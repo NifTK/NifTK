@@ -23,6 +23,8 @@
 
 #include <QObject>
 #include <QMetaType>
+#include <QSet>
+#include <QMutex>
 
 /**
  * \class IGIOpenCVDataSource
@@ -37,11 +39,6 @@ public:
 
   mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
   mitkNewMacro1Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*);
-
-  /**
-   * \brief We store the node name here so other classes can refer to it.
-   */
-  static const std::string OPENCV_IMAGE_NAME;
 
   /**
    * \see mitk::IGIDataSource::GetSaveInBackground()
@@ -119,12 +116,14 @@ protected:
   virtual bool Update(mitk::IGIDataType* data);
 
 private:
-
-  mitk::OpenCVVideoSource::Pointer m_VideoSource;
-
+  mitk::OpenCVVideoSource::Pointer  m_VideoSource;
   std::set<igtlUint64>              m_PlaybackIndex;
   std::string                       m_PlaybackDirectoryName;
-
+  int                               m_ChannelNumber;
+  std::string                       m_SourceName;
+  
+  QMutex                            m_Lock;
+  static QSet<int>                  m_SourcesInUse;  
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)

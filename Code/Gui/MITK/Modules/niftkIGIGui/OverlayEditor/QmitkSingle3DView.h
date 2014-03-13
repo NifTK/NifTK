@@ -134,6 +134,8 @@ public:
    */
   void SetTrackingCalibrationFileName(const std::string& fileName);
 
+  std::string GetTrackingCalibrationFileName() const;
+
   /**
    * \brief Sets whether or not we are doing camera tracking mode.
    *
@@ -148,6 +150,13 @@ public:
    * on top of the image.
    */
   void SetCameraTrackingMode(const bool& isCameraTracking);
+
+  bool GetCameraTrackingMode() const;
+
+  /**
+   * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
+   */  
+  void SetClipToImagePlane(const bool& clipToImagePlane);
 
   /**
    * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
@@ -224,5 +233,6 @@ private:
   bool                                          m_IsCalibrated;
   double                                        m_ZNear;
   double                                        m_ZFar;
+  bool                                          m_ClipToImagePlane;
 };
 #endif /* QmitkSingle3DView */

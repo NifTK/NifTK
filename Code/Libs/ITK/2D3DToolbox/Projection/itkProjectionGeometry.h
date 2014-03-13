@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef itkProjectionGeometry_h
-#define itkProjectionGeometry_h
+#ifndef __itkProjectionGeometry_h
+#define __itkProjectionGeometry_h
 
-#include <itkImage.h>
-#include <itkPerspectiveProjectionTransform.h>
-#include <itkEulerAffineTransform.h>
+#include "itkImage.h"
+#include "itkPerspectiveProjectionTransform.h"
+#include "itkEulerAffineTransform.h"
 
 namespace itk {
 
@@ -54,6 +54,25 @@ public:
 
   typedef typename itk::PerspectiveProjectionTransform<double>    PerspectiveProjectionTransformType;
   typedef typename PerspectiveProjectionTransformType::Pointer    PerspectiveProjectionTransformPointerType;
+
+  typedef enum {
+    UNDEFINED_SIDE=0,        //!< Undefined
+    LEFT_SIDE,               //!< Left side
+    RIGHT_SIDE               //!< Right side
+  } ProjectionSideType;
+
+  /// Set the projection side
+  void SetProjectionSide( ProjectionSideType side ) { m_FlagSide = side; }
+
+  typedef enum {
+    UNDEFINED_VIEW=0,      //!< Undefined
+    CC_VIEW,               //!< CC view
+    MLO_VIEW               //!< MLO view
+  } ProjectionViewType;
+
+
+  /// Set the projection view
+  void SetProjectionView( ProjectionViewType view ) { m_FlagView = view; }
 
   /** Return a pointer to the perspective projection matrix for
       projection 'i'. */
@@ -98,15 +117,19 @@ protected:
   ProjectionGeometry();
   virtual ~ProjectionGeometry() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const{
-    Superclass::PrintSelf(os, indent);
-  }
+  void PrintSelf(std::ostream& os, Indent indent) const;
 
   /// Initialise the object and check inputs are defined
   void Initialise(void);
 
   /// Flag indicating whether the object has been initialised
   bool m_FlagInitialised;
+
+  /// Flag indicating if side is left or right
+  ProjectionSideType m_FlagSide;
+
+  /// Flag indicating if view is CC or MLO
+  ProjectionViewType m_FlagView;
 
   /// Rotation in 'x' to allow reorientation of the volume
   double m_RotationInX;

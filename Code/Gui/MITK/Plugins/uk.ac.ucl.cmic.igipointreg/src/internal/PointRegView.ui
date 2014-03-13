@@ -93,13 +93,6 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="ctkPathLineEdit" name="m_SaveToFilePathEdit">
-         <property name="toolTip">
-          <string>enter a valid file name</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
@@ -124,11 +117,6 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkPathLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ctkPathLineEdit.h</header>
   </customwidget>
   <customwidget>
    <class>ctkMatrixWidget</class>

@@ -18,7 +18,7 @@ namespace itk
 {
 
 //-----------------------------------------------------------------------------
-int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation)
+int GetAxisFromOrientationString(const std::string& orientationString, const itk::Orientation& orientation)
 {
   int outputAxis = -1;
 

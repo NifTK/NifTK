@@ -30,7 +30,7 @@ class BaseRenderer;
  * \class DataStorageVisibilityTracker
  * \brief Class to listen to changes in visibility properties, and to update a list of BaseRenders.
  *
- * This finds use in the MIDAS Thumbnail window, which tracks visibility properties, and applies
+ * This finds use in the Thumbnail window plugin, which tracks visibility properties, and applies
  * them to a single render window, and also the MIDAS Segmentation Viewer widget which tracks
  * visibility properties, and applies them to an orthoviewer.
  */

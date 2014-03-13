@@ -27,6 +27,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.igidatasources
   uk.ac.ucl.cmic.igioverlayeditor
   uk.ac.ucl.cmic.igipointreg
+  uk.ac.ucl.cmic.igirmserror
   uk.ac.ucl.cmic.igisurfacerecon
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igitagtracker

@@ -37,26 +37,33 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(const char * stateM
 
 
 //-----------------------------------------------------------------------------
-float MIDASToolKeyPressStateMachine::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASToolKeyPressStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+float MIDASToolKeyPressStateMachine::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (   event->GetId() == 18   // S
-          || event->GetId() == 4004 // D
-          || event->GetId() == 4018 // Y
-          || event->GetId() == 4015 // V
-          || event->GetId() == 4003 // C
-          || event->GetId() == 13   // N
-          || event->GetId() == 25   // Space
-          )
+  int eventId = stateEvent->GetId();
+  if (eventId == 18   // S
+      || eventId == 4004 // D
+      || eventId == 4018 // Y
+      || eventId == 4015 // V
+      || eventId == 4003 // C
+      || eventId == 13   // N
+      || eventId == 25   // Space
       )
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::StateMachine::CanHandleEvent(event);
+    // Note that the superclass is not a MIDAS state machine and it does not
+    // have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }
 

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make Geometry</title>
+  <description><![CDATA[Make geometry for visualisation of laparoscopic tracking demo]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file>
+      <name>rigidBodyFile</name>
+      <longflag>rigidBodyFile</longflag>
+      <description>The rigid body definition file</description>
+      <label>The rigid body definition file</label>
+    </file>
+    <file>
+      <name>handeye</name>
+      <longflag>handeye</longflag>
+      <description>The handeye calibration matrix</description>
+      <label>The handeye calibration matrix</label>
+    </file>    
+    <file>
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>The output file name</description>
+      <label>The output file name</label>
+      <default>output.vtk</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <string>
+      <name>geometry</name>
+      <longflag>geometry</longflag>
+      <description>Description of what to make</description>
+      <label>Description of what to make</label>
+      <default>"backwall"</default>
+    </string>
+
+    <boolean>
+      <name>Visualise</name>
+      <longflag>Visualise</longflag>
+      <description>Show the results</description>
+      <label>Show the results</label>
+      <default>0</default>
+    </boolean>
+    
+  </parameters>
+  
+</executable>

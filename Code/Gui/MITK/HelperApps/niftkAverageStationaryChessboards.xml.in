@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Average Stationary Chessboards</title>
+  <description><![CDATA[Takes a two directories of images, extracts chessboards, averages corners and triangulates to 3D.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <directory>
+      <name>leftCameraInputDirectory</name>
+      <longflag>left</longflag>
+      <description>Directory containing images of a chessboard, from left camera.</description>
+      <label>Left Camera Input Directory</label>
+    </directory>
+
+    <directory>
+      <name>rightCameraInputDirectory</name>
+      <longflag>right</longflag>
+      <description>Directory containing images of a chessboard, from right camera.</description>
+      <label>Right Camera Input Directory</label>
+    </directory>
+
+    <file fileExtensions="*.txt">
+      <name>intrinsicLeft</name>
+      <longflag>intrinsicLeft</longflag>
+      <description>Left camera intrinsic parameters file as plain text file.</description>
+      <label>Left Camera Intrinsic Parameters</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.txt">
+      <name>intrinsicRight</name>
+      <longflag>intrinsicRight</longflag>
+      <description>Right camera intrinsic parameters file as plain text file.</description>
+      <label>Right Camera Intrinsic Parameters</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.txt">
+      <name>rightToLeftExtrinsics</name>
+      <longflag>rightToLeftExtrinsics</longflag>
+      <description>Right to left camera transformation as plain text file.</description>
+      <label>Right To Left Transformation</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.mps,*.txt">
+      <name>outputPoints</name>
+      <longflag>outputPoints</longflag>
+      <description>Output point set.</description>
+      <label>Output points</label>
+      <default>output.mps</default>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+
+    <integer>
+      <name>xCorners</name>
+      <longflag>xcorners</longflag>
+      <description>The number of internal corners in the horizontal (x) direction.</description>
+      <label>Corners in horizontal direction</label>
+      <default>14</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>yCorners</name>
+      <longflag>ycorners</longflag>
+      <description>The number of internal corners in the vertical (y) direction.</description>
+      <label>Corners in vertical direction</label>
+      <default>10</default>
+      <constraints>
+        <minimum>5</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+
+    <integer-vector>
+      <name>pixelScaleFactors</name>
+      <longflag>pixelScaleFactors</longflag>
+      <description>A vector of integers representing scale factors to multiply the number of pixels by.</description>
+      <label>Pixel Scale Factors</label>
+      <default>1,1</default>
+    </integer-vector>
+
+  </parameters>
+
+</executable>

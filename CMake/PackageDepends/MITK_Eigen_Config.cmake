@@ -13,6 +13,5 @@
 #============================================================================*/
 find_package(Eigen REQUIRED)
 if(Eigen_FOUND)
-  message("Found Eigen in ${Eigen_DIR}")
   list(APPEND ALL_INCLUDE_DIRECTORIES ${Eigen_INCLUDE_DIR})
 endif()

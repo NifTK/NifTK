@@ -67,28 +67,28 @@ public:
   std::string GetOrientationString(ImageType* image);
 
   /** Retrieves the index of the image axis corresponding to the currentOrientation, in 3D will return 0,1,2 or -1 if not found. */
-  int GetAxis(ImageType* image, ORIENTATION_ENUM currentOrientation);
+  int GetAxis(ImageType* image, Orientation currentOrientation);
 
   /** Retrieves the direction that corresponds to "Plus" or "Up", which is towards anterior, right or superior and will return +1 for increasing, -1 for decreasing or 0 if not found. */
-  int GetPlusOrUpDirection(ImageType* image, ORIENTATION_ENUM currentOrientation);
+  int GetPlusOrUpDirection(ImageType* image, Orientation currentOrientation);
 
   /** From the given image, orientation and slice number will calculate the Plus/Up region. */
-  RegionType GetPlusOrUpRegion(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  RegionType GetPlusOrUpRegion(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** From the given image, orientation and slice number will calculate the Minus/Down region. */
-  RegionType GetMinusOrDownRegion(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  RegionType GetMinusOrDownRegion(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** From the given image, orientation and slice number, will calculate the region for the current slice. */
-  RegionType GetSliceRegion(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  RegionType GetSliceRegion(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** From the give image, orientation and slice number will calculate the Plus/Up region and return a list of regions corresponding to each slice, so you can iterate slice-wise. */
-  std::vector<RegionType> GetPlusOrUpRegionAsSlices(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  std::vector<RegionType> GetPlusOrUpRegionAsSlices(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** From the give image, orientation and slice number will calculate the Minus/Down region and return a list of regions corresponding to each slice, so you can iterate slice-wise. */
-  std::vector<RegionType> GetMinusOrDownRegionAsSlices(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  std::vector<RegionType> GetMinusOrDownRegionAsSlices(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** Takes a given region of interest, and splits it down into slices according to orientation. */
-  std::vector<RegionType> SplitRegionBySlices(RegionType regionOfInterest, ImageType* image, ORIENTATION_ENUM currentOrientation);
+  std::vector<RegionType> SplitRegionBySlices(RegionType regionOfInterest, ImageType* image, Orientation currentOrientation);
 
   /** Works out the minimum region to encapsulate data that does not contain the background value. */
   RegionType GetMinimumRegion(ImageType *image, PixelType background);
@@ -102,13 +102,13 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   /** Will throw itkException if slice number is invalid (outside region). */
-  void CheckSliceNumber(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber);
+  void CheckSliceNumber(ImageType* image, Orientation currentOrientation, int sliceNumber);
 
   /** Calculates the region, either side of the sliceNumber, given the currentOrientation. */
-  RegionType GetRegion(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber, bool doSingleSlice, bool doPlus);
+  RegionType GetRegion(ImageType* image, Orientation currentOrientation, int sliceNumber, bool doSingleSlice, bool doPlus);
 
   /** Calculates the region, either side of the sliceNumber, given the currentOrientation. returning each slice to process as a separate region of interest. */
-  std::vector<RegionType> GetRegionAsSlices(ImageType* image, ORIENTATION_ENUM currentOrientation, int sliceNumber, bool doSingleSlice, bool doPlus);
+  std::vector<RegionType> GetRegionAsSlices(ImageType* image, Orientation currentOrientation, int sliceNumber, bool doSingleSlice, bool doPlus);
 
 }; // end class
 

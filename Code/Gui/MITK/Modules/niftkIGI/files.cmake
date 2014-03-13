@@ -24,10 +24,14 @@ set(CPP_FILES
   TrackedPointer/mitkTrackedPointerManager.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
+  Utils/mitkMakeGeometry.cxx
+  # this one does not depend on pcl!
+  PointClouds/mitkMergePointClouds.cxx
 )
 
 if(BUILD_PCL)
   list(APPEND CPP_FILES
     PCLTest/mitkPCLTest.cxx
+    PointClouds/FitPlaneToPointCloudWrapper.cxx
   )
 endif()

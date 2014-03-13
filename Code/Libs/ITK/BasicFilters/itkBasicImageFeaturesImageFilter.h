@@ -113,8 +113,30 @@ public:
   typedef typename DerivativeFilterTypeX::Pointer  DerivativeFilterPointerX;
   typedef typename DerivativeFilterTypeY::Pointer  DerivativeFilterPointerY;
 
+  /// Set the debugging output
+  void SetDebug(bool b) { itk::Object::SetDebug(b); }
+  /// Set debugging output on
+  void DebugOn() { this->SetDebug(true); }
+  /// Set debugging output off
+  void DebugOff() { this->SetDebug(false); }
+
+  /// Set the verbose output
+  void SetVerbose(bool b) { itk::Object::SetGlobalWarningDisplay(b); }
+  /// Set verbose output on
+  void VerboseOn() { this->SetVerbose(true); }
+  /// Set verbose output off
+  void VerboseOff() { this->SetVerbose(false); }
+
   /** Set Sigma value. */
   void SetSigma( RealType sigma );
+
+  /** BasicImageFeaturesImageFilter needs all of the input to produce an
+   * output. Therefore, GradientRecursiveGaussianImageFilter needs to provide
+   * an implementation for GenerateInputRequestedRegion in order to inform
+   * the pipeline execution model.
+   * \sa ImageToImageFilter::GenerateInputRequestedRegion() */
+  virtual void GenerateInputRequestedRegion()
+  throw( InvalidRequestedRegionError );
 
   /** Define which normalization factor will be used for the Gaussian */
   void SetNormalizeAcrossScale( bool normalizeInScaleSpace );
@@ -208,6 +230,12 @@ protected:
   BasicImageFeaturesImageFilter();
   virtual ~BasicImageFeaturesImageFilter();
   void PrintSelf(std::ostream& os, Indent indent) const;
+
+  /** Thread-Data Structure   */
+  struct BasicImageFeaturesThreadStruct
+  {
+    BasicImageFeaturesImageFilter *Filter;
+  };
   
   RealImagePointer GetDerivative( DerivativeFilterOrderEnumTypeX xOrder,
 				  DerivativeFilterOrderEnumTypeY yOrder );
@@ -240,7 +268,7 @@ protected:
   SetSingleThreadedExecution() ) */
   void GenerateData();
   
-  /** ForwardImageProjector3Dto2D can be implemented as a multithreaded filter.
+  /** BasicImageFeaturesImageFilter can be implemented as a multithreaded filter.
    * Therefore, this implementation provides a ThreadedGenerateData()
    * routine which is called for each processing thread. The output
    * image data is allocated automatically by the superclass prior to

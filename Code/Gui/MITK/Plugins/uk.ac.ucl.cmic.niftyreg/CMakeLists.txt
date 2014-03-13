@@ -61,4 +61,6 @@ if(FALSE AND NIFTK_USE_CUDA)
                         _reg_cudaCommon)
 endif(FALSE AND NIFTK_USE_CUDA)
 
-
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_niftyreg)
+endif()

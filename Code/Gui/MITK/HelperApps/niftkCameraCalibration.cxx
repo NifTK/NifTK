@@ -14,10 +14,12 @@
 
 #include <cstdlib>
 #include <limits>
+#include <stdexcept>
 #include <mitkCameraCalibrationFromDirectory.h>
-#include <mitkStereoCameraCalibrationFromTwoDirectories.h>
+#include <mitkStereoCameraCalibration.h>
 #include <niftkCameraCalibrationCLP.h>
 #include <mitkVector.h>
+#include <niftkFileHelper.h>
 
 int main(int argc, char** argv)
 {
@@ -25,9 +27,15 @@ int main(int argc, char** argv)
   int returnStatus = EXIT_FAILURE;
   double reprojectionError = std::numeric_limits<double>::max();
 
-  if ( leftCameraInputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
+  if ( leftCameraInputDirectory.length() == 0 || outputDirectory.length() == 0 )
   {
     commandLine.getOutput()->usage(commandLine);
+    return returnStatus;
+  }
+
+  if (numberOfFrames != 0 && leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  != 0)
+  {
+    MITK_ERROR << "If you specify --numberFrames, you must only specify --left OR --right, and not both" << std::endl;
     return returnStatus;
   }
 
@@ -37,24 +45,42 @@ int main(int argc, char** argv)
     pixelScales[0] = pixelScaleFactors[0];
     pixelScales[1] = pixelScaleFactors[1];
 
-    if (   (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
-        || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
+    if (!niftk::DirectoryExists(outputDirectory))
+    {
+      if (!niftk::CreateDirAndParents(outputDirectory))
+      {
+        MITK_ERROR << "Failed to create directory:" << outputDirectory << std::endl;
+        return -3;
+      }
+    }
+    
+    if (numberOfFrames == 0
+        && ((leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
+            || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
+           )
         )
     {
       mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
       if (rightCameraInputDirectory.length() != 0)
       {
-        reprojectionError = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
+        reprojectionError = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputDirectory, writeImages);
       }
       else
       {
-        reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
+        reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputDirectory, writeImages);
       }
     }
     else
     {
-      mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calibrationObject = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
+      mitk::StereoCameraCalibration::Pointer calibrationObject = mitk::StereoCameraCalibration::New();
+
+      if ( existingCalibrationDirectory != "" )
+      {
+        MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingCalibrationDirectory;
+        calibrationObject->LoadExistingIntrinsics(existingCalibrationDirectory);
+      }
+
+      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, numberOfFrames, xCorners, yCorners, size, pixelScales, outputDirectory, writeImages);
     }
     returnStatus = EXIT_SUCCESS;
   }

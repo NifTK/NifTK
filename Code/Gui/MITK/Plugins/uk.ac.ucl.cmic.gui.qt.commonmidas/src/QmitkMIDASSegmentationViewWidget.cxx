@@ -14,7 +14,6 @@
 
 #include "QmitkMIDASSegmentationViewWidget.h"
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
-#include <QmitkMIDASSingleViewWidgetListVisibilityManager.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
@@ -28,24 +27,30 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* parent)
-: m_ContainingFunctionality(NULL)
+QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBaseSegmentationFunctionality* functionality, QWidget* parent)
+: m_ContainingFunctionality(functionality)
 , m_FocusManagerObserverTag(0)
-, m_Layout(MIDAS_LAYOUT_UNKNOWN)
-, m_MainWindowLayout(MIDAS_LAYOUT_UNKNOWN)
-, m_MainAxialWindow(NULL)
-, m_MainSagittalWindow(NULL)
-, m_MainCoronalWindow(NULL)
-, m_Main3DWindow(NULL)
-, m_CurrentRenderer(NULL)
-, m_NodeAddedSetter(NULL)
-, m_VisibilityTracker(NULL)
+, m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
+, m_MainWindow(0)
+, m_MainAxialWindow(0)
+, m_MainSagittalWindow(0)
+, m_MainCoronalWindow(0)
+, m_MainAxialSnc(0)
+, m_MainSagittalSnc(0)
+, m_MainCoronalSnc(0)
+, m_NodeAddedSetter(0)
+, m_VisibilityTracker(0)
 , m_Magnification(0.0)
+, m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
+, m_MIDASToolNodeNameFilter(0)
+, m_Geometry(0)
 {
   this->setupUi(parent);
 
-  m_ViewerWidget->SetSelected(false);
+  m_Viewer->SetBoundGeometryActive(false);
+  m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
+  m_Viewer->SetSelected(false);
 
   m_MultiWindowComboBox->addItem("2H");
   m_MultiWindowComboBox->addItem("2V");
@@ -53,17 +58,17 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 
   m_CoronalWindowRadioButton->setChecked(true);
 
-  m_SingleWindowLayouts[MIDAS_LAYOUT_AXIAL] = MIDAS_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_LAYOUT_SAGITTAL] = MIDAS_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_LAYOUT_CORONAL] = MIDAS_LAYOUT_SAGITTAL;
+  m_SingleWindowLayouts[MIDAS_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[MIDAS_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[MIDAS_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
 
   this->ChangeLayout();
 
   m_MagnificationSpinBox->setDecimals(2);
   m_MagnificationSpinBox->setSingleStep(1.0);
 
-  double minMagnification = std::ceil(m_ViewerWidget->GetMinMagnification());
-  double maxMagnification = std::floor(m_ViewerWidget->GetMaxMagnification());
+  double minMagnification = std::ceil(m_Viewer->GetMinMagnification());
+  double maxMagnification = std::floor(m_Viewer->GetMaxMagnification());
 
   m_MagnificationSpinBox->setMinimum(minMagnification);
   m_MagnificationSpinBox->setMaximum(maxMagnification);
@@ -71,9 +76,9 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_ControlsWidget->setEnabled(false);
 
   std::vector<mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
-  renderers.push_back(m_ViewerWidget->GetSagittalWindow()->GetRenderer());
-  renderers.push_back(m_ViewerWidget->GetCoronalWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
 
   m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
   m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
@@ -82,86 +87,105 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_NodeAddedSetter->SetVisibility(false);
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
-  m_VisibilityTracker->SetNodesToIgnore(m_ViewerWidget->GetWidgetPlanes());
+  m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
-  m_ViewerWidget->SetDisplay2DCursorsGlobally(false);
-  m_ViewerWidget->SetDisplay2DCursorsLocally(true);
-  m_ViewerWidget->SetRememberSettingsPerLayout(true);
-  m_ViewerWidget->SetDisplayInteractionsEnabled(true);
-  m_ViewerWidget->SetCursorPositionsBound(false);
-  m_ViewerWidget->SetScaleFactorsBound(true);
+  m_Viewer->SetCursorGloballyVisible(false);
+  m_Viewer->SetCursorVisible(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
+  m_Viewer->SetDisplayInteractionsEnabled(true);
+  m_Viewer->SetCursorPositionBinding(false);
+  m_Viewer->SetScaleFactorBinding(true);
 
-  connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialWindowRadioButtonToggled(bool)));
-  connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalWindowRadioButtonToggled(bool)));
-  connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalWindowRadioButtonToggled(bool)));
-  connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnMultiWindowRadioButtonToggled(bool)));
-  connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
+  this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
+  this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));
+  this->connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalWindowRadioButtonToggled(bool)));
+  this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
+  this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
-  connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnMagnificationChanged(double)));
-  connect(m_ViewerWidget, SIGNAL(ScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)));
-}
+  this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationChanged(double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
 
-
-//-----------------------------------------------------------------------------
-QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
-{
-  // m_NodeAddedSetter deleted by smart pointer.
-  // m_VisibilityTracker deleted by smart pointer.
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* storage)
-{
-  if (storage != NULL)
-  {
-    m_ViewerWidget->SetDataStorage(storage);
-
-    m_NodeAddedSetter->SetDataStorage(storage);
-    m_VisibilityTracker->SetDataStorage(storage);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality)
-{
-  m_ContainingFunctionality = functionality;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::Activated()
-{
+  // Register focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     itk::SimpleMemberCommand<QmitkMIDASSegmentationViewWidget>::Pointer onFocusChangedCommand =
       itk::SimpleMemberCommand<QmitkMIDASSegmentationViewWidget>::New();
     onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASSegmentationViewWidget::OnFocusChanged );
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-
-    // Force this because:
-    // If user launches Drag and Drop Display, loads image, drops into window, and THEN launches this widget,
-    // you don't get the first OnFocusChanged as the window has already been clicked on, and then the
-    // geometry is initialised incorrectly.
-    this->OnFocusChanged();
-    m_ViewerWidget->SetSelected(false);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::Deactivated()
+QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
 {
+  if (m_MainAxialWindow)
+  {
+    m_MainAxialSnc->Disconnect(m_Viewer->GetAxialWindow()->GetSliceNavigationController());
+    m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
+  }
+  if (m_MainSagittalWindow)
+  {
+    m_MainSagittalSnc->Disconnect(m_Viewer->GetSagittalWindow()->GetSliceNavigationController());
+    m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->Disconnect(m_MainSagittalSnc);
+  }
+  if (m_MainCoronalWindow)
+  {
+    m_MainCoronalSnc->Disconnect(m_Viewer->GetCoronalWindow()->GetSliceNavigationController());
+    m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
+  }
+
+  // Register focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
-  m_ViewerWidget->SetEnabled(false);
+
+  m_Viewer->SetEnabled(false);
+
+  // m_NodeAddedSetter deleted by smart pointer.
+  // m_VisibilityTracker deleted by smart pointer.
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::SetDataStorage(mitk::DataStorage* dataStorage)
+{
+  if (dataStorage)
+  {
+    m_Viewer->SetDataStorage(dataStorage);
+
+    m_NodeAddedSetter->SetDataStorage(dataStorage);
+    m_VisibilityTracker->SetDataStorage(dataStorage);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnAMainWindowDestroyed(QObject* mainWindow)
+{
+  if (mainWindow == m_MainAxialWindow)
+  {
+    m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
+    m_MainAxialWindow = 0;
+    m_MainAxialSnc = 0;
+  }
+  else if (mainWindow == m_MainSagittalWindow)
+  {
+    m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->Disconnect(m_MainSagittalSnc);
+    m_MainSagittalWindow = 0;
+    m_MainSagittalSnc = 0;
+  }
+  else if (mainWindow == m_MainCoronalWindow)
+  {
+    m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
+    m_MainCoronalWindow = 0;
+    m_MainCoronalSnc = 0;
+  }
 }
 
 
@@ -177,12 +201,7 @@ void QmitkMIDASSegmentationViewWidget::OnAxialWindowRadioButtonToggled(bool chec
 {
   if (checked)
   {
-    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
-
-    if (::IsSingleWindowLayout(mainWindowLayout))
-    {
-      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_AXIAL;
-    }
+    m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_AXIAL;
     this->ChangeLayout();
   }
 }
@@ -193,12 +212,7 @@ void QmitkMIDASSegmentationViewWidget::OnSagittalWindowRadioButtonToggled(bool c
 {
   if (checked)
   {
-    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
-
-    if (::IsSingleWindowLayout(mainWindowLayout))
-    {
-      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_SAGITTAL;
-    }
+    m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_SAGITTAL;
     this->ChangeLayout();
   }
 }
@@ -209,12 +223,7 @@ void QmitkMIDASSegmentationViewWidget::OnCoronalWindowRadioButtonToggled(bool ch
 {
   if (checked)
   {
-    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
-
-    if (::IsSingleWindowLayout(mainWindowLayout))
-    {
-      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_CORONAL;
-    }
+    m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_CORONAL;
     this->ChangeLayout();
   }
 }
@@ -237,10 +246,11 @@ void QmitkMIDASSegmentationViewWidget::OnMultiWindowComboBoxIndexChanged()
   this->ChangeLayout();
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::ChangeLayout()
 {
-  MIDASLayout nextLayout = MIDAS_LAYOUT_UNKNOWN;
+  WindowLayout nextLayout = WINDOW_LAYOUT_UNKNOWN;
 
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
 
@@ -249,55 +259,55 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
     // 2H
     if (m_MultiWindowComboBox->currentIndex() == 0)
     {
-      if (m_MainWindowLayout == MIDAS_LAYOUT_AXIAL)
+      if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
       {
-        nextLayout = MIDAS_LAYOUT_COR_SAG_H;
+        nextLayout = WINDOW_LAYOUT_COR_SAG_H;
       }
-      else if (m_MainWindowLayout == MIDAS_LAYOUT_SAGITTAL)
+      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
       {
-        nextLayout = MIDAS_LAYOUT_COR_AX_H;
+        nextLayout = WINDOW_LAYOUT_COR_AX_H;
       }
-      else if (m_MainWindowLayout == MIDAS_LAYOUT_CORONAL)
+      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
       {
-        nextLayout = MIDAS_LAYOUT_SAG_AX_H;
+        nextLayout = WINDOW_LAYOUT_SAG_AX_H;
       }
     }
     // 2V
     else if (m_MultiWindowComboBox->currentIndex() == 1)
     {
-      if (m_MainWindowLayout == MIDAS_LAYOUT_AXIAL)
+      if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
       {
-        nextLayout = MIDAS_LAYOUT_COR_SAG_V;
+        nextLayout = WINDOW_LAYOUT_COR_SAG_V;
       }
-      else if (m_MainWindowLayout == MIDAS_LAYOUT_SAGITTAL)
+      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
       {
-        nextLayout = MIDAS_LAYOUT_COR_AX_V;
+        nextLayout = WINDOW_LAYOUT_COR_AX_V;
       }
-      else if (m_MainWindowLayout == MIDAS_LAYOUT_CORONAL)
+      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
       {
-        nextLayout = MIDAS_LAYOUT_SAG_AX_V;
+        nextLayout = WINDOW_LAYOUT_SAG_AX_V;
       }
     }
     // 2x2
     else if (m_MultiWindowComboBox->currentIndex() == 2)
     {
-      nextLayout = MIDAS_LAYOUT_ORTHO;
+      nextLayout = WINDOW_LAYOUT_ORTHO;
     }
   }
-  else if (::IsSingleWindowLayout(m_MainWindowLayout) && m_MainWindowLayout != MIDAS_LAYOUT_3D)
+  else if (m_MainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    nextLayout = m_SingleWindowLayouts[m_MainWindowLayout];
+    nextLayout = m_SingleWindowLayouts[m_MainWindowOrientation];
 
     QRadioButton* nextLayoutRadioButton = 0;
-    if (nextLayout == MIDAS_LAYOUT_AXIAL && !m_AxialWindowRadioButton->isChecked())
+    if (nextLayout == WINDOW_LAYOUT_AXIAL && !m_AxialWindowRadioButton->isChecked())
     {
       nextLayoutRadioButton = m_AxialWindowRadioButton;
     }
-    else if (nextLayout == MIDAS_LAYOUT_SAGITTAL && !m_SagittalWindowRadioButton->isChecked())
+    else if (nextLayout == WINDOW_LAYOUT_SAGITTAL && !m_SagittalWindowRadioButton->isChecked())
     {
       nextLayoutRadioButton = m_SagittalWindowRadioButton;
     }
-    if (nextLayout == MIDAS_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
+    if (nextLayout == WINDOW_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
     {
       nextLayoutRadioButton = m_CoronalWindowRadioButton;
     }
@@ -311,25 +321,25 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
   if (!m_MultiWindowRadioButton->isChecked())
   {
     m_ControlsWidget->setEnabled(true);
-    m_AxialWindowRadioButton->setEnabled(m_MainWindowLayout != MIDAS_LAYOUT_AXIAL);
-    m_SagittalWindowRadioButton->setEnabled(m_MainWindowLayout != MIDAS_LAYOUT_SAGITTAL);
-    m_CoronalWindowRadioButton->setEnabled(m_MainWindowLayout != MIDAS_LAYOUT_CORONAL);
+    m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_AXIAL);
+    m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_SAGITTAL);
+    m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_CORONAL);
   }
 
   m_LayoutWidget->blockSignals(wasBlocked);
 
-  if (nextLayout != MIDAS_LAYOUT_UNKNOWN && nextLayout != m_Layout)
+  if (nextLayout != WINDOW_LAYOUT_UNKNOWN && nextLayout != m_WindowLayout)
   {
-    m_Layout = nextLayout;
-    m_ViewerWidget->SetLayout(m_Layout);
+    m_WindowLayout = nextLayout;
+    m_Viewer->SetWindowLayout(m_WindowLayout);
 
-    double magnification = m_ViewerWidget->GetMagnification();
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
     m_MagnificationSpinBox->blockSignals(wasBlocked);
 
-    emit LayoutChanged(m_Layout);
+    emit LayoutChanged(m_WindowLayout);
   }
 }
 
@@ -339,15 +349,24 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  QmitkRenderWindow* focusedRenderWindow = 0;
 
-  QmitkRenderWindow* renderWindow = m_ViewerWidget->GetRenderWindow(focusedRenderer->GetRenderWindow());
-
-  // If the newly focused window is this widget, nothing to update. Stop early.
-  if (renderWindow)
+  const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewer->GetRenderWindows();
+  for (int i = 0; i < viewerRenderWindows.size(); ++i)
   {
-    m_ViewerWidget->SetSelectedRenderWindow(renderWindow);
+    if (focusedRenderer == viewerRenderWindows[i]->GetRenderer())
+    {
+      focusedRenderWindow = viewerRenderWindows[i];
+      break;
+    }
+  }
 
-    double magnification = m_ViewerWidget->GetMagnification();
+  // If the newly focused window is in this widget, nothing to update. Stop early.
+  if (focusedRenderWindow)
+  {
+    m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
+
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
     m_Magnification = magnification;
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
@@ -357,190 +376,190 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     return;
   }
 
-  // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
-  QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
-  QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
-  QmitkRenderWindow* main3DWindow = m_ContainingFunctionality->GetRenderWindow("3d");
+  this->SetMainWindow(m_ContainingFunctionality->GetSelectedRenderWindow());
+}
 
-  // Main windows could be NULL if main window not initialised,
-  // or no valid QmitkRenderer returned from mitkIRenderWindowPart.
-  if (   mainAxialWindow == NULL
-      || mainSagittalWindow == NULL
-      || mainCoronalWindow == NULL
-      || main3DWindow == NULL
-      )
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
+{
+  if (mainWindow == m_MainWindow)
   {
     return;
   }
 
-  // Check if the user selected a completely different main window widget, or
-  // if the user selected a different layout (axial, coronal, sagittal) within
-  // the same QmitkMIDASStdMultiWidget.
-  bool mainWindowChanged = false;
-  if (   mainAxialWindow    != m_MainAxialWindow
-      || mainSagittalWindow != m_MainSagittalWindow
-      || mainCoronalWindow  != m_MainCoronalWindow
-      || main3DWindow       != m_Main3DWindow
-      )
+  // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
+  QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
+  QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
+  QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
+
+  if (mainWindow != mainAxialWindow
+      && mainWindow != mainSagittalWindow
+      && mainWindow != mainCoronalWindow)
   {
-    mainWindowChanged = true;
+    return;
   }
 
-  if (mainWindowChanged)
+  m_MainWindow = mainWindow;
+
+  QmitkRenderWindow* axialWindow = m_Viewer->GetAxialWindow();
+  QmitkRenderWindow* sagittalWindow = m_Viewer->GetSagittalWindow();
+  QmitkRenderWindow* coronalWindow = m_Viewer->GetCoronalWindow();
+
+  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
+
+  if (m_MainAxialWindow)
   {
-    QmitkRenderWindow* axialWindow = m_ViewerWidget->GetAxialWindow();
-    if (mainAxialWindow != NULL)
-    {
-      axialWindow->GetSliceNavigationController()->ConnectGeometryEvents(mainAxialWindow->GetSliceNavigationController());
-      mainAxialWindow->GetSliceNavigationController()->ConnectGeometryEvents(axialWindow->GetSliceNavigationController());
-    }
-    else
-    {
-      axialWindow->GetSliceNavigationController()->Disconnect(m_MainAxialWindow->GetSliceNavigationController());
-      m_MainAxialWindow->GetSliceNavigationController()->Disconnect(axialWindow->GetSliceNavigationController());
-    }
-    QmitkRenderWindow* sagittalWindow = m_ViewerWidget->GetSagittalWindow();
-    if (mainSagittalWindow != NULL)
-    {
-      sagittalWindow->GetSliceNavigationController()->ConnectGeometryEvents(mainSagittalWindow->GetSliceNavigationController());
-      mainSagittalWindow->GetSliceNavigationController()->ConnectGeometryEvents(sagittalWindow->GetSliceNavigationController());
-    }
-    else
-    {
-      sagittalWindow->GetSliceNavigationController()->Disconnect(m_MainSagittalWindow->GetSliceNavigationController());
-      m_MainSagittalWindow->GetSliceNavigationController()->Disconnect(sagittalWindow->GetSliceNavigationController());
-    }
-    QmitkRenderWindow* coronalWindow = m_ViewerWidget->GetCoronalWindow();
-    if (mainCoronalWindow != NULL)
-    {
-      coronalWindow->GetSliceNavigationController()->ConnectGeometryEvents(mainCoronalWindow->GetSliceNavigationController());
-      mainCoronalWindow->GetSliceNavigationController()->ConnectGeometryEvents(coronalWindow->GetSliceNavigationController());
-    }
-    else
-    {
-      coronalWindow->GetSliceNavigationController()->Disconnect(m_MainCoronalWindow->GetSliceNavigationController());
-      m_MainCoronalWindow->GetSliceNavigationController()->Disconnect(coronalWindow->GetSliceNavigationController());
-    }
+    m_MainAxialSnc->Disconnect(axialSnc);
+    axialSnc->Disconnect(m_MainAxialSnc);
+  }
+  if (m_MainSagittalWindow)
+  {
+    m_MainSagittalSnc->Disconnect(sagittalSnc);
+    sagittalSnc->Disconnect(m_MainSagittalSnc);
+  }
+  if (m_MainCoronalWindow)
+  {
+    m_MainCoronalSnc->Disconnect(coronalSnc);
+    coronalSnc->Disconnect(m_MainCoronalSnc);
   }
 
-  // This will only be valid if we are not currently focused on THIS widget.
-  // This should always be true at this point due to early exit above.
-  MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
-
-  bool mainWindowLayoutChanged = false;
-  if (mainWindowLayout != MIDAS_LAYOUT_UNKNOWN && mainWindowLayout != m_MainWindowLayout)
+  if (!mainWindow)
   {
-    mainWindowLayoutChanged = true;
-    m_MainWindowLayout = mainWindowLayout;
+    /// FIXME: this should remove the currently visible nodes from the viewer,
+    /// but this does not happen.
+    std::vector<mitk::BaseRenderer*> renderersToTrack;
+    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
+    m_VisibilityTracker->OnPropertyChanged(); // force update
+
+    m_Geometry = 0;
+    m_Viewer->SetEnabled(false);
+
+    m_MainAxialWindow = 0;
+    m_MainSagittalWindow = 0;
+    m_MainCoronalWindow = 0;
+
+    m_MainAxialSnc = 0;
+    m_MainSagittalSnc = 0;
+    m_MainCoronalSnc = 0;
+
+    m_MainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    this->ChangeLayout();
+
+    m_Viewer->RequestUpdate();
+
+    return;
   }
 
-  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowLayout != MIDAS_LAYOUT_UNKNOWN && m_Layout == MIDAS_LAYOUT_UNKNOWN))
+  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+
+  if (geometry && geometry != m_Geometry)
   {
-    const mitk::TimeGeometry* worldTimeGeometry = mainAxialWindow->GetRenderer()->GetTimeWorldGeometry();
-    if (worldTimeGeometry)
-    {
-      mitk::TimeGeometry::Pointer timeGeometry = const_cast<mitk::TimeGeometry*>(worldTimeGeometry);
-      assert(timeGeometry);
+    m_Viewer->SetGeometry(geometry);
+    m_Viewer->FitToDisplay();
 
-      m_MainAxialWindow = mainAxialWindow;
-      m_MainSagittalWindow = mainSagittalWindow;
-      m_MainCoronalWindow = mainCoronalWindow;
-      m_Main3DWindow = main3DWindow;
+    std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
+    std::vector<mitk::BaseRenderer*> renderersToTrack;
+    renderersToTrack.push_back(mainAxialWindow->GetRenderer());
+    renderersToTrack.push_back(mainSagittalWindow->GetRenderer());
+    renderersToTrack.push_back(mainCoronalWindow->GetRenderer());
 
-      m_ViewerWidget->SetGeometry(timeGeometry);
-      m_ViewerWidget->SetBoundGeometryActive(false);
-      m_ViewerWidget->SetShow3DWindowInOrthoView(true);
-      if (!m_ViewerWidget->IsEnabled())
-      {
-        m_ViewerWidget->SetEnabled(true);
-      }
-
-      std::vector<mitk::DataNode*> crossHairs = m_ViewerWidget->GetWidgetPlanes();
-      std::vector<mitk::BaseRenderer*> renderersToTrack;
-      renderersToTrack.push_back(mainAxialWindow->GetRenderer());
-      renderersToTrack.push_back(mainSagittalWindow->GetRenderer());
-      renderersToTrack.push_back(mainCoronalWindow->GetRenderer());
-
-      m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-      m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-      m_VisibilityTracker->OnPropertyChanged(); // force update
-
-      m_ViewerWidget->FitToDisplay();
-      this->ChangeLayout();
-    }
+    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
+    m_VisibilityTracker->SetNodesToIgnore(crossHairs);
+    m_VisibilityTracker->OnPropertyChanged(); // force update
   }
-  else if (mainWindowLayoutChanged)
+
+  m_Geometry = geometry;
+  m_Viewer->SetEnabled(geometry != 0);
+
+  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
+
+  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
   {
+    m_MainWindowOrientation = mainWindowOrientation;
     this->ChangeLayout();
   }
 
-  m_CurrentRenderer = focusedRenderer;
+  mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
 
-  m_ViewerWidget->RequestUpdate();
+  if (mainAxialWindow)
+  {
+    mainAxialSnc->ConnectGeometryEvents(axialSnc);
+    axialSnc->ConnectGeometryEvents(mainAxialSnc);
+    this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+  }
+  if (mainSagittalWindow)
+  {
+    mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
+    sagittalSnc->ConnectGeometryEvents(mainSagittalSnc);
+    this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+  }
+  if (mainCoronalWindow)
+  {
+    mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
+    coronalSnc->ConnectGeometryEvents(mainCoronalSnc);
+    this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+  }
+
+  m_MainAxialWindow = mainAxialWindow;
+  m_MainSagittalWindow = mainSagittalWindow;
+  m_MainCoronalWindow = mainCoronalWindow;
+
+  m_MainAxialSnc = mainAxialSnc;
+  m_MainSagittalSnc = mainSagittalSnc;
+  m_MainCoronalSnc = mainCoronalSnc;
+
+  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
+  /// Therefore, we resend the main window position here.
+  mainAxialWindow->GetSliceNavigationController()->SendSlice();
+  mainSagittalWindow->GetSliceNavigationController()->SendSlice();
+  mainCoronalWindow->GetSliceNavigationController()->SendSlice();
+
+  m_Viewer->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientation()
+MIDASOrientation QmitkMIDASSegmentationViewWidget::GetWindowOrientation(mitk::BaseRenderer* renderer)
 {
-  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+  MIDASOrientation windowOrientation;
 
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  if (focusedRenderer != NULL)
+  mitk::SliceNavigationController::ViewDirection viewDirection = renderer->GetSliceNavigationController()->GetViewDirection();
+  switch (viewDirection)
   {
-    QmitkRenderWindow* mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
-    QmitkRenderWindow* mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
-    QmitkRenderWindow* mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
-
-    if (mainWindowAxial && mainWindowSagittal && mainWindowCoronal)
-    {
-      if (focusedRenderer == mainWindowAxial->GetRenderer())
-      {
-        orientation = MIDAS_ORIENTATION_AXIAL;
-      }
-      else if (focusedRenderer == mainWindowSagittal->GetRenderer())
-      {
-        orientation = MIDAS_ORIENTATION_SAGITTAL;
-      }
-      else if (focusedRenderer == mainWindowCoronal->GetRenderer())
-      {
-        orientation = MIDAS_ORIENTATION_CORONAL;
-      }
-    }
+  case mitk::SliceNavigationController::Axial:
+    windowOrientation = MIDAS_ORIENTATION_AXIAL;
+    break;
+  case mitk::SliceNavigationController::Sagittal:
+    windowOrientation = MIDAS_ORIENTATION_SAGITTAL;
+    break;
+  case mitk::SliceNavigationController::Frontal:
+    windowOrientation = MIDAS_ORIENTATION_CORONAL;
+    break;
+  default:
+    windowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    break;
   }
-  return orientation;
+
+  return windowOrientation;
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowLayout()
+MIDASOrientation QmitkMIDASSegmentationViewWidget::GetMainWindowOrientation()
 {
-  MIDASLayout mainWindowLayout = MIDAS_LAYOUT_UNKNOWN;
-  MIDASOrientation mainWindowOrientation = this->GetCurrentMainWindowOrientation();
-
-  if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-  {
-    mainWindowLayout = MIDAS_LAYOUT_AXIAL;
-  }
-  else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-  {
-    mainWindowLayout = MIDAS_LAYOUT_SAGITTAL;
-  }
-  else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-  {
-    mainWindowLayout = MIDAS_LAYOUT_CORONAL;
-  }
-  return mainWindowLayout;
+  return m_MainWindowOrientation;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double scaleFactor)
+void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
 {
-  double magnification = m_ViewerWidget->GetMagnification();
+  double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
   bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
   m_MagnificationSpinBox->setValue(magnification);
@@ -569,7 +588,7 @@ void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnificati
   }
   else
   {
-    m_ViewerWidget->SetMagnification(magnification);
+    m_Viewer->SetMagnification(m_Viewer->GetOrientation(), magnification);
     m_Magnification = magnification;
   }
 }

@@ -30,13 +30,12 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkMIDASSingleViewWidgetListVisibilityManager;
 class QmitkMIDASBaseSegmentationFunctionality;
 class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASSegmentationViewWidget
- * \brief Qt Widget to provide a single QmitkMIDASSingleViewWidget, and some associated
+ * \brief Qt Widget to provide a single niftkSingleViewerWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
  * The widget will display whatever data nodes are visible in the currently focused
@@ -57,44 +56,34 @@ class CMIC_QT_COMMONMIDAS QmitkMIDASSegmentationViewWidget :
 
 public:
 
-  QmitkMIDASSegmentationViewWidget(QWidget* parent = 0);
+  /**
+   * Constructs a QmitkMIDASSegmentationViewWidget object.
+   *
+   * \param functionality Sets the containing functionality for callback purposes.
+   *
+   *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
+   *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
+   */
+  QmitkMIDASSegmentationViewWidget(QmitkMIDASBaseSegmentationFunctionality* functionality, QWidget* parent = 0);
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
-   * \brief Injects the data storage, which is passed onto the contained QmitkMIDASSingleViewWidget.
+   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
    * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
    */
   void SetDataStorage(mitk::DataStorage* storage);
 
   /**
-   * \brief Sets the containing functionality for callback purposes.
-   *
-   * The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
-   * rather than have any hard coded reference to any widget such as QmitkMIDASStdMultiWidget.
-   *
-   * \param functionality In old terminology, the "functionality" that contains this widget,
-   * is the child of QmitkAbstractView that contains this widget.
-   *
-   * \see QmitkMIDASBaseSegmentationFunctionality
-   * \see QmitkAbstractView
-   */
-  void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
-
-  /**
-   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
+   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the niftkSingleViewerWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
   void SetEnabled(bool enabled);
 
-  /**
-   * \brief Connects the widget to the FocusManager.
-   */
-  void Activated();
-
-  /**
-   * \brief Disconnects the widget from the FocusManager.
-   */
-  void Deactivated();
+  /// \brief Sets the selected render window of the main display.
+  /// This view then might need to change its window layout so that it shows the image
+  /// of a different orientation.
+  /// \param mainWindow The selected render window of the main display.
+  void SetMainWindow(QmitkRenderWindow* mainWindow);
 
 signals:
 
@@ -103,7 +92,7 @@ signals:
    * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
    * and emit this signal when the displayed layout of this window changes.
    */
-  void LayoutChanged(MIDASLayout);
+  void LayoutChanged(WindowLayout);
 
 protected slots:
 
@@ -125,8 +114,8 @@ protected slots:
   /// \brief Called when the magnification is changed by the spin box.
   void OnMagnificationChanged(double magnification);
 
-  /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+  /// \brief Called when the scale factor is changed by zooming in a renderer window.
+  void OnScaleFactorChanged(niftkSingleViewerWidget* view, MIDASOrientation orientation, double scaleFactor);
 
 protected:
 
@@ -138,37 +127,53 @@ private:
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
-  /// \brief Works out the MIDASOrientation of the currently focused window.
-  MIDASOrientation GetCurrentMainWindowOrientation();
+  /// \brief Works out the orientation of the currently focused window.
+  MIDASOrientation GetMainWindowOrientation();
 
-  /// \brief Works out the MIDASLayout of the currently focused window.
-  MIDASLayout GetCurrentMainWindowLayout();
+  /// \brief Works out the orientation of a renderer.
+  MIDASOrientation GetWindowOrientation(mitk::BaseRenderer* renderer);
+
+private slots:
+
+  /// \brief Called when one of the main 2D windows has been destroyed.
+  virtual void OnAMainWindowDestroyed(QObject* mainWindow);
+
+private:
 
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
 
-  MIDASLayout m_MainWindowLayout;
+  QmitkRenderWindow* m_MainWindow;
 
   QmitkRenderWindow* m_MainAxialWindow;
   QmitkRenderWindow* m_MainSagittalWindow;
   QmitkRenderWindow* m_MainCoronalWindow;
-  QmitkRenderWindow* m_Main3DWindow;
-  mitk::BaseRenderer* m_CurrentRenderer;
+
+  mitk::SliceNavigationController* m_MainAxialSnc;
+  mitk::SliceNavigationController* m_MainSagittalSnc;
+  mitk::SliceNavigationController* m_MainCoronalSnc;
+
+  /// \brief Renderer of the currently focused window of the main display.
+  mitk::BaseRenderer* m_FocusedRenderer;
 
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   double m_Magnification;
 
+  /// \brief The orientation of the currently focused window of the main display.
+  MIDASOrientation m_MainWindowOrientation;
+
   /// \brief Stores the last single window layout of the internal viewer,
-  /// one for each layout of the main window.
-  QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+  /// one for each orientation of the main window.
+  QMap<MIDASOrientation, WindowLayout> m_SingleWindowLayouts;
 
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
+  mitk::TimeGeometry* m_Geometry;
 };
 
 #endif

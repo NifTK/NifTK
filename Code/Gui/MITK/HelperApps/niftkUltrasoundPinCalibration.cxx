@@ -16,16 +16,16 @@
 #include <limits>
 #include <mitkUltrasoundPinCalibration.h>
 #include <niftkUltrasoundPinCalibrationCLP.h>
+#include <niftkVTKFunctions.h>
 #include <mitkVector.h>
+#include <mitkExceptionMacro.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
-#include <niftkVTKFunctions.h>
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
-  double residualError = std::numeric_limits<double>::max();
 
   if ( matrixDirectory.length() == 0 || pointDirectory.length() == 0)
   {
@@ -35,120 +35,73 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::Point3D invPoint;
-    if (invariantPoint.size() == 3)
+    int maxNegativeInt = -32767;
+
+    int numberOfInvariantPoints = 0;
+    if (invariantPoint1[0] != maxNegativeInt) numberOfInvariantPoints++;
+    if (invariantPoint2[0] != maxNegativeInt) numberOfInvariantPoints++;
+    if (invariantPoint3[0] != maxNegativeInt) numberOfInvariantPoints++;
+
+    std::cout << "niftkUltrasoundPinCalibration: matrices       = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: points         = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output         = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt scaling    = " <<  optimiseScaling << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt inv points = " <<  optimiseInvariantPoints << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: num inv points = " <<  numberOfInvariantPoints << std::endl;
+
+    // Setup.
+    mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
+    calibration->SetOptimiseScaling(optimiseScaling);
+    calibration->InitialiseMillimetresPerPixel(millimetresPerPixel);
+    calibration->SetOptimiseInvariantPoints(optimiseInvariantPoints);
+    calibration->SetNumberOfInvariantPoints(numberOfInvariantPoints);
+    if (invariantPoint1[0] != maxNegativeInt)
     {
-      invPoint[0] = invariantPoint[0];
-      invPoint[1] = invariantPoint[1];
-      invPoint[2] = invariantPoint[2];
+      calibration->InitialiseInvariantPoint(0, invariantPoint1);
     }
-    else
+    if (invariantPoint2[0] != maxNegativeInt)
     {
-      invPoint[0] = 0;
-      invPoint[1] = 0;
-      invPoint[2] = 0;
+      calibration->InitialiseInvariantPoint(1, invariantPoint2);
+    }
+    if (invariantPoint3[0] != maxNegativeInt)
+    {
+      calibration->InitialiseInvariantPoint(2, invariantPoint3);
     }
 
-    mitk::Point2D mmPerPix;
-    if (millimetresPerPixel.size() == 2)
-    {
-      mmPerPix[0] = millimetresPerPixel[0];
-      mmPerPix[1] = millimetresPerPixel[1];
-    }
-    else
-    {
-      mmPerPix[0] = 1;
-      mmPerPix[1] = 1;
-    }
+    calibration->InitialiseInitialGuess(initialGuess);
 
-    std::vector<double> initialTransformationParameters;
-    if(initialGuess.size() == 6)
-    {
-      initialTransformationParameters.push_back(initialGuess[0]);
-      initialTransformationParameters.push_back(initialGuess[1]);
-      initialTransformationParameters.push_back(initialGuess[2]);
-      initialTransformationParameters.push_back(initialGuess[3]);
-      initialTransformationParameters.push_back(initialGuess[4]);
-      initialTransformationParameters.push_back(initialGuess[5]);
-    }
-    else
-    {
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-    }
-    if (optimiseScaling)
-    {
-      initialTransformationParameters.push_back(mmPerPix[0]);
-      initialTransformationParameters.push_back(mmPerPix[1]);
-    }
-    if (optimiseInvariantPoint)
-    {
-      initialTransformationParameters.push_back(invPoint[0]);
-      initialTransformationParameters.push_back(invPoint[1]);
-      initialTransformationParameters.push_back(invPoint[2]);
-    }
-
-    std::cout << "niftkUltrasoundPinCalibration: matrices         = " << matrixDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: points           = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output           = " << outputMatrixFile << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: invariant point  = " << invPoint << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: mm/pix           = " << mmPerPix << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: optimising       = ";
-    for (unsigned int i = 0; i < initialTransformationParameters.size(); i++)
-    {
-      std::cout << initialTransformationParameters[i] << " ";
-    }
-    std::cout << std::endl;
-
+    // Do calibration.
+    double residualError = 0;
     vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkMatrix4x4::New();
 
-    // Do calibration
-    mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    bool isSuccessful = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
+    residualError = calibration->CalibrateFromDirectories(
         matrixDirectory,
         pointDirectory,
-        optimiseScaling,
-        optimiseInvariantPoint,
-        initialTransformationParameters,
-        invPoint,
-        mmPerPix,
-        residualError,
         *transformationMatrix
         );
 
-    std::cout << "niftkUltrasoundPinCalibration: residual         = " << residualError << std::endl;
+    // Save matrix.
+    if (!niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
+    {
+      std::ostringstream oss;
+      oss << "niftkUltrasoundPinCalibration: Failed to save transformation to file:" << outputMatrixFile << std::endl;
+      mitkThrow() << oss.str();
+    }
 
-    if (isSuccessful)
-    {
-      if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
-      {
-        returnStatus = EXIT_SUCCESS;
-      }
-      else
-      {
-        MITK_ERROR << "Failed to save transformation to file:" << outputMatrixFile << std::endl;
-        returnStatus = EXIT_FAILURE;
-      }
-    }
-    else
-    {
-      MITK_ERROR << "Calibration failed" << std::endl;
-      returnStatus = EXIT_FAILURE;
-    }
+    std::cout << "niftkUltrasoundPinCalibration: residual = " << residualError << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: scaling  = " << calibration->GetMillimetresPerPixel() << std::endl;
+
+    returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)
   {
     MITK_ERROR << "Caught std::exception:" << e.what();
-    returnStatus = -1;
+    returnStatus = EXIT_FAILURE + 1;
   }
   catch (...)
   {
     MITK_ERROR << "Caught unknown exception:";
-    returnStatus = -2;
+    returnStatus = EXIT_FAILURE + 2;
   }
 
   return returnStatus;

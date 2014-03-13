@@ -22,6 +22,10 @@
 #include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
 
+#include <vtkCubeSource.h>
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
+
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
@@ -105,7 +109,9 @@ bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName)
 
 
 //-----------------------------------------------------------------------------
-void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageCheckableComboBox& comboBox)
+// Deliberately not exposed.
+//-----------------------------------------------------------------------------
+void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox, bool composeRatherThanSet)
 {
   std::vector<mitk::DataNode*> nodes = comboBox.GetSelectedNodes();
   mitk::DataNode::Pointer node = NULL;
@@ -141,18 +147,107 @@ void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageChecka
       msgBox.exec();
     }
 
-    bool successful = mitk::ApplyToNode(node, &matrix, true);
-
-    if (!successful)
+    // These throw exceptions if there is any error.
+    if (composeRatherThanSet)
     {
-      QMessageBox msgBox;
-      msgBox.setText(QString("Failed to apply transform to item ") + QString::fromStdString(node->GetName()));
-      msgBox.setInformativeText("Please check the console.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
+      mitk::ComposeTransformWithNode(transform, node);
     }
+    else
+    {
+      mitk::ApplyTransformToNode(transform, node);
+    }
+
   } // end foreach node
 }
 
 
+//-----------------------------------------------------------------------------
+void ApplyTransformToNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+{
+  ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ComposeTransformWithNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+{
+  ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, true);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size, 
+   const float& xOffset,  const float& yOffset,  const float& zOffset , 
+   const float& thickness ) 
+{
+  vtkSmartPointer<vtkCubeSource> wall =  vtkSmartPointer<vtkCubeSource>::New();
+
+  switch ( whichwall )
+  {
+    case 0: //the back wall
+    {
+      wall->SetXLength(size);
+      wall->SetYLength(size);
+      wall->SetZLength(thickness);
+      wall->SetCenter(size * xOffset, size * yOffset, 
+          size * zOffset + size * 0.5 + thickness * 0.5);
+      break;
+    }
+    case 1: //the left wall
+    {
+      wall->SetXLength(size);
+      wall->SetYLength(thickness);
+      wall->SetZLength(size);
+      wall->SetCenter(size * xOffset,
+          size * yOffset + size * 0.5 + thickness * 0.5, size * zOffset) ;
+      break;
+    }
+    case 2: //the front wall
+    {
+      wall->SetXLength(size);
+      wall->SetYLength(size);
+      wall->SetZLength(thickness);
+      wall->SetCenter(size * xOffset, size * yOffset, 
+          size * zOffset - size * 0.5 - thickness * 0.5);
+      break;
+    }
+    case 3: //the right wall
+    {
+      wall->SetXLength(size);
+      wall->SetYLength(thickness);
+      wall->SetZLength(size);
+      wall->SetCenter(size * xOffset,
+          size * yOffset - size * 0.5 - thickness * 0.5, size * zOffset) ;
+      break;
+    }
+    case 4: //the ceiling
+    {
+      wall->SetXLength(thickness);
+      wall->SetYLength(size);
+      wall->SetZLength(size);
+      wall->SetCenter(size * xOffset + size * 0.5 + thickness * 0.5,
+          size * yOffset, size * zOffset) ;
+      break;
+    }
+    case 5: //the floor
+    {
+      wall->SetXLength(thickness);
+      wall->SetYLength(size);
+      wall->SetZLength(size);
+      wall->SetCenter(size * xOffset - size * 0.5 - thickness * 0.5,
+          size * yOffset, size * zOffset) ;
+      break;
+    }
+    default: //a mistake
+    {
+      MITK_WARN << "Passed a bad number to MakeAWall : " << whichwall;
+      return NULL;
+    }
+  }
+  vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New(); 
+  poly=wall->GetOutput();
+  mitk::Surface::Pointer surface;
+  surface->SetVtkPolyData(poly);
+  return surface;
+
+}

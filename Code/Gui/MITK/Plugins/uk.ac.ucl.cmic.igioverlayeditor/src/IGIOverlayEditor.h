@@ -37,7 +37,7 @@ class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR IGIOverlayEditor
 
 public:
 
-  static const std::string EDITOR_ID;
+  static const char* EDITOR_ID;
 
   berryObjectMacro(IGIOverlayEditor)
 
@@ -126,12 +126,22 @@ protected:
   void OnPreferencesChanged(const berry::IBerryPreferences*);
   void CreateQtPartControl(QWidget* parent);
 
+  void WriteCurrentConfig(const QString& directory) const;
+
 private slots:
 
   /**
-   * \brief We can listen to the event bus to trigger updates.
+   * \brief We listen to "uk/ac/ucl/cmic/IGIUPDATE" and call this method.
    */
-  void OnUpdate(const ctkEvent& event);
+  void OnIGIUpdate(const ctkEvent& event);
+
+  /**
+   * \brief We listen to "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" and call this method.
+   */
+  void OnTrackedImageUpdate(const ctkEvent& event);
+
+  /** Listens to "uk/ac/ucl/cmic/IGIRECORDINGSTARTED" on the CTK bus and handles it here. */
+  void OnRecordingStarted(const ctkEvent& event);
 
 private:
 

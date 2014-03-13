@@ -77,7 +77,7 @@ private slots:
   /**
    * \brief Called from GUI button to create points set and grab current pointer location.
    */
-  void OnGrabPoints();
+  void OnStartGrabPoints();
 
   /**
    * \brief Called from the GUI button to clear all points.
@@ -109,6 +109,9 @@ private:
   bool m_UpdateViewCoordinate;
   mitk::DataStorage* m_DataStorage;
   mitk::TrackedPointerManager::Pointer m_TrackedPointerManager;
+  unsigned int m_NumberOfPointsToAverageOver;
+  unsigned int m_RemainingPointsCounter;
+  mitk::Point3D m_TipCoordinate;
 };
 
 #endif // TrackedPointerView_h

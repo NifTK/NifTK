@@ -16,16 +16,20 @@
 #define mitkMIDASPaintbrushTool_h
 
 #include "niftkMIDASExports.h"
-#include "mitkMIDASPaintbrushToolOpEditImage.h"
-#include "mitkMIDASPaintbrushToolEventInterface.h"
+
+#include <itkImage.h>
 #include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
+
+#include <mitkGeometry3D.h>
+#include <mitkImage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkSegTool2D.h>
-#include <mitkImage.h>
-#include <mitkGeometry3D.h>
-#include <itkImage.h>
 #include <usServiceReference.h>
+
+#include "mitkMIDASPaintbrushToolOpEditImage.h"
+#include "mitkMIDASPaintbrushToolEventInterface.h"
+#include "mitkMIDASStateMachine.h"
 
 namespace mitk
 {
@@ -57,7 +61,7 @@ namespace mitk
   * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
   * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
-class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D
+class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D, public MIDASStateMachine
 {
 
 public:
@@ -92,9 +96,6 @@ public:
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(Operation* operation);
 
-  /** \see mitk::StateMachine::CanHandleEvent */
-  float CanHandleEvent(const StateEvent *) const;
-
   /** Process all mouse events. */
   virtual bool OnLeftMousePressed   (Action* action, const StateEvent* stateEvent);
   virtual bool OnLeftMouseMoved     (Action* action, const StateEvent* stateEvent);
@@ -110,6 +111,19 @@ protected:
 
   MIDASPaintbrushTool();          // purposely hidden
   virtual ~MIDASPaintbrushTool(); // purposely hidden
+
+  /// \brief Tells if this tool can handle the given event.
+  ///
+  /// This implementation delegates the call to mitk::MIDASStateMachine::CanHandleEvent(),
+  /// that checks if the event is filtered by one of the installed event filters and if not,
+  /// calls CanHandle() and returns with its result.
+  ///
+  /// Note that this function is purposefully not virtual. Eventual subclasses should
+  /// override the CanHandle function.
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
+
+  /** \see mitk::MIDASStateMachine::CanHandle */
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
   /**
   \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).

@@ -22,7 +22,9 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include <Interactions/mitkMIDASDisplayInteractor.h>
+#include <Interactions/mitkDnDDisplayInteractor.h>
+
+#include "mitkMIDASEventFilter.h"
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
@@ -171,10 +173,10 @@ const std::string mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML = std::stri
 "           <transition NAME=\"middleButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4\">"
 "             <action ID=\"320413\" />"
 "           </transition>"
-"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"533\">"
+"           <transition NAME=\"middleButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"506\">"
 "             <action ID=\"320414\" />"
 "           </transition>"
-"           <transition NAME=\"middleButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"506\">"
+"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"533\">"
 "             <action ID=\"320415\" />"
 "           </transition>"
 "         </state>"
@@ -223,10 +225,7 @@ const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASTool::~MIDASTool()
-{
-
-}
+bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
 
 
 //-----------------------------------------------------------------------------
@@ -238,6 +237,68 @@ mitk::MIDASTool::MIDASTool(const char* type) :
 , m_IsActivated(false)
 , m_BlockNumberOfSeedsSignal(false)
 {
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::MIDASTool::~MIDASTool()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::LoadBehaviourStrings()
+{
+  if (!s_BehaviourStringsLoaded)
+  {
+    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
+    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
+    if (stateMachineFactory)
+    {
+      if (stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML))
+      {
+        s_BehaviourStringsLoaded = true;
+      }
+    }
+    else
+    {
+      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+float mitk::MIDASTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::InstallEventFilter(mitk::MIDASEventFilter* eventFilter)
+{
+  mitk::MIDASStateMachine::InstallEventFilter(eventFilter);
+  if (m_AddToPointSetInteractor.IsNotNull())
+  {
+    m_AddToPointSetInteractor->InstallEventFilter(eventFilter);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::RemoveEventFilter(mitk::MIDASEventFilter* eventFilter)
+{
+  if (m_AddToPointSetInteractor.IsNotNull())
+  {
+    m_AddToPointSetInteractor->RemoveEventFilter(eventFilter);
+  }
+  mitk::MIDASStateMachine::RemoveEventFilter(eventFilter);
 }
 
 
@@ -265,6 +326,14 @@ void mitk::MIDASTool::Activated()
     if (m_AddToPointSetInteractor.IsNull())
     {
       m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
+
+      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      for ( ; it != itEnd; ++it)
+      {
+        m_AddToPointSetInteractor->InstallEventFilter(*it);
+      }
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
 
@@ -282,7 +351,7 @@ void mitk::MIDASTool::Activated()
   std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
   for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
-    MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
+    DnDDisplayInteractor* displayInteractor = dynamic_cast<DnDDisplayInteractor*>(
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor != NULL)
     {
@@ -303,6 +372,13 @@ void mitk::MIDASTool::Deactivated()
 
   if (m_AddToPointSetInteractor.IsNotNull())
   {
+    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+    for ( ; it != itEnd; ++it)
+    {
+      m_AddToPointSetInteractor->RemoveEventFilter(*it);
+    }
     mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
   }
 
@@ -324,7 +400,7 @@ void mitk::MIDASTool::Deactivated()
   {
     if (it->first)
     {
-      MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
+      DnDDisplayInteractor* displayInteractor = static_cast<DnDDisplayInteractor*>(
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor != NULL)
       {
@@ -419,20 +495,17 @@ void mitk::MIDASTool::OnSeedsModified()
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (event->GetId() == 2   // right mouse down
-          )
-      )
+  if (stateEvent->GetId() == 2)   // right mouse down
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::FeedbackContourTool::CanHandleEvent(event);
+    // Note that the superclass is not a MIDAS state machine and it does not
+    // have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }

@@ -67,7 +67,7 @@ public:
   ImageType* GetDestinationImage() const { return m_Processor->GetDestinationImage(); }
 
   /** This method sets up the regions of interest from the sourceSliceNumber to the targetSliceNumber. */
-  virtual void SetSlices(itk::ORIENTATION_ENUM orientation, int sourceSliceNumber, int targetSliceNumber);
+  virtual void SetSlices(itk::Orientation orientation, int sourceSliceNumber, int targetSliceNumber);
 
   /** Set debug flags */
   virtual void SetDebug(bool b) { itk::Object::SetDebug(b); m_Processor->SetDebug(b); m_Calculator->SetDebug(b); }

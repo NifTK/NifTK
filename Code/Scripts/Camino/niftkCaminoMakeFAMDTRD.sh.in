@@ -37,21 +37,21 @@ cat <<EOF
   <parameters advanced="false">
     <label>Inputs</label>
     <description>Something to describe the input here</description>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>input4DImage</name>
       <longflag>input4DImage</longflag>
       <description>4D image containing diffusion directions</description>
       <label>4D image</label>
       <channel>input</channel>
     </image>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>inputMask</name>
       <longflag>inputMask</longflag>
       <description>mask image, defining a region of interest</description>
       <label>mask image</label>
       <channel>input</channel>
     </image>    
-    <file fileExtensions="*.scheme, *.txt">
+    <file fileExtensions="scheme,txt">
       <name>schemeFile</name>
       <longflag>schemeFile</longflag>
       <description>Camino scheme file describing diffusion directions</description>
@@ -62,7 +62,7 @@ cat <<EOF
   <parameters advanced="false">
     <label>Outputs</label>
     <description>Something to describe the outputs here</description>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>faImage</name>
       <longflag>faImage</longflag>
       <description>F.A. image</description>
@@ -70,7 +70,7 @@ cat <<EOF
       <default>outputFA.nii.gz</default>
       <channel>output</channel>
     </image>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>mdImage</name>
       <longflag>mdImage</longflag>
       <description>M.D. image</description>
@@ -78,7 +78,7 @@ cat <<EOF
       <default>outputMD.nii.gz</default>\
       <channel>output</channel>
     </image>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>trdImage</name>
       <longflag>trdImage</longflag>
       <description>Tr(D) image</description>

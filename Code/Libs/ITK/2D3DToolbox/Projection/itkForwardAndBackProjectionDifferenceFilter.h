@@ -173,6 +173,9 @@ protected:
   /// The specific projection geometry to be used
   ProjectionGeometryPointer m_ProjectionGeometry;
 
+  /** We don't expect the input volume and projection images to be in
+    * the same space so we override this method */
+  virtual void VerifyInputInformation() {};
 
 private:
   ForwardAndBackProjectionDifferenceFilter(const Self&); //purposely not implemented

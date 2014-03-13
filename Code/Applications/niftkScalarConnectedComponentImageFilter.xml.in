@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Extract Connected Components</title>
+  <description><![CDATA[Identifies connected components in and image and assigns each a unique label.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>outputInverted.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Parameters</label>
+    <description><![CDATA[Parameters that control the connected component filter]]></description>
+    
+    <boolean>
+      <name>flgLargestObject</name>
+      <longflag>largest</longflag>
+      <description>Only extract the largest object.</description>
+      <label>Largest object only?</label>
+    </boolean>
+
+    <float>
+      <name>distanceThreshold</name>
+      <longflag>interval</longflag>
+      <description>The distance between adjacent voxels considered members of the same object.</description>
+      <label>Object intensity inteval</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+    
+    <float>
+      <name>minSize</name>
+      <longflag>minSize</longflag>
+      <description>The minimum object size in voxels to be labelled.</description>
+      <label>Minimum object size</label>
+      <default>20</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+    
+    <float>
+      <name>minLabelRank</name>
+      <longflag>minLabelRank</longflag>
+      <description>The minimum object label (label 1 is the largest object) to keep. For instance if the background is the biggest region (label 1), but this region should be ignored, then set this parameter to 2.</description>
+      <label>Minimum object label to keep</label>
+      <default>-1e9</default>
+     </float>
+    
+    <float>
+      <name>maxLabelRank</name>
+      <longflag>maxLabelRank</longflag>
+      <description>The maximum object label (label 1 is the largest object) to keep. For instance setting this parameter to 10 would keep the ten largest objects.</description>
+      <label>Maximum object label to keep</label>
+      <default>1e9</default>
+     </float>
+    
+    <float>
+      <name>border</name>
+      <longflag>border</longflag>
+      <description>The width of the image border to ignore.</description>
+      <label>Ignore image border of width</label>
+      <default>0</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+  </parameters>
+
+</executable>

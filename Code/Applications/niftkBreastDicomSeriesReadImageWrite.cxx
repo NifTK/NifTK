@@ -946,6 +946,7 @@ int main( int argc, char* argv[] )
   nameGenerator->AddSeriesRestriction( "0018|11A2" ); // Compression Force
   nameGenerator->AddSeriesRestriction( "0018|1510" ); // Positioner Primary Angle
   nameGenerator->AddSeriesRestriction( "0018|5101" ); // Breast view
+  nameGenerator->AddSeriesRestriction( "0018|1405" ); // Relative X-ray Exposure
   nameGenerator->AddSeriesRestriction( "0020|0020" ); // Patient Orientation
   nameGenerator->AddSeriesRestriction( "0028|0010" ); // Image dimensions: number of rows and columns
   nameGenerator->AddSeriesRestriction( "0028|0011" );

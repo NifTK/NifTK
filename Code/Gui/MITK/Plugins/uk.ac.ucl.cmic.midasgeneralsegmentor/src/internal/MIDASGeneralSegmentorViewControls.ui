@@ -236,37 +236,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QGridLayout" name="m_ThresholdingSlidersGridLayout" columnstretch="0,1">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="spacing">
-         <number>5</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="m_LowerThresholdLabel">
-          <property name="text">
-           <string>lower:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="ctkSliderWidget" name="m_LowerThresholdSliderWidget" native="true"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="m_UpperThresholdLabel">
-          <property name="text">
-           <string>upper:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="ctkSliderWidget" name="m_UpperThresholdSliderWidget" native="true"/>
-        </item>
-       </layout>
+       <widget class="ctkRangeWidget" name="m_ThresholdsSlider" native="true"/>
       </item>
       <item>
        <layout class="QGridLayout" name="m_ThresholdingButtonsGridLayout">
@@ -335,9 +305,9 @@
  <layoutdefault spacing="0" margin="0"/>
  <customwidgets>
   <customwidget>
-   <class>ctkSliderWidget</class>
+   <class>ctkRangeWidget</class>
    <extends>QWidget</extends>
-   <header>ctkSliderWidget.h</header>
+   <header location="global">ctkRangeWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

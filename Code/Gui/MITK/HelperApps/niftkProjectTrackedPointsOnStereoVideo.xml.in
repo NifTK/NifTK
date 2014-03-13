@@ -36,13 +36,45 @@
     </file>
     
     <file fileExtensions="*.txt">
+      <name>input3DWithScalars</name>
+      <longflag>input3DWithScalars</longflag>
+      <description>Input 3D points and their scalar values</description>
+      <label>Input 3D points and their scalar values</label>
+      <channel>input</channel>
+    </file>
+    
+    <file fileExtensions="*.txt">
       <name>input2D</name>
       <longflag>input2D</longflag>
       <description>Input 2D points</description>
       <label>Input 2D points</label>
       <channel>input</channel>
     </file>
- 
+
+    <file>
+      <name>leftGoldStandard</name>
+      <longflag>leftGoldStandard</longflag>
+      <description>The measured points in the left screen</description>
+      <label>The measured points in the left screen</label>
+      <channel>input</channel>
+    </file>
+    
+    <file>
+      <name>rightGoldStandard</name>
+      <longflag>rightGoldStandard</longflag>
+      <description>The measured points in the rightscreen</description>
+      <label>The measured points in the right screen</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.txt">
+      <name>classifier3D</name>
+      <longflag>classifier3D</longflag>
+      <description>3D points used for classifing GS points during error calculation</description>
+      <label>3D points used for classifing GS points during error calculation</label>
+      <channel>input</channel>
+    </file>
+   
     <file>
       <name>output3D</name>
       <longflag>output3D</longflag>
@@ -58,6 +90,30 @@
       <label>output 2D points</label>
       <channel>output</channel>
     </file>
+    <file>
+      <name>outputMatrices</name>
+      <longflag>outputMatrices</longflag>
+      <description>Output the world to camera matrices</description>
+      <label>output the world to camera matrices</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputVideo</name>
+      <longflag>outputVideo</longflag>
+      <description>Write out video files</description>
+      <label>Write out video files</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputErrors</name>
+      <longflag>outputErrors</longflag>
+      <description>Write out the projection / reprojection errors</description>
+      <label>Write out the projection / reprojection errors</label>
+      <channel>output</channel>
+    </file>
+ 
     <integer>
       <name>videoLag</name>
       <longflag>videoLag</longflag>
@@ -65,7 +121,25 @@
       <label>The video lag</label>
       <default>0</default>
     </integer>
-							
+  
+    <integer>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum timing error in  milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>20</default>
+    </integer>
+ 
+
+    <float>
+	<name>pointMatchingRatio</name>
+	<longflag>pointMatchingRatio</longflag>
+	<description>The minimum ratio between the lowest 2 distance when matching Gold standard points</description>
+	<label>The minimum ratio between the lowest 2 distance when matching Gold standard points</label>
+	<default>3.0</default>
+    </float>
+
+						
 
   </parameters>
   

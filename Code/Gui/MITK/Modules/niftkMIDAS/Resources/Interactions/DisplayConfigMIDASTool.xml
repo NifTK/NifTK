@@ -40,10 +40,10 @@
     <attribute name="EventButton" value="RightMouseButton"/>
   </event_variant-->
   <!-- Scrolling trough planes -->
-  <event_variant class="MouseWheelEvent" name="PlaneUP">
+  <!--event_variant class="MouseWheelEvent" name="PlaneUP">
     <attribute name="ScrollDirection" value="up"/>
   </event_variant>
   <event_variant class="MouseWheelEvent" name="PlaneDown">
     <attribute name="ScrollDirection" value="down"/>
-  </event_variant>
+  </event_variant-->
 </config>

@@ -17,3 +17,7 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES MitkExt ImageStatistics Qmitk QmitkExt niftkCore
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(it_unito_cim_intensityprofile)
+endif()

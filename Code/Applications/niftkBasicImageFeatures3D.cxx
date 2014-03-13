@@ -863,12 +863,12 @@ int main( int argc, char *argv[] )
       BIFsFilter->WriteFilterResponseToFile( 3, AddScaleSuffix( fileOutputLightBlob, 
 								sigmaInMM, nScales ) );
 
-    if ( fileOutputDarkLine.length() != 0 ) 
-      BIFsFilter->WriteFilterResponseToFile( 4, AddScaleSuffix( fileOutputDarkLine, 
+    if ( fileOutputLightLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 4, AddScaleSuffix( fileOutputLightLine, 
 								sigmaInMM, nScales ) );
 
-    if ( fileOutputLightLine.length() != 0 ) 
-      BIFsFilter->WriteFilterResponseToFile( 5, AddScaleSuffix( fileOutputLightLine, 
+    if ( fileOutputDarkLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 5, AddScaleSuffix( fileOutputDarkLine, 
 								sigmaInMM, nScales ) );
 
     if ( fileOutputSaddle.length() != 0 ) 

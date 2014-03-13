@@ -38,18 +38,40 @@ namespace mitk{
 
 //-----------------------------------------------------------------------------
 mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
-, m_CursorSize(1)
+, m_CursorSize(0.5)
 , m_Interface(NULL)
+, m_EraserScopeVisible(false)
 {
   // great magic numbers, connecting interactor straight to method calls.
   CONNECT_ACTION( 320410, OnLeftMousePressed );
   CONNECT_ACTION( 320411, OnLeftMouseReleased );
   CONNECT_ACTION( 320412, OnLeftMouseMoved );
   CONNECT_ACTION( 320413, OnMiddleMousePressed );
-  CONNECT_ACTION( 320414, OnMiddleMouseMoved );
+  CONNECT_ACTION( 320414, OnMiddleMouseReleased );
+  CONNECT_ACTION( 320415, OnMiddleMouseMoved );
 
   m_Interface = MIDASDrawToolEventInterface::New();
   m_Interface->SetMIDASDrawTool(this);
+
+  m_EraserScope = mitk::PlanarCircle::New();
+  mitk::Point2D centre;
+  centre[0] = 0.0;
+  centre[1] = 0.0;
+  m_EraserScope->PlaceFigure(centre);
+  this->SetCursorSize(m_CursorSize);
+
+  m_EraserScopeNode = mitk::DataNode::New();
+  m_EraserScopeNode->SetData(m_EraserScope);
+  m_EraserScopeNode->SetName("Draw tool eraser");
+  m_EraserScopeNode->SetBoolProperty("helper object", true);
+  // This is for the DnD display, so that it does not try to change the
+  // visibility after node addition.
+  m_EraserScopeNode->SetBoolProperty("managed visibility", false);
+  m_EraserScopeNode->SetBoolProperty("includeInBoundingBox", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawname", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawoutline", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawshadow", false);
 }
 
 
@@ -74,25 +96,23 @@ const char** mitk::MIDASDrawTool::GetXPM() const
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASDrawTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASDrawTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-          || event->GetId() == 505 // left mouse up
-          || event->GetId() == 530 // left mouse down and move
-          || event->GetId() == 4   // middle mouse down
-          || event->GetId() == 506 // middle mouse up
-          || event->GetId() == 533 // middle mouse down and move
-          )
+  int eventId = stateEvent->GetId();
+  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+      || eventId == 505 // left mouse up
+      || eventId == 530 // left mouse down and move
+      || eventId == 4   // middle mouse down
+      || eventId == 506 // middle mouse up
+      || eventId == 533 // middle mouse down and move
       )
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::StateMachine::CanHandleEvent(event);
+    return Superclass::CanHandle(stateEvent);
   }
 }
 
@@ -136,8 +156,20 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
   MIDASContourTool::SetBackgroundContourVisible(false);
   MIDASContourTool::SetBackgroundContourColorDefault();
 
+  // The default opacity of contours is 0.5. The FeedbackContourTool does not expose the
+  // feedback contour node, only the contour data. Therefore, we have to access it through the
+  // data manager. The node is added to / removed from the data manager by the SetFeedbackContourVisible()
+  // function. So, we can do this now.
+  if (mitk::DataStorage* dataStorage = m_ToolManager->GetDataStorage())
+  {
+    if (mitk::DataNode* feedbackContourNode = dataStorage->GetNamedNode("One of FeedbackContourTool's feedback nodes"))
+    {
+      feedbackContourNode->SetOpacity(1.0);
+    }
+  }
+
   // Set reference data, but we don't draw anything at this stage
-  m_MostRecentPointInMillimetres = positionEvent->GetWorldPosition();
+  m_MostRecentPointInMm = positionEvent->GetWorldPosition();
   return true;
 }
 
@@ -168,21 +200,20 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
-  unsigned int numberAdded = this->DrawLineAroundVoxelEdges
-                             (
+  bool contourAugmented = this->DrawLineAroundVoxelEdges(
                                *m_WorkingImage,
                                *m_WorkingImageGeometry,
                                *planeGeometry,
                                 positionEvent->GetWorldPosition(),
-                                m_MostRecentPointInMillimetres,
+                                m_MostRecentPointInMm,
                                *feedbackContour,
                                *backgroundContour
                              );
 
   // This gets updated as the mouse moves, so that each new segement of line gets added onto the previous.
-  if (numberAdded > 0)
+  if (contourAugmented)
   {
-    m_MostRecentPointInMillimetres = positionEvent->GetWorldPosition();
+    m_MostRecentPointInMm = positionEvent->GetWorldPosition();
   }
 
   // Make sure all views everywhere get updated.
@@ -225,18 +256,38 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASDrawTool::SetCursorSize(int current)
+void mitk::MIDASDrawTool::SetCursorSize(double cursorSize)
 {
-  m_CursorSize = current;
+  m_CursorSize = cursorSize;
+
+  mitk::Point2D controlPoint = m_EraserScope->GetControlPoint(0);
+  controlPoint[0] += cursorSize;
+  m_EraserScope->SetControlPoint(1, controlPoint);
 }
 
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent* stateEvent)
 {
-  bool result = false;
-  result = result & this->DeleteFromContour(2, action, stateEvent);
-  result = result & this->DeleteFromContour(3, action, stateEvent);
+  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  if (!positionEvent)
+  {
+    return false;
+  }
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
+  m_EraserScope->SetGeometry2D(const_cast<mitk::Geometry2D*>(geometry2D));
+  mitk::Point2D mousePosition;
+  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  m_EraserScope->SetControlPoint(0, mousePosition);
+
+  this->SetEraserScopeVisible(true, renderer);
+  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
+
+  bool result = true;
+  result = result && this->DeleteFromContour(2, action, stateEvent);
+  result = result && this->DeleteFromContour(3, action, stateEvent);
   return result;
 }
 
@@ -244,13 +295,33 @@ bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent*
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  return this->OnMiddleMousePressed(action, stateEvent);
+  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  if (!positionEvent)
+  {
+    return false;
+  }
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
+  mitk::Point2D mousePosition;
+  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  m_EraserScope->SetControlPoint(0, mousePosition);
+  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
+
+  bool result = true;
+  result = result && this->DeleteFromContour(2, action, stateEvent);
+  result = result && this->DeleteFromContour(3, action, stateEvent);
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent)
 {
+  this->SetEraserScopeVisible(false, stateEvent->GetEvent()->GetSender());
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
   return true;
 }
 
@@ -263,7 +334,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
   if (!positionEvent) return false;
 
   // Get the world point.
-  mitk::Point3D worldPoint = positionEvent->GetWorldPosition();
+  mitk::Point3D mousePositionInMm = positionEvent->GetWorldPosition();
 
   // Retrieve the correct contour set.
   assert(m_ToolManager);
@@ -288,60 +359,147 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
     return false;
   }
 
+  const PlaneGeometry* planeGeometry =
+      dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+
+  mitk::Vector3D spacing = planeGeometry->GetSpacing();
+
+  mitk::Point2D centre;
+  planeGeometry->Map(mousePositionInMm, centre);
+
   // Copy the input contour.
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
   mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // Now generate the revised (edited) output contour.
-  mitk::ContourModelSet::ContourModelListType* contourVec = contourSet->GetContourModelList();
-  mitk::ContourModelSet::ContourModelSetIterator contourIt = contourSet->Begin();
-  mitk::ContourModel::Pointer firstContour = *contourIt;
-
-  // Essentially, given a middle mouse click position, delete anything within a specific radius, given by m_CursorSize.
-  unsigned int size = 0;
-  float squaredDistanceInMillimetres = 0;
-  bool isTooClose = false;
-  mitk::Point3D pointInExistingContour;
+  mitk::ContourModelSet::ContourModelSetIterator contourSetIt = contourSet->Begin();
+  mitk::ContourModelSet::ContourModelSetIterator contourSetEnd = contourSet->End();
+  mitk::ContourModel::Pointer firstContour = *contourSetIt;
 
   mitk::ContourModelSet::Pointer outputContourSet = mitk::ContourModelSet::New();
-  mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
-  mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
-  while ( contourIt != contourSet->End() )
+  for ( ; contourSetIt != contourSetEnd; ++contourSetIt)
   {
-    mitk::ContourModel::Pointer nextContour = *contourIt;
+    mitk::ContourModel::Pointer contour = *contourSetIt;
 
-    size = nextContour->GetNumberOfVertices();
-    squaredDistanceInMillimetres = m_CursorSize*m_CursorSize;
+    // Essentially, given a middle mouse click position, delete anything within a specific radius.
 
-    for (unsigned int i = 0; i < size; i++)
+    mitk::ContourModel::Pointer outputContour = 0;
+
+    mitk::ContourModel::VertexIterator it = contour->Begin();
+    mitk::ContourModel::VertexIterator itEnd = contour->End();
+
+    if (it == itEnd)
     {
-      pointInExistingContour = nextContour->GetVertexAt(i)->Coordinates;
-
-      isTooClose = false;
-      if (mitk::GetSquaredDistanceBetweenPoints(worldPoint, pointInExistingContour) <  squaredDistanceInMillimetres)
-      {
-        isTooClose = true;
-      }
-
-      if (!isTooClose)
-      {
-        outputContour->AddVertex(pointInExistingContour);
-      }
-      else if (isTooClose && outputContour->GetNumberOfVertices() > 0)
-      {
-        outputContourSet->AddContourModel(outputContour);
-        outputContour = mitk::ContourModel::New();
-        mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-      }
+      // TODO this should not happen.
+      continue;
     }
-    if (outputContour->GetNumberOfVertices() > 0)
+
+    mitk::Point3D startPoint = (*it)->Coordinates;
+    mitk::Point2D start;
+    planeGeometry->Map(startPoint, start);
+
+    mitk::Vector2D f = start - centre;
+    double c = f * f - m_CursorSize * m_CursorSize;
+    if (c > 0.0f)
     {
-      outputContourSet->AddContourModel(outputContour);
+      // Outside of the radius.
       outputContour = mitk::ContourModel::New();
       mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+      outputContour->AddVertex(startPoint);
     }
-    contourIt++;
+
+    for (++it ; it != itEnd; ++it)
+    {
+      mitk::Point3D endPoint = (*it)->Coordinates;
+      mitk::Point2D end;
+      planeGeometry->Map(endPoint, end);
+
+      mitk::Vector2D d = end - start;
+      double a = d * d;
+      double b = f * d;
+      double discriminant = b * b - a * c;
+      if (discriminant < 0.0f)
+      {
+        // No intersection.
+        outputContour->AddVertex(endPoint);
+      }
+      else
+      {
+        discriminant = std::sqrt(discriminant);
+        mitk::Vector2D t;
+        t[0] = (-b - discriminant) / a;
+        t[1] = (-b + discriminant) / a;
+
+        if (t[0] > 1.0f || t[1] < 0.0f)
+        {
+          // No intersection, both outside.
+          outputContour->AddVertex(endPoint);
+        }
+        else if (t[0] != t[1])
+        {
+          int axis = 0;
+          while (axis < 3 && startPoint[axis] == endPoint[axis])
+          {
+            ++axis;
+          }
+          assert(axis != 3);
+
+          if (t[0] >= 0.0f)
+          {
+            // The contour intersects the circle. Entry point hit.
+            mitk::Point2D entry = start + t[0] * d;
+            mitk::Point3D entryPoint;
+            planeGeometry->Map(entry, entryPoint);
+
+            // Find the last corner point before the entry point and add it
+            // to the contour if it is different than the start point.
+            float length = entryPoint[axis] - startPoint[axis];
+            if (std::abs(length) >= spacing[axis])
+            {
+              entryPoint[axis] -= std::fmod(length, spacing[axis]);
+              outputContour->AddVertex(entryPoint);
+            }
+
+            outputContourSet->AddContourModel(outputContour);
+            outputContour = 0;
+          }
+          if (t[1] <= 1.0f)
+          {
+            // The contour intersects the circle. Exit point hit.
+            mitk::Point2D exit = start + t[1] * d;
+            mitk::Point3D exitPoint;
+            planeGeometry->Map(exit, exitPoint);
+
+            outputContour = mitk::ContourModel::New();
+            mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+
+            // Find the first corner point after the exit point and add it
+            // to the contour if it is different than the end point.
+            float length = endPoint[axis] - exitPoint[axis];
+            if (std::abs(length) >= spacing[axis])
+            {
+              exitPoint[axis] += std::fmod(length, spacing[axis]);
+              outputContour->AddVertex(exitPoint);
+            }
+
+            outputContour->AddVertex(endPoint);
+          }
+        }
+        // Otherwise either the circle only "touches" the contour,
+        // or both points are inside. We do not do anything.
+      }
+
+      startPoint = endPoint;
+      start = end;
+      f = start - centre;
+      c = f * f - m_CursorSize * m_CursorSize;
+    }
+
+    if (outputContour.IsNotNull())
+    {
+      outputContourSet->AddContourModel(outputContour);
+    }
   }
 
   // Now we have the input contour set, and a filtered contour set, so pass to Undo/Redo mechanism
@@ -592,4 +750,29 @@ void mitk::MIDASDrawTool::Activated()
 {
   mitk::MIDASTool::Activated();
   CursorSizeChanged.Send(m_CursorSize);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASDrawTool::SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer)
+{
+  if (m_EraserScopeVisible == visible)
+  {
+    return;
+  }
+
+  if (mitk::DataStorage* dataStorage = m_ToolManager->GetDataStorage())
+  {
+    if (visible)
+    {
+      dataStorage->Add(m_EraserScopeNode);
+    }
+    else
+    {
+      dataStorage->Remove(m_EraserScopeNode);
+    }
+  }
+
+  m_EraserScopeNode->SetVisibility(visible, renderer);
+  m_EraserScopeVisible = visible;
 }

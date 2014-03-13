@@ -43,12 +43,26 @@ if(NOT WIN32)
     compute_symmetric_transform.sh
     compute_symmetric_transform_3.sh
     compute_symmetric_transform_n.sh
+    ComputeSymmetricBrainBSI.sh
+    ComputeSymmetricBrainBSIBatch.sh
+    ComputeSymmetricLocalBSIBatch.sh
+    ComputeSymmetricLocalBSI.sh
+    ComputeSymmetricHippoBSIBatch.sh
+    ComputeSymmetricVentsBSIBatch.sh
   )
   foreach(script ${scripts})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
     MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
   endforeach()
 endif()
+
+set(python_scripts
+    niftkRegPhosImmunofluorAutoradImages
+)
+foreach(script ${python_scripts})
+  NIFTK_CREATE_COMMAND_LINE_SCRIPT(NAME ${script} EXTENSION py INSTALL_CLI_MODULES)
+endforeach()
+
 
 if(NOT WIN32)
   set(textfiles

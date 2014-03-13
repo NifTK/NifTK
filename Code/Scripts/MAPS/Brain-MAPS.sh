@@ -139,7 +139,7 @@ function brain-match()
       ${output_brain_image} ${output_brain_series_number} ${output_brain_air} "no" 
   else
     brain_to_brain_registration_without_repeat_mask_using_irtk ${watjo_image} ${watjo_brain_region} ${subject_image}   \
-        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no" "${init_9dof}"
+        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no" "${init_9dof}" "${blur_9dof}"
   fi 
   
   rm -f ${output_left_corr}
@@ -283,7 +283,7 @@ function brain_delineation()
       regslice ${output_areg_template_air} ${template_brain_region} ${output_areg_hippo_region} 500
     else 
       brain_to_brain_registration_without_repeat_mask_using_irtk ${template_image} ${template_brain_region} ${subject_image}   \
-          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes" "${init_9dof}"
+          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes" "${init_9dof}" "${blur_9dof}"
 	local tmp_dir=`mktemp -d -q ~/temp/__maps-f3d-reg.XXXXXX`
       ${ffdroitransformation} ${template_brain_region} ${output_areg_hippo_region} ${template_image}  ${subject_image} ${output_areg_template_air}.dof -invert -bspline -tmpdir ${tmp_dir}
       rm -rf ${tmp_dir}
@@ -320,7 +320,7 @@ function brain_delineation()
       makemask ${subject_image} ${output_local_areg_hippo_region} ${output_local_areg_hippo_region_mask} 
       ${nifti_resample} -target ${subject_image} -source ${output_local_areg_hippo_region_mask} -result ${output_nreg_hippo_mask} -cpp ${output_nreg_template_hippo_dof}.nii -TRI
       ${abs_filter} -i ${output_nreg_hippo_mask} -o ${output_nreg_hippo_mask}
-      ${convert} -i ${output_nreg_hippo_mask} -o ${output_nreg_hippo_mask} -ot short
+      ${convert} -i ${output_nreg_hippo_mask} -o ${output_nreg_hippo_mask} --ot short
       makeroi -img ${output_nreg_hippo_mask} -out ${output_nreg_hippo_region} -alt 126
     else
       parameter_file=`mktemp ~/temp/param.XXXXXXXXXX`
@@ -549,7 +549,7 @@ COMMENTS
       makemask ${subject_image} ${output_areg_vents_region} ${output_local_areg_vents_region_mask} 
       ${nifti_resample} -target ${subject_image} -source ${output_local_areg_vents_region_mask} -result ${output_nreg_vents_mask} -cpp ${output_nreg_template_hippo_dof}.nii -TRI
       ${abs_filter} -i ${output_nreg_vents_mask} -o ${output_nreg_vents_mask}
-      ${convert} -i ${output_nreg_vents_mask} -o ${output_nreg_vents_mask} -ot short
+      ${convert} -i ${output_nreg_vents_mask} -o ${output_nreg_vents_mask} --ot short
       makeroi -img ${output_nreg_vents_mask} -out ${output_nreg_vents_region} -alt 126
       addRegions.sh ${subject_image} ${output_left_hippo_local_region_threshold} ${output_nreg_vents_region} ${temp_brain_with_vents_region} ""
       rm -rf ${tmp_vents_dir}
@@ -723,7 +723,7 @@ function brain-delineation-using-staple()
   ${crlSTAPLE} --outputImage ${output_hippo_staple_weights} ${staple_command_line_nreg_thresholded} 
   ${crlExtractSmallerImageFromImage} -i ${output_hippo_staple_weights} -o ${output_hippo_staple_nreg_thresholded} -l 1 -m 2 -a 3
   ${threshold} -i ${output_hippo_staple_nreg_thresholded} -o ${output_hippo_staple_nreg_thresholded} -u 2 -l ${staple_confidence} -in 255 -out 0
-  ${convert} -i ${output_hippo_staple_nreg_thresholded} -o ${output_hippo_staple_nreg_thresholded} -ot short
+  ${convert} -i ${output_hippo_staple_nreg_thresholded} -o ${output_hippo_staple_nreg_thresholded} --ot short
   niftkConnectedComponents ${output_hippo_staple_nreg_thresholded} ${output_hippo_staple_nreg_thresholded%.img} img -largest
   makeroi -img ${output_hippo_staple_nreg_thresholded} -out ${output_hippo_staple_nreg_thresholded_region}-${staple_confidence}-${count} -alt 0
   
@@ -733,7 +733,7 @@ function brain-delineation-using-staple()
   ${crlMeanFieldMRF} ${output_hippo_staple_weights_thresholded} automatic 0.00001 ${mrf_weighting} 5 ${output_hippo_staple_mf_weights}
   ${crlExtractSmallerImageFromImage} -i ${output_hippo_staple_mf_weights} -o ${output_hippo_staple_mf_seg} -l 1 -m 2 -a 3
   ${threshold} -i ${output_hippo_staple_mf_seg} -o ${output_hippo_staple_mf_seg} -u 2 -l ${staple_confidence} -in 255 -out 0
-  ${convert} -i ${output_hippo_staple_mf_seg} -o ${output_hippo_staple_mf_seg} -ot short
+  ${convert} -i ${output_hippo_staple_mf_seg} -o ${output_hippo_staple_mf_seg} --ot short
   niftkConnectedComponents ${output_hippo_staple_mf_seg} ${output_hippo_staple_mf_seg%.img} img -largest
   makeroi -img ${output_hippo_staple_mf_seg} -out ${output_hippo_staple_mf_region} -alt 0
   
@@ -873,6 +873,7 @@ leaveoneout=${23}
 use_kmeans=${24}
 init_9dof=${25}
 cd_mode=${26}
+blur_9dof=${27}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665

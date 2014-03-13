@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
 #include <niftkFileHelper.h>
 #include <iostream>
@@ -26,35 +27,89 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-void LoadChessBoardsFromDirectory(const std::string& fullDirectoryName,
-                                                    std::vector<IplImage*>& images,
-                                                    std::vector<std::string>& fileNames)
+void LoadImages(const std::vector<std::string>& files,
+                std::vector<IplImage*>& images,
+                std::vector<std::string>& fileNames)
 {
-  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
-  if (files.size() > 0)
+  if (files.size() == 0)
   {
-    std::sort(files.begin(), files.end());
-    for(unsigned int i = 0; i < files.size();i++)
-    {
-      IplImage* image = cvLoadImage(files[i].c_str());
-      if (image != NULL)
-      {
-        images.push_back(image);
-        fileNames.push_back(files[i]);
-      }
-    }
+    mitkThrow() << "LoadImages: Empty list supplied!" << std::endl;
   }
-  else
+
+  for(unsigned int i = 0; i < files.size();i++)
   {
-    throw std::logic_error("No files found in directory!");
+    IplImage* image = cvLoadImage(files[i].c_str());
+    if (image != NULL)
+    {
+      images.push_back(image);
+      fileNames.push_back(files[i]);
+    }
   }
 
   if (images.size() == 0)
   {
-    throw std::logic_error("No images found in directory!");
+    mitkThrow() << "LoadImages: Failed to load images!" << std::endl;
   }
 
-  std::cout << "Loaded " << fileNames.size() << " chess boards from " << fullDirectoryName << std::endl;
+  std::cout << "Loaded " << fileNames.size() << " chess boards" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadImagesFromDirectory(const std::string& fullDirectoryName,
+                                                    std::vector<IplImage*>& images,
+                                                    std::vector<std::string>& fileNames)
+{
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(), files.end());
+  LoadImages(files, images, fileNames);
+}
+
+
+//-----------------------------------------------------------------------------
+bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
+                                   const int& numberCornersX,
+                                   const int& numberCornersY,
+                                   const double& sizeSquareMillimeters,
+                                   const mitk::Point2D& pixelScaleFactor,
+                                   std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
+                                   )
+{
+  bool added = false;
+
+  if (leftFileName.length() > 0 && rightFileName.length() > 0)
+  {
+    IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
+    IplImage* imageRight = cvLoadImage(rightFileName.c_str());
+
+    if (imageLeft != NULL && imageRight != NULL)
+    {
+      cv::Mat leftImage(imageLeft);
+      cv::Mat rightImage(imageRight);
+
+      std::vector <cv::Point2d> corners;
+      std::vector <cv::Point3d> objectPoints;
+
+      bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      corners.clear();
+      objectPoints.clear();
+
+      bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      if (foundLeft && foundRight)
+      {
+        successfulLeftFiles.push_back(leftFileName);
+        successfulRightFiles.push_back(rightFileName);
+        added = true;
+      }
+    }
+
+    cvReleaseImage(&imageLeft);
+    cvReleaseImage(&imageRight);
+  }
+
+  return added;
 }
 
 
@@ -66,7 +121,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
 
   if (images.size() == 0)
   {
-    throw std::logic_error("Vector of images is empty!");
+    mitkThrow() << "Vector of images is empty!" << std::endl;
   }
 
   width = images[0]->width;
@@ -76,7 +131,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   {
     if (images[i]->width != width || images[i]->height != height)
     {
-      throw std::logic_error("Images are of inconsistent sizes!");
+      mitkThrow() << "Images are of inconsistent sizes!" << std::endl;
     }
   }
 
@@ -85,14 +140,14 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
 
 
 //-----------------------------------------------------------------------------
-bool ExtractChessBoardPoints(const cv::Mat image,
+bool ExtractChessBoardPoints(const cv::Mat& image,
                              const int& numberCornersWidth,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
                              const mitk::Point2D& pixelScaleFactor,
-                             std::vector <cv::Point2d>*& corners,
-                             std::vector <cv::Point3d>*& objectPoints
+                             std::vector <cv::Point2d>& corners,
+                             std::vector <cv::Point3d>& objectPoints
                              )
 {
 
@@ -137,14 +192,14 @@ bool ExtractChessBoardPoints(const cv::Mat image,
       objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
       objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
       objectCorner.z = 0; 
-      objectPoints->push_back(objectCorner);
+      objectPoints.push_back(objectCorner);
     }
   }
   for ( unsigned int i = 0 ; i < floatcorners.size() ; i ++ ) 
   {
-    corners->push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
+    corners.push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
   }
-  assert ( floatcorners.size() == corners->size());
+  assert ( floatcorners.size() == corners.size());
 
   return found;
 }
@@ -168,7 +223,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   if (images.size() != fileNames.size())
   {
-    throw std::logic_error("The list of images and list of filenames have different lengths!");
+    mitkThrow() << "The list of images and list of filenames have different lengths!" << std::endl;
   }
 
   outputImages.clear();
@@ -247,7 +302,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   if (successes == 0)
   {
-    throw std::logic_error("The chessboard feature detection failed");
+    mitkThrow() << "The chessboard feature detection failed" << std::endl;
   }
 
   // Now re-allocate points based on what we found.
@@ -471,7 +526,7 @@ void ComputeRightToLeftTransformations(
       || translationVectorsRightToLeft.rows != numberOfMatrices
       )
   {
-    throw std::logic_error("Inconsistent number of rows in supplied matrices!");
+    mitkThrow() << "Inconsistent number of rows in supplied matrices!" << std::endl;
   }
 
   CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
@@ -592,27 +647,36 @@ double CalibrateStereoCameraParameters(
     CvMat& outputRightToLeftRotation,
     CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
-    CvMat& outputFundamentalMatrix
+    CvMat& outputFundamentalMatrix,
+    const bool& fixedIntrinsics
     )
 {
-  double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
-      objectPointsLeft,
-      imagePointsLeft,
-      pointCountsLeft,
-      imageSize,
-      outputIntrinsicMatrixLeft,
-      outputDistortionCoefficientsLeft
-      );
+  if ( ! fixedIntrinsics )
+  {
+    double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+        objectPointsLeft,
+        imagePointsLeft,
+        pointCountsLeft,
+        imageSize,
+        outputIntrinsicMatrixLeft,
+        outputDistortionCoefficientsLeft
+        );
 
-  double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
-      objectPointsRight,
-      imagePointsRight,
-      pointCountsRight,
-      imageSize,
-      outputIntrinsicMatrixRight,
-      outputDistortionCoefficientsRight);
+    double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+        objectPointsRight,
+        imagePointsRight,
+        pointCountsRight,
+        imageSize,
+        outputIntrinsicMatrixRight,
+        outputDistortionCoefficientsRight);
 
-  std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+    std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+  }
+  int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
+  if ( fixedIntrinsics ) 
+  {
+    flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
+  }
 
   double stereoCalibrationProjectionError = cvStereoCalibrate
       (
@@ -630,7 +694,7 @@ double CalibrateStereoCameraParameters(
       &outputEssentialMatrix,
       &outputFundamentalMatrix,
       cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to optimise it.
+      flags 
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
@@ -694,9 +758,10 @@ double CalibrateStereoCameraParameters(
 
 
 //-----------------------------------------------------------------------------
-void OutputCalibrationData(
+std::vector<double> OutputCalibrationData(
     std::ostream& os,
-    const std::string intrinsicFlatFileName,
+    const std::string& outputDirectoryName,
+    const std::string& intrinsicFlatFileName,
     const CvMat& objectPoints,
     const CvMat& imagePoints,
     const CvMat& pointCounts,
@@ -712,6 +777,11 @@ void OutputCalibrationData(
     std::vector<std::string>& fileNames
     )
 {
+  double rms = 0;
+  std::vector<double> allRMSErrors;
+  int outputPrecision = 10;
+  int outputWidth = 10;
+
   int pointCount = cornersX * cornersY;
   int numberOfFilesUsed = fileNames.size();
 
@@ -733,12 +803,15 @@ void OutputCalibrationData(
       *projectedImagePoints
       );
 
-  os.precision(10);
-  os.width(10);
+  os.precision(outputPrecision);
+  os.width(outputWidth);
 
   bool writeIntrinsicToFlatFile = false;
 
   std::ofstream intrinsicFileOutput;
+  intrinsicFileOutput.precision(outputPrecision);
+  intrinsicFileOutput.width(outputWidth);
+
   intrinsicFileOutput.open((intrinsicFlatFileName).c_str(), std::ios::out);
   if (!intrinsicFileOutput.fail())
   {
@@ -801,16 +874,19 @@ void OutputCalibrationData(
         *extrinsicMatrix
         );
 
-    cvSave(std::string(fileNames[i] + ".extrinsic.xml").c_str(), extrinsicMatrix);
-    cvSave(std::string(fileNames[i] + ".extrinsic.rot.xml").c_str(), extrinsicRotationVector);
-    cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.xml"))).c_str(), extrinsicMatrix);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.rot.xml"))).c_str(), extrinsicRotationVector);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.trans.xml"))).c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
 
     bool writeExtrinsicToFlatFile = false;
 
     std::ofstream extrinsicFileOutput;
-    extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
+    extrinsicFileOutput.precision(outputPrecision);
+    extrinsicFileOutput.width(outputWidth);
+
+    extrinsicFileOutput.open((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.xml"))).c_str(), std::ios::out);
     if (!extrinsicFileOutput.fail())
     {
       writeExtrinsicToFlatFile = true;
@@ -837,6 +913,7 @@ void OutputCalibrationData(
       extrinsicFileOutput.close();
     }
 
+    rms = 0;
     for (unsigned int j = 0; j < numberOfPoints; j++)
     {
       CV_MAT_ELEM(*modelPointInputHomogeneous, double, 0 ,0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0);
@@ -846,13 +923,29 @@ void OutputCalibrationData(
 
       cvGEMM(extrinsicMatrix, modelPointInputHomogeneous, 1, NULL, 0, modelPointOutputHomogeneous);
 
+      double incurredDistanceError = sqrt(
+          (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))*(CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))
+          + (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))*(CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))
+          );
+
       os << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 2) \
           << " transforms to " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 0 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 1 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 2 ,0) \
-          << " and then projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
-          << " compared with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
-          << " detected in image " \
+          << " projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
+          << " compares with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
+          << " error = " << incurredDistanceError \
           << std::endl;
+
+      rms += (
+                  (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0)) * (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))
+                + (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1)) * (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))
+             );
     }
+    if (numberOfPoints > 0)
+    {
+      rms /= ((double)numberOfPoints);
+    }
+    rms = sqrt((double)rms);
+    allRMSErrors.push_back(rms);
   }
 
   cvReleaseMat(&extrinsicMatrix);
@@ -861,6 +954,8 @@ void OutputCalibrationData(
   cvReleaseMat(&extrinsicRotationVector);
   cvReleaseMat(&extrinsicTranslationVector);
   cvReleaseMat(&projectedImagePoints);
+
+  return allRMSErrors;
 }
 
 
@@ -875,7 +970,7 @@ void CorrectDistortionInImageFile(
   IplImage *image = cvLoadImage(inputFileName.c_str());
   if (image == NULL)
   {
-    throw std::logic_error("Failed to load image");
+    mitkThrow() << "Failed to load image";
   }
   CorrectDistortionInSingleImage(intrinsicParams, distortionCoefficients, *image);
   cvSaveImage(outputFileName.c_str(), image);
@@ -894,13 +989,13 @@ void CorrectDistortionInImageFile(
   CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
   if (intrinsic == NULL)
   {
-    throw std::logic_error("Failed to load camera intrinsic params");
+    mitkThrow() << "Failed to load camera intrinsic params" << std::endl;
   }
 
   CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
   if (distortion == NULL)
   {
-    throw std::logic_error("Failed to load camera distortion params");
+    mitkThrow() << "Failed to load camera distortion params" << std::endl;
   }
 
   CorrectDistortionInImageFile(inputImageFileName, *intrinsic, *distortion, outputImageFileName);
@@ -1058,7 +1153,7 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
       || output2DPointsRight != NULL
       )
   {
-    throw std::logic_error("Output pointers should be NULL, as this method creates new matrices");
+    mitkThrow() << "Output pointers should be NULL, as this method creates new matrices";
   }
 
   int numberOfInputPoints = leftCameraWorldPointsIn3D.rows;
@@ -1138,7 +1233,10 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
 void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    cv::Mat& outputIdealPointsNx2
+    cv::Mat& outputIdealPointsNx2,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   assert(inputObservedPointsNx2.rows == outputIdealPointsNx2.rows);
@@ -1158,7 +1256,8 @@ void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
     inputPoints[i].y = inputObservedPointsNx2.at<double>(i,1);
   }
 
-  UndistortPoints(inputPoints, cameraIntrinsics, cameraDistortionParams, outputPoints);
+  UndistortPoints(inputPoints, cameraIntrinsics, cameraDistortionParams, outputPoints,
+      cropPointsToScreen, xLow, xHigh, yLow, yHigh, cropValue);
 
   for (int i = 0; i < numberOfPoints; i++)
   {
@@ -1172,10 +1271,18 @@ void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
 void UndistortPoints(const std::vector<cv::Point2d>& inputPoints,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    std::vector<cv::Point2d>& outputPoints
+    std::vector<cv::Point2d>& outputPoints,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+
+  if ( cropPointsToScreen )
+  {
+    mitk::CropToScreen ( inputPoints, outputPoints, xLow, xHigh, yLow, yHigh, cropValue);
+  }
 }
 
 
@@ -1183,13 +1290,20 @@ void UndistortPoints(const std::vector<cv::Point2d>& inputPoints,
 void UndistortPoint(const cv::Point2d& inputPoint,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    cv::Point2d& outputPoint
+    cv::Point2d& outputPoint,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   std::vector<cv::Point2d> inputPoints;
   std::vector<cv::Point2d> outputPoints;
   inputPoints.push_back (inputPoint);
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+  if ( cropPointsToScreen )
+  {
+    mitk::CropToScreen ( inputPoints, outputPoints, xLow, xHigh, yLow, yHigh, cropValue);
+  }
   outputPoint = outputPoints[0];
 }
 
@@ -1690,12 +1804,12 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
   }
   else
   {
-    throw std::logic_error("No files found in directory!");
+    mitkThrow() << "No files found in directory!" << std::endl;
   }
 
   if (myMatrices.size() == 0)
   {
-    throw std::logic_error("No Matrices found in directory!");
+    mitkThrow() << "No Matrices found in directory!" << std::endl;
   }
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
@@ -1718,7 +1832,7 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
         cv::Mat Extrinsic = (cv::Mat)cvLoadImage(files[i].c_str());
         if (Extrinsic.rows != 4 )
         {
-          throw std::logic_error("Failed to load camera intrinsic params");
+          mitkThrow() << "Failed to load camera intrinsic params" << std::endl;
         }
         else
         {
@@ -1730,12 +1844,12 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   }
   else
   {
-    throw std::logic_error("No files found in directory!");
+    mitkThrow() << "No files found in directory!";
   }
 
   if (myMatrices.size() == 0)
   {
-    throw std::logic_error("No Matrices found in directory!");
+    mitkThrow() << "No Matrices found in directory!";
   }
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
@@ -2057,6 +2171,9 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
 {
   std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
@@ -2065,11 +2182,16 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     }
   }
 
-  int distortionVectorLength = CameraDistortion->size().height * CameraDistortion->size().width;
-
-  for ( int col = 0 ; col < distortionVectorLength ; col++ )
+  if (CameraDistortion != 0)
   {
-    fin >> CameraDistortion->at<double>(0,col);
+    // this should work around any row-vs-column vector opencv matrix confusion issues.
+    for (int row = 0; row < CameraDistortion->size().height; ++row)
+    {
+      for (int col = 0; col < CameraDistortion->size().width; ++col)
+      {
+        fin >> CameraDistortion->at<double>(row, col);
+      }
+    }
   }
 }
 
@@ -2079,16 +2201,23 @@ void LoadStereoTransformsFromPlainText (const std::string& filename,
     cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
 {
   std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
     {
        fin >> rightToLeftRotationMatrix->at<double>(row,col);
     }
-  } 
-  for ( int col = 0 ; col < 3 ; col++ )
+  }
+
+  for (int row = 0; row < rightToLeftTranslationVector->size().height; ++row)
   {
-    fin >> rightToLeftTranslationVector->at<double>(0,col);
+    for (int col = 0; col < rightToLeftTranslationVector->size().width; ++col)
+    {
+      fin >> rightToLeftTranslationVector->at<double>(row, col);
+    }
   }
 }
 
@@ -2155,22 +2284,22 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
 
   if ( leftIntrinsicFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of left intrinsic files");
+    mitkThrow() << "Found the wrong number of left intrinsic files";
   }
 
   if ( rightIntrinsicFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of right intrinsic files");
+    mitkThrow() << "Found the wrong number of right intrinsic files";
   }
 
   if ( r2lFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of right to left files");
+    mitkThrow() << "Found the wrong number of right to left files" << std::endl;
   }
   
   if ( handeyeFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of handeye files");
+    mitkThrow() << "Found the wrong number of handeye files" << std::endl;
   }
 
   std::cout << "Loading left intrinsics from  " << leftIntrinsicFiles[0] << std::endl;
@@ -2258,21 +2387,35 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
 {
   cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
   cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
- 
+  for ( int row = 0 ; row < 3 ; row++ )
+  {
+    for ( int col = 0 ; col < 3 ; col++ ) 
+    {
+      temp.at<double>(row,col) = 0.0;
+    }
+    temp_T.at<double>(row,0) = 0.0;
+  }
   for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
   {
     for ( int row = 0 ; row < 3 ; row++ )
     {
       for ( int col = 0 ; col < 3 ; col++ ) 
       {
-        temp.at<double>(row,col) += Matrices[i].at<double>(row,col);
+        double whatItWas = temp.at<double>(row,col);
+        double whatToAdd = Matrices[i].at<double>(row,col);
+        temp.at<double>(row,col) = whatItWas +  whatToAdd;
       }
       temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
     }
+    
+    //we write temp out, not because it's interesting but because it 
+    //seems to fix a bug in the averaging code, trac 2895
+    MITK_INFO << "temp " << temp;
   }
   
-  temp_T = temp_T /Matrices.size();
-  temp = temp / Matrices.size();
+  temp_T = temp_T / static_cast<double>(Matrices.size());
+  temp = temp / static_cast<double>(Matrices.size());
+
 
   cv::Mat rtr = temp.t() * temp;
 
@@ -2280,10 +2423,25 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
   cv::Mat eigenvalues = cvCreateMat(3,1,CV_64FC1);
   cv::eigen(rtr , eigenvalues, eigenvectors);
   cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
-  for ( int i = 0 ; i < 3 ; i ++ ) 
+  //write out the vectors and values, because it might be interesting, trac 2972
+  MITK_INFO << "eigenvalues " << eigenvalues;
+  MITK_INFO << "eigenvectors " << eigenvectors;
+  for ( int row = 0 ; row < 3 ; row ++ ) 
   {
-    rootedEigenValues.at<double>(i,i) = sqrt(1/eigenvalues.at<double>(i,0));
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      if ( row == col )
+      {
+        rootedEigenValues.at<double>(row,col) = sqrt(1.0/eigenvalues.at<double>(row,0));
+      }
+      else
+      {
+        rootedEigenValues.at<double>(row,col) = 0.0;
+      }
+    }
   }
+  //write out the rooted eigenValues trac 2972
+  MITK_INFO << " rooted eigenvalues " << rootedEigenValues;
 
   cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
   cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
@@ -2296,10 +2454,39 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
     }
     returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
   }
+  returnMat.at<double>(3,0) = 0.0;
+  returnMat.at<double>(3,1) = 0.0;
+  returnMat.at<double>(3,2) = 0.0;
   returnMat.at<double>(3,3)  = 1.0;
   return returnMat;
     
 } 
 
 //-----------------------------------------------------------------------------------------
+cv::Point3d ReProjectPoint ( const cv::Point2d& point , const cv::Mat& IntrinsicMatrix )
+{
+  cv::Mat m1 = cvCreateMat ( 3,1,CV_64FC1);
+  m1.at<double>(0,0) = point.x;
+  m1.at<double>(1,0) = point.y;
+  m1.at<double>(2,0) = 1.0;
+  m1 = IntrinsicMatrix.inv() * m1;
+  return cv::Point3d ( m1.at<double>(0,0), m1.at<double>(1,0), m1.at<double>(2,0));
+}
+
+//-----------------------------------------------------------------------------------------
+void CropToScreen ( const std::vector <cv::Point2d>& src, std::vector <cv::Point2d>& dst,
+    const double& xLow, const double& xHigh, const double& yLow, const double& yHigh, 
+    const double& cropValue )
+{
+  assert ( src.size() == dst.size() );
+
+  for ( unsigned int i = 0 ; i < src.size() ; i++ )
+  {
+    if ( ( src[i].x < xLow ) || ( src[i].x > xHigh ) || ( src[i].y < yLow ) || src[i].y > yHigh )
+    {
+      dst[i].x = cropValue;
+      dst[i].y = cropValue;
+    }
+  }
+}
 } // end namespace

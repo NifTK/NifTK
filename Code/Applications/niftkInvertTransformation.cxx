@@ -76,12 +76,13 @@ int main(int argc, char** argv)
   // Compute average transform. 
   try
   {
-    FactoryType::FluidDeformableTransformType* fluidTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(factory->CreateTransform(inputTransformName).GetPointer()); 
-    FactoryType::FluidDeformableTransformType* inverseTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(factory->CreateTransform(inputTransformName).GetPointer()); 
+    FactoryType::TransformType::Pointer genericTransform = factory->CreateTransform(inputTransformName);
+    FactoryType::FluidDeformableTransformType* fluidTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(genericTransform.GetPointer());
+    FactoryType::FluidDeformableTransformType* inverseTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(genericTransform.GetPointer());
     
-    FactoryType::EulerAffineTransformType* affineTransform = dynamic_cast<FactoryType::EulerAffineTransformType*>(factory->CreateTransform(inputTransformName).GetPointer()); 
+    FactoryType::EulerAffineTransformType* affineTransform = dynamic_cast<FactoryType::EulerAffineTransformType*>(genericTransform.GetPointer());
     FactoryType::EulerAffineTransformType::Pointer inverseAffineTransform = FactoryType::EulerAffineTransformType::New();
-    
+
     if (fluidTransform != NULL)
     {
       std::cout << "Inverting fluid transform..." << std::endl; 
@@ -92,9 +93,11 @@ int main(int argc, char** argv)
     else if (affineTransform != NULL)
     {
       std::cout << "Inverting affine transform..." << std::endl; 
-      inverseAffineTransform->SetFixedParameters(affineTransform->GetFixedParameters()); 
+      affineTransform->Print(std::cout);
+      inverseAffineTransform->SetFixedParameters(affineTransform->GetFixedParameters());
       inverseAffineTransform->SetCenter(inverseAffineTransform->GetCenter()); 
-      affineTransform->GetInverse(inverseAffineTransform); 
+      affineTransform->GetInverse(inverseAffineTransform);
+      std::cout << inverseAffineTransform << std::endl;
       inverseAffineTransform->SetParametersFromTransform(inverseAffineTransform->GetFullAffineTransform()); 
       transformFileWriter->SetInput(inverseAffineTransform);
     }

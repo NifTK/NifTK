@@ -14,6 +14,9 @@
 
 #include "mitkOpenCVMaths.h"
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <numeric>
+#include <algorithm>
+#include <functional>
 
 namespace mitk {
 
@@ -86,7 +89,6 @@ void MakeIdentity(cv::Matx44d& outputMatrix)
   outputMatrix(2,2) = 1;
   outputMatrix(3,3) = 1;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -293,6 +295,54 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
 }
 
 //-----------------------------------------------------------------------------
+std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const std::vector< std::pair < cv::Point3d, cv::Scalar > > & p)
+{
+  cv::Mat src ( 4, p.size(), CV_64F );
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    src.at<double>(0,i) = p[i].first.x;
+    src.at<double>(1,i) = p[i].first.y;
+    src.at<double>(2,i) = p[i].first.z;
+    src.at<double>(3,i) = 1.0;
+  }
+  cv::Mat dst = M*src;
+  std::vector < std::pair <cv::Point3d, cv::Scalar > > returnPoints;
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    cv::Point3d point;
+    point.x = dst.at<double>(0,i);
+    point.y = dst.at<double>(1,i);
+    point.z = dst.at<double>(2,i);
+    returnPoints.push_back(std::pair<cv::Point3d, cv::Scalar> (point, p[i].second));
+  }
+  return returnPoints;
+}
+
+//-----------------------------------------------------------------------------
+std::pair <cv::Point3d, cv::Scalar>  operator*(cv::Mat M, const  std::pair < cv::Point3d, cv::Scalar >  & p)
+{
+  cv::Mat src ( 4, 1 , CV_64F );
+  src.at<double>(0,0) = p.first.x;
+  src.at<double>(1,0) = p.first.y;
+  src.at<double>(2,0) = p.first.z;
+  src.at<double>(3,0) = 1.0;
+
+  cv::Mat dst = M*src;
+  std::pair <cv::Point3d, cv::Scalar >  returnPoint;
+   
+  cv::Point3d point;
+  point.x = dst.at<double>(0,0);
+  point.y = dst.at<double>(1,0);
+  point.z = dst.at<double>(2,0);
+  returnPoint = std::pair<cv::Point3d, cv::Scalar> (point, p.second);
+  
+  return returnPoint;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
@@ -315,6 +365,8 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
   }
   return returnPoints;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 {
@@ -333,6 +385,8 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 
   return returnPoint;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
@@ -397,6 +451,7 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
 
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
 {
@@ -414,8 +469,11 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
   }
   return returnPoints;
 }
+
+
 //-----------------------------------------------------------------------------
-cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers, 
+    cv::Point2d * StandardDeviation)
 {
   cv::Point2d centroid;
   centroid.x = 0.0;
@@ -431,7 +489,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
 
   centroid.x /= (double) numberOfPoints;
   centroid.y /= (double) numberOfPoints;
-  if ( ! RefineForOutliers )
+  if ( ( ! RefineForOutliers ) && ( StandardDeviation == NULL ) )
   {
     return centroid;
   }
@@ -448,6 +506,12 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
 
+  if ( ! RefineForOutliers ) 
+  {
+    *StandardDeviation = standardDeviation;
+    return centroid;
+  }
+
   cv::Point2d highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
   cv::Point2d lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
 
@@ -456,8 +520,8 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   unsigned int goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
-    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -468,8 +532,31 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   centroid.x /= (double) goodPoints;
   centroid.y /= (double) goodPoints;
 
+  if ( StandardDeviation == NULL ) 
+  {
+    return centroid;
+  }
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
+    {
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  
+  *StandardDeviation = standardDeviation;
   return centroid;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers , cv::Point3d* StandardDeviation)
 {
@@ -539,9 +626,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -566,9 +653,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     { 
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
@@ -592,7 +679,7 @@ cv::Matx33d ConstructEulerRxMatrix(const double& rx)
   double cosRx = cos(rx);
   double sinRx = sin(rx);
 
-  result.eye();
+  result = result.eye();
   result(1, 1) = cosRx;
   result(1, 2) = sinRx;
   result(2, 1) = -sinRx;
@@ -611,7 +698,7 @@ cv::Matx33d ConstructEulerRyMatrix(const double& ry)
   double cosRy = cos(ry);
   double sinRy = sin(ry);
 
-  result.eye();
+  result = result.eye();
   result(0, 0) = cosRy;
   result(0, 2) = -sinRy;
   result(2, 0) = sinRy;
@@ -630,7 +717,7 @@ cv::Matx33d ConstructEulerRzMatrix(const double& rz)
   double cosRz = cos(rz);
   double sinRz = sin(rz);
 
-  result.eye();
+  result = result.eye();
   result(0, 0) = cosRz;
   result(0, 1) = sinRz;
   result(1, 0) = -sinRz;
@@ -702,6 +789,42 @@ cv::Matx44d ConstructRigidTransformationMatrix(
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d ConstructRodriguesTransformationMatrix(
+    const double& r1,
+    const double& r2,
+    const double& r3,
+    const double& tx,
+    const double& ty,
+    const double& tz
+    )
+{
+  cv::Matx44d transformation;
+  mitk::MakeIdentity(transformation);
+
+  cv::Matx13d rotationVector;
+  rotationVector(0,0) = r1;
+  rotationVector(0,1) = r2;
+  rotationVector(0,2) = r3;
+
+  cv::Matx33d rotationMatrix;
+  cv::Rodrigues(rotationVector, rotationMatrix);
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      transformation(i, j) = rotationMatrix(i, j);
+    }
+  }
+  transformation(0, 3) = tx;
+  transformation(1, 3) = ty;
+  transformation(2, 3) = tz;
+
+  return transformation;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
 {
   cv::Matx44d scaling;
@@ -738,6 +861,8 @@ cv::Matx44d ConstructSimilarityTransformationMatrix(
   result = scaling * rigid;
   return result;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes )
 {
@@ -901,6 +1026,25 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   return RMSError;
 }
 //-----------------------------------------------------------------------------
+std::pair < double, double >  RMSError (std::vector < std::pair < long long , std::vector < std::pair <cv::Point2d, cv::Point2d> > > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    int indexToUse , double outlierSD, long long allowableTimingError )
+{
+  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > culledMeasured;
+  for ( unsigned int i = 0 ; i < measured.size() ; i ++ ) 
+  {
+    if ( measured[i].first < abs (allowableTimingError) )
+    {
+      culledMeasured.push_back( measured[i].second );
+    }
+    else 
+    {
+      MITK_WARN << "Dropping point pair " << i << " due to high timing error " << measured[i].first << " > " << allowableTimingError;
+    }
+  }
+  return mitk::RMSError ( culledMeasured, actual, indexToUse, outlierSD );
+}
+
+//-----------------------------------------------------------------------------
 std::pair < cv::Point2d, cv::Point2d >  MeanError (
     std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , 
     std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
@@ -1036,5 +1180,95 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
 
   return transformIn * perturbationMatrix;
 }
+
+
+//-----------------------------------------------------------------------------
+double RMS(const std::vector<double>& input)
+{
+  double mean = Mean(input);
+  return sqrt(mean);
+}
+
+
+//-----------------------------------------------------------------------------
+double Mean(const std::vector<double>& input)
+{
+  if (input.size() == 0)
+  {
+    return 0;
+  }
+  double sum = std::accumulate(input.begin(), input.end(), 0.0);
+  double mean = sum / input.size();
+  return mean;  
+}
+
+
+//-----------------------------------------------------------------------------
+double StdDev(const std::vector<double>& input)
+{
+  if (input.size() == 0)
+  {
+    return 0;
+  }
+  
+  double mean = mitk::Mean(input);
+  
+  std::vector<double> diff(input.size());
+  std::transform(input.begin(), input.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
+  double squared = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+  double stdev = std::sqrt(squared / ((double)(input.size()) - 1.0));
+  return stdev;
+}
+
+//-----------------------------------------------------------------------------
+cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
+    const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index ) 
+{
+  std::vector <cv::Point2d>  sortedMatches;
+  for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ )
+  {
+    sortedMatches.push_back ( point - matchingPoints[i] );
+  }
+  
+  if ( Index != NULL ) 
+  {
+    *Index = std::min_element(sortedMatches.begin(), sortedMatches.end(), DistanceCompare) -
+      sortedMatches.begin();
+  }
+
+  std::sort ( sortedMatches.begin(), sortedMatches.end () , DistanceCompare );
+
+  if ( minRatio != NULL )
+  {
+    if ( sortedMatches.size() > 1 )
+    {
+      *minRatio =  
+        sqrt(sortedMatches[1].x * sortedMatches[1].x + sortedMatches[1].y * sortedMatches[1].y ) /
+        sqrt(sortedMatches[0].x * sortedMatches[0].x + sortedMatches[0].y * sortedMatches[0].y ); 
+    }
+    else 
+    {
+      *minRatio = 0.0;
+    }
+  }
+  
+  return  point - sortedMatches [0];
+}
+
+//-----------------------------------------------------------------------------
+bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
+{
+  double d1 = sqrt( p1.x * p1.x + p1.y * p1.y );
+  double d2 = sqrt( p2.x * p2.x + p2.y * p2.y );
+  return d1 < d2;
+}
+
+//-----------------------------------------------------------------------------
+bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1, 
+    const std::pair < unsigned int , cv::Point2d> & p2 )
+{
+  return p1.first < p2.first;
+}
+
 
 } // end namespace

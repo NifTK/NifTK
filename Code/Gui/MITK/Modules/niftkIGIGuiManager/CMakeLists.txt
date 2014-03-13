@@ -16,7 +16,7 @@ set(niftkIGIGuiManager_DEPENDS
   niftkIGIGui
 )
 
-if(NVAPI_FOUND)
+if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   set(niftkIGIGuiManager_DEPENDS
     ${niftkIGIGuiManager_DEPENDS}
     niftkNVidia
@@ -31,6 +31,10 @@ MITK_CREATE_MODULE(niftkIGIGuiManager
   PACKAGE_DEPENDS QT
   QT_MODULE 
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkIGIGuiManager)
+endif()
 
 if(BUILD_TESTING)  
   #add_subdirectory(Testing)

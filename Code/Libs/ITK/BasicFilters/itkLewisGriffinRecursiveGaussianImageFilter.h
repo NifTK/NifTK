@@ -104,6 +104,9 @@ public:
   /** Explicitly set a second order derivative. */
   void SetSecondOrder();
 
+  /// For debugging purposes, set single threaded execution
+  void SetSingleThreadedExecution(void) {m_FlagMultiThreadedExecution = false;}
+
 protected:
   LewisGriffinRecursiveGaussianImageFilter();
   virtual ~LewisGriffinRecursiveGaussianImageFilter();
@@ -113,8 +116,18 @@ protected:
 
   void PrintSelf(std::ostream& os, Indent indent) const;
 
+  /** Thread-Data Structure   */
+  struct LewisGriffinRecursiveGaussianImageFilterStruct
+  {
+    LewisGriffinRecursiveGaussianImageFilter *Filter;
+  };
+
+  /// Flag to turn multithreading on or off
+  bool m_FlagMultiThreadedExecution;
+
   /** GenerateData (apply) the filter. */   
   void BeforeThreadedGenerateData();
+  void GenerateData(void);
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId );
 
   int SplitRequestedRegion(int i, int num, OutputImageRegionType& splitRegion);

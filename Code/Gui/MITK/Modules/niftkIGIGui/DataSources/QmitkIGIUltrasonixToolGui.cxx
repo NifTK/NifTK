@@ -40,6 +40,17 @@ QmitkIGIUltrasonixToolGui::~QmitkIGIUltrasonixToolGui()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixToolGui::OnFlippingChanged()
+{
+  if (m_UltrasonixTool != NULL)
+  {
+    m_UltrasonixTool->SetFlipHorizontally(this->m_FlipHorizontallyCheckBox->isChecked());
+    m_UltrasonixTool->SetFlipVertically(this->m_FlipVerticallyCheckBox->isChecked());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIUltrasonixToolGui::InitializeImage()
 {
   if (m_UltrasonixTool != NULL)
@@ -65,6 +76,9 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptor
 {
   setupUi(this);
 
+  connect(this->m_FlipHorizontallyCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnFlippingChanged()));
+  connect(this->m_FlipVerticallyCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnFlippingChanged()));
+
   if (this->GetSource() != NULL)
   {
     m_UltrasonixTool = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());
@@ -72,6 +86,9 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptor
 
     if (m_UltrasonixTool != NULL)
     {
+      this->m_FlipHorizontallyCheckBox->setChecked(m_UltrasonixTool->GetFlipHorizontally());
+      this->m_FlipVerticallyCheckBox->setChecked(m_UltrasonixTool->GetFlipVertically());
+
       mitk::DataStorage* dataStorage = m_UltrasonixTool->GetDataStorage();
       assert(dataStorage);
 

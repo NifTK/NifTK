@@ -30,13 +30,13 @@ namespace mitk
 /**
  * \brief Converts an MITK orientation enum to an ITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT itk::ORIENTATION_ENUM GetItkOrientation(const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT itk::Orientation GetItkOrientation(const MIDASOrientation& orientation);
 
 
 /*
  * \brief Converts an ITK orientation enum to an MITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT MIDASOrientation GetMitkOrientation(const itk::ORIENTATION_ENUM& orientation);
+NIFTKCORE_EXPORT MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation);
 
 
 /**
@@ -59,7 +59,7 @@ NIFTKCORE_EXPORT int GetUpDirection(const mitk::Image* image, const MIDASOrienta
  * </pre>
  */
 
-NIFTKCORE_EXPORT int GetUpDirection(const mitk::Geometry3D* geometry, const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT int GetUpDirection(const mitk::Geometry3D* geometry, itk::Orientation orientation);
 
 
 /**
@@ -81,6 +81,90 @@ NIFTKCORE_EXPORT int GetThroughPlaneAxis(const mitk::Image* image, const MIDASOr
  */
 NIFTKCORE_EXPORT std::string GetOrientationString(const mitk::Image* image);
 
+/// \brief Converts between voxel coordinate order and world coordinate order.
+/// The function writes the axes of the sagittal, coronal and axial dimensions to @a axes,
+/// in this order:
+///
+///     axes[0]: axis of sagittal dimension
+///     axes[1]: axis of coronal dimension
+///     axes[2]: axis of axial dimension
+///
+template<typename TPixel, unsigned int VImageDimension>
+NIFTKCORE_EXPORT
+void GetAxesInWorldCoordinateOrder(const itk::Image<TPixel, VImageDimension>* itkImage, int axes[3]);
+
+/// \brief Converts between voxel coordinate order and world coordinate order.
+/// The function writes the axes of the sagittal, coronal and axial dimensions to @a axes,
+/// in this order:
+///
+///     axes[0]: axis of sagittal dimension
+///     axes[1]: axis of coronal dimension
+///     axes[2]: axis of axial dimension
+///
+NIFTKCORE_EXPORT
+void GetAxesInWorldCoordinateOrder(const mitk::Image* mitkImage, int axes[3]);
+
+/// \brief Gets the spacing of the image in world coordinate order.
+///
+///     spacing[0]: spacing along sagittal dimension
+///     spacing[1]: spacing along coronal dimension
+///     spacing[2]: spacing axial dimension
+///
+template<typename TPixel, unsigned int VImageDimension>
+NIFTKCORE_EXPORT
+void GetSpacingInWorldCoordinateOrder(const itk::Image<TPixel, VImageDimension>* itkImage, mitk::Vector3D& spacing);
+
+/// \brief Gets the spacing of the image in world coordinate order.
+///
+///     spacing[0]: spacing along sagittal dimension
+///     spacing[1]: spacing along coronal dimension
+///     spacing[2]: spacing axial dimension
+///
+NIFTKCORE_EXPORT
+void GetSpacingInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& spacing);
+
+/// \brief Gets the extents (number of voxels) of the image in world coordinate order.
+///
+///     extentsInVx[0]: extent of sagittal dimension
+///     extentsInVx[1]: extent of coronal dimension
+///     extentsInVx[2]: extent of axial dimension
+///
+template<typename TPixel, unsigned int VImageDimension>
+NIFTKCORE_EXPORT
+void GetExtentsInVxInWorldCoordinateOrder(const itk::Image<TPixel, VImageDimension>* itkImage, mitk::Vector3D& extentsInVx);
+
+/// \brief Gets the extents (number of voxels) of the image in world coordinate order.
+///
+///     extentsInVx[0]: extent of sagittal dimension as number of voxels
+///     extentsInVx[1]: extent of coronal dimension as number of voxels
+///     extentsInVx[2]: extent of axial dimension as number of voxels
+///
+NIFTKCORE_EXPORT
+void GetExtentsInVxInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& extentsInVx);
+
+/// \brief Gets the extents of the image in millimetres in world coordinate order.
+///
+///     extentsInMm[0]: extent of sagittal dimension in millimetres
+///     extentsInMm[1]: extent of coronal dimension in millimetres
+///     extentsInMm[2]: extent of axial dimension in millimetres
+///
+template<typename TPixel, unsigned int VImageDimension>
+NIFTKCORE_EXPORT
+void GetExtentsInMmInWorldCoordinateOrder(const itk::Image<TPixel, VImageDimension>* itkImage, mitk::Vector3D& extentsInMm);
+
+/// \brief Gets the extents of the image in millimetres in world coordinate order.
+///
+///     extentsInMm[0]: extent of sagittal dimension in millimetres
+///     extentsInMm[1]: extent of coronal dimension in millimetres
+///     extentsInMm[2]: extent of axial dimension in millimetres
+///
+NIFTKCORE_EXPORT
+void GetExtentsInMmInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& extentsInMm);
+
 } // end namespace
+
+#ifndef ITK_MANUAL_INSTANTIATION
+#include "mitkMIDASOrientationUtils.txx"
+#endif
 
 #endif

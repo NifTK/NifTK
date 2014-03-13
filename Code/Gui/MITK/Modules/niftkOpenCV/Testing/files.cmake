@@ -15,6 +15,8 @@
 # tests with no extra command line parameter
 set(MODULE_TESTS
   ImageConversionTest.cxx
+  mitkCameraCalibrationFacadeTest.cxx
+  UndistortionTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
@@ -27,4 +29,5 @@ set(MODULE_CUSTOM_TESTS
   mitkFindAndTriangulateCrossHairTest.cxx
   mitkUltrasoundPinCalibrationRegressionTest.cxx
   mitkPivotCalibrationRegressionTest.cxx
+  mitkIdealStereoCalibrationTest.cxx
 )

@@ -65,6 +65,7 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
 
     m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
     m_Controls->m_RenderWindow->Activated();
+    m_Controls->m_RenderWindow->SetDisplayInteractionsEnabled(true);
   }
 }
 

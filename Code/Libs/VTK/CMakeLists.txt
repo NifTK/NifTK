@@ -16,6 +16,8 @@ set(niftkVTK_SRCS
   niftkVTKFunctions.cxx
   niftkVTKIterativeClosestPoint.cxx
   niftkVTK4PointsReader.cxx
+  niftkVTKIGIGeometry.cxx
+  niftkVTKBackfaceCullingFilter.cxx
 )
 
 add_library(niftkVTK ${niftkVTK_SRCS})
@@ -29,5 +31,9 @@ if(BUILD_SHARED_LIBS)
     add_definitions(-DNIFTKVTK_WINDOWS_EXPORT)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkVTK)
+endif()
 
 MITK_INSTALL(TARGETS niftkVTK)

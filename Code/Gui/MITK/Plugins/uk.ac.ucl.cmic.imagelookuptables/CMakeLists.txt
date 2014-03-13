@@ -21,3 +21,7 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES CTK MitkExt QmitkExt niftkCoreGui
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_imagelookuptables)
+endif()

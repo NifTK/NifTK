@@ -20,6 +20,7 @@
 #include <mitkVtkSurfaceReader.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
@@ -91,7 +92,6 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   } 
   
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
-  registerer->SetUseSpatialFilter(false);
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
@@ -140,9 +140,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
       registerer->SetIndexToWorld (movingnode, movingMatrix ) )
   {
     std::cout << "Starting registration test with index2world both identity.";
-    registerer->Update(fixednode, movingnode, resultMatrix);
-    registerer->ApplyTransform(movingnode, resultMatrix);
-    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    registerer->Update(fixednode, movingnode, *resultMatrix);
+    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing 2 ID");
   }
   else
@@ -162,9 +162,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
       registerer->SetIndexToWorld (movingnode, movingMatrix ) )
   {
     std::cout << "Starting registration test with moving index2world non identity.";
-    registerer->Update(fixednode, movingnode, resultMatrix);
-    registerer->ApplyTransform(movingnode, resultMatrix);
-    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    registerer->Update(fixednode, movingnode, *resultMatrix);
+    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing moving non ID");
   }
   else
@@ -181,9 +181,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
       registerer->SetIndexToWorld (movingnode, movingMatrix ) )
   {
     std::cout << "Starting registration test with fixed index2world non identity.";
-    registerer->Update(fixednode, movingnode, resultMatrix);
-    registerer->ApplyTransform(movingnode, resultMatrix);
-    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    registerer->Update(fixednode, movingnode, *resultMatrix);
+    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing fixed non ID");
   }
   else
@@ -205,9 +205,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
       registerer->SetIndexToWorld (movingnode, movingMatrix ) )
   {
     std::cout << "Starting registration test with both index2world non identity.";
-    registerer->Update(fixednode, movingnode, resultMatrix);
-    registerer->ApplyTransform(movingnode, resultMatrix);
-    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    registerer->Update(fixednode, movingnode, *resultMatrix);
+    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing both non ID");
   }
   else

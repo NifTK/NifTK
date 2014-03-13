@@ -1,3 +1,4 @@
+#/*============================================================================
 #
 #  NifTK: A software platform for medical image computing.
 #
@@ -11,13 +12,19 @@
 #
 #============================================================================*/
 
+option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
+if(NIFTK_USE_COTIRE)
+  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
+  include(cotire)
+endif()
+
 ###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
-set(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 10 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
+set(NIFTK_VERSION_MINOR 02 CACHE STRING "Month version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
 
@@ -151,6 +158,8 @@ option(BUILD_NIFTYREC "Build NiftyRec." OFF)
 option(BUILD_NIFTYSIM "Build NiftySim." ON)
 option(BUILD_NIFTYSEG "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
+option(BUILD_RTK "Build RTK - Experimental." OFF)
+option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -206,18 +215,19 @@ set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
-set(NIFTK_VERSION_DATA "f5b27aeb5a" CACHE STRING "Version of NifTKData" FORCE)
+set(NIFTK_VERSION_DATA "7915f6a087" CACHE STRING "Version of NifTKData" FORCE)
 set(NIFTK_VERSION_Boost "1_54_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.2.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
-set(NIFTK_VERSION_ITK "4.3.2.2" CACHE STRING "Version of ITK" FORCE)
+set(NIFTK_VERSION_ITK "4.3.2.3" CACHE STRING "Version of ITK" FORCE)
+set(NIFTK_VERSION_RTK "c88ec7cf4d" CACHE STRING "Version of RTK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "84f24b8d90" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_CTK "2f63dd4e44" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "a4743994f1" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
+set(NIFTK_VERSION_MITK "e4d9a6b49a" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_NIFTYLINK "b8a4e7c281" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -227,7 +237,7 @@ set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
-set(NIFTK_VERSION_APRILTAGS "084a8faa12" CACHE STRING "Version of AprilTags" FORCE)
+set(NIFTK_VERSION_APRILTAGS "8bd0380b5d" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
 set(NIFTK_VERSION_PCL "fc0043389e" CACHE STRING "Version of PCL" FORCE) 
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
@@ -236,6 +246,7 @@ set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_$
 set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
 set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
 set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
+set(NIFTK_LOCATION_RTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/SimonRit-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
 set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
@@ -339,6 +350,15 @@ mark_as_advanced(NIFTK_LOCATION_FLANN)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(NIFTK_VERSION_PCL)
 mark_as_advanced(NIFTK_LOCATION_PCL)
+mark_as_advanced(BUILD_RTK)
+mark_as_advanced(NIFTK_VERSION_RTK)
+mark_as_advanced(NIFTK_LOCATION_RTK)
+mark_as_advanced(BUILD_ITKFFTW)
+
+# PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
+if(BUILD_PCL)
+  set(PCL_FIND_QUIETLY ON)
+endif()
 
 ######################################################################
 # Make sure Git is available.
@@ -521,6 +541,10 @@ if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
 
+if(BUILD_ITKFFTW)
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This is not supported by NifTK.")
+endif(BUILD_ITKFFTW)
+
 ########################################################################
 # Simplest if we list ALL our include directories here.
 # We need to reference the CMAKE_BINARY_DIR, as we generate stuff there.
@@ -542,6 +566,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BreastCancerImaging
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics
@@ -628,8 +653,13 @@ endif(NIFTK_USE_CUDA)
 find_package(NVidiaAPI)
 if(NVAPI_FOUND)
   message("Found NVidia API")
-  set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NVAPI_INCLUDE_DIR})
-  add_definitions(-D_USE_NVAPI)
+  if (CUDA_FOUND AND NIFTK_USE_CUDA)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NVAPI_INCLUDE_DIR})
+    add_definitions(-D_USE_NVAPI)
+  else()
+    message("NVidia API disabled: need CUDA. Try NIFTK_USE_CUDA.")
+    set(NVAPI_FOUND 0)
+  endif()
 else()
   message("Did not find NVidia API")
 endif()
@@ -898,6 +928,18 @@ if(NOT NIFTYSEG_FOUND)
 endif()
 
 ######################################################################
+# Find RTK
+######################################################################
+
+if(BUILD_RTK)
+  find_package(RTK)
+  if(RTK_FOUND)
+    message("Found RTK")
+    include(${RTK_USE_FILE})
+  endif(RTK_FOUND)
+endif(BUILD_RTK)
+
+######################################################################
 # Find SlicerExecutionModel
 ######################################################################
 if(BUILD_COMMAND_LINE_PROGRAMS)
@@ -1071,6 +1113,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK.txt ${CMAKE_BINARY_DIR}/LICE
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LICENSE_DCMTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyLink.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyLink.txt)
@@ -1096,6 +1139,7 @@ set(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
@@ -1291,6 +1335,13 @@ if(WIN32)
   if(MITK_FOUND)
 
     include(mitkFunctionCreateWindowsBatchScript)
+
+    # if we didnt build pcl then substitute some benign empty path instead of potential garbage.
+    if(BUILD_PCL)
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/../bin")
+    else()
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
 
     set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
     foreach(VS_BUILD_TYPE debug release)

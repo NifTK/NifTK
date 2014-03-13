@@ -25,6 +25,10 @@
 #include <service/event/ctkEvent.h>
 
 #include <QWidget>
+#include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QDir>
 
 #include <mitkColorProperty.h>
 #include <mitkGlobalInteraction.h>
@@ -38,7 +42,7 @@
 #include <internal/IGIOverlayEditorPreferencePage.h>
 #include <internal/IGIOverlayEditorActivator.h>
 
-const std::string IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
+const char* IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
 
 
 /**
@@ -285,9 +289,18 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
     if (ref)
     {
       ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
-      ctkDictionary properties;
-      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+      
+      ctkDictionary propertiesIGI;
+      propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnIGIUpdate(ctkEvent)), propertiesIGI);
+      
+      ctkDictionary propertiesTrackedImage;
+      propertiesTrackedImage[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnTrackedImageUpdate(ctkEvent)), propertiesTrackedImage, Qt::DirectConnection);
+
+      ctkDictionary propertiesRecordingStarted;
+      propertiesRecordingStarted[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
+      eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), propertiesRecordingStarted);
     }
   }
 }
@@ -359,6 +372,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
   std::string calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
   d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
   d->m_IGIOverlayEditor->SetCameraTrackingMode(prefs->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true));
+  d->m_IGIOverlayEditor->SetClipToImagePlane(prefs->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
 }
 
 
@@ -373,7 +387,51 @@ void IGIOverlayEditor::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnUpdate(const ctkEvent& event)
+void IGIOverlayEditor::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIOverlayEditor->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::OnTrackedImageUpdate(const ctkEvent& event)
+{
+  d->m_IGIOverlayEditor->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::WriteCurrentConfig(const QString& directory) const
+{
+  QFile   infoFile(directory + QDir::separator() + EDITOR_ID + ".txt");
+  bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
+  if (opened)
+  {
+    QTextStream   info(&infoFile);
+    info.setCodec("UTF-8");
+    info << "START: " << QDateTime::currentDateTime().toString() << "\n";
+    info << "calibfile=" << QString::fromStdString(d->m_IGIOverlayEditor->GetCalibrationFileName()) << "\n";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::OnRecordingStarted(const ctkEvent& event)
+{
+  QString   directory = event.getProperty("directory").toString();
+  if (!directory.isEmpty())
+  {
+    try
+    {
+      WriteCurrentConfig(directory);
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Caught exception while writing info file! Ignoring it and aborting info file.";
+    }
+  }
+  else
+  {
+    MITK_WARN << "Received igi-recording-started event without directory information! Ignoring it.";
+  }
 }

@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
+  Common/mitkOpenCVFileIOUtils.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
@@ -22,11 +23,12 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
+  VideoProcessing/mitkSplitVideo.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
-  CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
+  CameraCalibration/mitkStereoCameraCalibration.cxx
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx
@@ -37,9 +39,16 @@ set(CPP_FILES
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
+  VideoTrackerMatching/mitkTrackingMatrixTimeStamps.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
-  UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
+  UltrasoundCalibration/itkUltrasoundCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
+  UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx
+  UltrasoundCalibration/mitkUltrasoundCalibration.cxx
+  UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
+  UltrasoundCalibration/mitkUltrasoundPointerCalibration.cxx
+  UltrasoundCalibration/mitkUltrasoundPinCalibrationEvaluation.cxx
+  UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
 )

@@ -17,5 +17,9 @@ project(uk_ac_ucl_cmic_thumbnail)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE THUMBNAIL_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES QmitkExt niftkCoreGui niftkDnDDisplay
+  MODULE_DEPENDENCIES niftkThumbnail
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_thumbnail)
+endif()

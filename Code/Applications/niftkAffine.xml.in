@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Registration</category>
+  <title>Intensity-Based Rigid or Affine Registration</title>
+  <description><![CDATA[A general purpose intensity-based rigid, rigid + scale or affine registration.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Mandatory Input and Output Options</label>
+    <description><![CDATA[Mandatory parameters]]></description>
+
+    <image>
+      <name>fixedImage</name>
+      <longflag>ti</longflag>
+      <description>The fixed target or reference image.</description>
+      <label>Fixed target image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>movingImage</name>
+      <longflag>si</longflag>
+      <description>The moving source image to be registered.</description>
+      <label>Moving source image</label>
+      <channel>input</channel>
+    </image>
+
+    <file>
+      <name>outputUCLTransformFile</name>
+      <longflag>ot</longflag>
+      <description>The output transformation.</description>      
+      <label>Output affine transformation</label>
+      <default>AffineTransformation.txt</default>
+      <channel>output</channel>
+    </file>
+
+    <image>
+      <name>outputImage</name>
+      <longflag>oi</longflag>
+      <description>The output moving image transformed into the space of the fixed image.</description>      
+      <label>Output registered image</label>
+      <default>RegisteredImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Common Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <file>
+      <name>outputMatrixTransformFile</name>
+      <longflag>om</longflag>
+      <description>The output matrix transformation.</description>      
+      <label>Output affine matrix transformation</label>
+      <default></default>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>inputTransformFile</name>
+      <longflag>it</longflag>
+      <description>The initial input transform file name.</description>      
+      <label>Initial input transformation</label>
+      <default></default>
+      <channel>input</channel>
+    </file>
+
+    <image>
+      <name>fixedMask</name>
+      <longflag>tm</longflag>
+      <description>The fixed target or reference image mask.</description>
+      <label>Fixed target mask image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>movingMask</name>
+      <longflag>sm</longflag>
+      <description>The moving source image mask.</description>
+      <label>Moving source mask image</label>
+      <channel>input</channel>
+    </image>
+
+    <string-enumeration>
+      <name>strSimilarityMeasure</name>
+      <flag>s</flag>
+      <longflag>similarity</longflag>
+      <description>The image similarity metric.</description>
+      <label>Similarity metric</label>
+      <default>Normalized Cross Correlation</default>
+      <element>Normalized Cross Correlation</element>
+      <element>Sum Squared Difference</element>
+      <element>Mean Squared Difference</element>
+      <element>Sum Absolute Difference</element>
+      <element>Ratio Image Uniformity</element>
+      <element>Partitioned Image Uniformity</element>
+      <element>Joint Entropy</element>
+      <element>Mutual Information</element>
+      <element>Normalized Mutual Information</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strTransformation</name>
+      <longflag>tr</longflag>
+      <description>The transformation to use.</description>
+      <label>Transformation</label>
+      <default>Rigid and Scale</default>
+      <element>Rigid and Scale</element>
+      <element>Rigid</element>
+      <element>Full Affine</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strOptimizer</name>
+      <flag>o</flag>
+      <longflag>optimiser</longflag>
+      <description>The specific registration optimiser to use.</description>
+      <label>Optimiser</label>
+      <default>Regular Step Size</default>
+      <element>Regular Step Size</element>
+      <element>Simplex</element>
+      <element>Gradient Descent</element>
+      <element>Regular Step Size Gradient Descent</element>
+      <element>Powell Optimisation</element>
+      <element>UCL Powell optimisation</element>
+    </string-enumeration>
+
+    <integer>
+      <name>nlevels</name>
+      <longflag>nlevels</longflag>
+      <description>Number of multi-resolution levels.</description>
+      <label>Number of multi-resolution levels</label>
+      <default>3</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>levels2use</name>
+      <longflag>levels2use</longflag>
+      <description>Number of multi-resolution levels to use (from the coarsest).</description>
+      <label>Number of levels to use</label>
+      <default>3</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <double-vector>
+      <name>movingImagePadValue</name>
+      <longflag>mip</longflag>
+      <description>The moving image pad intensity to use when pixels are outside the image. If not specified then the intensity of the first voxel in the image will be used.</description>
+      <label>Moving image pad value</label>
+      <default></default>
+    </double-vector>
+
+    <boolean>
+      <name>cog</name>
+      <longflag>cog</longflag>
+      <description>Use the center of mass of the images to initialise the translation.</description>
+      <label>Initialise translation with center of mass?</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
+      <name>rotateAboutCog</name>
+      <longflag>rcog</longflag>
+      <description>Set the center of rotation to the fixed image center of gravity.</description>
+      <label>Set center of rotation to fixed image center of gravity?</label>
+      <default>false</default>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced Options</label>
+    <description><![CDATA[More advanced optional parameters]]></description>
+
+    <string-enumeration>
+      <name>strRegnInterpolator</name>
+      <longflag>ri</longflag>
+      <description>The interpolator to use during the registration.</description>
+      <label>Registration interpolation</label>
+      <default>Linear</default>
+      <element>Linear</element>
+      <element>Nearest</element>
+      <element>BSpline</element>
+      <element>Sinc</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strFinalInterpolator</name>
+      <longflag>fi</longflag>
+      <description>The final interpolator to use.</description>
+      <label>Final interpolation</label>
+      <default>Sinc</default>
+      <element>Sinc</element>
+      <element>Nearest</element>
+      <element>Linear</element>
+      <element>BSpline</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strRegnStrategy</name>
+      <longflag>rs</longflag>
+      <description>The registration strategy to use.</description>
+      <label>Registration strategy</label>
+      <default>Normal</default>
+      <element>Normal</element>
+      <element>Switching:Trans, Rotate</element>
+      <element>Switching:Trans, Rotate, Scale</element>
+      <element>Switching:Rigid, Scale</element>
+    </string-enumeration>
+
+    <integer>
+      <name>bins</name>
+      <longflag>bn</longflag>
+      <description>Number of histogram bins.</description>
+      <label>Number of histogram bins</label>
+      <default>64</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>9999</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>iterations</name>
+      <longflag>mi</longflag>
+      <description>Maximum number of iterations per level.</description>
+      <label>Maximum number of iterations per level</label>
+      <default>300</default>
+    </integer>
+
+    <integer>
+      <name>dilations</name>
+      <flag>d</flag>
+      <longflag>ndilations</longflag>
+      <description>Number of mask dilations (if source and target masks have been specified).</description>
+      <label>Number of mask dilations</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>9999</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <float>
+      <name>maskMinimumThreshold</name>
+      <longflag>mmin</longflag>
+      <description>Mask minimum threshold (if source and target masks have been specified).</description>
+      <label>Mask minimum threshold</label>
+      <default>0.5</default>
+    </float>
+
+    <float>
+      <name>maskMaximumThreshold</name>
+      <longflag>mmax</longflag>
+      <description>Mask maximum threshold (if source and target masks have been specified).</description>
+      <label>Mask maximum threshold</label>
+      <default>255</default>
+    </float>
+
+    <float>
+      <name>weightingThreshold</name>
+      <longflag>wsim</longflag>
+      <description>Try to use weighted similarity measure and specify the weighting distance threshold.</description>
+      <label>Weighted similarity measure distance threshold</label>
+      <default>0</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Symmetric metric</label>
+    <description><![CDATA[Parameters that specify use of a symmetric metric]]></description>
+
+    <boolean>
+      <name>flgSymmetricMetric</name>
+      <longflag>sym</longflag>
+      <description>Compute a symmetric metric.</description>
+      <label>Symmetric metric?</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
+      <name>flgSymmetricMetricMidway</name>
+      <longflag>sym_midway</longflag>
+      <description>Compute a symmetric metric to the mid-point.</description>
+      <label>Symmetric midway?</label>
+      <default>false</default>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Rescale the output images?</label>
+    <description><![CDATA[Parameters that specify how to rescale the output images]]></description>
+
+    <double-vector>
+      <name>rescaleIntensities</name>
+      <longflag>rescale</longflag>
+      <description><![CDATA[Rescale the input images to the specified intensity range: <lower>,<upper>.]]></description>
+      <label><![CDATA[Rescaled output image range: <lower>,<upper>]]></label>
+      <default></default>
+    </double-vector>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Similarity Measure Image Intensity Limits</label>
+    <description><![CDATA[Parameters that define the image intensity limits used by the similarity measure]]></description>
+
+    <double-vector>
+      <name>intensityFixedBound</name>
+      <longflag>hf</longflag>
+      <description><![CDATA[Fixed image intensity limits: <lower>,<upper>.]]></description>
+      <label><![CDATA[Fixed image intensity limits: <lower>,<upper>]]></label>
+      <default></default>
+    </double-vector>
+
+    <double-vector>
+      <name>intensityMovingBound</name>
+      <longflag>hm</longflag>
+      <description><![CDATA[Moving image intensity limits: <lower>,<upper>.]]></description>
+      <label><![CDATA[Moving image intensity limits: <lower>,<upper>]]></label>
+      <default></default>
+    </double-vector>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Relative Parameter Weightings</label>
+    <description><![CDATA[The relative parameter weightings to be used by the optimiser]]></description>
+
+    <double>
+      <name>translationWeighting</name>
+      <longflag>wtrans</longflag>
+      <description>The translation relative parameter weightings to be used by the optimizer.</description>
+      <label>Translation weighting factor</label>
+      <default>1.0</default>
+    </double>
+
+    <double>
+      <name>rotationWeighting</name>
+      <longflag>wrot</longflag>
+      <description>The rotation relative parameter weightings to be used by the optimizer.</description>
+      <label>Rotation weighting factor</label>
+      <default>1.0</default>
+    </double>
+
+    <double>
+      <name>scaleWeighting</name>
+      <longflag>wscale</longflag>
+      <description>The scale relative parameter weightings to be used by the optimizer.</description>
+      <label>Scale weighting factor</label>
+      <default>100.0</default>
+    </double>
+
+    <double>
+      <name>skewWeighting</name>
+      <longflag>wskew</longflag>
+      <description>The skew relative parameter weightings to be used by the optimizer.</description>
+      <label>Skew weighting factor</label>
+      <default>100.0</default>
+    </double>
+
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Regular Step Optimzer Options</label>
+    <description><![CDATA[Parameters that modify the regular step optimisation]]></description>
+
+    <float>
+      <name>maxStep</name>
+      <longflag>rmax</longflag>
+      <description>Regular step optimisation maximum step size.</description>
+      <label>Maximum step size</label>
+      <default>5.0</default>
+    </float>
+
+    <float>
+      <name>minStep</name>
+      <longflag>rmin</longflag>
+      <description>Regular step optimisation minimum step size.</description>
+      <label>Minimum step size</label>
+      <default>0.01</default>
+    </float>
+
+    <float>
+      <name>gradTol</name>
+      <longflag>rgtol</longflag>
+      <description>Regular step optimisation gradient tolerance.</description>
+      <label>Gradient tolerance</label>
+      <default>0.01</default>
+    </float>
+
+    <float>
+      <name>relaxFactor</name>
+      <longflag>rrfac</longflag>
+      <description>Regular step optimisation relaxation Factor.</description>
+      <label>Relaxation Factor</label>
+      <default>0.5</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Simplex Optimzer Options</label>
+    <description><![CDATA[Parameters that modify the simplex optimisation]]></description>
+
+    <float>
+      <name>paramTol</name>
+      <longflag>spt</longflag>
+      <description>Simplex optimisation parameter tolerance.</description>
+      <label>Parameter tolerance</label>
+      <default>0.01</default>
+    </float>
+
+    <float>
+      <name>funcTol</name>
+      <longflag>sft</longflag>
+      <description>Simplex optimisation function tolerance.</description>
+      <label>Function tolerance</label>
+      <default>0.01</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Gradient Descent Optimzer Options</label>
+    <description><![CDATA[Parameters that modify the gradient descent optimisation]]></description>
+
+    <float>
+      <name>learningRate</name>
+      <longflag>glr</longflag>
+      <description>Gradient descent optimisation learning rate.</description>
+      <label>Learning rate</label>
+      <default>0.5</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>UCL Powell Optimzer Options</label>
+    <description><![CDATA[Parameters that modify the UCL Powell optimisation]]></description>
+
+    <float>
+      <name>parameterChangeTolerance</name>
+      <longflag>pptol</longflag>
+      <description>UCL Powell optimisation parameter change tolerance.</description>
+      <label>Parameter change tolerance</label>
+      <default>0.00001</default>
+    </float>
+
+  </parameters>
+
+</executable>

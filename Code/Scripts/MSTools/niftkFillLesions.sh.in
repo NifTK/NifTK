@@ -125,7 +125,7 @@ function cfityk_OLDER_T1() {
  
 	message=$(cat ${image_root}_bet_n3.fityk)
 	
-	if [[ "${message}" == *Warning* ]]; then
+	if [[ "${message}" == *Warning* || "${message}" == *Error* ]]; then
 		progressXML "0.77" "3 Gaussians"
 		# cfityk version older than 0.9.8
 		cfityk -q -c '
@@ -323,7 +323,11 @@ function histogram() {
 	class="Smooth_Histogram"
 
 	# Path to ImageJ user plugins, this lines set automatically the path
-	ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	ij_path="/local/ImageJ/"
+	
+	if [[ ! -d ${ij_path} ]]; then
+		ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	fi
 	
 	if [[ ! -n ${ij_path} ]]; then
 		ij_path=$(which imagej | tail -n 1 | sed 's/\/imagej*/ /g' | awk '$1 {print $1}')
@@ -392,7 +396,7 @@ For the installation and configuration of the different needed software in this 
    <parameters advanced="false">
       <label>Mandatory arguments</label>
       <description>Mandatory arguments: Input image, orientation, lesion mask and ouput image</description>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName</name>
           <longflag>in</longflag>
 	  <description>Input image name</description>
@@ -412,14 +416,14 @@ For the installation and configuration of the different needed software in this 
       <element>C</element>
       <element>S</element>
     </string-enumeration>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputMask</name>
           <longflag>mask</longflag>
 	  <description>Input lesion mask</description>
 	  <label>Input lesion mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="*.nii">
+      <image fileExtensions="nii">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>Output image name</description>
@@ -461,7 +465,7 @@ For the installation and configuration of the different needed software in this 
         <step>0.5</step>
       </constraints>
     </float>
-    <image fileExtensions="*.nii">
+    <image fileExtensions="nii">
           <name>brainMaskFile</name>
           <longflag>b</longflag>
 	  <description>Use existing brain mask file</description>

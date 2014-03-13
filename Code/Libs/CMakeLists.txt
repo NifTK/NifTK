@@ -29,6 +29,6 @@ if(VTK_FOUND)
 
 endif(VTK_FOUND)
 
-if(NVAPI_FOUND)
+if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   add_subdirectory(NVAPI)
-endif(NVAPI_FOUND)
+endif()

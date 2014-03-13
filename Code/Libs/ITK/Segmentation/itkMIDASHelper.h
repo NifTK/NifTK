@@ -32,7 +32,7 @@
 namespace itk
 {
   /** Enum to define the concept of orientation directions. */
-  enum ORIENTATION_ENUM {
+  enum Orientation {
     ORIENTATION_AXIAL = 0,
     ORIENTATION_SAGITTAL = 1,
     ORIENTATION_CORONAL = 2,
@@ -82,7 +82,7 @@ namespace itk
   /**
    * \brief Works out the axis of interest from the orientationString (normally derived from direction cosines), and the requested orientation.
    */
-  NIFTKITK_WINEXPORT ITK_EXPORT int GetAxisFromOrientationString(const std::string& orientationString, const itk::ORIENTATION_ENUM& orientation);
+  NIFTKITK_WINEXPORT ITK_EXPORT int GetAxisFromOrientationString(const std::string& orientationString, const itk::Orientation& orientation);
 
 
   /**
@@ -121,7 +121,7 @@ namespace itk
   void
   GetAxisFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
-    const itk::ORIENTATION_ENUM orientation,
+    const itk::Orientation orientation,
     int &outputAxis
     );
 
@@ -135,7 +135,7 @@ namespace itk
   void
   GetUpDirectionFromITKImage(
       const itk::Image<TPixel, VImageDimension>* itkImage,
-      const itk::ORIENTATION_ENUM orientation,
+      const itk::Orientation orientation,
       int &upDirection
       );
 

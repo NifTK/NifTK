@@ -136,7 +136,7 @@ ITK_EXPORT
 void
 GetAxisFromITKImage(
   const itk::Image<TPixel, VImageDimension>* itkImage,
-  const itk::ORIENTATION_ENUM orientation,
+  const itk::Orientation orientation,
   int &outputAxis
   )
 {
@@ -158,7 +158,7 @@ ITK_EXPORT
 void
 GetUpDirectionFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
-    const itk::ORIENTATION_ENUM orientation,
+    const itk::Orientation orientation,
     int &upDirection
     )
 {

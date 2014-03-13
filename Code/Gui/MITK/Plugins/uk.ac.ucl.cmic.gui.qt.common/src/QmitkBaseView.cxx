@@ -18,6 +18,9 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkSliceNavigationController.h>
+#include <mitkWeakPointerProperty.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
 #include <QmitkRenderWindow.h>
 
 class QmitkBaseViewPrivate
@@ -31,6 +34,11 @@ public:
 
   mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>* addNodeEventListener;
   mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>* removeNodeEventListener;
+
+  void OnFocusedWindowDeleted()
+  {
+    m_Focused2DRenderer = 0;
+  }
 
   /// \brief Used to store the parent of this view, and should normally be set from within CreateQtPartControl().
   QWidget *m_Parent;
@@ -47,8 +55,8 @@ public:
   /// \brief Used to track the currently focused renderer.
   mitk::BaseRenderer* m_Focused2DRenderer;
 
-  /// \brief Used to track the previously focused renderer.
-  mitk::BaseRenderer* m_PreviouslyFocused2DRenderer;
+  /// \brief Observer to get notified of the deletion of the focused renderer.
+  unsigned long m_FocusedWindowDeletedObserverTag;
 };
 
 
@@ -60,7 +68,7 @@ QmitkBaseViewPrivate::QmitkBaseViewPrivate()
   m_IsVisible = false;
   m_FocusManagerObserverTag = 0;
   m_Focused2DRenderer = NULL;
-  m_PreviouslyFocused2DRenderer = NULL;
+  m_FocusedWindowDeletedObserverTag = 0;
 }
 
 
@@ -77,14 +85,15 @@ QmitkBaseView::QmitkBaseView()
 {
   Q_D(QmitkBaseView);
 
-  mitk::DataStorage* dataStorage = GetDataStorage();
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
   if (dataStorage) {
 
     mitk::DataStorage::SetOfObjects::ConstPointer everyNode = dataStorage->GetAll();
     mitk::DataStorage::SetOfObjects::ConstIterator it = everyNode->Begin();
     mitk::DataStorage::SetOfObjects::ConstIterator end = everyNode->End();
-    while (it != end) {
-      onNodeAddedInternal(it->Value());
+    while (it != end)
+    {
+      this->onNodeAddedInternal(it->Value());
       ++it;
     }
 
@@ -96,12 +105,9 @@ QmitkBaseView::QmitkBaseView()
         new mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>(this, &QmitkBaseView::onNodeRemovedInternal);
     dataStorage->RemoveNodeEvent.AddListener(*d->removeNodeEventListener);
   }
-  else {
-    MITK_INFO << "QmitkBaseView() data storage not ready";
-  }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     itk::SimpleMemberCommand<QmitkBaseView>::Pointer onFocusChangedCommand =
       itk::SimpleMemberCommand<QmitkBaseView>::New();
@@ -126,15 +132,17 @@ QmitkBaseView::~QmitkBaseView() {
     delete d->removeNodeEventListener;
   }
 
-  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys()) {
+  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys())
+  {
     mitk::BaseProperty* property = node->GetProperty("visible");
-    if (property) {
+    if (property)
+    {
       property->RemoveObserver(d->visibilityObserverTags[node]);
     }
   }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     focusManager->RemoveObserver(d->m_FocusManagerObserverTag);
   }
@@ -153,7 +161,8 @@ void QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
   mitk::BaseProperty* property = node->GetProperty("visible");
-  if (property) {
+  if (property)
+  {
     VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
     d->visibilityObserverTags[node] = property->AddObserver(itk::ModifiedEvent(), command);
   }
@@ -164,7 +173,8 @@ void QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 void QmitkBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
-  if (d->visibilityObserverTags.contains(node)) {
+  if (d->visibilityObserverTags.contains(node))
+  {
     mitk::BaseProperty* property = node->GetProperty("visible");
     if (property) {
       property->RemoveObserver(d->visibilityObserverTags[node]);
@@ -201,35 +211,33 @@ void QmitkBaseView::OnFocusChanged()
 {
   Q_D(QmitkBaseView);
 
+  if (d->m_Focused2DRenderer)
+  {
+    d->m_Focused2DRenderer->RemoveObserver(d->m_FocusedWindowDeletedObserverTag);
+    d->m_Focused2DRenderer = 0;
+  }
+
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager != NULL)
   {
-    mitk::BaseRenderer* base = focusManager->GetFocused();
-    if (base != NULL && base->GetMapperID() == mitk::BaseRenderer::Standard2D)
+    mitk::BaseRenderer* renderer = focusManager->GetFocused();
+    if (renderer != NULL && renderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
     {
-      if (d->m_Focused2DRenderer != NULL)
-      {
-        d->m_PreviouslyFocused2DRenderer = d->m_Focused2DRenderer;
-      }
-      d->m_Focused2DRenderer = base;
+      itk::SimpleMemberCommand<QmitkBaseViewPrivate>::Pointer command = itk::SimpleMemberCommand<QmitkBaseViewPrivate>::New();
+      command->SetCallbackFunction(d, &QmitkBaseViewPrivate::OnFocusedWindowDeleted);
+      d->m_FocusedWindowDeletedObserverTag = renderer->AddObserver(itk::DeleteEvent(), command);
+
+      d->m_Focused2DRenderer = renderer;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetCurrentlyFocusedRenderer()
+mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer()
 {
   Q_D(QmitkBaseView);
   return d->m_Focused2DRenderer;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetPreviouslyFocusedRenderer()
-{
-  Q_D(QmitkBaseView);
-  return d->m_PreviouslyFocused2DRenderer;
 }
 
 
@@ -329,6 +337,65 @@ bool QmitkBaseView::IsVisible()
 
 
 //-----------------------------------------------------------------------------
+bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+
+  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
+  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
+  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
+
+  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
+  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+
+  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
+        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
+        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
+
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+  if (!dataStorage)
+  {
+    return false;
+  }
+
+  crossPlaneNameProperty->SetValue("widget1Plane");
+  crossPlaneRendererProperty->SetValue(mainAxialRenderer);
+  mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+  if (!axialCrossPlaneNode)
+  {
+    return false;
+  }
+
+  crossPlaneNameProperty->SetValue("widget2Plane");
+  crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
+  mitk::DataNode* sagittalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+
+  crossPlaneNameProperty->SetValue("widget3Plane");
+  crossPlaneRendererProperty->SetValue(mainCoronalRenderer);
+  mitk::DataNode* coronalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+
+  bool wasVisible;
+  axialCrossPlaneNode->GetVisibility(wasVisible, mainSagittalRenderer);
+
+  axialCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  axialCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  axialCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+
+  mainAxialRenderer->RequestUpdate();
+  mainSagittalRenderer->RequestUpdate();
+  mainCoronalRenderer->RequestUpdate();
+
+  return wasVisible;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkBaseView::SetCurrentSelection(mitk::DataNode::Pointer dataNode)
 {
   if (dataNode.IsNull())
@@ -375,6 +442,20 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
   }
 
   return window;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow()
+{
+  QmitkRenderWindow* renderWindow = 0;
+
+  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
+  {
+    renderWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+  }
+
+  return renderWindow;
 }
 
 

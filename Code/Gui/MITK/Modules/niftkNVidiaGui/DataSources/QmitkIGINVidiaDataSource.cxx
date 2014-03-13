@@ -478,7 +478,8 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     // FIXME: use qt for this
     //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2546
     SYSTEMTIME  now;
-    GetSystemTime(&now);
+    // we used to have utc here but all the other data sources use local time too.
+    GetLocalTime(&now);
 
     std::string directoryPath = this->GetSaveDirectoryName();
     QDir directory(QString::fromStdString(directoryPath));
@@ -642,34 +643,12 @@ int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore, bool forReal)
 {
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
-  QString directoryPath = QString::fromStdString(path);
-  // path used to be fixed. but now there's a suffix, so enum directories.
-  QDir directory(directoryPath);
-  if (!directory.exists())
-  {
-    return false;
-  }
-
-  directory.setNameFilters(QStringList() << "QmitkIGINVidiaDataSource*");
-  directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
-  QStringList possibledirs = directory.entryList();
-  if (possibledirs.size() > 1)
-  {
-    // yes, die here if in debug mode!
-    assert(false);
-    MITK_ERROR << "QmitkIGINVidiaDataSource: Warning: found more than one data directory, will use " + possibledirs[0].toStdString() + " only!" << std::endl;
-  }
-  if (possibledirs.size() == 0)
-  {
-    return false;
-  }
-
-  directory = (directoryPath + QDir::separator()) + possibledirs[0];
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
     QStringList filters;
@@ -688,7 +667,8 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
       QString     basename = nalfiles[0].split(".264")[0];
       std::string nalfilename = (directory.path() + QDir::separator() + basename + ".264").toStdString();
 
-      // try to open video file
+      // try to open video file.
+      // it will throw if something goes wrong.
       m_Pimpl->TryPlayback(nalfilename);
 
       // now we need to correlate frame numbers with timestamps
@@ -756,7 +736,10 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           case STACK_FIELDS:
           case DROP_ONE_FIELD:
           case DO_NOTHING_SPECIAL:
-            m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+            if (forReal)
+            {
+              m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+            }
             break;
         }
       }
@@ -789,8 +772,19 @@ bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUi
     return false;
   }
 
-  std::map<igtlUint64, PlaybackPerFrameInfo> index;
-  return InitWithRecordedData(index, path, firstTimeStampInStore, lastTimeStampInStore);
+  bool  ok = false;
+  try
+  {
+    std::map<igtlUint64, PlaybackPerFrameInfo> index;
+    ok = InitWithRecordedData(index, path, firstTimeStampInStore, lastTimeStampInStore, false);
+  }
+  catch (const std::exception& e)
+  {
+    MITK_ERROR << "Caught exception while probing for playback data: " << e.what();
+    ok = false;
+  }
+
+  return ok;
 }
 
 
@@ -815,7 +809,7 @@ void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64
 
   m_MostRecentlyUpdatedTimeStamp = 0;
 
-  bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0);
+  bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0, true);
   assert(ok);
 
   // lets guess how many streams we have dumped into that file.

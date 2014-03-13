@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( input2D.length() == 0 && input3D.length() == 0 )
+  if ( input2D.length() == 0 && input3D.length() == 0 && input3DWithScalars.length() == 0  )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -48,6 +48,12 @@ int main(int argc, char** argv)
   {
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
+    projector->SetAllowableTimingError(maxTimingError * 1e6);
+    
+    if ( outputVideo.length() != 0 ) 
+    {
+      projector->SetSaveVideo(true, outputVideo);
+    }
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
@@ -75,24 +81,27 @@ int main(int argc, char** argv)
     projector->SetDrawAxes(DrawAxes);
     
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
-    unsigned int setPointsFrameNumber;
+    std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < cv::Point3d > worldPoints;
+    std::vector < cv::Point3d > classifierWorldPoints;
+    std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
-      fin >> setPointsFrameNumber;
+      unsigned int frameNumber;
       double x1;
       double y1;
       double x2;
       double y2;
-      while ( fin >> x1 >> y1 >> x2 >> y2 )
+      while ( fin >> frameNumber >> x1 >> y1 >> x2 >> y2 )
       {
         screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
+        screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber,matcher);
+      projector->SetWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
     }
-  if ( input3D.length() != 0 ) 
+    if ( input3D.length() != 0 ) 
     {
       std::ifstream fin(input3D.c_str());
       double x;
@@ -105,16 +114,51 @@ int main(int argc, char** argv)
       projector->SetWorldPoints(worldPoints);
       fin.close();
     }
+   
+    if ( classifier3D.length() != 0 ) 
+    {
+      std::ifstream fin(classifier3D.c_str());
+      double x;
+      double y;
+      double z;
+      while ( fin >> x >> y >> z  )
+      {
+        classifierWorldPoints.push_back(cv::Point3d(x,y,z));
+      }
+      projector->SetClassifierWorldPoints(classifierWorldPoints);
+      fin.close();
+    }
+   
+
+    if ( input3DWithScalars.length() != 0 ) 
+    {
+      std::ifstream fin(input3DWithScalars.c_str());
+      double x;
+      double y;
+      double z;
+      int b; 
+      int g;
+      int r;
+
+      while ( fin >> x >> y >> z >> b >> g >> r )
+      {
+        worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
+            (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
+      }
+      projector->SetWorldPoints(worldPointsWithScalars);
+      fin.close();
+    }
+
 
     projector->Project(matcher);
    
     if ( output2D.length() != 0 ) 
     {
       std::ofstream fout (output2D.c_str());
-      std::vector < std::vector < std::pair < cv::Point2d , cv::Point2d > > > projectedPoints = 
+      std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > > projectedPoints = 
         projector->GetProjectedPoints();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < projectedPoints[0].size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < projectedPoints[0].second.size() ; i ++ ) 
       {
         fout << "P" << i << "[lx,ly,rx,ry]" << " ";
       }
@@ -122,10 +166,10 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < projectedPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < projectedPoints[i].size() ; j ++ )
+        for ( unsigned int j = 0 ; j < projectedPoints[i].second.size() ; j ++ )
         {
-          fout << projectedPoints[i][j].first.x << " " <<  projectedPoints[i][j].first.y <<
-             " " << projectedPoints[i][j].second.x << " " << projectedPoints[i][j].second.y << " ";
+          fout << projectedPoints[i].second[j].first.x << " " <<  projectedPoints[i].second[j].first.y <<
+             " " << projectedPoints[i].second[j].second.x << " " << projectedPoints[i].second[j].second.y << " ";
         }
         fout << std::endl;
       }
@@ -154,7 +198,56 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
+    if ( outputMatrices.length() !=0 )
+    {
+      std::ofstream fout (outputMatrices.c_str());
+      std::vector < cv::Mat > leftCameraMatrices = 
+        projector->GetWorldToLeftCameraMatrices();
+      
+      for ( unsigned int i  = 0 ; i < leftCameraMatrices.size() ; i ++ )
+      {
+        fout << "#Frame " << i << std::endl;
+        fout << leftCameraMatrices[i] ;
+        fout << std::endl;
+      }
+      fout.close();
+    }
+    if ( leftGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(leftGoldStandard.c_str());
+      unsigned int frameNumber;
+      double x1;
+      double y1;
+      std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
+      while ( fin >> frameNumber >> x1 >> y1 )
+      {
+        leftGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
+      }
+      fin.close();
+      projector->SetLeftGoldStandardPoints(leftGS);
+    }
+    if ( rightGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(rightGoldStandard.c_str());
+      unsigned int frameNumber;
+      double x1;
+      double y1;
+      std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
+      while ( fin >> frameNumber >> x1 >> y1 )
+      {
+        rightGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
+      }
+      fin.close();
+      projector->SetRightGoldStandardPoints(rightGS);
+    }
 
+    if ( outputErrors.length() != 0 ) 
+    {
+      projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
+      projector->CalculateProjectionErrors(outputErrors);
+      projector->CalculateTriangulationErrors(outputErrors, matcher);
+    }
+   
 
     returnStatus = EXIT_SUCCESS;
   }

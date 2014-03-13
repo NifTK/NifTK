@@ -158,29 +158,49 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
  * \brief multiplies a set of points by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p);
+
+/**
+ * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
+    const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
+
+/**
+ * \brief multiplies a point and corresponding scalar value by a 4x4 transformation matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Scalar >  operator*(cv::Mat M, 
+    const std::pair < cv::Point3d, cv::Scalar > & p);
+
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
+
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
 
+
 /**
  * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i>, 
     bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
+
+
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false, cv::Point2d* StandardDeviation = NULL);
+
+
 /**
  * \brief Calculates the centroid of a vector of points.
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers = false, cv::Point3d* StandardDeviation = NULL);
+
 
 /**
  * \brief From rotations in radians and translations in millimetres, constructs a 4x4 transformation matrix.
@@ -196,6 +216,26 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrix(
   const double& rx,
   const double& ry,
   const double& rz,
+  const double& tx,
+  const double& ty,
+  const double& tz
+  );
+
+
+/**
+ * \brief From Rodrigues rotation parameters and translations in millimetres, constructs a 4x4 transformation matrix.
+ * \param r1 Rodrigues rotation
+ * \param r2 Rodrigues rotation
+ * \param r3 Rodrigues rotation
+ * \param tx translation in millimetres along x-axis
+ * \param ty translation in millimetres along y-axis
+ * \param tz translation in millimetres along z-axis
+ * \return a new [4x4] matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRodriguesTransformationMatrix(
+  const double& r1,
+  const double& r2,
+  const double& r3,
   const double& tx,
   const double& ty,
   const double& tz
@@ -243,6 +283,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
+
 /**
  * \brief Takes a vector of pairs and finds the minimum value in each dimension. Returns the 
  * minimum values. Optionally returns the indexes of the minium values.
@@ -251,15 +292,28 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair < double, double > FindMinimumValues
   ( std::vector < std::pair < double, double>  > inputValues, 
     std::pair <unsigned int , unsigned int > * indexes = NULL ); 
 
+
 extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
     std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
+
+
 /** 
  * \brief Returns the RMS error between two point vectors
  */
 extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
     double outlierSD = 2.0 );
+
+/** 
+ * \brief Returns the RMS error between two point vectors, with the measured values containing 
+ * a measure of the timing error
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
+    double outlierSD = 2.0, long long allowableTimingError = 30e6 );
+
+
 
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
@@ -269,6 +323,44 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const cv::Mat transformIn,
     const double tx, const double ty, const double tz, 
     const double rx, const double ry, const double rz );
+
+
+/**
+ * \brief To return the sample mean of a vector.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double Mean(const std::vector<double>& input);
+
+
+/**
+ * \brief To return the sample standard deviation of a vector.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
+
+/**
+ * \brief Assuming input contains squared errors, will sum them, divide by N, and take sqrt for an RMS measure.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double RMS(const std::vector<double>& input);
+
+/** 
+ * \brief Searches through vector of 2D points to find the one closest (by distance)
+ * to the passed point, and returns the index of that point
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d& point,
+    const std::vector < cv::Point2d >& matchingPonints , 
+    double* minRatio = NULL , unsigned int * index = NULL );
+
+/**
+ * \brief Compare two cv point based on their distance from 0,0
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
+    const cv::Point2d& p2 );
+
+/**
+ * \brief Compare pairs based on the value of the first bit
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
+    const std::pair < unsigned int, cv::Point2d>& p2 );
+
 } // end namespace
 
 #endif

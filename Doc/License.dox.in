@@ -19,6 +19,7 @@
 \li \ref LicenseAprilTags
 \li \ref LicenseFLANN
 \li \ref LicensePCL
+\li \ref LicenseRTK
 
 \section LicenseNifTK The @NIFTK_PLATFORM@ License
 
@@ -91,5 +92,9 @@
 \section LicensePCL The PCL License
 
 \include LICENSE_PCL.txt
+
+\section LicenseRTK The RTK License
+
+\include LICENSE_RTK.txt
 
 */

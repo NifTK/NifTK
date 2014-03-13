@@ -19,15 +19,16 @@
 #include "mitkMIDASToolKeyPressResponder.h"
 #include <mitkStateMachine.h>
 
+#include "mitkMIDASStateMachine.h"
+
 namespace mitk {
 
 /**
  * \class MIDASToolPressStateMachine
  * \brief StateMachine to check for key press events that MIDAS is interested in,
  * and pass them onto any registered MIDASToolKeyPressResponder.
- * \sa MIDASViewKeyPressResponder
  */
-class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public StateMachine
+class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public StateMachine, public MIDASStateMachine
 {
 
 public:
@@ -42,8 +43,18 @@ protected:
   /// \brief Purposely hidden, destructor.
   ~MIDASToolKeyPressStateMachine(){}
 
-  /// \see mitk::StateMachine::CanHandleEvent
-  float CanHandleEvent(const StateEvent *) const;
+  /// \brief Tells if this tool can handle the given event.
+  ///
+  /// This implementation delegates the call to mitk::MIDASStateMachine::CanHandleEvent(),
+  /// that checks if the event is filtered by one of the installed event filters and if not,
+  /// calls CanHandle() and returns with its result.
+  ///
+  /// Note that this function is purposefully not virtual. Eventual subclasses should
+  /// override the CanHandle function.
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
+
+  /// \see mitk::MIDASStateMachine::CanHandleEvent
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
   /// \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(Action*, const StateEvent*);

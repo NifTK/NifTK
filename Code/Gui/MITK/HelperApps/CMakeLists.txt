@@ -21,7 +21,7 @@ endmacro()
 
 set(HELPER_APP_INCLUDE_DIRECTORIES)
 set(HELPER_APP_LINK_DIRECTORIES)
-set(HELPER_APP_LIBRARIES)
+set(HELPER_APP_LIBRARIES "")
 
 set(HELPER_APPS_REQUIRED_MODULES
   # Add modules that DO NOT depend on BUILD_IGI here.
@@ -37,8 +37,10 @@ if(BUILD_IGI)
   include(${PROJECT_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
 
   list(APPEND HELPER_APPS_REQUIRED_MODULES 
+    niftkCore
     niftkOpenCV 
     niftkIGI
+    niftkIGIGui
   ) 
 endif()
 
@@ -62,7 +64,30 @@ if(BUILD_IGI)
   endif()
 endif()
 
-list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
+  ########################################################
+  # st: Not very nice, the following are dependencies of
+  # niftkIGI but don't get pulled into the include path 
+  # properly, so I've done them one by one 
+  ##########################################################
+ 
+include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
+include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+include (${MITK_DIR}/MITKConfig.cmake)
+include (${tinyxml_DIR}/tinyxmlConfig.cmake)
+
+# FIXME
+# Temporary workaround until the QuaZip lib directory is not exposed properly to
+# projects depending on CTK. Should be removed as soon as this is fixed in CTK.
+if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
+  include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
+  list(APPEND HELPER_APP_LINK_DIRECTORIES ${qRestAPI_LIBRARY_DIRS})
+endif()
+if(EXISTS "${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake")
+  include(${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake)
+  list(APPEND HELPER_APP_LINK_DIRECTORIES ${QUAZIP_LIBRARY_DIRS})
+endif()
+
+list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${MitkExt_INCLUDE_DIRS} ${CppMicroServices_INCLUDE_DIRS} ${tinyxml_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
 list(APPEND HELPER_APP_LINK_DIRECTORIES     ${MITK_LIBRARY_DIRS} )
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
@@ -98,12 +123,30 @@ if(SlicerExecutionModel_FOUND)
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
       niftkProjectTrackedPointsOnStereoVideo
+      niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkUltrasoundPinCalibration
+      niftkUltrasoundPinCalibrationSorter
+      niftkUltrasoundPointerCalibration
+      niftkUltrasoundPinCalibrationEvaluation
+      niftkUltrasoundTransformAndImageMerger
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
+      niftkIGIMakeGeometry
       niftkMakeGridOf2DImages
+      niftkIterativeClosestPointRegister
+      # this one does not depend on pcl!
+      niftkMergePointClouds
+      niftkAverageTrackingMatrices
+      niftkAverageStationaryChessboards
     )
+    
+    if(BUILD_PCL)
+      set(SLICER_HELPER_APPS
+        ${SLICER_HELPER_APPS}
+        FitPlaneToPointCloud
+      )
+    endif()
   endif()  
 
   foreach(APP ${SLICER_HELPER_APPS})

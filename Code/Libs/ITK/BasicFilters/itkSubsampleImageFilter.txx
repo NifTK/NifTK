@@ -53,7 +53,7 @@ SubsampleImageFilter<TInputImage, TOutputImage>
 }
  
 /* ---------------------------------------------------------------------
-   GenerateData()
+   SetSubsamplingFactors()
    --------------------------------------------------------------------- */
 
 template <class TInputImage, class TOutputImage>
@@ -66,6 +66,24 @@ SubsampleImageFilter<TInputImage, TOutputImage>
   for (i = 0; i < ImageDimension; i++)
     {
       m_SubsamplingFactors[i] = data[i];
+    }
+}
+
+
+/* ---------------------------------------------------------------------
+   SetSubsamplingFactors()
+   --------------------------------------------------------------------- */
+
+template <class TInputImage, class TOutputImage>
+void
+SubsampleImageFilter<TInputImage, TOutputImage>
+::SetSubsamplingFactors(itk::Array< double > &sampling) 
+{
+  unsigned int i;
+
+  for (i = 0; i < ImageDimension; i++)
+    {
+      m_SubsamplingFactors[i] = sampling[i];
     }
 }
 

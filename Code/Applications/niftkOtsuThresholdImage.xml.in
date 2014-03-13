@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Binary Mask Image Operators</category>
+  <category>Segmentation</category>
   <title>Automated Otsu Threshold Image</title>
   <description><![CDATA[Threshold an image using the Otsu method which maximises the variance between the two intensity classes. This programs creates a binary thresholded image that separates an image into foreground and background components using the ITK OtsuThresholdImageFilter. The filter computes the threshold using the OtsuThresholdCalculator and applies that theshold to the input image using the BinaryThresholdImageFilter.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
@@ -24,6 +24,15 @@
     </image>
 
     <image>
+      <name>fileInputMask</name>
+      <flag>m</flag>
+      <longflag>inMask</longflag>
+      <description>Input mask image</description>      
+      <label>Input mask</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
       <name>fileOutputMask</name>
       <flag>o</flag>
       <longflag>outMask</longflag>
@@ -33,6 +42,14 @@
       <channel>output</channel>
     </image>
 
+   <boolean>
+      <name>flgInvertOutputMask</name>
+      <longflag>invert</longflag>
+      <description>Invert the output mask.</description>
+      <label>Invert output mask</label>
+      <channel>input</channel>
+    </boolean>
+ 
   </parameters>
 
 </executable>

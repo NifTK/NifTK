@@ -50,9 +50,8 @@ public:
     invariantPoint[1] = 0;
     invariantPoint[2] = 0;
 
-    mitk::Point2D scaleFactors;
-    scaleFactors[0] = 0.156; // Assuming image is 256 pixels, and depth = 4cm = 40/256 mm per pixel.
-    scaleFactors[1] = 0.156;
+    double scaleFactors;
+    scaleFactors = 0.156; // Assuming image is 256 pixels, and depth = 4cm = 40/256 mm per pixel.
 
     std::vector<double> initialTransformation;
     initialTransformation.push_back(0);
@@ -67,7 +66,10 @@ public:
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    bool successfullyCalibrated = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
+    bool successfullyCalibrated = false;
+
+    /* NOT READY YET
+    calibration->Calibrate(
         directoryOfMatrices,
         directoryOfPoints,
         false,
@@ -78,6 +80,7 @@ public:
         residualError,
         *calibrationMatrix
         );
+    */
 
     MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
 

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MG . Individual Images</category>
+
+  <title>Pectoral Muscle Segmentation</title>
+
+  <description><![CDATA[Segments a mammogram generating a binary mask corresponding to the pectoral muscle.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+
+  <contributor>John Hipwell. </contributor>
+
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>maskImage</name>
+      <flag>m</flag>
+      <longflag>im</longflag>
+      <description>Mask image</description>
+      <label>Mask image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputMask</name>
+      <flag>n</flag>
+      <longflag>om</longflag>
+      <description>Output binary pectoral mask image</description>      
+      <label>Output pectoral mask</label>
+      <default>outputMask.nii</default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image with pectoral muscle removed</description>      
+      <label>Output masked image</label>
+      <default>outputMasked.nii</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <image>
+      <name>outputTemplate</name>
+      <flag>t</flag>
+      <longflag>ot</longflag>
+      <description>Output the final pectoral muscle template image</description>      
+      <label>Output template image</label>
+      <channel>output</channel>
+    </image>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
+
+  </parameters>
+
+</executable>

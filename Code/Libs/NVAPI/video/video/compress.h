@@ -33,14 +33,14 @@ namespace video
 class LIBVIDEO_DLL_EXPORTS CompressorFailedException : public std::runtime_error
 {
 public:
-    CompressorFailedException(const std::string& msg, int errorcode = 1);
+    CompressorFailedException(const std::string& msg, int errorcode);
 };
 
 // functionality required to map buffers/textures/etc for compression failed
 class LIBVIDEO_DLL_EXPORTS InteropFailedException : public std::runtime_error
 {
 public:
-    InteropFailedException(const std::string& msg);
+    InteropFailedException(const std::string& msg, int errorcode);
 };
 
 #pragma warning(pop)
@@ -70,6 +70,10 @@ struct FrameType
  * @warning For the CUDA compression to work properly you need to make sure the CUDA
  * context that runs the compression stream is on the same device as the OpenGL context
  * that owns the textures! In debug mode, this class will check for this and barf if not!
+ *
+ * When the destructor runs it will unregister textures passed in via preparetexture()
+ * from CUDA. This basically assumes that you are not using the textures in the current
+ * CUDA context outside of this library.
  */
 class LIBVIDEO_DLL_EXPORTS Compressor
 {
@@ -101,6 +105,9 @@ public:
      */
     void compresstexture(int gltexture);
 
+    /**
+     * @warning The textures you pass in here will be unregistered from CUDA when the destructor runs!
+     */
     void preparetexture(int gltexture);
 
 

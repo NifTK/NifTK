@@ -69,6 +69,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString vtkLocation(NIFTK_VTK_LOCATION);
   QString ctkLocation(NIFTK_CTK_LOCATION);
   QString mitkLocation(NIFTK_MITK_LOCATION);
+  
 #ifdef USE_NIFTYREC
   QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
   QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
@@ -206,6 +207,12 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr><td><a href=\"http://pointclouds.org/\">PCL</a></td><td>%1</td><td><a href=\"https://github.com/PointCloudLibrary/pcl/blob/master/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(pclVersion).arg(pclLocation);
 
+    QString openCVVersion(NIFTK_VERSION_OPENCV);
+    QString openCVLocation(NIFTK_LOCATION_OPENCV);
+    QString openCVText = QObject::tr(
+      "<tr><td><a href=\"http://opencv.org/\">OpenCV</a></td><td>%1</td><td><a href=\"https://github.com/Itseez/opencv/blob/master/doc/license.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(openCVVersion).arg(openCVLocation);
+    
   #endif
 
   QString versionsEnd = QObject::tr(
@@ -226,13 +233,13 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<ul>"
       "<li>Mac OSX 10.8 (Mountain Lion)</li>"
       "<li>Ubuntu 11.04 (Natty)</li>"
-      "<li>Linux Mint 12</li>"
+      "<li>Linux Mint 14</li>"
       "<li>Scientific Linux 6.1</li>"
       "<li>Debian 6.0.5</li>"
       "<li>Windows 7</li>"
       "<li>Windows 8</li>"
       "</ul>"
-      "We assume a 64 bit operating system. Our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
+      "We use a 64 bit operating system. Our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
       "</p>"
       ).arg(applicationName).arg(dashboardURL).arg(dashboardText);
 
@@ -269,6 +276,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(aprilTagsText)
       .append(flannText)
       .append(pclText)
+      .append(openCVText)
 #endif
       .append(versionsEnd)
       .append(licenses)

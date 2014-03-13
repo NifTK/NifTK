@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Split a video and framemap.log file</title>
+  <description><![CDATA[Looks for a suitably named video and framemap.log file and makes a smaller file according to the passed parameters]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>videoFileDirectory</name>
+      <longflag>directory</longflag>
+      <description>The directory containing the file and framemap.log.</description>
+      <label>The directory containing the file and the framemap.log</label>
+    </directory>    
+
+  </parameters>
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+
+    <integer>
+	<name>startFrame</name>
+	<longflag>startFrame</longflag>
+	<description>The start frame</description>
+	<label>The start frame</label>
+	<default>10</default>
+    </integer>
+
+    <integer>
+	<name>endFrame</name>
+	<longflag>endFrame</longflag>
+	<description>The end frame</description>
+	<label>The end frame</label>
+	<default>30</default>
+    </integer>
+
+  </parameters>
+  
+</executable>

@@ -37,6 +37,8 @@
 #include <boost/filesystem.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
+  {OPT_SWITCH, "dbg", 0, "Output debugging information."},
+  {OPT_SWITCH, "v", 0,   "Verbose output during execution."},
 
   {OPT_SWITCH, "st", NULL, "Perform single threaded execution [multi-threaded]."},
   {OPT_SWITCH, "resample", NULL, "Speed up the execution by resampling the image."},
@@ -96,6 +98,9 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
 
 enum {
+  O_DEBUG = 0,
+  O_VERBOSE,
+
   O_SINGLE_THREADED,
   O_RESAMPLE_IMAGES,
 
@@ -202,6 +207,9 @@ std::string AddSuffix( std::string filename, std::string suffix )
 
 int main( int argc, char *argv[] )
 {
+  bool flgVerbose;
+  bool flgDebug;
+
   bool flgSingleThreaded;
   bool flgOrientate;
   bool flgResampleImages;
@@ -264,6 +272,9 @@ int main( int argc, char *argv[] )
   // printed out as they are parsed.
 
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+
+  CommandLineOptions.GetArgument( O_DEBUG, flgDebug );
+  CommandLineOptions.GetArgument( O_VERBOSE, flgVerbose );
 
   CommandLineOptions.GetArgument( O_SINGLE_THREADED, flgSingleThreaded );
   CommandLineOptions.GetArgument( O_RESAMPLE_IMAGES, flgResampleImages );
@@ -570,6 +581,12 @@ int main( int argc, char *argv[] )
 
   BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
 
+  if ( flgDebug )
+    BIFsFilter->DebugOn();
+
+  if ( flgVerbose )
+    BIFsFilter->VerboseOn();
+
   if (flgSingleThreaded)
     BIFsFilter->SetSingleThreadedExecution();
 
@@ -780,12 +797,12 @@ int main( int argc, char *argv[] )
       BIFsFilter->WriteFilterResponseToFile( 3, AddScaleSuffix( fileOutputLightBlob, 
 								sigmaInMM, nScales ) );
 
-    if ( fileOutputDarkLine.length() != 0 ) 
-      BIFsFilter->WriteFilterResponseToFile( 4, AddScaleSuffix( fileOutputDarkLine, 
+    if ( fileOutputLightLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 4, AddScaleSuffix( fileOutputLightLine, 
 								sigmaInMM, nScales ) );
 
-    if ( fileOutputLightLine.length() != 0 ) 
-      BIFsFilter->WriteFilterResponseToFile( 5, AddScaleSuffix( fileOutputLightLine, 
+    if ( fileOutputDarkLine.length() != 0 ) 
+      BIFsFilter->WriteFilterResponseToFile( 5, AddScaleSuffix( fileOutputDarkLine, 
 								sigmaInMM, nScales ) );
 
     if ( fileOutputSaddle.length() != 0 ) 

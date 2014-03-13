@@ -101,11 +101,18 @@ public:
    */
   void SetCalibrationFileName(const std::string& fileName);
 
+  std::string GetCalibrationFileName() const;
+
   /**
    * \brief Sets whether or not we are doing camera tracking mode.
    */
   void SetCameraTrackingMode(const bool& isCameraTracking);
 
+  /**
+   * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
+   */  
+  void SetClipToImagePlane(const bool& clipToImagePlane);
+  
   /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
    */
@@ -125,6 +132,18 @@ private:
 
   QmitkIGIOverlayEditor(const QmitkIGIOverlayEditor&);  // Purposefully not implemented.
   void operator=(const QmitkIGIOverlayEditor&);  // Purposefully not implemented.
+
+  /**
+   * \brief Utility method to deregister data storage listeners.
+   */
+  void DeRegisterDataStorageListeners();
+  
+  /**
+   * \brief Called when a DataStorage Node Changed Event was emitted.
+   */
+  void NodeChanged(const mitk::DataNode* node);
+  
+  mitk::DataStorage::Pointer m_DataStorage;
 };
 
 #endif // QmitkIGIOverlayEditor_h

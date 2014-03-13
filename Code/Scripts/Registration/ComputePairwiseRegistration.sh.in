@@ -38,9 +38,28 @@ current_dir=`dirname $0`
 output_format=$1
 dilation=$2
 symmetric=$3
-dof=$4
+transformations=( \
+   "0=UNDEFINED" \
+   "1=UNDEFINED" \
+   "Rigid" \
+   "Rigid and Scale" \
+   "Full Affine" \
+)
+dof=${transformations[$4]}
 scaling_using_skull=$5
-similarity=$6
+similarityMetrics=( \
+  "0=UNDEFINED" \
+  "Sum Squared Difference" \
+  "Mean Squared Difference" \
+  "Sum Absolute Difference" \
+  "Normalized Cross Correlation" \
+  "Ratio Image Uniformity" \
+  "Partitioned Image Uniformity" \
+  "Joint Entropy" \
+  "Mutual Information" \
+  "Normalized Mutual Information" \
+)
+similarity=${similarityMetrics[$6]}
 ajc=$7
 pptol=$8
 region=${9}
@@ -64,7 +83,7 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 
 
 dilation_flag=""
-symmetric_flag="-sym_midway"
+symmetric_flag="--sym_midway"
 number_of_images=1
 ajc_flag=""
 symmetric_ajc_flag="0"
@@ -77,8 +96,6 @@ fi
 if [ "${symmetric}" == "no" ]
 then
   symmetric_flag=""
-else
-  symmetric_flag=-"${symmetric}"
 fi 
 
 if [ "${ajc}" == "yes" ]
@@ -140,22 +157,27 @@ do
       then 
         # Initial affine registration to align using the region. 
         niftkAffine \
-          -ti ${fixed_image} -si ${moving_image} \
-          -tm ${fixed_image_mask_img} -sm ${moving_image_mask_img} \
-          -ot ${output}_affine_init.dof \
-          -ri 2 -fi 3 -s 4 -tr 2 -o 7 -ln 4 -rmin 0.1 -rmax 2 -stl 0 -spl 2 ${symmetric_flag} ${dilation_flag} -wsim 2 -pptol 0.001 -cog
+          --ti ${fixed_image} --si ${moving_image} \
+          --tm ${fixed_image_mask_img} --sm ${moving_image_mask_img} \
+          --ot ${output}_affine_init.dof \
+          --ri "Linear" --fi "BSpline" -s "Normalized Cross Correlation" \
+          --tr "Rigid" -o "UCL Powell optimisation"  --rmin 0.1 --rmax 2 \
+          --nlevels 4 --levels2use 3 ${symmetric_flag} ${dilation_flag} \
+          --wsim 2 --pptol 0.001 --cog
       fi 
       
       if [ ! -f "${output}_affine_first.dof" ]
       then 
         # More precise affine registration. 
         niftkAffine \
-          -ti ${fixed_image} -si ${moving_image} \
-          -tm ${fixed_image_mask_img} \
-          -sm ${moving_image_mask_img} \
-          -ot ${output}_affine_first.dof \
-          -it ${output}_affine_init.dof \
-          -ri 2 -fi 3 -s ${similarity} -tr ${dof} -o 7 -ln 1 -rmin 0.001 -rmax 1 ${symmetric_flag} ${dilation_flag} -wsim 2 -pptol ${pptol}
+          --ti ${fixed_image} --si ${moving_image} \
+          --tm ${fixed_image_mask_img} \
+          --sm ${moving_image_mask_img} \
+          --ot ${output}_affine_first.dof \
+          --it ${output}_affine_init.dof \
+          --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "${dof}" \
+          -o "UCL Powell optimisation" --nlevels 1 --rmin 0.001 --rmax 1 \
+          ${symmetric_flag} ${dilation_flag} --wsim 2 --pptol ${pptol}
       fi 
     
     else # if [ "${region}" == "no" ] 
@@ -163,9 +185,11 @@ do
       if [ ! -f "${output}_affine_first.dof" ]
       then 
         niftkAffine \
-          -ti ${fixed_image} -si ${moving_image} \
-          -ot ${output}_affine_first.dof \
-          -ri 2 -fi 3 -s ${similarity} -tr ${dof} -o 6 -ln 3 -rmax 1 -rmin 0.01 ${symmetric_flag} -wsim 2 -pptol 0.001
+          --ti ${fixed_image} --si ${moving_image} \
+          --ot ${output}_affine_first.dof \
+          --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "${dof}" \
+          -o "Regular Step Size" --nlevels 3 --rmax 1 --rmin 0.01 \
+          ${symmetric_flag} --wsim 2 --pptol 0.001
       fi 
         
     fi 
@@ -173,19 +197,21 @@ do
     if [ ! -f "${output}_affine_second.dof" ]
     then 
       niftkAffine \
-        -ti ${fixed_image} -si ${moving_image} \
-        -tm ${fixed_image_mask_img} \
-        -sm ${moving_image_mask_img} \
-        -ot ${output}_affine_second.dof \
-        -it ${output}_affine_first.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -ln 1 -rmin 0.001 -rmax 0.5 ${symmetric_flag} -d 2 -wsim 2 -pptol ${pptol}
+        --ti ${fixed_image} --si ${moving_image} \
+        --tm ${fixed_image_mask_img} \
+        --sm ${moving_image_mask_img} \
+        --ot ${output}_affine_second.dof \
+        --it ${output}_affine_first.dof \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" \
+        -o "UCL Powell optimisation" --nlevels 1 --rmin 0.001 --rmax 0.5 \
+        ${symmetric_flag} -d 2 --wsim 2 --pptol ${pptol}
     fi 
     
     if [ "${large_local_region_search}" == "yes" ]
     then 
-      local_region_search_options="-ln 2 -rmax 1 -d 7"
+      local_region_search_options="--nlevels 2 --rmax 1 -d 7"
     else
-      local_region_search_options="-ln 1 -rmax 0.5 -d 5"
+      local_region_search_options="--nlevels 1 --rmax 0.5 -d 5"
     fi 
     
     # ROI 1 local registration. 
@@ -206,12 +232,13 @@ do
         makemask ${moving_image} ${moving_roi1} ${moving_roi1_img}
       fi 
       niftkAffine \
-        -ti ${fixed_image} -si ${moving_image} \
-        -tm ${fixed_roi1_img} \
-        -sm ${moving_roi1_img} \
-        -ot ${output}_affine_second_roi1.dof \
-        -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -rmin 0.001 ${local_region_search_options} ${symmetric_flag} -wsim 2 -pptol ${pptol}
+        --ti ${fixed_image} --si ${moving_image} \
+        --tm ${fixed_roi1_img} \
+        --sm ${moving_roi1_img} \
+        --ot ${output}_affine_second_roi1.dof \
+        --it ${output}_affine_second.dof \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" -o "UCL Powell optimisation" \
+        --rmin 0.001 ${local_region_search_options} ${symmetric_flag} --wsim 2 --pptol ${pptol}
     fi 
     
     # ROI 2 local registration. 
@@ -232,12 +259,14 @@ do
        makemask ${moving_image} ${moving_roi2} ${moving_roi2_img}
       fi 
       niftkAffine \
-        -ti ${fixed_image} -si ${moving_image} \
-        -tm ${fixed_roi2_img} \
-        -sm ${moving_roi2_img} \
-        -ot ${output}_affine_second_roi2.dof \
-        -it ${output}_affine_second.dof \
-        -ri 2 -fi 3 -s ${similarity} -tr 2 -o 7 -rmin 0.001 ${local_region_search_options} ${symmetric_flag} -wsim 2 -pptol ${pptol}
+        --ti ${fixed_image} --si ${moving_image} \
+        --tm ${fixed_roi2_img} \
+        --sm ${moving_roi2_img} \
+        --ot ${output}_affine_second_roi2.dof \
+        --it ${output}_affine_second.dof \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" \
+        -o "UCL Powell optimisation" --rmin 0.001 ${local_region_search_options} \
+        ${symmetric_flag} --wsim 2 --pptol ${pptol}
     fi 
     
     fi 

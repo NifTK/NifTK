@@ -108,7 +108,10 @@ protected:
           m_smm -= (m_sm * m_sm / m_numberCounted);
           m_sfm -= (m_sf * m_sm / m_numberCounted);
           denom = 1 * vcl_sqrt(m_sff * m_smm);
-          measure = m_sfm / denom;
+          if ( denom != 0. )
+          {
+            measure = m_sfm / denom;
+          }
         }
       return measure*measure;
     }

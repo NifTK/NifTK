@@ -24,6 +24,7 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 namespace mitk {
 
@@ -40,42 +41,37 @@ public:
 
   enum Method 
   {
-    VTK_ICP, //VTK's ICP algorithm, point to surface
-    DEFORM //A hypothetical non rigid point to surface algorithm
+    VTK_ICP, // VTK's ICP algorithm, point to surface
+    DEFORM   // A hypothetical non rigid point to surface algorithm
   };
 
   static const int DEFAULT_MAX_ITERATIONS;
   static const int DEFAULT_MAX_POINTS;
   static const bool DEFAULT_USE_DEFORMABLE;
-  static const bool DEFAULT_USE_SPATIALFILTER;
-  /**
-   * \brief Write My Documentation
-   */
-  void Update(const mitk::DataNode* fixedNode,
-           const mitk::DataNode* movingNode,
-           vtkMatrix4x4* transformMovingToFixed);
-
-  /**
-   * \brief apply the transform to a given data node
-   */
-  void ApplyTransform (mitk::DataNode::Pointer node);
-  void ApplyTransform (mitk::DataNode::Pointer node, vtkMatrix4x4* transform);
-  static void GetCurrentTransform ( const mitk::DataNode * node , vtkMatrix4x4* matrix );
 
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
-  itkSetMacro (UseSpatialFilter, bool);
+  itkSetMacro(CameraNode, mitk::DataNode::Pointer);
+  itkSetMacro(FlipNormals, bool);
 
 
   /**
-   * \brief An crude method to spatially filter the mitk point cloud, assuming that the 
-   * cloud is from a surface reconstruction where the point id encodes the point's 
-   * position on screen
+   * \brief Write My Documentation
    */
-  static void PointSetToPolyData_SpatialFilter ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
-  static void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut, bool useSpatialFilter = false);
-  static void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+  void Update(const mitk::DataNode::Pointer fixedNode,
+           const mitk::DataNode::Pointer movingNode,
+           vtkMatrix4x4& transformMovingToFixed);
+
+  /**
+   * \brief Generates a poly data from a mitk::DataNode.
+   */
+  static void NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(), bool flipnormals = false);
+
+  /**
+   * \brief Generates a poly data from a mitk::PointSet.
+   */
+  static void PointSetToPolyData ( const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut);
 
 protected:
 
@@ -90,14 +86,16 @@ private:
   int m_MaximumIterations;
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
-  bool m_UseSpatialFilter;  //flag to control use of spatial filter
 
-  vtkMatrix4x4* m_Matrix;
+  mitk::DataNode::Pointer     m_CameraNode;
+  bool                        m_FlipNormals;
 
+  vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 
   void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,
-           vtkMatrix4x4* transformMovingToFixed);
+           vtkMatrix4x4& transformMovingToFixed);
+
 }; // end class
 
 } // end namespace

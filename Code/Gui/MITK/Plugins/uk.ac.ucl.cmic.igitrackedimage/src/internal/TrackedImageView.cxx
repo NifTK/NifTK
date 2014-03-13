@@ -110,6 +110,7 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
       ctkDictionary properties;
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+      eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE", Qt::DirectConnection);
     }
   }
 }
@@ -131,7 +132,19 @@ void TrackedImageView::RetrievePreferenceValues()
     m_ImageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_ImageToTrackingSensorTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToTrackingSensorFileName);
     m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
+    if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
+    {
+      m_ImageScaling[0] *= -1;
+    }
     m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
+    if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_Y_SCALING, false))
+    {
+      m_ImageScaling[1] *= -1;
+    }
+    if(m_PlaneNode.IsNotNull())
+    {
+      m_PlaneNode->Modified();  
+    }
   }
 }
 
@@ -151,8 +164,25 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL && image->GetGeometry() != NULL)
     {
+      this->m_Controls->m_DoUpdateCheckBox->setChecked(false);
+      
+      // Set a property saying which node is selected by this plugin.
+      for (int i = 0; i < this->m_Controls->m_ImageNode->count(); i++)
+      {
+        mitk::DataNode::Pointer aNode = this->m_Controls->m_ImageNode->GetNode(i);
+        aNode->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
+      }
+      mitk::DataNode::Pointer nodeToUpdate = this->GetDataStorage()->GetNamedNode(node->GetName());
+      if (nodeToUpdate.IsNotNull())
+      {
+        nodeToUpdate->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);        
+      }
+      
+      // Update the view to match the image geometry.
       mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
 
+      // Generate a plane to visualise in the 3D window, and in this plugins Render Window.
+      // This view is a shared VTK resource, which may be buggy on some systems.
       float white[3] = {1.0f,1.0f,1.0f};
       mitk::Geometry2DDataMapper2D::Pointer mapper(NULL);
 
@@ -184,28 +214,51 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
 {
   Q_UNUSED(event);
 
-  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
-  mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
-
-  if (this->m_Controls->m_DoUpdateCheckBox->isChecked()
-      && imageNode.IsNotNull()
-      && m_ImageToTrackingSensorTransform != NULL
-      && trackingSensorToTrackerTransform.IsNotNull()
-     )
+  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();  
+  if (imageNode.IsNotNull())
   {
-    mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
-    command->Update(imageNode,
-                    trackingSensorToTrackerTransform,
-                    m_ImageToTrackingSensorTransform,
-                    m_ImageScaling
-                    );
-
-    m_PlaneNode->Modified();
-
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
     if (image.IsNotNull())
     {
-      mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
-    }
-  }
+
+      mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
+
+      if (this->m_Controls->m_DoUpdateCheckBox->isChecked()
+          && m_ImageToTrackingSensorTransform != NULL
+          && trackingSensorToTrackerTransform.IsNotNull()
+         )
+      {
+        // Check modified times to minimise updates.
+        unsigned long trackingSensorToTrackerModifiedTime = trackingSensorToTrackerTransform->GetMTime();
+        unsigned long planeModifiedTime = m_PlaneNode->GetMTime(); // proxy for this class.
+        
+        if (planeModifiedTime < trackingSensorToTrackerModifiedTime)
+        {          
+          // Start of important bit.
+          
+          // We publish this update signal immediately after the image plane is updated,
+          // as we want the Overlay Display to listen synchronously, and update immediately.
+          // We don't want a rendering event to trigger the Overlay Display to re-render at the
+          // wrong position, and momentarily display the wrong thing.
+          
+          mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+          command->Update(imageNode,
+                          trackingSensorToTrackerTransform,
+                          m_ImageToTrackingSensorTransform,
+                          m_ImageScaling
+                          );
+          
+          m_PlaneNode->Modified();
+          
+          ctkDictionary properties;
+          emit Updated(properties);
+          
+          // End of important bit.
+          
+          mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+          
+        } // if modified times suggest we need an update
+      } // end if input is valid
+    } // if got an image
+  } // if got an image node
 }

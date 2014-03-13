@@ -56,7 +56,7 @@ public:
   virtual void onVisibilityChanged(const mitk::DataNode* node);
 
   /**
-   * \brief Called when the window focus changes, and tracks the current and previous mitk::BaseRenderer*.
+   * \brief Called when the window focus changes, and tracks the current mitk::BaseRenderer*.
    */
   virtual void OnFocusChanged();
 
@@ -97,6 +97,16 @@ public:
    * \return QmitkRenderWindow* The render window or NULL if it can not be found.
    */
   virtual QmitkRenderWindow* GetRenderWindow(QString id);
+
+  /**
+   * \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
+   * \return QmitkRenderWindow* The selected render window or NULL if it no render window is selected.
+   */
+  virtual QmitkRenderWindow* GetSelectedRenderWindow();
+
+  /// \brief Sets the visibility of the cursor (aka. crosshair) in the 2D render windows of the main display.
+  /// \return The actual visibility of the cursor when this function is called.
+  bool SetMainWindowCursorVisible(bool visible);
 
 protected:
 
@@ -153,14 +163,7 @@ protected:
    *
    * \return mitk::BaseRenderer* The currently focused renderer, or NULL if it has not been set.
    */
-  mitk::BaseRenderer* GetCurrentlyFocusedRenderer();
-
-  /**
-   * \brief Returns the previously focused renderer (the one before the currently focused renderer), as this class is tracking the focus changes.
-   *
-   * \return mitk::BaseRenderer* The previously focused renderer, or NULL if it has not been set.
-   */
-  mitk::BaseRenderer* GetPreviouslyFocusedRenderer();
+  mitk::BaseRenderer* GetFocusedRenderer();
 
   /**
    * \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.

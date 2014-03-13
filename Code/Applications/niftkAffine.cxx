@@ -29,6 +29,8 @@
 #include <itkTransformFileWriter.h>
 #include <itkImageMomentsCalculator.h>
 
+#include <niftkAffineCLP.h>
+
 /*!
  * \file niftkAffine.cxx
  * \page niftkAffine
@@ -40,90 +42,6 @@
  * \section niftkAffineCaveats Caveats
  * \li Rarely used in 2D, use with caution.
  */
-void StartUsage(char *name)
-{
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-  std::cout << "  " << std::endl;
-  std::cout << "  Using standard ITK filters, and the NifTK image registration library, implements a general purpose affine registration." << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "  " << name << " -ti <filename> -si <filename> -ot <filename> [options] " << std::endl;
-  std::cout << "  " << std::endl;  
-  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-  std::cout << "    -ti <filename>                 Target/Fixed image " << std::endl;
-  std::cout << "    -si <filename>                 Source/Moving image " << std::endl;
-  std::cout << "    -ot <filename>                 Output UCL tranformation" << std::endl << std::endl;      
-}
-
-void EndUsage()
-{
-  std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  std::cout << "    -om <filename>                 Output matrix transformation" << std::endl << std::endl;
-  std::cout << "    -oi <filename>                 Output resampled image" << std::endl << std::endl;
-  std::cout << "    -it <filename>                 Initial transform file name" << std::endl << std::endl;  
-  std::cout << "    -tm <filename>                 Target/Fixed mask image" << std::endl;
-  std::cout << "    -sm <filename>                 Source/Moving mask image" << std::endl;
-  std::cout << "    -fi <int>       [4]            Choose final reslicing interpolator" << std::endl;
-  std::cout << "                                      1. Nearest neighbour" << std::endl;
-  std::cout << "                                      2. Linear" << std::endl;
-  std::cout << "                                      3. BSpline" << std::endl;
-  std::cout << "                                      4. Sinc" << std::endl;
-  std::cout << "    -ri <int>       [2]            Choose registration interpolator" << std::endl;
-  std::cout << "                                      1. Nearest neighbour" << std::endl;
-  std::cout << "                                      2. Linear" << std::endl;
-  std::cout << "                                      3. BSpline" << std::endl;
-  std::cout << "                                      4. Sinc" << std::endl; 
-  std::cout << "    -s   <int>      [4]            Choose image similarity measure" << std::endl;
-  std::cout << "                                      1. Sum Squared Difference" << std::endl;
-  std::cout << "                                      2. Mean Squared Difference" << std::endl;
-  std::cout << "                                      3. Sum Absolute Difference" << std::endl;
-  std::cout << "                                      4. Normalized Cross Correlation" << std::endl;
-  std::cout << "                                      5. Ratio Image Uniformity" << std::endl;
-  std::cout << "                                      6. Partitioned Image Uniformity" << std::endl;
-  std::cout << "                                      7. Joint Entropy" << std::endl;
-  std::cout << "                                      8. Mutual Information" << std::endl;
-  std::cout << "                                      9. Normalized Mutual Information" << std::endl;
-  std::cout << "    -tr  <int>      [3]            Choose transformation" << std::endl;
-  std::cout << "                                      2. Rigid" << std::endl;
-  std::cout << "                                      3. Rigid + Scale" << std::endl;
-  std::cout << "                                      4. Full affine" << std::endl;
-  std::cout << "    -rs  <int>      [1]            Choose registration strategy" << std::endl;
-  std::cout << "                                      1. Normal (optimize transformation)" << std::endl;
-  std::cout << "                                      2. Switching:Trans, Rotate" << std::endl;
-  std::cout << "                                      3. Switching:Trans, Rotate, Scale" << std::endl;
-  std::cout << "                                      4. Switching:Rigid, Scale" << std::endl;  
-  std::cout << "    -o   <int>      [6]            Choose optimizer" << std::endl;
-  std::cout << "                                      1. Simplex" << std::endl;
-  std::cout << "                                      2. Gradient Descent" << std::endl;
-  std::cout << "                                      3. Regular Step Size Gradient Descent" << std::endl;
-  std::cout << "                                      5. Powell optimisation" << std::endl;  
-  std::cout << "                                      6. Regular Step Size" << std::endl;
-  std::cout << "                                      7. UCL Powell optimisation" << std::endl;
-  std::cout << "    -bn <int>       [64]           Number of histogram bins" << std::endl;
-  std::cout << "    -mi <int>       [300]          Maximum number of iterations per level" << std::endl;
-  std::cout << "    -d   <int>      [0]            Number of dilations of masks (if -tm or -sm used)" << std::endl;  
-  std::cout << "    -mmin <float>   [0.5]          Mask minimum threshold (if -tm or -sm used)" << std::endl;
-  std::cout << "    -mmax <float>   [max]          Mask maximum threshold (if -tm or -sm used)" << std::endl;
-  std::cout << "    -spt  <float>   [0.01]         Simplex: Parameter tolerance" << std::endl;
-  std::cout << "    -sft  <float>   [0.01]         Simplex: Function tolerance" << std::endl;
-  std::cout << "    -rmax <float>   [5.0]          Regular Step: Maximum step size" << std::endl;
-  std::cout << "    -rmin <float>   [0.01]         Regular Step: Minimum step size" << std::endl;
-  std::cout << "    -rgtol <float>  [0.01]         Regular Step: Gradient tolerance" << std::endl;
-  std::cout << "    -rrfac <float>  [0.5]          Regular Step: Relaxation Factor" << std::endl;
-  std::cout << "    -glr   <float>  [0.5]          Gradient: Learning rate" << std::endl;
-  std::cout << "    -sym                           Symmetric metric" << std::endl;
-  std::cout << "    -sym_midway                    Symmetric metric to the midway" << std::endl;
-  std::cout << "    -ln  <int>      [3]            Number of multi-resolution levels" << std::endl;
-  std::cout << "    -stl <int>      [0]            Start Level (starts at zero like C++)" << std::endl;
-  std::cout << "    -spl <int>      [ln - 1 ]      Stop Level (default goes up to number of levels minus 1, like C++)" << std::endl;
-  std::cout << "    -rescale        [lower upper]  Rescale the input images to the specified intensity range" << std::endl;
-  std::cout << "    -mip <float>    [0]            Moving image pad value" << std::endl;  
-  std::cout << "    -hfl <float>                   Similarity measure, fixed image lower intensity limit" << std::endl;
-  std::cout << "    -hfu <float>                   Similarity measure, fixed image upper intensity limit" << std::endl;
-  std::cout << "    -hml <float>                   Similarity measure, moving image lower intensity limit" << std::endl;
-  std::cout << "    -hmu <float>                   Similarity measure, moving image upper intensity limit" << std::endl;  
-  std::cout << "    -wsim <float>                  Try to use weighted similarity measure and specify the weighting distance threshold" << std::endl;  
-  std::cout << "    -pptol <float>                 UCLPowell: Parameter tolerance" << std::endl;  
-}
 
 struct arguments
 {
@@ -171,6 +89,11 @@ struct arguments
   double weightingThreshold; 
   double parameterChangeTolerance; 
   bool useCogInitialisation; 
+  bool rotateAboutCog; 
+  double translationWeighting;
+  double rotationWeighting;
+  double scaleWeighting;
+  double skewWeighting;
 };
 
 template <int Dimension>
@@ -273,7 +196,7 @@ int DoMain(arguments args)
   movingImgeCOG.Fill(0.); 
   
   // Calculate the CoG for the initialisation using CoG or for the symmetric transformation. 
-  if (args.useCogInitialisation || args.symmetricMetric == 2)
+  if (args.useCogInitialisation || args.rotateAboutCog || args.symmetricMetric == 2)
   {
     typename ImageMomentCalculatorType::Pointer fixedImageMomentCalulator = ImageMomentCalculatorType::New(); 
     if (args.fixedMask.length() > 0)
@@ -315,11 +238,41 @@ int DoMain(arguments args)
   if (args.useCogInitialisation)
   {
     if (args.symmetricMetric == 2)
+    {
       transform->InitialiseUsingCenterOfMass(fixedImgeCOG/2.0, movingImgeCOG/2.0); 
+    }
     else
+    {
       transform->InitialiseUsingCenterOfMass(fixedImgeCOG, movingImgeCOG); 
+    }
+
+    std::cout << "Initialising translation to: " << transform->GetTranslation() << std::endl;
   }
   
+  // Rotate about the center of gravity?
+  if (args.rotateAboutCog)
+  {
+    typename InputImageType::PointType centerPoint;
+
+    for (unsigned int i=0; i<Dimension; i++)
+    {
+      centerPoint[i] = fixedImgeCOG[i];
+    }
+
+    std::cout << "Setting the center of rotation to: " << centerPoint 
+              << " in the fixed image." << std::endl;
+
+    transform->SetCenter(centerPoint);
+  }
+    
+  // Set the parameter relative weighting factors
+
+  transform->SetTranslationRelativeWeighting( args.translationWeighting );
+  transform->SetRotationRelativeWeighting( args.rotationWeighting );
+  transform->SetScaleRelativeWeighting( args.scaleWeighting );
+  transform->SetSkewRelativeWeighting( args.skewWeighting );
+
+
   builder->CreateOptimizer((itk::OptimizerTypeEnum)args.optimizer);
 
   // Get the single res method.
@@ -334,6 +287,7 @@ int DoMain(arguments args)
   
   if (args.optimizer == itk::SIMPLEX)
     {
+      std::cout << "Creating simplex optimiser" << std::endl;
       typedef typename itk::UCLSimplexOptimizer OptimizerType;
       typedef OptimizerType*                    OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
@@ -342,48 +296,26 @@ int DoMain(arguments args)
       op->SetFunctionConvergenceTolerance(args.funcTol);
       op->SetAutomaticInitialSimplex(true);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      typename OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
     }
   else if (args.optimizer == itk::GRADIENT_DESCENT)
     {
+      std::cout << "Creating gradient descent optimiser" << std::endl;
       typedef typename itk::GradientDescentOptimizer OptimizerType;
       typedef OptimizerType*                         OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
       op->SetNumberOfIterations(args.iterations);
       op->SetLearningRate(args.learningRate);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      typename OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
     }
   else if (args.optimizer == itk::REGSTEP_GRADIENT_DESCENT)
     {
+      std::cout << "Creating regular step gradient descent optimiser" << std::endl;
       typedef typename itk::UCLRegularStepGradientDescentOptimizer OptimizerType;
       typedef OptimizerType*                                       OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
@@ -392,24 +324,13 @@ int DoMain(arguments args)
       op->SetMinimumStepLength(args.minStep);
       op->SetRelaxationFactor(args.relaxFactor);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
     }
   else if (args.optimizer == itk::POWELL)
     {
+      std::cout << "Creating Powell optimiser" << std::endl;
       typedef typename itk::PowellOptimizer OptimizerType;
       typedef OptimizerType*                OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
@@ -419,49 +340,28 @@ int DoMain(arguments args)
       op->SetMaximumLineIteration(10);
       op->SetValueTolerance(0.0001);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());      
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
     }
   else if (args.optimizer == itk::SIMPLE_REGSTEP)
     {
+      std::cout << "Creating regular step optimiser" << std::endl;
       typedef typename itk::UCLRegularStepOptimizer OptimizerType;
       typedef OptimizerType*                        OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
       op->SetNumberOfIterations(args.iterations);
       op->SetMaximumStepLength(args.maxStep);
       op->SetMinimumStepLength(args.minStep);
+      op->SetRelaxationFactor(args.relaxFactor);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);      
     }
   else if (args.optimizer == itk::UCLPOWELL)
     {
+      std::cout << "Creating UCL Powell optimiser" << std::endl;
       typedef itk::UCLPowellOptimizer OptimizerType;
       typedef OptimizerType*       OptimizerPointer;
       OptimizerPointer op = dynamic_cast<OptimizerPointer>(singleResMethod->GetOptimizer());
@@ -472,20 +372,8 @@ int DoMain(arguments args)
       op->SetValueTolerance(1.0e-14);
       op->SetParameterTolerance(args.parameterChangeTolerance);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());      
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
     }
 
@@ -547,6 +435,12 @@ int DoMain(arguments args)
           metric->SetIntensityBounds(args.intensityFixedLowerBound, args.intensityFixedUpperBound, args.intensityMovingLowerBound, args.intensityMovingUpperBound);
         }
     }
+
+  if (args.symmetricMetric == 2)
+    {
+      multiResMethod->SetIsAutoAdjustMovingSamping(false);
+    }
+
 
   try
   {
@@ -638,231 +532,450 @@ int DoMain(arguments args)
   return EXIT_SUCCESS;
 }
 
+
+const char *BooleanToString( bool flag )
+{
+  if ( flag )
+  {
+    return "YES";
+  }
+
+  return "NO";
+}
+
+
 /**
  * \brief Does general purpose affine 3D image registration.
  */
 int main(int argc, char** argv)
 {
   // To pass around command line args
+  PARSE_ARGS;
+
+  // To pass around command line args
   struct arguments args;
 
-  // Set defaults
-  args.finalInterpolator = 4;
-  args.registrationInterpolator = 2;
-  args.similarityMeasure = 4;
-  args.transformation = 3;
-  args.registrationStrategy = 1;
-  args.optimizer = 6;
-  args.bins = 64;
-  args.iterations = 300;
-  args.dilations = 0;
-  args.levels = 3;
+
+  args.fixedImage  = fixedImage;
+  args.movingImage = movingImage;
+
+  args.outputUCLTransformFile = outputUCLTransformFile;
+  args.outputImage = outputImage;
+
+  args.outputMatrixTransformFile = outputMatrixTransformFile;
+
+  args.inputTransformFile = inputTransformFile;
+
+  args.fixedMask  = fixedMask;
+  args.movingMask = movingMask;
+
+  args.useCogInitialisation = cog;
+  args.rotateAboutCog = rotateAboutCog;
+
+  args.bins = bins;
+  args.iterations = iterations;
+  args.dilations = dilations;
+
+  args.maskMinimumThreshold = maskMinimumThreshold;
+  args.maskMaximumThreshold = maskMaximumThreshold;
+
+  args.paramTol = paramTol;
+  args.funcTol  = funcTol;
+
+  args.maxStep = maxStep;
+  args.minStep = minStep;
+  args.gradTol = gradTol;
+  args.relaxFactor = relaxFactor;
+
+  args.learningRate = learningRate;
+
+  args.parameterChangeTolerance = parameterChangeTolerance;
+
+  args.translationWeighting = translationWeighting;
+  args.rotationWeighting = rotationWeighting;
+  args.scaleWeighting = scaleWeighting;
+  args.skewWeighting = skewWeighting;
+
+  // The registration interpolator
+
+  if     ( strRegnInterpolator == std::string( "Nearest" ) )
+  {
+    args.registrationInterpolator = 1;
+  }
+  else if     ( strRegnInterpolator == std::string( "Linear" ) )
+  {
+    args.registrationInterpolator = 2;
+  }
+  else if     ( strRegnInterpolator == std::string( "BSpline" ) )
+  {
+    args.registrationInterpolator = 3;
+  }
+  else if     ( strRegnInterpolator == std::string( "Sinc" ) )
+  {
+    args.registrationInterpolator = 4;
+  }
+
+  // The final interpolator
+
+  if     ( strFinalInterpolator == std::string( "Nearest" ) )
+  {
+    args.finalInterpolator = 1;
+  }
+  else if     ( strFinalInterpolator == std::string( "Linear" ) )
+  {
+    args.finalInterpolator = 2;
+  }
+  else if     ( strFinalInterpolator == std::string( "BSpline" ) )
+  {
+    args.finalInterpolator = 3;
+  }
+  else if     ( strFinalInterpolator == std::string( "Sinc" ) )
+  {
+    args.finalInterpolator = 4;
+  }
+
+  // The similarity measure
+
+  if     ( strSimilarityMeasure == std::string( "Sum Squared Difference" ) )
+  {
+    args.similarityMeasure = 1;
+  }
+  else if( strSimilarityMeasure == std::string( "Mean Squared Difference" ) )
+  {
+    args.similarityMeasure = 2;
+  }
+  else if( strSimilarityMeasure == std::string( "Sum Absolute Difference" ) )
+  {
+    args.similarityMeasure = 3;
+  }
+  else if( strSimilarityMeasure == std::string( "Normalized Cross Correlation" ) )
+  {
+    args.similarityMeasure = 4;
+  }
+  else if( strSimilarityMeasure == std::string( "Ratio Image Uniformity" ) )
+  {
+    args.similarityMeasure = 5;
+  }
+  else if( strSimilarityMeasure == std::string( "Partitioned Image Uniformity" ) )
+  {
+    args.similarityMeasure = 6;
+  }
+  else if( strSimilarityMeasure == std::string( "Joint Entropy" ) )
+  {
+    args.similarityMeasure = 7;
+  }
+  else if( strSimilarityMeasure == std::string( "Mutual Information" ) )
+  {
+    args.similarityMeasure = 8;
+  }
+  else if( strSimilarityMeasure == std::string( "Normalized Mutual Information" ) )
+  {
+    args.similarityMeasure = 9;
+  }
+
+  // The transformation type
+
+  if(      strTransformation == std::string( "Rigid" ) )
+  {
+    args.transformation = 2;
+  }
+  else if( strTransformation == std::string( "Rigid and Scale" ) )
+  {
+    args.transformation = 3;
+  }
+  else if( strTransformation == std::string( "Full Affine" ) )
+  {
+    args.transformation = 4;
+  }
+
+  // The registration strategy
+
+  if(      strRegnStrategy == std::string( "Normal" ) )
+  {
+    args.registrationStrategy = 1;
+  }
+  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate" ) )
+  {
+    args.registrationStrategy = 2;
+  }
+  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate, Scale" ) )
+  {
+    args.registrationStrategy = 3;
+  }
+  else if( strRegnStrategy == std::string( "Switching:Rigid, Scale" ) )
+  {
+    args.registrationStrategy = 4;
+  }
+  
+
+  // The optimiser
+
+  if(      strOptimizer == std::string( "Simplex" ) )
+  {
+    args.optimizer = 1;
+  }
+  else if( strOptimizer == std::string( "Gradient Descent" ) )
+  {
+    args.optimizer = 2;
+  }
+  else if( strOptimizer == std::string( "Regular Step Size Gradient Descent" ) )
+  {
+    args.optimizer = 3;
+  }
+  else if( strOptimizer == std::string( "Powell optimisation" ) )
+  {
+    args.optimizer = 5;
+  }
+  else if( strOptimizer == std::string( "Regular Step Size" ) )
+  {
+    args.optimizer = 6;
+  }
+  else if( strOptimizer == std::string( "UCL Powell optimisation" ) )
+  {
+    args.optimizer = 7;
+  }
+
+  // The multi-resolution strategy
+
   args.startLevel = 0;
-  args.stopLevel = args.levels -1;
-  args.lowerIntensity = 0;
-  args.higherIntensity = 0;
+  args.levels = nlevels;
+
+  if( levels2use <= nlevels ){
+    args.stopLevel = levels2use - 1;
+  }
+  else{
+    args.stopLevel = args.levels - 1;
+  }
+
+  // Use a symmetric metric?
+
+  args.symmetricMetric = 0;
+
+  if ( flgSymmetricMetric )
+  {
+    args.symmetricMetric = 1;
+  }
+  if ( flgSymmetricMetricMidway )
+  {
+    args.symmetricMetric = 2;
+  }
+
+  // Rescale the image intensities?
+
+  args.isRescaleIntensity = false;
+
+  if ( rescaleIntensities.size() == 2 )
+  {
+      args.isRescaleIntensity = true;
+      args.lowerIntensity  = rescaleIntensities[0];
+      args.higherIntensity = rescaleIntensities[1];
+  }
+  else if ( rescaleIntensities.size() != 0 )
+  {
+    std::cerr << "ERROR: Rescale output image intensities must be specified "
+              << "as two values: <lower>,<upper>" << std::endl;
+    return( EXIT_FAILURE );
+  }
+
+  // The moving image pad value
+
+  args.userSetPadValue = false;
+
+  if ( movingImagePadValue.size() == 0 )
+  {
+    args.userSetPadValue = false;
+    args.movingImagePadValue = 0;
+  }
+  else if ( movingImagePadValue.size() == 1 )
+  {
+    args.userSetPadValue = true;
+    args.movingImagePadValue = movingImagePadValue[0];
+  }
+  else
+  {
+    std::cerr << "ERROR: The moving image pad value (";
+    unsigned int i;
+    for (i=0; i<movingImagePadValue.size(); i++)
+    {
+      std::cerr << movingImagePadValue[i];
+      if ( i + 1 < movingImagePadValue.size() )
+      {
+        std::cerr << ",";
+      }
+    }
+    std::cerr << ") is not recognised" << std::endl;
+    return( EXIT_FAILURE );
+  }
+
+
+  // Similarity measure image intensity limits
+
   args.dummyDefault = -987654321;
-  args.paramTol = 0.01;
-  args.funcTol = 0.01;
-  args.maxStep = 5.0;
-  args.minStep = 0.01;
-  args.gradTol = 0.01;
-  args.relaxFactor = 0.5;
-  args.learningRate = 0.5;
-  args.maskMinimumThreshold = 0.5;
-  args.maskMaximumThreshold = 255;
+
   args.intensityFixedLowerBound = args.dummyDefault;
   args.intensityFixedUpperBound = args.dummyDefault;
+
+  if ( intensityFixedBound.size() == 2 )
+  {
+      args.intensityFixedLowerBound = intensityFixedBound[0];
+      args.intensityFixedUpperBound = intensityFixedBound[1];
+  }
+  else if ( intensityFixedBound.size() != 0 )
+  {
+    std::cerr << "ERROR: Fixed image intensity limits '--hf' must be specified "
+              << "as two values: <lower>,<upper>" << std::endl;
+    return( EXIT_FAILURE );
+  }
+
   args.intensityMovingLowerBound = args.dummyDefault;
   args.intensityMovingUpperBound = args.dummyDefault;
-  args.movingImagePadValue = 0;
-  args.symmetricMetric = 0;
-  args.isRescaleIntensity = false;
-  args.userSetPadValue = false;
-  args.useWeighting = false; 
-  args.useCogInitialisation = false; 
 
-
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
-      StartUsage(argv[0]);
-      EndUsage();
-      return -1;
-    }
-    else if(strcmp(argv[i], "-ti") == 0){
-      args.fixedImage=argv[++i];
-      std::cout << "Set -ti=" << args.fixedImage<< std::endl;
-    }
-    else if(strcmp(argv[i], "-si") == 0){
-      args.movingImage=argv[++i];
-      std::cout << "Set -si=" << args.movingImage<< std::endl;
-    }
-    else if(strcmp(argv[i], "-ot") == 0){
-      args.outputUCLTransformFile=argv[++i];
-      std::cout << "Set -ot=" << args.outputUCLTransformFile<< std::endl;
-    }
-    else if(strcmp(argv[i], "-om") == 0){
-      args.outputMatrixTransformFile=argv[++i];
-      std::cout << "Set -om=" << args.outputMatrixTransformFile<< std::endl;
-    }
-    else if(strcmp(argv[i], "-oi") == 0){
-      args.outputImage=argv[++i];
-      std::cout << "Set -oi=" << args.outputImage<< std::endl;
-    }
-    else if(strcmp(argv[i], "-it") == 0){
-      args.inputTransformFile=argv[++i];
-      std::cout << "Set -it=" << args.inputTransformFile<< std::endl;
-    }
-    else if(strcmp(argv[i], "-tm") == 0){
-      args.fixedMask=argv[++i];
-      std::cout << "Set -tm=" << args.fixedMask<< std::endl;
-    }
-    else if(strcmp(argv[i], "-sm") == 0){
-      args.movingMask=argv[++i];
-      std::cout << "Set -sm=" << args.movingMask<< std::endl;
-    }
-    else if(strcmp(argv[i], "-fi") == 0){
-      args.finalInterpolator=atoi(argv[++i]);
-      std::cout << "Set -fi=" << niftk::ConvertToString(args.finalInterpolator)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-ri") == 0){
-      args.registrationInterpolator=atoi(argv[++i]);
-      std::cout << "Set -ri=" << niftk::ConvertToString(args.registrationInterpolator)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-s") == 0){
-      args.similarityMeasure=atoi(argv[++i]);
-      std::cout << "Set -s=" << niftk::ConvertToString(args.similarityMeasure)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-tr") == 0){
-      args.transformation=atoi(argv[++i]);
-      std::cout << "Set -tr=" << niftk::ConvertToString(args.transformation)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rs") == 0){
-      args.registrationStrategy=atoi(argv[++i]);
-      std::cout << "Set -rs=" << niftk::ConvertToString(args.registrationStrategy)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0){
-      args.optimizer=atoi(argv[++i]);
-      std::cout << "Set -o=" << niftk::ConvertToString(args.optimizer)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-bn") == 0){
-      args.bins=atoi(argv[++i]);
-      std::cout << "Set -bn=" << niftk::ConvertToString(args.bins)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-mi") == 0){
-      args.iterations=atoi(argv[++i]);
-      std::cout << "Set -mi=" << niftk::ConvertToString(args.iterations)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-d") == 0){
-      args.dilations=atoi(argv[++i]);
-      std::cout << "Set -d=" << niftk::ConvertToString(args.dilations)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-mmin") == 0){
-      args.maskMinimumThreshold=atof(argv[++i]);
-      std::cout << "Set -mmin=" << niftk::ConvertToString(args.maskMinimumThreshold)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-mmax") == 0){
-      args.maskMaximumThreshold=atof(argv[++i]);
-      std::cout << "Set -mmax=" << niftk::ConvertToString(args.maskMaximumThreshold)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-spt") == 0){
-      args.paramTol=atof(argv[++i]);
-      std::cout << "Set -spt=" << niftk::ConvertToString(args.paramTol)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-sft") == 0){
-      args.funcTol=atof(argv[++i]);
-      std::cout << "Set -spt=" << niftk::ConvertToString(args.funcTol)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rmax") == 0){
-      args.maxStep=atof(argv[++i]);
-      std::cout << "Set -rmax=" << niftk::ConvertToString(args.maxStep)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rmin") == 0){
-      args.minStep=atof(argv[++i]);
-      std::cout << "Set -rmin=" << niftk::ConvertToString(args.minStep)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rgtol") == 0){
-      args.gradTol=atof(argv[++i]);
-      std::cout << "Set -rgtol=" << niftk::ConvertToString(args.gradTol)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rrfac") == 0){
-      args.relaxFactor=atof(argv[++i]);
-      std::cout << "Set -rrfac=" << niftk::ConvertToString(args.relaxFactor)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-glr") == 0){
-      args.learningRate=atof(argv[++i]);
-      std::cout << "Set -glr=" << niftk::ConvertToString(args.learningRate)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-sym") == 0){
-      args.symmetricMetric=1;
-      std::cout << "Set -sym=" << niftk::ConvertToString(args.symmetricMetric)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-sym_midway") == 0){
-      args.symmetricMetric=2;
-      std::cout << "Set -sym_midway=" << niftk::ConvertToString(args.symmetricMetric)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-ln") == 0){
-      args.levels=atoi(argv[++i]);
-      std::cout << "Set -ln=" << niftk::ConvertToString(args.levels)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-stl") == 0){
-      args.startLevel=atoi(argv[++i]);
-      std::cout << "Set -stl=" << niftk::ConvertToString(args.startLevel)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-spl") == 0){
-      args.stopLevel=atoi(argv[++i]);
-      std::cout << "Set -spl=" << niftk::ConvertToString(args.stopLevel)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-hfl") == 0){
-      args.intensityFixedLowerBound=atof(argv[++i]);
-      std::cout << "Set -hfl=" << niftk::ConvertToString(args.intensityFixedLowerBound)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-hfu") == 0){
-      args.intensityFixedUpperBound=atof(argv[++i]);
-      std::cout << "Set -hfu=" << niftk::ConvertToString(args.intensityFixedUpperBound)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-hml") == 0){
-      args.intensityMovingLowerBound=atof(argv[++i]);
-      std::cout << "Set -hml=" << niftk::ConvertToString(args.intensityMovingLowerBound)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-hmu") == 0){
-      args.intensityMovingUpperBound=atof(argv[++i]);
-      std::cout << "Set -hmu=" << niftk::ConvertToString(args.intensityMovingUpperBound)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-rescale") == 0){
-      args.isRescaleIntensity=true;
-      args.lowerIntensity=atof(argv[++i]);
-      args.higherIntensity=atof(argv[++i]);
-      std::cout << "Set -rescale=" << niftk::ConvertToString(args.lowerIntensity) << "-" << niftk::ConvertToString(args.higherIntensity)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-mip") == 0){
-      args.movingImagePadValue=atof(argv[++i]);
-      args.userSetPadValue=true;
-      std::cout << "Set -mip=" << niftk::ConvertToString(args.movingImagePadValue)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-wsim") == 0){
-      args.useWeighting=true;
-      args.weightingThreshold=atof(argv[++i]);
-      std::cout << "Set -wsim=" << niftk::ConvertToString(args.weightingThreshold)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-pptol") == 0){
-      args.parameterChangeTolerance=atof(argv[++i]);
-      std::cout << "Set -pptol=" << niftk::ConvertToString(args.parameterChangeTolerance)<< std::endl;
-    }
-    else if(strcmp(argv[i], "-cog") == 0){
-      args.useCogInitialisation=true; 
-      std::cout << "Set -cog=" << niftk::ConvertToString(args.useCogInitialisation)<< std::endl;
-    }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }
+  if ( intensityMovingBound.size() == 2 )
+  {
+      args.intensityMovingLowerBound = intensityMovingBound[0];
+      args.intensityMovingUpperBound = intensityMovingBound[1];
   }
+  else if ( intensityMovingBound.size() != 0 )
+  {
+    std::cerr << "ERROR: Moving image intensity limits '--hm' must be specified "
+              << "as two values: <lower>,<upper>" << std::endl;
+    return( EXIT_FAILURE );
+  }
+
+  // Weighted similarity measure distance threshold
+
+  if ( weightingThreshold != 0. )
+  {
+    args.useWeighting = true;
+    args.weightingThreshold = weightingThreshold;
+  }
+  else
+  {
+    args.useWeighting = false; 
+  }
+
+  // Print out the options
+  
+  std::cout << std::endl
+            << "Command line options: "					<< std::endl;
+
+  std::cout << "  Mandatory Input and Output Options: "			<< std::endl
+            << "    Fixed target image: "				<< args.fixedImage              << std::endl
+            << "    Moving source image: "				<< args.movingImage             << std::endl
+            << "    Output affine transformation: "			<< args.outputUCLTransformFile  << std::endl
+            << "    Output registered image: "				<< args.outputImage             << std::endl;
+
+  std::cout << "  Common Options: "					<< std::endl
+            << "    Output affine matrix transformation: "		<< args.outputMatrixTransformFile<< std::endl
+            << "    Initial input transformation: "			<< args.inputTransformFile      << std::endl
+            << "    Fixed target mask image: "				<< args.fixedMask               << std::endl
+            << "    Moving source mask image: "				<< args.movingMask              << std::endl
+            << "    Similarity metric: "				<< args.similarityMeasure << ". " << strSimilarityMeasure    << std::endl
+            << "    Transformation: "					<< args.transformation << ". " << strTransformation       << std::endl
+            << "    Optimiser: "					<< args.optimizer << ". " << strOptimizer            << std::endl
+            << "    Number of multi-resolution levels: "		<< args.levels                  << std::endl
+            << "    Multi-resolution start level: "			<< args.startLevel              << std::endl
+            << "    Multi-resolution stop level: "			<< args.stopLevel               << std::endl;
+
+  if ( ! args.userSetPadValue )
+  {
+    std::cout << "    Moving image pad value: First moving image voxel intensity" << std::endl;
+  }
+  else 
+  {
+    std::cout << "    Moving image pad value: " << args.movingImagePadValue     << std::endl;
+  }
+
+  std::cout << "    Initialise translation with center of mass? "	<< BooleanToString( args.useCogInitialisation )  << std::endl
+            << "    Set center of rotation to fixed image center of gravity? " << BooleanToString( args.rotateAboutCog )  << std::endl;
+
+  std::cout << "  Advanced Options: "					<< std::endl
+            << "    Registration interpolation: "			<< args.registrationInterpolator << ". " << strRegnInterpolator     << std::endl
+            << "    Final interpolation: "				<< args.finalInterpolator << ". " << strFinalInterpolator    << std::endl
+            << "    Registration strategy: "				<< args.registrationStrategy << ". " << strRegnStrategy         << std::endl
+            << "    Number of histogram bins: "				<< args.bins                    << std::endl
+            << "    Maximum number of iterations per level: "		<< args.iterations              << std::endl
+            << "    Number of mask dilations: "				<< args.dilations               << std::endl
+            << "    Mask minimum threshold: "				<< args.maskMinimumThreshold    << std::endl
+            << "    Mask maximum threshold: "				<< args.maskMaximumThreshold    << std::endl
+            << "    Weighted similarity measure distance threshold: "	<< args.weightingThreshold      << std::endl;
+
+  std::cout << "  Symmetric metric ("					<< args.symmetricMetric << "): " << std::endl
+            << "    Symmetric metric? "					<< BooleanToString( flgSymmetricMetric )      << std::endl
+            << "    Symmetric midway? "					<< BooleanToString( flgSymmetricMetricMidway )<< std::endl;
+
+  std::cout << "  Rescale the output images?: "				<< std::endl;
+
+  if ( args.isRescaleIntensity )
+  {
+    std::cout << "    Rescaled output image range: <lower>,<upper>: "	<< args.lowerIntensity << " to " << args.higherIntensity << std::endl;
+  }
+  else
+  {
+    std::cout << "    Rescale output image? NO" << std::endl;
+  }
+
+  std::cout << "  Similarity Measure Image Intensity Limits: "		<< std::endl;
+
+  if ( args.intensityFixedLowerBound != args.dummyDefault ||
+       args.intensityFixedUpperBound != args.dummyDefault )
+  {
+    std::cout << "    Fixed image intensity limits: <lower>,<upper>: "<< args.intensityFixedLowerBound << " to " << args.intensityFixedUpperBound << std::endl;
+  }
+  else
+  {
+    std::cout << "    Fixed image intensity limits specified? NO " << std::endl;
+  }
+
+  if ( args.intensityMovingLowerBound != args.dummyDefault ||
+       args.intensityMovingUpperBound != args.dummyDefault )
+  {
+    std::cout << "    Moving image intensity limits: <lower>,<upper>: "	<< args.intensityMovingLowerBound << " to " << args.intensityMovingUpperBound << std::endl;
+  }
+  else
+  {
+    std::cout << "    Moving image intensity limits specified? NO " << std::endl;
+  }
+
+  std::cout << "  Relative Parameter Weightings: "	<< std::endl
+            << "    Translation weighting factor: "	<< args.translationWeighting << std::endl
+            << "    Rotation weighting factor: "	<< args.rotationWeighting    << std::endl
+            << "    Scale weighting factor: "		<< args.scaleWeighting       << std::endl
+            << "    Skew weighting factor: "		<< args.skewWeighting        << std::endl;
+  
+
+  if ( args.optimizer == 6 )
+  {
+    std::cout << "  Regular Step Optimzer Options: "	<< std::endl
+              << "    Maximum step size: "		<< args.maxStep     << std::endl
+              << "    Minimum step size: "		<< args.minStep     << std::endl
+              << "    Gradient tolerance: "		<< args.gradTol     << std::endl
+              << "    Relaxation Factor: "		<< args.relaxFactor << std::endl;
+  }
+  else if ( args.optimizer == 1 )
+  {
+    std::cout << "  Simplex Optimzer Options: "		<< std::endl
+              << "    Parameter tolerance: "		<< args.paramTol << std::endl
+              << "    Function tolerance: "		<< args.funcTol  << std::endl;
+  }
+  else if ( args.optimizer == 2 )
+  {
+    std::cout << "  Gradient Descent Optimzer Options: "<< std::endl
+              << "    Learning rate: "			<< args.learningRate << std::endl;
+  }
+  else if ( args.optimizer == 7 )
+  {
+    std::cout << "  UCL Powell Optimzer Options: "	<< std::endl
+              << "    Parameter change tolerance: "	<< args.parameterChangeTolerance << std::endl;
+  }
+      
+  std::cout << std::endl;
+
 
   // Validation
   if (args.fixedImage.length() <= 0 || args.movingImage.length() <= 0 || args.outputUCLTransformFile.length() <= 0)
     {
-      StartUsage(argv[0]);
+      commandLine.getOutput()->usage(commandLine);
       std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
       return -1;
     }
@@ -968,10 +1081,10 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  unsigned int dims = itk::PeekAtImageDimension(args.fixedImage);
+  unsigned int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fixedImage);
   if (dims != 3 && dims != 2)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -986,7 +1099,7 @@ int main(int argc, char** argv)
         result = DoMain<3>(args);
       break;
       default:
-        std::cout << "Unsuported image dimension" << std::endl;
+        std::cout << "Unsupported image dimension" << std::endl;
         exit( EXIT_FAILURE );
     }
   return result;

@@ -20,6 +20,11 @@
 #include <mitkImageWriteAccessor.h>
 #include <mitkIOUtil.h>
 #include <QCoreApplication>
+#include <Conversion/ImageConversion.h>
+#include <cv.h>
+#include <itkNiftiImageIO.h>
+#include <NiftyLinkMessage.h>
+#include <boost/typeof/typeof.hpp>
 
 #include <mitkImageWriter.h>
 
@@ -29,6 +34,8 @@ const float QmitkIGIUltrasonixTool::RAD_TO_DEGREES = 180 / 3.1415926535897932384
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  NiftyLinkSocketObject * socket )
 : QmitkIGINiftyLinkDataSource(storage, socket)
+, m_FlipHorizontally(false)
+, m_FlipVertically(false)
 {
 }
 
@@ -97,7 +104,6 @@ void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");
   }
-
 }
 
 
@@ -150,76 +156,106 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     }
 
     NiftyLinkImageMessage::Pointer imageMsg;
-    imageMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
+    imageMsg = dynamic_cast<NiftyLinkImageMessage*>(pointerToMessage);
 
     if (imageMsg.data() != NULL)
     {
       imageMsg->PreserveMatrix();
-      QImage qImage = imageMsg->GetQImage();  
+      QImage qImage = imageMsg->GetQImage();
+
+      // Slow.
+      if (m_FlipHorizontally || m_FlipVertically)
+      {
+        qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
+      }
+
+      // wrap the qimage in an opencv image
+      IplImage  ocvimg;
+      int nchannels = 0;
+      switch (qImage.format())
+      {
+        // this corresponds to BGRA channel order.
+        // we are flipping to RGBA below.
+        case QImage::Format_ARGB32:
+          nchannels = 4;
+          break;
+        case QImage::Format_Indexed8:
+          // we totally ignore the (missing?) colour table here.
+          nchannels = 1;
+          break;
+
+        default:
+          MITK_ERROR << "QmitkIGIUltrasonixTool received an unsupported image format";
+      }
+      cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
+      cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+      // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+      // so should be fine to do this here...
+      if (ocvimg.nChannels == 4)
+      {
+        cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+        // mark layout as rgba instead of the opencv-default bgr
+        std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
+      }
 
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
 
-      if (qImage.format() == QImage::Format_Indexed8)
+      if (!imageInNode.IsNull())
       {
-        if (imageInNode.IsNull())
-        {          
-          QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-          filter->SetQImage(&qImage);
-          filter->Update();
+        // check size of image that is already attached to data node!
+        bool haswrongsize = false;
+        haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
+        haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
+        haswrongsize |= imageInNode->GetDimension(2) != 1;
+        // check image type as well.
+        haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
+        haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
 
-          m_DataStorage->Remove(node);
-          node->SetData(filter->GetOutput());
-
-          m_DataStorage->Add(node);
-        }
-        else
+        if (haswrongsize)
         {
-          const void* cPointer = qImage.bits();
-
-          mitk::ImageWriteAccessor writeAccess(imageInNode);
-          void* vPointer = writeAccess.GetData();
-
-          memcpy(vPointer, cPointer, qImage.width() * qImage.height());
-          imageInNode->Modified();
+          imageInNode = mitk::Image::Pointer();
         }
+      }
+
+      if (imageInNode.IsNull())
+      {
+        mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
+        // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
+        m_DataStorage->Remove(node);
+        node->SetData(convertedImage);
+        m_DataStorage->Add(node);
       }
       else
       {
-        // NOT FINISHED or tested or anything.
-        assert(false);
+        try
+        {
+          mitk::ImageWriteAccessor writeAccess(imageInNode);
+          void* vPointer = writeAccess.GetData();
 
-        //QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-        //filter->SetQImage(&qImage);
-        //filter->Update();
+          // the mitk image is tightly packed
+          // but the opencv image might not
+          const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
+          if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
+          {
+            std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
+          }
+          else
+          {
+            // if that is not true then something is seriously borked
+            assert(ocvimg.widthStep >= numberOfBytesPerLine);
 
-        //mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-        //if (imageInNode.IsNull())
-        //{
-        //  // We remove and add to trigger the NodeAdded event,
-        //  // which is not emmitted if the node was added with no data.
-        //  m_DataStorage->Remove(node);
-        //  node->SetData(filter->GetOutput());
-
-        //  m_DataStorage->Add(node);
-        //}
-        //else
-        //{
-        //  try
-        //  {
-        //    mitk::ImageReadAccessor readAccess(filter->GetOutput(), filter->GetOutput()->GetVolumeData(0));
-        //    const void* cPointer = readAccess.GetData();
-
-        //    mitk::ImageWriteAccessor writeAccess(imageInNode);
-        //    void* vPointer = writeAccess.GetData();
-
-        //    memcpy(vPointer, cPointer, qImage.width() * qImage.height());
-        //    imageInNode->Modified();
-        //  }
-        //  catch(mitk::Exception& e)
-        //  {
-        //    MITK_ERROR << "Failed to copy Ultrasonix image to DataStorage due to " << e.what() << std::endl;
-        //  }
-        //}
+            // "slow" path: copy line by line
+            for (int y = 0; y < ocvimg.height; ++y)
+            {
+              // widthStep is in bytes while width is in pixels
+              std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine); 
+            }
+          }
+        }
+        catch(mitk::Exception& e)
+        {
+          MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+        }
       }
 
       imageMsg->GetMatrix(m_CurrentMatrix);
@@ -279,29 +315,224 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           }
           matrixFile.close();
 
-          QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-          mitk::Image::Pointer image = mitk::Image::New();
+          fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
+          outputFileName = fileName.toStdString();
 
           QImage qImage = imgMsg->GetQImage();
-          filter->SetQImage(&qImage);
-          filter->Update();
-          image = filter->GetOutput();
+          // there shouldnt be any sharing, but make sure we own the buffer exclusively.
+          qImage.detach();
 
-          fileName = directoryPath + QDir::separator() + tr("%1.ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
+          // go straight via itk, skipping all the mitk stuff.
+          itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+          io->SetFileName(outputFileName);
+          io->SetNumberOfDimensions(2);
+          io->SetDimensions(0, qImage.width());
+          io->SetDimensions(1, qImage.height());
+          io->SetComponentType(itk::ImageIOBase::UCHAR);
+          // FIXME: SetSpacing(unsigned int i, double spacing)
+          // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
 
-          if (image.IsNotNull())
+          switch (qImage.format())
           {
-            mitk::IOUtil::SaveImage( image, fileName.toStdString() );
-            outputFileName = fileName.toStdString();
-            success = true;
+            case QImage::Format_ARGB32:
+            {
+              // temporary opencv image, just for swapping bgr to rgb
+              IplImage  ocvimg;
+              cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
+              cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+              // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+              // so should be fine to do this here...
+              cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+
+              io->SetPixelType(itk::ImageIOBase::RGBA);
+              io->SetNumberOfComponents(4);
+              break;
+            }
+
+            case QImage::Format_Indexed8:
+              io->SetPixelType(itk::ImageIOBase::SCALAR);
+              io->SetNumberOfComponents(1);
+              break;
+
+            default:
+              MITK_ERROR << "Trying to save ultrasound image with unsupported pixel type.";
+              // all the smartpointer goodness should take care of cleaning up.
+              return false;
           }
-          else
-          {
-            MITK_ERROR << "QmitkIGIUltrasonixTool: m_Image is NULL. This should not happen" << std::endl;
-          }
+
+          // i wonder how itk knows the buffer layout from just the few parameters up there.
+          // this is all a bit fishy...
+          io->Write(qImage.bits());
+          success = true;
+
         } // end if directory to write to ok
       } // end if (imgMsg != NULL)
     } // end if (pointerToMessage != NULL)
   } // end if (dataType.IsNotNull())
   return success;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIUltrasonixTool::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
+  igtlUint64    firstTimeStampFound = 0;
+  igtlUint64    lastTimeStampFound  = 0;
+
+  QDir directory(QString::fromStdString(path));
+  if (directory.exists())
+  {
+    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString("-ultrasoundImage.nii"));
+    if (!timestamps.empty())
+    {
+      firstTimeStampFound = *timestamps.begin();
+      lastTimeStampFound  = *(--(timestamps.end()));
+    }
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  //StopGrabbingThread();
+  ClearBuffer();
+
+  // needs to match what SaveData() does
+  QDir directory(QString::fromStdString(path));
+  if (directory.exists())
+  {
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString("-ultrasoundImage.nii"));
+    m_PlaybackDirectoryName = path;
+  }
+  else
+  {
+    // shouldnt happen
+    assert(false);
+  }
+
+  SetIsPlayingBack(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::StopPlayback()
+{
+  m_PlaybackIndex.clear();
+  ClearBuffer();
+
+  SetIsPlayingBack(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  assert(GetIsPlayingBack());
+
+  // this will find us the timestamp right after the requested one
+  BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
+
+  // so we need to pick the previous
+  // FIXME: not sure if the non-existing-else here ever applies!
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
+  if (i != m_PlaybackIndex.end())
+  {
+    // completely ignore motor position for now.
+    // it currently contains garbage.
+
+    std::ostringstream    filename;
+    filename << m_PlaybackDirectoryName << '/' << (*i) << "-ultrasoundImage.nii";
+
+    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+    io->SetFileName(filename.str());
+    io->ReadImageInformation();
+
+    // only supporting 2d images, for now
+    if (io->GetNumberOfDimensions() != 2)
+    {
+      MITK_ERROR << "Unsupported number of dimensions for " << filename.str();
+      return;
+    }
+    if (io->GetComponentType() != itk::ImageIOBase::UCHAR)
+    {
+      MITK_ERROR << "Unsupported component type for " << filename.str();
+      return;
+    }
+
+    // there is probably a way to avoid this extra qimage round trip
+    QImage  img;
+    switch (io->GetPixelType())
+    {
+      case itk::ImageIOBase::RGBA:
+        if (io->GetNumberOfComponents() != 4)
+        {
+          MITK_ERROR << "Unexpected number of components for RGBA image in " << filename.str();
+          return;
+        }
+        img = QImage(io->GetDimensions(0), io->GetDimensions(1), QImage::Format_ARGB32);
+        break;
+
+      case itk::ImageIOBase::SCALAR:
+        if (io->GetNumberOfComponents() != 1)
+        {
+          MITK_ERROR << "Unexpected number of components for SCALAR image in " << filename.str();
+          return;
+        }
+        img = QImage(io->GetDimensions(0), io->GetDimensions(1), QImage::Format_Indexed8);
+        break;
+
+      // we only expect image formats that we can write in SaveData() above.
+      default:
+        MITK_ERROR << "Unsupported image type for " << filename.str();
+        // nothing we can do to recover, better stop right here.
+        return;
+    }
+    itk::ImageIORegion  ioregion;
+    ioregion.SetIndex(0, 0);
+    ioregion.SetIndex(1, 0);
+    ioregion.SetSize(0, io->GetDimensions(0));
+    ioregion.SetSize(1, io->GetDimensions(1));
+    io->SetIORegion(ioregion);
+    io->Read(img.bits());
+
+    if (img.format() == QImage::Format_ARGB32)
+    {
+      // flip from RGBA (on disc) to BGRA (in qt)
+      IplImage  ocvimg;
+      cvInitImageHeader(&ocvimg, cvSize(img.width(), img.height()), IPL_DEPTH_8U, 4);
+      cvSetData(&ocvimg, (void*) img.constScanLine(0), img.constScanLine(1) - img.constScanLine(0));
+      // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+      // so should be fine to do this here...
+      cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+    }
+
+    NiftyLinkImageMessage*   msg = new NiftyLinkImageMessage;
+    msg->ChangeMessageType("IMAGE");
+    msg->ChangeHostName("localhost");
+    msg->SetQImage(img);
+
+    QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
+    dataType->SetMessage(msg);
+    dataType->SetTimeStampInNanoSeconds(*i);
+    dataType->SetDuration(m_TimeStampTolerance);
+
+    AddData(dataType.GetPointer());
+    SetStatus("Playing back");
+  }
 }

@@ -22,32 +22,47 @@
 #include <NiftyLinkUtils.h>
 #include <cv.h>
 #include <QCoreApplication>
+#include <sstream>
 
-const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
+QSet<int> QmitkIGIOpenCVDataSource::m_SourcesInUse = QSet<int>();
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_VideoSource(NULL)
 {
+  m_Lock.lock();
+  unsigned int sourceCounter = 0;
+  while(m_SourcesInUse.contains(sourceCounter))
+  {
+    sourceCounter++;
+  }
+  m_SourcesInUse.insert(sourceCounter);
+  m_ChannelNumber = sourceCounter;
+  m_Lock.unlock();
+  
   qRegisterMetaType<mitk::VideoSource*>();
 
-  this->SetName("QmitkIGIOpenCVDataSource");
+  std::ostringstream channelNameString;
+  channelNameString << "OpenCV-" << m_ChannelNumber;
+  m_SourceName = channelNameString.str();
+  
+  this->SetName(m_SourceName);
   this->SetType("Frame Grabber");
-  this->SetDescription("OpenCV");
+  this->SetDescription(m_SourceName);
   this->SetStatus("Initialised");
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
-  m_VideoSource->SetVideoCameraInput(0);
+  m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
 
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
   // Create this node up front, so that the Update doesn't have to (and risk triggering GUI update events).
-  mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+  mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
   if (node.IsNull())
   {
-    MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+    MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
   }
 
   // This creates and starts up the thread.
@@ -59,6 +74,14 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
+  m_Lock.lock();
+  m_SourcesInUse.remove(m_ChannelNumber);
+  m_Lock.unlock();
+
+  // explicitly tell base class to stop the thread.
+  // otherwise there's a race condition where this class has been cleaned up but the thread
+  // calls a virtual function on us before the base class destructor has had a chance to stop it.
+  StopGrabbingThread();
 }
 
 
@@ -118,9 +141,25 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::GrabData()
 {
+  // somehow this can become null, probably a race condition during destruction.
+  if (m_VideoSource.IsNull())
+  {
+    MITK_ERROR << "Video source is null. This should not happen! It's most likely a race-condition.";
+    return;
+  }
+
   // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
+  // beware: recent mitk will throw a bunch of exceptions, for some random reasons.
+  const IplImage* img = 0;
+  try
+  {
+    m_VideoSource->FetchFrame();
+    img = m_VideoSource->GetCurrentFrame();
+  }
+  catch (...)
+  {
+    // if (img == 0) below will handle this.
+  }
 
   // Check if grabbing failed (maybe no webcam present)
   if (img == 0)
@@ -154,10 +193,10 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
     // Get Data Node.
-    mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+    mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
     if (node.IsNull())
     {
-      MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+      MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
       return result;
     }
 
@@ -230,11 +269,10 @@ bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUi
   igtlUint64    lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-  QDir directory(directoryPath);
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
-    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString("jpg"));
+    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString(".jpg"));
     if (!timestamps.empty())
     {
       firstTimeStampFound = *timestamps.begin();
@@ -262,12 +300,11 @@ void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64
   ClearBuffer();
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-  QDir directory(directoryPath);
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
-    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString("jpg"));
-    m_PlaybackDirectoryName = directoryPath.toStdString();
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".jpg"));
+    m_PlaybackDirectoryName = path;
   }
   else
   {

@@ -18,8 +18,8 @@
 //-----------------------------------------------------------------------------
 QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 {
-  setupUi(parent);
-  connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
+  this->setupUi(parent);
+  this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 

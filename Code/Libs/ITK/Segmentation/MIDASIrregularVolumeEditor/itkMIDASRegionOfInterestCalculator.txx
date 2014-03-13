@@ -51,7 +51,7 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 template<class TPixel, unsigned int VImageDimension>
 int
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
-::GetAxis(ImageType* image, ORIENTATION_ENUM orientation)
+::GetAxis(ImageType* image, Orientation orientation)
 {
   std::string orientationString = this->GetOrientationString(image);
 
@@ -94,7 +94,7 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 template<class TPixel, unsigned int VImageDimension>
 int 
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
-::GetPlusOrUpDirection(ImageType* image, ORIENTATION_ENUM orientation)
+::GetPlusOrUpDirection(ImageType* image, Orientation orientation)
 {
   std::string orientationString = this->GetOrientationString(image);
   int axis = this->GetAxis(image, orientation);
@@ -138,7 +138,7 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 template<class TPixel, unsigned int VImageDimension>
 void 
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
-::CheckSliceNumber(ImageType* image, ORIENTATION_ENUM orientation, int sliceNumber)
+::CheckSliceNumber(ImageType* image, Orientation orientation, int sliceNumber)
 {
   assert(image);
 
@@ -163,7 +163,7 @@ template<class TPixel, unsigned int VImageDimension>
 typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::RegionType
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension> 
 ::GetRegion(typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::ImageType* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber,
   bool doSingleSlice,
   bool doPlus
@@ -214,7 +214,7 @@ template<class TPixel, unsigned int VImageDimension>
 std::vector< typename itk::Image<TPixel, VImageDimension>::RegionType >
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension> 
 ::GetRegionAsSlices(typename itk::Image<TPixel, VImageDimension>* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber,
   bool doSingleSlice,
   bool doPlus
@@ -298,7 +298,7 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 ::SplitRegionBySlices(
   typename itk::Image<TPixel, VImageDimension>::RegionType region,
   typename itk::Image<TPixel, VImageDimension>* image, 
-  ORIENTATION_ENUM orientation
+  Orientation orientation
   )
 {
   std::vector<RegionType> results;
@@ -353,7 +353,7 @@ template<class TPixel, unsigned int VImageDimension>
 typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::RegionType
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension> 
 ::GetPlusOrUpRegion(typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::ImageType* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber
   )
 {
@@ -364,7 +364,7 @@ template<class TPixel, unsigned int VImageDimension>
 typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::RegionType
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 ::GetMinusOrDownRegion(typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::ImageType* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber
   )
 {
@@ -375,7 +375,7 @@ template<class TPixel, unsigned int VImageDimension>
 typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::RegionType
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
 ::GetSliceRegion(typename MIDASRegionOfInterestCalculator<TPixel, VImageDimension>::ImageType* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber
   )
 {
@@ -386,7 +386,7 @@ template<class TPixel, unsigned int VImageDimension>
 std::vector< typename itk::Image<TPixel, VImageDimension>::RegionType >
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension> 
 ::GetPlusOrUpRegionAsSlices(typename itk::Image<TPixel, VImageDimension>* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber
   )
 {
@@ -397,7 +397,7 @@ template<class TPixel, unsigned int VImageDimension>
 std::vector< typename itk::Image<TPixel, VImageDimension>::RegionType >
 MIDASRegionOfInterestCalculator<TPixel, VImageDimension> 
 ::GetMinusOrDownRegionAsSlices(typename itk::Image<TPixel, VImageDimension>* image, 
-  ORIENTATION_ENUM orientation, 
+  Orientation orientation, 
   int sliceNumber
   )
 {

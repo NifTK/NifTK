@@ -35,7 +35,8 @@
 // Miscellaneous.
 #include <mitkToolManager.h>
 #include <itkImage.h>
-#include <itkMIDASHelper.h>
+
+#include <mitkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
 
@@ -50,7 +51,7 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView
+class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public mitk::MIDASEventFilter
 {
 
   Q_OBJECT
@@ -60,6 +61,10 @@ public:
   QmitkMIDASBaseSegmentationFunctionality();
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
+
+  /// \brief Returns true if the event should be filtered, i.e. not processed,
+  /// otherwise false.
+  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const;
 
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).
@@ -79,6 +84,15 @@ public:
    * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
    */
   virtual mitk::DataNode* CreateNewSegmentation(QColor &defaultColor);
+
+  /**
+   * \brief Returns the currently focused renderer.
+   *
+   * Same as QmitkBaseView::GetFocusedRenderer(), but with public visiblity.
+   *
+   * \return mitk::BaseRenderer* The currently focused renderer, or NULL if it has not been set.
+   */
+  mitk::BaseRenderer* GetFocusedRenderer();
 
 signals:
 
@@ -100,6 +114,11 @@ protected:
    * \see mitk::ILifecycleAwarePart::PartActivated
    */
   virtual void Activated();
+
+  /**
+   * \see mitk::ILifecycleAwarePart::PartDectivated
+   */
+  virtual void Deactivated();
 
   /**
    * \see mitk::ILifecycleAwarePart::PartVisible
@@ -238,6 +257,12 @@ protected:
   QColor m_DefaultSegmentationColor;
 
 private:
+
+  /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
+  bool m_MainWindowCursorWasVisible;
+
+  /// \brief Stores the visibility state of the cursor in the viewer of this plugin before activating a tool.
+  bool m_OwnCursorWasVisible;
 
   /// \brief For Event Admin, we store a reference to the CTK plugin context
   ctkPluginContext* m_Context;

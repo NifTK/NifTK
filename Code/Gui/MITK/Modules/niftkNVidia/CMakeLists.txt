@@ -22,6 +22,10 @@ target_link_libraries(niftkNVidia
   niftknvapi
   )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkNVidia)
+endif()
+
 if(BUILD_TESTING)  
   add_subdirectory(Testing)
 endif()

@@ -50,6 +50,8 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE)
         UPDATE_COMMAND ""
         BUILD_IN_SOURCE ON
         LOG_BUILD ON
+        CMAKE_ARGS
+          ${EP_COMMON_ARGS}
         DEPENDS ${proj_DEPENDENCIES}
         )
  

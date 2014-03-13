@@ -32,6 +32,10 @@ if(NIFTYSEG_FOUND)
     niftkITK    
     ${NIFTYSEG_LIBRARIES}
     )
+    
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    cotire(uk_ac_ucl_cmic_breastsegmentation)
+  endif()
 
 else(NIFTYSEG_FOUND)
 

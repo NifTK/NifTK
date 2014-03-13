@@ -26,7 +26,7 @@ namespace itk
   /** Constructor with default arguments */
   template<class TScalarType, unsigned int NDimensions>
   AffineTransform2D3D<TScalarType, NDimensions>::
-  AffineTransform2D3D(): Superclass(SpaceDimension,ParametersDimension)
+  AffineTransform2D3D(): Superclass(ParametersDimension)
   {
     m_Rotations.SetIdentity();
     m_Translations.SetIdentity();

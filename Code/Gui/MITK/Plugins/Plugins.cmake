@@ -94,6 +94,7 @@ set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipointreg:ON
   Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
   Plugins/uk.ac.ucl.cmic.igiundistort:ON
+  Plugins/uk.ac.ucl.cmic.igirmserror:ON
 )
 
 if(BUILD_IGI)

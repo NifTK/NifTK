@@ -38,7 +38,7 @@ So if you are currently running a CMIC Centos machine, you are strongly advised 
 machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
 <li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.
 Do check your system path, if it has Boost, old Qt, random installation of ITK or VTK then please clear them off. </li>
-<li> If you would like to compile NifTK using Visual Studio 2010 please also install the VS Redistributable packages for your system. 
+<li> If you would like to compile NifTK using Visual Studio 2010 or VS2012 please also install the VS Redistributable packages for your system. Also make sure that you have at least the "Professional" version of Visual Studio, otherwise you won't have OpenMP support.
 
 <br> 32 bit Windows:
 <a href="http://www.microsoft.com/en-us/download/details.aspx?id=3387">Microsoft Visual C++ 2005 Redistributable Package (x86)</a><br>
@@ -61,20 +61,25 @@ Do check your system path, if it has Boost, old Qt, random installation of ITK o
 
 \section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
 
-<ul>
-<li> On Windows always use our patched version of CMake, available here: <a href="https://github.com/NifTK/CMake.git">NifTK/CMake</a>. You can build it from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
+
+You can build CMake from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
 \verbatim
-/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/platform/dependencies
+http://www.cmake.org/files/v2.8/
 \endverbatim
 
-Once you have obtained a binary version of the patched CMake please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.9-git\bin\" )<br>
+Please note that different versions of CMake are known to work on different platforms.
 
-</li>
-<li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
-<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
-<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. The ccmake binary must be visible on your PATH. </li>
-<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. Make sure the compiled ccmake is on your PATH. </li>
+<ul>
+<li> On Windows you can use CMake 2.8.11.2.</li>
+<li> On Mac Mountain Lion (10.8) machines you can use CMake 2.8.9. </li>
+<li> On Mac Mavericks (10.9) machines you can use CMake 2.8.12.1. </li>
+<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. </li>
+<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. </li>
+<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. </li>
 </ul>
+
+Once you have obtained a binary version of CMake or built your own CMake, please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" or "/opt/cmake-2.8.12.1/bin").
+If you have built your own CMake on Linux or Mac, make sure that you have built the 'ccmake' command and it is visible on your PATH.
 
 \section BuildInstructionsDownloadQt 3. Install Qt 4.8.3 or greater
 
@@ -92,9 +97,18 @@ On Linux/Mac try
 \endverbatim
 </li>
 
+<li> On Mac Mavericks you have to build the latest sources from their git repositiory and build it with the Mountain Lion (10.8) system libraries.
+<br>
+\verbatim
+git clone git://gitorious.org/qt/qt.git qt
+cd qt
+./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+\endverbatim
+</li>
+
 <li> On Windows follow the instructions below to build Qt:<br>
 
-First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2008 or 2010 Professional version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues.
+First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.<br>
 You might also want to have the Qt intergation pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
 
 On Win32 you can download a pre-compiled Qt version from <a href="http://qt-project.org/downloads">_here_</a>. The suitable versions are:
@@ -104,23 +118,12 @@ where XXXX is the Visual Studio version you'd like to use.
 
 On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
-The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or visit the repository at qt.gitorious.org/qt.<br><br>
-Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.2-build"), and create a directory where you want Qt installed (e.g. "C:\Qt\4.8.2"). <br>Note: The install path must not contain any spaces or Windows specific file system characters.
+The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or clone Qt from the git repository: git clone git://gitorious.org/qt/qt.git.<br><br>
+Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.6-build"), and create a directory where you want Qt installed (e.g. "C:\Qt\4.8.6"). <br>Note: The install path must not contain any spaces or Windows specific file system characters.<br>
 
-The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
+To configure Qt a Windows version of Perl will be required. Get the installer from here: <a href="http://strawberryperl.com/">StrawberryPerl</a>. Install the package and make sure that the "bin" folders of Perl are added to your system path.<br>
 
-To open the command prompt launch:
-- 32bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio Command Prompt
-- 64bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio x64 Win64 Command Prompt <br>
-where XXXX is the Visual Studio version you'd like to use.
-
-The next step is to configure Qt for the build:
-\verbatim
-cd /D C:\Qt\4.8.2-build
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -debug-and-release -opensource -confirm-license -mp -platform win32-msvcXXXX -prefix c:\Qt\4.8.2
-\endverbatim 
-
-The last two paramters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2008 or -platform win32-msvc2010). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
+On Windows you'll have to install OpenSSL before attempting to build Qt (OpenSSL is required for the XNAT functionality). Please download the installer from here: <a href="http://slproweb.com/products/Win32OpenSSL.html">Win OpenSSL</a>. Install the package somewhere, but make sure that the install path must not contain any spaces or Windows specific file system characters (e.g. c:\OpenSSL-Win64\).<br><br>
 
 If you need symbols (to be able to debug a crashed release-build, for example, or to performance-profile your code), you'll need to hack mkspec: You need to edit
 \verbatim
@@ -133,9 +136,33 @@ QMAKE_CFLAGS_RELEASE = -O2 -MD -Zi
 ...
 QMAKE_LFLAGS_RELEASE = /INCREMENTAL:NO /DEBUG /OPT:REF
 ...
+\endverbatim<br>
+
+The current version of Qt (4.8.6 - from git repo) doesn't build with VS2012 due to header file within the "webkit" module. To fix this issue please replace
+\verbatim
+qt-src-folder\src\3rdparty\webkit\Source\JavaScriptCore\wtf\HashSet.h
+\endverbatim<br>
+with the HashSet.h file that is provided <a href="file://HashSet.h">here</a></br>
+
+The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
+
+To open the command prompt launch:
+- 32bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio Command Prompt
+- 64bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio x64 Win64 (Native) Command Prompt <br>
+where XXXX is the Visual Studio version you'd like to use.
+
+The next step is to configure Qt for the build:
+\verbatim
+cd /D C:\Qt\4.8.6-build
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-multimedia -no-audio-backend -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
-Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.2").  
+The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
+
+Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.6").<br> 
+
+The -I and -L parameters are to specify additional include paths and library paths, respectively. Please edit these to point to your installation of OpenSSL, so qmake can find them.<br>
+
 <br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing "nmake distclean" before running configure again.<br>
 
 The next step is to compile and build Qt, so type:
@@ -151,7 +178,7 @@ nmake clean
 
 This will remove all the temporary files used during build-time. 
 
-The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add "c:\Qt\4.8.2\bin;" to the FRONT of the path string.
+The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add "c:\Qt\4.8.6\bin;" to the FRONT of the path string.
 You'll have to log off / log on for the changes to make effect.
 </li>
 
@@ -220,6 +247,17 @@ matter what you call it, so it could be /Users/mattclarkson/install/foo-version-
 subdirectories will be created below foo-version-bar. For release builds, the version number 
 to use can be found in the top of the CMakeLists.txt file, but the core development team will 
 know this anyway.
+</li>
+<li>On Mac Mavericks (10.9) you need to set the following CMake variables:
+  <ul>
+    <li>CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"</li>
+    <li>CMAKE_OSX_DEPLOYMENT_TARGET: "10.8"</li>
+    <li>CMAKE_OSX_ARCHITECTURES: "x86_64"</li>
+  </ul>
+  You can pass these options to the cmake or ccmake commands in the command line like this:
+  <verbatim>
+    ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
+  </verbatim>
 </li>
 <li> Select which options you want building. These variables start with BUILD_
 

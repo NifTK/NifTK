@@ -51,4 +51,8 @@ target_link_libraries(niftkITK
   ${Boost_LIBRARIES}
 )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkITK)
+endif()
+
 MITK_INSTALL(TARGETS niftkITK)

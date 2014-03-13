@@ -22,6 +22,7 @@
 
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 /**
  * Test for stereo trianglulation and projection. Start with a realistic set
@@ -42,6 +43,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   bool cropNonVisiblePoints = true; 
   double screenWidth = 1980;
   double screenHeight = 540;
+  double cropValue = std::numeric_limits<double>::quiet_NaN();
 
   bool ok;
   while ( argc > 1 ) 
@@ -106,6 +108,35 @@ int mitkReprojectionTest ( int argc, char * argv[] )
      &rightCameraDistortion,&rightToLeftRotationMatrix,
      &rightToLeftTranslationVector,&leftCameraToTracker);
 
+  // Section to output reprojected image size
+  cv::Point2d topLeft = cv::Point2d (0,0);
+  cv::Point2d bottomRight = cv::Point2d (screenWidth, screenHeight);
+  cv::Point2d undistortedTopLeft;
+  cv::Point2d undistortedBottomRight;
+  mitk::UndistortPoint ( topLeft, leftCameraIntrinsic, leftCameraDistortion, undistortedTopLeft);
+  mitk::UndistortPoint ( bottomRight, leftCameraIntrinsic, leftCameraDistortion, undistortedBottomRight);
+
+  cv::Point3d reProjectedTopLeft = mitk::ReProjectPoint (undistortedTopLeft, leftCameraIntrinsic);
+  cv::Point3d reProjectedBottomRight = mitk::ReProjectPoint (undistortedBottomRight, leftCameraIntrinsic);
+
+  reProjectedTopLeft.x *= featureDepth;
+  reProjectedTopLeft.y *= featureDepth;
+  reProjectedTopLeft.z *= featureDepth;
+
+  reProjectedBottomRight.x *= featureDepth;
+  reProjectedBottomRight.y *= featureDepth;
+  reProjectedBottomRight.z *= featureDepth;
+
+  double diagonalSize = sqrt (
+       pow ( (reProjectedTopLeft.x - reProjectedBottomRight.x),2.0) +
+       pow ( (reProjectedTopLeft.y - reProjectedBottomRight.y),2.0) );
+
+  MITK_INFO << "Top Left = " << reProjectedTopLeft;
+  MITK_INFO << "Bottom Right = " << reProjectedBottomRight;
+  MITK_INFO << "Length of Diagonal = " << diagonalSize;
+  // End of reprojected image size bit
+  
+
   CvMat* outputLeftCameraWorldPointsIn3D = NULL;
   CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
   CvMat* output2DPointsLeft = NULL ;
@@ -149,7 +180,6 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   boost::mt19937 rng;
   boost::normal_distribution<> nd(0.0,pixelNoise);
   boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
-  MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
   for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
   {
     CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) += var_nor(); 
@@ -173,13 +203,18 @@ int mitkReprojectionTest ( int argc, char * argv[] )
     }
   }
   
+ 
   mitk::UndistortPoints(output2DPointsLeft, 
       leftCameraIntrinsic,leftCameraDistortion,
-      leftScreenPoints);
+      leftScreenPoints,
+      cropNonVisiblePoints, 
+      0.0 , screenWidth, 0.0, screenHeight, cropValue);
 
   mitk::UndistortPoints(output2DPointsRight, 
       rightCameraIntrinsic,rightCameraDistortion,
-      rightScreenPoints);
+      rightScreenPoints,
+      cropNonVisiblePoints, 
+      0.0 , screenWidth, 0.0, screenHeight, cropValue);
 
  //check it with the c Wrapper function
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
@@ -240,8 +275,30 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         100.0 // don't know tolerance allowable yet.
         );
 
-  MITK_INFO << leftCameraTriangulatedWorldPoints_m2.size();
+  MITK_INFO << "size of triangulated point vector = " <<  leftCameraTriangulatedWorldPoints_m2.size();
+  //mitk::TriangulatePointPairsUsingGeometry does not ensure that the indexes in inputUndistortedPoints
+  //are preserved in  leftCameraTriangulatedWorldPoints_m2, let's add a NaN to the end and
+  //build a look up table
+  cv::Point3d nanPoint = cv::Point3d(std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN());
+  leftCameraTriangulatedWorldPoints_m2.push_back(nanPoint);
 
+  unsigned int leftCameraTriangulatedWorldPoints_Counter = 0;
+  std::vector < unsigned int > leftCameraTriangulatedWorldPoints_LookUpVector;
+  for ( int i = 0 ; i < numberOfPoints ; i ++ )
+  {
+    if ( ( ! boost::math::isnan(inputUndistortedPoints[i].first.x) ) &&
+          ( ! boost::math::isnan(inputUndistortedPoints[i].second.x) ) )
+    {
+      leftCameraTriangulatedWorldPoints_LookUpVector.push_back(leftCameraTriangulatedWorldPoints_Counter);
+      leftCameraTriangulatedWorldPoints_Counter++;
+    }
+    else
+    {
+      leftCameraTriangulatedWorldPoints_LookUpVector.push_back(leftCameraTriangulatedWorldPoints_m2.size()-1);
+    }
+  }
+          
     
   for ( int row = 0 ; row < 51 ; row += 25 ) 
   {
@@ -258,7 +315,8 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, row* 51 + col, 0) << ","
         << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, row* 51 + col, 1) << ","
         << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, row* 51 + col, 2) << "] " 
-        << leftCameraTriangulatedWorldPoints_m2[row*51 + col]; 
+        << leftCameraTriangulatedWorldPoints_m2[
+        leftCameraTriangulatedWorldPoints_LookUpVector[row*51 + col]]; 
     }
   }
 
@@ -271,7 +329,8 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   double errorRMS_m1 = 0.0;
   double errorRMS_m2 = 0.0;
   
-  int goodPoints = 0;
+  int goodPoints_m1 = 0;
+  int goodPoints_m2 = 0;
   for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
   {
 
@@ -281,51 +340,48 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       leftCameraWorldPoints.at<double>(i,1);
     double zError_m1 = CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, i, 2) - 
       leftCameraWorldPoints.at<double>(i,2);
-    double xError_m2 = leftCameraTriangulatedWorldPoints_m2[i].x -  
+    double xError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].x -  
       leftCameraWorldPoints.at<double>(i,0);
-    double yError_m2 = leftCameraTriangulatedWorldPoints_m2[i].y -  
+    double yError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].y -  
       leftCameraWorldPoints.at<double>(i,1);
-    double zError_m2 = leftCameraTriangulatedWorldPoints_m2[i].z -  
+    double zError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].z -  
       leftCameraWorldPoints.at<double>(i,2);
     
     double error_m1 = (xError_m1 * xError_m1 + yError_m1 * yError_m1 + zError_m1 * zError_m1);
     double error_m2 = (xError_m2 * xError_m2 + yError_m2 * yError_m2 + zError_m2 * zError_m2);
     
-    if ( ! cropNonVisiblePoints || ! (
-        ( leftScreenPoints.at<double>(i,0) < 0.0) ||
-           ( leftScreenPoints.at<double>(i,0) > screenWidth )  || 
-           ( leftScreenPoints.at<double>(i,1) < 0.0 ) || 
-           ( leftScreenPoints.at<double>(i,1) > screenHeight ) || 
-           ( rightScreenPoints.at<double>(i,0) < 0.0) ||
-           ( rightScreenPoints.at<double>(i,0) > screenWidth )  || 
-           ( rightScreenPoints.at<double>(i,1) < 0.0 ) || 
-           ( rightScreenPoints.at<double>(i,1) > screenHeight ) ) )
+    if ( ! boost::math::isnan(error_m1) ) 
     {
       xErrorMean_m1 += xError_m1;
       yErrorMean_m1 += yError_m1;
       zErrorMean_m1 += zError_m1;
+      errorRMS_m1 += error_m1;
+      goodPoints_m1++;
+    }
+    if ( ! boost::math::isnan(error_m2 ))
+    {
       xErrorMean_m2 += xError_m2;
       yErrorMean_m2 += yError_m2;
       zErrorMean_m2 += zError_m2;
-      errorRMS_m1 += error_m1;
       errorRMS_m2 += error_m2;
-      goodPoints++;
+      goodPoints_m2++;
     }
   }
-  MITK_INFO << "Dumped " << numberOfPoints - goodPoints << " off screen points";
-  xErrorMean_m1 /= goodPoints;
-  yErrorMean_m1 /= goodPoints;
-  zErrorMean_m1 /= goodPoints;
-  xErrorMean_m2 /= goodPoints;
-  yErrorMean_m2 /= goodPoints;
-  zErrorMean_m2 /= goodPoints;
-  errorRMS_m1 = sqrt(errorRMS_m1/goodPoints);
-  errorRMS_m2 = sqrt(errorRMS_m2/goodPoints);
+  MITK_INFO << "Method 1 Dumped " << numberOfPoints - goodPoints_m1 << " off screen points";
+  MITK_INFO << "Method 2 Dumped " << numberOfPoints - goodPoints_m2 << " off screen points";
+  xErrorMean_m1 /= goodPoints_m1;
+  yErrorMean_m1 /= goodPoints_m1;
+  zErrorMean_m1 /= goodPoints_m1;
+  xErrorMean_m2 /= goodPoints_m2;
+  yErrorMean_m2 /= goodPoints_m2;
+  zErrorMean_m2 /= goodPoints_m2;
+  errorRMS_m1 = sqrt(errorRMS_m1/goodPoints_m1);
+  errorRMS_m2 = sqrt(errorRMS_m2/goodPoints_m2);
   
   MITK_INFO << "Mean x error c wrapper = " <<  xErrorMean_m1; 
   MITK_INFO << "Mean y error c wrapper = " <<  yErrorMean_m1; 
   MITK_INFO << "Mean z error c wrapper = " <<  zErrorMean_m1; 
-  MITK_INFO << "RMS error c+wrapper = " <<  errorRMS_m1; 
+  MITK_INFO << "RMS error c wrapper = " <<  errorRMS_m1; 
   MITK_INFO << "Mean x error c++ wrapper = " <<  xErrorMean_m2; 
   MITK_INFO << "Mean y error c++ wrapper = " <<  yErrorMean_m2; 
   MITK_INFO << "Mean z error c++ wrapper = " <<  zErrorMean_m2; 
@@ -333,7 +389,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 1e-3 , "Testing x error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_m1 < 1e-3 , "Testing RMS error value for c method");
+  MITK_TEST_CONDITION (errorRMS_m1 < 2e-3 , "Testing RMS error value for c method");
   MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 0.5 , "Testing x error mean value for c++ method");
   MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 0.5 , "Testing y error mean value for c++ method");
   MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 0.5 , "Testing z error mean value for c++ method");

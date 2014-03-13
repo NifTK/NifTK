@@ -87,7 +87,7 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::GetMitkOrientation(itk::ORIENTATION_SAGITTAL),  MIDAS_ORIENTATION_SAGITTAL),".. Testing sagittal.");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::GetMitkOrientation(itk::ORIENTATION_CORONAL),   MIDAS_ORIENTATION_CORONAL), ".. Testing coronal.");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::GetMitkOrientation(itk::ORIENTATION_UNKNOWN),   MIDAS_ORIENTATION_UNKNOWN), ".. Testing unknown.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::GetMitkOrientation((itk::ORIENTATION_ENUM)999), MIDAS_ORIENTATION_UNKNOWN), ".. Testing garbage.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::GetMitkOrientation((itk::Orientation)999), MIDAS_ORIENTATION_UNKNOWN), ".. Testing garbage.");
 
     MITK_TEST_OUTPUT(<< "Finished TesttItkToMitk...");
   }
@@ -149,9 +149,9 @@ public:
     int imUpSa = mitk::GetUpDirection(m_Image, MIDAS_ORIENTATION_SAGITTAL);
     int imUpCo = mitk::GetUpDirection(m_Image, MIDAS_ORIENTATION_CORONAL);
 
-    int geomUpAx = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_AXIAL);
-    int geomUpSa = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_SAGITTAL);
-    int geomUpCo = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_CORONAL);
+    int geomUpAx = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_AXIAL);
+    int geomUpSa = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_SAGITTAL);
+    int geomUpCo = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_CORONAL);
 
     MITK_TEST_CONDITION_REQUIRED(imUpAx == geomUpAx,     ".. Testing axial==" << imUpAx << ", but got " << geomUpAx);
     MITK_TEST_CONDITION_REQUIRED(imUpSa == geomUpSa,     ".. Testing sagittal==" << imUpSa << ", but got " << geomUpSa);

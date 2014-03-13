@@ -793,85 +793,89 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
   assert(QGLContext::currentContext() == oglwin->context());
 
 
-  if (compressor == 0)
+  // it's unlikely that we'll ever catch an exception here.
+  // all the other bits around the sdi data source would start failing earlier
+  // if there's something wrong and we'd never even get here.
+  // BUT: various libvideo functions *can* throw in error conditions. so better
+  // prevent the exception from leaking into the qt message loop.
+  try
   {
-    CUcontext ctx = 0;
-    CUresult r = cuCtxGetCurrent(&ctx);
-    // die straight away
-    if (r != CUDA_SUCCESS)
+    if (compressor == 0)
     {
-      *frameindex = 0;
-      return;
-    }
-    assert(ctx == cuContext);
+      CUcontext ctx = 0;
+      CUresult r = cuCtxGetCurrent(&ctx);
+      // die straight away
+      if (r != CUDA_SUCCESS)
+      {
+        *frameindex = 0;
+        return;
+      }
+      assert(ctx == cuContext);
 
-    // also keep sdi logs
-    sdiin->flush_log();
-    sdiin->set_log_filename(m_CompressionOutputFilename + ".sdicapture.log");
+      // also keep sdi logs
+      sdiin->flush_log();
+      sdiin->set_log_filename(m_CompressionOutputFilename + ".sdicapture.log");
 
-    // when we get a new compressor we want to start counting from zero again
-    m_NumFramesCompressed = 0;
+      // when we get a new compressor we want to start counting from zero again
+      m_NumFramesCompressed = 0;
 
-    // it's unlikely that we'll ever catch an exception here.
-    // all the other bits around the sdi data source would start failing earlier
-    // if there's something wrong and we'd never even get here.
-    try
-    {
       compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
     }
-    catch (...)
+    else
     {
-      // die straight away
-      CUcontext ctx;
-      cuCtxPopCurrent(&ctx);
+      // we have compressor already so context should be all set up
+      // check it!
+      CUcontext ctx = 0;
+      CUresult r = cuCtxGetCurrent(&ctx);
+      // if for any reason we cant interact with cuda then there's no use of trying to do anything else
+      if (r != CUDA_SUCCESS)
+      {
+        *frameindex = 0;
+        return;
+      }
+      assert(ctx == cuContext);
+    }
+
+    // find out which ringbuffer slot the request sequence number is in, if any
+    video::FrameInfo  fi = {0};
+    fi.sequence_number = sequencenumber;
+    BOOST_TYPEOF(sn2slot_map)::const_iterator sloti = sn2slot_map.find(fi);
+    if (sloti != sn2slot_map.end())
+    {
+      // sanity check
+      assert(slot2sn_map.find(sloti->second)->second.sequence_number == sequencenumber);
+
+      // compress each stream
+      for (int i = 0; i < streamcount; ++i)
+      {
+        int tid = sdiin->get_texture_id(i, sloti->second);
+        assert(tid != 0);
+        // would need to do prepare() only once
+        // but more often is ok too
+        compressor->preparetexture(tid);
+        compressor->compresstexture(tid);
+
+        m_NumFramesCompressed++;
+      }
+
+      *frameindex = m_NumFramesCompressed;
+    }
+    else
+    {
+      // i want to know how often this happens, really...
+      std::cerr << "Debug: sdi compressor: requested sn that is no longer available" << std::endl;
       *frameindex = 0;
-      return;
     }
   }
-  else
+  catch (...)
   {
-    // we have compressor already so context should be all set up
-    // check it!
-    CUcontext ctx = 0;
-    CUresult r = cuCtxGetCurrent(&ctx);
-    // if for any reason we cant interact with cuda then there's no use of trying to do anything else
-    if (r != CUDA_SUCCESS)
-    {
-      *frameindex = 0;
-      return;
-    }
-    assert(ctx == cuContext);
-  }
+    // die straight away
 
-  // find out which ringbuffer slot the request sequence number is in, if any
-  video::FrameInfo  fi = {0};
-  fi.sequence_number = sequencenumber;
-  BOOST_TYPEOF(sn2slot_map)::const_iterator sloti = sn2slot_map.find(fi);
-  if (sloti != sn2slot_map.end())
-  {
-    // sanity check
-    assert(slot2sn_map.find(sloti->second)->second.sequence_number == sequencenumber);
-
-    // compress each stream
-    for (int i = 0; i < streamcount; ++i)
-    {
-      int tid = sdiin->get_texture_id(i, sloti->second);
-      assert(tid != 0);
-      // would need to do prepare() only once
-      // but more often is ok too
-      compressor->preparetexture(tid);
-      compressor->compresstexture(tid);
-
-      m_NumFramesCompressed++;
-    }
-
-    *frameindex = m_NumFramesCompressed;
-  }
-  else
-  {
-    // i want to know how often this happens, really...
-    std::cerr << "Debug: sdi compressor: requested sn that is no longer available" << std::endl;
+    // FIXME: cant remember why i'd pop the cuda context here (or after compressor constructor fail, where these lines used to be).
+    //CUcontext ctx;
+    //cuCtxPopCurrent(&ctx);
     *frameindex = 0;
+    return;
   }
 
 }

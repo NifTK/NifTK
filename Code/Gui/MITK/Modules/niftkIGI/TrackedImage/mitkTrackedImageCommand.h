@@ -38,8 +38,13 @@ public:
   /**
    * \brief Stores the name of the plane node representing the tracked image.
    */
-  static const std::string TRACKED_IMAGE_NODE_NAME;
+  static const char* TRACKED_IMAGE_NODE_NAME;
 
+  /**
+   * \brief Stores the name of a DataNode property, indicating the currently selected image = niftk.trackedimage
+   */
+  static const char* TRACKED_IMAGE_SELECTED_PROPERTY_NAME;
+  
   /**
    * \brief Write My Documentation
    */

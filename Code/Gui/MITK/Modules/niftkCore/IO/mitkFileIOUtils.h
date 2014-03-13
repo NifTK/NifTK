@@ -26,7 +26,6 @@ namespace mitk {
  * \file mitkFileIOUtils.h
  * \brief Various file IO stuff, like loading transformations from file.
  */
-
 bool LoadDoublesFromFile(const std::string& fileName, std::vector<double>& output);
 
 /**

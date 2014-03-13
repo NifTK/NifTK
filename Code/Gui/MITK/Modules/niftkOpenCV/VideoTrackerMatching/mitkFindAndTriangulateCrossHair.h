@@ -107,6 +107,9 @@ private:
   cv::Mat* m_RightToLeftRotationMatrix;
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
+  //the video screen dimensions
+  double   m_VideoWidth;
+  double   m_VideoHeight;
 
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenPoints; // the projected points

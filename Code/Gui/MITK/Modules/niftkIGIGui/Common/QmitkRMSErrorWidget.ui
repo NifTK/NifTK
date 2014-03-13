@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QmitkRMSErrorWidget</class>
+ <widget class="QWidget" name="QmitkRMSErrorWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>466</width>
+    <height>224</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="m_GroupBox">
+       <property name="title">
+        <string>RMS Error</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_FixedLabel">
+            <property name="toolTip">
+             <string>Select one set of target fiducials</string>
+            </property>
+            <property name="text">
+             <string>Fixed</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QmitkDataStorageComboBox" name="m_FixedCombo"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_MovingLabel">
+            <property name="toolTip">
+             <string>Select one set of moving fiducials, of same size as target fiducials</string>
+            </property>
+            <property name="text">
+             <string>Moving</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QmitkDataStorageComboBox" name="m_MovingCombo"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="m_TransformLabel">
+            <property name="text">
+             <string>Transform</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QmitkDataStorageComboBox" name="m_TransformCombo"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="m_RMSErrorLabel">
+            <property name="text">
+             <string>RMS error (mm)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="m_RMSError">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkDataStorageComboBox</class>
+   <extends>QComboBox</extends>
+   <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

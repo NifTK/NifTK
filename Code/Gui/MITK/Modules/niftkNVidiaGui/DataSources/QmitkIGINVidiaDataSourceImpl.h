@@ -82,7 +82,9 @@ public:
   unsigned int CompressFrame(unsigned int sequencenumber);
   void StopCompression();
 
-
+  /**
+   * @throws std::runtime_error if something goes wrong.
+   */
   void TryPlayback(const std::string& filename);
   // stops realtime capture if on=true and enables decompressor.
   // use GetRGBAImage() to retrieve a frame.

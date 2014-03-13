@@ -78,9 +78,9 @@ ITKGetAsAcquiredOrientation(
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout GetAsAcquiredView(const MIDASLayout& defaultView, const mitk::Image* image)
+MIDASOrientation GetAsAcquiredOrientation(const MIDASOrientation& defaultOrientation, const mitk::Image* image)
 {
-  MIDASLayout view = defaultView;
+  MIDASOrientation result = defaultOrientation;
   if (image != NULL)
   {
     // "As Acquired" means you take the orientation of the XY plane
@@ -93,27 +93,27 @@ MIDASLayout GetAsAcquiredView(const MIDASLayout& defaultView, const mitk::Image*
       AccessFixedDimensionByItk_n(image, ITKGetAsAcquiredOrientation, 3, (orientation));
       break;
     default:
-      MITK_ERROR << "During GetAsAcquiredView, unsupported number of dimensions:" << dimensions << std::endl;
+      MITK_ERROR << "During GetAsAcquiredOrientation, unsupported number of dimensions:" << dimensions << std::endl;
     }
 
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      view = MIDAS_LAYOUT_AXIAL;
+      result = MIDAS_ORIENTATION_AXIAL;
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      view = MIDAS_LAYOUT_SAGITTAL;
+      result = MIDAS_ORIENTATION_SAGITTAL;
     }
     else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      view = MIDAS_LAYOUT_CORONAL;
+      result = MIDAS_ORIENTATION_CORONAL;
     }
     else
     {
-      MITK_ERROR << "GetAsAcquiredView defaulting to view=" << view << std::endl;
+      MITK_ERROR << "GetAsAcquiredResult defaulting to orientation=" << result << std::endl;
     }
   }
-  return view;
+  return result;
 }
 
 

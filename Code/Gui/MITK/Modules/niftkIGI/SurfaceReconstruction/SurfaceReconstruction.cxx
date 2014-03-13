@@ -25,6 +25,55 @@
 namespace niftk 
 {
 
+
+struct MethodDescription
+{
+  const char*                           m_Name;
+  const SurfaceReconstruction::Method   m_ID;
+};
+
+static const MethodDescription s_AvailableMethods[] =
+{
+  // name needs to be unique!
+  {"Sequential Quasi-Dense CPU", SurfaceReconstruction::SEQUENTIAL_CPU}
+};
+
+
+//-----------------------------------------------------------------------------
+bool SurfaceReconstruction::GetMethodDetails(int index, Method* id, std::string* friendlyname)
+{
+  if (index < 0)
+    return false;
+  if (index >= (sizeof(s_AvailableMethods) / sizeof(s_AvailableMethods[0])))
+    return false;
+
+  if (id != 0)
+  {
+    *id = s_AvailableMethods[index].m_ID;
+  }
+  if (friendlyname != 0)
+  {
+    *friendlyname = s_AvailableMethods[index].m_Name;
+  }
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+SurfaceReconstruction::Method SurfaceReconstruction::ParseMethodName(const std::string& friendlyname)
+{
+  // dumb sequential scan.
+  for (int i = 0; i < (sizeof(s_AvailableMethods) / sizeof(s_AvailableMethods[0])); ++i)
+  {
+    if (s_AvailableMethods[i].m_Name == friendlyname)
+      return s_AvailableMethods[i].m_ID;
+  }
+
+  throw std::runtime_error("SurfaceReconstruction::ParseMethodName: unknown method name");
+}
+
+
 //-----------------------------------------------------------------------------
 SurfaceReconstruction::SurfaceReconstruction()
   : m_SequentialCpuQds(0)

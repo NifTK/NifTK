@@ -16,6 +16,7 @@ set(MODULE_DIRS
   niftkCore
   niftkCoreGui
   niftkDnDDisplay
+  niftkThumbnail
 )
 
 if(BUILD_MIDAS)
@@ -37,7 +38,7 @@ if(BUILD_IGI)
     niftkIGIGui
   )
 
-  if(NVAPI_FOUND)
+  if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       niftkNVidia

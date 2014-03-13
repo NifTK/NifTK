@@ -19,7 +19,7 @@ set(EP_BUILD_TESTING OFF)
 set(EP_BUILD_EXAMPLES OFF)
 set(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
-if(MSVC90 OR MSVC10)
+if(MSVC)
   set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
   set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
   # we want symbols, even for release builds!
@@ -66,6 +66,15 @@ set(EP_COMMON_ARGS
   -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
 )
+
+if(APPLE)                         
+  set(EP_COMMON_ARGS
+       -DCMAKE_OSX_ARCHITECTURES:PATH=${CMAKE_OSX_ARCHITECTURES}
+       -DCMAKE_OSX_DEPLOYMENT_TARGET:PATH=${CMAKE_OSX_DEPLOYMENT_TARGET}
+       -DCMAKE_OSX_SYSROOT:PATH=${CMAKE_OSX_SYSROOT}
+       ${EP_COMMON_ARGS}
+      )
+endif()
 
 set(NIFTK_APP_OPTIONS)
 foreach(NIFTK_APP ${NIFTK_APPS})
@@ -121,7 +130,8 @@ set(EXTERNAL_PROJECTS
   apriltags
   FLANN
   PCL
-  ITK          
+  ITK
+  RTK
   CTK          
   MITK         
   CGAL           
@@ -180,6 +190,10 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     list(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
   endif(BUILD_NIFTYREC)
 
+  if(BUILD_RTK)
+    list(APPEND proj_DEPENDENCIES ${RTK_DEPENDS})
+  endif(BUILD_RTK)
+
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
     # and compilation will fail with the weirdest errors.
@@ -192,6 +206,16 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     # 0x0601  = Windows 7
     set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -D_WIN32_WINNT=0x0601")
     set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -D_WIN32_WINNT=0x0601")
+  endif()
+
+  # unfortunately, putting this here means we cannot enable pch on a non-superbuild.
+  # instead it must be initially enabled, and later on can be disabled/enabled at will.
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    # visual studio needs an extra parameter to increase the pch heap size.
+    if (MSVC)
+      set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -Zm400")
+      set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -Zm400")
+    endif()
   endif()
 
   ExternalProject_Add(${proj}
@@ -210,6 +234,8 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.
       -DBUILD_SUPERBUILD:BOOL=OFF           # Must force this to be off, or else you will loop forever.
       -DBUILD_PCL:BOOL=${BUILD_PCL}
+      -DBUILD_RTK:BOOL=${BUILD_RTK}
+      -DBUILD_ITKFFTW=${BUILD_ITKFFTW}
       -DBUILD_CAMINO:BOOL=${BUILD_CAMINO}
       -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_COMMAND_LINE_PROGRAMS}
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
@@ -235,6 +261,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNVAPI_LIBRARY:PATH=${NVAPI_LIBRARY}
       -DNIFTK_USE_FFTW:BOOL=${NIFTK_USE_FFTW}
       -DNIFTK_USE_CUDA:BOOL=${NIFTK_USE_CUDA}
+      -DNIFTK_USE_COTIRE:BOOL=${NIFTK_USE_COTIRE}
       -DNIFTK_WITHIN_SUPERBUILD:BOOL=ON                    # Set this to ON, as some compilation flags rely on knowing if we are doing superbuild.
       -DNIFTK_VERSION_MAJOR:STRING=${NIFTK_VERSION_MAJOR}
       -DNIFTK_VERSION_MINOR:STRING=${NIFTK_VERSION_MINOR}
@@ -281,6 +308,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DFLANN_DIR:PATH=${FLANN_DIR}
       -DFLANN_ROOT:PATH=${FLANN_ROOT}
       -DPCL_DIR:PATH=${PCL_DIR}
+      -DRTK_DIR:PATH=${RTK_DIR}
       DEPENDS ${proj_DEPENDENCIES}
   )
 

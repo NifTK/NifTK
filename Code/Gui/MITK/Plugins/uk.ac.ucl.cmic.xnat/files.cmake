@@ -16,11 +16,11 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
+  XnatPluginActivator.cxx
   XnatBrowserView.cxx
   XnatBrowserWidget.cxx
   XnatDownloadDialog.cxx
   XnatDownloadManager.cxx
-  XnatPluginActivator.cxx
   XnatPluginPreferencePage.cxx
   XnatPluginSettings.cxx
   XnatTreeView.cxx
@@ -58,10 +58,10 @@ set(QRC_FILES
 set(CPP_FILES 
 )
 
-foreach(file ${SRC_CPP_FILES})
-  set(CPP_FILES ${CPP_FILES} src/${file})
-endforeach(file ${SRC_CPP_FILES})
-
 foreach(file ${INTERNAL_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/internal/${file})
 endforeach(file ${INTERNAL_CPP_FILES})
+
+foreach(file ${SRC_CPP_FILES})
+  set(CPP_FILES ${CPP_FILES} src/${file})
+endforeach(file ${SRC_CPP_FILES})

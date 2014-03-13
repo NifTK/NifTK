@@ -114,6 +114,14 @@
       <default>false</default>
     </boolean>
 
+    <directory>
+      <name>existingCalibrationDirectory</name>
+      <longflag>existingCalibrationDirectory</longflag>
+      <description>Use an exsiting intrinsic calibration</description>
+      <label>input intrinsics calibration</label>
+      <channel>input</channel>
+    </directory>
+ 
   </parameters>
   
 </executable>

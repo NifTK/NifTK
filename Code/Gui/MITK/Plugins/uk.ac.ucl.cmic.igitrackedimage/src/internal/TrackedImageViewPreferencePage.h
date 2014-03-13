@@ -23,6 +23,7 @@ class QWidget;
 class QPushButton;
 class QDoubleSpinBox;
 class ctkPathLineEdit;
+class QCheckBox;
 
 /**
  * \class TrackedImageViewPreferencePage
@@ -56,6 +57,16 @@ public:
    * \brief Stores the name of the preference node that contains the image scaling in the y direction.
    */
   static const std::string Y_SCALING;
+
+  /**
+   * \brief Stores the name of the preference node that contains whether we flip the x scale factor to be negative.
+   */
+  static const std::string FLIP_X_SCALING;
+
+  /**
+   * \brief Stores the name of the preference node that contains whether we flip the y scale factor to be negative.
+   */
+  static const std::string FLIP_Y_SCALING;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
@@ -91,6 +102,8 @@ private:
   bool             m_Initializing;
   QDoubleSpinBox  *m_XScaling;
   QDoubleSpinBox  *m_YScaling;
+  QCheckBox       *m_FlipXScaling;
+  QCheckBox       *m_FlipYScaling;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };

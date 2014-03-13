@@ -20,7 +20,9 @@
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkImageLinearConstIteratorWithIndex.h>
 #include <itkProgressReporter.h>
-#include <new>
+#include <itkUCLMacro.h>
+
+//#include <new>
 
 
 namespace itk
@@ -46,7 +48,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::~LewisGriffinRecursiveGaussianImageFilter()
 {
   if (m_Kernel)
-    delete[] m_Kernel;
+    delete m_Kernel;
 }
 
 
@@ -177,22 +179,22 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   TOutputImage *out = dynamic_cast<TOutputImage*>(output);
 
   if (out)
-    {
+  {
     OutputImageRegionType outputRegion = out->GetRequestedRegion();
     const OutputImageRegionType &largestOutputRegion = out->GetLargestPossibleRegion();
-
+    
     // verify sane parameter
     if ( this->m_Direction >=  outputRegion.GetImageDimension() )
-      {
-      itkExceptionMacro("Direction selected for filtering is greater than ImageDimension")
-      }
-
+    {
+      itkExceptionMacro("Direction selected for filtering is greater than ImageDimension");
+    }
+    
     // expand output region to match largest in the "Direction" dimension
     outputRegion.SetIndex( m_Direction, largestOutputRegion.GetIndex(m_Direction) );
     outputRegion.SetSize( m_Direction, largestOutputRegion.GetSize(m_Direction) );
     
     out->SetRequestedRegion( outputRegion );
-    }
+  }
 }
 
 
@@ -235,16 +237,16 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   // Split the region
   if (i < maxThreadIdUsed)
-    {
+  {
     splitIndex[splitAxis] += i*valuesPerThread;
     splitSize[splitAxis] = valuesPerThread;
-    }
+  }
   if (i == maxThreadIdUsed)
-    {
+  {
     splitIndex[splitAxis] += i*valuesPerThread;
     // last thread needs to process the "rest" dimension being split
     splitSize[splitAxis] = splitSize[splitAxis] - i*valuesPerThread;
-    }
+  }
   
   // set the split region ivars
   splitRegion.SetIndex( splitIndex );
@@ -269,9 +271,9 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   const unsigned int imageDimension = inputImage->GetImageDimension();
 
   if( this->m_Direction >= imageDimension )
-    {
+  {
     itkExceptionMacro("Direction selected for filtering is greater than ImageDimension");
-    }
+  }
 
   const typename InputImageType::SpacingType & pixelSize
     = inputImage->GetSpacing();
@@ -283,10 +285,55 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   const unsigned int ln = region.GetSize()[ this->m_Direction ];
 
   if( ln < 4 )
-    {
+  {
     itkExceptionMacro("The number of pixels along direction " << this->m_Direction << " is less than 4. This filter requires a minimum of four pixels along the dimension to be processed.");
-    }
+  }
 
+}
+
+
+
+/* -----------------------------------------------------------------------
+   GenerateData()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage, typename TOutputImage>
+void 
+LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
+::GenerateData(void)
+{
+  // Perform multi-threaded execution by default
+
+  if (m_FlagMultiThreadedExecution) {
+    
+    niftkitkDebugMacro( "Multi-threaded Lewis Griffin recursive Gaussian image filter");
+
+    Superclass::GenerateData();
+  }
+
+  // Single-threaded execution
+
+  else {
+  
+    niftkitkDebugMacro( "Single-threaded Lewis Griffin recursive Gaussian image filter");
+
+    this->AllocateOutputs();
+    this->BeforeThreadedGenerateData();
+  
+    // Set up the multithreaded processing
+    LewisGriffinRecursiveGaussianImageFilterStruct str;
+    str.Filter = this;
+    
+    this->GetMultiThreader()->SetNumberOfThreads( 1 );
+    this->GetMultiThreader()->SetSingleMethod(this->ThreaderCallback, &str);
+    
+    // multithread the execution
+    this->GetMultiThreader()->SingleMethodExecute();
+    
+    // Call a method that can be overridden by a subclass to perform
+    // some calculations after all the threads have completed
+    this->AfterThreadedGenerateData();
+  }
 }
 
 
@@ -324,23 +371,25 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   RealType *outs = 0;
 
   try 
-    {
+  {
     inps = new RealType[ ln ];
-    }
+  }
   catch( std::bad_alloc & ) 
-    {
+  {
     itkExceptionMacro("Problem allocating memory for internal computations");
-    }
+    return;
+  }
 
   try 
-    {
+  {
     outs = new RealType[ ln ];
-    }
+  }
   catch( std::bad_alloc & ) 
-    {
+  {
     delete [] inps;
     itkExceptionMacro("Problem allocating memory for internal computations");
-    }
+    return;
+  }
 
   inputIterator.GoToBegin();
   outputIterator.GoToBegin();
@@ -350,53 +399,74 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   const unsigned int numberOfLinesToProcess = offsetTable[ TInputImage::ImageDimension ] / ln;
   ProgressReporter progress(this, threadId, numberOfLinesToProcess, 10 );
 
-
+  
   try  // this try is intended to catch an eventual AbortException.
-    {
+  {
     while( !inputIterator.IsAtEnd() && !outputIterator.IsAtEnd() )
-      {
+    {
       unsigned int i=0;
       while( !inputIterator.IsAtEndOfLine() )
-        {
+      {
         inps[i++]      = inputIterator.Get();
         ++inputIterator;
-        }
-
+      }
+      
       this->FilterDataArray( outs, inps, (int) ln );
-
+      
       unsigned int j=0; 
       while( !outputIterator.IsAtEndOfLine() )
-        {
+      {
         outputIterator.Set( static_cast<OutputPixelType>( outs[j++] ) );
         ++outputIterator;
-        }
-
+      }
+      
       inputIterator.NextLine();
       outputIterator.NextLine();
-
+      
       // Although the method name is CompletedPixel(),
       // this is being called after each line is processed
       progress.CompletedPixel();  
-      }
     }
+  }
+
   catch( ProcessAborted  & )
-    {
+  {
     // User aborted filter excecution Here we catch an exception thrown by the
     // progress reporter and rethrow it with the correct line number and file
     // name. We also invoke AbortEvent in case some observer was interested on
     // it.
     // release locally allocated memory
-    delete [] outs;
-    delete [] inps;
+    if ( outs ) 
+    {
+      delete[] outs;
+      outs = 0;
+    }
+    
+    if ( inps ) 
+    {
+      delete[] inps;
+      inps = 0;
+    }
+
     // Throw the final exception.
+
     ProcessAborted e(__FILE__,__LINE__);
     e.SetDescription("Process aborted.");
     e.SetLocation(ITK_LOCATION);
     throw e;
-    }
-
-  delete [] outs;
-  delete [] inps;
+  }
+  
+  if ( outs ) 
+  {
+    delete[] outs;
+    outs = 0;
+  }
+  
+  if ( inps ) 
+  {
+    delete[] inps;
+    inps = 0;
+  }
 }
 
 
@@ -455,49 +525,49 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   RealType end = (RealType) ((m_KernelSize - 1) / 2);
   RealType x;
 
-  if (m_Kernel) delete[] m_Kernel;
+  if (m_Kernel) delete m_Kernel;
   m_Kernel = new RealType[m_KernelSize];
 
   switch( m_Order ) 
-    {
-    case ZeroOrder:
-      {
-
-	for (unsigned int i=0; i<m_KernelSize; i++) {
-	  x = i - end;
-	  m_Kernel[i] = GaussianZeroOrder(x, sigma);
-	}
-
-      break;
-      }
-
-    case FirstOrder:
-      {
-	for (unsigned int i=0; i<m_KernelSize; i++) {
-	  x = i - end;
-	  m_Kernel[i] = GaussianFirstOrder(x, sigma);
-	}
-
-	break;
-      }
-
-    case SecondOrder:
-      {
-	for (unsigned int i=0; i<m_KernelSize; i++) {
-	  x = i - end;
-	  m_Kernel[i] = GaussianSecondOrder(x, sigma);
-	}
-
-      break;
-      }
-
-    default:
-      {
-      itkExceptionMacro(<<"Unknown Order");
-      return;
-      }
+  {
+  case ZeroOrder:
+  {
+    
+    for (unsigned int i=0; i<m_KernelSize; i++) {
+      x = i - end;
+      m_Kernel[i] = GaussianZeroOrder(x, sigma);
     }
-
+    
+    break;
+  }
+  
+  case FirstOrder:
+  {
+    for (unsigned int i=0; i<m_KernelSize; i++) {
+      x = i - end;
+      m_Kernel[i] = GaussianFirstOrder(x, sigma);
+    }
+    
+    break;
+  }
+  
+  case SecondOrder:
+  {
+    for (unsigned int i=0; i<m_KernelSize; i++) {
+      x = i - end;
+      m_Kernel[i] = GaussianSecondOrder(x, sigma);
+    }
+    
+    break;
+  }
+  
+  default:
+  {
+    itkExceptionMacro(<<"Unknown Order");
+    return;
+  }
+  }
+  
 
   // Normalise the kernel
 
@@ -505,13 +575,14 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   for (unsigned int i=0; i<m_KernelSize; i++)
     sum += m_Kernel[i];
-
+  
   for (unsigned int i=0; i<m_KernelSize; i++)
+  {
     if (m_Order == ZeroOrder)
       m_Kernel[i] /= sum;
     else
       m_Kernel[i] -= sum/m_KernelSize;
-
+  }
 }
 
 

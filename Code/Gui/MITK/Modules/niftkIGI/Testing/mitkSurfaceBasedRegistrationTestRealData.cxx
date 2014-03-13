@@ -58,7 +58,6 @@ int mitkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   int MaxIterations = atoi(argv[3]);
   int MaxLandmarks = atoi(argv[4]);
   mitk::SurfaceBasedRegistration::Pointer registerer = mitk::SurfaceBasedRegistration::New();
-  registerer->SetUseSpatialFilter(true); 
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
@@ -95,7 +94,7 @@ int mitkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   
   registerer->SetMaximumIterations(MaxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(MaxLandmarks);
-  registerer->Update(fixednode, movingnode, resultMatrix);
+  registerer->Update(fixednode, movingnode, *resultMatrix);
   std::cerr << *resultMatrix;
   MITK_TEST_CONDITION_REQUIRED(MatrixOK(resultMatrix), ".. Testing result matrix is a number");
   return EXIT_SUCCESS;

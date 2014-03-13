@@ -92,6 +92,9 @@ ctkMacroSetupPlugins(${PROJECT_PLUGINS}
 #   HelperApps contains independent stuff like utilities, command line apps etc.
 ####################################################################################
 
-add_subdirectory(HelperApps)
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  add_subdirectory(HelperApps)
+endif()
+
 add_subdirectory(Apps)
 

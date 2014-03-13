@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Invariant Point Sorter</title>
+  <description><![CDATA[Sorts data for Ultrasound Pin Calibration]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>inputMatrixDirectory</name>
+      <longflag>inputMatrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <label>Input Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>inputImageDirectory</name>
+      <longflag>inputImageDirectory</longflag>
+      <description>Directory containing ultrasound images.</description>
+      <label>Input Image Directory</label>
+    </directory>
+    <directory>
+      <name>outputMatrixDirectory</name>
+      <longflag>outputMatrixDirectory</longflag>
+      <description>Directory to write selected 4x4 tracking matrices in plain text files.</description>
+      <label>Output Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>outputPointDirectory</name>
+      <longflag>outputPointDirectory</longflag>
+      <description>Directory to write selected 2D pin locations.</description>
+      <label>Output Points Directory</label>
+    </directory>
+  </parameters>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Method parameters]]></description>
+    <integer>
+      <name>timingTolerance</name>
+      <longflag>timingTolerance</longflag>
+      <description>The maximum timing error in  milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>40</default>
+    </integer>
+    <boolean>
+      <name>skipForward</name>
+      <longflag>skipForward</longflag>
+      <description>Jump forward to hunt for images with valid tracking data</description>
+      <label>Skip Forward</label>
+      <default>0</default>
+    </boolean>
+    <boolean>
+      <name>multiPointMode</name>
+      <longflag>multiPointMode</longflag>
+      <description>Allow >1 invariant point using mouse buttons</description>
+      <label>Multi-Point mode</label>
+      <default>0</default>
+    </boolean>
+  </parameters>
+
+</executable>

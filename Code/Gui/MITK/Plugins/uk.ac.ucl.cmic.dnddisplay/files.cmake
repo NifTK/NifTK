@@ -13,9 +13,8 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  mitkMIDASDataStorageEditorInput.cxx
-  QmitkMIDASMultiViewEditor.cxx
-  QmitkMIDASMultiViewEditorPreferencePage.cxx
+  niftkDnDDisplayEditor.cxx
+  niftkDnDDisplayPreferencePage.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -27,8 +26,8 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/uk_ac_ucl_cmic_dnddisplay_Activator.h
-  src/QmitkMIDASMultiViewEditor.h
-  src/QmitkMIDASMultiViewEditorPreferencePage.h  
+  src/niftkDnDDisplayEditor.h
+  src/niftkDnDDisplayPreferencePage.h  
 )
 
 # list of resource files which can be used by the plug-in
@@ -46,10 +45,10 @@ set(QRC_FILES
 
 set(CPP_FILES )
 
-foreach(file ${SRC_CPP_FILES})
-  set(CPP_FILES ${CPP_FILES} src/${file})
-endforeach(file ${SRC_CPP_FILES})
-
 foreach(file ${INTERNAL_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/internal/${file})
 endforeach(file ${INTERNAL_CPP_FILES})
+
+foreach(file ${SRC_CPP_FILES})
+  set(CPP_FILES ${CPP_FILES} src/${file})
+endforeach(file ${SRC_CPP_FILES})

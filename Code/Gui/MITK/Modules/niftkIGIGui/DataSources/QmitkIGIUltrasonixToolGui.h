@@ -63,6 +63,10 @@ protected:
    */
   void InitializeImage();
 
+private slots:
+
+  void OnFlippingChanged();
+
 private:
 
   QmitkIGIUltrasonixTool *m_UltrasonixTool;

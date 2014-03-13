@@ -20,7 +20,7 @@ MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget
 {
   if (parent)
   {
-    setupUi(parent);
+    this->setupUi(parent);
   }
 }
 
@@ -35,6 +35,8 @@ MIDASGeneralSegmentorViewControlsWidget::~MIDASGeneralSegmentorViewControlsWidge
 void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 {
   Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
+
+  m_ThresholdsSlider->layout()->setSpacing(2);
 
   this->SetAllWidgetsEnabled(false);
 }
@@ -58,10 +60,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool
   m_SeedMaxLabel->setEnabled(enabled);
   m_SeedMaxValue->setEnabled(enabled);
 
-  m_LowerThresholdLabel->setEnabled(enabled);
-  m_LowerThresholdSliderWidget->setEnabled(enabled);
-  m_UpperThresholdLabel->setEnabled(enabled);
-  m_UpperThresholdSliderWidget->setEnabled(enabled);
+  m_ThresholdsSlider->setEnabled(enabled);
 
   m_PropUpButton->setEnabled(enabled);
   m_PropDownButton->setEnabled(enabled);
@@ -98,10 +97,8 @@ void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
-  m_LowerThresholdSliderWidget->setMinimum(lower);
-  m_LowerThresholdSliderWidget->setMaximum(upper);
-  m_UpperThresholdSliderWidget->setMinimum(lower);
-  m_UpperThresholdSliderWidget->setMaximum(upper);
+  m_ThresholdsSlider->setMinimum(lower);
+  m_ThresholdsSlider->setMaximum(upper);
 }
 
 

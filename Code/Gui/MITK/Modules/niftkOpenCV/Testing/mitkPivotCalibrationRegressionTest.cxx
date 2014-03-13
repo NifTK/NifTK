@@ -49,13 +49,11 @@ public:
 
     // Run Calibration.
     mitk::PivotCalibration::Pointer calibration = mitk::PivotCalibration::New();
-    bool successfullyCalibrated = calibration->CalibrateUsingFilesInDirectories(
+    calibration->CalibrateUsingFilesInDirectories(
         directoryOfMatrices,
         residualError,
         *calibrationMatrix
         );
-
-    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
 
     bool successfullySaved = niftk::SaveMatrix4x4ToFile(outputMatrixFileName, *calibrationMatrix);
     MITK_TEST_CONDITION_REQUIRED(successfullySaved == true, "Checking saved file successfully to filename:" << outputMatrixFileName);
@@ -77,7 +75,7 @@ public:
 };
 
 /**
- * \file Test harness for Ultrasound Pin Calibration
+ * \file Test harness for the pivot calibration functionality.
  */
 int mitkPivotCalibrationRegressionTest(int argc, char * argv[])
 {

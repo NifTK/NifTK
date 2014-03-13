@@ -205,6 +205,188 @@ int TestConcatenateToPath()
 }
 
 
+//-----------------------------------------------------------------------------
+int TestExtractImageFileSuffix()
+{
+  std::string ostr;
+  if (!((ostr=niftk::ExtractImageFileSuffix("")) == "" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "an empty string if the input is empty [incorrect: " << ostr << "]."
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("file.jpg.name.gz")) == "" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "an empty string if the image suffix is not at the end [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("filename")) == "" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "an empty string if no image suffix is present (a) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("1.2.34.556.7")) == "" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "an empty string if no image suffix is present (b) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("somefile.bmp")) == ".bmp" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (a) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("somefile.nii.gz")) == ".nii.gz" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (b) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("somefile.dcm")) == ".dcm" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (c) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("somefile.gipl")) == ".gipl" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (d) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix("1.dicom")) == ".dicom" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (e) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ExtractImageFileSuffix(".TIFF")) == ".TIFF" ))
+  {
+    std::cerr << "The method niftk::ExtractImageFileSuffix should return "
+              << "the image suffix (f) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+int TestAddStringToImageFileSuffix()
+{
+  std::string ostr;
+  if (!((ostr=niftk::AddStringToImageFileSuffix("", "")) == "" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "return an empty string if the input strings are empty [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix("somefile.png", "")) 
+        == "somefile.png" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "not change the file name if the string to be "
+              << "added is empty [incorrect: " << ostr << "]." << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix(".png", "somefile")) 
+        == "somefile.png" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "return the concatenated file name with text added before "
+              << "the suffix (a) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix("somefile.img", "_add")) 
+        == "somefile_add.img" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "return the concatenated file name with text added before "
+              << "the suffix (b) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix("somefile.abc", "_add")) 
+        == "somefile.abc_add" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "not change the suffix of a non-image file (a) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix("somefile.doc", "_add")) 
+        == "somefile.doc_add" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "not change the suffix of a non-image file (b) [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::AddStringToImageFileSuffix("somefile.ima.gz", "_add")) 
+        == "somefile_add.ima.gz" ))
+  {
+    std::cerr << "The method niftk::AddStringToImageFileSuffix should "
+              << "include the compression extension '.gz' in the suffix [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+int TestModifyImageFileSuffix()
+{
+  std::string ostr;
+  if (!((ostr=niftk::ModifyImageFileSuffix("", "")) == "" ))
+  {
+    std::cerr << "The method niftk::ModifyImageFileSuffix should "
+              << "return an empty string if the inputs are empty [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyImageFileSuffix("somefile.gz", "_new_")) 
+             == "somefile.gz_new_" ))
+  {
+    std::cerr << "The method niftk::ModifyImageFileSuffix should "
+              << "append text to the file name if no image suffix is "
+              << "found [incorrect: " << ostr << "]." << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyImageFileSuffix("somefile.JPG", ".replace")) 
+             == "somefile.replace" ))
+  {
+    std::cerr << "The method niftk::ModifyImageFileSuffix should "
+              << "replace the image suffix with the new string [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyImageFileSuffix("somefile.tif.zip", ".replace")) 
+             == "somefile.replace" ))
+  {
+    std::cerr << "The method niftk::ModifyImageFileSuffix should "
+              << "replace the image suffix and '.zip' extension"
+              << " with the new string [incorrect: " << ostr << "]." << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -245,6 +427,18 @@ int niftkFileHelperTest(int argc, char * argv[])
   else if (testNumber == 7)
   {
     return TestConcatenateToPath();
+  }
+  else if (testNumber == 8)
+  {
+    return TestExtractImageFileSuffix();
+  }
+  else if (testNumber == 9)
+  {
+    return TestAddStringToImageFileSuffix();
+  }
+  else if (testNumber == 10)
+  {
+    return TestModifyImageFileSuffix();
   }
   else
   {

@@ -19,10 +19,6 @@
 #include <mitkILinkedRenderWindowPart.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkDataNodeObject.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkNodePredicateAnd.h>
-#include <mitkNodePredicateNot.h>
 #include <mitkProperties.h>
 #include <mitkColorProperty.h>
 #include <mitkRenderingManager.h>
@@ -44,7 +40,6 @@
 #include <mitkMIDASPolyTool.h>
 #include <mitkMIDASSeedTool.h>
 #include <mitkMIDASOrientationUtils.h>
-#include <itkMIDASHelper.h>
 
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -58,6 +53,8 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
 , m_SegmentationView(NULL)
+, m_MainWindowCursorWasVisible(true)
+, m_OwnCursorWasVisible(true)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -68,6 +65,17 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 //-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionality()
 {
+  mitk::ToolManager::ToolVectorTypeConst tools = this->GetToolManager()->GetTools();
+  mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
+  for ( ; it != tools.end(); ++it)
+  {
+    mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
+    if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+    {
+      midasSM->RemoveEventFilter(this);
+    }
+  }
+
   if (m_ImageAndSegmentationSelector != NULL)
   {
     delete m_ImageAndSegmentationSelector;
@@ -78,8 +86,6 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
     delete m_ToolSelector;
   }
 
-  m_SegmentationView->Deactivated();
-
   if (m_SegmentationView != NULL)
   {
     delete m_SegmentationView;
@@ -89,12 +95,44 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const
+{
+  // If we have a render window part (aka. editor or display)...
+  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
+  {
+    // and it has a focused render window...
+    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
+    {
+      // whose renderer is the sender of this event...
+      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
+      {
+        // then we let the event pass through.
+        return false;
+      }
+    }
+  }
+
+  // Otherwise, if it comes from another window, we reject it.
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::Activated()
 {
   QmitkBaseView::Activated();
 
+  m_SegmentationView->SetMainWindow(this->GetSelectedRenderWindow());
+
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
+{
+  QmitkBaseView::Deactivated();
 }
 
 
@@ -133,6 +171,18 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
     toolManager->InitializeTools();
 
+    mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
+    mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
+    for ( ; it != tools.end(); ++it)
+    {
+      mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
+      if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+      {
+        midasSM->InstallEventFilter(this);
+      }
+    }
+
+
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForSelectorWidget = new QWidget(parent);
@@ -150,16 +200,14 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);
-    m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithReferenceAndWorkingDataVisible);
+    m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
 
     // Set up the Segmentation View
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForSegmentationViewWidget = new QWidget(parent);
-    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(m_ContainerForSegmentationViewWidget);
+    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(this, m_ContainerForSegmentationViewWidget);
     m_SegmentationView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_SegmentationView->SetDataStorage(this->GetDataStorage());
-    m_SegmentationView->SetContainingFunctionality(this);
-    m_SegmentationView->Activated();
 
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
@@ -184,17 +232,23 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  // See http://bugs.mitk.org/show_bug.cgi?id=12302 - new interaction concept.
-  if (toolID >= 0)
+  if (toolID != -1)
   {
-    // Enabling a tool - so just the tool receives the event,
-    // so tool must return a high value from mitk::CanHandleEvent
-    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_ONE);
+    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
+    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
+    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
   }
   else
   {
-    // Disabling a tool - revert to default behaviour.
-    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_MULTIPLE);
+    this->SetMainWindowCursorVisible(m_MainWindowCursorWasVisible);
+    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorWasVisible);
+  }
+
+  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
+  /// (like 'a' and 'z' for changing slice) keep on working.
+  if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())
+  {
+    mainWindow->setFocus();
   }
 }
 
@@ -460,6 +514,13 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(Q
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetFocusedRenderer()
+{
+  return QmitkBaseView::GetFocusedRenderer();
 }
 
 

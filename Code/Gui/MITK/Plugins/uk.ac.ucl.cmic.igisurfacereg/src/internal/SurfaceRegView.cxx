@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QtConcurrentRun>
 #include <QmitkIGIUtils.h>
+#include <QFileDialog>
 #include <niftkVTKFunctions.h>
 #include <vtkDoubleArray.h>
 
@@ -99,15 +100,33 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MovingSurfaceComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
 
+    // i've decided against a node filter for now. any node can have the suitable
+    // matrix for representing the camera position.
+    // if we decide otherwise then mitk::CoordinateAxisData would be suitable, i think.
+    m_Controls->m_CameraNodeComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_CameraNodeComboBox->SetAutoSelectNewItems(false);
+
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
     m_Controls->m_LiveDistanceGroupBox->setCollapsed(true);
+    // disable it for now, we've never used it, and it seems to have bugs:
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2873
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2579
+    m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
 
-    connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
-    connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
-    connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
-    connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    // disabled by default, for now.
+    m_Controls->m_HiddenSurfaceRemovalGroupBox->setCollapsed(true);
+
+    bool  ok = false;
+    ok = QObject::connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    assert(ok);
 
     dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
 
@@ -131,10 +150,11 @@ void SurfaceRegView::OnComputeDistance()
   // essentially the same stuff that SurfaceBasedRegistration::Update() does.
   // we should do that before we kick off the worker thread! 
   // otherwise someone else might move around the node's matrices.
-  vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), fixedPoly);
-  vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), movingPoly);
+  vtkPolyData *fixedPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
+
+  vtkPolyData *movingPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
 
   // this seems a bit messy here:
   // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
@@ -212,7 +232,7 @@ void SurfaceRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-
+    //FIX ME
   }
 }
 
@@ -220,10 +240,10 @@ void SurfaceRegView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnCalculateButtonPressed()
 {
-  mitk::DataNode* fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
-  mitk::DataNode* movingnode = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer movingnode = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
 
-  if ( fixednode == NULL )
+  if ( fixednode.IsNull() )
   {
     QMessageBox msgBox;
     msgBox.setText("The fixed surface or point set is non-existent, or not-selected.");
@@ -235,7 +255,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
 
-  if ( movingnode == NULL )
+  if ( movingnode.IsNull() )
   {
     QMessageBox msgBox;
     msgBox.setText("The moving surface is non-existent, or not-selected.");
@@ -247,8 +267,13 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
-  registration->Update(fixednode, movingnode, m_Matrix);
-  
+  if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
+  {
+    registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());
+    registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
+  }
+  registration->Update(fixednode, movingnode, *m_Matrix);
+
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
@@ -257,7 +282,6 @@ void SurfaceRegView::OnCalculateButtonPressed()
     }
   }
 
-  registration->ApplyTransform(movingnode);
   // we seem to need an explicit node-modified to trigger the usual listeners.
   // and even with this, the window will not re-render on its own, have to click in it.
   movingnode->Modified();
@@ -267,14 +291,21 @@ void SurfaceRegView::OnCalculateButtonPressed()
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
-  ApplyMatrixToNodes(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
+  ComposeTransformWithNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
 
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnSaveToFileButtonPressed()
 {
-  SaveMatrixToFile(*m_Matrix, m_Controls->m_SaveToFilePathEdit->currentPath());
+  QString fileName = QFileDialog::getSaveFileName( NULL,
+                                                   tr("Save Transform As ..."),
+                                                   QDir::currentPath(),
+                                                   "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
+  if (fileName.size() > 0)
+  {
+    SaveMatrixToFile(*m_Matrix, fileName);
+  }
 }
 
 
