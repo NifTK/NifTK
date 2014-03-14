@@ -113,6 +113,7 @@ private:
   std::string                                m_BackgroundLeftNodeName;
   std::string                                m_BackgroundRightNodeName;
   bool                                       m_BackgroundOutputNodeIsVisible;
+  std::string                                m_BackgroundErrorMessage;
 
   // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
   qlonglong           m_IGIUpdateSubscriptionID;

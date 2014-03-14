@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-// Qmitk
 #include "SurfaceReconView.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
@@ -23,8 +22,10 @@
 #include "SurfaceReconViewActivator.h"
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkLogMacros.h>
 #include <QFileDialog>
 #include <QDateTime>
+#include <QMessageBox>
 #include <mitkCoordinateAxesData.h>
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
@@ -405,13 +406,24 @@ void SurfaceReconView::DoSurfaceReconstruction()
         params.maxDepth = maxDepth;
         params.bakeCameraTransform = bakeTransform;
 
+        // make sure to reset this before we start processing.
+        m_BackgroundErrorMessage = "";
+
         m_BackgroundProcess = QtConcurrent::run(this, &SurfaceReconView::RunBackgroundReconstruction, params);
         m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
       }
       catch (const std::exception& e)
       {
-        std::cerr << "Whoops... something went wrong with surface reconstruction: " << e.what() << std::endl;
-        // FIXME: show an error message on the plugin panel somewhere?
+        // i dont think this will ever catch here. it's a remnant of when surface-recon was called directly,
+        // instead of bouncing it through a future.
+        MITK_ERROR << "Whoops... something went wrong with surface reconstruction: " << e.what() << std::endl;
+
+        QMessageBox msgBox;
+        msgBox.setText("Starting surface reconstruction failed.");
+        msgBox.setInformativeText(QString::fromStdString(e.what()));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.exec();
       }
     }
   }
@@ -428,11 +440,13 @@ mitk::BaseData::Pointer SurfaceReconView::RunBackgroundReconstruction(niftk::Sur
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Caught exception: " << e.what() << std::endl;
+    MITK_ERROR << "Caught exception: " << e.what() << std::endl;
+    m_BackgroundErrorMessage = e.what();
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception!" << std::endl;
+    MITK_ERROR << "Caught unknown exception!" << std::endl;
+    m_BackgroundErrorMessage = "unknown exception";
   }
   return result;
 }
@@ -441,6 +455,23 @@ mitk::BaseData::Pointer SurfaceReconView::RunBackgroundReconstruction(niftk::Sur
 //-----------------------------------------------------------------------------
 void SurfaceReconView::OnBackgroundProcessFinished()
 {
+  if (!m_BackgroundErrorMessage.empty())
+  {
+    MITK_ERROR << "Background processing returned an error message: " << m_BackgroundErrorMessage;
+
+    QMessageBox msgBox;
+    msgBox.setText("Surface Reconstruction failed.");
+    msgBox.setInformativeText(QString::fromStdString(m_BackgroundErrorMessage));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+
+    DoItButton->setEnabled(true);
+
+    // dont think we should continue, trying to parse the output from our future.
+    return;
+  }
+
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
@@ -491,7 +522,7 @@ void SurfaceReconView::OnBackgroundProcessFinished()
   {
     // i think this else branch will only ever happen if we are half-way down the shutdown process.
     // but not sure...
-    std::cerr << "Warning: data storage gone while processing surface reconstruction!" << std::endl;
+    MITK_ERROR << "Warning: data storage gone while processing surface reconstruction!";
   }
 }
 
