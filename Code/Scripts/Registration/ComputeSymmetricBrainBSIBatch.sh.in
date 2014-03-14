@@ -73,7 +73,7 @@ Optional arguements:
                         9. Normalized Mutual Information
   -pptol [float]      : stopping criteria for the powell optimization. [0.01]
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI. 
-  -reset_vox_offset [yes/no] : reset vox_offset or not [yes].
+  -reset_vox_offset [yes/no] : reset vox_offset or not [no].
 
 EOF
 exit 127

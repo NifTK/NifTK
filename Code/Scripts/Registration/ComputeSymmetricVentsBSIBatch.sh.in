@@ -74,7 +74,7 @@ Optional arguements:
   -pptol [float]      : stopping criteria for the powell optimization. [0.01]
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI.
   -brain_reg_dir [dir]          : brain-to-brain reg results to be reused. All dof files will be copied to output dir.
-  -reset_vox_offset [yes/no]    : reset vox_offset or not [yes].
+  -reset_vox_offset [yes/no]    : reset vox_offset or not [no].
 
 EOF
 exit 127
