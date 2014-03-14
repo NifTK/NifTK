@@ -197,6 +197,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="m_BakeWorldTransformCheckBox">
+        <property name="text">
+         <string>Bake camera-to-world transformation by default</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
