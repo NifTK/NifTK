@@ -75,7 +75,7 @@ Optional arguements:
   -brain_reg_dir [dir]          : brain-to-brain reg results to be reused. All dof files will be copied to output dir.
   -double_window [yes/no]       : double window or not [no].
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI.
-  -reset_vox_offset [yes/no] : reset vox_offset or not [yes].
+  -reset_vox_offset [yes/no] : reset vox_offset or not [no].
 
 EOF
 exit 127
