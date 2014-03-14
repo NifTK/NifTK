@@ -258,7 +258,6 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         left2right_translation.at<float>(0,1) = stereoRig->GetValue()[1][3];
         left2right_translation.at<float>(0,2) = stereoRig->GetValue()[2][3];
 
-        //, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 3), sizeof(float) * 4);
         std::vector< cv::Point3d > outputOpenCVPoints;
         std::vector< std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
 
@@ -370,7 +369,6 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         imgData4Node->GetGeometry()->SetOrigin(imggeom->GetOrigin());
         imgData4Node->GetGeometry()->SetIndexToWorldTransform(imggeom->GetIndexToWorldTransform());
 
-        //outputNode->SetData(imgData4Node);
         return imgData4Node.GetPointer();
       }
     } // end switch on output
