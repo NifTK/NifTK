@@ -83,7 +83,17 @@ public:
   itkNewMacro(SurfaceReconstruction);
 
   /**
-   * \brief Write My Documentation
+   * @warning niftk::Undistortion::s_StereoRigTransformationPropertyName is taken from either image1 or image2
+   *          but it is interpreted as coming from image2! This is a bug, I think.
+   *
+   * @throws std::logic_error if method is not implemented (beware: just because a method ID exists in 
+   *                          the Method enum doesn't mean it's actually implemented! you need to loop
+   *                          through GetMethodDetails().)
+   * @throws std::runtime_error if the dimensions of image1 and image2 are not the same.
+   * @throws std::runtime_error if outputtype is POINT_CLOUD and either image lacks property niftk::Undistortion::s_CameraCalibrationPropertyName.
+   * @throws std::runtime_error if property niftk::Undistortion::s_CameraCalibrationPropertyName is not of type mitk::CameraIntrinsicsProperty
+   * @throws std::runtime_error if property niftk::Undistortion::s_StereoRigTransformationPropertyName is not of type niftk::MatrixProperty
+   * @throws std::runtime_error if MITK image accessors fail.
    */
   mitk::BaseData::Pointer Run(
            const mitk::Image::Pointer image1,
@@ -95,7 +105,7 @@ public:
            float minDepth,
            float maxDepth);
 
-
+  /** Exists mainly for the benefit of uk.ac.ucl.cmic.igisurfacerecon plugin. */
   struct ParamPacket
   {
     mitk::DataStorage::Pointer dataStorage;
