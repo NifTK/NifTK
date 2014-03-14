@@ -232,6 +232,14 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
     this->AddDisplayGeometryModificationObserver(i);
   }
 
+  // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
+  itk::SimpleMemberCommand<niftkMultiWindowWidget>::Pointer onFocusChangedCommand =
+    itk::SimpleMemberCommand<niftkMultiWindowWidget>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnFocusChanged);
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+
   // The mouse mode switcher is declared and initialised in QmitkStdMultiWidget. It creates an
   // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
   // so that it is destructed and it unregisters and destructs its display interactor as well.
@@ -242,6 +250,12 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 //-----------------------------------------------------------------------------
 niftkMultiWindowWidget::~niftkMultiWindowWidget()
 {
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  }
+
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
 
@@ -2379,6 +2393,35 @@ int niftkMultiWindowWidget::GetSliceUpDirection(int orientation) const
     result = mitk::GetUpDirection(m_Geometry, itk::Orientation(orientation));
   }
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::OnFocusChanged()
+{
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+  if (focusedRenderer == m_RenderWindows[AXIAL]->GetRenderer())
+  {
+    this->SetSelectedRenderWindow(m_RenderWindows[AXIAL]);
+  }
+  else if (focusedRenderer == m_RenderWindows[SAGITTAL]->GetRenderer())
+  {
+    this->SetSelectedRenderWindow(m_RenderWindows[SAGITTAL]);
+  }
+  else if (focusedRenderer == m_RenderWindows[CORONAL]->GetRenderer())
+  {
+    this->SetSelectedRenderWindow(m_RenderWindows[CORONAL]);
+  }
+  else if (focusedRenderer == m_RenderWindows[THREE_D]->GetRenderer())
+  {
+    this->SetSelectedRenderWindow(m_RenderWindows[THREE_D]);
+  }
+  else
+  {
+    this->SetSelected(false);
+  }
 }
 
 

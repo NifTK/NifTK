@@ -374,6 +374,9 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(int orientation) const;
 
+  /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
+  void OnFocusChanged();
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
@@ -447,6 +450,9 @@ private:
   /// block the signals  the SNCs, only hinders processing them (and falling into an infinite recursion,
   /// eventually).
   bool m_BlockSncEvents;
+
+  /// \brief Observer tag of the focus manager observer.
+  unsigned long m_FocusManagerObserverTag;
 
   /// \brief Blocks the update of this widget.
   bool m_BlockUpdate;
