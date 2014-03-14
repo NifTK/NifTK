@@ -31,6 +31,8 @@ const char* SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsNam
 const char* SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName    = "default triangulation error";
 const char* SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName         = "default min depth range";
 const char* SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName         = "default max depth range";
+const char* SurfaceReconViewPreferencePage::s_DefaultBakeCameraTransformPrefsName   = "default bake camera transform";
+
 
 //-----------------------------------------------------------------------------
 SurfaceReconViewPreferencePage::SurfaceReconViewPreferencePage()
@@ -134,6 +136,7 @@ bool SurfaceReconViewPreferencePage::PerformOk()
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultTriangulationErrorPrefsName, (float) m_DefaultTriangulationErrorThresholdSpinBox->value());
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMinDepthRangePrefsName, (float) m_MinDefaultDepthRangeSpinBox->value());
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMaxDepthRangePrefsName, (float) m_MaxDefaultDepthRangeSpinBox->value());
+  m_SurfaceReconViewPreferencesNode->PutBool(s_DefaultBakeCameraTransformPrefsName, m_BakeWorldTransformCheckBox->isChecked());
 
   return true;
 }
@@ -166,4 +169,6 @@ void SurfaceReconViewPreferencePage::Update()
 
   m_MinDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMinDepthRangePrefsName, 1.0f));
   m_MaxDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMaxDepthRangePrefsName, 1000.0f));
+
+  m_BakeWorldTransformCheckBox->setChecked(m_SurfaceReconViewPreferencesNode->GetBool(s_DefaultBakeCameraTransformPrefsName, true));
 }

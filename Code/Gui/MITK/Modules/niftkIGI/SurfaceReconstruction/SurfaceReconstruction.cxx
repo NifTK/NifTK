@@ -92,7 +92,7 @@ SurfaceReconstruction::~SurfaceReconstruction()
 //-----------------------------------------------------------------------------
 mitk::BaseData::Pointer SurfaceReconstruction::Run(ParamPacket params)
 {
-  return this->Run(params.image1, params.image2, params.method, params.outputtype, params.camnode, params.maxTriangulationError, params.minDepth, params.maxDepth);
+  return this->Run(params.image1, params.image2, params.method, params.outputtype, params.camnode, params.maxTriangulationError, params.minDepth, params.maxDepth, params.bakeCameraTransform);
 }
 
 
@@ -105,7 +105,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
                                 const mitk::DataNode::Pointer camnode,
                                 float maxTriangulationError,
                                 float minDepth,
-                                float maxDepth)
+                                float maxDepth,
+                                bool bakeCameraTransform)
 {
   // sanity check
   assert(image1.IsNotNull());
@@ -316,6 +317,30 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           points->GetGeometry()->SetSpacing(camgeom->GetSpacing());
           points->GetGeometry()->SetOrigin(camgeom->GetOrigin());
           points->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
+
+          if (bakeCameraTransform)
+          {
+            // use the transformation we just set to get the point in world coordinates.
+            // then stuff it back in (and this means it would be transformed twice!).
+            // then strip off the camera transformation.
+            for (mitk::PointSet::PointsIterator i = points->Begin(); i != points->End(); ++i)
+            {
+              // we need the point in world-coordinates! i.e. take its index-to-world transformation into account.
+              // so instead of i->Value() we go via GetPointIfExists(i->Id(), ...)
+              mitk::PointSet::PointType p;
+              bool pointexists = points->GetPointIfExists(i->Index(), &p);
+              // sanity check
+              assert(pointexists);
+
+              // directly overwrite coordinates.
+              // do not use SetPoint()! it will try to transform p back into the local coordinate system.
+              i->Value() = p;
+            }
+
+            // camgeom has been cloned off the camera node above.
+            // so while we might reset a shared instance of geometry, we are only sharing it with outself here.
+            points->GetGeometry()->SetIdentity();
+          }
         }
 
         return points.GetPointer();

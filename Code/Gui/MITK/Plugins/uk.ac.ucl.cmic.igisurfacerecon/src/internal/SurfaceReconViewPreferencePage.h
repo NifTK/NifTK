@@ -43,6 +43,7 @@ public:
   static const char*      s_DefaultTriangulationErrorPrefsName;
   static const char*      s_DefaultMinDepthRangePrefsName;
   static const char*      s_DefaultMaxDepthRangePrefsName;
+  static const char*      s_DefaultBakeCameraTransformPrefsName;
 
   SurfaceReconViewPreferencePage();
   SurfaceReconViewPreferencePage(const SurfaceReconViewPreferencePage& other);

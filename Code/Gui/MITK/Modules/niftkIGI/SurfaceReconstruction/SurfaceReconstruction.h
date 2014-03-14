@@ -103,7 +103,8 @@ public:
            const mitk::DataNode::Pointer camnode,
            float maxTriangulationError,
            float minDepth,
-           float maxDepth);
+           float maxDepth,
+           bool bakeCameraTransform);
 
   /** Exists mainly for the benefit of uk.ac.ucl.cmic.igisurfacerecon plugin. */
   struct ParamPacket
@@ -118,6 +119,7 @@ public:
     float maxTriangulationError;
     float minDepth;
     float maxDepth;
+    bool bakeCameraTransform;
 
     ParamPacket()
     {

@@ -152,6 +152,7 @@ void SurfaceReconView::RetrievePreferenceValues()
 
   m_MinDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName, 1.0f));
   m_MaxDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName, 1000.0f));
+  m_BakeWorldTransformCheckBox->setChecked(prefs->GetBool(SurfaceReconViewPreferencePage::s_DefaultBakeCameraTransformPrefsName, true));
 
   bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
   if (useUndistortDefaultPath)
@@ -232,6 +233,8 @@ void SurfaceReconView::WriteCurrentConfig(const QString& directory) const
     info << "maxtrierror=" << m_MaxTriangulationErrorThresholdSpinBox->value() << "\n";
     info << "mindepth=" << m_MinDepthRangeSpinBox->value() << "\n";
     info << "maxdepth=" << m_MaxDepthRangeSpinBox->value() << "\n";
+
+    info << "bakingcameratoworldtransform=" << (m_BakeWorldTransformCheckBox->isChecked() ? "yes" : "no") << "\n";
   }
 }
 
@@ -383,6 +386,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
       float maxTriError = (float) m_MaxTriangulationErrorThresholdSpinBox->value();
       float minDepth    = (float) m_MinDepthRangeSpinBox->value();
       float maxDepth    = (float) m_MaxDepthRangeSpinBox->value();
+      bool  bakeTransform = m_BakeWorldTransformCheckBox->isChecked();
 
       try
       {
@@ -399,6 +403,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
         params.maxTriangulationError = maxTriError;
         params.minDepth = minDepth;
         params.maxDepth = maxDepth;
+        params.bakeCameraTransform = bakeTransform;
 
         m_BackgroundProcess = QtConcurrent::run(this, &SurfaceReconView::RunBackgroundReconstruction, params);
         m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
