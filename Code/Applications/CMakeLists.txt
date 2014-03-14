@@ -193,6 +193,7 @@ endif()
 
 set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
   niftkBreastMaskSegmentationFromMRI
+  niftkOCTVolumeConstructor
   niftkVesselExtractor
   )
 list(APPEND _all_command_line_apps ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
@@ -282,6 +283,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkMultiplyTransformation
   niftkMultiScaleHessianImageEnhancement2D
   niftkMultiScaleHessianImageEnhancement3D
+  niftkOCTVolumeConstructor
   niftkPadImage
   niftkProjectionGeometry
   niftkReorientateImage
