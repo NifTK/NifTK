@@ -18,8 +18,6 @@
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <itkImageRegionConstIterator.h>
-#include <mitkPositionEvent.h>
-#include <mitkInteractionConst.h>
 #include <itkMIDASHelper.h>
 
 namespace mitk
@@ -416,21 +414,6 @@ mitk::Point3D GetMiddlePointInVoxels(const mitk::Image* image)
   voxelIndex[1] = (int)(image->GetDimension(1)/2.0);
   voxelIndex[2] = (int)(image->GetDimension(2)/2.0);
   return voxelIndex;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation)
-{
-  mitk::Point2D point2D;
-  point2D[0] = 0;
-  point2D[1] = 0;
-
-  mitk::Point3D millimetreCoordinate;
-  image->GetGeometry()->IndexToWorld(voxelLocation, millimetreCoordinate);
-
-  mitk::PositionEvent event( const_cast<mitk::BaseRenderer*>(renderer), 0, 0, 0, mitk::Key_unknown, point2D, millimetreCoordinate );
-  return event;
 }
 
 
