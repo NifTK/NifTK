@@ -1,0 +1,18 @@
+<stateMachine>
+  <state name="start" startstate="true">
+    <transition event_class="MousePressEvent" event_variant="AddingLine" target="start">
+      <action name="addLine"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="SelectingPoint" target="movingLine">
+      <action name="selectPoint"/>
+    </transition>
+  </state>
+  <state name="movingLine">
+    <transition event_class="MouseMoveEvent" event_variant="MovingLine" target="movingLine">
+      <action name="movePoint"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="DeselectingPoint" target="start">
+      <action name="deselectPoint"/>
+    </transition>
+  </state>
+</stateMachine>

@@ -143,9 +143,7 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
-
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
   /// \brief Makes the current window re-render
   virtual void RenderCurrentWindow(const PositionEvent& event);
@@ -163,24 +161,6 @@ private:
 
   /// \brief Called when the seeds have been modified.
   void OnSeedsModified();
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_DROPPER_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_POLY_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_DRAW_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML;
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
   mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;

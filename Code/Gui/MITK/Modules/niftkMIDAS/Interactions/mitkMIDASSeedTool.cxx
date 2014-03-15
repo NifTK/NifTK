@@ -17,12 +17,12 @@
 #include <mitkToolManager.h>
 #include <mitkPointSet.h>
 #include <mitkProperties.h>
-#include <mitkStateEvent.h>
 #include <mitkPositionEvent.h>
 #include <mitkRenderingManager.h>
 #include <mitkGlobalInteraction.h>
 
-namespace mitk{
+namespace mitk
+{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
 }
 
@@ -50,27 +50,6 @@ const char* mitk::MIDASSeedTool::GetName() const
 const char** mitk::MIDASSeedTool::GetXPM() const
 {
   return mitkMIDASSeedTool_xpm;
-}
-
-
-//-----------------------------------------------------------------------------
-float mitk::MIDASSeedTool::CanHandle(const mitk::StateEvent* stateEvent) const
-{
-  // See StateMachine.xml for event Ids.
-  int eventId = stateEvent->GetId();
-  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-      || eventId == 505 // left mouse up
-      || eventId == 530 // left mouse down and move
-      || eventId == 4   // middle mouse down
-      || eventId == 533 // middle mouse down and move
-      )
-  {
-    return 1.0f;
-  }
-  else
-  {
-    return Superclass::CanHandle(stateEvent);
-  }
 }
 
 
@@ -106,24 +85,29 @@ void mitk::MIDASSeedTool::Activated()
 
   this->FindPointSet(pointSet, pointSetNode);
 
-  if (pointSet != NULL && pointSetNode != NULL)
-  {
-    if (m_PointSetInteractor.IsNull())
-    {
-      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
+  /// TODO
 
-      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-      for ( ; it != itEnd; ++it)
-      {
-        m_PointSetInteractor->InstallEventFilter(*it);
-      }
+//  if (pointSet != NULL && pointSetNode != NULL)
+//  {
+//    if (m_PointSetInteractor.IsNull())
+//    {
+////      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
+//      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New();
 
-      m_PointSetInteractor->SetPrecision(1);
-    }
-    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_PointSetInteractor );
-  }
+//      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+//      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+//      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+//      for ( ; it != itEnd; ++it)
+//      {
+//        m_PointSetInteractor->InstallEventFilter(*it);
+//      }
+
+////      m_PointSetInteractor->SetAccuracy(1.0);
+//    }
+
+//    mitk::GlobalInteraction* globalInteraction = mitk::GlobalInteraction::GetInstance();
+//    globalInteraction->AddInteractor(m_PointSetInteractor);
+//  }
 }
 
 
@@ -132,16 +116,18 @@ void mitk::MIDASSeedTool::Deactivated()
 {
   Superclass::Deactivated();
 
-  if (m_PointSetInteractor.IsNotNull())
-  {
-    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-    for ( ; it != itEnd; ++it)
-    {
-      m_PointSetInteractor->RemoveEventFilter(*it);
-    }
-    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
-  }
+  /// TODO
+
+//  if (m_PointSetInteractor.IsNotNull())
+//  {
+//    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+//    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+//    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+//    for ( ; it != itEnd; ++it)
+//    {
+//      m_PointSetInteractor->RemoveEventFilter(*it);
+//    }
+//    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
+//  }
   m_PointSetInteractor = NULL;
 }

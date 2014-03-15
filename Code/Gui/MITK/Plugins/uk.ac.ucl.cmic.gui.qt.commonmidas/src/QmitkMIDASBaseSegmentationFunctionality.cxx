@@ -95,7 +95,7 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const
+bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(mitk::InteractionEvent* event) const
 {
   // If we have a render window part (aka. editor or display)...
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
@@ -104,7 +104,7 @@ bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent
     if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
     {
       // whose renderer is the sender of this event...
-      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
+      if (renderWindow->GetRenderer() == event->GetSender())
       {
         // then we let the event pass through.
         return false;

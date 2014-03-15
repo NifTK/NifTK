@@ -1,0 +1,22 @@
+<stateMachine>
+   <state name="start" startstate="true">
+     <transition event_class="MousePressEvent" event_variant="Drawing" target="start">
+       <action name="startDrawing" />
+     </transition>
+     <transition event_class="MouseReleaseEvent" event_variant="Drawing" target="start">
+       <action name="stopDrawing" />
+     </transition>
+     <transition event_class="MouseMoveEvent" event_variant="Drawing" target="start">
+       <action name="keepDrawing" />
+     </transition>
+     <transition event_class="MousePressEvent" event_variant="Erasing" target="start">
+       <action name="startErasing" />
+     </transition>
+     <transition event_class="MouseReleaseEvent" event_variant="Erasing" target="start">
+       <action name="stopErasing" />
+     </transition>
+     <transition event_class="MouseMoveEvent" event_variant="Erasing" target="start">
+       <action name="keepErasing" />
+     </transition>
+   </state>
+</stateMachine>

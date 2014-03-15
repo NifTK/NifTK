@@ -1,0 +1,37 @@
+<!--
+   Note: In MIDAS, left button, adds to segmentation image.
+   Note: In MIDAS, middle button, adds to mask that influences connection breaker.
+   Note: In MIDAS, right button, subtracts from the mask that influences connection breaker.
+   So, we just add shift to distinguish from normal MITK interaction.
+-->
+<stateMachine>
+   <state name="start" startstate="true">
+     <transition event_class="MousePressEvent" event_variant="AddingAddition" target="start">
+       <action name="startAddingAddition"/>
+     </transition>
+     <transition event_class="MouseReleaseEvent" event_variant="AddingAddition" target="start">
+       <action name="stopAddingAddition"/>
+     </transition>
+     <transition event_class="MouseMoveEvent" event_variant="AddingAddition" target="start">
+       <action name="keepAddingAddition"/>
+     </transition>
+     <transition event_class="MousePressEvent" event_variant="AddingSubtraction" target="start">
+       <action name="startAddingSubtraction"/>
+     </transition>
+     <transition event_class="MouseReleaseEvent" event_variant="AddingSubtraction" target="start">
+       <action name="stopAddingSubtraction"/>
+     </transition>
+     <transition event_class="MouseMoveEvent" event_variant="AddingSubtraction" target="start">
+       <action name="keepAddingSubtraction"/>
+     </transition>
+     <transition event_class="MousePressEvent" event_variant="RemovingSubtraction" target="start">
+       <action name="startRemovingSubtraction"/>
+     </transition>
+     <transition event_class="MouseReleaseEvent" event_variant="RemovingSubtraction" target="start">
+       <action name="stopRemovingSubtraction"/>
+     </transition>
+     <transition event_class="MouseMoveEvent" event_variant="RemovingSubtraction" target="start">
+       <action name="keepRemovingSubtraction"/>
+     </transition>
+   </state>
+</stateMachine>

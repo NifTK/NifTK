@@ -39,33 +39,38 @@
 const std::string mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType mitk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
 
-namespace mitk{
+namespace mitk
+{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPaintbrushTool, "MIDAS Paintbrush Tool");
 }
 
-mitk::MIDASPaintbrushTool::MIDASPaintbrushTool() : SegTool2D("MIDASPaintbrushTool")
+mitk::MIDASPaintbrushTool::MIDASPaintbrushTool()
+: mitk::SegTool2D("MIDASPaintbrushTool")
 , m_Interface(NULL)
 , m_CursorSize(1)
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
 , m_ErosionMode(true)
 {
-  CONNECT_ACTION( 320401, OnLeftMousePressed );
-  CONNECT_ACTION( 320402, OnLeftMouseReleased );
-  CONNECT_ACTION( 320403, OnLeftMouseMoved );
-  CONNECT_ACTION( 320404, OnMiddleMousePressed );
-  CONNECT_ACTION( 320405, OnMiddleMouseReleased );
-  CONNECT_ACTION( 320406, OnMiddleMouseMoved );
-  CONNECT_ACTION( 320407, OnRightMousePressed );
-  CONNECT_ACTION( 320408, OnRightMouseReleased );
-  CONNECT_ACTION( 320409, OnRightMouseMoved );
-
   m_Interface = mitk::MIDASPaintbrushToolEventInterface::New();
   m_Interface->SetMIDASPaintbrushTool( this );
 }
 
 mitk::MIDASPaintbrushTool::~MIDASPaintbrushTool()
 {
+}
+
+void mitk::MIDASPaintbrushTool::ConnectActionsAndFunctions()
+{
+  CONNECT_FUNCTION("startAddingAddition", StartAddingAddition);
+  CONNECT_FUNCTION("stopAddingAddition", StopAddingAddition);
+  CONNECT_FUNCTION("keepAddingAddition", KeepAddingAddition);
+  CONNECT_FUNCTION("startAddingSubtraction", StartAddingSubtraction);
+  CONNECT_FUNCTION("stopAddingSubtraction", StopAddingSubtraction);
+  CONNECT_FUNCTION("keepAddingSubtraction", KeepAddingSubtraction);
+  CONNECT_FUNCTION("startRemovingSubtraction", StartRemovingSubtraction);
+  CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
+  CONNECT_FUNCTION("keepRemovingSubtraction", KeepRemovingSubtraction);
 }
 
 const char* mitk::MIDASPaintbrushTool::GetName() const
@@ -124,34 +129,9 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   m_DisplayInteractorConfigs.clear();
 }
 
-float mitk::MIDASPaintbrushTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+bool mitk::MIDASPaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
-}
-
-float mitk::MIDASPaintbrushTool::CanHandle(const mitk::StateEvent* stateEvent) const
-{
-  // See StateMachine.xml for event Ids.
-  int eventId = stateEvent->GetId();
-  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-      || eventId == 505 // left mouse up
-      || eventId == 530 // left mouse down and move
-      || eventId == 4   // middle mouse down
-      || eventId == 506 // middle mouse up
-      || eventId == 533 // middle mouse down and move
-      || eventId == 2   // right mouse down
-      || eventId == 507 // right mouse up
-      || eventId == 531 // right mouse down and move
-      )
-  {
-    return 1.0f;
-  }
-  else
-  {
-    /// Note that the superclass is not a MIDASStateMachine and it does not
-    /// have a CanHandle function.
-    return Superclass::CanHandleEvent(stateEvent);
-  }
+  return this->CanHandleEvent(event);
 }
 
 int mitk::MIDASPaintbrushTool::GetCursorSize() const
@@ -169,7 +149,7 @@ bool mitk::MIDASPaintbrushTool::GetErosionMode() const
   return m_ErosionMode;
 }
 
-void mitk::MIDASPaintbrushTool::SetErosionMode(int erosionMode)
+void mitk::MIDASPaintbrushTool::SetErosionMode(bool erosionMode)
 {
   m_ErosionMode = erosionMode;;
 }
@@ -321,7 +301,7 @@ void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
   } // end if length > 0
 } // end function
 
-bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   DataNode* workingNode( m_ToolManager->GetWorkingData(imageNumber) );
   if (!workingNode)
@@ -334,19 +314,18 @@ bool mitk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int imageNumber, Ac
   m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
 
   // Make sure we have a valid position event, otherwise no point continuing.
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
   {
     return false;
   }
 
   // Set reference data, but we don't draw anything at this stage
-  m_MostRecentPointInMillimetres = positionEvent->GetWorldPosition();
+  m_MostRecentPointInMillimetres = positionEvent->GetPositionInWorld();
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
-    const StateEvent* stateEvent,
+bool mitk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
     int imageNumber,
     unsigned char valueForRedo,
     unsigned char valueForUndo
@@ -358,13 +337,13 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
     return false;
   }
 
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
   {
     return false;
   }
 
-  const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
+  const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
   if ( !planeGeometry )
   {
     return false;
@@ -376,7 +355,7 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(Action* action,
   mitk::Image::Pointer imageToWriteTo = static_cast<mitk::Image*>(workingNode->GetData());
   assert(imageToWriteTo);
 
-  mitk::Point3D currentPoint = positionEvent->GetWorldPosition();
+  mitk::Point3D currentPoint = positionEvent->GetPositionInWorld();
 
   ProcessorType::Pointer processor = ProcessorType::New();
   this->GetListOfAffectedVoxels(*planeGeometry, currentPoint, m_MostRecentPointInMillimetres, (*processor));
@@ -438,61 +417,61 @@ int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
   return imageNumber;
 }
 
-bool mitk::MIDASPaintbrushTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(true);
-  bool result = this->MarkInitialPosition(imageNumber, action, stateEvent);
+  bool result = this->MarkInitialPosition(imageNumber, action, event);
   return result;
 }
 
-bool mitk::MIDASPaintbrushTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(true);
-  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
+  this->DoMouseMoved(action, event, imageNumber, 1, 0);
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::OnLeftMouseReleased(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(true);
   this->SetInvalidRegion(imageNumber);
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::OnMiddleMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
-  return this->MarkInitialPosition(imageNumber, action, stateEvent);
+  return this->MarkInitialPosition(imageNumber, action, event);
 }
 
-bool mitk::MIDASPaintbrushTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
-  this->DoMouseMoved(action, stateEvent, imageNumber, 1, 0);
+  this->DoMouseMoved(action, event, imageNumber, 1, 0);
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
   this->SetInvalidRegion(imageNumber);
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::OnRightMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
-  return this->MarkInitialPosition(imageNumber, action, stateEvent);
+  return this->MarkInitialPosition(imageNumber, action, event);
 }
 
-bool mitk::MIDASPaintbrushTool::OnRightMouseMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
-  this->DoMouseMoved(action, stateEvent, imageNumber, 0, 1);
+  this->DoMouseMoved(action, event, imageNumber, 0, 1);
   return true;
 }
 
-bool mitk::MIDASPaintbrushTool::OnRightMouseReleased(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int imageNumber = this->GetImageNumber(false);
   this->SetInvalidRegion(imageNumber);

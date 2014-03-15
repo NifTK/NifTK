@@ -44,12 +44,6 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
 , m_PolyLinePointSetVisible(false)
 , m_DraggedPointIndex(0)
 {
-  // great magic numbers, connecting interactor straight to method calls.
-  CONNECT_ACTION( 12, OnLeftMousePressed );
-  CONNECT_ACTION( 66, OnMiddleMousePressed );
-  CONNECT_ACTION( 90, OnMiddleMousePressedAndMoved );
-  CONNECT_ACTION( 76, OnMiddleMouseReleased );
-
   // These are not added to DataStorage as they are never drawn, they are just an internal data structure
   m_ReferencePoints = mitk::ContourModel::New();
   m_PreviousContourReferencePoints = mitk::ContourModel::New();
@@ -84,6 +78,15 @@ mitk::MIDASPolyTool::~MIDASPolyTool()
 {
 }
 
+void mitk::MIDASPolyTool::ConnectActionsAndFunctions()
+{
+  CONNECT_FUNCTION("addLine", AddLine);
+  CONNECT_FUNCTION("selectPoint", SelectPoint);
+  CONNECT_FUNCTION("movePoint", MovePoint);
+  CONNECT_FUNCTION("deselectPoint", DeselectPoint);
+}
+
+
 const char* mitk::MIDASPolyTool::GetName() const
 {
   return "Poly";
@@ -92,26 +95,6 @@ const char* mitk::MIDASPolyTool::GetName() const
 const char** mitk::MIDASPolyTool::GetXPM() const
 {
   return mitkMIDASPolyTool_xpm;
-}
-
-float mitk::MIDASPolyTool::CanHandle(const StateEvent* stateEvent) const
-{
-  // See StateMachine.xml for event Ids.
-  int eventId = stateEvent->GetId();
-  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-      || eventId == 4   // middle mouse down
-      || eventId == 506 // middle mouse up
-      || eventId == 533 // middle mouse down and move
-      )
-  {
-    return 1.0f;
-  }
-  else
-  {
-    /// Note that the superclass is not a MIDASStateMachine and it does not
-    /// have a CanHandle function.
-    return Superclass::CanHandleEvent(stateEvent);
-  }
 }
 
 void mitk::MIDASPolyTool::Disable3dRenderingOfPreviousContour()
@@ -125,21 +108,21 @@ void mitk::MIDASPolyTool::ClearData()
 
   // These are added to the DataManager, but only drawn when the middle mouse is down (and subsequently moved).
   m_PreviousContour->Initialize();
-  m_PreviousContour->SetIsClosed(m_ContourClosed);
+  m_PreviousContour->SetClosed(m_ContourClosed);
   // TODO Removed at from the new MITK segmentation framework.
   // Some property of the node controls this.
 //  m_PreviousContour->SetWidth(m_ContourWidth);
 
   // These are not added to the DataManager, so will never be drawn.
   m_ReferencePoints->Initialize();
-  m_ReferencePoints->SetIsClosed(m_ContourClosed);
+  m_ReferencePoints->SetClosed(m_ContourClosed);
   // TODO Removed at from the new MITK segmentation framework.
   // Some property of the node controls this.
 //  m_ReferencePoints->SetWidth(m_ContourWidth);
 
   // These are not added to the DataManager, so will never be drawn.
   m_PreviousContourReferencePoints->Initialize();
-  m_PreviousContourReferencePoints->SetIsClosed(m_ContourClosed);
+  m_PreviousContourReferencePoints->SetClosed(m_ContourClosed);
   // TODO Removed at from the new MITK segmentation framework.
   // Some property of the node controls this.
 //  m_PreviousContourReferencePoints->SetWidth(m_ContourWidth);
@@ -346,12 +329,12 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
   }
 }
 
-void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo, bool registerNewPoint)
+void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk::InteractionPositionEvent* positionEvent, bool provideUndo, bool registerNewPoint)
 {
   if (m_ReferencePoints->GetNumberOfVertices() > 1)
   {
     // Don't forget to call baseclass method.
-    MIDASContourTool::OnMousePressed(action, stateEvent);
+    MIDASContourTool::OnMousePressed(action, positionEvent);
 
     // If these are not set, something is fundamentally wrong.
     assert(m_WorkingImage);
@@ -363,17 +346,16 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
     mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
     assert(backgroundContour);
 
-    // Make sure we have a valid position event, otherwise no point continuing.
-    const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-    if (!positionEvent) return;
-
     // Make sure we have a valid geometry, otherwise no point continuing.
-    const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
-    if (!planeGeometry) return;
+    const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+    if (!planeGeometry)
+    {
+      return;
+    }
 
     // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
     mitk::Point3D closestCornerPoint;
-    this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetWorldPosition(), closestCornerPoint);
+    this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetPositionInWorld(), closestCornerPoint);
 
     // Redraw the "previous" contour line in green.
     this->DrawWholeContour(*(m_PreviousContourReferencePoints.GetPointer()), *planeGeometry, *(m_PreviousContour.GetPointer()), *backgroundContour);
@@ -391,18 +373,21 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
  * When the tool is activated, the next mouse click starts the line.
  * We then keep adding points and lines until the tool is deactivated.
  */
-bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Don't forget to call baseclass method.
-  MIDASContourTool::OnMousePressed(action, stateEvent);
+  MIDASContourTool::OnMousePressed(action, event);
 
   // If these are not set, something is fundamentally wrong.
   assert(m_WorkingImage);
   assert(m_WorkingImageGeometry);
 
   // Make sure we have a valid position event, otherwise no point continuing.
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   // Similarly, we can't do plane calculations if no geometry set.
   const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
@@ -410,7 +395,7 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
 
   // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
   mitk::Point3D closestCornerPoint;
-  this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetWorldPosition(), closestCornerPoint);
+  this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetPositionInWorld(), closestCornerPoint);
 
   mitk::Point3D previousPoint;
   if (m_ReferencePoints->GetNumberOfVertices() > 0)
@@ -449,32 +434,43 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
   return true;
 }
 
-bool mitk::MIDASPolyTool::OnMiddleMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   this->CopyContour(*(m_ReferencePoints), *(m_PreviousContourReferencePoints));
-  this->UpdateContours(action, stateEvent, false, true);
+  this->UpdateContours(action, positionEvent, false, true);
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
-bool mitk::MIDASPolyTool::OnMiddleMousePressedAndMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   this->SetPreviousContourVisible(true);
-  this->UpdateContours(action, stateEvent, false, false);
+  this->UpdateContours(action, positionEvent, false, false);
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
-bool mitk::MIDASPolyTool::OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASPolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
   this->SetPreviousContourVisible(false);
-  this->UpdateContours(action, stateEvent, true, false);
+  this->UpdateContours(action, positionEvent, true, false);
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }

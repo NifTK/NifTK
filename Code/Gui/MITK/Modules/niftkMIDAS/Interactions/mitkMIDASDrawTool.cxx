@@ -32,7 +32,8 @@
 const mitk::OperationType mitk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
 const mitk::OperationType mitk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
-namespace mitk{
+namespace mitk
+{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASDrawTool, "MIDAS Draw Tool");
 }
 
@@ -42,14 +43,6 @@ mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
 , m_Interface(NULL)
 , m_EraserScopeVisible(false)
 {
-  // great magic numbers, connecting interactor straight to method calls.
-  CONNECT_ACTION( 320410, OnLeftMousePressed );
-  CONNECT_ACTION( 320411, OnLeftMouseReleased );
-  CONNECT_ACTION( 320412, OnLeftMouseMoved );
-  CONNECT_ACTION( 320413, OnMiddleMousePressed );
-  CONNECT_ACTION( 320414, OnMiddleMouseReleased );
-  CONNECT_ACTION( 320415, OnMiddleMouseMoved );
-
   m_Interface = MIDASDrawToolEventInterface::New();
   m_Interface->SetMIDASDrawTool(this);
 
@@ -82,6 +75,18 @@ mitk::MIDASDrawTool::~MIDASDrawTool()
 
 
 //-----------------------------------------------------------------------------
+void mitk::MIDASDrawTool::ConnectActionsAndFunctions()
+{
+  CONNECT_FUNCTION("startDrawing", StartDrawing);
+  CONNECT_FUNCTION("stopDrawing", StopDrawing);
+  CONNECT_FUNCTION("keepDrawing", KeepDrawing);
+  CONNECT_FUNCTION("startErasing", StartErasing);
+  CONNECT_FUNCTION("stopErasing", StopErasing);
+  CONNECT_FUNCTION("keepErasing", KeepErasing);
+}
+
+
+//-----------------------------------------------------------------------------
 const char* mitk::MIDASDrawTool::GetName() const
 {
   return "Draw";
@@ -92,28 +97,6 @@ const char* mitk::MIDASDrawTool::GetName() const
 const char** mitk::MIDASDrawTool::GetXPM() const
 {
   return mitkMIDASDrawTool_xpm;
-}
-
-
-//-----------------------------------------------------------------------------
-float mitk::MIDASDrawTool::CanHandle(const mitk::StateEvent* stateEvent) const
-{
-  // See StateMachine.xml for event Ids.
-  int eventId = stateEvent->GetId();
-  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-      || eventId == 505 // left mouse up
-      || eventId == 530 // left mouse down and move
-      || eventId == 4   // middle mouse down
-      || eventId == 506 // middle mouse up
-      || eventId == 533 // middle mouse down and move
-      )
-  {
-    return 1.0f;
-  }
-  else
-  {
-    return Superclass::CanHandle(stateEvent);
-  }
 }
 
 
@@ -138,14 +121,17 @@ void mitk::MIDASDrawTool::ClearWorkingData()
  and also store the current point, at which the mouse was pressed down. It's the next
  method OnMouseMoved that starts to draw the line.
 */
-bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Don't forget to call baseclass method.
-  MIDASContourTool::OnMousePressed(action, stateEvent);
+  MIDASContourTool::OnMousePressed(action, event);
 
   // Make sure we have a valid position event, otherwise no point continuing.
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   // Initialize contours, and set properties.
   this->ClearData();
@@ -169,7 +155,7 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
   }
 
   // Set reference data, but we don't draw anything at this stage
-  m_MostRecentPointInMm = positionEvent->GetWorldPosition();
+  m_MostRecentPointInMm = positionEvent->GetPositionInWorld();
   return true;
 }
 
@@ -182,15 +168,21 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
  pixel (unless you move your mouse slowly), so you have to draw a line between
  two points that may span more than one voxel, or fractions of a voxel.
 */
-bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   if (m_WorkingImage == NULL || m_WorkingImageGeometry == NULL) return false;
 
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
-  if ( !planeGeometry ) return false;
+  if (!planeGeometry)
+  {
+    return false;
+  }
 
   // Set this flag to indicate that we are editing, which will block the update of the region growing.
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
@@ -204,7 +196,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
                                *m_WorkingImage,
                                *m_WorkingImageGeometry,
                                *planeGeometry,
-                                positionEvent->GetWorldPosition(),
+                                positionEvent->GetPositionInWorld(),
                                 m_MostRecentPointInMm,
                                *feedbackContour,
                                *backgroundContour
@@ -213,7 +205,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   // This gets updated as the mouse moves, so that each new segement of line gets added onto the previous.
   if (contourAugmented)
   {
-    m_MostRecentPointInMm = positionEvent->GetWorldPosition();
+    m_MostRecentPointInMm = positionEvent->GetPositionInWorld();
   }
 
   // Make sure all views everywhere get updated.
@@ -228,11 +220,14 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
  * When we finish a contour, we take the Current contour, and add it to the Cumulative contour.
  * This action should be undo-able, as we are creating data.
  */
-bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Make sure we have a valid position event, otherwise no point continuing.
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
@@ -274,9 +269,9 @@ void mitk::MIDASDrawTool::SetCursorSize(double cursorSize)
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
   {
     return false;
@@ -286,23 +281,23 @@ bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent*
   const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
   m_EraserScope->SetGeometry2D(const_cast<mitk::Geometry2D*>(geometry2D));
   mitk::Point2D mousePosition;
-  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  geometry2D->Map(positionEvent->GetPositionInWorld(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
 
   this->SetEraserScopeVisible(true, renderer);
   mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
 
   bool result = true;
-  result = result && this->DeleteFromContour(2, action, stateEvent);
-  result = result && this->DeleteFromContour(3, action, stateEvent);
+  result = result && this->DeleteFromContour(2, action, event);
+  result = result && this->DeleteFromContour(3, action, event);
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASDrawTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
   {
     return false;
@@ -311,21 +306,21 @@ bool mitk::MIDASDrawTool::OnMiddleMouseMoved(Action* action, const StateEvent* s
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
   const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
   mitk::Point2D mousePosition;
-  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  geometry2D->Map(positionEvent->GetPositionInWorld(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
   mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
 
   bool result = true;
-  result = result && this->DeleteFromContour(2, action, stateEvent);
-  result = result && this->DeleteFromContour(3, action, stateEvent);
+  result = result && this->DeleteFromContour(2, action, event);
+  result = result && this->DeleteFromContour(3, action, event);
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASDrawTool::OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  this->SetEraserScopeVisible(false, stateEvent->GetEvent()->GetSender());
+  this->SetEraserScopeVisible(false, event->GetSender());
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
@@ -334,14 +329,17 @@ bool mitk::MIDASDrawTool::OnMiddleMouseReleased (Action* action, const StateEven
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASDrawTool::DeleteFromContour(int workingDataNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Make sure we have a valid position event, otherwise no point continuing.
-  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
-  if (!positionEvent) return false;
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  if (!positionEvent)
+  {
+    return false;
+  }
 
   // Get the world point.
-  mitk::Point3D mousePositionInMm = positionEvent->GetWorldPosition();
+  mitk::Point3D mousePositionInMm = positionEvent->GetPositionInWorld();
 
   // Retrieve the correct contour set.
   assert(m_ToolManager);
@@ -461,7 +459,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
             // Find the last corner point before the entry point and add it
             // to the contour if it is different than the start point.
-            float length = entryPoint[axis] - startPoint[axis];
+            double length = entryPoint[axis] - startPoint[axis];
             if (std::abs(length) >= spacing[axis])
             {
               entryPoint[axis] -= std::fmod(length, spacing[axis]);
@@ -483,7 +481,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
             // Find the first corner point after the exit point and add it
             // to the contour if it is different than the end point.
-            float length = endPoint[axis] - exitPoint[axis];
+            double length = endPoint[axis] - exitPoint[axis];
             if (std::abs(length) >= spacing[axis])
             {
               exitPoint[axis] += std::fmod(length, spacing[axis]);
@@ -530,7 +528,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASDrawTool::Clean(const int& sliceNumber, const int& axisNumber)
+void mitk::MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
 {
   int workingNodeToClean = 3;
   int regionGrowingNodeNumber = 6;
@@ -601,8 +599,8 @@ void mitk::MIDASDrawTool::ITKCleanContours(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::ContourModelSet& inputContours,
     mitk::ContourModelSet& outputContours,
-    const int& axis,
-    const int& sliceNumber
+    int axis,
+    int sliceNumber
     )
 {
   // This itkImage should be the region growing image (i.e. unsigned char and binary).
@@ -708,7 +706,10 @@ void mitk::MIDASDrawTool::ITKCleanContours(
 //-----------------------------------------------------------------------------
 void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
 {
-  if (!operation) return;
+  if (!operation)
+  {
+    return;
+  }
 
   mitk::MIDASContourTool::ExecuteOperation(operation);
 
