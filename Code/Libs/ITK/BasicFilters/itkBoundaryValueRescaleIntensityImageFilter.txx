@@ -17,6 +17,8 @@
 
 #include "itkBoundaryValueRescaleIntensityImageFilter.h"
 
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
 #include <itkLogHelper.h>
 
 namespace itk
