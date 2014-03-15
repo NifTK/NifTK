@@ -453,7 +453,7 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
     return;
   }
 
-  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
 
   if (geometry && geometry != m_Geometry)
   {
