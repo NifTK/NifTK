@@ -1,4 +1,4 @@
-<stateMachine>
+<statemachine>
   <state name="start" startstate="true">
     <transition event_class="MousePressEvent" event_variant="AddingLine" target="start">
       <action name="addLine"/>
@@ -15,4 +15,4 @@
       <action name="deselectPoint"/>
     </transition>
   </state>
-</stateMachine>
+</statemachine>

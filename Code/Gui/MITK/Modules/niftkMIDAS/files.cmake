@@ -49,12 +49,6 @@ set(RESOURCE_FILES
   Interactions/MIDASPaintbrushToolStateMachine.xml
   Interactions/MIDASSeedDropperConfig.xml
   Interactions/MIDASSeedDropperStateMachine.xml
-  Interactions/MIDASToolConfig.xml
-  Interactions/MIDASToolStateMachine.xml
-  Interactions/MIDASToolConfig.xml
-  Interactions/MIDASToolStateMachine.xml
-  Interactions/MIDASToolConfig.xml
-  Interactions/MIDASToolStateMachine.xml
-  Interactions/MIDASToolConfig.xml
-  Interactions/MIDASToolStateMachine.xml
+  Interactions/MIDASSeedToolConfig.xml
+  Interactions/MIDASSeedToolStateMachine.xml
 )

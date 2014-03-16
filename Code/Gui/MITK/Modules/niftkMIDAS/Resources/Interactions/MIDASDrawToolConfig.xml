@@ -1,20 +1,20 @@
 <config>
-  <event_variant class="MousePressEvent" name="Drawing">
+  <event_variant class="MousePressEvent" name="StartDrawing">
     <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
-  <event_variant class="MouseReleaseEvent" name="Drawing">
-    <attribute name="EventButton" value="LeftMouseButton"/>
-  </event_variant>
-  <event_variant class="MouseMoveEvent" name="Drawing">
+  <event_variant class="MouseMoveEvent" name="KeepDrawing">
     <attribute name="ButtonState" value="LeftMouseButton"/>
   </event_variant>
-  <event_variant class="MousePressEvent" name="Erasing">
+  <event_variant class="MouseReleaseEvent" name="StopDrawing">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MousePressEvent" name="StartErasing">
     <attribute name="EventButton" value="MiddleMouseButton"/>
   </event_variant>
-  <event_variant class="MouseReleaseEvent" name="Erasing">
-    <attribute name="EventButton" value="MiddleMouseButton"/>
-  </event_variant>
-  <event_variant class="MouseMoveEvent" name="Erasing">
+  <event_variant class="MouseMoveEvent" name="KeepErasing">
     <attribute name="ButtonState" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="StopErasing">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
   </event_variant>
 </config>

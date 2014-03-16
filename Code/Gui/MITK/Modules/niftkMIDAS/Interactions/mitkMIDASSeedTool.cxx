@@ -21,6 +21,9 @@
 #include <mitkRenderingManager.h>
 #include <mitkGlobalInteraction.h>
 
+#include <usModuleResource.h>
+#include <usGetModuleContext.h>
+
 namespace mitk
 {
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
@@ -36,6 +39,21 @@ mitk::MIDASSeedTool::~MIDASSeedTool()
 mitk::MIDASSeedTool::MIDASSeedTool() : MIDASTool("dummy")
 , m_PointSetInteractor(NULL)
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASSeedTool::InitializeStateMachine()
+{
+  try
+  {
+    this->LoadStateMachine("MIDASSeedToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("MIDASSeedToolConfig.xml", us::GetModuleContext()->GetModule());
+  }
+  catch( const std::exception& e )
+  {
+    MITK_ERROR << "Could not load statemachine pattern MIDASSeedToolStateMachine.xml with exception: " << e.what();
+  }
 }
 
 

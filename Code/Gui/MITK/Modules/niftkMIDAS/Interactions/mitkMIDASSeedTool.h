@@ -45,6 +45,8 @@ public:
   mitkClassMacro(MIDASSeedTool, MIDASTool);
   itkNewMacro(MIDASSeedTool);
 
+  virtual void InitializeStateMachine();
+
   /// \see mitk::Tool::GetName()
   virtual const char* GetName() const;
 

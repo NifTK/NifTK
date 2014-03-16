@@ -29,6 +29,9 @@
 #include <vtkImageData.h>
 #include <itkContinuousIndex.h>
 
+#include <usModuleResource.h>
+#include <usGetModuleContext.h>
+
 const mitk::OperationType mitk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
 const mitk::OperationType mitk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
@@ -71,6 +74,21 @@ mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
 //-----------------------------------------------------------------------------
 mitk::MIDASDrawTool::~MIDASDrawTool()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASDrawTool::InitializeStateMachine()
+{
+  try
+  {
+    this->LoadStateMachine("MIDASDrawToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("MIDASDrawToolConfig.xml", us::GetModuleContext()->GetModule());
+  }
+  catch( const std::exception& e )
+  {
+    MITK_ERROR << "Could not load statemachine pattern MIDASDrawToolStateMachine.xml with exception: " << e.what();
+  }
 }
 
 

@@ -71,6 +71,8 @@ public:
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
+  virtual void InitializeStateMachine();
+
   /** Strings to help the tool identify itself in GUI. */
   virtual const char* GetName() const;
   virtual const char** GetXPM() const;

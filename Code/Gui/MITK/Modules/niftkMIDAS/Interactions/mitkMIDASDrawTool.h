@@ -46,6 +46,8 @@ public:
   mitkClassMacro(MIDASDrawTool, MIDASContourTool);
   itkNewMacro(MIDASDrawTool);
 
+  virtual void InitializeStateMachine();
+
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(Operation* operation);
 

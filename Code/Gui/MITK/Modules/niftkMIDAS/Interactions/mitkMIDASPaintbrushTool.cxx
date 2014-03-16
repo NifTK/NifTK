@@ -60,17 +60,30 @@ mitk::MIDASPaintbrushTool::~MIDASPaintbrushTool()
 {
 }
 
+void mitk::MIDASPaintbrushTool::InitializeStateMachine()
+{
+  try
+  {
+    this->LoadStateMachine("MIDASPaintbrushToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("MIDASPaintbrushToolConfig.xml", us::GetModuleContext()->GetModule());
+  }
+  catch( const std::exception& e )
+  {
+    MITK_ERROR << "Could not load statemachine pattern MIDASPaintbrushToolStateMachine.xml with exception: " << e.what();
+  }
+}
+
 void mitk::MIDASPaintbrushTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("startAddingAddition", StartAddingAddition);
-  CONNECT_FUNCTION("stopAddingAddition", StopAddingAddition);
   CONNECT_FUNCTION("keepAddingAddition", KeepAddingAddition);
+  CONNECT_FUNCTION("stopAddingAddition", StopAddingAddition);
   CONNECT_FUNCTION("startAddingSubtraction", StartAddingSubtraction);
-  CONNECT_FUNCTION("stopAddingSubtraction", StopAddingSubtraction);
   CONNECT_FUNCTION("keepAddingSubtraction", KeepAddingSubtraction);
+  CONNECT_FUNCTION("stopAddingSubtraction", StopAddingSubtraction);
   CONNECT_FUNCTION("startRemovingSubtraction", StartRemovingSubtraction);
-  CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
   CONNECT_FUNCTION("keepRemovingSubtraction", KeepRemovingSubtraction);
+  CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
 }
 
 const char* mitk::MIDASPaintbrushTool::GetName() const

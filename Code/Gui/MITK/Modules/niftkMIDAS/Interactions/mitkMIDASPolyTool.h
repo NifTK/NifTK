@@ -89,6 +89,8 @@ protected:
   MIDASPolyTool(); // purposely hidden
   virtual ~MIDASPolyTool(); // purposely hidden
 
+  virtual void InitializeStateMachine();
+
   /// \brief Connects state machine actions to functions.
   virtual void ConnectActionsAndFunctions();
 

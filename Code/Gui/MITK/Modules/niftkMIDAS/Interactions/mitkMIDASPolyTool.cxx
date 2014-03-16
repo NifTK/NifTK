@@ -24,6 +24,9 @@
 #include <mitkBaseRenderer.h>
 #include <mitkContourModel.h>
 
+#include <usModuleResource.h>
+#include <usGetModuleContext.h>
+
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
 const mitk::OperationType mitk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR = 320420;
@@ -77,6 +80,22 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
 mitk::MIDASPolyTool::~MIDASPolyTool()
 {
 }
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASPolyTool::InitializeStateMachine()
+{
+  try
+  {
+    this->LoadStateMachine("MIDASPolyToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("MIDASPolyToolConfig.xml", us::GetModuleContext()->GetModule());
+  }
+  catch( const std::exception& e )
+  {
+    MITK_ERROR << "Could not load statemachine pattern MIDASPolyToolStateMachine.xml with exception: " << e.what();
+  }
+}
+
 
 void mitk::MIDASPolyTool::ConnectActionsAndFunctions()
 {

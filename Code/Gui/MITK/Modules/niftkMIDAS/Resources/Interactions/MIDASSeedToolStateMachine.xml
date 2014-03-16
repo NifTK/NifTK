@@ -1,4 +1,4 @@
-<stateMachine>
+<statemachine>
   <state name="start" startstate="true">
     <transition event_class="MousePressEvent" event_variant="MiddleButtonPressed" target="guardMiddleButtonPointSelected">
       <!-- 30 = AcCHECKELEMENT  -->
@@ -19,7 +19,7 @@
       <action name="moveSelected" />
     </transition>
     <!--left up-->
-    <transition event_class="MouseLeftEvent" event_variant="LeftButtonReleased" target="start">
+    <transition event_class="MouseReleaseEvent" event_variant="LeftButtonReleased" target="start">
       <!-- 42 = AcFINISHMOVEMENT  -->
       <action name="finishMovement" />
       <!-- 72 = AcDESELECTALL  -->
@@ -50,4 +50,4 @@
       <action name="selectPickedObject" />
     </transition>
   </state-->
-</stateMachine>
+</statemachine>
