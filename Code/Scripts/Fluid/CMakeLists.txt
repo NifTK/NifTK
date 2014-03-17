@@ -19,6 +19,8 @@ if(NOT WIN32)
     fluid.sh
     _fluid.sh
     addRegions.sh
+    flImport.sh
+    _flImport.sh
   )
   foreach(script ${scripts})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
