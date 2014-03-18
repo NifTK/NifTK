@@ -53,6 +53,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
 , m_EndFrame(0)
+, m_ProjectorScreenBuffer(0.0)
+, m_ClassifierScreenBuffer(100.0)
 {
 }
 
@@ -256,6 +258,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
       leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
     
+      bool cropUndistortedPointsToScreen = true;
+      double cropValue = std::numeric_limits<double>::infinity();
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( leftCameraWorldPoints,leftCameraWorldNormals,
           leftCameraPositionToFocalPointUnitVector,
@@ -265,10 +269,12 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           outputLeftCameraWorldPointsIn3D,
           outputLeftCameraWorldNormalsIn3D,
           output2DPointsLeft,
-          output2DPointsRight);
+          output2DPointsRight,
+          cropUndistortedPointsToScreen , 
+          0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
+          0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
+          cropValue);
       
-      bool cropUndistortedPointsToScreen = true;
-      double cropValue = std::numeric_limits<double>::infinity();
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
           leftCameraPositionToFocalPointUnitVector,
@@ -280,7 +286,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           classifierOutput2DPointsLeft,
           classifierOutput2DPointsRight,
           cropUndistortedPointsToScreen , 
-          0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
+          0.0 - m_ClassifierScreenBuffer, m_VideoWidth + m_ClassifierScreenBuffer, 
+          0.0 - m_ClassifierScreenBuffer, m_VideoHeight + m_ClassifierScreenBuffer,
+          cropValue);
 
       std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
       std::vector < std::pair < cv::Point2d , cv::Point2d > > classifierScreenPoints;

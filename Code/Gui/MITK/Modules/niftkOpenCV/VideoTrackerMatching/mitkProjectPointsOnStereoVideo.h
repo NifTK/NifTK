@@ -140,6 +140,12 @@ public:
   void CalculateTriangulationErrors (std::string outPrefix,  mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
 
+  /** 
+   * \brief Set the projector screen buffer
+   */
+  itkSetMacro ( ProjectorScreenBuffer, double);
+
+  itkSetMacro ( ClassifierScreenBuffer, double);
 protected:
 
   ProjectPointsOnStereoVideo();
@@ -167,6 +173,9 @@ private:
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
+
+  double                        m_ProjectorScreenBuffer; // A buffer around the screen beyond which projected points will be set to infinity
+  double                        m_ClassifierScreenBuffer; // A buffer around the screen, beyond which projected classifier points will be set to infinity
 
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
