@@ -1057,7 +1057,10 @@ void Project3DModelPositionsToStereo2D(
     const CvMat& rightToLeftRotationMatrix,
     const CvMat& rightToLeftTranslationVector,
     CvMat& output2DPointsLeft,
-    CvMat& output2DPointsRight
+    CvMat& output2DPointsRight,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
 
@@ -1119,6 +1122,72 @@ void Project3DModelPositionsToStereo2D(
       &rightCameraDistortion,
       &output2DPointsRight
       );
+  
+  if ( cropPointsToScreen ) 
+  {
+    CvMat *leftCameraZeroDistortion = cvCreateMat(leftCameraDistortion.rows, leftCameraDistortion.cols , CV_64FC1);
+    for ( int i = 0 ; i < leftCameraDistortion.rows ; i ++ ) 
+    {
+      for ( int j = 0 ; j < leftCameraDistortion.cols ; j ++ ) 
+      {
+        CV_MAT_ELEM(*leftCameraZeroDistortion, double , i , j) = 0.0;
+      }
+    }
+    CvMat *rightCameraZeroDistortion = cvCreateMat(rightCameraDistortion.rows, rightCameraDistortion.cols , CV_64FC1);
+    for ( int i = 0 ; i < rightCameraDistortion.rows ; i ++ ) 
+    {
+      for ( int j = 0 ; j < rightCameraDistortion.cols ; j ++ ) 
+      {
+        CV_MAT_ELEM(*rightCameraZeroDistortion, double , i , j) = 0.0;
+      }
+    }
+    CvMat *zeroDistortion2DPointsLeft = cvCreateMat(output2DPointsLeft.rows, output2DPointsLeft.cols, CV_64FC1);
+    CvMat *zeroDistortion2DPointsRight = cvCreateMat(output2DPointsRight.rows, output2DPointsRight.cols, CV_64FC1);
+    cvProjectPoints2(
+      &modelPointsIn3D,
+      &leftCameraRotationVector,
+      &leftCameraTranslationVector,
+      &leftCameraIntrinsic,
+      leftCameraZeroDistortion,
+      zeroDistortion2DPointsLeft
+      );
+    cvProjectPoints2(
+      modelPointsIn3DInRightCameraSpaceTransposed,
+      rightCameraRotationVector,
+      rightCameraTranslationVector,
+      &rightCameraIntrinsic,
+      rightCameraZeroDistortion,
+      zeroDistortion2DPointsRight
+      );
+    for ( int i = 0 ; i < output2DPointsLeft.rows ; i ++ ) 
+    {
+      if (
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) < xLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) > xHigh) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) < yLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) > yHigh) )
+      {
+        CV_MAT_ELEM ( output2DPointsLeft, double , i , 0) = cropValue;
+        CV_MAT_ELEM ( output2DPointsLeft, double , i , 1) = cropValue;
+      }
+    }
+    for ( int i = 0 ; i < output2DPointsRight.rows ; i ++ ) 
+    {
+      if (
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) < xLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) > xHigh) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) < yLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) > yHigh) )
+      {
+        CV_MAT_ELEM ( output2DPointsRight, double , i , 0) = cropValue;
+        CV_MAT_ELEM ( output2DPointsRight, double , i , 1) = cropValue;
+      }
+    }
+    cvReleaseMat(&zeroDistortion2DPointsLeft);
+    cvReleaseMat(&zeroDistortion2DPointsRight);
+    cvReleaseMat(&leftCameraZeroDistortion);
+    cvReleaseMat(&rightCameraZeroDistortion);
+  }   
 
   cvReleaseMat(&leftCameraRotationMatrix);
   cvReleaseMat(&modelPointsIn3DInLeftCameraSpace);
@@ -1144,7 +1213,10 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
     CvMat*& outputLeftCameraWorldPointsIn3D,
     CvMat*& outputLeftCameraWorldNormalsIn3D,
     CvMat*& output2DPointsLeft,
-    CvMat*& output2DPointsRight
+    CvMat*& output2DPointsRight,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   if (   outputLeftCameraWorldPointsIn3D != NULL
@@ -1216,7 +1288,10 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
         rightToLeftRotationMatrix,
         rightToLeftTranslationVector,
         *output2DPointsLeft,
-        *output2DPointsRight
+        *output2DPointsRight,
+        cropPointsToScreen,
+        xLow,  xHigh,
+        yLow, yHigh, cropValue
         );
 
     // Tidy up, but DONT delete the output matrices.

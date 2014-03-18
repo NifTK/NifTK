@@ -30,4 +30,5 @@ set(MODULE_CUSTOM_TESTS
   mitkUltrasoundPinCalibrationRegressionTest.cxx
   mitkPivotCalibrationRegressionTest.cxx
   mitkIdealStereoCalibrationTest.cxx
+  mitkUndistortionLoopTest.cxx
 )
