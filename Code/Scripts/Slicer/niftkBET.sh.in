@@ -30,7 +30,7 @@ cat <<EOF
   <category>Segmentation.Brain Extraction Tool</category>
   <title>BET-FSL [FMRIB Software Library]</title>
   <description><![CDATA[A simple wrapper sript, provided within @NIFTK_PLATFORM@ to enable FSL's 'bet' program to be run via the NiftyView GUI.]]></description>
-  <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+  <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@</version>
   <documentation-url>http://www.fmrib.ox.ac.uk/fsl</documentation-url>
   <license>BSD</license>
   <contributor>Matt Clarkson</contributor>
