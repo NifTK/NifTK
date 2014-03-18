@@ -510,7 +510,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         bool left = true;
         this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
             ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
-        if ( minRatio < m_AllowablePointMatchingRatio || isinf (minRatio) ) 
+        if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf (minRatio) ) 
         {
           MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
         }
@@ -522,7 +522,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             unsigned int rightIndex;
             this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
               ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
-            if ( minRatio < m_AllowablePointMatchingRatio || isinf(minRatio) ) 
+            if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf(minRatio) ) 
             {
               MITK_WARN << "Ambiguous point match or infinite match Ratio at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
             }
@@ -801,7 +801,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
     return;
   }
 
-  if ( isinf(minRatio) ) 
+  if ( boost::math::isinf(minRatio) ) 
   {
     MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
     return;
@@ -890,7 +890,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
     return;
   }
   
-  if ( isinf(minRatio) ) 
+  if ( boost::math::isinf(minRatio) ) 
   {
     MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from projection errors"; 
     return;
@@ -926,7 +926,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
     }
   }
   unsigned int myIndex;
-  if ( ! std::isinf(mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex ).x))
+  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex ).x))
   {
     if ( index != NULL ) 
     {
