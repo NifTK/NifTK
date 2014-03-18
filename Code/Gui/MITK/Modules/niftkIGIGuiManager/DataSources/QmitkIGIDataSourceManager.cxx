@@ -786,7 +786,18 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz"));
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz");
+  // avoid flickering the text field. it makes copy-n-paste impossible
+  // during playback mode because it resets the selection every few milliseconds.
+  if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+  {
+    m_TimeStampEdit->setText(humanReadableTimeStamp);
+  }
+  if (m_TimeStampEdit->toolTip() != rawTimeStampString)
+  {
+    m_TimeStampEdit->setToolTip(rawTimeStampString);
+  }
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
