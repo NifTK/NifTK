@@ -81,6 +81,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
 #endif
 
   //get the lens position
+  appenderer->Update();
   return appenderer->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -134,6 +135,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscopePolaris ( std::strin
 #endif
 
   //get the lens position
+  appenderer->Update();
   return appenderer->GetOutput();
 }
 
@@ -174,6 +176,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 #endif
 
   //get the lens position
+  appenderer->Update();
   return appenderer->GetOutput();
 
 }
@@ -217,6 +220,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string 
   appenderer->AddInputData(this->ConnectIREDs(axis));
 #endif
 
+  appenderer->Update();
   return appenderer->GetOutput();
 
 }
@@ -291,6 +295,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, c
       return NULL;
     }
   }
+  appenderer->Update();
   return wall->GetOutput();
 
 }
@@ -311,6 +316,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeXAxes( const float& length , co
 
   Axis->SetPoint2(length,0,0);
 
+  appenderer->Update();
   return Axis->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -328,7 +334,8 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeYAxes( const float& length , co
   }
 
   Axis->SetPoint2(0,length,0);
-
+  
+  appenderer->Update();
   return Axis->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -346,7 +353,8 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeZAxes( const float& length , co
   }
 
   Axis->SetPoint2(0,0,length);
-
+  
+  appenderer->Update();
   return Axis->GetOutput();
 }
 
@@ -388,7 +396,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
   appenderer->AddInputData(YAxisLHC->GetOutput());
   appenderer->AddInputData(YAxisRHC->GetOutput());
 #endif
-  
+  appenderer->Update();
   return appenderer->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -465,6 +473,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
   appenderer->AddInputData(rightEye->GetOutput());
 #endif
 
+  appenderer->Update();
   return appenderer->GetOutput();
 
 }
@@ -530,6 +539,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string 
 
   TranslatePolyData(appenderer->GetOutput(),transform);
 
+  appenderer->Update();
   return appenderer->GetOutput();
 
 }
@@ -589,6 +599,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeIREDs(std::vector < std::vector
     appenderer->AddInputData(sphere->GetOutput());
 #endif
   }
+  appenderer->Update();
   return appenderer->GetOutput();
 }
 
@@ -671,6 +682,7 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
     appenderer->AddInputData(join4->GetOutput());
 #endif
   }
+  appenderer->Update();
   return appenderer->GetOutput();
 } 
 } //end namespace niftk
