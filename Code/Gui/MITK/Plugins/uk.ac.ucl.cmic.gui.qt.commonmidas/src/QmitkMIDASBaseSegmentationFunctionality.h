@@ -258,11 +258,14 @@ protected:
 
 private:
 
+  /// \brief The ID of the currently active tool or -1 if no tool is active.
+  int m_ActiveToolID;
+
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
-  bool m_MainWindowCursorWasVisible;
+  bool m_MainWindowCursorVisibleWithToolsOff;
 
   /// \brief Stores the visibility state of the cursor in the viewer of this plugin before activating a tool.
-  bool m_OwnCursorWasVisible;
+  bool m_OwnCursorIsVisibleWithToolsOff;
 
   /// \brief For Event Admin, we store a reference to the CTK plugin context
   ctkPluginContext* m_Context;
