@@ -47,14 +47,14 @@ const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_
 
 //-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
-:
-  m_SelectedNode(NULL)
+: m_SelectedNode(NULL)
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
 , m_SegmentationView(NULL)
-, m_MainWindowCursorWasVisible(true)
-, m_OwnCursorWasVisible(true)
+, m_ActiveToolID(-1)
+, m_MainWindowCursorVisibleWithToolsOff(true)
+, m_OwnCursorIsVisibleWithToolsOff(true)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -234,15 +234,23 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
   if (toolID != -1)
   {
-    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
+    bool mainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
+    bool ownCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
     this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
+
+    if (m_ActiveToolID == -1)
+    {
+      m_MainWindowCursorVisibleWithToolsOff = mainWindowCursorWasVisible;
+      m_OwnCursorIsVisibleWithToolsOff = ownCursorWasVisible;
+    }
   }
   else
   {
-    this->SetMainWindowCursorVisible(m_MainWindowCursorWasVisible);
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorWasVisible);
+    this->SetMainWindowCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
+    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorIsVisibleWithToolsOff);
   }
+
+  m_ActiveToolID = toolID;
 
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
