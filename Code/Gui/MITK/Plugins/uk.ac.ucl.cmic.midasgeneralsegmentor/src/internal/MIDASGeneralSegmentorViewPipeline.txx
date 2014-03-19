@@ -235,6 +235,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     {
       const ParametricPathVertexListType* list = m_SegmentationContours[j]->GetVertexList();
       assert(list);
+      assert(list->Size() >= 2);
 
       for (unsigned int k = 0; k < list->Size(); k += list->Size() - 1)
       {

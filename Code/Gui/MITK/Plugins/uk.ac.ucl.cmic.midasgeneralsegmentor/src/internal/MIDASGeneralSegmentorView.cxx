@@ -1315,7 +1315,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
 
   mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
   mitk::ContourModel* polyToolContour = polyTool->GetContour();
-  if (polyToolContour != NULL && !polyToolContour->IsEmpty())
+  if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
   {
     polyToolContours->AddContourModel(polyToolContour);
   }
@@ -1582,7 +1582,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
       mitk::ContourModel* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() > 0)
+      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
       {
         polyToolContours->AddContourModel(polyToolContour);
       }
@@ -2113,7 +2113,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonClicked()
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
       mitk::ContourModel* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() > 0)
+      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
       {
         polyToolContours->AddContourModel(polyToolContour);
       }
@@ -4661,14 +4661,14 @@ void MIDASGeneralSegmentorView
       {
         outputContour->AddVertex(pointInContour);
       }
-      else if (!isNearRegion && outputContour->GetNumberOfVertices() > 0)
+      else if (!isNearRegion && outputContour->GetNumberOfVertices() >= 2)
       {
         outputContours.AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
         mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
       }
     }
-    if (outputContour->GetNumberOfVertices() > 0)
+    if (outputContour->GetNumberOfVertices() >= 2)
     {
       outputContours.AddContourModel(outputContour);
       outputContour = mitk::ContourModel::New();

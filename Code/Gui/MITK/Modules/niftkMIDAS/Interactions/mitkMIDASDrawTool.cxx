@@ -461,7 +461,10 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
               outputContour->AddVertex(entryPoint);
             }
 
-            outputContourSet->AddContourModel(outputContour);
+            if (outputContour->GetNumberOfVertices() >= 2)
+            {
+              outputContourSet->AddContourModel(outputContour);
+            }
             outputContour = 0;
           }
           if (t[1] <= 1.0f)
@@ -496,7 +499,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
       c = f * f - m_CursorSize * m_CursorSize;
     }
 
-    if (outputContour.IsNotNull())
+    if (outputContour.IsNotNull() && outputContour->GetNumberOfVertices() >= 2)
     {
       outputContourSet->AddContourModel(outputContour);
     }
@@ -682,7 +685,7 @@ void mitk::MIDASDrawTool::ITKCleanContours(
       {
         outputContour->AddVertex(point);
       }
-      else if (outputContour->GetNumberOfVertices() > 0)
+      else if (outputContour->GetNumberOfVertices() >= 2)
       {
         outputContours.AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
@@ -690,7 +693,10 @@ void mitk::MIDASDrawTool::ITKCleanContours(
       }
     }
 
-    outputContours.AddContourModel(outputContour);
+    if (outputContour->GetNumberOfVertices() >= 2)
+    {
+      outputContours.AddContourModel(outputContour);
+    }
     outputContour = mitk::ContourModel::New();
     mitk::MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
     contourIt++;
