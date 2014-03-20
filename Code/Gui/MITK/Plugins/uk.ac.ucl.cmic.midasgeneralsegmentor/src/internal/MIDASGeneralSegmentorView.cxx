@@ -1877,16 +1877,15 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
             if (thisSliceIsEmpty)
             {
-              QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+              returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                       tr("The current slice is empty - retain marks cannot be performed.\n"
                                                          "Use the 'wipe' functionality to erase slices instead"),
                                                       QMessageBox::Ok
                                    );
             }
-            else
-            if (!nextSliceIsEmpty)
+            else if (!nextSliceIsEmpty)
             {
-              QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+              returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
                                                       tr("The new slice is not empty - retain marks will overwrite the slice.\n"
                                                          "Are you sure?"),
                                                       QMessageBox::Yes | QMessageBox::No);
