@@ -295,7 +295,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, c
       return NULL;
     }
   }
-  appenderer->Update();
+  wall->Update();
   return wall->GetOutput();
 
 }
@@ -316,7 +316,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeXAxes( const float& length , co
 
   Axis->SetPoint2(length,0,0);
 
-  appenderer->Update();
+  Axis->Update();
   return Axis->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -335,7 +335,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeYAxes( const float& length , co
 
   Axis->SetPoint2(0,length,0);
   
-  appenderer->Update();
+  Axis->Update();
   return Axis->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -354,7 +354,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeZAxes( const float& length , co
 
   Axis->SetPoint2(0,0,length);
   
-  appenderer->Update();
+  Axis->Update();
   return Axis->GetOutput();
 }
 
