@@ -32,6 +32,7 @@ People should add any preconditions or caveats here as they find them.
 
 <ul>
 <li> On Ubuntu you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev. (This has been done on hellica and denguefever).</li>
+<li> On most Linux distros you will need to install libbz2-dev.</li>
 <li> On CMIC Centos machines, you will need to use CMAKE_C++_COMPILER=/usr/lib/g++44 and CMAKE_C_COMPILER=/usr/lib/gcc44 in the build below. </li>
 <li> On CMIC Scientific Linux machines, the compiler version is more up to date, as is Qt. 
 So if you are currently running a CMIC Centos machine, you are strongly advised to upgrade your 
