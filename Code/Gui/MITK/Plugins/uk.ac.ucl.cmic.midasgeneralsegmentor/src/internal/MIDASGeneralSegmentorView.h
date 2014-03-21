@@ -268,6 +268,16 @@ protected slots:
   /// leaving you with a finished segmentation.
   void OnOKButtonClicked();
 
+  /// \brief Qt slot called when the Reset button is pressed and resets to the start
+  /// of the segmentation, so wipes the current segmentation (no undo), but leaves the
+  /// reference data so you can continue segmenting.
+  void OnResetButtonClicked();
+
+  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
+  /// data (seeds, contours, region growing image), and also destroys the current segmentation
+  /// if it was created by this volume editor. Otherwise, it restores the original segmentation.
+  void OnCancelButtonClicked();
+
   /// \brief Qt slot called when the Restart button is pressed and restores the initial
   /// state of the segmentation.
   void OnRestartButtonClicked();
@@ -439,6 +449,9 @@ private:
       int projectedSliceNumber,
       mitk::ContourModelSet::Pointer outputContourSet
       );
+
+  /// \brief Clears both images of the working data.
+  void ClearWorkingData();
 
   /// \brief Completely removes the current pipeline.
   void DestroyPipeline();
@@ -890,6 +903,8 @@ private:
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
+
+  bool m_IsRestarting;
 
 };
 
