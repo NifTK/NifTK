@@ -34,6 +34,19 @@ the design decisions will be explained in detail. It is however assumed that the
 
 \section TechnicalManualAdditional Additional Reading
 
+<h3>The MITK Infrastructure</h3>
+
+<a href="http://www.mitk.org">MITK</a> forms the underlying infrastructure for the GUI applications. So, developers
+should be reading and digesting, on a regular basis, the main MITK <a href="http://www.mitk.org">website</a>,
+the <a href="http://docs.mitk.org/nightly-qt4/">API</a> and also the
+<a href="http://www.mitk.org/BugSquashingSeminars">Bug Squashing Seminars</a>.
+
+<h3>The MITK Segmentation Framework</h3>
+
+At least three of the available plugins are segmentation tools. The underlying architecture of these plugins
+is derived in some ways from the MITK Segmentation Framework described
+<a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">here</a>.
+
 <h3>The Medical Image Display And Analysis System (MIDAS) Application</h3>
 
 Throughout this manual we may refer to an application called MIDAS. MIDAS was developed by
@@ -45,12 +58,6 @@ with a lot of new functionality. The interested reader should refer to:
 segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
 (53), 15-25, 1997. 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
-
-<h3>The MITK Segmentation Framework</h3>
-
-At least three of the available plugins are segmentation tools. The underlying architecture of these plugins
-is derived in some ways from the MITK Segmentation Framework described 
-<a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">here</a>.
 
 <h3>The Slicer Execution Model</h3>
 
