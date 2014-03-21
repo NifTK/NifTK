@@ -624,6 +624,58 @@ void MIDASGeneralSegmentorView::StoreInitialSegmentation()
   initialSeedsNode->SetData(dynamic_cast<mitk::PointSet*>(seedsNode->GetData())->Clone());
 }
 
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
+{
+  if (!this->HasInitialisedWorkingData())
+  {
+    return;
+  }
+
+  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodesFromToolManager();
+  if (!workingNodes.empty() && node == workingNodes[0])
+  {
+    bool segmentationNodeVisibility;
+    if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
+    {
+      if (!m_GeneralControls->m_SeeImageCheckBox->isChecked())
+      {
+        workingNodes[1]->SetVisibility(true);
+        workingNodes[2]->SetVisibility(true);
+        workingNodes[3]->SetVisibility(true);
+        if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
+        {
+          workingNodes[4]->SetVisibility(true);
+        }
+        if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
+        {
+          workingNodes[5]->SetVisibility(true);
+        }
+        if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+        {
+          workingNodes[6]->SetVisibility(true);
+        }
+
+        mitk::ToolManager::Pointer toolManager = this->GetToolManager();
+        mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+        assert(polyTool);
+        polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
+      }
+      workingNodes[7]->SetVisibility(false);
+      workingNodes[8]->SetVisibility(false);
+    }
+    else
+    {
+      for (std::size_t i = 1; i < workingNodes.size(); ++i)
+      {
+        workingNodes[i]->SetVisibility(false);
+      }
+    }
+  }
+}
+
+
 /**************************************************************
  * End of: Functions to create reference data (hidden nodes)
  *************************************************************/
@@ -1504,7 +1556,7 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxToggled(bool checked)
   mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
   assert(polyTool);
 
-  polyTool->SetFeedbackContourVisible(!checked);
+  polyTool->SetFeedbackContourVisible(!checked && toolManager->GetActiveTool() == polyTool);
 
   this->RequestRenderWindowUpdate();
 }
