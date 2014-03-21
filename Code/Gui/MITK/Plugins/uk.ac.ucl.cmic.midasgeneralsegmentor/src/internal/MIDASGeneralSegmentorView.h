@@ -273,6 +273,15 @@ protected slots:
   /// reference data so you can continue segmenting.
   void OnResetButtonClicked();
 
+  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
+  /// data (seeds, contours, region growing image), and also destroys the current segmentation
+  /// if it was created by this volume editor. Otherwise, it restores the original segmentation.
+  void OnCancelButtonClicked();
+
+  /// \brief Qt slot called when the Restart button is pressed and restores the initial
+  /// state of the segmentation.
+  void OnRestartButtonClicked();
+
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
   /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
   /// described in this class intro.
@@ -358,10 +367,10 @@ private:
   /// destroys the current segmentation.
   void DiscardSegmentation();
 
-  /// \brief Stores the initial state of the segmentation so that the Reset button can restore it.
+  /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();
 
-  /// \brief Restores the initial state of the segmentation after the Reset button was pressed.
+  /// \brief Restores the initial state of the segmentation after the Restart button was pressed.
   void RestoreInitialSegmentation();
 
   // Operation constants, used in Undo/Redo framework
@@ -440,6 +449,9 @@ private:
       int projectedSliceNumber,
       mitk::ContourModelSet::Pointer outputContourSet
       );
+
+  /// \brief Clears both images of the working data.
+  void ClearWorkingData();
 
   /// \brief Completely removes the current pipeline.
   void DestroyPipeline();
@@ -891,6 +903,8 @@ private:
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
+
+  bool m_IsRestarting;
 
 };
 

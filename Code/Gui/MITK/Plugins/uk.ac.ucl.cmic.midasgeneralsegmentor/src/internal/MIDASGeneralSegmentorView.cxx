@@ -94,6 +94,7 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_IsDeleting(false)
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
+, m_IsRestarting(false)
 {
   m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
@@ -180,6 +181,8 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
     this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
     this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
+    this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
+    this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
     this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
     this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
@@ -200,13 +203,15 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()) );
+    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
   }
 }
 
@@ -510,7 +515,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     // Create the region growing image.
     mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, mitk::MIDASTool::REGION_GROWING_IMAGE_NAME, false, 94);
 
-    // Create nodes to store the original segmentation and seeds, so that it can be restored if the Reset button is pressed.
+    // Create nodes to store the original segmentation and seeds, so that it can be restored if the Restart button is pressed.
     mitk::DataNode::Pointer initialSegmentationNode = mitk::DataNode::New();
     initialSegmentationNode->SetProperty("name", mitk::StringProperty::New(mitk::MIDASTool::INITIAL_SEGMENTATION_IMAGE_NAME));
     initialSegmentationNode->SetBoolProperty("helper object", true);
@@ -594,6 +599,8 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     this->WaitCursorOff();
 
   } // end if we have a reference image
+
+  m_IsRestarting = isRestarting;
 
   // Finally, select the new segmentation node.
   this->SetCurrentSelection(newSegmentation);
@@ -949,8 +956,8 @@ void MIDASGeneralSegmentorView::RestoreInitialSegmentation()
     mitk::DataNode::Pointer initialSegmentationNode = this->GetToolManager()->GetWorkingData(7);
     mitk::DataNode::Pointer initialSeedsNode = this->GetToolManager()->GetWorkingData(8);
 
-    segmentationNode->SetData(initialSegmentationNode->GetData());
-    seedsNode->SetData(initialSeedsNode->GetData());
+    segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
+    seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
     // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
     if (m_SliceNavigationController)
@@ -994,13 +1001,39 @@ void MIDASGeneralSegmentorView::OnOKButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::ClosePart()
+void MIDASGeneralSegmentorView::OnResetButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
+  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
+                                                            tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
+                                                            QMessageBox::Yes | QMessageBox::No);
+  if (returnValue == QMessageBox::No)
+  {
+    return;
+  }
+
+  this->ClearWorkingData();
+  this->UpdateRegionGrowing();
+  this->UpdatePriorAndNext();
+  this->UpdateCurrentSliceContours();
+  this->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::OnCancelButtonClicked()
+{
+  this->DiscardSegmentation();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::ClosePart()
+{
   this->DiscardSegmentation();
 }
 
@@ -1017,8 +1050,16 @@ void MIDASGeneralSegmentorView::DiscardSegmentation()
   assert(segmentationNode);
 
   this->DestroyPipeline();
-  this->RemoveWorkingData();
-  this->GetDataStorage()->Remove(segmentationNode);
+  if (m_IsRestarting)
+  {
+    this->RestoreInitialSegmentation();
+    this->RemoveWorkingData();
+  }
+  else
+  {
+    this->RemoveWorkingData();
+    this->GetDataStorage()->Remove(segmentationNode);
+  }
   this->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
   this->RequestRenderWindowUpdate();
@@ -1027,7 +1068,7 @@ void MIDASGeneralSegmentorView::DiscardSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnResetButtonClicked()
+void MIDASGeneralSegmentorView::OnRestartButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1035,7 +1076,7 @@ void MIDASGeneralSegmentorView::OnResetButtonClicked()
   }
 
   int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                            tr("Reset all slices?\nThis is not Undo-able!\nAre you sure?"),
+                                                            tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
   {
@@ -1047,6 +1088,42 @@ void MIDASGeneralSegmentorView::OnResetButtonClicked()
   this->UpdatePriorAndNext();
   this->UpdateCurrentSliceContours();
   this->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::ClearWorkingData()
+{
+  if (!this->HasInitialisedWorkingData())
+  {
+    return;
+  }
+
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(0);
+  assert(workingData);
+
+  mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(workingData->GetData());
+  assert(segmentationImage);
+
+  try
+  {
+    AccessFixedDimensionByItk(segmentationImage.GetPointer(), ITKClearImage, 3);
+    segmentationImage->Modified();
+    workingData->Modified();
+
+    mitk::PointSet::Pointer seeds = this->GetSeeds();
+    seeds->Clear();
+
+    // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
+    if (m_SliceNavigationController)
+    {
+      m_SliceNavigationController->SendSlice();
+    }
+  }
+  catch(const mitk::AccessByItkException& e)
+  {
+    MITK_ERROR << "Caught exception during ITKClearImage, caused by:" << e.what();
+  }
 }
 
 
