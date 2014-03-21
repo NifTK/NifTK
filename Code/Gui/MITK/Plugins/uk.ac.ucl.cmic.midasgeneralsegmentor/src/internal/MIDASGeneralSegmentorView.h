@@ -268,10 +268,9 @@ protected slots:
   /// leaving you with a finished segmentation.
   void OnOKButtonClicked();
 
-  /// \brief Qt slot called when the Reset button is pressed and resets to the start
-  /// of the segmentation, so wipes the current segmentation (no undo), but leaves the
-  /// reference data so you can continue segmenting.
-  void OnResetButtonClicked();
+  /// \brief Qt slot called when the Restart button is pressed and restores the initial
+  /// state of the segmentation.
+  void OnRestartButtonClicked();
 
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
   /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
@@ -358,10 +357,10 @@ private:
   /// destroys the current segmentation.
   void DiscardSegmentation();
 
-  /// \brief Stores the initial state of the segmentation so that the Reset button can restore it.
+  /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();
 
-  /// \brief Restores the initial state of the segmentation after the Reset button was pressed.
+  /// \brief Restores the initial state of the segmentation after the Restart button was pressed.
   void RestoreInitialSegmentation();
 
   // Operation constants, used in Undo/Redo framework

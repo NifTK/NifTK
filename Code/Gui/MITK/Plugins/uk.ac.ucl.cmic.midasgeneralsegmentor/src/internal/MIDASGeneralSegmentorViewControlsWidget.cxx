@@ -73,7 +73,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool
 void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
-  m_ResetButton->setEnabled(enabled);
+  m_RestartButton->setEnabled(enabled);
 }
 
 
