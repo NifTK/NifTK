@@ -949,8 +949,8 @@ void MIDASGeneralSegmentorView::RestoreInitialSegmentation()
     mitk::DataNode::Pointer initialSegmentationNode = this->GetToolManager()->GetWorkingData(7);
     mitk::DataNode::Pointer initialSeedsNode = this->GetToolManager()->GetWorkingData(8);
 
-    segmentationNode->SetData(initialSegmentationNode->GetData());
-    seedsNode->SetData(initialSeedsNode->GetData());
+    segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
+    seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
     // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
     if (m_SliceNavigationController)
