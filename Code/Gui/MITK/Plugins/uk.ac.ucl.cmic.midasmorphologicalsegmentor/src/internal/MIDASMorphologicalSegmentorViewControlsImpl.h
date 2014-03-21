@@ -75,8 +75,10 @@ protected slots:
   void OnBackButtonClicked();
   void OnNextButtonClicked();
   void OnErosionsUpperThresholdChanged();
-  void OnErosionsSliderChanged();
-  void OnDilationsSliderChanged();
+  void OnErosionsIterationsChanged();
+  void OnDilationsLowerThresholdChanged();
+  void OnDilationsUpperThresholdChanged();
+  void OnDilationsIterationsChanged();
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
 
