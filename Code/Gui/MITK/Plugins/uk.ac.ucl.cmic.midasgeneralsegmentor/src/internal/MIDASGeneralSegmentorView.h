@@ -361,6 +361,8 @@ protected:
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
+  void onVisibilityChanged(const mitk::DataNode* node);
+
 private:
   /// \brief Called when the view is closed or the segmentation node is removed from the data
   /// manager and destroys all working data (seeds, contours, region growing image), and also

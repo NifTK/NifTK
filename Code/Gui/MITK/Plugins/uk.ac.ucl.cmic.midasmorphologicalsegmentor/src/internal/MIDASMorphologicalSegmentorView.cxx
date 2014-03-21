@@ -715,3 +715,34 @@ void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
 
   m_MorphologicalControls->SetControlsByParameterValues(params);
 }
+
+
+//-----------------------------------------------------------------------------
+void MIDASMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
+{
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+
+  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodesFromToolManager();
+  if (segmentationNode.IsNotNull() && node == segmentationNode && workingNodes.size() == 4)
+  {
+    mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+
+    bool segmentationNodeVisibility;
+    if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
+    {
+      workingNodes[0]->SetVisibility(false);
+      workingNodes[1]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 1);
+      workingNodes[2]->SetVisibility(false);
+      workingNodes[3]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 2);
+      axialCutOffPlaneNode->SetVisibility(true);
+    }
+    else
+    {
+      for (std::size_t i = 1; i < workingNodes.size(); ++i)
+      {
+        workingNodes[i]->SetVisibility(false);
+      }
+      axialCutOffPlaneNode->SetVisibility(false);
+    }
+  }
+}
