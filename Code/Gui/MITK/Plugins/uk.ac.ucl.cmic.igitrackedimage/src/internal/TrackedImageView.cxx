@@ -301,7 +301,7 @@ void TrackedImageView::OnClonePushButtonClicked()
   m_Controls->m_CloneTrackedImageDirectoryChooser->setCurrentPath(directoryName);
 
   char num[500];
-  QString fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.nii").arg(itoa(m_NameCounter, num, 10));
+  QString fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.nii").arg(m_NameCounter);
   std::string outputFileName = fileName.toStdString();
 
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
@@ -319,7 +319,7 @@ void TrackedImageView::OnClonePushButtonClicked()
       mitk::IOUtil::SaveImage(savedmitkimage, outputFileName);      
 
       // for debug only? load the saved image into the data manager
-      QString nodeName = tr("ultrasoundImage-%1.nii").arg(itoa(m_NameCounter, num, 10));      
+      QString nodeName = tr("ultrasoundImage-%1.nii").arg(m_NameCounter);      
 
       mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();
       savedImageNode->SetData(savedmitkimage);
@@ -333,7 +333,7 @@ void TrackedImageView::OnClonePushButtonClicked()
 
 
       // clone the origin ultrasound image (without changing orientation) to disk.
-      QString untouched_fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.png").arg(itoa(m_NameCounter, num, 10));
+      QString untouched_fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.png").arg(m_NameCounter);
       std::string o_FileName = untouched_fileName.toStdString();
       mitk::Image::Pointer untouched_image = savedmitkimage->Clone();
       mitk::Geometry3D::Pointer geometry = untouched_image->GetGeometry();
