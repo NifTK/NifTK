@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>389</width>
-    <height>232</height>
+    <width>371</width>
+    <height>174</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -45,62 +45,6 @@
     <number>5</number>
    </property>
    <item row="2" column="0">
-    <layout class="QGridLayout" name="m_ThresholdingButtonGridLayout" columnstretch="1,0">
-     <property name="spacing">
-      <number>5</number>
-     </property>
-     <item row="0" column="1">
-      <widget class="QCheckBox" name="m_RetainMarksCheckBox">
-       <property name="text">
-        <string>retain marks</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="m_ThresholdingCheckBox">
-       <property name="text">
-        <string>thresholding</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="0">
-    <layout class="QGridLayout" name="m_VisibilityButtonsGridLayout">
-     <property name="spacing">
-      <number>5</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="m_SeePriorCheckBox">
-       <property name="text">
-        <string>see prior</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QCheckBox" name="m_SeeNextCheckBox">
-       <property name="text">
-        <string>see next</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QCheckBox" name="m_SeeImageCheckBox">
-       <property name="text">
-        <string>view image</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0">
-    <widget class="Line" name="m_LineSeparator">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
     <layout class="QGridLayout" name="m_BottomButtonsGridLayout" rowstretch="0,0">
      <property name="spacing">
       <number>5</number>
@@ -211,7 +155,7 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item row="1" column="0">
     <widget class="QGroupBox" name="m_ThresholdingGroupBox">
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
@@ -334,6 +278,41 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="m_ThresholdingButtonGridLayout">
+     <property name="spacing">
+      <number>5</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="m_ThresholdingCheckBox">
+       <property name="text">
+        <string>thresholding</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="m_SeePriorCheckBox">
+       <property name="text">
+        <string>see prior</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QCheckBox" name="m_RetainMarksCheckBox">
+       <property name="text">
+        <string>retain marks</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="m_SeeNextCheckBox">
+       <property name="text">
+        <string>see next</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
