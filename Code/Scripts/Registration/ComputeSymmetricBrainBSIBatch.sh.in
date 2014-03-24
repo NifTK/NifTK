@@ -53,8 +53,7 @@ Usage: $0 input_file output_dir
 Mandatory Arguments:
  
   input_file : is the input file containing paths to your images and regions. 
-                  image1, brain_region1, dummy, dummy, image2, brain_region2, dummy, dummy, ......
-                  (just use local_region will be skipped if not found - just specified some dummy name there if no local region)
+                  "image1  brain_region1  dummy  dummy  image2  brain_region2  dummy dummy ......"
   output_dir : is the output directory. 
   
 Optional arguements:  
