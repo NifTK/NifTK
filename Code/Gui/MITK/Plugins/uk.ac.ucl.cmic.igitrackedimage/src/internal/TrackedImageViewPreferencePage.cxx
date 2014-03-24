@@ -112,7 +112,7 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
 
   m_CloneImage = new QCheckBox();
   m_CloneImage->setChecked(false);
-  formLayout->addRow("Show Clone image button", m_CloneImage);
+  formLayout->addRow("show clone image button", m_CloneImage);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
