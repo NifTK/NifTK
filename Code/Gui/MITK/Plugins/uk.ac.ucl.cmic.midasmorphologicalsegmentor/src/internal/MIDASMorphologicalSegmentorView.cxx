@@ -515,8 +515,8 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_Layout->setContentsMargins(0, 0, 0, 0);
     m_Layout->setSpacing(0);
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 1);
-    m_Layout->setRowStretch(2, 0);
+    m_Layout->setRowStretch(1, 0);
+    m_Layout->setRowStretch(2, 1);
     m_Layout->setRowStretch(3, 0);
 
     m_ContainerForControlsWidget = new QWidget(parent);
@@ -530,8 +530,8 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_Layout->setSpacing(5);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget, 2, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
+    m_Layout->addWidget(new QWidget(parent), 2, 0);
     m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");

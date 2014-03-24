@@ -30,7 +30,7 @@
 #include <QmitkBaseView.h>
 #include <QmitkMIDASImageAndSegmentationSelectorWidget.h>
 #include <QmitkMIDASToolSelectorWidget.h>
-#include "QmitkMIDASSegmentationViewWidget.h"
+#include <mitkMIDASOrientationUtils.h>
 
 // Miscellaneous.
 #include <mitkToolManager.h>
@@ -241,17 +241,11 @@ protected:
   /// \brief Common widget, enabling selection of a segmentation tool.
   QmitkMIDASToolSelectorWidget *m_ToolSelector;
 
-  /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
-  QmitkMIDASSegmentationViewWidget *m_SegmentationView;
-
   /// \brief Container for Selector Widget.
   QWidget *m_ContainerForSelectorWidget;
 
   /// \brief Container for Tool Widget.
   QWidget *m_ContainerForToolWidget;
-
-  /// \brief Container for Segmentation view widget.
-  QWidget *m_ContainerForSegmentationViewWidget;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;

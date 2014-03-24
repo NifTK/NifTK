@@ -13,36 +13,32 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkNiftyMIDASApplication.cxx
-  QmitkNiftyMIDASAppWorkbenchAdvisor.cxx
-  QmitkNiftyMIDASPerspective.cxx
-  QmitkNiftyMIDASWorkbenchWindowAdvisor.cxx
+  QmitkSideViewView.cxx
+  QmitkSideViewWidget.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkNiftyMIDASApplicationPlugin.cxx
+  SideViewActivator.cxx
+)
+
+set(UI_FILES
+  src/QmitkSideViewWidget.ui
 )
 
 set(MOC_H_FILES
-  src/QmitkNiftyMIDASApplication.h
-  src/QmitkNiftyMIDASPerspective.h
-  src/QmitkNiftyMIDASWorkbenchWindowAdvisor.h
-  src/internal/QmitkNiftyMIDASApplicationPlugin.h
+  src/internal/SideViewActivator.h
+  src/QmitkSideViewView.h
+  src/QmitkSideViewWidget.h
 )
 
 set(CACHED_RESOURCE_FILES
-# list of resource files which can be used by the plug-in
-# system without loading the plug-ins shared library,
-# for example the icon used in the menu and tabs for the
-# plug-in views in the workbench
+  resources/sideview-icon.png
   plugin.xml
-  resources/icon_ion.xpm
-  resources/icon_ucl.xpm
 )
 
+# todo: add some qt style sheet resources
 set(QRC_FILES
-# uncomment the following line if you want to use Qt resources
-  resources/QmitkNiftyMIDASApplication.qrc
+  resources/sideview.qrc
 )
 
 set(CPP_FILES )

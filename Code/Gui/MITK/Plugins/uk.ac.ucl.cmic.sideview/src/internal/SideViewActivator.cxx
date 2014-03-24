@@ -12,26 +12,41 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASAppWorkbenchAdvisor.h"
-#include "QmitkNiftyMIDASWorkbenchWindowAdvisor.h"
+#include "SideViewActivator.h"
+
+#include <QtPlugin>
+#include <mitkGlobalInteraction.h>
+#include <mitkMIDASTool.h>
+#include "QmitkSideViewView.h"
+
+namespace mitk
+{
+
+ctkPluginContext* SideViewActivator::s_PluginContext(NULL);
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+void SideViewActivator::start(ctkPluginContext* context)
 {
-  return "uk.ac.ucl.cmic.gui.qt.niftymidas.midasperspective";
+  s_PluginContext = context;
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkSideViewView, context);
+
+  mitk::MIDASTool::LoadBehaviourStrings();
 }
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+void SideViewActivator::stop(ctkPluginContext* context)
 {
-  return ":/QmitkNiftyMIDASApplication/icon_ion.xpm";
+  Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyMIDASAppWorkbenchAdvisor::CreateQmitkBaseWorkbenchWindowAdvisor(
-    berry::IWorkbenchWindowConfigurer::Pointer configurer)
+ctkPluginContext* SideViewActivator::GetPluginContext()
 {
-  return new QmitkNiftyMIDASWorkbenchWindowAdvisor(this, configurer);
+  return s_PluginContext;
 }
+
+}
+
+Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_sideview, mitk::SideViewActivator)

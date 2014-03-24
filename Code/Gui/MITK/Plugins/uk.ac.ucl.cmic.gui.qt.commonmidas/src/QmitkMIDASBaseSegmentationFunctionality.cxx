@@ -51,7 +51,6 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
-, m_SegmentationView(NULL)
 , m_ActiveToolID(-1)
 , m_MainWindowCursorVisibleWithToolsOff(true)
 , m_OwnCursorIsVisibleWithToolsOff(true)
@@ -85,12 +84,6 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
   {
     delete m_ToolSelector;
   }
-
-  if (m_SegmentationView != NULL)
-  {
-    delete m_SegmentationView;
-  }
-
 }
 
 
@@ -121,8 +114,6 @@ bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent
 void QmitkMIDASBaseSegmentationFunctionality::Activated()
 {
   QmitkBaseView::Activated();
-
-  m_SegmentationView->SetMainWindow(this->GetSelectedRenderWindow());
 
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
@@ -202,22 +193,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);
     m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
 
-    // Set up the Segmentation View
-    // Subclasses add it to their layouts, at the appropriate point.
-    m_ContainerForSegmentationViewWidget = new QWidget(parent);
-    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(this, m_ContainerForSegmentationViewWidget);
-    m_SegmentationView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_SegmentationView->SetDataStorage(this->GetDataStorage());
-
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
-
-    // Set up the ctkEventAdmin stuff.
-    m_Context = mitk::MIDASActivator::GetPluginContext();
-    m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
-    m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
-    m_EventAdmin->publishSignal(this, SIGNAL(InteractorRequest(ctkDictionary)),
-                              "org/mitk/gui/qt/INTERACTOR_REQUEST", Qt::QueuedConnection);
   }
 }
 
@@ -235,19 +212,15 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
   if (toolID != -1)
   {
     bool mainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    bool ownCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
 
     if (m_ActiveToolID == -1)
     {
       m_MainWindowCursorVisibleWithToolsOff = mainWindowCursorWasVisible;
-      m_OwnCursorIsVisibleWithToolsOff = ownCursorWasVisible;
     }
   }
   else
   {
     this->SetMainWindowCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorIsVisibleWithToolsOff);
   }
 
   m_ActiveToolID = toolID;

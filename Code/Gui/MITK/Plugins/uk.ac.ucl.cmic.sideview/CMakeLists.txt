@@ -12,14 +12,14 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_gui_qt_commonmidas)
+project(uk_ac_ucl_cmic_sideview)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE CMIC_QT_COMMONMIDAS
+  EXPORT_DIRECTIVE CMIC_QT_SIDEVIEW
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES CTK niftkMIDASGui
-  )
+)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_gui_qt_commonmidas)
+  cotire(uk_ac_ucl_cmic_sideview)
 endif()
