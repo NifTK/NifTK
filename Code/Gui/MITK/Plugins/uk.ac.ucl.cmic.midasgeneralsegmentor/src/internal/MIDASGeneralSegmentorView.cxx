@@ -47,6 +47,8 @@
 #include <itkContinuousIndex.h>
 #include <itkImageFileWriter.h>
 
+#include <QmitkRenderWindow.h>
+
 #include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
 #include <mitkMIDASTool.h>
@@ -139,16 +141,12 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget, 2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
-
-    m_ContainerForSegmentationViewWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 4);
+    m_Layout->setRowStretch(1, 1);
     m_Layout->setRowStretch(2, 0);
-    m_Layout->setRowStretch(3, 0);
 
     m_GeneralControls->SetThresholdingCheckboxEnabled(false);
     m_GeneralControls->SetThresholdingWidgetsEnabled(false);
