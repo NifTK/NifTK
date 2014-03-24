@@ -156,6 +156,5 @@ void TrackedImageViewPreferencePage::Update()
   m_YScaling->setValue(m_TrackedImageViewPreferencesNode->GetDouble(Y_SCALING, 1));
   m_FlipXScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_X_SCALING, false));
   m_FlipYScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_Y_SCALING, false));
-
   m_CloneImage->setChecked(m_TrackedImageViewPreferencesNode->GetBool(CLONE_IMAGE, false));
 }
