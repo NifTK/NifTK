@@ -188,7 +188,6 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-    this->connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeImageCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
     this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
@@ -210,7 +209,6 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
   }
 }
@@ -588,9 +586,6 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     m_GeneralControls->SetThresholdingWidgetsEnabled(false);
     m_GeneralControls->SetThresholdingCheckboxEnabled(true);
     m_GeneralControls->m_ThresholdingCheckBox->setChecked(false);
-    bool wasBlocked = m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
-    m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
-    m_GeneralControls->m_SeeImageCheckBox->blockSignals(wasBlocked);
 
     this->FocusOnCurrentWindow();
     this->OnFocusChanged();
@@ -639,31 +634,28 @@ void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      if (!m_GeneralControls->m_SeeImageCheckBox->isChecked())
+      workingNodes[1]->SetVisibility(true);
+      workingNodes[2]->SetVisibility(true);
+      workingNodes[3]->SetVisibility(true);
+      if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
       {
-        workingNodes[1]->SetVisibility(true);
-        workingNodes[2]->SetVisibility(true);
-        workingNodes[3]->SetVisibility(true);
-        if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
-        {
-          workingNodes[4]->SetVisibility(true);
-        }
-        if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
-        {
-          workingNodes[5]->SetVisibility(true);
-        }
-        if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
-        {
-          workingNodes[6]->SetVisibility(true);
-        }
-
-        mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-        mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-        assert(polyTool);
-        polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
+        workingNodes[4]->SetVisibility(true);
+      }
+      if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
+      {
+        workingNodes[5]->SetVisibility(true);
+      }
+      if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+      {
+        workingNodes[6]->SetVisibility(true);
       }
       workingNodes[7]->SetVisibility(false);
       workingNodes[8]->SetVisibility(false);
+
+      mitk::ToolManager::Pointer toolManager = this->GetToolManager();
+      mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
+      assert(polyTool);
+      polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
     }
     else
     {
@@ -1269,14 +1261,15 @@ bool MIDASGeneralSegmentorView::UnselectTools()
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::SelectViewMode()
 {
-  if (m_GeneralControls->m_SeeImageCheckBox->isChecked())
+  if (!this->HasInitialisedWorkingData())
   {
-    m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
+    return false;
   }
-  else if (!m_GeneralControls->m_SeeImageCheckBox->isChecked())
-  {
-    m_GeneralControls->m_SeeImageCheckBox->setChecked(true);
-  }
+
+  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
+  bool segmentationNodeIsVisible = workingNodes[0]->IsVisible(0);
+  this->OnSeeImageCheckBoxToggled(!segmentationNodeIsVisible);
+
   return true;
 }
 
