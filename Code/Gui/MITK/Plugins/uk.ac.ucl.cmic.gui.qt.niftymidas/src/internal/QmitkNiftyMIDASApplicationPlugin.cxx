@@ -13,8 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyMIDASApplicationPlugin.h"
-#include <QmitkNiftyViewIGIPerspective.h>
-#include <QmitkNiftyViewMIDASPerspective.h>
+#include <QmitkNiftyMIDASPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyMIDASApplication.h"
 
@@ -44,8 +43,7 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();

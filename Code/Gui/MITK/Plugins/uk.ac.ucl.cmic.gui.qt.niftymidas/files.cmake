@@ -15,6 +15,7 @@
 set(SRC_CPP_FILES
   QmitkNiftyMIDASApplication.cxx
   QmitkNiftyMIDASAppWorkbenchAdvisor.cxx
+  QmitkNiftyMIDASPerspective.cxx
   QmitkNiftyMIDASWorkbenchWindowAdvisor.cxx
 )
 
@@ -24,6 +25,7 @@ set(INTERNAL_CPP_FILES
 
 set(MOC_H_FILES
   src/QmitkNiftyMIDASApplication.h
+  src/QmitkNiftyMIDASPerspective.h
   src/QmitkNiftyMIDASWorkbenchWindowAdvisor.h
   src/internal/QmitkNiftyMIDASApplicationPlugin.h
 )
