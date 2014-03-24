@@ -109,13 +109,12 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4>   m_ImageToTrackingSensorTransform;
-  std::string                     m_ImageToTrackingSensorFileName;
-  mitk::DataNode::Pointer         m_PlaneNode; // we use this to proxy the modified time of this class.
-  mitk::Point2D                   m_ImageScaling;
-  
-  bool                            m_ShowCloneImageGroup;
-  int                             m_NameCounter;
+  vtkSmartPointer<vtkMatrix4x4>        m_ImageToTrackingSensorTransform;
+  std::string                          m_ImageToTrackingSensorFileName;
+  mitk::DataNode::Pointer              m_PlaneNode; // we use this to proxy the modified time of this class.
+  mitk::Point2D                        m_ImageScaling;
+  bool                                 m_ShowCloneImageGroup;
+  int                                  m_NameCounter;
 };
 
 #endif // TrackedImageView_h
