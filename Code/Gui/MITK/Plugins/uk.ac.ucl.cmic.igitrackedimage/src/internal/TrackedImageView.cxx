@@ -45,7 +45,6 @@ TrackedImageView::TrackedImageView()
 {
   m_ImageScaling[0] = 1;
   m_ImageScaling[1] = 1;
-
   m_NameCounter = 0;
 }
 
@@ -114,8 +113,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_CloneTrackedImageDirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
     m_Controls->m_CloneTrackedImageDirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
     m_Controls->m_CloneTrackedImageDirectoryChooser->setCurrentPath(tr("C:\\Workspace\\Laparoscopic\\tmp"));
-
-    
 
     ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
@@ -298,55 +295,45 @@ void TrackedImageView::OnClonePushButtonClicked()
     return;
   }
 
-  m_Controls->m_CloneTrackedImageDirectoryChooser->setCurrentPath(directoryName);
-
-  char num[500];
-  QString fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.nii").arg(m_NameCounter);
-  std::string outputFileName = fileName.toStdString();
-
-  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
-
-  if ( imageNode.IsNotNull() )
-  {
-    mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(imageNode->GetData());
-
-    if (!imageInNode.IsNull())
+  mitk::DataNode::Pointer node = m_Controls->m_ImageNode->GetSelectedNode();
+  if ( node.IsNotNull() )
+  {    
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    if ( image.IsNotNull() )
     {
-      mitk::Image::Pointer savedmitkimage = imageInNode->Clone();
-/*      mitk::TimeGeometry::Pointer clonedgeo = imageInNode->GetTimeGeometry()->Clone();
-      savedmitkimage->SetTimeGeometry(clonedgeo.GetPointer());   */   
-
-      mitk::IOUtil::SaveImage(savedmitkimage, outputFileName);      
-
-      // for debug only? load the saved image into the data manager
-      QString nodeName = tr("ultrasoundImage-%1.nii").arg(m_NameCounter);      
-
-      mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();
-      savedImageNode->SetData(savedmitkimage);
-
-      savedImageNode->SetProperty("name", mitk::StringProperty::New(nodeName.toStdString()) );  
-      savedImageNode->SetVisibility(true);
-
-      this->GetDataStorage()->Add(savedImageNode); 
-
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
+      QString imageName = tr("TrackedImageView-%1").arg(m_NameCounter);
+      QString fileNameWithGeometry = directoryName + QDir::separator() + imageName + QString(".nii");
+      QString fileNameWithoutGeometry = directoryName + QDir::separator() + imageName + QString(".png");
 
       // clone the origin ultrasound image (without changing orientation) to disk.
-      QString untouched_fileName = directoryName + QDir::separator() + tr("ultrasoundImage-%1.png").arg(m_NameCounter);
-      std::string o_FileName = untouched_fileName.toStdString();
-      mitk::Image::Pointer untouched_image = savedmitkimage->Clone();
-      mitk::Geometry3D::Pointer geometry = untouched_image->GetGeometry();
+      mitk::Image::Pointer savedMitkImage = image->Clone();
+      mitk::IOUtil::SaveImage(savedMitkImage, fileNameWithGeometry.toStdString());
+
+      // clone the origin ultrasound image (changing orientation) to disk.
+      mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
+      mitk::Geometry3D::Pointer geometry = untouchedImage->GetGeometry();
       if (geometry.IsNotNull())
       {
         vtkSmartPointer<vtkMatrix4x4> identityMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
         identityMatrix->Identity();
         geometry->SetIndexToWorldTransformByVtkMatrix(identityMatrix);
       }
-      
-      mitk::IOUtil::SaveImage(untouched_image, o_FileName);
-      
+      mitk::IOUtil::SaveImage(untouchedImage, fileNameWithoutGeometry.toStdString());
 
+      // For immediate visualisation, we create a new DataNode with the new image.
+      mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();
+      savedImageNode->SetData(savedMitkImage);
+      savedImageNode->SetProperty("visible", mitk::BoolProperty::New(true));
+      savedImageNode->SetProperty("name", mitk::StringProperty::New(imageName.toStdString()));
+      savedImageNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(true));
+      savedImageNode->SetProperty("helper object", mitk::BoolProperty::New(false));
+      savedImageNode->SetVisibility(true);
+
+      // Add to data storage.
+      mitk::DataStorage* dataStorage = this->GetDataStorage();
+      dataStorage->Add(savedImageNode);
+
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
       m_NameCounter++;
     }
   }
