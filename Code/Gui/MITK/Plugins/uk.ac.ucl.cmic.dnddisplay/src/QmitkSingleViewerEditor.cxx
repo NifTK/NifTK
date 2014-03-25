@@ -178,6 +178,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     WindowLayout defaultLayout =
         (WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
 
+    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QColor backgroundColour(backgroundColourName);
     bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
     bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
@@ -201,6 +203,10 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_SingleViewer->SetDataStorage(dataStorage);
 
     // Setup GUI a bit more.
+    d->m_SingleViewer->SetBackgroundColour(backgroundColour);
+    d->m_SingleViewer->SetDisplayInteractionsEnabled(true);
+    d->m_SingleViewer->SetCursorPositionBinding(true);
+    d->m_SingleViewer->SetScaleFactorBinding(true);
 //    d->m_SingleViewer->SetShowOptionsVisible(showShowingOptions);
 //    d->m_SingleViewer->SetWindowLayoutControlsVisible(showWindowLayoutControls);
 //    d->m_SingleViewer->SetCursorDefaultVisibility(show2DCursors);
@@ -212,6 +218,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 //    d->m_SingleViewer->SetTimeStepTracking(timeStepTracking);
 //    d->m_SingleViewer->SetMagnificationTracking(magnificationTracking);
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
+//    d->m_SingleViewer->SetDefaultSingleWindowLayout(singleWindowLayout);
+//    d->m_SingleViewer->SetDefaultMultiWindowLayout(multiWindowLayout);
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
     d->m_VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
