@@ -21,7 +21,6 @@
 #include <QWidget>
 #include <QGridLayout>
 
-#include <mitkGlobalInteraction.h>
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
@@ -30,7 +29,7 @@
 #include <niftkMultiViewerVisibilityManager.h>
 #include "QmitkDnDDisplayPreferencePage.h"
 
-const std::string QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
+const std::string QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
 
 class QmitkMultiViewerEditorPrivate
 {

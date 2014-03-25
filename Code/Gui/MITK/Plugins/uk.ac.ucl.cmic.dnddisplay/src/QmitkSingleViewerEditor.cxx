@@ -18,8 +18,8 @@
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
 
-#include <QWidget>
 #include <QGridLayout>
+#include <QToolButton>
 
 #include <mitkGlobalInteraction.h>
 #include <mitkIDataStorageService.h>
@@ -31,7 +31,10 @@
 
 #include "QmitkDnDDisplayPreferencePage.h"
 
-const std::string QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dndsingleviewer";
+#include <ctkPopupWidget.h>
+#include <niftkSingleViewerControls.h>
+
+const std::string QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
 
 class QmitkSingleViewerEditorPrivate
 {
@@ -46,6 +49,15 @@ public:
   mitk::IRenderingManager* m_RenderingManagerInterface;
 
   bool m_ShowCursor;
+
+  // Layouts
+  QGridLayout* m_TopLevelLayout;
+  QGridLayout* m_LayoutForRenderWindows;
+
+  // Widgets
+  QToolButton* m_PinButton;
+  ctkPopupWidget* m_PopupWidget;
+  niftkSingleViewerControls* m_ControlPanel;
 };
 
 //-----------------------------------------------------------------------------
@@ -128,6 +140,11 @@ QmitkSingleViewerEditorPrivate::QmitkSingleViewerEditorPrivate()
 , m_PartListener(new QmitkSingleViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 , m_ShowCursor(true)
+, m_TopLevelLayout(0)
+, m_LayoutForRenderWindows(0)
+, m_PinButton(0)
+, m_PopupWidget(0)
+, m_ControlPanel(0)
 {
   m_RenderingManager = mitk::RenderingManager::GetInstance();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
@@ -169,6 +186,94 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 {
   if (d->m_SingleViewer == NULL)
   {
+    parent->setFocusPolicy(Qt::StrongFocus);
+
+    /************************************
+     * Create stuff.
+     ************************************/
+
+    d->m_TopLevelLayout = new QGridLayout(parent);
+    d->m_TopLevelLayout->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_TopLevelLayout"));
+    d->m_TopLevelLayout->setContentsMargins(0, 0, 0, 0);
+    d->m_TopLevelLayout->setSpacing(0);
+
+    d->m_LayoutForRenderWindows = new QGridLayout();
+    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_LayoutForRenderWindows"));
+    d->m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
+    d->m_LayoutForRenderWindows->setSpacing(0);
+
+    QWidget* pinButtonWidget = new QWidget(parent);
+    pinButtonWidget->setContentsMargins(0, 0, 0, 0);
+    QVBoxLayout* pinButtonWidgetLayout = new QVBoxLayout(pinButtonWidget);
+    pinButtonWidgetLayout->setContentsMargins(0, 0, 0, 0);
+    pinButtonWidgetLayout->setSpacing(0);
+    pinButtonWidget->setLayout(pinButtonWidgetLayout);
+
+    d->m_PopupWidget = new ctkPopupWidget(pinButtonWidget);
+    d->m_PopupWidget->setOrientation(Qt::Vertical);
+    d->m_PopupWidget->setAnimationEffect(ctkBasePopupWidget::ScrollEffect);
+    d->m_PopupWidget->setHorizontalDirection(Qt::LeftToRight);
+    d->m_PopupWidget->setVerticalDirection(ctkBasePopupWidget::TopToBottom);
+    d->m_PopupWidget->setAutoShow(true);
+    d->m_PopupWidget->setAutoHide(true);
+    d->m_PopupWidget->setEffectDuration(100);
+    d->m_PopupWidget->setContentsMargins(5, 5, 5, 1);
+    d->m_PopupWidget->setLineWidth(0);
+
+  #ifdef __APPLE__
+    QPalette popupPalette = parent->palette();
+    QColor windowColor = popupPalette.color(QPalette::Window);
+    windowColor.setAlpha(64);
+    popupPalette.setColor(QPalette::Window, windowColor);
+    d->m_PopupWidget->setPalette(popupPalette);
+  #else
+    QPalette popupPalette = this->palette();
+    QColor windowColor = popupPalette.color(QPalette::Window);
+    windowColor.setAlpha(128);
+    popupPalette.setColor(QPalette::Window, windowColor);
+    d->m_PopupWidget->setPalette(popupPalette);
+    d->m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+  #endif
+
+    int buttonRowHeight = 15;
+    d->m_PinButton = new QToolButton(parent);
+    d->m_PinButton->setContentsMargins(0, 0, 0, 0);
+    d->m_PinButton->setCheckable(true);
+    d->m_PinButton->setAutoRaise(true);
+    d->m_PinButton->setFixedHeight(16);
+    QSizePolicy pinButtonSizePolicy;
+    pinButtonSizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
+    d->m_PinButton->setSizePolicy(pinButtonSizePolicy);
+    // These two lines ensure that the icon appears on the left on each platform.
+    d->m_PinButton->setText(" ");
+    d->m_PinButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    QIcon pinButtonIcon;
+    pinButtonIcon.addFile(":Icons/PushPinIn.png", QSize(), QIcon::Normal, QIcon::On);
+    pinButtonIcon.addFile(":Icons/PushPinOut.png", QSize(), QIcon::Normal, QIcon::Off);
+    d->m_PinButton->setIcon(pinButtonIcon);
+
+    this->connect(d->m_PinButton, SIGNAL(toggled(bool)), SLOT(OnPinButtonToggled(bool)));
+    d->m_PinButton->installEventFilter(this);
+
+    d->m_ControlPanel = this->CreateControlPanel(d->m_PopupWidget);
+
+    pinButtonWidgetLayout->addWidget(d->m_PinButton);
+
+    d->m_TopLevelLayout->addWidget(pinButtonWidget, 0, 0);
+    d->m_TopLevelLayout->setRowMinimumHeight(0, buttonRowHeight);
+    d->m_TopLevelLayout->addLayout(d->m_LayoutForRenderWindows, 1, 0);
+
+
+    d->m_LayoutForRenderWindows = new QGridLayout();
+    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_LayoutForRenderWindows"));
+    d->m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
+    d->m_LayoutForRenderWindows->setVerticalSpacing(0);
+    d->m_LayoutForRenderWindows->setHorizontalSpacing(0);
+
+    d->m_TopLevelLayout->addLayout(d->m_LayoutForRenderWindows, 1, 0);
+
+
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
@@ -236,14 +341,23 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
-    QGridLayout *gridLayout = new QGridLayout(parent);
-    gridLayout->addWidget(d->m_SingleViewer, 0, 0);
-    gridLayout->setContentsMargins(0, 0, 0, 0);
-    gridLayout->setSpacing(0);
+    d->m_LayoutForRenderWindows->addWidget(d->m_SingleViewer, 0, 0);
 
     prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkSingleViewerEditor, const berry::IBerryPreferences*>( this, &QmitkSingleViewerEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
   }
+}
+
+
+//-----------------------------------------------------------------------------
+niftkSingleViewerControls* QmitkSingleViewerEditor::CreateControlPanel(QWidget* parent)
+{
+  niftkSingleViewerControls* controlPanel = new niftkSingleViewerControls(parent);
+
+  controlPanel->SetWindowCursorsBound(true);
+  controlPanel->SetWindowMagnificationsBound(true);
+
+  return controlPanel;
 }
 
 
@@ -445,4 +559,39 @@ void QmitkSingleViewerEditor::EnableLinkedNavigation(bool enable)
 bool QmitkSingleViewerEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_SingleViewer->IsLinkedNavigationEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnPopupOpened(bool opened)
+{
+  if (!opened)
+  {
+    d->m_SingleViewer->repaint();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnPinButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    d->m_PopupWidget->pinPopup(true);
+  }
+  else
+  {
+    d->m_PopupWidget->setAutoHide(true);
+  }
+}
+
+
+//---------------------------------------------------------------------------
+bool QmitkSingleViewerEditor::eventFilter(QObject* object, QEvent* event)
+{
+  if (object == d->m_PinButton && event->type() == QEvent::Enter)
+  {
+    d->m_PopupWidget->showPopup();
+  }
+  return this->QObject::eventFilter(object, event);
 }

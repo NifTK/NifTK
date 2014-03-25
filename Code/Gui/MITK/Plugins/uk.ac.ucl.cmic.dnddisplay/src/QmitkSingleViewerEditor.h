@@ -55,6 +55,7 @@ namespace mitk
 
 class QmitkSingleViewerEditorPrivate;
 class niftkSingleViewerWidget;
+class niftkSingleViewerControls;
 class QmitkRenderWindow;
 
 class DNDDISPLAY_EXPORT QmitkSingleViewerEditor :
@@ -156,6 +157,9 @@ public:
    */
   bool IsLinkedNavigationEnabled() const;
 
+  /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
+  virtual bool eventFilter(QObject* object, QEvent* event);
+
 protected:
 
   /// \brief Tells the contained niftkSingleViewerWidget to SetFocus().
@@ -167,9 +171,17 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
+  niftkSingleViewerControls* CreateControlPanel(QWidget* parent);
+
 protected slots:
 
   void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes);
+
+  /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
+  void OnPopupOpened(bool opened);
+
+  /// \brief Called when the pin button is toggled.
+  void OnPinButtonToggled(bool checked);
 
 private:
 
