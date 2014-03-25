@@ -11,7 +11,7 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftyview.minimalperspective"
-      name="Default Perspective"
+      name="Minimal Perspective"
       class="QmitkCommonAppsMinimalPerspective"
       icon="resources/icon_ucl.xpm">
     </perspective>
