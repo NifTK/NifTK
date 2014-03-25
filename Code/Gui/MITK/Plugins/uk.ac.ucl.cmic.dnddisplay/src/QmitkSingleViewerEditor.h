@@ -167,6 +167,10 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
+protected slots:
+
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes);
+
 private:
 
   const QScopedPointer<QmitkSingleViewerEditorPrivate> d;

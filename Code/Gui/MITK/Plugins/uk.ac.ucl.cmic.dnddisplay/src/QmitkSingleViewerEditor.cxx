@@ -44,6 +44,8 @@ public:
   mitk::RenderingManager::Pointer m_RenderingManager;
   berry::IPartListener::Pointer m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
+
+  bool m_ShowCursor;
 };
 
 //-----------------------------------------------------------------------------
@@ -125,6 +127,7 @@ QmitkSingleViewerEditorPrivate::QmitkSingleViewerEditorPrivate()
 , m_RenderingManager(0)
 , m_PartListener(new QmitkSingleViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
+, m_ShowCursor(true)
 {
   m_RenderingManager = mitk::RenderingManager::GetInstance();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
@@ -198,6 +201,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_RenderingManager->SetDataStorage(dataStorage);
 
+    d->m_ShowCursor = show2DCursors;
+
     // Create the niftkSingleViewerWidget
     d->m_SingleViewer = new niftkSingleViewerWidget(parent, d->m_RenderingManager);
     d->m_SingleViewer->SetDataStorage(dataStorage);
@@ -220,6 +225,10 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
 //    d->m_SingleViewer->SetDefaultSingleWindowLayout(singleWindowLayout);
 //    d->m_SingleViewer->SetDefaultMultiWindowLayout(multiWindowLayout);
+
+    this->connect(d->m_SingleViewer,
+                  SIGNAL(NodesDropped(niftkSingleViewerWidget*,QmitkRenderWindow*,std::vector<mitk::DataNode*>)),
+                  SLOT(OnNodesDropped(niftkSingleViewerWidget*,QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
     d->m_VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
@@ -252,6 +261,19 @@ void QmitkSingleViewerEditor::SetFocus()
   {
     d->m_SingleViewer->SetFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes)
+{
+  Q_UNUSED(viewer);
+  Q_UNUSED(renderWindow);
+  Q_UNUSED(dataNodes);
+
+//  MITK_INFO << "QmitkSingleViewerEditor::OnNodesDropped() show cursor: " << d->m_ShowCursor;
+
+  d->m_SingleViewer->SetCursorVisible(d->m_ShowCursor);
 }
 
 
