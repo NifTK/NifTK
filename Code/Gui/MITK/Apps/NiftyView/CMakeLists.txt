@@ -16,6 +16,7 @@ project(NiftyView)
 set(MY_APP_NAME NiftyView)
 
 set(_exclude_plugins
+  org.mitk.gui.qt.common.legacy
   uk.ac.ucl.cmic.breastsegmentation
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.gui.qt.niftymidas
