@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyViewIGIPerspective.h"
+#include "QmitkCommonAppsIGIPerspective.h"
 #include <berryIViewLayout.h>
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective()
+QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective()
 {
 }
  
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other)
+QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -30,7 +30,7 @@ QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective(const QmitkNiftyViewI
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void QmitkCommonAppsIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();
 
@@ -42,4 +42,7 @@ void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Point
 
   layout->AddView("org.mitk.views.propertylistview",
     berry::IPageLayout::BOTTOM, 0.3f, "org.mitk.views.datamanager");
+
+  layout->AddView("uk.ac.ucl.cmic.igidatasources",
+    berry::IPageLayout::RIGHT, 0.66f, editorArea);
 }

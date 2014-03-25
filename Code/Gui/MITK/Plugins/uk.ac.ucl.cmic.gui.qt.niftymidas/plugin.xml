@@ -12,7 +12,7 @@
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftymidas.midasperspective"
       name="MIDAS Perspective"
-      class="QmitkNiftyMIDASPerspective"
+      class="QmitkCommonAppsMIDASPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>

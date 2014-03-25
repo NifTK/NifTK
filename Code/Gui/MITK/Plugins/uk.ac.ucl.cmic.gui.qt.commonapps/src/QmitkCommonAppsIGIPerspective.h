@@ -12,31 +12,31 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyViewIGIPerspective_h
-#define QmitkNiftyViewIGIPerspective_h
+#ifndef QmitkCommonAppsIGIPerspective_h
+#define QmitkCommonAppsIGIPerspective_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIPerspectiveFactory.h>
 
 /**
- * \class QmitkNiftyViewIGIPerspective
+ * \class QmitkCommonAppsIGIPerspective
  * \brief Perspective to arrange widgets as would be suitable for CMIC IGI applications.
- * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
+ * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class CMIC_QT_COMMONAPPS QmitkNiftyViewIGIPerspective : public QObject, public berry::IPerspectiveFactory
+class CMIC_QT_COMMONAPPS QmitkCommonAppsIGIPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
   
 public:
 
-  QmitkNiftyViewIGIPerspective();
-  QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other);
+  QmitkCommonAppsIGIPerspective();
+  QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other);
   
   void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 
 };
 
-#endif /* QMITKNIFTYVIEWIGIPERSPECTIVE_H_ */
+#endif
