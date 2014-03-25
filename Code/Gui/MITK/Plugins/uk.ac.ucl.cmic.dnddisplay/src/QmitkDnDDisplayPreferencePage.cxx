@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "niftkDnDDisplayPreferencePage.h"
-#include "niftkDnDDisplayEditor.h"
+#include "QmitkDnDDisplayPreferencePage.h"
+#include "QmitkMultiViewerEditor.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -25,34 +25,34 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE("default image interpolation");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR("DnD display background colour");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET("DnD display background colour stylesheet");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE("default image interpolation");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR("DnD display background colour");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET("DnD display background colour stylesheet");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING("DnD display slice select tracking");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING("DnD display time select tracking");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING("DnD display magnification select tracking");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING("DnD display slice select tracking");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING("DnD display time select tracking");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING("DnD display magnification select tracking");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("DnD display show 3D window in multiple window layout");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("DnD display show 3D window in multiple window layout");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER("DnD display default number of view rows");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER("DnD display default number of view columns");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER("DnD display default number of view rows");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER("DnD display default number of view columns");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE("DnD display default drop type");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE("DnD display default drop type");
 
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER("DnD display show magnification slider");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS("DnD display show showing options");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS("DnD display show window layout controls");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS("DnD display show view number controls");
-const std::string niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS("DnD display show drop type widgets");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER("DnD display show magnification slider");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS("DnD display show showing options");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS("DnD display show window layout controls");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS("DnD display show view number controls");
+const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS("DnD display show drop type widgets");
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayPreferencePage::niftkDnDDisplayPreferencePage()
+QmitkDnDDisplayPreferencePage::QmitkDnDDisplayPreferencePage()
 : m_MainControl(0)
 , m_ImageInterpolationComboBox(NULL)
 , m_SliceSelectTracking(NULL)
@@ -77,7 +77,7 @@ niftkDnDDisplayPreferencePage::niftkDnDDisplayPreferencePage()
 
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayPreferencePage::niftkDnDDisplayPreferencePage(const niftkDnDDisplayPreferencePage& other)
+QmitkDnDDisplayPreferencePage::QmitkDnDDisplayPreferencePage(const QmitkDnDDisplayPreferencePage& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -85,19 +85,19 @@ niftkDnDDisplayPreferencePage::niftkDnDDisplayPreferencePage(const niftkDnDDispl
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::Init(berry::IWorkbench::Pointer )
+void QmitkDnDDisplayPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
+void QmitkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
     .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  m_DnDDisplayPreferencesNode = prefService->GetSystemPreferences()->Node(niftkDnDDisplayEditor::EDITOR_ID);
+  m_DnDDisplayPreferencesNode = prefService->GetSystemPreferences()->Node(QmitkMultiViewerEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);
 
@@ -200,14 +200,14 @@ void niftkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* niftkDnDDisplayPreferencePage::GetQtControl() const
+QWidget* QmitkDnDDisplayPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkDnDDisplayPreferencePage::PerformOk()
+bool QmitkDnDDisplayPreferencePage::PerformOk()
 {
   m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet.toStdString());
   m_DnDDisplayPreferencesNode->PutByteArray(DNDDISPLAY_BACKGROUND_COLOUR, m_BackgroundColor);
@@ -233,13 +233,13 @@ bool niftkDnDDisplayPreferencePage::PerformOk()
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::PerformCancel()
+void QmitkDnDDisplayPreferencePage::PerformCancel()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::Update()
+void QmitkDnDDisplayPreferencePage::Update()
 {
   m_BackgroundColorStyleSheet = QString::fromStdString(m_DnDDisplayPreferencesNode->Get(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, ""));
   m_BackgroundColor = m_DnDDisplayPreferencesNode->GetByteArray(DNDDISPLAY_BACKGROUND_COLOUR, "");
@@ -274,7 +274,7 @@ void niftkDnDDisplayPreferencePage::Update()
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::OnBackgroundColourChanged()
+void QmitkDnDDisplayPreferencePage::OnBackgroundColourChanged()
 {
   QColor colour = QColorDialog::getColor();
   if (colour.isValid())
@@ -301,7 +301,7 @@ void niftkDnDDisplayPreferencePage::OnBackgroundColourChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::OnResetBackgroundColour()
+void QmitkDnDDisplayPreferencePage::OnResetBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(0, 0, 0)";
   m_BackgroundColor = "#000000";
@@ -310,7 +310,7 @@ void niftkDnDDisplayPreferencePage::OnResetBackgroundColour()
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayPreferencePage::OnResetMIDASBackgroundColour()
+void QmitkDnDDisplayPreferencePage::OnResetMIDASBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS off-white colour.
   m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS off-white colour.

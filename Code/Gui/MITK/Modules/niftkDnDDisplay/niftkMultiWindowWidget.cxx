@@ -129,7 +129,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->DisableStandardLevelWindow();
   this->DisableDepartmentLogo();
   this->ActivateMenuWidget(false);
-  this->SetBackgroundColor(QColor(0, 0, 0));
+  this->SetBackgroundColour(QColor(0, 0, 0));
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
@@ -355,9 +355,9 @@ void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
+void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
 {
-  m_BackgroundColor = colour;
+  m_BackgroundColour = colour;
   m_GradientBackground1->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground1->Enable();
   m_GradientBackground2->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
@@ -371,9 +371,9 @@ void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
 
 
 //-----------------------------------------------------------------------------
-QColor niftkMultiWindowWidget::GetBackgroundColor() const
+QColor niftkMultiWindowWidget::GetBackgroundColour() const
 {
-  return m_BackgroundColor;
+  return m_BackgroundColour;
 }
 
 

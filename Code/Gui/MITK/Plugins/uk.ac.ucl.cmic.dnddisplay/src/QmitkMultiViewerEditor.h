@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkDnDDisplayEditor_h
-#define niftkDnDDisplayEditor_h
+#ifndef QmitkMultiViewerEditor_h
+#define QmitkMultiViewerEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -41,7 +41,7 @@ namespace mitk {
 }
 
 /**
- * \class niftkDnDDisplayEditor
+ * \class QmitkMultiViewerEditor
  * \brief Provides a display with with multiple image viewers on up to 5 x 5 panes of equal
  * size in a grid layout.
  *
@@ -53,21 +53,21 @@ namespace mitk {
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
-class niftkDnDDisplayEditorPrivate;
+class QmitkMultiViewerEditorPrivate;
 class niftkMultiViewerWidget;
 class QmitkRenderWindow;
 
-class DNDDISPLAY_EXPORT niftkDnDDisplayEditor :
+class DNDDISPLAY_EXPORT QmitkMultiViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(niftkDnDDisplayEditor)
+  berryObjectMacro(QmitkMultiViewerEditor)
 
-  niftkDnDDisplayEditor();
-  ~niftkDnDDisplayEditor();
+  QmitkMultiViewerEditor();
+  ~QmitkMultiViewerEditor();
 
   static const std::string EDITOR_ID;
 
@@ -169,7 +169,7 @@ protected:
 
 private:
 
-  const QScopedPointer<niftkDnDDisplayEditorPrivate> d;
+  const QScopedPointer<QmitkMultiViewerEditorPrivate> d;
 };
 
 #endif

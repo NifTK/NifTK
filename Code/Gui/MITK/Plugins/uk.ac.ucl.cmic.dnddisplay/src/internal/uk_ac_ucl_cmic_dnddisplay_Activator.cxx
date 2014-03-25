@@ -13,21 +13,24 @@
 =============================================================================*/
 
 #include "uk_ac_ucl_cmic_dnddisplay_Activator.h"
-#include <niftkDnDDisplayEditor.h>
-#include <niftkDnDDisplayPreferencePage.h>
+#include <QmitkDnDDisplayPreferencePage.h>
+#include <QmitkMultiViewerEditor.h>
+#include <QmitkSingleViewerEditor.h>
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
 #include <Interactions/mitkDnDDisplayStateMachine.h>
 
-namespace mitk {
+namespace mitk
+{
 
 ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::s_PluginContext(NULL);
 
 //-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(niftkDnDDisplayEditor, context)
-  BERRY_REGISTER_EXTENSION_CLASS(niftkDnDDisplayPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkMultiViewerEditor, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkSingleViewerEditor, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkDnDDisplayPreferencePage, context);
   s_PluginContext = context;
 }
 

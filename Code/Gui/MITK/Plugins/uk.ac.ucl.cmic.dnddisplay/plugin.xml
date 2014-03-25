@@ -3,16 +3,24 @@
 <plugin>
   <extension point="org.blueberry.ui.editors">
     <editor
+      id="org.mitk.editors.dndmultidisplay"
+      name="DnD Multi Display"
+      extensions="mitk"
+      class="QmitkMultiViewerEditor">
+    </editor>
+  </extension>
+  <extension point="org.blueberry.ui.editors">
+    <editor
       id="org.mitk.editors.dnddisplay"
-      name="Drag and Drop Display"
+      name="DnD Display"
       extensions="mitk"
       default="true"
-      class="niftkDnDDisplayEditor">
+      class="QmitkSingleViewerEditor">
     </editor>
   </extension>
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.niftk.DnDDisplayPreferencePage" name="Drag and Drop Display" 
-      class="niftkDnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
+      class="QmitkDnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
       <keywordreference id="org.niftk.DnDDisplayPreferencePageKeywords"/>
     </page>     
   </extension>

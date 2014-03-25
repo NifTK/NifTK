@@ -38,7 +38,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_NavigationControllerEventListening(false)
+, m_LinkedNavigation(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
@@ -64,7 +64,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  this->SetNavigationControllerEventListening(false);
+  this->EnableLinkedNavigation(false);
 
   m_GridLayout = new QGridLayout(this);
   m_GridLayout->setObjectName(QString::fromUtf8("niftkSingleViewerWidget::m_GridLayout"));
@@ -318,16 +318,16 @@ void niftkSingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBackgroundColor(QColor color)
+void niftkSingleViewerWidget::SetBackgroundColour(QColor colour)
 {
-  m_MultiWidget->SetBackgroundColor(color);
+  m_MultiWidget->SetBackgroundColour(colour);
 }
 
 
 //-----------------------------------------------------------------------------
-QColor niftkSingleViewerWidget::GetBackgroundColor() const
+QColor niftkSingleViewerWidget::GetBackgroundColour() const
 {
-  return m_MultiWidget->GetBackgroundColor();
+  return m_MultiWidget->GetBackgroundColour();
 }
 
 
@@ -433,24 +433,17 @@ void niftkSingleViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStor
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetNavigationControllerEventListening(bool enabled)
+void niftkSingleViewerWidget::EnableLinkedNavigation(bool enabled)
 {
-  if (enabled)
-  {
-    m_MultiWidget->SetWidgetPlanesLocked(false);
-  }
-  else
-  {
-    m_MultiWidget->SetWidgetPlanesLocked(true);
-  }
-  m_NavigationControllerEventListening = enabled;
+  m_MultiWidget->SetWidgetPlanesLocked(!enabled);
+  m_LinkedNavigation = enabled;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetNavigationControllerEventListening() const
+bool niftkSingleViewerWidget::IsLinkedNavigationEnabled() const
 {
-  return m_NavigationControllerEventListening;
+  return m_LinkedNavigation;
 }
 
 
