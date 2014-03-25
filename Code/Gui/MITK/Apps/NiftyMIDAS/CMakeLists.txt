@@ -16,7 +16,6 @@ project(NiftyMIDAS)
 set(MY_APP_NAME NiftyMIDAS)
 
 set(_exclude_plugins
-  org.mitk.gui.qt.common.legacy
   org.mitk.gui.qt.pointsetinteraction
   org.mitk.gui.qt.stdmultiwidgeteditor
   it.unito.cim.intensityprofile
