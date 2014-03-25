@@ -192,6 +192,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_VisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
     d->m_VisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
+    d->m_VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
 
     d->m_RenderingManager->SetDataStorage(dataStorage);
 
