@@ -27,5 +27,5 @@ QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
 void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 {
   QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate();
-  this->OpenEditor("org.mitk.editors.stdmultiwidget");
+  this->OpenEditorIfEnvironmentVariableIsON("NIFTK_MITK_DISPLAY", "org.mitk.editors.stdmultiwidget");
 }

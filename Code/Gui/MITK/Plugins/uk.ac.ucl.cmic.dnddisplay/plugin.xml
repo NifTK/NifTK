@@ -6,6 +6,7 @@
       id="org.mitk.editors.dnddisplay"
       name="Drag and Drop Display"
       extensions="mitk"
+      default="true"
       class="niftkDnDDisplayEditor">
     </editor>
   </extension>
