@@ -27,5 +27,5 @@ QmitkNiftyViewWorkbenchWindowAdvisor::QmitkNiftyViewWorkbenchWindowAdvisor(
 void QmitkNiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
 {
   QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate();
-  this->CheckIfLoadingMITKDisplay();
+  this->OpenEditor("org.mitk.editors.stdmultiwidget");
 }
