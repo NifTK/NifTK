@@ -183,6 +183,50 @@ protected slots:
   /// \brief Called when the pin button is toggled.
   void OnPinButtonToggled(bool checked);
 
+  /// \brief Called when the selected slice has been changed through the control panel.
+  void OnSelectedSliceChanged(int selectedSlice);
+
+  /// \brief Called when the time step has been changed through the control panel.
+  void OnTimeStepChanged(int timeStep);
+
+  /// \brief Called when the magnification has been changed through the control panel.
+  void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the show cursor option has been changed through the control panel.
+  void OnCursorVisibilityChanged(bool visible);
+
+  /// \brief Called when the show direction annotations option has been changed through the control panel.
+  void OnShowDirectionAnnotationsChanged(bool visible);
+
+  /// \brief Called when the show 3D window option has been changed through the control panel.
+  void OnShow3DWindowChanged(bool visible);
+
+  /// \brief Called when the window layout has been changed through the control panel.
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
+
+  /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
+  void OnWindowCursorBindingChanged(bool);
+
+  /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
+  void OnWindowMagnificationBindingChanged(bool);
+
+  /// \brief Called when the selected position has changed in a render window of a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+
+  /// \brief Called when the selected time step has changed in a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+
+  /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
+  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Called when the window layout of a viewer has changed.
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+
+  /// \brief Called when the show cursor option has been changed in a viewer.
+  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
+
 private:
 
   const QScopedPointer<QmitkSingleViewerEditorPrivate> d;

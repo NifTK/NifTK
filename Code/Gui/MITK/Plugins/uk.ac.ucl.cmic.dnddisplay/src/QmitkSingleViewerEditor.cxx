@@ -49,6 +49,7 @@ public:
   mitk::IRenderingManager* m_RenderingManagerInterface;
 
   bool m_ShowCursor;
+  double m_Magnification;
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -140,6 +141,7 @@ QmitkSingleViewerEditorPrivate::QmitkSingleViewerEditorPrivate()
 , m_PartListener(new QmitkSingleViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 , m_ShowCursor(true)
+, m_Magnification(0.0)
 , m_TopLevelLayout(0)
 , m_LayoutForRenderWindows(0)
 , m_PinButton(0)
@@ -193,12 +195,12 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
      ************************************/
 
     d->m_TopLevelLayout = new QGridLayout(parent);
-    d->m_TopLevelLayout->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_TopLevelLayout"));
+    d->m_TopLevelLayout->setObjectName(QString::fromUtf8("QmitkSingleViewerEditor::m_TopLevelLayout"));
     d->m_TopLevelLayout->setContentsMargins(0, 0, 0, 0);
     d->m_TopLevelLayout->setSpacing(0);
 
     d->m_LayoutForRenderWindows = new QGridLayout();
-    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_LayoutForRenderWindows"));
+    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkSingleViewerEditor::m_LayoutForRenderWindows"));
     d->m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
     d->m_LayoutForRenderWindows->setSpacing(0);
 
@@ -266,7 +268,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
 
     d->m_LayoutForRenderWindows = new QGridLayout();
-    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("niftkMultiViewerWidget::m_LayoutForRenderWindows"));
+    d->m_LayoutForRenderWindows->setObjectName(QString::fromUtf8("QmitkSingleViewerEditor::m_LayoutForRenderWindows"));
     d->m_LayoutForRenderWindows->setContentsMargins(0, 0, 0, 0);
     d->m_LayoutForRenderWindows->setVerticalSpacing(0);
     d->m_LayoutForRenderWindows->setHorizontalSpacing(0);
@@ -317,27 +319,23 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_SingleViewer->SetDisplayInteractionsEnabled(true);
     d->m_SingleViewer->SetCursorPositionBinding(true);
     d->m_SingleViewer->SetScaleFactorBinding(true);
-//    d->m_SingleViewer->SetShowOptionsVisible(showShowingOptions);
-//    d->m_SingleViewer->SetWindowLayoutControlsVisible(showWindowLayoutControls);
+    d->m_ControlPanel->SetShowOptionsVisible(showShowingOptions);
+    d->m_ControlPanel->SetWindowLayoutControlsVisible(showWindowLayoutControls);
 //    d->m_SingleViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_SingleViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_ControlPanel->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
-//    d->m_SingleViewer->SetShowMagnificationSlider(showMagnificationSlider);
+    d->m_ControlPanel->SetMagnificationControlsVisible(showMagnificationSlider);
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
-//    d->m_SingleViewer->SetSliceTracking(sliceIndexTracking);
-//    d->m_SingleViewer->SetTimeStepTracking(timeStepTracking);
-//    d->m_SingleViewer->SetMagnificationTracking(magnificationTracking);
+    d->m_ControlPanel->SetSliceTracking(sliceIndexTracking);
+    d->m_ControlPanel->SetTimeStepTracking(timeStepTracking);
+    d->m_ControlPanel->SetMagnificationTracking(magnificationTracking);
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
 //    d->m_SingleViewer->SetDefaultSingleWindowLayout(singleWindowLayout);
 //    d->m_SingleViewer->SetDefaultMultiWindowLayout(multiWindowLayout);
 
-    this->connect(d->m_SingleViewer,
-                  SIGNAL(NodesDropped(niftkSingleViewerWidget*,QmitkRenderWindow*,std::vector<mitk::DataNode*>)),
-                  SLOT(OnNodesDropped(niftkSingleViewerWidget*,QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
-
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
     d->m_VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
-    d->m_VisibilityManager->connect(d->m_SingleViewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
@@ -345,6 +343,31 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkSingleViewerEditor, const berry::IBerryPreferences*>( this, &QmitkSingleViewerEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
+
+    // Connect Qt Signals to make it all hang together.
+
+    d->m_VisibilityManager->connect(d->m_SingleViewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+
+    this->connect(d->m_SingleViewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+    this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+    this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
+    this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
+    this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+    this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
+
+    this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceChanged(int)));
+    this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
+    this->connect(d->m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
+
+    this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowChanged(bool)));
+
+    this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
+    this->connect(d->m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowMagnificationBindingChanged(bool)));
+
+    this->connect(d->m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
   }
 }
 
@@ -401,16 +424,17 @@ void QmitkSingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferenc
     d->m_SingleViewer->SetBackgroundColour(backgroundColour);
     d->m_VisibilityManager->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
     d->m_VisibilityManager->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
-//    d->m_SingleViewer->SetShowOptionsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
-//    d->m_SingleViewer->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
-//    d->m_SingleViewer->SetShowMagnificationSlider(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
+    d->m_ControlPanel->SetShowOptionsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
+    d->m_ControlPanel->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
+    d->m_ControlPanel->SetMagnificationControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
 //    d->m_SingleViewer->SetCursorDefaultVisibility(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
+
     d->m_SingleViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
-//    d->m_SingleViewer->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
-//    d->m_SingleViewer->SetTimeStepTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
-//    d->m_SingleViewer->SetMagnificationTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
+    d->m_ControlPanel->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
+    d->m_ControlPanel->SetTimeStepTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
+    d->m_ControlPanel->SetMagnificationTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
   }
 }
 
@@ -594,4 +618,174 @@ bool QmitkSingleViewerEditor::eventFilter(QObject* object, QEvent* event)
     d->m_PopupWidget->showPopup();
   }
   return this->QObject::eventFilter(object, event);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnSelectedSliceChanged(int selectedSlice)
+{
+  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+    d->m_SingleViewer->SetSelectedSlice(orientation, selectedSlice);
+    d->m_SingleViewer->blockSignals(signalsWereBlocked);
+
+  }
+  else
+  {
+    MITK_WARN << "Found an invalid orientation in viewer, so ignoring request to change to slice " << selectedSlice << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnTimeStepChanged(int timeStep)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetTimeStep(timeStep);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnMagnificationChanged(double magnification)
+{
+  double roundedMagnification = std::floor(magnification);
+
+  // If we are between two integers, we raise a new event:
+  if (magnification != roundedMagnification)
+  {
+    // If the value has decreased, we have to increase the rounded value.
+    if (magnification < d->m_Magnification)
+    {
+      roundedMagnification += 1.0;
+    }
+
+    magnification = roundedMagnification;
+    d->m_ControlPanel->SetMagnification(magnification);
+  }
+
+  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetMagnification(orientation, magnification);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+
+  d->m_Magnification = magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnShowDirectionAnnotationsChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetDirectionAnnotationsVisible(visible);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetCursorVisible(visible);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnShow3DWindowChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(visible);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnWindowCursorBindingChanged(bool bound)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetCursorPositionBinding(bound);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnWindowMagnificationBindingChanged(bool bound)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetScaleFactorBinding(bound);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
+{
+  if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
+  {
+    bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+    d->m_SingleViewer->SetWindowLayout(windowLayout);
+    d->m_SingleViewer->blockSignals(signalsWereBlocked);
+
+    // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
+    // (or indeed anything that's listening to the FocusManager).
+//    this->UpdateFocusManagerToSelectedViewer();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+{
+  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+    d->m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(orientation));
+    d->m_ControlPanel->blockSignals(signalsWereBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int timeStep)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetTimeStep(timeStep);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor)
+{
+  double magnification = d->m_SingleViewer->GetMagnification(orientation);
+
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetMagnification(magnification);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+
+  d->m_Magnification = magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetCursorVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnWindowLayoutChanged(niftkSingleViewerWidget* selectedViewer, WindowLayout windowLayout)
+{
+  d->m_ControlPanel->SetWindowLayout(windowLayout);
+  d->m_ControlPanel->SetWindowCursorsBound(d->m_SingleViewer->GetCursorPositionBinding());
+  d->m_ControlPanel->SetWindowMagnificationsBound(d->m_SingleViewer->GetScaleFactorBinding());
 }
