@@ -27,7 +27,6 @@
   #endif
 #endif
 
-#include <syslimits.h>
 #include <cstring>
 #include "miniz.c"
 
@@ -519,8 +518,8 @@ void XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
 
   for (mz_uint i = 0; i < fileNumber; ++i)
   {
-    char fileName[PATH_MAX];
-    mz_zip_reader_get_filename(&zipArchive, i, fileName, PATH_MAX);
+    char fileName[1024];
+    mz_zip_reader_get_filename(&zipArchive, i, fileName, 1024);
 
     if (mz_zip_reader_is_file_a_directory(&zipArchive, i))
     {
