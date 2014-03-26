@@ -72,6 +72,10 @@ if(BUILD_NIFTYSIM)
 	  )
 	mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
       endif (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
+    else ()
+      if (NIFTYSIM_USE_CUDA) 
+	MESSAGE(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
+      endif (NIFTYSIM_USE_CUDA) 
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
