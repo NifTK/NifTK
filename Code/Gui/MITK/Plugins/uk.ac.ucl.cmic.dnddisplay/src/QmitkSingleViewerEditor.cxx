@@ -229,7 +229,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     popupPalette.setColor(QPalette::Window, windowColor);
     d->m_PopupWidget->setPalette(popupPalette);
   #else
-    QPalette popupPalette = this->palette();
+    QPalette popupPalette = parent->palette();
     QColor windowColor = popupPalette.color(QPalette::Window);
     windowColor.setAlpha(128);
     popupPalette.setColor(QPalette::Window, windowColor);
