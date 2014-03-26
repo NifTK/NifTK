@@ -249,7 +249,9 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Double-click on a row in the list above to activate a preview/control GUI for that data source. Untick the checkbox to freeze-frame a data source. Recording incoming data will continue in the background; just Data Storage will not receive updates.</string>
+      <string>Double-click on a row in the list to activate a preview/control GUI for that data source.
+Untick the checkbox to freeze-frame a data source. Recording incoming data will continue in the background;
+just Data Storage will not receive updates.</string>
      </property>
      <property name="title">
       <string>Sources</string>
@@ -258,16 +260,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -346,16 +339,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -386,16 +370,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
