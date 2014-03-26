@@ -2489,11 +2489,14 @@ void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding
       if (0 <= m_SelectedWindowIndex && m_SelectedWindowIndex < 3)
       {
         this->OnOriginChanged(m_SelectedWindowIndex, true);
-        /// We raise the event in another window as well so that the cursors are in sync
-        /// along the third axis as well.
-        int someOtherOrientation =
-            m_SelectedWindowIndex == CORONAL ? SAGITTAL : CORONAL;
-        this->OnOriginChanged(someOtherOrientation, true);
+        if (m_WindowLayout == WINDOW_LAYOUT_ORTHO
+            && (m_SelectedWindowIndex == AXIAL || m_SelectedWindowIndex == SAGITTAL))
+        {
+          /// We raise the event in the coronal window so that the cursors are in sync
+          /// along the third axis, too.
+          this->MoveToCursorPosition(CORONAL);
+          this->OnOriginChanged(CORONAL, true);
+        }
       }
     }
 
