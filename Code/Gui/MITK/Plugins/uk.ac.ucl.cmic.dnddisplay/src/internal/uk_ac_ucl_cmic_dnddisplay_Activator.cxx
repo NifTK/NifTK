@@ -29,7 +29,7 @@ ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::s_PluginContext(NULL);
 void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(QmitkMultiViewerEditor, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkSingleViewerEditor, context);
+//  BERRY_REGISTER_EXTENSION_CLASS(QmitkSingleViewerEditor, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkDnDDisplayPreferencePage, context);
   s_PluginContext = context;
 }
