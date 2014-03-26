@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkDnDDisplayEditor_h
-#define niftkDnDDisplayEditor_h
+#ifndef QmitkSingleViewerEditor_h
+#define QmitkSingleViewerEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -36,14 +36,14 @@
 
 #include <niftkMultiViewerVisibilityManager.h>
 
-namespace mitk {
+namespace mitk
+{
   class DataNode;
 }
 
 /**
- * \class niftkDnDDisplayEditor
- * \brief Provides a display with with multiple image viewers on up to 5 x 5 panes of equal
- * size in a grid layout.
+ * \class QmitkSingleViewerEditor
+ * \brief Simple image viewer that supports cursor and magnification binding.
  *
  * As of 18th April 2012, this editor inherits from the QmitkAbstractRenderEditor, and hence
  * conforms to the mitk::IRenderWindowPart which is the new Render Window Abstraction provided by
@@ -53,26 +53,27 @@ namespace mitk {
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
-class niftkDnDDisplayEditorPrivate;
-class niftkMultiViewerWidget;
+class QmitkSingleViewerEditorPrivate;
+class niftkSingleViewerWidget;
+class niftkSingleViewerControls;
 class QmitkRenderWindow;
 
-class DNDDISPLAY_EXPORT niftkDnDDisplayEditor :
+class DNDDISPLAY_EXPORT QmitkSingleViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(niftkDnDDisplayEditor)
+  berryObjectMacro(QmitkSingleViewerEditor)
 
-  niftkDnDDisplayEditor();
-  ~niftkDnDDisplayEditor();
+  QmitkSingleViewerEditor();
+  ~QmitkSingleViewerEditor();
 
   static const std::string EDITOR_ID;
 
-  /// \brief Get hold of the internal niftkMultiViewerWidget.
-  niftkMultiViewerWidget* GetMultiViewer();
+  /// \brief Get hold of the internal niftkSingleViewerWidget.
+  niftkSingleViewerWidget* GetSingleViewer();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -156,9 +157,12 @@ public:
    */
   bool IsLinkedNavigationEnabled() const;
 
+  /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
+  virtual bool eventFilter(QObject* object, QEvent* event);
+
 protected:
 
-  /// \brief Tells the contained niftkMultiViewerWidget to SetFocus().
+  /// \brief Tells the contained niftkSingleViewerWidget to SetFocus().
   virtual void SetFocus();
 
   /// \brief Called when the preferences object of this editor changed.
@@ -167,9 +171,68 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
+  niftkSingleViewerControls* CreateControlPanel(QWidget* parent);
+
+protected slots:
+
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes);
+
+  /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
+  void OnPopupOpened(bool opened);
+
+  /// \brief Called when the pin button is toggled.
+  void OnPinButtonToggled(bool checked);
+
+  /// \brief Called when the selected slice has been changed through the control panel.
+  void OnSelectedSliceChanged(int selectedSlice);
+
+  /// \brief Called when the time step has been changed through the control panel.
+  void OnTimeStepChanged(int timeStep);
+
+  /// \brief Called when the magnification has been changed through the control panel.
+  void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the show cursor option has been changed through the control panel.
+  void OnCursorVisibilityChanged(bool visible);
+
+  /// \brief Called when the show direction annotations option has been changed through the control panel.
+  void OnShowDirectionAnnotationsChanged(bool visible);
+
+  /// \brief Called when the show 3D window option has been changed through the control panel.
+  void OnShow3DWindowChanged(bool visible);
+
+  /// \brief Called when the window layout has been changed through the control panel.
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
+
+  /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
+  void OnWindowCursorBindingChanged(bool);
+
+  /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
+  void OnWindowMagnificationBindingChanged(bool);
+
+  /// \brief Called when the selected render window has been changed in the viewer.
+  void OnSelectedRenderWindowChanged(MIDASOrientation orientation);
+
+  /// \brief Called when the selected position has changed in a render window of a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+
+  /// \brief Called when the selected time step has changed in a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+
+  /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
+  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Called when the window layout of a viewer has changed.
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+
+  /// \brief Called when the show cursor option has been changed in a viewer.
+  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
+
 private:
 
-  const QScopedPointer<niftkDnDDisplayEditorPrivate> d;
+  const QScopedPointer<QmitkSingleViewerEditorPrivate> d;
 };
 
 #endif

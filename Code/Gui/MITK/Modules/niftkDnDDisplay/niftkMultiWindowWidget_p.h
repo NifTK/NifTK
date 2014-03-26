@@ -131,10 +131,10 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
-  void SetBackgroundColor(QColor color);
+  void SetBackgroundColour(QColor color);
 
   /// \brief Get the background color, applied to 2D and 3D windows, and currently we don't do gradients.
-  QColor GetBackgroundColor() const;
+  QColor GetBackgroundColour() const;
 
   /// \brief If selected, this widget is "selected" meaning its selected render window (if any)
   /// will have coloured border, otherwise it is not selected, and will not have coloured borders
@@ -378,7 +378,7 @@ private:
   void OnFocusChanged();
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
-  QColor m_BackgroundColor;
+  QColor m_BackgroundColour;
   QGridLayout* m_GridLayout;
   unsigned long m_AxialSliceTag;
   unsigned long m_SagittalSliceTag;

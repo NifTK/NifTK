@@ -129,7 +129,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->DisableStandardLevelWindow();
   this->DisableDepartmentLogo();
   this->ActivateMenuWidget(false);
-  this->SetBackgroundColor(QColor(0, 0, 0));
+  this->SetBackgroundColour(QColor(0, 0, 0));
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
@@ -355,9 +355,9 @@ void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
+void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
 {
-  m_BackgroundColor = colour;
+  m_BackgroundColour = colour;
   m_GradientBackground1->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground1->Enable();
   m_GradientBackground2->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
@@ -371,9 +371,9 @@ void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
 
 
 //-----------------------------------------------------------------------------
-QColor niftkMultiWindowWidget::GetBackgroundColor() const
+QColor niftkMultiWindowWidget::GetBackgroundColour() const
 {
-  return m_BackgroundColor;
+  return m_BackgroundColour;
 }
 
 
@@ -2489,11 +2489,14 @@ void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding
       if (0 <= m_SelectedWindowIndex && m_SelectedWindowIndex < 3)
       {
         this->OnOriginChanged(m_SelectedWindowIndex, true);
-        /// We raise the event in another window as well so that the cursors are in sync
-        /// along the third axis as well.
-        int someOtherOrientation =
-            m_SelectedWindowIndex == CORONAL ? SAGITTAL : CORONAL;
-        this->OnOriginChanged(someOtherOrientation, true);
+        if (m_WindowLayout == WINDOW_LAYOUT_ORTHO
+            && (m_SelectedWindowIndex == AXIAL || m_SelectedWindowIndex == SAGITTAL))
+        {
+          /// We raise the event in the coronal window so that the cursors are in sync
+          /// along the third axis, too.
+          this->MoveToCursorPosition(CORONAL);
+          this->OnOriginChanged(CORONAL, true);
+        }
       }
     }
 
