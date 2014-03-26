@@ -300,7 +300,8 @@ just Data Storage will not receive updates.</string>
           <string>A</string>
          </property>
          <property name="toolTip">
-          <string>Active</string>
+          <string>Active
+Click to freeze all sources.</string>
          </property>
         </column>
         <column>

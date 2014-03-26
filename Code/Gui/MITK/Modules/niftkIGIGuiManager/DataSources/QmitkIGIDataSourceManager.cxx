@@ -333,6 +333,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  // the active column has a fixed, minimal size. note that this line relies on the table having
+  // columns already! the ui file has them added.
+  m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
   bool    ok = false;
   ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
