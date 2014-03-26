@@ -210,6 +210,9 @@ protected slots:
   /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
   void OnWindowMagnificationBindingChanged(bool);
 
+  /// \brief Called when the selected render window has been changed in the viewer.
+  void OnSelectedRenderWindowChanged(MIDASOrientation orientation);
+
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
   void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
