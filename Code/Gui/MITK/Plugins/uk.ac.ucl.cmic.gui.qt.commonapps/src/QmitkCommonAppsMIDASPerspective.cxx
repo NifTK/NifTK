@@ -12,18 +12,17 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASPerspective.h"
+#include "QmitkCommonAppsMIDASPerspective.h"
 #include <berryIViewLayout.h>
-#include <berryIFolderLayout.h>
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASPerspective::QmitkNiftyMIDASPerspective()
+QmitkCommonAppsMIDASPerspective::QmitkCommonAppsMIDASPerspective()
 {
 }
  
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASPerspective::QmitkNiftyMIDASPerspective(const QmitkNiftyMIDASPerspective& other)
+QmitkCommonAppsMIDASPerspective::QmitkCommonAppsMIDASPerspective(const QmitkCommonAppsMIDASPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -31,11 +30,11 @@ QmitkNiftyMIDASPerspective::QmitkNiftyMIDASPerspective(const QmitkNiftyMIDASPers
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void QmitkCommonAppsMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();
 
-  layout->AddView("org.mitk.views.datamanager", 
+  layout->AddView("org.mitk.views.datamanager",
     berry::IPageLayout::LEFT, 0.20f, editorArea);
 
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");

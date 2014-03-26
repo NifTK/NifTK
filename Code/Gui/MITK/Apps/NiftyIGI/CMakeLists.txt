@@ -22,6 +22,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.dnddisplay
   uk.ac.ucl.cmic.midasgeneralsegmentor
   uk.ac.ucl.cmic.midasmorphologicalsegmentor
+  uk.ac.ucl.cmic.sideview
   uk.ac.ucl.cmic.niftyseg
   uk.ac.ucl.cmic.thumbnail
   it.unito.cim.intensityprofile

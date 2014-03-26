@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyViewMIDASPerspective.h"
+#include "QmitkCommonAppsIGIPerspective.h"
 #include <berryIViewLayout.h>
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective()
+QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective()
 {
 }
  
 
 //-----------------------------------------------------------------------------
-QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective(const QmitkNiftyViewMIDASPerspective& other)
+QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -30,22 +30,19 @@ QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective(const QmitkNiftyV
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyViewMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void QmitkCommonAppsIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   std::string editorArea = layout->GetEditorArea();
 
-  layout->AddView("org.mitk.views.datamanager", 
-    berry::IPageLayout::LEFT, 0.25f, editorArea);
+  layout->AddView("org.mitk.views.datamanager",
+    berry::IPageLayout::LEFT, 0.2f, editorArea);
 
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);
 
-  layout->AddView("uk.ac.ucl.cmic.thumbnail",
-    berry::IPageLayout::BOTTOM, 0.25f, "org.mitk.views.datamanager");
+  layout->AddView("org.mitk.views.propertylistview",
+    berry::IPageLayout::BOTTOM, 0.3f, "org.mitk.views.datamanager");
 
-  layout->AddView("uk.ac.ucl.cmic.imagelookuptables",
-    berry::IPageLayout::BOTTOM, 0.33f, "uk.ac.ucl.cmic.thumbnail");
-
-  layout->AddView("uk.ac.ucl.cmic.imagestatistics",
-    berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.imagelookuptables");
+  layout->AddView("uk.ac.ucl.cmic.igidatasources",
+    berry::IPageLayout::RIGHT, 0.66f, editorArea);
 }

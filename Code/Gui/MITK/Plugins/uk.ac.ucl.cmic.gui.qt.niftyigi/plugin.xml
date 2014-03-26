@@ -10,9 +10,9 @@
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective"
+      id="uk.ac.ucl.cmic.gui.qt.niftyigi.igiperspective"
       name="IGI Perspective"
-      class="QmitkNiftyViewIGIPerspective"
+      class="QmitkCommonAppsIGIPerspective"
 	  icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
