@@ -111,6 +111,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
     assert(ok);
+    ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -331,6 +333,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  // the active column has a fixed, minimal size. note that this line relies on the table having
+  // columns already! the ui file has them added.
+  m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
   bool    ok = false;
   ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
@@ -351,10 +356,27 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   assert(ok);
   ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
   assert(ok);
+  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 
   m_setupUiHasBeenCalled = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnFreezeTableHeaderClicked(int section)
+{
+  if (section == 0)
+  {
+    // we only ever freeze data sources. always.
+
+    for (int i = 0; i < m_TableWidget->rowCount(); ++i)
+    {
+      m_TableWidget->item(i, 0)->setCheckState(Qt::Unchecked);
+    }
+  }
 }
 
 
@@ -743,15 +765,19 @@ void QmitkIGIDataSourceManager::UpdateSourceView(const int& sourceIdentifier, bo
     m_TableWidget->insertRow(rowNumber);
   }
 
-  for (unsigned int i = 0; i < fields.size(); i++)
+  for (unsigned int i = 1; i < fields.size(); i++)
   {
     QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
     item->setTextAlignment(Qt::AlignCenter);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, i, item);
   }
-  m_TableWidget->item(rowNumber, 0)->setFlags(m_TableWidget->item(rowNumber, 0)->flags() | Qt::ItemIsUserCheckable);
-  m_TableWidget->item(rowNumber, 0)->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+
+  QTableWidgetItem* freezeitem = new QTableWidgetItem(" ");
+  freezeitem->setTextAlignment(Qt::AlignCenter);
+  freezeitem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+  freezeitem->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+  m_TableWidget->setItem(rowNumber, 0, freezeitem);
 
   if (instantiateRelatedSources)
   {
@@ -821,16 +847,16 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
       frameRateItem->setTextAlignment(Qt::AlignCenter);
       frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+      m_TableWidget->setItem(rowNumber, 5, frameRateItem);
 
       // Update the lag number.
       QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
       lagItem->setTextAlignment(Qt::AlignCenter);
       lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 5, lagItem);
+      m_TableWidget->setItem(rowNumber, 6, lagItem);
 
       // Update the status icon.
-      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
       if (!shouldUpdate)
       {
         QPixmap pix(22, 22);
@@ -856,7 +882,9 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       }
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
-      tItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+
+      QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
+      activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
 
     emit UpdateGuiFinishedDataSources(idNow);
