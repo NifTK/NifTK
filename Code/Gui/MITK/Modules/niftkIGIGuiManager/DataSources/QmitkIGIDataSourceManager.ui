@@ -280,15 +280,29 @@ just Data Storage will not receive updates.</string>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
         <property name="sortingEnabled">
          <bool>false</bool>
         </property>
         <property name="columnCount">
-         <number>6</number>
+         <number>7</number>
         </property>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
+        <column>
+         <property name="text">
+          <string>A</string>
+         </property>
+         <property name="toolTip">
+          <string>Active</string>
+         </property>
+        </column>
         <column>
          <property name="text">
           <string>Status</string>
