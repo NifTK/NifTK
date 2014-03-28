@@ -57,7 +57,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_INT, "expansion", "value", "Expand the bounding box of the union of the masks by the given number of voxels. Default: 5"},
 
-  {OPT_INT, "bspline", "value", "Use bspline to model the differential bias field. Default: 0"},
+  {OPT_FLOAT, "bspline", "value", "Use bspline with the specified control point spacing in mm, e.g. 2mm. Default: 0 for not using bspline"},
   
   {OPT_STRING|OPT_LONELY, NULL,  "filename", "Input image 1, input mask 1, output image 1, input image 2, input mask 2, output image 2,..."},
   
@@ -75,7 +75,7 @@ enum {
   
   O_INT_EXPANSION,
 
-  O_INT_BSPLINE,
+  O_FLOAT_BSPLINE,
 
   O_FILENAME,
   
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 {
   int startArg = 1; 
   int inputRadius = 5; 
-  int bsplineMode = 0;
+  float bsplineControlPointSpacing = 0.f;
   int inputMode = 1; 
   char **multipleStrings = NULL;
   int inputRegionExpansion = 5;
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
   CommandLineOptions.GetArgument(O_INT_RADIUS, inputRadius); 
   CommandLineOptions.GetArgument(O_INT_MODE, inputMode); 
   CommandLineOptions.GetArgument(O_INT_EXPANSION, inputRegionExpansion);
-  CommandLineOptions.GetArgument(O_INT_BSPLINE, bsplineMode);
+  CommandLineOptions.GetArgument(O_FLOAT_BSPLINE, bsplineControlPointSpacing);
 
   if (inputMode != 1 && inputMode != 2)
   {
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
   
   typedef float PixelType; 
   typedef short MaskPixelType; 
-  const int Dimension = 3; 
+  const int Dimension = 3;
   typedef itk::Image<PixelType, Dimension>  InputImageType; 
   typedef itk::Image<MaskPixelType, Dimension>  InputMaskType; 
   typedef itk::ImageFileReader<InputImageType> ReaderType;
@@ -221,6 +221,10 @@ int main(int argc, char** argv)
     }
     std::cout << "expanded requestedRegion=" << requestedRegion << std::endl;
 
+    const InputImageType::SizeType inputImageSize = inputReader[0]->GetOutput()->GetLargestPossibleRegion().GetSize();
+    const InputImageType::SpacingType inputImageSpacing = inputReader[0]->GetOutput()->GetSpacing();
+
+
     double normalisedMean = 0.0;
     for (int i = 0; i < numberOfImages; i++)
     { 
@@ -278,11 +282,12 @@ int main(int argc, char** argv)
     
     InputImageType::Pointer* pairwiseBiasRatioImage = new InputImageType::Pointer[numberOfImages*numberOfImages];
     DuplicatorType::Pointer* duplicator = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
+    MedianImageFilterType::Pointer* medianImageFilter = new MedianImageFilterType::Pointer[numberOfImages*numberOfImages];
+    DuplicatorType::Pointer* bsplineImage = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
 
-    if (bsplineMode == 0)
+    if (bsplineControlPointSpacing == 0.f)
     {
         // Apply median filter to the subtraction images to obtain the bias.
-        MedianImageFilterType::Pointer* medianImageFilter = new MedianImageFilterType::Pointer[numberOfImages*numberOfImages];
         InputImageType::SizeType kernelRadius;
         kernelRadius.Fill(inputRadius);
         for (int i = 0; i < numberOfImages; i++)
@@ -297,11 +302,6 @@ int main(int argc, char** argv)
             medianImageFilter[index]->GetOutput()->SetRequestedRegion(requestedRegion);
             medianImageFilter[index]->Update();
             pairwiseBiasRatioImage[index] = medianImageFilter[index]->GetOutput();
-
-            writer->SetFileName("median_old.img");
-            writer->SetInput(medianImageFilter[index]->GetOutput());
-            writer->Update();
-
             // Just need consecutive pairwise differential bias fields for mode 2.
             if (inputMode == 2)
               break;
@@ -357,7 +357,6 @@ int main(int argc, char** argv)
         //    the union of the undilated region.
         // 4. The unchanged region is given by subtracting the changed region from the union of dilated regions.
 
-        DuplicatorType::Pointer* bsplineImage = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
         typedef itk::BinariseUsingPaddingImageFilter<InputMaskType, InputMaskType> BinariseUsingPaddingImageFilterType;
         BinariseUsingPaddingImageFilterType::Pointer binariseUsingPaddingImageFilterI = BinariseUsingPaddingImageFilterType::New();
         BinariseUsingPaddingImageFilterType::Pointer binariseUsingPaddingImageFilterJ = BinariseUsingPaddingImageFilterType::New();
@@ -370,15 +369,17 @@ int main(int argc, char** argv)
         typedef itk::BinaryIntersectWithPaddingImageFilter<InputMaskType, InputMaskType> BinaryIntersectWithPaddingImageFilterType;
         BinaryIntersectWithPaddingImageFilterType::Pointer binaryIntersectWithPaddingUndilatedImageFilter = BinaryIntersectWithPaddingImageFilterType::New();
         const unsigned int ParametricDimension = InputImageType::ImageDimension;
+        // Bias field is a single value in 3 dimensions.
         const unsigned int DataDimension = 1;
         typedef itk::Vector<InputImageType::PixelType, DataDimension> VectorType;
         typedef itk::Image<VectorType, ParametricDimension> VectorImageType;
         typedef itk::PointSet<VectorImageType::PixelType, ParametricDimension> PointSetType;
         typedef itk::BSplineScatteredDataPointSetToImageFilter<PointSetType, VectorImageType>  BSplineScatteredDataToImageFilterType;
-        const unsigned int maskDilation = 5;
+        const unsigned int maskDilation = inputRadius+1;
 
         for (int i = 0; i < numberOfImages; i++)
         {
+          // Dilate the image i.
           binariseUsingPaddingImageFilterI->SetInput(inputMaskReader[i]->GetOutput());
           binariseUsingPaddingImageFilterI->Update();
           multipleDilateImageFilterI->SetInput(binariseUsingPaddingImageFilterI->GetOutput());
@@ -388,21 +389,21 @@ int main(int argc, char** argv)
           {
             std::cerr << "Preparing mask..." << i << "," << j << std::endl;
             const int index = i*numberOfImages+j;
-
+            // Dilate the image j.
             binariseUsingPaddingImageFilterJ->SetInput(inputMaskReader[j]->GetOutput());
             binariseUsingPaddingImageFilterJ->Update();
             multipleDilateImageFilterJ->SetInput(binariseUsingPaddingImageFilterJ->GetOutput());
             multipleDilateImageFilterJ->SetNumberOfDilations(maskDilation);
             multipleDilateImageFilterJ->Update();
-
+            // Union of the dilated regions.
             binaryUnionWithPaddingDilatedImageFilter->SetInput(0, multipleDilateImageFilterI->GetOutput());
             binaryUnionWithPaddingDilatedImageFilter->SetInput(1, multipleDilateImageFilterJ->GetOutput());
             binaryUnionWithPaddingDilatedImageFilter->Update();
-
+            // Union of the undilated regions.
             binaryUnionWithPaddingUndilatedImageFilter->SetInput(0, binariseUsingPaddingImageFilterI->GetOutput());
             binaryUnionWithPaddingUndilatedImageFilter->SetInput(1, binariseUsingPaddingImageFilterJ->GetOutput());
             binaryUnionWithPaddingUndilatedImageFilter->Update();
-
+            // Intersection of the undilated regions.
             binaryIntersectWithPaddingUndilatedImageFilter->SetInput(0, binariseUsingPaddingImageFilterI->GetOutput());
             binaryIntersectWithPaddingUndilatedImageFilter->SetInput(1, binariseUsingPaddingImageFilterJ->GetOutput());
             binaryIntersectWithPaddingUndilatedImageFilter->Update();
@@ -413,28 +414,29 @@ int main(int argc, char** argv)
             MaskNeighborhoodIterator dilatedUnionImageIterator(radius, binaryUnionWithPaddingDilatedImageFilter->GetOutput(), requestedRegion);
             MaskConstIterator undilatedUnionImageIterator(binaryUnionWithPaddingUndilatedImageFilter->GetOutput(), requestedRegion);
             MaskConstIterator undilatedIntersectImageIterator(binaryIntersectWithPaddingUndilatedImageFilter->GetOutput(), requestedRegion);
-            for (;
+            // The unchanged region is given by subtracting the changed region from the union of dilated regions.
+            for (dilatedUnionImageIterator.GoToBegin();
                  !dilatedUnionImageIterator.IsAtEnd();
                  ++dilatedUnionImageIterator, ++undilatedUnionImageIterator, ++undilatedIntersectImageIterator)
             {
               dilatedUnionImageIterator.SetCenterPixel(dilatedUnionImageIterator.GetCenterPixel() - (undilatedUnionImageIterator.Get() - undilatedIntersectImageIterator.Get()));
             }
+
             subtractImageFilter[index]->Update();
             ImageConstNeighborhoodIterator subtractionImageIterator(radius, subtractImageFilter[index]->GetOutput(), requestedRegion);
             PointSetType::Pointer pointSet = PointSetType::New();
+            //DuplicatorType::Pointer filteredImage = DuplicatorType::New();
+            //filteredImage->SetInputImage(inputReader[i]->GetOutput());
+            //filteredImage->Update();
+            //filteredImage->GetOutput()->FillBuffer(0);
 
-            DuplicatorType::Pointer filteredImage = DuplicatorType::New();
-            filteredImage->SetInputImage(inputReader[i]->GetOutput());
-            filteredImage->Update();
-            filteredImage->GetOutput()->FillBuffer(0);
-
+            // Median filtering of the subtract image using on the values inside the mask.
             for (dilatedUnionImageIterator.GoToBegin();
                  !dilatedUnionImageIterator.IsAtEnd();
                  ++dilatedUnionImageIterator, ++subtractionImageIterator)
             {
               if (dilatedUnionImageIterator.GetCenterPixel())
               {
-                // Median filtering of the subtract image using on the values inside the mask.
                 std::vector<PixelType> allValues;
                 for (unsigned int n = 0; n < subtractionImageIterator.Size(); ++n)
                 {
@@ -451,23 +453,26 @@ int main(int argc, char** argv)
                 pointSet->SetPoint(count, point);
 
                 PointSetType::PixelType value(DataDimension);
-                value[0] = median; // subtractionImageIterator.Get();
+                value[0] = median;
                 pointSet->SetPointData(count, value);
-
-                filteredImage->GetOutput()->SetPixel(subtractionImageIterator.GetIndex(), median);
+                // filteredImage->GetOutput()->SetPixel(subtractionImageIterator.GetIndex(), median);
               }
             }
 
             std::cerr << "Fitting bspline..." << std::endl;
             BSplineScatteredDataToImageFilterType::Pointer bSplineScatteredDataToImageFilter = BSplineScatteredDataToImageFilterType::New();
-            // Define the parametric domain
             bSplineScatteredDataToImageFilter->SetOrigin(subtractImageFilter[index]->GetOutput()->GetOrigin());
-            bSplineScatteredDataToImageFilter->SetSpacing(subtractImageFilter[index]->GetOutput()->GetSpacing());
-            bSplineScatteredDataToImageFilter->SetSize(subtractImageFilter[index]->GetOutput()->GetLargestPossibleRegion().GetSize());
+            bSplineScatteredDataToImageFilter->SetSpacing(inputImageSpacing);
+            bSplineScatteredDataToImageFilter->SetSize(inputImageSize);
             bSplineScatteredDataToImageFilter->SetInput(pointSet);
             bSplineScatteredDataToImageFilter->SetSplineOrder(3);
             BSplineScatteredDataToImageFilterType::ArrayType ncps;
-            ncps.Fill(32);
+            for (int n = 0; n < Dimension; n++)
+            {
+                const int controlPoint = static_cast<int>((inputImageSize[n]*inputImageSpacing[n])/bsplineControlPointSpacing/4);
+                std::cerr << "nubmer of control points=" << controlPoint << std::endl;
+                ncps.Fill(controlPoint);
+            }
             bSplineScatteredDataToImageFilter->SetNumberOfControlPoints(ncps);
             bSplineScatteredDataToImageFilter->SetNumberOfLevels(3);
             bSplineScatteredDataToImageFilter->SetGenerateOutputImage(true);
@@ -487,15 +492,15 @@ int main(int argc, char** argv)
             }
 
             // debug.
-            writer->SetFileName("bias.img");
-            writer->SetInput(pairwiseBiasRatioImage[index]);
-            writer->Update();
-            writer->SetFileName("subtract.img");
-            writer->SetInput(subtractImageFilter[index]->GetOutput());
-            writer->Update();
-            writer->SetFileName("median.img");
-            writer->SetInput(filteredImage->GetOutput());
-            writer->Update();
+            //writer->SetFileName("bias.img");
+            //writer->SetInput(pairwiseBiasRatioImage[index]);
+            //writer->Update();
+            //writer->SetFileName("subtract.img");
+            //writer->SetInput(subtractImageFilter[index]->GetOutput());
+            //writer->Update();
+            //writer->SetFileName("median.img");
+            //writer->SetInput(filteredImage->GetOutput());
+            //writer->Update();
           }
         }
 
@@ -588,8 +593,8 @@ int main(int argc, char** argv)
     delete [] inputMaskReader; 
     delete [] mean;
     delete [] logImageFilter; 
-    //delete [] medianImageFilter;
-    //delete[] bsplineImage;
+    delete [] medianImageFilter;
+    delete [] bsplineImage;
     delete [] biasRatioImage; 
     delete [] expImageFilter; 
     delete [] divideImageFilter; 
