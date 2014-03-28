@@ -25,6 +25,12 @@
 #include <itkMultiplyImageFilter.h>
 #include <itkDivideImageFilter.h>
 #include <itkImageDuplicator.h>
+#include <itkBSplineScatteredDataPointSetToImageFilter.h>
+#include <itkBinariseUsingPaddingImageFilter.h>
+#include <itkMultipleDilateImageFilter.h>
+#include <itkBinaryUnionWithPaddingImageFilter.h>
+#include <itkBinaryIntersectWithPaddingImageFilter.h>
+#include <itkPointSet.h>
 
 /*!
  * \file niftkMTPDbc.cxx
@@ -50,6 +56,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_INT, "mode", "value", "Determine how the differential bias fields of non-consecutive time-points are calculated. 1: from the images, 2: compose from the differential bias fields of consecutive time-points. Default: 1"},
 
   {OPT_INT, "expansion", "value", "Expand the bounding box of the union of the masks by the given number of voxels. Default: 5"},
+
+  {OPT_INT, "bspline", "value", "Use bspline to model the differential bias field. Default: 0"},
   
   {OPT_STRING|OPT_LONELY, NULL,  "filename", "Input image 1, input mask 1, output image 1, input image 2, input mask 2, output image 2,..."},
   
@@ -66,6 +74,8 @@ enum {
   O_INT_MODE,
   
   O_INT_EXPANSION,
+
+  O_INT_BSPLINE,
 
   O_FILENAME,
   
@@ -85,6 +95,7 @@ int main(int argc, char** argv)
 {
   int startArg = 1; 
   int inputRadius = 5; 
+  int bsplineMode = 0;
   int inputMode = 1; 
   char **multipleStrings = NULL;
   int inputRegionExpansion = 5;
@@ -93,6 +104,7 @@ int main(int argc, char** argv)
   CommandLineOptions.GetArgument(O_INT_RADIUS, inputRadius); 
   CommandLineOptions.GetArgument(O_INT_MODE, inputMode); 
   CommandLineOptions.GetArgument(O_INT_EXPANSION, inputRegionExpansion);
+  CommandLineOptions.GetArgument(O_INT_BSPLINE, bsplineMode);
 
   if (inputMode != 1 && inputMode != 2)
   {
@@ -135,8 +147,13 @@ int main(int argc, char** argv)
   typedef itk::ImageFileReader<InputMaskType> MaskReaderType;
   typedef itk::ImageFileWriter<InputImageType> WriterType;
   typedef itk::ImageRegionIteratorWithIndex<InputImageType> ImageIterator;
+  typedef itk::ImageRegionConstIteratorWithIndex<InputImageType> ImageConstIterator;
   typedef itk::ImageRegionIteratorWithIndex<InputMaskType> MaskIterator;
-  typedef itk::LogImageFilter<InputImageType, InputImageType> LogImageFilterType; 
+  typedef itk::ImageRegionConstIteratorWithIndex<InputMaskType> MaskConstIterator;
+  typedef itk::ConstNeighborhoodIterator<InputImageType> ImageConstNeighborhoodIterator;
+  typedef itk::NeighborhoodIterator<InputMaskType> MaskNeighborhoodIterator;
+  typedef itk::ConstNeighborhoodIterator<InputMaskType> MaskConstNeighborhoodIterator;
+  typedef itk::LogImageFilter<InputImageType, InputImageType> LogImageFilterType;
   typedef itk::SubtractImageFilter<InputImageType, InputImageType> SubtractImageFilterType; 
   typedef itk::MedianImageFilter<InputImageType, InputImageType> MedianImageFilterType; 
   typedef itk::ExpImageFilter<InputImageType, InputImageType> ExpImageFilterType; 
@@ -260,59 +277,259 @@ int main(int argc, char** argv)
     }
     
     InputImageType::Pointer* pairwiseBiasRatioImage = new InputImageType::Pointer[numberOfImages*numberOfImages];
-    
-    // Apply median filter to the subtraction images to obtain the bias.  
-    MedianImageFilterType::Pointer* medianImageFilter = new MedianImageFilterType::Pointer[numberOfImages*numberOfImages];
-    InputImageType::SizeType kernelRadius; 
-    kernelRadius.Fill(inputRadius); 
-    for (int i = 0; i < numberOfImages; i++)
+    DuplicatorType::Pointer* duplicator = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
+
+    if (bsplineMode == 0)
     {
-      for (int j = i+1; j < numberOfImages; j++)
-      {
-        std::cout << "Applying median filter..." << i << "," << j << std::endl; 
-        int index = i*numberOfImages+j; 
-        medianImageFilter[index] = MedianImageFilterType::New(); 
-        medianImageFilter[index]->SetInput(subtractImageFilter[index]->GetOutput()); 
-        medianImageFilter[index]->SetRadius(kernelRadius); 
-        medianImageFilter[index]->GetOutput()->SetRequestedRegion(requestedRegion);
-        medianImageFilter[index]->Update(); 
-        pairwiseBiasRatioImage[index] = medianImageFilter[index]->GetOutput(); 
-        // Just need consecutive pairwise differential bias fields for mode 2. 
-        if (inputMode == 2)
-          break; 
-      }
-    }
-    
-    DuplicatorType::Pointer* duplicator = new DuplicatorType::Pointer[numberOfImages*numberOfImages]; 
-    // Compose the non-consecutive pairwise differential bias fields form the consecutive ones. 
-    if (inputMode == 2)
-    {
-      for (int i = 0; i < numberOfImages; i++)
-      {
-        for (int j = i+2; j < numberOfImages; j++)
+        // Apply median filter to the subtraction images to obtain the bias.
+        MedianImageFilterType::Pointer* medianImageFilter = new MedianImageFilterType::Pointer[numberOfImages*numberOfImages];
+        InputImageType::SizeType kernelRadius;
+        kernelRadius.Fill(inputRadius);
+        for (int i = 0; i < numberOfImages; i++)
         {
-          std::cout << "Composing non-consecutive differential bias field..." << i << "," << j << std::endl; 
-          int nonConsetiveTimePointIndex = i*numberOfImages+j; 
-          duplicator[nonConsetiveTimePointIndex] = DuplicatorType::New(); 
-          duplicator[nonConsetiveTimePointIndex]->SetInputImage(inputReader[i]->GetOutput()); 
-          duplicator[nonConsetiveTimePointIndex]->Update();
-          pairwiseBiasRatioImage[nonConsetiveTimePointIndex] = duplicator[nonConsetiveTimePointIndex]->GetOutput(); 
-          pairwiseBiasRatioImage[nonConsetiveTimePointIndex]->FillBuffer(0.0); 
-          for (int m = i, n=i+1; m < j; m++,n++)
+          for (int j = i+1; j < numberOfImages; j++)
           {
-            std::cout << "  Adding in..." << m << "," << n << std::endl; 
-            int consetiveTimePointIndex = m*numberOfImages+n; 
-            ImageIterator image1It(pairwiseBiasRatioImage[nonConsetiveTimePointIndex], requestedRegion);
-            ImageIterator image2It(medianImageFilter[consetiveTimePointIndex]->GetOutput(), requestedRegion);
-            for (image1It.GoToBegin(), image2It.GoToBegin(); 
-                !image1It.IsAtEnd(); 
-                ++image1It, ++image2It)
+            std::cout << "Applying median filter..." << i << "," << j << std::endl;
+            int index = i*numberOfImages+j;
+            medianImageFilter[index] = MedianImageFilterType::New();
+            medianImageFilter[index]->SetInput(subtractImageFilter[index]->GetOutput());
+            medianImageFilter[index]->SetRadius(kernelRadius);
+            medianImageFilter[index]->GetOutput()->SetRequestedRegion(requestedRegion);
+            medianImageFilter[index]->Update();
+            pairwiseBiasRatioImage[index] = medianImageFilter[index]->GetOutput();
+
+            writer->SetFileName("median_old.img");
+            writer->SetInput(medianImageFilter[index]->GetOutput());
+            writer->Update();
+
+            // Just need consecutive pairwise differential bias fields for mode 2.
+            if (inputMode == 2)
+              break;
+          }
+        }
+
+        // Compose the non-consecutive pairwise differential bias fields form the consecutive ones.
+        if (inputMode == 2)
+        {
+          for (int i = 0; i < numberOfImages; i++)
+          {
+            for (int j = i+2; j < numberOfImages; j++)
             {
-              image1It.Set(image1It.Get()+image2It.Get()); 
+              std::cout << "Composing non-consecutive differential bias field..." << i << "," << j << std::endl;
+              int nonConsetiveTimePointIndex = i*numberOfImages+j;
+              duplicator[nonConsetiveTimePointIndex] = DuplicatorType::New();
+              duplicator[nonConsetiveTimePointIndex]->SetInputImage(inputReader[i]->GetOutput());
+              duplicator[nonConsetiveTimePointIndex]->Update();
+              pairwiseBiasRatioImage[nonConsetiveTimePointIndex] = duplicator[nonConsetiveTimePointIndex]->GetOutput();
+              pairwiseBiasRatioImage[nonConsetiveTimePointIndex]->FillBuffer(0.0);
+              for (int m = i, n=i+1; m < j; m++,n++)
+              {
+                std::cout << "  Adding in..." << m << "," << n << std::endl;
+                int consetiveTimePointIndex = m*numberOfImages+n;
+                ImageIterator image1It(pairwiseBiasRatioImage[nonConsetiveTimePointIndex], requestedRegion);
+                ImageIterator image2It(medianImageFilter[consetiveTimePointIndex]->GetOutput(), requestedRegion);
+                for (image1It.GoToBegin(), image2It.GoToBegin();
+                    !image1It.IsAtEnd();
+                    ++image1It, ++image2It)
+                {
+                  image1It.Set(image1It.Get()+image2It.Get());
+                }
+              }
             }
           }
         }
-      }
+    }
+    else
+    {
+
+        // The disadvantage of the median filter in the DBC is that the median filter doesn't work too well
+        // if the brain is very different between the baseline and repeat scans, i.e. brain atrophy between
+        // the two scans will be counted as differential bias.
+        //
+        // The idea here is to try to use the unchanged region in the brain only. I model the differential
+        // bias field in the unchanged region using bspline, and deduce the bias field in changed region
+        // from the model.
+        //
+        // Prepare the region for feeding the points into bspline image filter.
+        // 1. Dilate the baseline and repeat brains by n times.
+        // 2. Create a union of the dilated regions.
+        // 3. Calculate the changed region by subtracting the intersection of the undilated region from
+        //    the union of the undilated region.
+        // 4. The unchanged region is given by subtracting the changed region from the union of dilated regions.
+
+        DuplicatorType::Pointer* bsplineImage = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
+        typedef itk::BinariseUsingPaddingImageFilter<InputMaskType, InputMaskType> BinariseUsingPaddingImageFilterType;
+        BinariseUsingPaddingImageFilterType::Pointer binariseUsingPaddingImageFilterI = BinariseUsingPaddingImageFilterType::New();
+        BinariseUsingPaddingImageFilterType::Pointer binariseUsingPaddingImageFilterJ = BinariseUsingPaddingImageFilterType::New();
+        typedef itk::MultipleDilateImageFilter<InputMaskType> MultipleDilateImageFilterType;
+        MultipleDilateImageFilterType::Pointer multipleDilateImageFilterI = MultipleDilateImageFilterType::New();
+        MultipleDilateImageFilterType::Pointer multipleDilateImageFilterJ = MultipleDilateImageFilterType::New();
+        typedef itk::BinaryUnionWithPaddingImageFilter<InputMaskType, InputMaskType> BinaryUnionWithPaddingImageFilterType;
+        BinaryUnionWithPaddingImageFilterType::Pointer binaryUnionWithPaddingDilatedImageFilter = BinaryUnionWithPaddingImageFilterType::New();
+        BinaryUnionWithPaddingImageFilterType::Pointer binaryUnionWithPaddingUndilatedImageFilter = BinaryUnionWithPaddingImageFilterType::New();
+        typedef itk::BinaryIntersectWithPaddingImageFilter<InputMaskType, InputMaskType> BinaryIntersectWithPaddingImageFilterType;
+        BinaryIntersectWithPaddingImageFilterType::Pointer binaryIntersectWithPaddingUndilatedImageFilter = BinaryIntersectWithPaddingImageFilterType::New();
+        const unsigned int ParametricDimension = InputImageType::ImageDimension;
+        const unsigned int DataDimension = 1;
+        typedef itk::Vector<InputImageType::PixelType, DataDimension> VectorType;
+        typedef itk::Image<VectorType, ParametricDimension> VectorImageType;
+        typedef itk::PointSet<VectorImageType::PixelType, ParametricDimension> PointSetType;
+        typedef itk::BSplineScatteredDataPointSetToImageFilter<PointSetType, VectorImageType>  BSplineScatteredDataToImageFilterType;
+        const unsigned int maskDilation = 5;
+
+        for (int i = 0; i < numberOfImages; i++)
+        {
+          binariseUsingPaddingImageFilterI->SetInput(inputMaskReader[i]->GetOutput());
+          binariseUsingPaddingImageFilterI->Update();
+          multipleDilateImageFilterI->SetInput(binariseUsingPaddingImageFilterI->GetOutput());
+          multipleDilateImageFilterI->SetNumberOfDilations(maskDilation);
+          multipleDilateImageFilterI->Update();
+          for (int j = i+1; j < numberOfImages; j++)
+          {
+            std::cerr << "Preparing mask..." << i << "," << j << std::endl;
+            const int index = i*numberOfImages+j;
+
+            binariseUsingPaddingImageFilterJ->SetInput(inputMaskReader[j]->GetOutput());
+            binariseUsingPaddingImageFilterJ->Update();
+            multipleDilateImageFilterJ->SetInput(binariseUsingPaddingImageFilterJ->GetOutput());
+            multipleDilateImageFilterJ->SetNumberOfDilations(maskDilation);
+            multipleDilateImageFilterJ->Update();
+
+            binaryUnionWithPaddingDilatedImageFilter->SetInput(0, multipleDilateImageFilterI->GetOutput());
+            binaryUnionWithPaddingDilatedImageFilter->SetInput(1, multipleDilateImageFilterJ->GetOutput());
+            binaryUnionWithPaddingDilatedImageFilter->Update();
+
+            binaryUnionWithPaddingUndilatedImageFilter->SetInput(0, binariseUsingPaddingImageFilterI->GetOutput());
+            binaryUnionWithPaddingUndilatedImageFilter->SetInput(1, binariseUsingPaddingImageFilterJ->GetOutput());
+            binaryUnionWithPaddingUndilatedImageFilter->Update();
+
+            binaryIntersectWithPaddingUndilatedImageFilter->SetInput(0, binariseUsingPaddingImageFilterI->GetOutput());
+            binaryIntersectWithPaddingUndilatedImageFilter->SetInput(1, binariseUsingPaddingImageFilterJ->GetOutput());
+            binaryIntersectWithPaddingUndilatedImageFilter->Update();
+
+            std::cerr << "Setting up the scatterred data point set..." << std::endl;
+            InputImageType::SizeType radius;
+            radius.Fill(inputRadius);
+            MaskNeighborhoodIterator dilatedUnionImageIterator(radius, binaryUnionWithPaddingDilatedImageFilter->GetOutput(), requestedRegion);
+            MaskConstIterator undilatedUnionImageIterator(binaryUnionWithPaddingUndilatedImageFilter->GetOutput(), requestedRegion);
+            MaskConstIterator undilatedIntersectImageIterator(binaryIntersectWithPaddingUndilatedImageFilter->GetOutput(), requestedRegion);
+            for (;
+                 !dilatedUnionImageIterator.IsAtEnd();
+                 ++dilatedUnionImageIterator, ++undilatedUnionImageIterator, ++undilatedIntersectImageIterator)
+            {
+              dilatedUnionImageIterator.SetCenterPixel(dilatedUnionImageIterator.GetCenterPixel() - (undilatedUnionImageIterator.Get() - undilatedIntersectImageIterator.Get()));
+            }
+            subtractImageFilter[index]->Update();
+            ImageConstNeighborhoodIterator subtractionImageIterator(radius, subtractImageFilter[index]->GetOutput(), requestedRegion);
+            PointSetType::Pointer pointSet = PointSetType::New();
+
+            DuplicatorType::Pointer filteredImage = DuplicatorType::New();
+            filteredImage->SetInputImage(inputReader[i]->GetOutput());
+            filteredImage->Update();
+            filteredImage->GetOutput()->FillBuffer(0);
+
+            for (dilatedUnionImageIterator.GoToBegin();
+                 !dilatedUnionImageIterator.IsAtEnd();
+                 ++dilatedUnionImageIterator, ++subtractionImageIterator)
+            {
+              if (dilatedUnionImageIterator.GetCenterPixel())
+              {
+                // Median filtering of the subtract image using on the values inside the mask.
+                std::vector<PixelType> allValues;
+                for (unsigned int n = 0; n < subtractionImageIterator.Size(); ++n)
+                {
+                    if (dilatedUnionImageIterator.GetPixel(n) > 0)
+                        allValues.push_back(subtractionImageIterator.GetPixel(n));
+                }
+                const unsigned int middle = allValues.size()/2;
+                std::nth_element(allValues.begin(), allValues.begin()+middle, allValues.end());
+                const PixelType median = allValues[middle];
+
+                PointSetType::PointType point;
+                subtractImageFilter[index]->GetOutput()->TransformIndexToPhysicalPoint(subtractionImageIterator.GetIndex(), point);
+                const unsigned long count = pointSet->GetNumberOfPoints();
+                pointSet->SetPoint(count, point);
+
+                PointSetType::PixelType value(DataDimension);
+                value[0] = median; // subtractionImageIterator.Get();
+                pointSet->SetPointData(count, value);
+
+                filteredImage->GetOutput()->SetPixel(subtractionImageIterator.GetIndex(), median);
+              }
+            }
+
+            std::cerr << "Fitting bspline..." << std::endl;
+            BSplineScatteredDataToImageFilterType::Pointer bSplineScatteredDataToImageFilter = BSplineScatteredDataToImageFilterType::New();
+            // Define the parametric domain
+            bSplineScatteredDataToImageFilter->SetOrigin(subtractImageFilter[index]->GetOutput()->GetOrigin());
+            bSplineScatteredDataToImageFilter->SetSpacing(subtractImageFilter[index]->GetOutput()->GetSpacing());
+            bSplineScatteredDataToImageFilter->SetSize(subtractImageFilter[index]->GetOutput()->GetLargestPossibleRegion().GetSize());
+            bSplineScatteredDataToImageFilter->SetInput(pointSet);
+            bSplineScatteredDataToImageFilter->SetSplineOrder(3);
+            BSplineScatteredDataToImageFilterType::ArrayType ncps;
+            ncps.Fill(32);
+            bSplineScatteredDataToImageFilter->SetNumberOfControlPoints(ncps);
+            bSplineScatteredDataToImageFilter->SetNumberOfLevels(3);
+            bSplineScatteredDataToImageFilter->SetGenerateOutputImage(true);
+            bSplineScatteredDataToImageFilter->Update();
+
+            bsplineImage[index] = DuplicatorType::New();
+            bsplineImage[index]->SetInputImage(inputReader[i]->GetOutput());
+            bsplineImage[index]->Update();
+            pairwiseBiasRatioImage[index] = bsplineImage[index]->GetOutput();
+
+            itk::ImageRegionConstIteratorWithIndex<VectorImageType> bsplineImageIterator(bSplineScatteredDataToImageFilter->GetOutput(),
+                                                                                         bSplineScatteredDataToImageFilter->GetOutput()->GetLargestPossibleRegion());
+            ImageIterator biasIterator(pairwiseBiasRatioImage[index], pairwiseBiasRatioImage[index]->GetLargestPossibleRegion());
+            for (; !bsplineImageIterator.IsAtEnd(); ++bsplineImageIterator, ++biasIterator)
+            {
+                biasIterator.Set(bsplineImageIterator.Get()[0]);
+            }
+
+            // debug.
+            writer->SetFileName("bias.img");
+            writer->SetInput(pairwiseBiasRatioImage[index]);
+            writer->Update();
+            writer->SetFileName("subtract.img");
+            writer->SetInput(subtractImageFilter[index]->GetOutput());
+            writer->Update();
+            writer->SetFileName("median.img");
+            writer->SetInput(filteredImage->GetOutput());
+            writer->Update();
+          }
+        }
+
+        DuplicatorType::Pointer* duplicator = new DuplicatorType::Pointer[numberOfImages*numberOfImages];
+        // Compose the non-consecutive pairwise differential bias fields form the consecutive ones.
+        if (inputMode == 2)
+        {
+          for (int i = 0; i < numberOfImages; i++)
+          {
+            for (int j = i+2; j < numberOfImages; j++)
+            {
+              std::cout << "Composing non-consecutive differential bias field..." << i << "," << j << std::endl;
+              int nonConsetiveTimePointIndex = i*numberOfImages+j;
+              duplicator[nonConsetiveTimePointIndex] = DuplicatorType::New();
+              duplicator[nonConsetiveTimePointIndex]->SetInputImage(inputReader[i]->GetOutput());
+              duplicator[nonConsetiveTimePointIndex]->Update();
+              pairwiseBiasRatioImage[nonConsetiveTimePointIndex] = duplicator[nonConsetiveTimePointIndex]->GetOutput();
+              pairwiseBiasRatioImage[nonConsetiveTimePointIndex]->FillBuffer(0.0);
+              for (int m = i, n=i+1; m < j; m++,n++)
+              {
+                std::cout << "  Adding in..." << m << "," << n << std::endl;
+                int consetiveTimePointIndex = m*numberOfImages+n;
+                ImageIterator image1It(pairwiseBiasRatioImage[nonConsetiveTimePointIndex], requestedRegion);
+                ImageIterator image2It(bsplineImage[consetiveTimePointIndex]->GetOutput(), requestedRegion);
+                for (image1It.GoToBegin(), image2It.GoToBegin();
+                    !image1It.IsAtEnd();
+                    ++image1It, ++image2It)
+                {
+                  image1It.Set(image1It.Get()+image2It.Get());
+                }
+              }
+            }
+          }
+        }
     }
     
     // Calculate the bias ratio images in log scale, i.e. R_1 = (r_12*r_13)^(1/3), R_2=c(r_21*r_23)^(1/3), ... etc. 
@@ -371,7 +588,8 @@ int main(int argc, char** argv)
     delete [] inputMaskReader; 
     delete [] mean;
     delete [] logImageFilter; 
-    delete [] medianImageFilter; 
+    //delete [] medianImageFilter;
+    //delete[] bsplineImage;
     delete [] biasRatioImage; 
     delete [] expImageFilter; 
     delete [] divideImageFilter; 
