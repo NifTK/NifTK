@@ -23,7 +23,11 @@
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkRenderingModeProperty.h>
+#include <mitkLookupTableProperty.h>
 #include <itkStatisticsImageFilter.h>
+#include <vtkLookupTable.h>
+#include <vtkSmartPointer.h>
 
 #include <service/cm/ctkConfigurationAdmin.h>
 #include <service/cm/ctkConfiguration.h>
@@ -203,8 +207,8 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
 {
   mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
   this->RegisterInterpolationProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
-  this->RegisterBlackOpacityProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
 }
 
 
@@ -377,6 +381,53 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
+{
+  if (mitk::IsNodeAGreyScaleImage(node))
+  {
+    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+    if (prefNode != NULL)
+    {
+      // Get the opacity values from preferences.
+      bool lowestIsOpaque = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_IS_OPAQUE, true);
+      node->SetProperty("Image Rendering.Lowest Value Is Opaque", mitk::BoolProperty::New(lowestIsOpaque));
+
+      bool highestIsOpaque = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_IS_OPAQUE, true);
+      node->SetProperty("Image Rendering.Highest Value Is Opaque", mitk::BoolProperty::New(highestIsOpaque));
+
+      // Generates a default lookup table, grey scale, with the correct opacity.
+      vtkLookupTable* lut = vtkLookupTable::New();
+      lut->SetNumberOfColors(256);
+      double rgba[4];
+      for (unsigned int i = 0; i < 256; i++)
+      {
+        rgba[0] = i/255.0;
+        rgba[1] = i/255.0;
+        rgba[2] = i/255.0;
+        rgba[3] = 1;
+
+        if ((i == 0 && !lowestIsOpaque) || (i == 255 && !highestIsOpaque))
+        {
+          rgba[3] = 0;
+        }
+        lut->SetTableValue(i, rgba);
+      }
+      mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
+      mitkLUT->SetVtkLookupTable(lut);
+      mitk::LookupTableProperty::Pointer mitkLUTProperty = mitk::LookupTableProperty::New();
+      mitkLUTProperty->SetLookupTable(mitkLUT);
+      node->SetProperty("LookupTable", mitkLUTProperty);
+      node->SetIntProperty("LookupTableIndex", 0);
+
+      // Then we set the property to make sure we are using the above lookup table.
+      node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+
+    } // end if have pref node
+  } // end if node is grey image
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
     const std::string& preferencesNodeName, mitk::DataNode *node)
 {
@@ -415,33 +466,6 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
         interpolationProperty->SetInterpolationToCubic();
       }
       node->SetProperty("reslice interpolation", interpolationProperty);
-
-    } // end if have pref node
-  } // end if node is grey image
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::RegisterBlackOpacityProperty(
-    const std::string& preferencesNodeName, mitk::DataNode *node)
-{
-  if (mitk::IsNodeAGreyScaleImage(node))
-  {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
-
-    if (prefNode != NULL && image.IsNotNull())
-    {
-      bool blackOpacity = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::BLACK_OPACITY, true);
-
-      if (blackOpacity)
-      {
-        node->SetProperty("black opacity", mitk::FloatProperty::New(1));
-      }
-      else
-      {
-        node->SetProperty("black opacity", mitk::FloatProperty::New(0));
-      }
 
     } // end if have pref node
   } // end if node is grey image

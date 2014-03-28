@@ -67,11 +67,11 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
   void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
+  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial "Image Rendering.Mode" property to each image.
+  void RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
   void RegisterInterpolationProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
-
-  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for black opacity property.
-  void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
   void RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);

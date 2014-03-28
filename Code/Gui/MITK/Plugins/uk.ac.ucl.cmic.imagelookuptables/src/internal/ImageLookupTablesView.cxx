@@ -52,7 +52,9 @@ ImageLookupTablesView::ImageLookupTablesView()
 , m_Precision(2)
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
-, m_PropertyObserverTag(0)
+, m_LevelWindowPropertyObserverTag(0)
+, m_LowestIsOpaquePropertyObserverTag(0)
+, m_HighestIsOpaquePropertyObserverTag(0)
 {
   m_LookupTableManager = new LookupTableManager();
 }
@@ -101,11 +103,10 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     m_Controls->m_LimitsGroupBox->setCollapsed(true);
 
     // Populate combo box with lookup table names.
-    m_Controls->m_LookupTableComboBox->insertItem(0, "NONE");
     for (unsigned int i = 0; i < m_LookupTableManager->GetNumberOfLookupTables(); i++)
     {
       const LookupTableContainer *container = m_LookupTableManager->GetLookupTableContainer(i);
-      m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder()+1, container->GetDisplayName());
+      m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder(), container->GetDisplayName());
     }
 
     /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
@@ -226,6 +227,7 @@ void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /
   this->EnableControls(isValid);
 }
 
+
 //-----------------------------------------------------------------------------
 bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
@@ -298,8 +300,19 @@ void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
       = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
     command->SetCallbackFunction(this, &ImageLookupTablesView::OnPropertyChanged);
     mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
+    m_LevelWindowPropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
 
-    m_PropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
+    itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer lowestIsOpaqueCommand
+      = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+    lowestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
+    mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Is Opaque");
+    m_LowestIsOpaquePropertyObserverTag = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), command);
+
+    itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer highestIsOpaqueCommand
+      = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+    highestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
+    mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Is Opaque");
+    m_HighestIsOpaquePropertyObserverTag = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), command);
   }
 }
 
@@ -310,10 +323,15 @@ void ImageLookupTablesView::Unregister()
   if (m_CurrentNode.IsNotNull())
   {
     mitk::BaseProperty::Pointer property = m_CurrentNode->GetProperty("levelwindow");
-    property->RemoveObserver(m_PropertyObserverTag);
+    property->RemoveObserver(m_LevelWindowPropertyObserverTag);
+
+    mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Is Opaque");
+    lowestIsOpaqueProperty->RemoveObserver(m_LowestIsOpaquePropertyObserverTag);
+
+    mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Is Opaque");
+    highestIsOpaqueProperty->RemoveObserver(m_HighestIsOpaquePropertyObserverTag);
 
     m_CurrentNode = NULL;
-    m_PropertyObserverTag = -1;
   }
 }
 
@@ -487,13 +505,40 @@ void ImageLookupTablesView::OnLevelWindowChanged()
 
 
 //-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnLookupTablePropertyChanged(const itk::EventObject&)
+{
+  int comboIndex;
+  m_CurrentNode->GetIntProperty("LookupTableIndex", comboIndex);
+  this->OnLookupTableComboBoxChanged(comboIndex);
+}
+
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
-  if (comboBoxIndex > 0)
+  if (m_CurrentNode.IsNotNull())
   {
     // Copy the vtkLookupTable
-    const LookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex - 1);
-    const vtkLookupTable *vtkLUT = lutContainer->GetLookupTable();
+    const LookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex);
+    vtkLookupTable *vtkLUT = m_LookupTableManager->CloneLookupTable(comboBoxIndex);
+
+    // Set the opacity flags.
+    bool lowestIsOpaque = true;
+    m_CurrentNode->GetBoolProperty("Image Rendering.Lowest Value Is Opaque", lowestIsOpaque);
+    if (!lowestIsOpaque)
+    {
+      double *rgba = vtkLUT->GetTableValue(0);
+      rgba[3] = 0;
+    }
+
+    bool highestIsOpaque = true;
+    m_CurrentNode->GetBoolProperty("Image Rendering.Highest Value Is Opaque", highestIsOpaque);
+    if (!highestIsOpaque)
+    {
+      double *rgba = vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1);
+      rgba[3] = 0;
+    }
+
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(const_cast<vtkLookupTable*>(vtkLUT));
     const std::string& lutName = lutContainer->GetDisplayName().toStdString();
@@ -504,17 +549,11 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
     m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
-  }
-  else
-  {
-    m_CurrentNode->SetProperty("LookupTable", 0);
-    mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LEVELWINDOW_COLOR);
-    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
-    m_CurrentNode->GetPropertyList()->DeleteProperty("LookupTableIndex");
-  }
 
-  m_CurrentNode->Update();
-  this->RequestRenderWindowUpdate();
+    // Force redraw.
+    m_CurrentNode->Update();
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 

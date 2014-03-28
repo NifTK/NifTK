@@ -75,6 +75,11 @@ protected:
   virtual void OnPropertyChanged(const itk::EventObject&);
 
   /**
+   * \brief Called when the user toggles the opacity control properties.
+   */
+  virtual void OnLookupTablePropertyChanged(const itk::EventObject&);
+
+  /**
    * \brief Actually updates the GUI when property changes.
    */
   virtual void OnPropertyChanged();
@@ -196,9 +201,19 @@ private:
   int m_ThresholdForIntegerBehaviour;
 
   /**
-   * \brief To store the
+   * \brief To store the observer ID on the LevelWindow property.
    */
-  unsigned long int m_PropertyObserverTag;
+  unsigned long int m_LevelWindowPropertyObserverTag;
+
+  /**
+   * \brief To store the observer ID on the "Image Rendering.Lowest Value Is Opaque" property.
+   */
+  unsigned long int m_LowestIsOpaquePropertyObserverTag;
+
+  /**
+   * \brief To store the observer ID on the "Image Rendering.Highest Value Is Opaque" property.
+   */
+  unsigned long int m_HighestIsOpaquePropertyObserverTag;
 
 };
 
