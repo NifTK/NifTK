@@ -87,8 +87,6 @@ void QmitkSideViewView::Activated()
 {
   QmitkBaseView::Activated();
 
-  m_SideViewWidget->SetMainWindow(this->GetSelectedRenderWindow());
-
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
 }
