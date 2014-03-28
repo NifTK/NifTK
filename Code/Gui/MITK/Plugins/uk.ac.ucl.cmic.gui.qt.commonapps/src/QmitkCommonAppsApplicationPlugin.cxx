@@ -414,8 +414,10 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       }
       mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
       mitkLUT->SetVtkLookupTable(lut);
-      mitk::LookupTableProperty::Pointer mitkLUTProperty = mitk::LookupTableProperty::New();
+      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
       mitkLUTProperty->SetLookupTable(mitkLUT);
+      mitkLUTProperty->SetName("Default Grey");
+
       node->SetProperty("LookupTable", mitkLUTProperty);
       node->SetIntProperty("LookupTableIndex", 0);
 

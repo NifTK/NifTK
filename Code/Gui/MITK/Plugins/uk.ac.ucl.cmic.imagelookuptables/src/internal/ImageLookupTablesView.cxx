@@ -549,8 +549,9 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(vtkLUT);
-    mitk::LookupTableProperty::Pointer mitkLUTProperty = mitk::LookupTableProperty::New();
+    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
     mitkLUTProperty->SetLookupTable(mitkLUT);
+    mitkLUTProperty->SetName(lutContainer->GetDisplayName().toStdString());
 
     // and give to the node property.
     mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
