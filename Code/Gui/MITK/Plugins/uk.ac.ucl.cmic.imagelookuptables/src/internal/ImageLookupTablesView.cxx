@@ -531,31 +531,36 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     m_CurrentNode->GetBoolProperty("Image Rendering.Lowest Value Is Opaque", lowestIsOpaque);
     if (!lowestIsOpaque)
     {
-      double *rgba = vtkLUT->GetTableValue(0);
+      double rgba[4];
+      vtkLUT->GetTableValue(0, rgba);
       rgba[3] = 0;
+      vtkLUT->SetTableValue(0, rgba);
     }
 
     bool highestIsOpaque = true;
     m_CurrentNode->GetBoolProperty("Image Rendering.Highest Value Is Opaque", highestIsOpaque);
     if (!highestIsOpaque)
     {
-      double *rgba = vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1);
+      double rgba[4];
+      vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1);
       rgba[3] = 0;
+      vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
     }
 
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(vtkLUT);
-    const std::string& lutName = lutContainer->GetDisplayName().toStdString();
-    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New(lutName, mitkLUT);
+    mitk::LookupTableProperty::Pointer mitkLUTProperty = mitk::LookupTableProperty::New();
+    mitkLUTProperty->SetLookupTable(mitkLUT);
 
     // and give to the node property.
-    m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
     mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
-    m_CurrentNode->ReplaceProperty("Image Rendering.Mode", renderProp);
-    m_CurrentNode->ReplaceProperty("LookupTableIndex", mitk::IntProperty::New(comboBoxIndex));
+    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
+    m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
+    m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
 
     // Force redraw.
     m_CurrentNode->Update();
+    m_CurrentNode->Modified();
     this->RequestRenderWindowUpdate();
   }
 }

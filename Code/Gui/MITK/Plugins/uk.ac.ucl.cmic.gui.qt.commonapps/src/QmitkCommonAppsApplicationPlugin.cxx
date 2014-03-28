@@ -24,7 +24,7 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkLookupTableProperty.h>
+#include <mitkNamedLookupTableProperty.h>
 #include <itkStatisticsImageFilter.h>
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
