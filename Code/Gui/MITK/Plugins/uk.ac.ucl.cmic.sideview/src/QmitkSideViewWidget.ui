@@ -157,12 +157,16 @@
       <item>
        <widget class="QLabel" name="m_MagnificationLabel">
         <property name="text">
-         <string>magn.</string>
+         <string> magn.</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="m_MagnificationSpinBox"/>
+       <widget class="QDoubleSpinBox" name="m_MagnificationSpinBox">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer">
