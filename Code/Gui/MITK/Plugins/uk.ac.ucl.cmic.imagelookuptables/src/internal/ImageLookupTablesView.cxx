@@ -308,13 +308,13 @@ void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
       itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer lowestIsOpaqueCommand
         = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
       lowestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Is Opaque");
+      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
       m_LowestIsOpaquePropertyObserverTag = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
 
       itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer highestIsOpaqueCommand
         = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
       highestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Is Opaque");
+      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
       m_HighestIsOpaquePropertyObserverTag = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
     }
   }
@@ -331,10 +331,10 @@ void ImageLookupTablesView::Unregister()
 
     if (mitk::IsNodeAGreyScaleImage(m_CurrentNode))
     {
-      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Is Opaque");
+      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Opacity");
       lowestIsOpaqueProperty->RemoveObserver(m_LowestIsOpaquePropertyObserverTag);
 
-      mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Is Opaque");
+      mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Opacity");
       highestIsOpaqueProperty->RemoveObserver(m_HighestIsOpaquePropertyObserverTag);
     }
 
@@ -534,25 +534,18 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     vtkLUT->DeepCopy(dynamic_cast<vtkScalarsToColors*>(const_cast<vtkLookupTable*>(lutContainer->GetLookupTable())));
 
     // Set the opacity flags.
-    bool lowestIsOpaque = true;
-    m_CurrentNode->GetBoolProperty("Image Rendering.Lowest Value Is Opaque", lowestIsOpaque);
-    if (!lowestIsOpaque)
-    {
-      double rgba[4];
-      vtkLUT->GetTableValue(0, rgba);
-      rgba[3] = 0;
-      vtkLUT->SetTableValue(0, rgba);
-    }
+    float lowestOpacity = 1;
+    m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+    double rgba[4];
+    vtkLUT->GetTableValue(0, rgba);
+    rgba[3] = lowestOpacity;
+    vtkLUT->SetTableValue(0, rgba);
 
-    bool highestIsOpaque = true;
-    m_CurrentNode->GetBoolProperty("Image Rendering.Highest Value Is Opaque", highestIsOpaque);
-    if (!highestIsOpaque)
-    {
-      double rgba[4];
-      vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1);
-      rgba[3] = 0;
-      vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-    }
+    float highestOpacity = 1;
+    m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
+    rgba[3] = highestOpacity;
+    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
 
     mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
     mitkLUT->SetVtkLookupTable(vtkLUT);

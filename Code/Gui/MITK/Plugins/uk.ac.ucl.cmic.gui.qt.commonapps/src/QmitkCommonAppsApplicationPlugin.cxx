@@ -389,11 +389,11 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
     if (prefNode != NULL)
     {
       // Get the opacity values from preferences.
-      bool lowestIsOpaque = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_IS_OPAQUE, true);
-      node->SetProperty("Image Rendering.Lowest Value Is Opaque", mitk::BoolProperty::New(lowestIsOpaque));
+      float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
+      node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
 
-      bool highestIsOpaque = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_IS_OPAQUE, true);
-      node->SetProperty("Image Rendering.Highest Value Is Opaque", mitk::BoolProperty::New(highestIsOpaque));
+      float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
+      node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
       // Generates a default lookup table, grey scale, with the correct opacity.
       vtkLookupTable* lut = vtkLookupTable::New();
@@ -406,9 +406,13 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
         rgba[2] = i/255.0;
         rgba[3] = 1;
 
-        if ((i == 0 && !lowestIsOpaque) || (i == 255 && !highestIsOpaque))
+        if (i == 0)
         {
-          rgba[3] = 0;
+          rgba[3] = lowestOpacity;
+        }
+        else if (i == 255)
+        {
+          rgba[3] = highestOpacity;
         }
         lut->SetTableValue(i, rgba);
       }
