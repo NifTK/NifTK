@@ -28,6 +28,7 @@
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
+#include <mitkDataStorageUtils.h>
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
@@ -302,17 +303,20 @@ void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
     mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
     m_LevelWindowPropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
 
-    itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer lowestIsOpaqueCommand
-      = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
-    lowestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-    mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Is Opaque");
-    m_LowestIsOpaquePropertyObserverTag = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
+    if (mitk::IsNodeAGreyScaleImage(node))
+    {
+      itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer lowestIsOpaqueCommand
+        = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+      lowestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
+      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Is Opaque");
+      m_LowestIsOpaquePropertyObserverTag = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
 
-    itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer highestIsOpaqueCommand
-      = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
-    highestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-    mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Is Opaque");
-    m_HighestIsOpaquePropertyObserverTag = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
+      itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer highestIsOpaqueCommand
+        = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+      highestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
+      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Is Opaque");
+      m_HighestIsOpaquePropertyObserverTag = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
+    }
   }
 }
 
@@ -325,11 +329,14 @@ void ImageLookupTablesView::Unregister()
     mitk::BaseProperty::Pointer property = m_CurrentNode->GetProperty("levelwindow");
     property->RemoveObserver(m_LevelWindowPropertyObserverTag);
 
-    mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Is Opaque");
-    lowestIsOpaqueProperty->RemoveObserver(m_LowestIsOpaquePropertyObserverTag);
+    if (mitk::IsNodeAGreyScaleImage(m_CurrentNode))
+    {
+      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Is Opaque");
+      lowestIsOpaqueProperty->RemoveObserver(m_LowestIsOpaquePropertyObserverTag);
 
-    mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Is Opaque");
-    highestIsOpaqueProperty->RemoveObserver(m_HighestIsOpaquePropertyObserverTag);
+      mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Is Opaque");
+      highestIsOpaqueProperty->RemoveObserver(m_HighestIsOpaquePropertyObserverTag);
+    }
 
     m_CurrentNode = NULL;
   }
