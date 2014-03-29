@@ -357,16 +357,25 @@ MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
-  if (selectedRenderWindow == this->GetAxialWindow())
+  QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
+  if (!renderWindow)
+  {
+    std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
+    if (!visibleRenderWindows.empty())
+    {
+      renderWindow = visibleRenderWindows[0];
+    }
+  }
+
+  if (renderWindow == this->GetAxialWindow())
   {
     orientation = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (selectedRenderWindow == this->GetSagittalWindow())
+  else if (renderWindow == this->GetSagittalWindow())
   {
     orientation = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (selectedRenderWindow == this->GetCoronalWindow())
+  else if (renderWindow == this->GetCoronalWindow())
   {
     orientation = MIDAS_ORIENTATION_CORONAL;
   }
