@@ -752,7 +752,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
-      m_LastSelectedPositions.push_back(m_SelectedPositions[Index(windowLayout)]);
+      //      m_LastSelectedPositions.push_back(m_SelectedPositions[Index(windowLayout)]);
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
       m_LastCursorPositions.push_back(m_CursorPositions[Index(windowLayout)]);
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
