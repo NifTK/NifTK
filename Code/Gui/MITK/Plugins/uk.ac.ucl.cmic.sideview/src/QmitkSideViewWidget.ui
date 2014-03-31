@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>379</width>
-    <height>229</height>
+    <width>436</width>
+    <height>268</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -155,9 +155,26 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="m_SliceLabel">
+        <property name="text">
+         <string>slice:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="m_SliceSpinBox">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="maximum">
+         <number>999</number>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="m_MagnificationLabel">
         <property name="text">
-         <string> magn.</string>
+         <string>magn.:</string>
         </property>
        </widget>
       </item>
