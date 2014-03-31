@@ -91,6 +91,9 @@ protected:
   /// \brief Called each time a data node is added, and derived classes can override it.
   virtual void NodeAdded(const mitk::DataNode *node);
 
+  /// \brief Called each time a data node is removed, and derived classes can override it.
+  virtual void NodeRemoved(const mitk::DataNode *node);
+
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
 
@@ -102,6 +105,9 @@ private:
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
   void NodeAddedProxy(const mitk::DataNode *node);
+
+  /// \brief Private method that checks whether or not we are already removing and if not, calls NodeRemoved()
+  void NodeRemovedProxy(const mitk::DataNode *node);
 
   /// \brief Returns the lookup table provider service.
   QmitkLookupTableProviderService* GetLookupTableProvider();

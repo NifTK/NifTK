@@ -140,6 +140,11 @@ void QmitkCommonAppsApplicationPlugin::RegisterDataStorageListener()
   this->GetDataStorage()->AddNodeEvent.AddListener
       ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
         ( this, &QmitkCommonAppsApplicationPlugin::NodeAddedProxy ) );
+
+  this->GetDataStorage()->RemoveNodeEvent.AddListener
+      ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
+        ( this, &QmitkCommonAppsApplicationPlugin::NodeRemovedProxy ) );
+
 }
 
 
@@ -152,6 +157,10 @@ void QmitkCommonAppsApplicationPlugin::UnregisterDataStorageListener()
     this->GetDataStorage()->AddNodeEvent.RemoveListener
         ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
           ( this, &QmitkCommonAppsApplicationPlugin::NodeAddedProxy ) );
+
+    this->GetDataStorage()->RemoveNodeEvent.RemoveListener
+        ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
+          ( this, &QmitkCommonAppsApplicationPlugin::NodeRemovedProxy ) );
 
     m_DataStorageServiceTracker->close();
     delete m_DataStorageServiceTracker;
@@ -227,6 +236,47 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
   this->RegisterInterpolationProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::NodeRemovedProxy(const mitk::DataNode *node)
+{
+  // guarantee no recursions when a new node event is thrown in NodeRemoved()
+  if(!m_InDataStorageChanged)
+  {
+    m_InDataStorageChanged = true;
+    this->NodeRemoved(node);
+    m_InDataStorageChanged = false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::NodeRemoved(const mitk::DataNode *constNode)
+{
+  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
+
+  // Not sure if we need this block.
+  // Removing observers on a node thats being deleted?
+
+  if (mitk::IsNodeAGreyScaleImage(node))
+  {
+    std::map<mitk::DataNode*, unsigned long int>::iterator lowestIter;
+    lowestIter = m_NodeToLowestOpacityObserverMap.find(node);
+
+    std::map<mitk::DataNode*, unsigned long int>::iterator highestIter;
+    highestIter = m_NodeToHighestOpacityObserverMap.find(node);
+
+    if (lowestIter != m_NodeToLowestOpacityObserverMap.end() && highestIter != m_NodeToHighestOpacityObserverMap.end())
+    {
+      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
+      lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+
+      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
+      highestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+    }
+  }
 }
 
 
