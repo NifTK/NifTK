@@ -42,6 +42,11 @@ niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
   ui = new Ui::niftkSingleViewerControls();
   ui->setupUi(parent);
 
+  // Disable synchronising the decimal precision. Synchronise width only.
+  ui->m_SliceSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+  ui->m_TimeStepSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+  ui->m_MagnificationSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+
   ui->m_SliceSlider->layout()->setSpacing(3);
   ui->m_SliceSlider->setDecimals(0);
   ui->m_SliceSlider->setTickInterval(1.0);
