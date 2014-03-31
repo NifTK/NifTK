@@ -103,7 +103,9 @@ QmitkSideViewWidget::QmitkSideViewWidget(QmitkSideViewView* functionality, QWidg
   this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
   this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
-  this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationChanged(double)));
+  this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
+  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
   this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
 
   // Register focus observer.
@@ -366,10 +368,18 @@ void QmitkSideViewWidget::OnFocusChanged()
   {
     m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
 
+    int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
+    int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
+
+    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+    m_SliceSpinBox->setMaximum(maxSlice);
+    m_SliceSpinBox->setValue(selectedSlice);
+    m_SliceSpinBox->blockSignals(wasBlocked);
+
     double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
     m_Magnification = magnification;
 
-    bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+    wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
     m_MagnificationSpinBox->blockSignals(wasBlocked);
 
@@ -557,6 +567,19 @@ MIDASOrientation QmitkSideViewWidget::GetMainWindowOrientation()
 
 
 //-----------------------------------------------------------------------------
+void QmitkSideViewWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+{
+  MIDASOrientation orientation = m_Viewer->GetOrientation();
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+    m_SliceSpinBox->setValue(m_Viewer->GetSelectedSlice(orientation));
+    m_SliceSpinBox->blockSignals(wasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSideViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
 {
   double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
@@ -570,7 +593,14 @@ void QmitkSideViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOr
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnMagnificationChanged(double magnification)
+void QmitkSideViewWidget::OnSliceSpinBoxValueChanged(int slice)
+{
+  m_Viewer->SetSelectedSlice(m_Viewer->GetOrientation(), slice);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewWidget::OnMagnificationSpinBoxValueChanged(double magnification)
 {
   double roundedMagnification = std::floor(magnification);
 
