@@ -30,6 +30,7 @@
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkExceptionMacro.h>
 #include <itkStatisticsImageFilter.h>
+#include <itkCommand.h>
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
 
@@ -40,8 +41,6 @@
 #include <usModuleRegistry.h>
 #include <usModuleContext.h>
 #include <usModuleInitialization.h>
-
-#include <QmitkLookupTableProviderService.h>
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -400,6 +399,57 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::Object *object, const itk::EventObject & event)
+{
+  const mitk::BaseProperty* prop = dynamic_cast<const mitk::BaseProperty*>(object);
+  if (prop != NULL)
+  {
+    std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator iter;
+    iter = m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
+    if (iter != m_PropertyToNodeMap.end())
+    {
+      mitk::DataNode *node = iter->second;
+      if (node != NULL && mitk::IsNodeAGreyScaleImage(node))
+      {
+        float lowestOpacity = 1;
+        bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+        float highestOpacity = 1;
+        bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+        int lookupTableIndex = 0;
+        bool gotIndex = node->GetIntProperty("LookupTableIndex", lookupTableIndex);
+
+        if (gotLowest && gotHighest && gotIndex)
+        {
+          // Get LUT from Micro Service.
+          QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lookupTableIndex, lowestOpacity, highestOpacity);
+          node->SetProperty("LookupTable", mitkLUTProperty);
+        }
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTableProvider()
+{
+  us::ModuleContext* context = us::GetModuleContext();
+  us::ServiceReference<QmitkLookupTableProviderService> ref = context->GetServiceReference<QmitkLookupTableProviderService>();
+  QmitkLookupTableProviderService* lutService = context->GetService<QmitkLookupTableProviderService>(ref);
+
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  return lutService;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeAGreyScaleImage(node))
@@ -407,21 +457,12 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
     berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
     if (prefNode != NULL)
     {
-      us::ModuleContext* context = us::GetModuleContext();
-      us::ServiceReference<QmitkLookupTableProviderService> ref = context->GetServiceReference<QmitkLookupTableProviderService>();
-      QmitkLookupTableProviderService* lutService = context->GetService<QmitkLookupTableProviderService>(ref);
-
-      if (lutService == NULL)
-      {
-        mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
-      }
-
       float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
       float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
-
       unsigned int defaultIndex = 0;
 
       // Get LUT from Micro Service.
+      QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
       mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
 
       node->SetProperty("LookupTable", mitkLUTProperty);
@@ -430,6 +471,24 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
+      if (mitk::IsNodeAGreyScaleImage(node))
+      {
+        unsigned long int observerId;
+
+        itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::Pointer lowestIsOpaqueCommand = itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::New();
+        lowestIsOpaqueCommand->SetCallbackFunction(this, &QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged);
+        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
+        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
+        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(lowestIsOpaqueProperty.GetPointer(), node));
+        m_NodeToLowestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
+
+        itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::Pointer highestIsOpaqueCommand = itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::New();
+        highestIsOpaqueCommand->SetCallbackFunction(this, &QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged);
+        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
+        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
+        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(highestIsOpaqueProperty.GetPointer(), node));
+        m_NodeToHighestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
+      }
     } // end if have pref node
   } // end if node is grey image
 }

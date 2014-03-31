@@ -20,6 +20,7 @@
 #include <ctkServiceTracker.h>
 #include <berryIPreferencesService.h>
 #include <mitkIDataStorageService.h>
+#include <QmitkLookupTableProviderService.h>
 
 #include <QObject>
 #include <QString>
@@ -51,6 +52,11 @@ public:
   void stop(ctkPluginContext* context);
 
 protected:
+
+  /**
+   * \brief Called when the user toggles the opacity control properties.
+   */
+  virtual void OnLookupTablePropertyChanged(const itk::Object *caller, const itk::EventObject &event);
 
   /// \brief Deliberately not virtual method that enables derived classes to set the plugin context, and should be called from within the plugin start method.
   void SetPluginContext(ctkPluginContext*);
@@ -95,7 +101,10 @@ protected:
 private:
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
-  virtual void NodeAddedProxy(const mitk::DataNode *node);
+  void NodeAddedProxy(const mitk::DataNode *node);
+
+  /// \brief Returns the lookup table provider service.
+  QmitkLookupTableProviderService* GetLookupTableProvider();
 
   /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
   const mitk::DataStorage* GetDataStorage();
@@ -118,6 +127,9 @@ private:
   bool m_InDataStorageChanged;
   static QmitkCommonAppsApplicationPlugin* s_Inst;
 
+  std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
 };
 
 #endif /* QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_ */

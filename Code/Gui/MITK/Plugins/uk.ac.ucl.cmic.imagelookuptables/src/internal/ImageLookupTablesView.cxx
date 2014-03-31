@@ -307,21 +307,6 @@ void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
     command->SetCallbackFunction(this, &ImageLookupTablesView::OnPropertyChanged);
     mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
     m_LevelWindowPropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
-
-    if (mitk::IsNodeAGreyScaleImage(node))
-    {
-      itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer lowestIsOpaqueCommand
-        = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
-      lowestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-      m_LowestIsOpaquePropertyObserverTag = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
-
-      itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer highestIsOpaqueCommand
-        = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
-      highestIsOpaqueCommand->SetCallbackFunction(this, &ImageLookupTablesView::OnLookupTablePropertyChanged);
-      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-      m_HighestIsOpaquePropertyObserverTag = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
-    }
   }
 }
 
@@ -333,15 +318,6 @@ void ImageLookupTablesView::Unregister()
   {
     mitk::BaseProperty::Pointer property = m_CurrentNode->GetProperty("levelwindow");
     property->RemoveObserver(m_LevelWindowPropertyObserverTag);
-
-    if (mitk::IsNodeAGreyScaleImage(m_CurrentNode))
-    {
-      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Lowest Value Opacity");
-      lowestIsOpaqueProperty->RemoveObserver(m_LowestIsOpaquePropertyObserverTag);
-
-      mitk::BaseProperty::Pointer highestIsOpaqueProperty = m_CurrentNode->GetProperty("Image Rendering.Highest Value Opacity");
-      highestIsOpaqueProperty->RemoveObserver(m_HighestIsOpaquePropertyObserverTag);
-    }
 
     m_CurrentNode = NULL;
   }
