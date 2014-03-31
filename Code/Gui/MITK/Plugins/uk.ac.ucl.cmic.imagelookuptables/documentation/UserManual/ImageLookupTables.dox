@@ -86,6 +86,8 @@ grey scale colour map is applied. In addition there are two properties added.
 </ul>
 
 These properties enable you to control the opacity of things at the bottom/top end of your colour lookup table.
+These properties are set according to these values, only when the image is first loaded.
+Thereafter, you can edit the opacity value using the Properties plugin.
 
 \subsection ImageLookupTablesUsageAppSpecificPreferences Application Specific Preferences
 
