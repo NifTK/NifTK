@@ -28,6 +28,7 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkExceptionMacro.h>
 #include <itkStatisticsImageFilter.h>
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
@@ -37,6 +38,10 @@
 
 #include <usModule.h>
 #include <usModuleRegistry.h>
+#include <usModuleContext.h>
+#include <usModuleInitialization.h>
+
+#include <QmitkLookupTableProviderService.h>
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -402,45 +407,28 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
     berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
     if (prefNode != NULL)
     {
-      // Get the opacity values from preferences.
-      float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
-      node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
+      us::ModuleContext* context = us::GetModuleContext();
+      us::ServiceReference<QmitkLookupTableProviderService> ref = context->GetServiceReference<QmitkLookupTableProviderService>();
+      QmitkLookupTableProviderService* lutService = context->GetService<QmitkLookupTableProviderService>(ref);
 
-      float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
-      node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
-
-      // Generates a default lookup table, grey scale, with the correct opacity.
-      vtkLookupTable* lut = vtkLookupTable::New();
-      lut->SetNumberOfColors(256);
-      double rgba[4];
-      for (unsigned int i = 0; i < 256; i++)
+      if (lutService == NULL)
       {
-        rgba[0] = i/255.0;
-        rgba[1] = i/255.0;
-        rgba[2] = i/255.0;
-        rgba[3] = 1;
-
-        if (i == 0)
-        {
-          rgba[3] = lowestOpacity;
-        }
-        else if (i == 255)
-        {
-          rgba[3] = highestOpacity;
-        }
-        lut->SetTableValue(i, rgba);
+        mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
       }
-      mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
-      mitkLUT->SetVtkLookupTable(lut);
-      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
-      mitkLUTProperty->SetLookupTable(mitkLUT);
-      mitkLUTProperty->SetName("Default Grey");
+
+      float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
+      float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
+
+      unsigned int defaultIndex = 0;
+
+      // Get LUT from Micro Service.
+      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
 
       node->SetProperty("LookupTable", mitkLUTProperty);
-      node->SetIntProperty("LookupTableIndex", 0);
-
-      // Then we set the property to make sure we are using the above lookup table.
+      node->SetIntProperty("LookupTableIndex", defaultIndex);
       node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+      node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
+      node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
     } // end if have pref node
   } // end if node is grey image
@@ -525,3 +513,4 @@ void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
+US_INITIALIZE_MODULE("CommonApps", "libuk_ac_ucl_cmic_gui_qt_commonapps")

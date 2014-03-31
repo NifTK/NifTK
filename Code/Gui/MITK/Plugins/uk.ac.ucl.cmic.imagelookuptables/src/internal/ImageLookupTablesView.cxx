@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "ImageLookupTablesView.h"
+#include "ImageLookupTablesViewActivator.h"
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
@@ -34,13 +35,17 @@
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>
-
+#include <QmitkLookupTableProviderService.h>
 #include <mitkLevelWindowManager.h>
 #include <mitkNodePredicateData.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateNot.h>
+#include <usModule.h>
+#include <usModuleRegistry.h>
+#include <usModuleContext.h>
+#include <usModuleInitialization.h>
 
 const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
@@ -528,30 +533,20 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
   if (m_CurrentNode.IsNotNull())
   {
-    // Copy the vtkLookupTable
-    const QmitkLookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex);
-    vtkLookupTable *vtkLUT = vtkLookupTable::New();
-    vtkLUT->DeepCopy(dynamic_cast<vtkScalarsToColors*>(const_cast<vtkLookupTable*>(lutContainer->GetLookupTable())));
+    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+    if (lutService == NULL)
+    {
+      mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+    }
 
-    // Set the opacity flags.
     float lowestOpacity = 1;
     m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
-    double rgba[4];
-    vtkLUT->GetTableValue(0, rgba);
-    rgba[3] = lowestOpacity;
-    vtkLUT->SetTableValue(0, rgba);
 
     float highestOpacity = 1;
     m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
-    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-    rgba[3] = highestOpacity;
-    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
 
-    mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
-    mitkLUT->SetVtkLookupTable(vtkLUT);
-    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
-    mitkLUTProperty->SetLookupTable(mitkLUT);
-    mitkLUTProperty->SetName(lutContainer->GetDisplayName().toStdString());
+    // Get LUT from Micro Service.
+    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex, lowestOpacity, highestOpacity);
 
     // and give to the node property.
     mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
@@ -594,4 +589,5 @@ void ImageLookupTablesView::OnResetButtonPressed()
     this->RequestRenderWindowUpdate();
   }
 }
+
 

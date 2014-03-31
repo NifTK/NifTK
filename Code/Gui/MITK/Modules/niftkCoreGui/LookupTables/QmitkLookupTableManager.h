@@ -17,6 +17,7 @@
 
 #include <niftkCoreGuiExports.h>
 #include <vector>
+#include <QString>
 
 /**
  * \class QmitkLookupTableManager
@@ -52,6 +53,11 @@ public:
    * if index < 0, or index >= GetNumberOfLookupTables().
    */
   const QmitkLookupTableContainer* GetLookupTableContainer(const unsigned int& n);
+
+  /**
+   * \brief Returns the display name.
+   */
+  QString GetName(const unsigned int& n);
 
 private:
 

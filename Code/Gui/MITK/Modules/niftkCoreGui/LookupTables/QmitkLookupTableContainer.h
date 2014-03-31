@@ -16,6 +16,7 @@
 #define QmitkLookupTableContainer_h
 
 #include <niftkCoreGuiExports.h>
+
 #include <QString>
 #include <vtkLookupTable.h>
 

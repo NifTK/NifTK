@@ -34,7 +34,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 	// TODO: How can I automatically read a list of filenames within a plugin?
 	QStringList fileList;
   fileList.push_back(":imagej_fire.lut");
-	fileList.push_back(":blue.lut");
+  fileList.push_back(":blue.lut");
   fileList.push_back(":cyan.lut");
   fileList.push_back(":green.lut");
   fileList.push_back(":grey.lut");
@@ -143,6 +143,19 @@ const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContaine
 	}
 
 	return result;
+}
+
+
+//-----------------------------------------------------------------------------
+QString QmitkLookupTableManager::GetName(const unsigned int& n)
+{
+  QString result = "";
+  const QmitkLookupTableContainer* container = this->GetLookupTableContainer(n);
+  if (container != 0)
+  {
+    result = container->GetDisplayName();
+  }
+  return result;
 }
 
 
