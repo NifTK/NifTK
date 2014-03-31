@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "QmitkSideViewWidget.h"
-#include "QmitkSideViewView.h"
+#include "QmitkSideViewerWidget.h"
+#include "QmitkSideViewerView.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
@@ -27,7 +27,7 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewWidget::QmitkSideViewWidget(QmitkSideViewView* functionality, QWidget* parent)
+QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent)
 : m_ContainingFunctionality(functionality)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
@@ -112,9 +112,9 @@ QmitkSideViewWidget::QmitkSideViewWidget(QmitkSideViewView* functionality, QWidg
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager)
   {
-    itk::SimpleMemberCommand<QmitkSideViewWidget>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<QmitkSideViewWidget>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewWidget::OnFocusChanged );
+    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
@@ -122,7 +122,7 @@ QmitkSideViewWidget::QmitkSideViewWidget(QmitkSideViewView* functionality, QWidg
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewWidget::~QmitkSideViewWidget()
+QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
   if (m_MainAxialWindow)
   {
@@ -155,7 +155,7 @@ QmitkSideViewWidget::~QmitkSideViewWidget()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::SetDataStorage(mitk::DataStorage* dataStorage)
+void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage* dataStorage)
 {
   if (dataStorage)
   {
@@ -168,7 +168,7 @@ void QmitkSideViewWidget::SetDataStorage(mitk::DataStorage* dataStorage)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnAMainWindowDestroyed(QObject* mainWindow)
+void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
   if (mainWindow == m_MainAxialWindow)
   {
@@ -192,14 +192,14 @@ void QmitkSideViewWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::SetEnabled(bool enabled)
+void QmitkSideViewerWidget::SetEnabled(bool enabled)
 {
   m_ControlsWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnAxialWindowRadioButtonToggled(bool checked)
+void QmitkSideViewerWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -210,7 +210,7 @@ void QmitkSideViewWidget::OnAxialWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnSagittalWindowRadioButtonToggled(bool checked)
+void QmitkSideViewerWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -221,7 +221,7 @@ void QmitkSideViewWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnCoronalWindowRadioButtonToggled(bool checked)
+void QmitkSideViewerWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -232,7 +232,7 @@ void QmitkSideViewWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnMultiWindowRadioButtonToggled(bool checked)
+void QmitkSideViewerWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -242,7 +242,7 @@ void QmitkSideViewWidget::OnMultiWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnMultiWindowComboBoxIndexChanged()
+void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
 {
   m_MultiWindowRadioButton->setChecked(true);
   this->ChangeLayout();
@@ -250,7 +250,7 @@ void QmitkSideViewWidget::OnMultiWindowComboBoxIndexChanged()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::ChangeLayout()
+void QmitkSideViewerWidget::ChangeLayout()
 {
   WindowLayout nextLayout = WINDOW_LAYOUT_UNKNOWN;
 
@@ -347,7 +347,7 @@ void QmitkSideViewWidget::ChangeLayout()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnFocusChanged()
+void QmitkSideViewerWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
@@ -391,7 +391,7 @@ void QmitkSideViewWidget::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
+void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 {
   if (mainWindow == m_MainWindow)
   {
@@ -534,7 +534,7 @@ void QmitkSideViewWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation QmitkSideViewWidget::GetWindowOrientation(mitk::BaseRenderer* renderer)
+MIDASOrientation QmitkSideViewerWidget::GetWindowOrientation(mitk::BaseRenderer* renderer)
 {
   MIDASOrientation windowOrientation;
 
@@ -560,14 +560,14 @@ MIDASOrientation QmitkSideViewWidget::GetWindowOrientation(mitk::BaseRenderer* r
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation QmitkSideViewWidget::GetMainWindowOrientation()
+MIDASOrientation QmitkSideViewerWidget::GetMainWindowOrientation()
 {
   return m_MainWindowOrientation;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
 {
   MIDASOrientation orientation = m_Viewer->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -580,7 +580,7 @@ void QmitkSideViewWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* vie
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
+void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
 {
   double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
@@ -593,14 +593,14 @@ void QmitkSideViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOr
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnSliceSpinBoxValueChanged(int slice)
+void QmitkSideViewerWidget::OnSliceSpinBoxValueChanged(int slice)
 {
   m_Viewer->SetSelectedSlice(m_Viewer->GetOrientation(), slice);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewWidget::OnMagnificationSpinBoxValueChanged(double magnification)
+void QmitkSideViewerWidget::OnMagnificationSpinBoxValueChanged(double magnification)
 {
   double roundedMagnification = std::floor(magnification);
 

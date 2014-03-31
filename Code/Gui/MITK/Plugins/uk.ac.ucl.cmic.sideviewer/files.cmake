@@ -13,32 +13,32 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkSideViewView.cxx
-  QmitkSideViewWidget.cxx
+  QmitkSideViewerView.cxx
+  QmitkSideViewerWidget.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  SideViewActivator.cxx
+  SideViewerActivator.cxx
 )
 
 set(UI_FILES
-  src/QmitkSideViewWidget.ui
+  src/QmitkSideViewerWidget.ui
 )
 
 set(MOC_H_FILES
-  src/internal/SideViewActivator.h
-  src/QmitkSideViewView.h
-  src/QmitkSideViewWidget.h
+  src/internal/SideViewerActivator.h
+  src/QmitkSideViewerView.h
+  src/QmitkSideViewerWidget.h
 )
 
 set(CACHED_RESOURCE_FILES
-  resources/sideview-icon.png
+  resources/sideviewer-icon.png
   plugin.xml
 )
 
 # todo: add some qt style sheet resources
 set(QRC_FILES
-  resources/sideview.qrc
+  resources/sideviewer.qrc
 )
 
 set(CPP_FILES )

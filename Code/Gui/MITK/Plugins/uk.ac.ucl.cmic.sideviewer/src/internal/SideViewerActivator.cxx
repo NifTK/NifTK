@@ -12,41 +12,41 @@
 
 =============================================================================*/
 
-#include "SideViewActivator.h"
+#include "SideViewerActivator.h"
 
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
 #include <mitkMIDASTool.h>
-#include "QmitkSideViewView.h"
+#include "QmitkSideViewerView.h"
 
 namespace mitk
 {
 
-ctkPluginContext* SideViewActivator::s_PluginContext(NULL);
+ctkPluginContext* SideViewerActivator::s_PluginContext(NULL);
 
 //-----------------------------------------------------------------------------
-void SideViewActivator::start(ctkPluginContext* context)
+void SideViewerActivator::start(ctkPluginContext* context)
 {
   s_PluginContext = context;
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkSideViewView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkSideViewerView, context);
 
   mitk::MIDASTool::LoadBehaviourStrings();
 }
 
 
 //-----------------------------------------------------------------------------
-void SideViewActivator::stop(ctkPluginContext* context)
+void SideViewerActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* SideViewActivator::GetPluginContext()
+ctkPluginContext* SideViewerActivator::GetPluginContext()
 {
   return s_PluginContext;
 }
 
 }
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_sideview, mitk::SideViewActivator)
+Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_sideviewer, mitk::SideViewerActivator)
