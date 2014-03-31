@@ -99,7 +99,6 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
   mitk::FloatPropertyExtension::Pointer opacityPropertyExtension = mitk::FloatPropertyExtension::New(0.0, 1.0);
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
-  propertyExtensions->AddExtension("black opacity", opacityPropertyExtension.GetPointer());
 }
 
 
