@@ -224,6 +224,7 @@ int main (int argc, char *argv[])
 				// The link between objects in the pipeline
   vtkImageData *pipeVTKImageDataConnector;
   vtkPolyData *pipeVTKPolyDataConnector;	// The link between objects in the pipeline
+  vtkAlgorithmOutput *pipeVTKAlgorithmConnector;	// The link between objects in the pipeline
 
 
   // Define the input image type
@@ -810,15 +811,15 @@ int main (int argc, char *argv[])
     // This is half the region groeing value
     surfaceExtractor->SetValue(0, 500);
 
-  surfaceExtractor->SetInput((vtkDataObject *) pipeVTKImageDataConnector);
-  pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
+  surfaceExtractor->SetInputData(pipeVTKImageDataConnector);
+  pipeVTKAlgorithmConnector = surfaceExtractor->GetOutputPort();
 
 
   if (verbose) {
     surfaceExtractor->Update();
 
     std::cout << std::endl << "Extracted surface data:" << std::endl;
-    polyDataInfo(pipeVTKPolyDataConnector);
+    polyDataInfo(surfaceExtractor->GetOutput());
   }
 
 
@@ -826,7 +827,7 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
-  triangleFilter->SetInput(pipeVTKPolyDataConnector);
+  triangleFilter->SetInputConnection(pipeVTKAlgorithmConnector);
   pipeVTKPolyDataConnector = triangleFilter->GetOutput();
 
   if (verbose) {
@@ -853,7 +854,7 @@ int main (int argc, char *argv[])
     preSmoothingFilter->SetNumberOfIterations(niterations);
     preSmoothingFilter->SetPassBand(bandwidth);
  
-    preSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+    preSmoothingFilter->SetInputData(pipeVTKPolyDataConnector);
     pipeVTKPolyDataConnector = preSmoothingFilter->GetOutput();
   }
 
@@ -874,7 +875,7 @@ int main (int argc, char *argv[])
       
       if (featureAngle) decimator->SetFeatureAngle( featureAngle );
       
-      decimator->SetInput( pipeVTKPolyDataConnector );
+      decimator->SetInputData( pipeVTKPolyDataConnector );
 
       pipeVTKPolyDataConnector = decimator->GetOutput();
       
@@ -891,7 +892,7 @@ int main (int argc, char *argv[])
       vtkSmartPointer<vtkQuadricDecimation> decimatorQD = vtkQuadricDecimation::New();
       
       decimatorQD->SetTargetReduction( decimation );
-      decimatorQD->SetInput( pipeVTKPolyDataConnector );
+      decimatorQD->SetInputData( pipeVTKPolyDataConnector );
       
       pipeVTKPolyDataConnector = decimatorQD->GetOutput();
 
@@ -921,7 +922,7 @@ int main (int argc, char *argv[])
     postSmoothingFilter->SetNumberOfIterations(niterations);
     postSmoothingFilter->SetPassBand(bandwidth);
     
-    postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+    postSmoothingFilter->SetInputData(pipeVTKPolyDataConnector);
     pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
   }
 
@@ -933,7 +934,7 @@ int main (int argc, char *argv[])
 
     vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
     writer3D->SetFileName( fileOutputPolydata.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
+    writer3D->SetInputData(pipeVTKPolyDataConnector);
 
     if (flgTextOutput)
       writer3D->SetFileType(VTK_ASCII);
@@ -952,7 +953,7 @@ int main (int argc, char *argv[])
 
     vtkSmartPointer<vtkSTLWriter> writer3D = vtkSTLWriter::New();
     writer3D->SetFileName( fileOutputSTL.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
+    writer3D->SetInputData(pipeVTKPolyDataConnector);
 
     if (flgTextOutput)
       writer3D->SetFileType(VTK_ASCII);
@@ -980,7 +981,7 @@ int main (int argc, char *argv[])
 
   normals->SplittingOff();
 
-  normals->SetInput(pipeVTKPolyDataConnector);
+  normals->SetInputData(pipeVTKPolyDataConnector);
   pipeVTKPolyDataConnector = normals->GetOutput();
 
 
@@ -991,7 +992,7 @@ int main (int argc, char *argv[])
 
   map3D->ScalarVisibilityOff();
 
-  map3D->SetInput(pipeVTKPolyDataConnector);
+  map3D->SetInputData(pipeVTKPolyDataConnector);
 
 
   // Create the renderer, the render window, and the interactor. The renderer
