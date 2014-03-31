@@ -16,6 +16,9 @@
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
 
+#include <mitkCoreServices.h>
+#include <mitkIPropertyExtensions.h>
+#include <mitkFloatPropertyExtension.h>
 #include <mitkProperties.h>
 #include <mitkVersion.h>
 #include <mitkLogMacros.h>
@@ -31,6 +34,9 @@
 
 #include <service/cm/ctkConfigurationAdmin.h>
 #include <service/cm/ctkConfiguration.h>
+
+#include <usModule.h>
+#include <usModuleRegistry.h>
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -85,6 +91,15 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
   this->RegisterQmitkCommonAppsExtensions();
   this->RegisterDataStorageListener();
   this->BlankDepartmentalLogo();
+
+  // Get the MitkCore module context.
+  us::ModuleContext* mitkCoreContext = us::ModuleRegistry::GetModule(1)->GetModuleContext();
+
+  mitk::IPropertyExtensions* propertyExtensions = mitk::CoreServices::GetPropertyExtensions(mitkCoreContext);
+  mitk::FloatPropertyExtension::Pointer opacityPropertyExtension = mitk::FloatPropertyExtension::New(0.0, 1.0);
+  propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
+  propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
+  propertyExtensions->AddExtension("black opacity", opacityPropertyExtension.GetPointer());
 }
 
 
