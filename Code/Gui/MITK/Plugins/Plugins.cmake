@@ -71,7 +71,7 @@ set(PROJECT_PLUGINS
 if(BUILD_MIDAS)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.sideview:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
     Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
     Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
     Plugins/uk.ac.ucl.cmic.mitksegmentation:ON

@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "QmitkSideViewView.h"
+#include "QmitkSideViewerView.h"
 
-#include "internal/SideViewActivator.h"
+#include "internal/SideViewerActivator.h"
 #include <mitkILinkedRenderWindowPart.h>
 #include <mitkDataNodeObject.h>
 #include <mitkProperties.h>
@@ -31,8 +31,8 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewView::QmitkSideViewView()
-: m_SideViewWidget(NULL)
+QmitkSideViewerView::QmitkSideViewerView()
+: m_SideViewerWidget(NULL)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -40,8 +40,8 @@ QmitkSideViewView::QmitkSideViewView()
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewView::QmitkSideViewView(
-    const QmitkSideViewView& other)
+QmitkSideViewerView::QmitkSideViewerView(
+    const QmitkSideViewerView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -49,18 +49,17 @@ QmitkSideViewView::QmitkSideViewView(
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewView::~QmitkSideViewView()
+QmitkSideViewerView::~QmitkSideViewerView()
 {
-  if (m_SideViewWidget != NULL)
+  if (m_SideViewerWidget != NULL)
   {
-    delete m_SideViewWidget;
+    delete m_SideViewerWidget;
   }
-
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkSideViewView::EventFilter(const mitk::StateEvent* stateEvent) const
+bool QmitkSideViewerView::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   // If we have a render window part (aka. editor or display)...
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
@@ -83,7 +82,7 @@ bool QmitkSideViewView::EventFilter(const mitk::StateEvent* stateEvent) const
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::Activated()
+void QmitkSideViewerView::Activated()
 {
   QmitkBaseView::Activated();
 
@@ -93,35 +92,35 @@ void QmitkSideViewView::Activated()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::Deactivated()
+void QmitkSideViewerView::Deactivated()
 {
   QmitkBaseView::Deactivated();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::Visible()
+void QmitkSideViewerView::Visible()
 {
   QmitkBaseView::Visible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::Hidden()
+void QmitkSideViewerView::Hidden()
 {
   QmitkBaseView::Hidden();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::CreateQtPartControl(QWidget *parent)
+void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
 {
-  if (!m_SideViewWidget)
+  if (!m_SideViewerWidget)
   {
-    m_SideViewWidget = new QmitkSideViewWidget(this, parent);
-    m_SideViewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_SideViewerWidget = new QmitkSideViewerWidget(this, parent);
+    m_SideViewerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    m_SideViewWidget->SetDataStorage(this->GetDataStorage());
+    m_SideViewerWidget->SetDataStorage(this->GetDataStorage());
 
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
@@ -130,14 +129,14 @@ void QmitkSideViewView::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::SetFocus()
+void QmitkSideViewerView::SetFocus()
 {
-  m_SideViewWidget->m_Viewer->SetSelected(true);
+  m_SideViewerWidget->m_Viewer->SetSelected(true);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::ApplyDisplayOptions(mitk::DataNode* node)
+void QmitkSideViewerView::ApplyDisplayOptions(mitk::DataNode* node)
 {
   if (!node) return;
 
@@ -155,14 +154,14 @@ void QmitkSideViewView::ApplyDisplayOptions(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void QmitkSideViewerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewView::RetrievePreferenceValues()
+void QmitkSideViewerView::RetrievePreferenceValues()
 {
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
@@ -181,7 +180,7 @@ void QmitkSideViewView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkSideViewView::GetPreferencesNodeName()
+std::string QmitkSideViewerView::GetPreferencesNodeName()
 {
-  return "/uk_ac_ucl_cmic_sideview";
+  return "/uk_ac_ucl_cmic_sideviewer";
 }

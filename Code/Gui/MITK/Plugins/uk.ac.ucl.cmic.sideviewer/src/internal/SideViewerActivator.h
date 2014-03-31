@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef SideViewActivator_h
-#define SideViewActivator_h
+#ifndef SideViewerActivator_h
+#define SideViewerActivator_h
 
 #include <ctkPluginActivator.h>
 
 namespace mitk
 {
 
-class SideViewActivator :
+class SideViewerActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT

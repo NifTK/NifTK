@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef QmitkSideViewView_h
-#define QmitkSideViewView_h
+#ifndef QmitkSideViewerView_h
+#define QmitkSideViewerView_h
 
-#include <uk_ac_ucl_cmic_sideview_Export.h>
+#include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
 // CTK for event handling.
 #include <service/event/ctkEventHandler.h>
@@ -28,30 +28,30 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include "QmitkSideViewWidget.h"
+#include "QmitkSideViewerWidget.h"
 
 #include <mitkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
 
 /**
- * \class QmitkSideViewView
+ * \class QmitkSideViewerView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  *
  * \sa QmitkBaseView
  */
-class CMIC_QT_SIDEVIEW QmitkSideViewView : public QmitkBaseView, public mitk::MIDASEventFilter
+class CMIC_QT_SIDEVIEWER QmitkSideViewerView : public QmitkBaseView, public mitk::MIDASEventFilter
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkSideViewView();
-  QmitkSideViewView(const QmitkSideViewView& other);
-  virtual ~QmitkSideViewView();
+  QmitkSideViewerView();
+  QmitkSideViewerView(const QmitkSideViewerView& other);
+  virtual ~QmitkSideViewerView();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
@@ -114,7 +114,7 @@ protected:
   virtual std::string GetPreferencesNodeName();
 
   /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
-  QmitkSideViewWidget *m_SideViewWidget;
+  QmitkSideViewerWidget *m_SideViewerWidget;
 
 private:
 

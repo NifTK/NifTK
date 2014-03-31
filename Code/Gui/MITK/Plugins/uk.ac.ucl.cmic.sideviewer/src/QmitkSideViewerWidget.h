@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef QmitkSideViewWidget_h
-#define QmitkSideViewWidget_h
+#ifndef QmitkSideViewerWidget_h
+#define QmitkSideViewerWidget_h
 
-#include "ui_QmitkSideViewWidget.h"
-#include <uk_ac_ucl_cmic_sideview_Export.h>
+#include "ui_QmitkSideViewerWidget.h"
+#include <uk_ac_ucl_cmic_sideviewer_Export.h>
 #include <QWidget>
 #include <QString>
 #include <mitkMIDASEnums.h>
@@ -30,11 +30,11 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkSideViewView;
+class QmitkSideViewerView;
 class QmitkRenderWindow;
 
 /**
- * \class QmitkSideViewWidget
+ * \class QmitkSideViewerWidget
  * \brief Qt Widget to provide a single niftkSingleViewerWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
@@ -47,9 +47,9 @@ class QmitkRenderWindow;
  *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
  * </pre>
  */
-class CMIC_QT_SIDEVIEW QmitkSideViewWidget :
+class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget :
   public QWidget,
-  public Ui_QmitkSideViewWidget
+  public Ui_QmitkSideViewerWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
@@ -57,15 +57,15 @@ class CMIC_QT_SIDEVIEW QmitkSideViewWidget :
 public:
 
   /**
-   * Constructs a QmitkSideViewWidget object.
+   * Constructs a QmitkSideViewerWidget object.
    *
    * \param functionality Sets the containing functionality for callback purposes.
    *
    *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
    *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
    */
-  QmitkSideViewWidget(QmitkSideViewView* functionality, QWidget* parent = 0);
-  virtual ~QmitkSideViewWidget();
+  QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent = 0);
+  virtual ~QmitkSideViewerWidget();
 
   /**
    * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
@@ -146,7 +146,7 @@ private slots:
 
 private:
 
-  QmitkSideViewView* m_ContainingFunctionality;
+  QmitkSideViewerView* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.

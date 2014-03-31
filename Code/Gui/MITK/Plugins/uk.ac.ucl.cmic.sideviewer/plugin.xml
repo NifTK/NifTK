@@ -5,10 +5,10 @@
     <category
         id="org.mitk.views.general"
         name="MITK General"/>
-    <view id="uk.ac.ucl.cmic.sideview"
-        name="Side View"
+    <view id="uk.ac.ucl.cmic.sideviewer"
+        name="Side Viewer"
         category="org.mitk.views.general"
-        class="QmitkSideViewView"
-        icon="resources/sideview-icon.png" />
+        class="QmitkSideViewerView"
+        icon="resources/sideviewer-icon.png" />
   </extension>
 </plugin>
