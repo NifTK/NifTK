@@ -32,8 +32,8 @@
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
-#include <LookupTableManager.h>
-#include <LookupTableContainer.h>
+#include <QmitkLookupTableManager.h>
+#include <QmitkLookupTableContainer.h>
 
 #include <mitkLevelWindowManager.h>
 #include <mitkNodePredicateData.h>
@@ -57,7 +57,7 @@ ImageLookupTablesView::ImageLookupTablesView()
 , m_LowestIsOpaquePropertyObserverTag(0)
 , m_HighestIsOpaquePropertyObserverTag(0)
 {
-  m_LookupTableManager = new LookupTableManager();
+  m_LookupTableManager = new QmitkLookupTableManager();
 }
 
 
@@ -106,7 +106,7 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     // Populate combo box with lookup table names.
     for (unsigned int i = 0; i < m_LookupTableManager->GetNumberOfLookupTables(); i++)
     {
-      const LookupTableContainer *container = m_LookupTableManager->GetLookupTableContainer(i);
+      const QmitkLookupTableContainer *container = m_LookupTableManager->GetLookupTableContainer(i);
       m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder(), container->GetDisplayName());
     }
 
@@ -529,7 +529,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
   if (m_CurrentNode.IsNotNull())
   {
     // Copy the vtkLookupTable
-    const LookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex);
+    const QmitkLookupTableContainer* lutContainer = m_LookupTableManager->GetLookupTableContainer(comboBoxIndex);
     vtkLookupTable *vtkLUT = vtkLookupTable::New();
     vtkLUT->DeepCopy(dynamic_cast<vtkScalarsToColors*>(const_cast<vtkLookupTable*>(lutContainer->GetLookupTable())));
 

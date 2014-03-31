@@ -12,33 +12,27 @@
 
 =============================================================================*/
 
-#ifndef LookupTableContainer_h
-#define LookupTableContainer_h
+#ifndef QmitkLookupTableContainer_h
+#define QmitkLookupTableContainer_h
 
 #include <niftkCoreGuiExports.h>
 #include <QString>
 #include <vtkLookupTable.h>
 
 /**
- * \class LookupTableContainer
+ * \class QmitkLookupTableContainer
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
- * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
- *
- * Note that this container stores a const vtkLookupTable. Thus, the lookup table
- * is loaded from disc, when the application starts, and then clients should
- * copy it, and manage the copy themselves. You should never modify a lookup table
- * once it has been loaded, and you must never share them.
  */
-class NIFTKCOREGUI_EXPORT LookupTableContainer {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer {
 
 public:
 
 	/** Constructor that takes a lookup table. */
-  LookupTableContainer(const vtkLookupTable* lut);
+  QmitkLookupTableContainer(const vtkLookupTable* lut);
 
 	/** Destructor. */
-	virtual ~LookupTableContainer();
+  virtual ~QmitkLookupTableContainer();
 
 	/** Get the vtkLookupTable. */
 	const vtkLookupTable* GetLookupTable() const { return m_LookupTable; }
@@ -60,10 +54,10 @@ protected:
 private:
 
   /** Deliberately prohibit copy constructor. */
-	LookupTableContainer(const LookupTableContainer&) {};
+  QmitkLookupTableContainer(const QmitkLookupTableContainer&) {};
 
 	/** Deliberately prohibit assignment. */
-	void operator=(const LookupTableContainer&) {};
+  void operator=(const QmitkLookupTableContainer&) {};
 
 	/** This is it! */
 	const vtkLookupTable* m_LookupTable;

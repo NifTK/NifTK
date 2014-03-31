@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef LookupTableSaxHandler_h
-#define LookupTableSaxHandler_h
+#ifndef QmitkLookupTableSaxHandler_h
+#define QmitkLookupTableSaxHandler_h
 
 #include <niftkCoreGuiExports.h>
 #include <vector>
@@ -22,12 +22,11 @@
 #include <QXmlDefaultHandler>
 
 class vtkLookupTable;
-class LookupTableContainer;
+class QmitkLookupTableContainer;
 
 /**
- * \class LookupTableSaxHandler
+ * \class QmitkLookupTableSaxHandler
  * \brief SAX handler to load lookup tables into LookupTableContainer objects.
- * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  *
  * This class is not designed to be re-used. For each lookup table,
  * you create a new LookupTableSaxHander, parse the XML file, then call GetLookupTable()
@@ -37,15 +36,15 @@ class LookupTableContainer;
  * This class is not thread safe, so you should load lookup tables
  * one at a time, in a single thread.
  */
-class NIFTKCOREGUI_EXPORT LookupTableSaxHandler : public QXmlDefaultHandler {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler {
 
 public:
 
 	/** No-arg constructor. */
-	LookupTableSaxHandler();
+  QmitkLookupTableSaxHandler();
 
 	/** Returns the internal lookup table, you should not call this until the parsing has finished sucessfully. */
-	LookupTableContainer* GetLookupTableContainer();
+  QmitkLookupTableContainer* GetLookupTableContainer();
 
 	/** Methods that we must implement for the handler. */
   bool startElement(const QString &namespaceURI,

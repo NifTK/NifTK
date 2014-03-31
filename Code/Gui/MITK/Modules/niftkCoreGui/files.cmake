@@ -13,9 +13,9 @@
 #============================================================================*/
 
 set(CPP_FILES
-  LookupTables/LookupTableContainer.cxx
-  LookupTables/LookupTableSaxHandler.cxx
-  LookupTables/LookupTableManager.cxx
+  LookupTables/QmitkLookupTableContainer.cxx
+  LookupTables/QmitkLookupTableSaxHandler.cxx
+  LookupTables/QmitkLookupTableManager.cxx
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx

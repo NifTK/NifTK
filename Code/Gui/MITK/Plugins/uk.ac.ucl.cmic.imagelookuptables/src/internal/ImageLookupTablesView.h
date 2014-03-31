@@ -23,7 +23,7 @@
 
 class QWidget;
 class QSlider;
-class LookupTableManager;
+class QmitkLookupTableManager;
 
 /**
  * \class ImageLookupTablesView
@@ -173,7 +173,7 @@ private:
   /**
    * \brief We contain a LookupTableManager containing vtkLookupTables loaded from the resource system.
    */
-  LookupTableManager *m_LookupTableManager;
+  QmitkLookupTableManager *m_LookupTableManager;
 
   /**
    * \brief Tracks the currently selected node.
