@@ -27,7 +27,8 @@
 
 const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION("default reslice interpolation");
 const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION("default texture interpolation");
-const std::string QmitkCommonAppsApplicationPreferencePage::BLACK_OPACITY("black opacity");
+const std::string QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY("lowest value opacity");
+const std::string QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY("highest value opacity");
 const std::string QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME("binary opacity");
 const double QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE = 1.0;
 
@@ -36,7 +37,8 @@ QmitkCommonAppsApplicationPreferencePage::QmitkCommonAppsApplicationPreferencePa
 : m_MainControl(0)
 , m_ResliceInterpolation(0)
 , m_TextureInterpolation(0)
-, m_BlackOpacity(0)
+, m_LowestValueOpacity(0)
+, m_HighestValueOpacity(0)
 , m_BinaryOpacity(0)
 {
 
@@ -86,17 +88,27 @@ void QmitkCommonAppsApplicationPreferencePage::CreateQtControl(QWidget* parent)
   m_TextureInterpolation->insertItem(0, "none");
   m_TextureInterpolation->insertItem(1, "linear");
 
-  m_BlackOpacity = new QCheckBox();
+  m_LowestValueOpacity = new QDoubleSpinBox();
+  m_LowestValueOpacity->setMinimum(0);
+  m_LowestValueOpacity->setMaximum(1);
+  m_LowestValueOpacity->setSingleStep(0.1);
+  m_LowestValueOpacity->setValue(1);
+  m_HighestValueOpacity = new QDoubleSpinBox();
+  m_HighestValueOpacity->setMinimum(0);
+  m_HighestValueOpacity->setMaximum(1);
+  m_HighestValueOpacity->setSingleStep(0.1);
+  m_HighestValueOpacity->setValue(1);
 
   m_BinaryOpacity = new QDoubleSpinBox();
   m_BinaryOpacity->setMinimum(0);
   m_BinaryOpacity->setMaximum(1);
-  m_BinaryOpacity->setSingleStep(1);
+  m_BinaryOpacity->setSingleStep(0.1);
 
   QFormLayout *formLayout = new QFormLayout;
-  formLayout->addRow( "Image reslice interpolation:", m_ResliceInterpolation );
-  formLayout->addRow( "Image texture interpolation:", m_TextureInterpolation );
-  formLayout->addRow( "Lowest lookup table value is opaque:", m_BlackOpacity);
+  formLayout->addRow( "Default image reslice interpolation:", m_ResliceInterpolation );
+  formLayout->addRow( "Default image texture interpolation:", m_TextureInterpolation );
+  formLayout->addRow( "Default lowest lookup table value opacity:", m_LowestValueOpacity);
+  formLayout->addRow( "Default highest lookup table value opacity:", m_HighestValueOpacity);
   formLayout->addRow( "Default opacity when loading binary images:", m_BinaryOpacity);
 
   m_MainControl->setLayout(formLayout);
@@ -116,7 +128,8 @@ bool QmitkCommonAppsApplicationPreferencePage::PerformOk()
 {
   m_PreferencesNode->PutInt(IMAGE_RESLICE_INTERPOLATION, m_ResliceInterpolation->currentIndex());
   m_PreferencesNode->PutInt(IMAGE_TEXTURE_INTERPOLATION, m_TextureInterpolation->currentIndex());
-  m_PreferencesNode->PutBool(BLACK_OPACITY, m_BlackOpacity->isChecked());
+  m_PreferencesNode->PutDouble(LOWEST_VALUE_OPACITY, m_LowestValueOpacity->value());
+  m_PreferencesNode->PutDouble(HIGHEST_VALUE_OPACITY, m_HighestValueOpacity->value());
   m_PreferencesNode->PutDouble(BINARY_OPACITY_NAME, m_BinaryOpacity->value());
   return true;
 }
@@ -134,6 +147,7 @@ void QmitkCommonAppsApplicationPreferencePage::Update()
 {
   m_ResliceInterpolation->setCurrentIndex(m_PreferencesNode->GetInt(IMAGE_RESLICE_INTERPOLATION, 2));
   m_TextureInterpolation->setCurrentIndex(m_PreferencesNode->GetInt(IMAGE_TEXTURE_INTERPOLATION, 1));
-  m_BlackOpacity->setChecked(m_PreferencesNode->GetBool(BLACK_OPACITY, true));
+  m_LowestValueOpacity->setValue(m_PreferencesNode->GetDouble(LOWEST_VALUE_OPACITY, 1));
+  m_HighestValueOpacity->setValue(m_PreferencesNode->GetDouble(HIGHEST_VALUE_OPACITY, 1));
   m_BinaryOpacity->setValue(m_PreferencesNode->GetDouble(BINARY_OPACITY_NAME, QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE));
 }

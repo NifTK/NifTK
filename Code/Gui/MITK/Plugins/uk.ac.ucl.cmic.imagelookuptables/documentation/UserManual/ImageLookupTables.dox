@@ -44,19 +44,14 @@ spring, summer, autumn, winter.
 
 \subsection ImageLookupTablesUsageSelecting Selecting a Lookup Table
 
-\image html ScreenshotMainView.png "Figure 3. The main GUI view."
+\image html ScreenshotMainView.jpg "Figure 3. The main GUI view."
 
-The main GUI view is shown in Figure 3. It can be seen that by default, there is no lookup table used. 
-The underlying MITK framework will render an image based on different shades of a specific colour, where
-the default colour is white. So, the shades of white vary from black to white. If you open the Property view,
-and specify the "color" property, followed by ticking "use color" to on, you will be using a standard colour,
-and NOT using a lookup table. The "selected image", or the "current image" is the top-most visible one, 
-which corresponds to the same image that the MITK Level/Window slider operates on. At the top of the Image 
-Lookup Tables plugin, there is a drop down combo-box enabling the selection of a lookup table. The lookup 
-table is applied to the current image (the top-most visible one).
+The main GUI view is shown in Figure 3. By default, a grey colour map is used,
+mapping intensity values from black to white.
 
-The lookup table is immediately applied to the top most visible image. To remove the lookup table, and 
-revert to the default colour scheme, select "NONE" in the combo box.
+An image can be selected in the DataManager plugin, by left single-clicking on the name.
+Once an image is selected, the GUI controls of the ImageLookupTables plugin are set to
+reflect the properties on the selected image.
 
 \subsection ImageLookupTablesUsageRange Selecting the Colour Range.
 
@@ -68,7 +63,7 @@ The min and max are related to the window and level by
   <li> window = max - min
 </ul>
 
-The term level is equivalent to brightness and window is equivalent to contrast.
+The term "level" is equivalent to "brightness" and "window" is equivalent to "contrast".
 
 \subsection ImageLookupTablesUsageMinMax Setting the Minimum and Maximum Limits
 
@@ -79,20 +74,46 @@ cases where it is necessary to specify these limits manually.  These limits can 
 using the data limits min and max boxes. The reset button will then revert back to the minimum
 and maximum image values.
 
-\subsection ImageLookupTablesUsagePreferences Preferences
+\subsection ImageLookupTablesUsagePreferences Application Level Preferences
 
-\image html SnapshotPreferences.png Figure 4. Preferences that apply to the Image Lookup Tables plugin.
+\image html ApplicationPreferences.jpg Figure 4. Application Level Preferences that apply to the Image Lookup Tables plugin.
 
-The preference page can be seen in Figure 4. When the plugin first encounters an image, it will have 
-to set the sliders to a suitable minimum and maximum range. There are two types of initialisation.
+The Application preference page can be seen in Figure 4. When an image is loaded, the default
+grey scale colour map is applied. In addition there are two properties added.
 <ul>
-  <li> Initialise to the same values as on the MITK Level/Window widget. </li>
-  <li> Initialise based on the minimum and maximum image data. </li>
+  <li>Default lowest lookup table value opacity. This sets the opacity of the lowest (darkest, normally black) lookup table value. 1 is opaque, 0 is transparent. This is stored in property "Image Rendering.Lowest Value Opacity"
+  <li>Default highest lookup table value opacity. This sets the opacity of the highest (lightest, normally white) lookup table value. 1 is opaque, 0 is transparent. This is stored in property "Image Rendering.Highest Value Opacity"
 </ul>
 
-Furthermore, for the second option only, you can select that the even when the minimum and maximum range of the 
+These properties enable you to control the opacity of things at the bottom/top end of your colour lookup table.
+These properties are set according to these values, only when the image is first loaded.
+Thereafter, you can edit the opacity value using the Properties plugin.
+
+\subsection ImageLookupTablesUsageAppSpecificPreferences Application Specific Preferences
+
+\image html ScreenshotAppSpecificPrefs.jpg Figure 5. Application Specific Preferences that apply to the Image Lookup Tables plugin.
+
+Depending on the application run, additional preferences may be registered.
+The user may be able to chose how the lookup table window/level is initialised.
+
+When the plugin first encounters an image, it will have
+to set the sliders to a suitable minimum and maximum range. There are two types of initialisation.
+<ul>
+  <li> Initialise based on MIDAS application.
+  <li> Initialise to the same values as on the MITK Level/Window widget.
+  <li> Initialise based on the minimum and maximum image data.
+</ul>
+
+Furthermore, for the third option only, you can select that the even when the minimum and maximum range of the
 sliders are set to the minimum and maximum range of the image data, the maximum slider is set to the given
-percentage of the full range. The final preference specifies the precision of the spin boxes.
+percentage of the full range.
+
+\subsection ImageLookupTablesUsagePluginSpecificPreferences Plugin Specific Preferences
+
+\image html ScreenshotPluginSpecificPrefs.jpg Figure 6. Plugin Specific Preferences that apply to the Image Lookup Tables plugin.
+
+In addition, there is a preference registered under Image Lookup Tables to set the precision of the spin boxes. This is useful
+if for example the images are floating point images, and the user needs fine control.
 
 \section ImageLookupTablesUsageReferences References
 

@@ -34,7 +34,7 @@ QmitkNiftyViewApplicationPlugin::~QmitkNiftyViewApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyViewApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/index.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftyview.html");
 }
 
 

@@ -16,6 +16,7 @@
 #define ImageLookupTablesViewActivator_h
 
 #include <ctkPluginActivator.h>
+#include <QmitkLookupTableProviderService.h>
 
 namespace mitk {
 
@@ -32,11 +33,22 @@ class ImageLookupTablesViewActivator :
 
 public:
 
+  ImageLookupTablesViewActivator();
+  ~ImageLookupTablesViewActivator();
+
+  static ImageLookupTablesViewActivator* GetDefault();
+  ctkPluginContext* GetPluginContext() const;
+  static QmitkLookupTableProviderService* GetQmitkLookupTableProviderService();
+
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-}; // ImageLookupTablesViewActivator
+private:
 
-} // end namespace
+  ctkPluginContext* m_Context;
+  static ImageLookupTablesViewActivator* s_Inst;
+};
+
+} // end namepace
 
 #endif
