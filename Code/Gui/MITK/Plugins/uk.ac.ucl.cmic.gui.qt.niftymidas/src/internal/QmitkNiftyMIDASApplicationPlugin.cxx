@@ -32,7 +32,7 @@ QmitkNiftyMIDASApplicationPlugin::~QmitkNiftyMIDASApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/index.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftymidas.html");
 }
 
 
