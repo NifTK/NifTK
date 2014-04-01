@@ -1384,7 +1384,7 @@ cv::Mat HandeyeRotation ( const std::vector<cv::Mat>& Tracker1,
   return rcg;
 }
 //-----------------------------------------------------------------------------
- cv::Mat HandeyeTranslation ( const std::vector<cv::Mat>& Tracker1, 
+cv::Mat HandeyeTranslation ( const std::vector<cv::Mat>& Tracker1, 
      const std::vector<cv::Mat>& Tracker2, double& Residual, const cv::Mat& rcg)
 {
   if ( Tracker1.size() != Tracker2.size() ) 
@@ -1439,4 +1439,43 @@ cv::Mat HandeyeRotation ( const std::vector<cv::Mat>& Tracker1,
   Residual = sqrt(ErrorTransMult.at<double>(0,0)/(numberOfViews-1));
   return tcg;
 }
+//-----------------------------------------------------------------------------
+cv::Mat HandeyeRotationAndTranslation ( const std::vector<cv::Mat>& Tracker1, 
+     const std::vector<cv::Mat>& Tracker2, std::vector<double>& Residuals)
+{
+  Residuals.clear();
+  //init residuals with negative number to stop unit test passing
+  //  //if Load result and calibration both produce zero.
+  Residuals.push_back(-100.0);
+  Residuals.push_back(-100.0);
+
+  double RotationalResidual;
+  cv::Mat rcg = mitk::HandeyeRotation ( Tracker1, Tracker2, RotationalResidual);
+  double TranslationalResidual;
+  cv::Mat tcg = mitk::HandeyeTranslation (Tracker1, Tracker2, TranslationalResidual, rcg);
+
+  Residuals[0] = RotationalResidual;
+  Residuals[1] = TranslationalResidual;
+
+  cv::Mat handeye = cvCreateMat(4,4,CV_64FC1);
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+      handeye.at<double>(row,col) = rcg.at<double>(row,col);
+    }
+  }
+  for ( int row = 0; row < 3; row ++ )
+  {
+    handeye.at<double>(row,3) = tcg.at<double>(row,0);
+  }
+  for ( int col = 0; col < 3; col ++ )
+  {
+    handeye.at<double>(3,col) = 0.0;
+  }
+  handeye.at<double>(3,3)=1.0;
+ 
+  return handeye;
+} 
+
 } // end namespace

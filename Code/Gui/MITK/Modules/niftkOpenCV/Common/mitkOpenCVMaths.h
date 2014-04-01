@@ -377,6 +377,15 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeTranslation (
     const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
     double& Residual, const cv::Mat & rcg);
 
+/**
+ * \brief works out the rigid rotation and translation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeRotationAndTranslation ( 
+    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+    std::vector<double>& Residuals);
+
+
 } // end namespace
 
 #endif

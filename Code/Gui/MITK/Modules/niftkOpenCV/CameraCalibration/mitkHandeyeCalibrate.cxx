@@ -137,31 +137,10 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     SortedGridToCamera.push_back(GridToCamera[indexes[i]]);
     SortedMarkerToWorld.push_back(MarkerToWorld[indexes[i]]);
   }
+ 
+  m_CameraToMarker = HandeyeRotationAndTranslation(SortedMarkerToWorld, SortedGridToCamera,
+      residuals);
   
-  double RotationalResidual;
-  cv::Mat rcg = mitk::HandeyeRotation ( SortedMarkerToWorld, SortedGridToCamera, RotationalResidual);
-  double TranslationalResidual;
-  cv::Mat tcg = mitk::HandeyeTranslation (SortedMarkerToWorld, SortedGridToCamera, TranslationalResidual, rcg);
-  
-  residuals[0] = RotationalResidual;
-  residuals[1] = TranslationalResidual;
-  
-  for ( int row = 0; row < 3; row ++ )
-  {
-    for ( int col = 0; col < 3; col ++ )
-    {
-      m_CameraToMarker.at<double>(row,col) = rcg.at<double>(row,col);
-    }
-  }
-  for ( int row = 0; row < 3; row ++ )
-  {
-    m_CameraToMarker.at<double>(row,3) = tcg.at<double>(row,0);
-  }
-  for ( int col = 0; col < 3; col ++ )
-  {
-    m_CameraToMarker.at<double>(3,col) = 0.0;
-  }
-  m_CameraToMarker.at<double>(3,3)=1.0;
   std::cout << "Camera To Marker Matrix = " << std::endl << m_CameraToMarker << std::endl;
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
