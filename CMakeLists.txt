@@ -605,34 +605,31 @@ endif (BUILD_MESHING)
 # the Superbuild, because VTK needs to know if we have Qt.
 ######################################################################
 
-if(BUILD_GUI)
-  if(BUILD_IGI)
-    find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
-  else(BUILD_IGI)
-    find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-  endif(BUILD_IGI)
+# We ALWAYS need Qt. This is because MITK always needs it.
+if(BUILD_IGI)
+  find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
+else(BUILD_IGI)
+  find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
+endif(BUILD_IGI)
 
-  if(QT_FOUND)
-
-    set(QT_USE_QTXML 1)
-    set(QT_USE_QTXMLPATTERNS 1)
-    set(QT_USE_PHONON 0)
-
-    include(${QT_USE_FILE})
-
-    if(BUILD_SUPERBUILD)
-      set(VTK_QT_ARGS
-        -DDESIRED_QT_VERSION:STRING=4
-        -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-        -DVTK_USE_QT:BOOL=ON
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-       )
-     endif(BUILD_SUPERBUILD)
-
-  endif(QT_FOUND)
-endif(BUILD_GUI)
-
+if(QT_FOUND)
+  set(QT_USE_QTXML 1)
+  set(QT_USE_QTXMLPATTERNS 1)
+  set(QT_USE_PHONON 0)
+  include(${QT_USE_FILE})
+  if(BUILD_SUPERBUILD)
+    set(VTK_QT_ARGS
+      -DDESIRED_QT_VERSION:STRING=4
+      -DVTK_USE_GUISUPPORT:BOOL=ON
+      -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
+      -DVTK_USE_QT:BOOL=ON
+      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+    )
+  endif(BUILD_SUPERBUILD)
+else()
+ message(FATAL "Qt is mandatory, but QT_FOUND is false.")
+endif()
+ 
 ######################################################################
 # Find CUDA: Required by the Nifty packages
 ######################################################################
