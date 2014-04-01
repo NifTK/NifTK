@@ -49,11 +49,11 @@ void QmitkCommonAppsMIDASPerspective::CreateInitialLayout(berry::IPageLayout::Po
   layout->AddView("uk.ac.ucl.cmic.imagestatistics",
     berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.imagelookuptables");
 
-  layout->AddView("uk.ac.ucl.cmic.sideview",
+  layout->AddView("uk.ac.ucl.cmic.sideviewer",
     berry::IPageLayout::RIGHT, 0.70f, editorArea);
 
   berry::IFolderLayout::Pointer segmentationViewsFolder =
-      layout->CreateFolder("uk.ac.ucl.cmic.segmentationviews", berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.sideview");
+      layout->CreateFolder("uk.ac.ucl.cmic.segmentationviews", berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.sideviewer");
   segmentationViewsFolder->AddView("uk.ac.ucl.cmic.midasmorphologicalsegmentor");
   segmentationViewsFolder->AddView("uk.ac.ucl.cmic.midasgeneralsegmentor");
 }
