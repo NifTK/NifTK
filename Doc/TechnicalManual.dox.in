@@ -28,9 +28,11 @@ the design decisions will be explained in detail. It is however assumed that the
 \li \subpage HowToContributeToThePlatform
 \li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
+\li \subpage HowToDoUltrasoundCalibration
 \li \subpage TestingApplications
 \li \subpage TechnicalCheckListPreRelease
 \li \subpage TechnicalCheckListPostRelease
+\li \subpage BuildInstructionsKelvin
 
 \section TechnicalManualAdditional Additional Reading
 
