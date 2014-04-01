@@ -220,7 +220,7 @@ void QmitkCommonAppsApplicationPlugin::BlankDepartmentalLogo()
 void QmitkCommonAppsApplicationPlugin::NodeAddedProxy(const mitk::DataNode *node)
 {
   // guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_InDataStorageChanged)
+  if (!m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     this->NodeAdded(node);
@@ -243,7 +243,7 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
 void QmitkCommonAppsApplicationPlugin::NodeRemovedProxy(const mitk::DataNode *node)
 {
   // guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_InDataStorageChanged)
+  if (!m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     this->NodeRemoved(node);
@@ -257,7 +257,6 @@ void QmitkCommonAppsApplicationPlugin::NodeRemoved(const mitk::DataNode *constNo
 {
   mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
 
-  // Not sure if we need this block.
   // Removing observers on a node thats being deleted?
 
   if (mitk::IsNodeAGreyScaleImage(node))
@@ -268,13 +267,21 @@ void QmitkCommonAppsApplicationPlugin::NodeRemoved(const mitk::DataNode *constNo
     std::map<mitk::DataNode*, unsigned long int>::iterator highestIter;
     highestIter = m_NodeToHighestOpacityObserverMap.find(node);
 
-    if (lowestIter != m_NodeToLowestOpacityObserverMap.end() && highestIter != m_NodeToHighestOpacityObserverMap.end())
+    if (lowestIter != m_NodeToLowestOpacityObserverMap.end())
     {
-      mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-      lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+      if (highestIter != m_NodeToHighestOpacityObserverMap.end())
+      {
+        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
+        lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
 
-      mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-      highestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
+        highestIsOpaqueProperty->RemoveObserver(highestIter->second);
+
+        m_NodeToLowestOpacityObserverMap.erase(lowestIter->first);
+        m_NodeToHighestOpacityObserverMap.erase(highestIter->first);
+        m_PropertyToNodeMap.erase(lowestIsOpaqueProperty.GetPointer());
+        m_PropertyToNodeMap.erase(highestIsOpaqueProperty.GetPointer());
+      }
     }
   }
 }
