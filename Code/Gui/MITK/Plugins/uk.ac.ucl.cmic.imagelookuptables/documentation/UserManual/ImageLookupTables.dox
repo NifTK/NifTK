@@ -100,7 +100,7 @@ When the application first loads an image, it will have
 to set the window/level to a suitable range. The minimum, maximum, mean and standard deviation (stdDev)
 of the image intensity data is calculated. Then there are three types of initialisation.
 <ul>
-  <li> Initialise based on MIDAS application. This sets the level to \f$ (minimum + 4.51*stdDev)/2.0 \f$, and the window size to \f$ 4.5*stdDev \f$.
+  <li> Initialise based on MIDAS application. This sets the level to (minimum + 4.51*stdDev)/2.0, and the window size to (4.5*stdDev).
   <li> Initialise to the same values as on the MITK Level/Window widget. This sets the level to the average of the maximum and minimum image intensity values, and the window size to the full range of the data. This typically looks darker than the MIDAS settings.
   <li> Initialise based on a percentage of the minimum and maximum of image data. Here, the maximum slider is set to a percentage of the maximum image intensity value. The minimum is set to the minimum of the data. The window/level are then calculated accordingly.
 </ul>
