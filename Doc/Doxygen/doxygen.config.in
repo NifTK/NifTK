@@ -304,7 +304,8 @@ EXAMPLE_PATH     = @CMAKE_BINARY_DIR@/LICENSE.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_NiftySim.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_OpenCV.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_Qt.txt \
-                   @CMAKE_BINARY_DIR@/LICENSE_VTK.txt
+                   @CMAKE_BINARY_DIR@/LICENSE_VTK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_RTK.txt
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cxx 
