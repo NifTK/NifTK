@@ -361,6 +361,22 @@ extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1,
 extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
     const std::pair < unsigned int, cv::Point2d>& p2 );
 
+/**
+ * \brief works out the rigid rotation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeRotation ( 
+    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+    double& Residual);
+
+/**
+ * \brief works out the rigid translation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeTranslation ( 
+    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+    double& Residual, const cv::Mat & rcg);
+
 } // end namespace
 
 #endif
