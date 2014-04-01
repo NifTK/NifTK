@@ -49,6 +49,6 @@ private:
   static ImageLookupTablesViewActivator* s_Inst;
 };
 
-} // end namepace
+}
 
 #endif
