@@ -15,7 +15,7 @@
 
 \section ImageLookupTablesIntroduction Introduction
 
-The Image Lookup Tables plugin provides the ability to assign a different colour map to each image.
+The Image Lookup Tables view provides the ability to assign a different colour map to each image.
 Each image will have range of intensity values, for example ranging from some minimum value such as 0
 to a maximum value such as 4096.  These image intensity values must be converted to the colour values 
 seen on the screen.  
@@ -32,11 +32,11 @@ in the colour map between 0 and 255 in a linear fashion.
 
 \image html Diagram1.png "Figure 1. Intensity values are mapped to indexes within the lookup table."
  
-This plugin provides a range of pre-set "lookup tables" or "colour maps" to enable different colour schemes to be applied.
-For example, there are colour maps suitable for MR images (grey), PET images (NIH),
-images of the determinant of a Jacobian of a transformation (MIDAS overlay) and ones derived from
-popular image processing packages, such as Image J's Fire lookup table, and MATLAB's hot, cool,
-spring, summer, autumn, winter.
+The Image Lookup Tables view provides a range of pre-set "lookup tables" or "colour maps"
+to enable different colour schemes to be applied. For example, there are colour maps suitable for
+MR images (grey), PET images (NIH), images of the determinant of a Jacobian of a transformation (MIDAS overlay)
+and ones derived from popular image processing packages, such as Image J's Fire lookup table, and MATLAB's hot,
+cool, spring, summer, autumn, winter.
 
 \image html ExampleLookupTables.png "Figure 2. Lookup tables include greyscale, ImageJ Fire and the NIH Pet colour map."
 
@@ -46,11 +46,11 @@ spring, summer, autumn, winter.
 
 \image html ScreenshotMainView.jpg "Figure 3. The main GUI view."
 
-The main GUI view is shown in Figure 3. By default, a grey colour map is used,
-mapping intensity values from black to white.
+The main graphical user interface (GUI) view is shown in Figure 3.
+By default, a grey colour map is used, mapping intensity values from black to white.
 
-An image can be selected in the DataManager plugin, by left single-clicking on the name.
-Once an image is selected, the GUI controls of the ImageLookupTables plugin are set to
+An image can be selected in the DataManager view, by left single-clicking on the name.
+Once an image is selected, the GUI controls of the Image Lookup Tables view are set to
 reflect the properties on the selected image.
 
 \subsection ImageLookupTablesUsageRange Selecting the Colour Range.
@@ -67,18 +67,18 @@ The term "level" is equivalent to "brightness" and "window" is equivalent to "co
 
 \subsection ImageLookupTablesUsageMinMax Setting the Minimum and Maximum Limits
 
-When an image is first loaded the minimum and maximum values are calculated, and normally these are
+When an image is first loaded the minimum and maximum values of the data are calculated, and normally these are
 the range of data that the user is interested in viewing. For this reason, the minimum and maximum
-image intensity value is also the minimum and maximum range of the sliders. However, there may be
+image intensity value of the data is also the minimum and maximum range of the sliders. However, there may be
 cases where it is necessary to specify these limits manually.  These limits can be set manually
 using the data limits min and max boxes. The reset button will then revert back to the minimum
-and maximum image values.
+and maximum image data values.
 
 \subsection ImageLookupTablesUsagePreferences Application Level Preferences
 
-\image html ApplicationPreferences.jpg Figure 4. Application Level Preferences that apply to the Image Lookup Tables plugin.
+\image html ApplicationPreferences.jpg Figure 4. Application level preferences that apply to the Image Lookup Tables view.
 
-The Application preference page can be seen in Figure 4. When an image is loaded, the default
+The Application Preferences page can be seen in Figure 4. When an image is loaded, the default
 grey scale colour map is applied. In addition there are two properties added.
 <ul>
   <li>Default lowest lookup table value opacity. This sets the opacity of the lowest (darkest, normally black) lookup table value. 1 is opaque, 0 is transparent. This is stored in property "Image Rendering.Lowest Value Opacity"
@@ -86,31 +86,28 @@ grey scale colour map is applied. In addition there are two properties added.
 </ul>
 
 These properties enable you to control the opacity of things at the bottom/top end of your colour lookup table.
-These properties are set according to these values, only when the image is first loaded.
-Thereafter, you can edit the opacity value using the Properties plugin.
+These properties are set according to these preference values, only when the image is first loaded.
+Thereafter, you can edit the opacity value using the Properties view.
 
 \subsection ImageLookupTablesUsageAppSpecificPreferences Application Specific Preferences
 
-\image html ScreenshotAppSpecificPrefs.jpg Figure 5. Application Specific Preferences that apply to the Image Lookup Tables plugin.
+\image html ScreenshotAppSpecificPrefs.jpg Figure 5. Application specific (NiftyView) preferences that apply to the Image Lookup Tables view.
 
 Depending on the application run, additional preferences may be registered.
-The user may be able to chose how the lookup table window/level is initialised.
+The user may be able to choose how the lookup table window/level is initialised.
 
-When the plugin first encounters an image, it will have
-to set the sliders to a suitable minimum and maximum range. There are two types of initialisation.
+When the application first loads an image, it will have
+to set the window/level to a suitable range. The minimum, maximum, mean and standard deviation (stdDev)
+of the image intensity data is calculated. Then there are three types of initialisation.
 <ul>
-  <li> Initialise based on MIDAS application.
-  <li> Initialise to the same values as on the MITK Level/Window widget.
-  <li> Initialise based on the minimum and maximum image data.
+  <li> Initialise based on MIDAS application. This sets the level to \f$ (minimum + 4.51*stdDev)/2.0 \f$, and the window size to \f$ 4.5*stdDev \f$.
+  <li> Initialise to the same values as on the MITK Level/Window widget. This sets the level to the average of the maximum and minimum image intensity values, and the window size to the full range of the data. This typically looks darker than the MIDAS settings.
+  <li> Initialise based on a percentage of the minimum and maximum of image data. Here, the maximum slider is set to a percentage of the maximum image intensity value. The minimum is set to the minimum of the data. The window/level are then calculated accordingly.
 </ul>
-
-Furthermore, for the third option only, you can select that the even when the minimum and maximum range of the
-sliders are set to the minimum and maximum range of the image data, the maximum slider is set to the given
-percentage of the full range.
 
 \subsection ImageLookupTablesUsagePluginSpecificPreferences Plugin Specific Preferences
 
-\image html ScreenshotPluginSpecificPrefs.jpg Figure 6. Plugin Specific Preferences that apply to the Image Lookup Tables plugin.
+\image html ScreenshotPluginSpecificPrefs.jpg Figure 6. Plugin specific preferences that apply to the Image Lookup Tables view.
 
 In addition, there is a preference registered under Image Lookup Tables to set the precision of the spin boxes. This is useful
 if for example the images are floating point images, and the user needs fine control.
