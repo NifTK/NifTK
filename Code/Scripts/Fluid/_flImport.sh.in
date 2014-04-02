@@ -22,6 +22,7 @@ bl_air=$4
 rp_image_native=$5
 rp_brain_native=$6
 input_fluid=$7
+no_dbc=$8
 
 # Include necessary functions
 source _niftkCommon.sh
@@ -71,8 +72,14 @@ bl_image_dbc=${bl_id}-005-1_dbc
 # repeat image after dbc.
 rp_image_dbc=${rp_id}-005-1_dbc
 
-# Differential bias correction.
-differentialbiascorrect ${bl_image} ${rp_image} ${bl_brain} ${rp_brain} . 5 /tmp ${bl_image_dbc} ${rp_image_dbc} 3 0 0 0 0
+if [ "${no_dbc}" == "0" ]
+then
+  # Differential bias correction.
+  differentialbiascorrect ${bl_image} ${rp_image} ${bl_brain} ${rp_brain} . 5 /tmp ${bl_image_dbc} ${rp_image_dbc} 3 0 0 0 0
+else
+  anchange ${bl_image} ${bl_image_dbc} -sex m
+  anchange ${rp_image} ${rp_image_dbc} -sex m
+fi
 
 # output image with "_cropped" appended.
 echo "${bl_brain_vents} ${bl_image_dbc}.img ${rp_image_dbc}.img" > ${tmpdir}/input.txt

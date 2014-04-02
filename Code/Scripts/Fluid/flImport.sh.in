@@ -36,6 +36,8 @@ Mandatory Arguments:
                               "input registered repeat native space brain mask".
   input_fluid.txt : is the name of the output file.
 
+Options:
+  -no_dbc : no DBC.
 
 Note that the input baseline native-to-standard-space AIR file normally sits in params/atlas-9dof6/register-air/ in Midas.
   
@@ -67,7 +69,7 @@ function iterate_through_input_file()
     if [ "$DO_THE_CROPPING" = "CROP" ]; then
 
       # Generate a file of all commands
-      echo "_flImport.sh \"${bl_image}\" \"${bl_brain}\" \"${bl_vents}\" \"${bl_air}\" \"${rp_image_native}\" \"${rp_brain_native}\" \"${input_fluid}\" " >> ${job_file}
+      echo "_flImport.sh \"${bl_image}\" \"${bl_brain}\" \"${bl_vents}\" \"${bl_air}\" \"${rp_image_native}\" \"${rp_brain_native}\" \"${input_fluid}\" ${no_dbc}" >> ${job_file}
 
     else
     
@@ -106,6 +108,21 @@ input_fluid=$2
 if [ "$FILENAME" = "" ]; then
   Usage
 fi
+
+shift 2
+no_dbc=0
+
+while [ "$1" != "" ] ; do
+    if [ "$1" = "-no_dbc" ] ; then
+        no_dbc=1
+        shift 1
+    else
+        Usage
+    fi
+done
+
+
+
 
 echo "Running $0 using file=$FILENAME"
 
