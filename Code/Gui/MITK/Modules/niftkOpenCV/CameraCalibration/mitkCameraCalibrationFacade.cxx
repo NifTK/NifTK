@@ -1102,75 +1102,83 @@ void Project3DModelPositionsToStereo2D(
       );
 
   CvMat *leftCameraRotationMatrix = cvCreateMat(3, 3, CV_64FC1);
+  CvMat *leftExtrinsics = cvCreateMat(4,4,CV_64FC1);
+  CvMat *rightToLeft = cvCreateMat(4,4,CV_64FC1);
+  CvMat *leftToRight = cvCreateMat(4,4,CV_64FC1);
+  CvMat *rightExtrinsics = cvCreateMat(4,4,CV_64FC1);
+  CvMat *rightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat *rightRotationVector = cvCreateMat(1,3,CV_64FC1);
+  CvMat *rightTranslationVector = cvCreateMat(1,3,CV_64FC1);
+
+  cvSetIdentity(leftCameraRotationMatrix);
+  cvSetIdentity(leftExtrinsics);
+  cvSetIdentity(rightToLeft);
+  cvSetIdentity(leftToRight);
+  cvSetIdentity(rightExtrinsics);
+  cvSetIdentity(rightRotationMatrix);
+  cvSetIdentity(rightRotationVector);
+  cvSetIdentity(rightTranslationVector);
+
   cvRodrigues2(&leftCameraRotationVector, leftCameraRotationMatrix);
 
-  CvMat *modelPointsIn3DInLeftCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_64FC1);   // So, [3xN] matrix.
-  cvGEMM(leftCameraRotationMatrix, &modelPointsIn3D, 1, NULL, 0, modelPointsIn3DInLeftCameraSpace, CV_GEMM_B_T); // ie. [3x3][Nx3]^T = [3xN].
-
-  // This bit just to add the translation on, to get 3D model points, into 3D camera coordinates for left camera.
-  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  for (int i = 0; i < 3; i++)
   {
-    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 0, i) + CV_MAT_ELEM(leftCameraTranslationVector, double, 0, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 1, i) + CV_MAT_ELEM(leftCameraTranslationVector, double, 0, 1);
-    CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, double, 2, i) + CV_MAT_ELEM(leftCameraTranslationVector, double, 0, 2);
+    for (int j = 0; j < 3; j++)
+    {
+      CV_MAT_ELEM(*leftExtrinsics, double, i, j) = CV_MAT_ELEM(*leftCameraRotationMatrix, double, i, j);
+      CV_MAT_ELEM(*rightToLeft, double, i, j) = CV_MAT_ELEM(rightToLeftRotationMatrix, double, i, j);
+    }
+    CV_MAT_ELEM(*leftExtrinsics, double, i, 3) = CV_MAT_ELEM(leftCameraTranslationVector, double, 0, i);
+    CV_MAT_ELEM(*rightToLeft, double, i, 3) = CV_MAT_ELEM(rightToLeftTranslationVector, double, i, 0);
   }
 
-  CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
-  cvInv(&rightToLeftRotationMatrix, leftToRightRotationMatrix);
+  cvInv(rightToLeft, leftToRight);
+  cvGEMM(leftToRight, leftExtrinsics, 1, NULL, 0, rightExtrinsics);
 
-  CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_64FC1);        // So, [3xN] matrix.
-  cvGEMM(leftToRightRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
-
-  // Add translation again, to get 3D model points into 3D camera coordinates for right camera.
-  for (int i = 0; i < modelPointsIn3D.rows; i++)
+  for (int i = 0; i < 3; i++)
   {
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 0, i) - CV_MAT_ELEM(rightToLeftTranslationVector, double, 0, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 1, i) - CV_MAT_ELEM(rightToLeftTranslationVector, double, 1, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, double, 2, i) - CV_MAT_ELEM(rightToLeftTranslationVector, double, 2, 0);
+    for (int j = 0; j < 3; j++)
+    {
+      CV_MAT_ELEM(*rightRotationMatrix, double, i, j) = CV_MAT_ELEM(*rightExtrinsics, double, i, j);
+    }
+    CV_MAT_ELEM(*rightTranslationVector, double, 0, i) = CV_MAT_ELEM(*rightExtrinsics, double, i, 3);
   }
 
-  // Now project those points to 2D
-  CvMat *rightCameraRotationMatrix = cvCreateMat(3, 3, CV_64FC1);
-  CvMat *rightCameraRotationVector = cvCreateMat(1, 3, CV_64FC1);
+  cvRodrigues2(rightRotationMatrix, rightRotationVector);
 
-  cvSetIdentity(rightCameraRotationMatrix);
-  cvRodrigues2(rightCameraRotationMatrix, rightCameraRotationVector);
-
-  CvMat *rightCameraTranslationVector = cvCreateMat(1, 3, CV_64FC1);
-  cvSetZero(rightCameraTranslationVector);
-
-  CvMat *modelPointsIn3DInRightCameraSpaceTransposed = cvCreateMat(modelPointsIn3D.rows, modelPointsIn3D.cols, CV_64FC1);
-  cvTranspose(modelPointsIn3DInRightCameraSpace, modelPointsIn3DInRightCameraSpaceTransposed);
-
+  // NOTE: modelPointsIn3D should be [Nx3]. i.e. N rows, 3 columns.
   cvProjectPoints2(
-      modelPointsIn3DInRightCameraSpaceTransposed,
-      rightCameraRotationVector,
-      rightCameraTranslationVector,
-      &rightCameraIntrinsic,
-      &rightCameraDistortion,
-      &output2DPointsRight
-      );
-  
-  if ( cropPointsToScreen ) 
+    &modelPointsIn3D,
+    rightRotationVector,
+    rightTranslationVector,
+    &rightCameraIntrinsic,
+    &rightCameraDistortion,
+    &output2DPointsRight
+  );
+
+  if ( cropPointsToScreen )
   {
     CvMat *leftCameraZeroDistortion = cvCreateMat(leftCameraDistortion.rows, leftCameraDistortion.cols , CV_64FC1);
-    for ( int i = 0 ; i < leftCameraDistortion.rows ; i ++ ) 
+    for ( int i = 0 ; i < leftCameraDistortion.rows ; i ++ )
     {
-      for ( int j = 0 ; j < leftCameraDistortion.cols ; j ++ ) 
+      for ( int j = 0 ; j < leftCameraDistortion.cols ; j ++ )
       {
         CV_MAT_ELEM(*leftCameraZeroDistortion, double , i , j) = 0.0;
       }
     }
+
     CvMat *rightCameraZeroDistortion = cvCreateMat(rightCameraDistortion.rows, rightCameraDistortion.cols , CV_64FC1);
-    for ( int i = 0 ; i < rightCameraDistortion.rows ; i ++ ) 
+    for ( int i = 0 ; i < rightCameraDistortion.rows ; i ++ )
     {
-      for ( int j = 0 ; j < rightCameraDistortion.cols ; j ++ ) 
+      for ( int j = 0 ; j < rightCameraDistortion.cols ; j ++ )
       {
         CV_MAT_ELEM(*rightCameraZeroDistortion, double , i , j) = 0.0;
       }
     }
+
     CvMat *zeroDistortion2DPointsLeft = cvCreateMat(output2DPointsLeft.rows, output2DPointsLeft.cols, CV_64FC1);
     CvMat *zeroDistortion2DPointsRight = cvCreateMat(output2DPointsRight.rows, output2DPointsRight.cols, CV_64FC1);
+
     cvProjectPoints2(
       &modelPointsIn3D,
       &leftCameraRotationVector,
@@ -1179,15 +1187,17 @@ void Project3DModelPositionsToStereo2D(
       leftCameraZeroDistortion,
       zeroDistortion2DPointsLeft
       );
+
     cvProjectPoints2(
-      modelPointsIn3DInRightCameraSpaceTransposed,
-      rightCameraRotationVector,
-      rightCameraTranslationVector,
+      &modelPointsIn3D,
+      rightRotationVector,
+      rightTranslationVector,
       &rightCameraIntrinsic,
       rightCameraZeroDistortion,
       zeroDistortion2DPointsRight
       );
-    for ( int i = 0 ; i < output2DPointsLeft.rows ; i ++ ) 
+
+    for ( int i = 0 ; i < output2DPointsLeft.rows ; i ++ )
     {
       if (
         ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) < xLow ) ||
@@ -1199,7 +1209,7 @@ void Project3DModelPositionsToStereo2D(
         CV_MAT_ELEM ( output2DPointsLeft, double , i , 1) = cropValue;
       }
     }
-    for ( int i = 0 ; i < output2DPointsRight.rows ; i ++ ) 
+    for ( int i = 0 ; i < output2DPointsRight.rows ; i ++ )
     {
       if (
         ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) < xLow ) ||
@@ -1215,16 +1225,16 @@ void Project3DModelPositionsToStereo2D(
     cvReleaseMat(&zeroDistortion2DPointsRight);
     cvReleaseMat(&leftCameraZeroDistortion);
     cvReleaseMat(&rightCameraZeroDistortion);
-  }   
+  }
 
   cvReleaseMat(&leftCameraRotationMatrix);
-  cvReleaseMat(&leftToRightRotationMatrix);
-  cvReleaseMat(&modelPointsIn3DInLeftCameraSpace);
-  cvReleaseMat(&modelPointsIn3DInRightCameraSpace);
-  cvReleaseMat(&rightCameraRotationMatrix);
-  cvReleaseMat(&rightCameraRotationVector);
-  cvReleaseMat(&rightCameraTranslationVector);
-  cvReleaseMat(&modelPointsIn3DInRightCameraSpaceTransposed);
+  cvReleaseMat(&leftExtrinsics);
+  cvReleaseMat(&rightToLeft);
+  cvReleaseMat(&leftToRight);
+  cvReleaseMat(&rightExtrinsics);
+  cvReleaseMat(&rightRotationMatrix);
+  cvReleaseMat(&rightRotationVector);
+  cvReleaseMat(&rightTranslationVector);
 }
 
 
