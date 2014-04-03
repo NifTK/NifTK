@@ -779,6 +779,43 @@ if(Boost_FOUND)
   endif(WIN32)
 endif(Boost_FOUND)
 
+######################################################################
+# Find OpenMP and make sure Microsoft DirectComposition Library (dcomp.dll) is deployed
+######################################################################
+
+if (WIN32)
+  find_package(OpenMP)
+
+  if(OPENMP_FOUND)
+    message("Found OpenMP")
+
+    if(CMAKE_CL_64)
+      if(MSVC_VERSION GREATER 1599)
+        # VS 10 and later:
+        set(CMAKE_MSVC_ARCH x64)
+      else()
+        # VS 9 and earlier:
+        set(CMAKE_MSVC_ARCH amd64)
+      endif()
+    else()
+      set(CMAKE_MSVC_ARCH x86)
+    endif()
+
+    if (MSVC90)
+      set (_omp_dll "${MSVC90_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC90.OPENMP/vcomp90.dll")
+    elseif (MSVC10)
+      set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.OPENMP/vcomp100.dll")
+    elseif (MSVC11)
+      set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.OPENMP/vcomp110.dll")
+    elseif (MSVC12)
+      set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.OPENMP/vcomp120.dll")
+    endif ()
+
+    message("Found OpenMP dll at: ${_omp_dll}")
+
+    set (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS};${_omp_dll}")
+  endif()
+endif()
 
 ######################################################################
 # Find VTK.
