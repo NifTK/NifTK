@@ -80,7 +80,7 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *pointCounts = NULL;
 
   CvMat *intrinsicMatrix = cvCreateMat(3,3,CV_64FC1);
-  CvMat *distortionCoeffs = cvCreateMat(4, 1, CV_64FC1);
+  CvMat *distortionCoeffs = cvCreateMat(1, 4, CV_64FC1);
 
   LoadImagesFromDirectory(fullDirectoryName, images, fileNames);
 
