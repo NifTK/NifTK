@@ -66,10 +66,10 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
   leftErrors.push_back(cv::Point2d(19.0695, 11.079));
   
   std::vector <cv::Point2d> rightErrors;
-  rightErrors.push_back(cv::Point2d(0.0,0.0));
-  rightErrors.push_back(cv::Point2d(40.5056, -0.068661 ));
-  rightErrors.push_back(cv::Point2d(-0.0689459, 30.6163 ));
-  rightErrors.push_back(cv::Point2d(19.8522, 11.2005));
+  rightErrors.push_back(cv::Point2d(0.195419, 0.23519));
+  rightErrors.push_back(cv::Point2d(40.7176, -0.0442551 ));
+  rightErrors.push_back(cv::Point2d(-0.522525, 30.5887 ));
+  rightErrors.push_back(cv::Point2d(19.3863, 11.421));
   
   for ( int i = 0 ; i < 4 ; i ++ ) 
   {
