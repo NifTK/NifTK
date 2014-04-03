@@ -271,23 +271,23 @@ int mitkReprojectionTest ( int argc, char * argv[] )
 
 
  //check it with the c Wrapper function
-  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat leftCameraTranslationVector = cv::Mat (1,3,CV_64FC1);
+  cv::Mat leftCameraRotationVector = cv::Mat (1,3,CV_64FC1);
+  cv::Mat rightCameraTranslationVector = cv::Mat (1,3,CV_64FC1);
+  cv::Mat rightCameraRotationVector = cv::Mat (1,3,CV_64FC1);
  
   for ( int i = 0 ; i < 3 ; i ++ ) 
   {
-    leftCameraTranslationVector.at<double>(i,0) = 0.0;
-    leftCameraRotationVector.at<double>(i,0) = 0.0;
+    leftCameraTranslationVector.at<double>(0,i) = 0.0;
+    leftCameraRotationVector.at<double>(0,i) = 0.0;
   }
   rightCameraTranslationVector = rightToLeftTranslationVector * -1;
   cv::Rodrigues ( rightToLeftRotationMatrix.inv(), rightCameraRotationVector  );
   
-  MITK_INFO << leftCameraTranslationVector;
-  MITK_INFO << leftCameraRotationVector;
-  MITK_INFO << rightCameraTranslationVector;
-  MITK_INFO << rightCameraRotationVector;
+  MITK_DEBUG << leftCameraTranslationVector;
+  MITK_DEBUG << leftCameraRotationVector;
+  MITK_DEBUG << rightCameraTranslationVector;
+  MITK_DEBUG << rightCameraRotationVector;
 
   CvMat leftScreenPointsMat = leftScreenPoints;// cvCreateMat(numberOfPoints,2,CV_64FC1;
   CvMat rightScreenPointsMat= rightScreenPoints; 
@@ -534,14 +534,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_INFO << "Mean y error c++ wrapper = " <<  yErrorMean_m2; 
   MITK_INFO << "Mean z error c++ wrapper = " <<  zErrorMean_m2; 
   MITK_INFO << "RMS error c++ wrapper = " <<  errorRMS_m2; 
-  MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 1e-3 , "Testing x error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_m1 < 2e-3 , "Testing RMS error value for c method");
-  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 0.5 , "Testing x error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 0.5 , "Testing y error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 0.5 , "Testing z error mean value for c++ method");
-  MITK_TEST_CONDITION (errorRMS_m2 < 2.0 , "Testing RMS error value for c++ method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 0.5, "Testing x error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 0.5, "Testing y error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 0.5, "Testing z error mean value for c wrapper method");
+  MITK_TEST_CONDITION (errorRMS_m1 < 2.0 , "Testing RMS error value for c method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 1e-3, "Testing x error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 1e-3, "Testing y error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 1e-3, "Testing z error mean value for c++ method");
+  MITK_TEST_CONDITION (errorRMS_m2 < 2e-3, "Testing RMS error value for c++ method");
 
   MITK_INFO << "Method 1 Trimmed Dumped " << numberOfPoints - goodPoints_trimmed_m1 << " off screen points";
   MITK_INFO << "Method 2 Trimmed Dumped " << numberOfPoints - goodPoints_trimmed_m2 << " off screen points";
@@ -562,14 +562,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_INFO << "Mean y error trimmed c++ wrapper = " <<  yErrorMean_trimmed_m2; 
   MITK_INFO << "Mean z error trimmed c++ wrapper = " <<  zErrorMean_trimmed_m2; 
   MITK_INFO << "RMS error trimmed c++ wrapper = " <<  errorRMS_trimmed_m2; 
-  MITK_TEST_CONDITION (fabs(xErrorMean_trimmed_m1) < 1e-3 , "Testing x error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_trimmed_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_trimmed_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_trimmed_m1 < 2e-3 , "Testing RMS error value for c method");
-  MITK_TEST_CONDITION (fabs(xErrorMean_trimmed_m2) < 0.5 , "Testing x error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_trimmed_m2) < 0.5 , "Testing y error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_trimmed_m2) < 0.5 , "Testing z error mean value for c++ method");
-  MITK_TEST_CONDITION (errorRMS_trimmed_m2 < 2.0 , "Testing RMS error value for c++ method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_trimmed_m1) < 0.5, "Testing x error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_trimmed_m1) < 0.5, "Testing y error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_trimmed_m1) < 0.5, "Testing z error mean value for c wrapper method");
+  MITK_TEST_CONDITION (errorRMS_trimmed_m1 < 2.0, "Testing RMS error value for c method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_trimmed_m2) < 1e-3, "Testing x error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_trimmed_m2) < 1e-3, "Testing y error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_trimmed_m2) < 1e-3, "Testing z error mean value for c++ method");
+  MITK_TEST_CONDITION (errorRMS_trimmed_m2 < 2e-3, "Testing RMS error value for c++ method");
 
   MITK_TEST_END();
 }
