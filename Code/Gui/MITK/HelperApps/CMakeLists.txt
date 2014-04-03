@@ -122,6 +122,7 @@ if(SlicerExecutionModel_FOUND)
       niftkHandeyeCalibrationFromDirectory
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
+      niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair

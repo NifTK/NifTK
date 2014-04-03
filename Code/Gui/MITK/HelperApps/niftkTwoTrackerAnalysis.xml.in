@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calibrate and analysise two independent tracking directories</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>Directory1</name>
+      <longflag>Directory1</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+  
+    <directory>
+      <name>Directory2</name>
+      <longflag>Directory2</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <file>
+      <name>TCfileout</name>
+      <longflag>TCfileout</longflag>
+      <description>A file to writeout the temporal calibration results.</description>
+      <label>A file to writeout the temporal calibration results</label>
+    </file>
+    <file>
+      <name>HEfileout</name>
+      <longflag>HEfileout</longflag>
+      <description>A file to writeout the handeye results.</description>
+      <label>A file to writeout the temporal handeye results</label>
+    </file>
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <integer>
+	<name>temporalWindowLow</name>
+	<longflag>temporalWindowLow</longflag>
+	<description>The lower value (ms) for the temporal calibration window</description>
+	<label>The lower valuer (ms) for the temporal calibration window</label>
+	<default>-50</default>
+    </integer>
+
+    <integer>
+	<name>temporalWindowHigh</name>
+	<longflag>temporalWindowHigh</longflag>
+	<description>The upper value (ms) for the temporal calibration window</description>
+	<label>The upper valuer (ms) for the temporal calibration window</label>
+	<default>50</default>
+</integer>
+
+  </parameters>
+  
+</executable>
