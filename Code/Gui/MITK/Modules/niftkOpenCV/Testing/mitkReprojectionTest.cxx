@@ -534,6 +534,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_INFO << "Mean y error c++ wrapper = " <<  yErrorMean_m2; 
   MITK_INFO << "Mean z error c++ wrapper = " <<  zErrorMean_m2; 
   MITK_INFO << "RMS error c++ wrapper = " <<  errorRMS_m2; 
+
   MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 0.5, "Testing x error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 0.5, "Testing y error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 0.5, "Testing z error mean value for c wrapper method");
