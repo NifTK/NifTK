@@ -278,6 +278,15 @@ extern "C++" NIFTKOPENCV_EXPORT void ProjectAllPoints(
   CvMat& outputImagePoints
   );
 
+/**
+ * \brief Calculates the RMS projection error.
+ * \param projectedPoints [Nx2] list of 2D points, measured in pixels.
+ * \param goldStandardPoints [Nx2] list of 2D points, measured in pixels.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double CalculateRPE(
+    const CvMat& projectedPoints,
+    const CvMat& goldStandardPoints
+    );
 
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
