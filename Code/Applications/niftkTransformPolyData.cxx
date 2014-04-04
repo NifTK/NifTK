@@ -129,11 +129,11 @@ int main(int argc, char** argv)
   std::cout << "Loaded PolyData:" << args.inputPolyDataFile << std::endl;
   
   vtkTransformPolyDataFilter *filter = vtkTransformPolyDataFilter::New();
-  filter->SetInput(reader->GetOutput());
+  filter->SetInputDataObject(reader->GetOutput());
   filter->SetTransform(vtkTransform);
   
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInput(filter->GetOutput());
+  writer->SetInputDataObject(filter->GetOutput());
   writer->SetFileName(args.outputPolyDataFile.c_str());
   writer->Update();
 }
