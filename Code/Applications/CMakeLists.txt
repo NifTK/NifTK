@@ -90,9 +90,9 @@ if(SlicerExecutionModel_FOUND)
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
-    niftkMammogramMaskSegmentation
-    niftkMaskDICOMMammograms
-    niftkMammogramPectoralisSegmentation
+    #niftkMammogramMaskSegmentation
+    #niftkMaskDICOMMammograms
+    #niftkMammogramPectoralisSegmentation
     niftkMultiply
     niftkN4BiasFieldCorrection
     niftkNegateImage
