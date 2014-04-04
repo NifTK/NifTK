@@ -370,7 +370,7 @@ if(VTK_FOUND)
     # Add new programs to this list.
     ##############################################################
     set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
-      niftkCreateBreastMesh
+      #niftkCreateBreastMesh
     )
     list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
 
