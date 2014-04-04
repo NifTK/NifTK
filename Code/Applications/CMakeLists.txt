@@ -192,7 +192,7 @@ endif()
 ###############################################################
 
 set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
-  niftkBreastMaskSegmentationFromMRI
+  #niftkBreastMaskSegmentationFromMRI
   niftkOCTVolumeConstructor
   niftkVesselExtractor
   )
@@ -329,7 +329,7 @@ if(VTK_FOUND)
   # Add new programs to this list.
   ##############################################################
   set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
-    niftkBreastMaskSegmentationFromMRI
+    #niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
     niftkConvertNiftiVectorImage
     niftkDecimatePolyData
