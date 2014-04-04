@@ -120,7 +120,7 @@ int main(int argc, char** argv)
   reader->SetFileName(args.inputPolyDataFile.c_str());
   
   vtkDecimatePro *filter = vtkDecimatePro::New();
-  filter->SetInput(reader->GetOutput());
+  filter->SetInputConnection(reader->GetOutputPort());
   filter->SetPreserveTopology(args.preserveTopology);
   
   if (args.featureAngleSpecified) filter->SetFeatureAngle(args.featureAngle);
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   if (args.targetReductionFactorSpecified) filter->SetTargetReduction(args.targetReductionFactor);
   
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInput(filter->GetOutput());
+  writer->SetInputConnection(filter->GetOutputPort());
   writer->SetFileName(args.outputPolyDataFile.c_str());
   writer->Update();
 }
