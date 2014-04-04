@@ -300,7 +300,7 @@ std::string SO_OrientationToString(SO_OrientationType in)
     default:
       {
       std::stringstream x;
-      x << (in & 0xff) << ", " << ((in >> 8) & 0xff) << ", " << ((in >> 16) && 0xff);
+      x << (in & 0xff) << ", " << ((in >> 8) & 0xff) << ", " << ((in >> 16) & 0xff);
       return x.str();
       }
     }
