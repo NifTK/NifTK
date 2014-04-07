@@ -206,7 +206,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     /// is a start or end point of both contours, we have not processed it in the previous round,
     /// and it is still 0 now.
     ///
-    /// If the corner point is the start or end of only one contour, like in the following example,
+    /// If the corner point is the start or end of only one contour, like in the following examples,
     /// we do not need to do anything.
     ///
     ///    +-------+-------+-------+-------+
@@ -225,11 +225,28 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     ///       12      13      14      15
     ///
     ///
+    ///    +-------+-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 48 |   0   |   2   |   2   |   2   |
+    ///    |       |       |       |       |
+    ///    +-------o---o---+---o---+---o---+
+    ///    |       |       |       |       |
+    /// 47 |   0   |   1   |   1   |   1   |
+    ///    |       |       |       |       |
+    ///    +---o---o-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 46 |   0   |   0   |   0   |   0   |
+    ///    |       |       |       |       |
+    ///    +-------+-------+-------+-------+
+    ///       12      13      14      15
+    ///
+    ///
     /// The rule is the following:
     ///
-    /// If the 2x2 region around a start/end corner point has *exactly* one 0 voxel,
-    /// we paint it to 1 or 2 depending on whether it was inside or outside of the previous
-    /// segmentation.
+    /// If the 2x2 region around a start/end corner point has *exactly* one 0 voxel then
+    /// we check if there is another contour whose start/end point is the same. If yes,
+    /// we paint the 0 voxel to 1 or 2 depending on whether it was inside or outside
+    /// of the previous segmentation.
     ///
     for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
     {
@@ -258,21 +275,44 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               ++unsetVoxels;
             }
           }
+
           if (unsetVoxels == 1)
           {
-            for (countourImageIt.GoToBegin(), segmentationImageIt.GoToBegin();
-                 !countourImageIt.IsAtEnd();
-                 ++countourImageIt, ++segmentationImageIt)
+            bool anotherContourStartsOrEndsHere = false;
+            for (unsigned int p = 0; p < m_SegmentationContours.size() && !anotherContourStartsOrEndsHere; p++)
             {
-              if (countourImageIt.Get() == segImageInside)
+              const ParametricPathVertexListType* list2 = m_SegmentationContours[p]->GetVertexList();
+              for (unsigned int q = 0; q < list2->Size(); q += list2->Size() - 1)
               {
-                if (segmentationImageIt.Get())
+                if (p == j && q == k)
                 {
-                  countourImageIt.Set(segImageBorder);
+                  continue;
                 }
-                else
+                ParametricPathVertexType pointInMm2 = list2->ElementAt(q);
+                if (pointInMm2 == pointInMm)
                 {
-                  countourImageIt.Set(segImageOutside);
+                  anotherContourStartsOrEndsHere = true;
+                  break;
+                }
+              }
+            }
+
+            if (anotherContourStartsOrEndsHere)
+            {
+              for (countourImageIt.GoToBegin(), segmentationImageIt.GoToBegin();
+                   !countourImageIt.IsAtEnd();
+                   ++countourImageIt, ++segmentationImageIt)
+              {
+                if (countourImageIt.Get() == segImageInside)
+                {
+                  if (segmentationImageIt.Get())
+                  {
+                    countourImageIt.Set(segImageBorder);
+                  }
+                  else
+                  {
+                    countourImageIt.Set(segImageOutside);
+                  }
                 }
               }
             }
@@ -337,6 +377,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           }
           if (unsetVoxels == 1)
           {
+            /// Should we do the same 'anotherContourStartsOrEndsHere' check here as well?
+            /// I could not create a situation when this code was working badly, so maybe not.
+
             for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
             {
               if (countourImageIt.Get() == manualImageNonBorder)
@@ -352,14 +395,14 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 //    static int counter = 0;
 //    ++counter;
 //    std::ostringstream fileName;
-//    fileName << "/Users/espakm/Desktop/16856/segmentationContour-" << counter << ".nii.gz";
+//    fileName << "/home/espakm/Desktop/16856/tmp/segmentationContour-" << counter << ".nii.gz";
 //    itk::ImageFileWriter<itk::Image<unsigned char, 3> >::Pointer fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
 //    fileWriter->SetFileName(fileName.str());
 //    fileWriter->SetInput(segmentationContourImage);
 //    fileWriter->Update();
 //    ++counter;
 //    std::ostringstream fileName2;
-//    fileName2 << "/Users/espakm/Desktop/16856/manualContour-" << counter << ".nii.gz";
+//    fileName2 << "/home/espakm/Desktop/16856/tmp/manualContour-" << counter << ".nii.gz";
 //    fileWriter->SetFileName(fileName2.str());
 //    fileWriter->SetInput(manualContourImage);
 //    fileWriter->Update();
@@ -386,7 +429,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     
 //    ++counter;
 //    std::ostringstream fileName3;
-//    fileName3 << "/Users/espakm/Desktop/16856/regionGrowing-" << counter << ".nii.gz";
+//    fileName3 << "/home/espakm/Desktop/16856/tmp/regionGrowing-" << counter << ".nii.gz";
 //    fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
 //    fileWriter->SetFileName(fileName3.str());
 //    fileWriter->SetInput(m_RegionGrowingFilter->GetOutput());
