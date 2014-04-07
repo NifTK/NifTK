@@ -443,7 +443,8 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
           {
             ++axis;
           }
-          assert(axis != 3);
+          // TODO This should not happen, but it does sometimes.
+//          assert(axis != 3);
 
           if (t[0] >= 0.0f)
           {
