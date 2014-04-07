@@ -102,6 +102,7 @@ public:
   typedef float RealType;
     
   typedef itk::Image<InputPixelType, ImageDimension> InternalImageType;
+  typedef itk::Image<InputPixelType, SliceDimension> AxialImageType;
 
   typedef itk::Vector<RealType,     DataDimension>        VectorType;
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
@@ -209,6 +210,8 @@ public:
   void SetOutputBreastFittedSurfMask( std::string fn ) { fileOutputFittedBreastMask = fn; }
 
   void SetOutputVTKSurface( std::string fn ) { fileOutputVTKSurface = fn; }
+
+  void SetOutputSkinElevationMap( std::string fn ) { fileOutputSkinElevationMap = fn; }
 
 
   void SetStructuralImage( typename InternalImageType::Pointer image ) { imStructural = image; }
@@ -324,6 +327,7 @@ protected:
 
   std::string fileOutputVTKSurface;
 
+  std::string fileOutputSkinElevationMap;
 
   typename InternalImageType::Pointer imStructural;
   typename InternalImageType::Pointer imFatSat;
@@ -336,6 +340,13 @@ protected:
   typename InternalImageType::Pointer imSegmented;
 
   typename InternalImageType::Pointer imTmp;
+
+  typename AxialImageType::Pointer imSkinElevationMap;
+
+  /// The left side of the image
+  typename InternalImageType::RegionType m_LeftLateralRegion;
+  typename InternalImageType::RegionType m_RightLateralRegion;
+
 
   /// Breast Landmarks
 
@@ -368,12 +379,18 @@ protected:
 
   /// Scan an image in a particular direction and replace voxels with scanned maximum intensity
   typename InternalImageType::Pointer ScanLineMaxima( typename InternalImageType::Pointer image,
+                                                      typename InternalImageType::RegionType region,
                                                       unsigned int direction, bool flgForward );
   /// Scan an image in a particular direction and replace voxels with closed intensities
   typename InternalImageType::Pointer GreyScaleCloseImage( typename InternalImageType::Pointer image,
-                                                           unsigned int direction );
+                                                           typename InternalImageType::RegionType region,
+                                                           unsigned int direction,
+                                                           const std::string label );
   /// Scan an image in all directions and replace voxels with closed intensities
-  typename InternalImageType::Pointer GreyScaleCloseImage( typename InternalImageType::Pointer image );
+  typename InternalImageType::Pointer GreyScaleCloseImage( typename InternalImageType::Pointer image,
+                                                           typename InternalImageType::RegionType region,
+                                                           const char *strSide );
+
   /// Scan rows and columns in the image to fill in the center of the breast
   void GreyScaleClosing( void );
 
@@ -388,6 +405,9 @@ protected:
 
   /// Segment the backgound using the maximum image histogram
   void SegmentBackground( void );
+
+  /// Compute a 2D map of the height of the patient's anterior skin surface
+  void ComputeElevationOfAnteriorSurface( void );
 
   /// Find the nipple and mid-sternum landmarks
   void FindBreastLandmarks( void );
