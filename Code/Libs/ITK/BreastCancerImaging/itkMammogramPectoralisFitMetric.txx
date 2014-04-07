@@ -280,6 +280,33 @@ MammogramPectoralisFitMetric<TInputImage>
 
 
 /* -----------------------------------------------------------------------
+   GradientAtMidpoint()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+double 
+MammogramPectoralisFitMetric<TInputImage>
+::GradientAtMidpoint( const ParametersType &parameters ) const
+{
+  double a = parameters[0];
+  double b = parameters[1];
+  double c = parameters[2];
+
+  // Compute the 'x' coordinate of y = a/2
+
+  double x;
+
+  x = log( log(0.5)/b )/c;
+  
+  // Compute the derivative
+
+  double exp_cx = exp( c*x );
+
+  return a*b*c*exp( b*exp_cx )*exp_cx;
+}
+
+
+/* -----------------------------------------------------------------------
    GenerateTemplate()
    ----------------------------------------------------------------------- */
 
@@ -440,7 +467,7 @@ MammogramPectoralisFitMetric<TInputImage>
       }
       else if ( itDistTrans.Get() > -10. )
       {
-        itTemplate.Set( -1 );
+        itTemplate.Set( -0.0001 ); // Close to zero but non-zero
 
         if ( index[0] > maxIndex[0] ) maxIndex[0] = index[0];
         if ( index[1] > maxIndex[1] ) maxIndex[1] = index[1];
@@ -603,6 +630,19 @@ MammogramPectoralisFitMetric<TInputImage>
       return -1.;
     }
   } 
+
+  // Only permit muscle boundaries with slopes greater than 45 degrees
+
+  if ( this->GradientAtMidpoint( parameters ) < 1. )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: Slope of muscle boundary is less than 1, skipping: " 
+                << parameters << std::endl;
+    }
+    return -1.;
+  }
+    
 
   double value;
   double nPixels, nPecPixels;
