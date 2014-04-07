@@ -272,7 +272,8 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     }
 
     for ( pecIntercept[0] = pecInterceptStart[0]; 
-          pecIntercept[0] < pecInterceptEnd[0]; 
+          ( pecIntercept[0] < pecInterceptEnd[0] ) 
+            && ( pecIntercept[0] < pecIntercept[1] ); 
           pecIntercept[0]++ )
     {
       imPipelineConnector->TransformIndexToPhysicalPoint( pecIntercept,
