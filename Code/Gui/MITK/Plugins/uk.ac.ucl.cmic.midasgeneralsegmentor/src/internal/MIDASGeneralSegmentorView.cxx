@@ -1387,19 +1387,26 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[2]->GetData());
-  assert(contourSet);
 
-  if (sliceNumber >= 0 && axisNumber >= 0)
+  // TODO
+  // This assertion fails sometimes if both the morphological and irregular (this) volume editor is
+  // switched on and you are using the paintbrush tool of the morpho editor.
+//  assert(contourSet);
+
+  if (contourSet)
   {
-    Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
-
-    if (contourSet->GetSize() > 0)
+    if (sliceNumber >= 0 && axisNumber >= 0)
     {
-      workingNodes[2]->Modified();
+      Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
-      if (updateRendering)
+      if (contourSet->GetSize() > 0)
       {
-        this->RequestRenderWindowUpdate();
+        workingNodes[2]->Modified();
+
+        if (updateRendering)
+        {
+          this->RequestRenderWindowUpdate();
+        }
       }
     }
   }
