@@ -166,6 +166,7 @@ protected:
   MaskImageRegionType    m_MaskRegion;
   MaskImageConstPointer  m_Mask;
 
+  double GradientAtMidpoint( const ParametersType &parameters ) const;
 };
 
 } // end namespace itk
