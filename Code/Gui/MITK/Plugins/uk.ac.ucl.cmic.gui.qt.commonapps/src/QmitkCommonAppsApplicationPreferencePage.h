@@ -43,7 +43,8 @@ public:
 
   static const std::string IMAGE_RESLICE_INTERPOLATION;
   static const std::string IMAGE_TEXTURE_INTERPOLATION;
-  static const std::string BLACK_OPACITY;
+  static const std::string LOWEST_VALUE_OPACITY;
+  static const std::string HIGHEST_VALUE_OPACITY;
   static const std::string BINARY_OPACITY_NAME;
   static const double BINARY_OPACITY_VALUE;
 
@@ -75,7 +76,8 @@ protected:
   QWidget        *m_MainControl;
   QComboBox      *m_ResliceInterpolation;
   QComboBox      *m_TextureInterpolation;
-  QCheckBox      *m_BlackOpacity;
+  QDoubleSpinBox *m_LowestValueOpacity;
+  QDoubleSpinBox *m_HighestValueOpacity;
   QDoubleSpinBox *m_BinaryOpacity;
 
   berry::IPreferences::Pointer m_PreferencesNode;

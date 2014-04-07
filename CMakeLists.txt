@@ -25,8 +25,10 @@ endif()
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
 set(NIFTK_VERSION_MINOR 03 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
+mark_as_advanced(NIFTK_VERSION_PATCH)
 
 ######################################################################
 # Set the minimum CMake version.
@@ -195,7 +197,7 @@ endif()
 ######################################################################
 set(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
 set(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
-set(NIFTK_COPYRIGHT "Copyright (C) 2008-2013 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
+set(NIFTK_COPYRIGHT "Copyright (C) 2008-2014 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 set(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 set(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 set(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -209,7 +211,7 @@ if(WIN32)
 else(WIN32)
   set(NIFTK_BASE_NAME "niftk" CACHE STRING "Base name for installation folder. Unix convention is lower case letters." FORCE )
 endif(WIN32)
-set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}" CACHE STRING "String to describe fully named version" FORCE)
+set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
@@ -237,7 +239,7 @@ set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
-set(NIFTK_VERSION_APRILTAGS "8bd0380b5d" CACHE STRING "Version of AprilTags" FORCE)
+set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
 set(NIFTK_VERSION_PCL "378afeecb0" CACHE STRING "Version of PCL" FORCE) 
 set(NIFTK_VERSION_qRestAPI "0d46f8a682" CACHE STRING "Version of qRestAPI" FORCE) 
@@ -607,34 +609,31 @@ endif (BUILD_MESHING)
 # the Superbuild, because VTK needs to know if we have Qt.
 ######################################################################
 
-if(BUILD_GUI)
-  if(BUILD_IGI)
-    find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
-  else(BUILD_IGI)
-    find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-  endif(BUILD_IGI)
+# We ALWAYS need Qt. This is because MITK always needs it.
+if(BUILD_IGI)
+  find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
+else(BUILD_IGI)
+  find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
+endif(BUILD_IGI)
 
-  if(QT_FOUND)
-
-    set(QT_USE_QTXML 1)
-    set(QT_USE_QTXMLPATTERNS 1)
-    set(QT_USE_PHONON 0)
-
-    include(${QT_USE_FILE})
-
-    if(BUILD_SUPERBUILD)
-      set(VTK_QT_ARGS
-        -DDESIRED_QT_VERSION:STRING=4
-        -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-        -DVTK_USE_QT:BOOL=ON
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-       )
-     endif(BUILD_SUPERBUILD)
-
-  endif(QT_FOUND)
-endif(BUILD_GUI)
-
+if(QT_FOUND)
+  set(QT_USE_QTXML 1)
+  set(QT_USE_QTXMLPATTERNS 1)
+  set(QT_USE_PHONON 0)
+  include(${QT_USE_FILE})
+  if(BUILD_SUPERBUILD)
+    set(VTK_QT_ARGS
+      -DDESIRED_QT_VERSION:STRING=4
+      -DVTK_USE_GUISUPPORT:BOOL=ON
+      -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
+      -DVTK_USE_QT:BOOL=ON
+      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+    )
+  endif(BUILD_SUPERBUILD)
+else()
+ message(FATAL "Qt is mandatory, but QT_FOUND is false.")
+endif()
+ 
 ######################################################################
 # Find CUDA: Required by the Nifty packages
 ######################################################################
@@ -784,6 +783,43 @@ if(Boost_FOUND)
   endif(WIN32)
 endif(Boost_FOUND)
 
+######################################################################
+# Find OpenMP and make sure Microsoft DirectComposition Library (dcomp.dll) is deployed
+######################################################################
+
+if (WIN32)
+  find_package(OpenMP)
+
+  if(OPENMP_FOUND)
+    message("Found OpenMP")
+
+    if(CMAKE_CL_64)
+      if(MSVC_VERSION GREATER 1599)
+        # VS 10 and later:
+        set(CMAKE_MSVC_ARCH x64)
+      else()
+        # VS 9 and earlier:
+        set(CMAKE_MSVC_ARCH amd64)
+      endif()
+    else()
+      set(CMAKE_MSVC_ARCH x86)
+    endif()
+
+    if (MSVC90)
+      set (_omp_dll "${MSVC90_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC90.OPENMP/vcomp90.dll")
+    elseif (MSVC10)
+      set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.OPENMP/vcomp100.dll")
+    elseif (MSVC11)
+      set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.OPENMP/vcomp110.dll")
+    elseif (MSVC12)
+      set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.OPENMP/vcomp120.dll")
+    endif ()
+
+    message("Found OpenMP dll at: ${_omp_dll}")
+
+    set (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS};${_omp_dll}")
+  endif()
+endif()
 
 ######################################################################
 # Find VTK.

@@ -1,0 +1,102 @@
+/**
+
+\page BuildInstructionsKelvin Kelvin's Build Instructions on comic1
+
+\section Purposes Purposes
+
+The main purposes of the build on comic1 are
+<ul>
+<li> to allow the use of the "special" Midas Analyze images in the Dementia Research Center, by setting the vox_offset to 0 when reading in the images; </li>
+<li> to avoid potential crashes when using the gcc4/g++4 compilers on comic1, by using the default gcc/g++ compiler; </li>
+<li> to have the latest build from Kelvin after he has left the Dementia Research Center. </li>
+</ul>
+
+\section Location Location
+The source/build/installation are in "comic1:/home/kkleung/work/NifTK-14.03-kelvin".
+
+\section CMakeOptions CMake options
+The basic CMake options are listed below:
+
+\verbatim
+ BUILD_COMMAND_LINE_PROGRAMS      ON
+ BUILD_COMMAND_LINE_SCRIPTS       ON
+ BUILD_NIFTYREC                   OFF
+ BUILD_NIFTYREG                   OFF
+ BUILD_NIFTYSEG                   OFF
+ BUILD_NIFTYSIM                   OFF
+ BUILD_PROTOTYPE                  ON
+ BUILD_SUPERBUILD                 ON
+ BUILD_TESTING                    OFF
+ BUILD_UTILITIES                  OFF
+ CMAKE_BUILD_TYPE                 Release
+ CMAKE_INSTALL_PREFIX             /home/kkleung/work/NifTK-14.03-kelvin/install
+ NIFTK_Apps/NiftyIGI              OFF
+ NIFTK_Apps/NiftyMIDAS            OFF
+ NIFTK_Apps/NiftyView             OFF
+ NIFTK_BUILD_ALL_APPS             OFF
+ NIFTK_USE_COTIRE                 OFF
+ QT_QMAKE_EXECUTABLE              /home/kkleung/work/qt/install/bin/qmake
+ VTK_USE_SYSTEM_FREETYPE          OFF
+\endverbatim
+
+Some of the CMake advanced options are listed below:
+
+\verbatim
+ BUILDNAME                        Linux-x86_64-gcc--dev-7e26ab50-Rel
+ BUILD_ITKFFTW                    ON
+ CMAKE_CXX_FLAGS_RELEASE          -O3 -DNDEBUG -mfpmath=sse -msse2
+ CMAKE_C_FLAGS_RELEASE            -O3 -DNDEBUG -mfpmath=sse -msse2
+\endverbatim
+
+"-mfpmath=sse -msse2" is used to allow consistent floating point results across platforms/architectures.
+
+\section Patches Various manual patches
+
+\subsection MITK MITK warning as error
+
+This is turned off by adding the following in "build/MITK-src/CMake/mitkMacroCreateModule.cmake".
+\verbatim
+ set(MODULE_WARNINGS_AS_ERRORS 0)
+\endverbatim
+
+\subsection ITK ITK vox_offset
+
+The vox_offset is set to 0 for 2-file Nifti images (including Analyze images) by modifying one line in the file "build/ITK-src/Modules/ThirdParty/NIFTI/src/nifti/niftilib/nifti1_io.c".
+
+\verbatim
+   if( is_onefile ){
+     ioff = (int)nhdr.vox_offset ;
+     if( ioff < (int) sizeof(nhdr) ) ioff = (int) sizeof(nhdr) ;
+   } else {
+     // ioff = (int)nhdr.vox_offset ;
+     ioff = 0 ;
+   }
+\endverbatim
+
+\subsection niftkTransformation niftkTransformation
+
+The compilation causes comic1 to run out of memory. The 2D cases have been removed to reduce the memory requirement.
+
+\subsection niftkMacroFixupCommandLineApps niftkMacroFixupCommandLineApps.cmake
+
+To speed up the installation, the fixup_bundle in "source/CMake/niftkMacroFixupCommandLineApps.cmake" is commented out.
+
+\verbatim
+    # This is slow, we have to validate apps one at a time.
+    foreach(APP ${_install_APPS})
+      set(_full_app_path "${CMAKE_INSTALL_PREFIX}/bin/${APP}")
+
+      #install(CODE "
+      #  include(BundleUtilities)
+      #  fixup_bundle(\"${_full_app_path}\"   \"\"   \"${_library_dirs}\")
+      #  " COMPONENT Runtime)
+
+    endforeach()
+\endverbatim
+
+The libraries are manually copied to the installation after "make install".
+
+
+ 
+*/
+

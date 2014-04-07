@@ -12,36 +12,36 @@
 
 =============================================================================*/
 
-#ifndef LookupTableManager_h
-#define LookupTableManager_h
+#ifndef QmitkLookupTableManager_h
+#define QmitkLookupTableManager_h
 
 #include <niftkCoreGuiExports.h>
 #include <vector>
+#include <QString>
 
 /**
- * \class LookupTableManager
- * \brief Class to manage access to LookupTableContainers.
- * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
+ * \class QmitkLookupTableManager
+ * \brief Class to manage access to QmitkLookupTableContainers.
  *
- * Each LookupTableContainer contains 1 vtkLookupTable.
- * These are loaded from disc when the LookupTableManager is created.
+ * Each QmitkLookupTableContainers contains 1 vtkLookupTable.
+ * These are loaded from disc when the QmitkLookupTableManager is created.
  * This manager class takes care of providing copies of the
  * lookup tables. So, when the client calls CloneLookupTable(),
- * the client own the provided vtkLookupTable, and should delete it when done.
+ * the client owns the provided vtkLookupTable, and should delete it when done.
  */
 
-class LookupTableContainer;
+class QmitkLookupTableContainer;
 class vtkLookupTable;
 
-class NIFTKCOREGUI_EXPORT LookupTableManager {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableManager {
 
 public:
 
   /** No-arg constructor. */
-  LookupTableManager();
+  QmitkLookupTableManager();
 
   /** Destructor, to get rid of all lookup tables. */
-  virtual ~LookupTableManager();
+  virtual ~QmitkLookupTableManager();
 
   /**
    * Gets the total number of lookup tables loaded.
@@ -52,18 +52,17 @@ public:
    * Returns a pointer to the nth lookup table container in the list, or NULL
    * if index < 0, or index >= GetNumberOfLookupTables().
    */
-  const LookupTableContainer* GetLookupTableContainer(const unsigned int& n);
+  const QmitkLookupTableContainer* GetLookupTableContainer(const unsigned int& n);
 
   /**
-   * Returns a copy of the nth lookup table in the list, or NULL
-   * if index < 0, or index >= GetNumberOfLookupTables().
+   * \brief Returns the display name.
    */
-  vtkLookupTable* CloneLookupTable(const unsigned int& n);
+  QString GetName(const unsigned int& n);
 
 private:
 
   /** A list of lookup table containers that we have loaded. */
-  std::vector<const LookupTableContainer*> m_List;
+  std::vector<const QmitkLookupTableContainer*> m_List;
 
   /** Checks that the index is within range. */
   bool CheckIndex(const unsigned int& n);

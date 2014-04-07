@@ -32,7 +32,6 @@ QmitkNiftyMIDASWorkbenchWindowAdvisor::QmitkNiftyMIDASWorkbenchWindowAdvisor(
 void QmitkNiftyMIDASWorkbenchWindowAdvisor::PostWindowCreate()
 {
   QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate();
-  this->CheckIfLoadingMITKDisplay();
 
   // very bad hack...
   berry::IWorkbenchWindow::Pointer window = this->GetWindowConfigurer()->GetWindow();

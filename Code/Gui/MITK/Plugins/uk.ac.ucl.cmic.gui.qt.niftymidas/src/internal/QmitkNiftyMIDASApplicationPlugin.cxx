@@ -13,8 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyMIDASApplicationPlugin.h"
-#include <QmitkNiftyViewIGIPerspective.h>
-#include <QmitkNiftyViewMIDASPerspective.h>
+#include <QmitkCommonAppsMIDASPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyMIDASApplication.h"
 
@@ -33,7 +32,7 @@ QmitkNiftyMIDASApplicationPlugin::~QmitkNiftyMIDASApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/index.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftymidas.html");
 }
 
 
@@ -44,8 +43,7 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewMIDASPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();

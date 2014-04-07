@@ -83,12 +83,11 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
   if (!m_Controls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(0,0,0,0);
+    m_Layout->setContentsMargins(0, 0, 0, 0);
     m_Layout->setSpacing(0);
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 10);
+    m_Layout->setRowStretch(1, 1);
     m_Layout->setRowStretch(2, 0);
-    m_Layout->setRowStretch(3, 0);
 
     m_ContainerForControlsWidget = new QWidget(parent);
 
@@ -97,18 +96,9 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,             1, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget,         2, 0);
-    m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 3, 0);
-
-    // Ideally we would want this, but there is a geometry problem at the moment.
-    // When the user views stuff in the MITK viewer, this widget has the wrong geometry.
-    // This is most likely to happen for people who are not using MIDAS, and so will
-    // be using the MITK display, and this MITK segmentation widget. So for the time
-    // being we remove this viewer.
-    m_ContainerForSegmentationViewWidget->setVisible(false);
-    m_SegmentationView->setVisible(false);
+    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(2);
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);

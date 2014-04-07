@@ -12,31 +12,31 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyViewIGIPerspective_h
-#define QmitkNiftyViewIGIPerspective_h
+#ifndef QmitkCommonAppsMinimalPerspective_h
+#define QmitkCommonAppsMinimalPerspective_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIPerspectiveFactory.h>
 
 /**
- * \class QmitkNiftyViewIGIPerspective
- * \brief Perspective to arrange widgets as would be suitable for CMIC IGI applications.
- * \ingroup uk_ac_ucl_cmic_gui_qt_niftyview_internal
+ * \class QmitkCommonAppsMinimalPerspective
+ * \brief Default Perspective, called 'Minimal' to discourage incrementally adding to it.  
+ * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class CMIC_QT_COMMONAPPS QmitkNiftyViewIGIPerspective : public QObject, public berry::IPerspectiveFactory
+class CMIC_QT_COMMONAPPS QmitkCommonAppsMinimalPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
   
 public:
 
-  QmitkNiftyViewIGIPerspective();
-  QmitkNiftyViewIGIPerspective(const QmitkNiftyViewIGIPerspective& other);
+  QmitkCommonAppsMinimalPerspective();
+  QmitkCommonAppsMinimalPerspective(const QmitkCommonAppsMinimalPerspective& other);
   
   void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 
 };
 
-#endif /* QMITKNIFTYVIEWIGIPERSPECTIVE_H_ */
+#endif 

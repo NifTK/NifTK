@@ -30,6 +30,8 @@
 #include <mitkFileIOUtils.h>
 #include <mitkRenderingManager.h>
 #include <mitkGeometry2DDataMapper2D.h>
+#include <mitkIOUtil.h>
+#include <QMessageBox>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -39,9 +41,11 @@ TrackedImageView::TrackedImageView()
 , m_ImageToTrackingSensorTransform(NULL)
 , m_ImageToTrackingSensorFileName("")
 , m_PlaneNode(NULL)
+, m_ShowCloneImageGroup(false)
 {
   m_ImageScaling[0] = 1;
   m_ImageScaling[1] = 1;
+  m_NameCounter = 0;
 }
 
 
@@ -99,9 +103,16 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     // the axial/sagittal/coronal slices work in the QmitkStdMultiWidget.
 
     m_Controls->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
-    mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
+    mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);   
 
     RetrievePreferenceValues();
+
+    m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);   
+    connect(m_Controls->m_ClonePushButton, SIGNAL(clicked()), this, SLOT(OnClonePushButtonClicked()));
+
+    m_Controls->m_CloneTrackedImageDirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
+    m_Controls->m_CloneTrackedImageDirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
+    m_Controls->m_CloneTrackedImageDirectoryChooser->setCurrentPath(tr("C:\\Workspace\\Laparoscopic\\tmp"));
 
     ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
@@ -120,6 +131,8 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
 void TrackedImageView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
+
+  m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);
 }
 
 
@@ -132,6 +145,9 @@ void TrackedImageView::RetrievePreferenceValues()
     m_ImageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_ImageToTrackingSensorTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToTrackingSensorFileName);
     m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
+
+    m_ShowCloneImageGroup = prefs->GetBool(TrackedImageViewPreferencePage::CLONE_IMAGE, false);
+
     if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
     {
       m_ImageScaling[0] *= -1;
@@ -261,4 +277,74 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
       } // end if input is valid
     } // if got an image
   } // if got an image node
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedImageView::OnClonePushButtonClicked()
+{
+  QString directoryName = m_Controls->m_CloneTrackedImageDirectoryChooser->currentPath();
+  if (directoryName.length() == 0)
+  {
+    QMessageBox msgBox; 
+    msgBox.setText("The folder to save is not-selected.");
+    msgBox.setInformativeText("Please select a folder to save image node.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  mitk::DataNode::Pointer node = m_Controls->m_ImageNode->GetSelectedNode();
+  if ( node.IsNotNull() )
+  {    
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    if ( image.IsNotNull() )
+    {
+      QString imageName = tr("TrackedImageView-%1").arg(m_NameCounter);
+      QString fileNameWithGeometry = directoryName + QDir::separator() + imageName + QString(".nii");
+      QString fileNameWithoutGeometry = directoryName + QDir::separator() + imageName + QString(".png");
+
+      // clone the origin ultrasound image (without changing orientation) to disk.
+      mitk::Image::Pointer savedMitkImage = image->Clone();
+      mitk::IOUtil::SaveImage(savedMitkImage, fileNameWithGeometry.toStdString());
+
+      // clone the origin ultrasound image (changing orientation) to disk.
+      mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
+      mitk::Geometry3D::Pointer geometry = untouchedImage->GetGeometry();
+      if (geometry.IsNotNull())
+      {
+        vtkSmartPointer<vtkMatrix4x4> identityMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+        identityMatrix->Identity();
+        geometry->SetIndexToWorldTransformByVtkMatrix(identityMatrix);
+      }
+      mitk::IOUtil::SaveImage(untouchedImage, fileNameWithoutGeometry.toStdString());
+
+      // For immediate visualisation, we create a new DataNode with the new image.
+      mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();
+      savedImageNode->SetData(savedMitkImage);
+      savedImageNode->SetProperty("visible", mitk::BoolProperty::New(true));
+      savedImageNode->SetProperty("name", mitk::StringProperty::New(imageName.toStdString()));
+      savedImageNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(true));
+      savedImageNode->SetProperty("helper object", mitk::BoolProperty::New(false));
+      savedImageNode->SetVisibility(true);
+
+      // Add to data storage.
+      mitk::DataStorage* dataStorage = this->GetDataStorage();
+      dataStorage->Add(savedImageNode);
+
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+      m_NameCounter++;
+    }
+  }
+  else
+  {
+    QMessageBox msgBox;
+    msgBox.setText("The image node is non-existent, or not-selected.");
+    msgBox.setInformativeText("Please select an image node.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
 }

@@ -129,7 +129,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->DisableStandardLevelWindow();
   this->DisableDepartmentLogo();
   this->ActivateMenuWidget(false);
-  this->SetBackgroundColor(QColor(0, 0, 0));
+  this->SetBackgroundColour(QColor(0, 0, 0));
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
@@ -355,9 +355,9 @@ void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
+void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
 {
-  m_BackgroundColor = colour;
+  m_BackgroundColour = colour;
   m_GradientBackground1->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground1->Enable();
   m_GradientBackground2->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
@@ -371,9 +371,9 @@ void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
 
 
 //-----------------------------------------------------------------------------
-QColor niftkMultiWindowWidget::GetBackgroundColor() const
+QColor niftkMultiWindowWidget::GetBackgroundColour() const
 {
-  return m_BackgroundColor;
+  return m_BackgroundColour;
 }
 
 
@@ -1060,40 +1060,77 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
     m_OrientationAxes[SAGITTAL] = dominantAxisRL;
     m_OrientationAxes[CORONAL] = dominantAxisAP;
 
-//    MITK_DEBUG << "Matt, extent=" << geometry->GetExtent(0) << ", " << geometry->GetExtent(1) << ", " << geometry->GetExtent(2) << std::endl;
-//    MITK_DEBUG << "Matt, domRL=" << dominantAxisRL << ", signRL=" << signRL << ", domAP=" << dominantAxisAP << ", signAP=" << signAP << ", dominantAxisSI=" << dominantAxisSI << ", signSI=" << signSI << std::endl;
-//    MITK_DEBUG << "Matt, permutedBoundingBox=" << permutedBoundingBox[0] << ", " << permutedBoundingBox[1] << ", " << permutedBoundingBox[2] << std::endl;
-//    MITK_DEBUG << "Matt, permutedAxes=" << permutedAxes[0] << ", " << permutedAxes[1] << ", " << permutedAxes[2] << std::endl;
-//    MITK_DEBUG << "Matt, permutedSpacing=" << permutedSpacing[0] << ", " << permutedSpacing[1] << ", " << permutedSpacing[2] << std::endl;
-//    MITK_DEBUG << "Matt, flippedAxes=" << flippedAxes[0] << ", " << flippedAxes[1] << ", " << flippedAxes[2] << std::endl;
-
-//    MITK_DEBUG << "Matt, input normalised matrix=" << std::endl;
-
+//    MITK_INFO << "Matt, image geometry=" << m_Geometry->GetImageGeometry();
+//    MITK_INFO << "Matt, origin=" << m_Geometry->GetOrigin();
+//    MITK_INFO << "Matt, centre=" << m_Geometry->GetCenter();
+//    MITK_INFO << "Matt, extent=" << m_Geometry->GetExtent(0) << ", " << m_Geometry->GetExtent(1) << ", " << m_Geometry->GetExtent(2);
+//    MITK_INFO << "Matt, domRL=" << dominantAxisRL << ", signRL=" << signRL << ", domAP=" << dominantAxisAP << ", signAP=" << signAP << ", dominantAxisSI=" << dominantAxisSI << ", signSI=" << signSI;
+//    MITK_INFO << "Matt, permutedBoundingBox=" << permutedBoundingBox[0] << ", " << permutedBoundingBox[1] << ", " << permutedBoundingBox[2];
+//    MITK_INFO << "Matt, permutedAxes=" << permutedAxes[0] << ", " << permutedAxes[1] << ", " << permutedAxes[2];
+//    MITK_INFO << "Matt, permutedSpacing=" << permutedSpacing[0] << ", " << permutedSpacing[1] << ", " << permutedSpacing[2];
+//    MITK_INFO << "Matt, flippedAxes=" << flippedAxes[0] << ", " << flippedAxes[1] << ", " << flippedAxes[2];
+//    MITK_INFO << "Matt, input normalised matrix=";
 //    for (unsigned int i=0; i < 3; i++)
 //    {
-//      MITK_DEBUG << affineTransformMatrix[i][0] << " " << affineTransformMatrix[i][1] << " " << affineTransformMatrix[i][2];
+//      MITK_INFO << affineTransformMatrix[i][0] << " " << affineTransformMatrix[i][1] << " " << affineTransformMatrix[i][2];
 //    }
-
-//    MITK_DEBUG << "Matt, inverse normalised matrix=" << std::endl;
-
+//    MITK_INFO << "Matt, inverse normalised matrix=";
 //    for (unsigned int i=0; i < 3; i++)
 //    {
-//      MITK_DEBUG << inverseTransformMatrix[i][0] << " " << inverseTransformMatrix[i][1] << " " << inverseTransformMatrix[i][2];
+//      MITK_INFO << inverseTransformMatrix[i][0] << " " << inverseTransformMatrix[i][1] << " " << inverseTransformMatrix[i][2];
 //    }
-
-//    MITK_DEBUG << "Matt, permuted matrix=" << std::endl;
-
+//    MITK_INFO << "Matt, permuted matrix=";
 //    for (unsigned int i=0; i < 3; i++)
 //    {
-//      MITK_DEBUG << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
+//      MITK_INFO << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
 //    }
+
+    mitk::Point3D originInVx;
+    for (int i = 0; i < 3; ++i)
+    {
+      if (flippedAxes[i] >= 0)
+      {
+        originInVx[permutedAxes[i]] = 0;
+      }
+      else
+      {
+        originInVx[permutedAxes[i]] = m_Geometry->GetExtent(permutedAxes[i]) - 1;
+      }
+    }
+
+    mitk::Point3D originInMm;
+    m_Geometry->IndexToWorld(originInVx, originInMm);
+
+//    MITK_INFO << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm;
+
+    if (!m_Geometry->GetImageGeometry())
+    {
+      if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
+      {
+        originInMm[0] += 0.5 * permutedSpacing[0];
+        originInMm[1] -= 0.5 * permutedSpacing[1];
+      }
+      else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
+      {
+        originInMm[1] += 0.5 * permutedSpacing[1];
+        originInMm[2] += 0.5 * permutedSpacing[2];
+      }
+      else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
+      {
+        originInMm[0] += 0.5 * permutedSpacing[0];
+        originInMm[2] += 0.5 * permutedSpacing[2];
+      }
+      else
+      {
+        assert(false);
+      }
+    }
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
       QmitkRenderWindow* renderWindow = renderWindows[i];
       mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-      int id = renderer->GetMapperID();
 
       // Get access to slice navigation controller, as this sorts out most of the process.
       mitk::SliceNavigationController* sliceNavigationController = renderer->GetSliceNavigationController();
@@ -1104,48 +1141,15 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
       if (i < 3)
       {
-
-        mitk::Point3D originInVx;
-        mitk::Point3D originInMm;
         mitk::Point3D originOfSlice;
         mitk::VnlVector rightDV(3);
         mitk::VnlVector bottomDV(3);
         mitk::VnlVector normal(3);
         int width = 1;
         int height = 1;
-        mitk::ScalarType viewSpacing = 1;
         unsigned int slices = 1;
+        mitk::ScalarType viewSpacing = 1;
         bool isFlipped;
-
-        float voxelOffset = 0;
-        if (m_Geometry->GetImageGeometry())
-        {
-          voxelOffset = 0.5;
-        }
-
-        originInVx[0] = 0;
-        originInVx[1] = 0;
-        originInVx[2] = 0;
-
-        if (flippedAxes[0] < 0)
-        {
-//          MITK_DEBUG << "Matt, flippedAxis[0] < 0, so flipping axis " << permutedAxes[0] << std::endl;
-          originInVx[permutedAxes[0]] = m_Geometry->GetExtent(permutedAxes[0]) - 1;
-        }
-        if (flippedAxes[1] < 0)
-        {
-//          MITK_DEBUG << "Matt, flippedAxis[1] < 0, so flipping axis " << permutedAxes[1] << std::endl;
-          originInVx[permutedAxes[1]] = m_Geometry->GetExtent(permutedAxes[1]) - 1;
-        }
-        if (flippedAxes[2] < 0)
-        {
-//          MITK_DEBUG << "Matt, flippedAxis[2] < 0, so flipping axis " << permutedAxes[2] << std::endl;
-          originInVx[permutedAxes[2]] = m_Geometry->GetExtent(permutedAxes[2]) - 1;
-        }
-
-        m_Geometry->IndexToWorld(originInVx, originInMm);
-
-//        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
 
         // Setting up the width, height, axis orientation.
         switch (viewDirection)
@@ -1153,9 +1157,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
         case mitk::SliceNavigationController::Sagittal:
           width  = permutedBoundingBox[1];
           height = permutedBoundingBox[2];
+          slices = permutedBoundingBox[0];
+          viewSpacing = permutedSpacing[0];
+          isFlipped = false;
           originOfSlice[0] = originInMm[0];
-          originOfSlice[1] = originInMm[1] - voxelOffset * permutedSpacing[1];
-          originOfSlice[2] = originInMm[2] - voxelOffset * permutedSpacing[2];
+          originOfSlice[1] = originInMm[1] - 0.5 * permutedSpacing[1];
+          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
@@ -1165,17 +1172,17 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedMatrix[0][0];
           normal[1] = permutedMatrix[1][0];
           normal[2] = permutedMatrix[2][0];
-          viewSpacing = permutedSpacing[0];
-          slices = permutedBoundingBox[0];
-          isFlipped = false;
           break;
         /// Coronal:
         case mitk::SliceNavigationController::Frontal:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[2];
-          originOfSlice[0] = originInMm[0] - voxelOffset * permutedSpacing[0];
+          slices = permutedBoundingBox[1];
+          viewSpacing = permutedSpacing[1];
+          isFlipped = true;
+          originOfSlice[0] = originInMm[0] - 0.5 * permutedSpacing[0];
           originOfSlice[1] = originInMm[1];
-          originOfSlice[2] = originInMm[2] - voxelOffset * permutedSpacing[2];
+          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1185,16 +1192,16 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedMatrix[0][1];
           normal[1] = permutedMatrix[1][1];
           normal[2] = permutedMatrix[2][1];
-          viewSpacing = permutedSpacing[1];
-          slices = permutedBoundingBox[1];
-          isFlipped = true;
           break;
         /// Axial:
         default:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
-          originOfSlice[0] = originInMm[0] + permutedBoundingBox[0] * permutedSpacing[0] * permutedMatrix[0][1] - voxelOffset * permutedSpacing[0];
-          originOfSlice[1] = originInMm[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1] + voxelOffset * permutedSpacing[1];
+          slices = permutedBoundingBox[2];
+          viewSpacing = permutedSpacing[2];
+          isFlipped = true;
+          originOfSlice[0] = originInMm[0] + permutedBoundingBox[0] * permutedSpacing[0] * permutedMatrix[0][1] - 0.5 * permutedSpacing[0];
+          originOfSlice[1] = originInMm[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1] - 0.5 * permutedSpacing[1];
           originOfSlice[2] = originInMm[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][1];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
@@ -1205,39 +1212,36 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedMatrix[0][2];
           normal[1] = permutedMatrix[1][2];
           normal[2] = permutedMatrix[2][2];
-          viewSpacing = permutedSpacing[2];
-          slices = permutedBoundingBox[2];
-          isFlipped = true;
           break;
-        } // end switch
+        }
 
-//        MITK_DEBUG << "Matt, image=" << geometry->GetImageGeometry() << std::endl;
-//        MITK_DEBUG << "Matt, width=" << width << std::endl;
-//        MITK_DEBUG << "Matt, height=" << height << std::endl;
-//        MITK_DEBUG << "Matt, originOfSlice=" << originOfSlice << std::endl;
-//        MITK_DEBUG << "Matt, rightDV=" << rightDV << std::endl;
-//        MITK_DEBUG << "Matt, bottomDV=" << bottomDV << std::endl;
-//        MITK_DEBUG << "Matt, normal=" << normal << std::endl;
-//        MITK_DEBUG << "Matt, viewSpacing=" << viewSpacing << std::endl;
-//        MITK_DEBUG << "Matt, slices=" << slices << std::endl;
-//        MITK_DEBUG << "Matt, isFlipped=" << isFlipped << std::endl;
-
-        // TODO Commented out when migrating to the redesigned MITK geometry framework.
-        // This will definitely not work. Should be fixed.
+//        MITK_INFO << "Matt, image=" << m_Geometry->GetImageGeometry();
+//        MITK_INFO << "Matt, width=" << width;
+//        MITK_INFO << "Matt, height=" << height;
+//        MITK_INFO << "Matt, originOfSlice=" << originOfSlice;
+//        MITK_INFO << "Matt, rightDV=" << rightDV;
+//        MITK_INFO << "Matt, bottomDV=" << bottomDV;
+//        MITK_INFO << "Matt, normal=" << normal;
+//        MITK_INFO << "Matt, viewSpacing=" << viewSpacing;
+//        MITK_INFO << "Matt, slices=" << slices;
+//        MITK_INFO << "Matt, isFlipped=" << isFlipped;
 
         mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
 
         mitk::ProportionalTimeGeometry::Pointer createdTimeGeometry = mitk::ProportionalTimeGeometry::New();
         createdTimeGeometry->Initialize();
         createdTimeGeometry->Expand(numberOfTimeSteps);
-//        createdTimeSlicedGeometry->SetImageGeometry(false);
-//        createdTimeSlicedGeometry->SetEvenlyTimed(true);
+
+        // TODO Commented out when migrating to the redesigned MITK geometry framework.
+        // This will definitely not work. Should be fixed.
+
+//        createdTimeGeometry->SetEvenlyTimed(true);
 
 //        if (inputTimeSlicedGeometry.IsNotNull())
 //        {
-//          createdTimeSlicedGeometry->SetEvenlyTimed(inputTimeSlicedGeometry->GetEvenlyTimed());
-//          createdTimeSlicedGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetTimeBounds());
-//          createdTimeSlicedGeometry->SetBounds(inputTimeSlicedGeometry->GetBounds());
+//          createdTimeGeometry->SetEvenlyTimed(inputTimeSlicedGeometry->GetEvenlyTimed());
+//          createdTimeGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetTimeBounds());
+//          createdTimeGeometry->SetBounds(inputTimeSlicedGeometry->GetBounds());
 //        }
 
         // For the PlaneGeometry.
@@ -1272,12 +1276,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
         }
         createdTimeGeometry->Update();
 
-//        MITK_DEBUG << "Matt - final geometry=" << createdTimeSlicedGeometry << std::endl;
-//        MITK_DEBUG << "Matt - final geometry origin=" << createdTimeSlicedGeometry->GetOrigin() << std::endl;
-//        MITK_DEBUG << "Matt - final geometry center=" << createdTimeSlicedGeometry->GetCenter() << std::endl;
+//        MITK_INFO << "Matt - final geometry=" << createdTimeGeometry;
+//        MITK_INFO << "Matt - final geometry origin=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetOrigin();
+//        MITK_INFO << "Matt - final geometry center=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetCenter();
 //        for (int j = 0; j < 8; j++)
 //        {
-//          MITK_DEBUG << "Matt - final geometry j=" << j << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(j) << std::endl;
+//          MITK_INFO << "Matt - final geometry j=" << j << ", p=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetCornerPoint(j);
 //        }
 
         sliceNavigationController->SetInputWorldTimeGeometry(createdTimeGeometry);
@@ -1285,7 +1289,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
         sliceNavigationController->SetViewDirection(viewDirection);
 
         // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
-        if (id == 1)
+        if (renderer->GetMapperID() == 1)
         {
           // Now geometry is established, set to middle slice.
           int sliceNumber = (int)((sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
@@ -2489,11 +2493,14 @@ void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding
       if (0 <= m_SelectedWindowIndex && m_SelectedWindowIndex < 3)
       {
         this->OnOriginChanged(m_SelectedWindowIndex, true);
-        /// We raise the event in another window as well so that the cursors are in sync
-        /// along the third axis as well.
-        int someOtherOrientation =
-            m_SelectedWindowIndex == CORONAL ? SAGITTAL : CORONAL;
-        this->OnOriginChanged(someOtherOrientation, true);
+        if (m_WindowLayout == WINDOW_LAYOUT_ORTHO
+            && (m_SelectedWindowIndex == AXIAL || m_SelectedWindowIndex == SAGITTAL))
+        {
+          /// We raise the event in the coronal window so that the cursors are in sync
+          /// along the third axis, too.
+          this->MoveToCursorPosition(CORONAL);
+          this->OnOriginChanged(CORONAL, true);
+        }
       }
     }
 

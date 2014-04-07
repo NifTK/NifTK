@@ -261,6 +261,8 @@ private slots:
 
   void OnPlayStart();
 
+  void OnFreezeTableHeaderClicked(int section);
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;

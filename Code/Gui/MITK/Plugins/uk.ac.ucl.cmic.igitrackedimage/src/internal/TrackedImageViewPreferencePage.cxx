@@ -33,6 +33,8 @@ const std::string TrackedImageViewPreferencePage::X_SCALING("scaling in x (verti
 const std::string TrackedImageViewPreferencePage::Y_SCALING("scaling in y (vertical) direction");
 const std::string TrackedImageViewPreferencePage::FLIP_X_SCALING("flip x scaling");
 const std::string TrackedImageViewPreferencePage::FLIP_Y_SCALING("flip y scaling");
+const std::string TrackedImageViewPreferencePage::CLONE_IMAGE("Clone image");
+
 
 //-----------------------------------------------------------------------------
 TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
@@ -41,6 +43,7 @@ TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
 , m_Initializing(false)
 , m_XScaling(0)
 , m_YScaling(0)
+, m_CloneImage(0)
 , m_TrackedImageViewPreferencesNode(0)
 {
 }
@@ -107,6 +110,10 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
   m_FlipYScaling->setChecked(false);
   formLayout->addRow("flip y scale factor", m_FlipYScaling);
 
+  m_CloneImage = new QCheckBox();
+  m_CloneImage->setChecked(false);
+  formLayout->addRow("show clone image button", m_CloneImage);
+
   m_MainControl->setLayout(formLayout);
   this->Update();
 
@@ -129,6 +136,7 @@ bool TrackedImageViewPreferencePage::PerformOk()
   m_TrackedImageViewPreferencesNode->PutDouble(Y_SCALING, m_YScaling->value());
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_X_SCALING, m_FlipXScaling->isChecked());
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_Y_SCALING, m_FlipYScaling->isChecked());
+  m_TrackedImageViewPreferencesNode->PutBool(CLONE_IMAGE, m_CloneImage->isChecked());
   return true;
 }
 
@@ -148,4 +156,5 @@ void TrackedImageViewPreferencePage::Update()
   m_YScaling->setValue(m_TrackedImageViewPreferencesNode->GetDouble(Y_SCALING, 1));
   m_FlipXScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_X_SCALING, false));
   m_FlipYScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_Y_SCALING, false));
+  m_CloneImage->setChecked(m_TrackedImageViewPreferencesNode->GetBool(CLONE_IMAGE, false));
 }

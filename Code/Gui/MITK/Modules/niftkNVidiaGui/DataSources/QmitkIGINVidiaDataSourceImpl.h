@@ -41,9 +41,9 @@ public:
   {
     PRE_INIT,
     HW_ENUM,
-    FAILED,     // something is broken. signal dropout is not failed!
+    FAILED,     // something is broken. as of recently, signal drop out is considered failed!
     RUNNING,    // trying to capture
-    DEAD,
+    DEAD,       // e.g. no suitable hardware in the system
     PLAYBACK
   };
 
@@ -121,6 +121,9 @@ signals:
   void SignalStopCompression();
   void SignalGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
   void SignalTryPlayback(const char* filename, bool* ok, const char** errormsg);
+
+  // emitted when capture setup dies. should be connected with a non-blocking queued connection!
+  void SignalFatalError(QString msg);
 
 private:
   // has to be called with lock held!

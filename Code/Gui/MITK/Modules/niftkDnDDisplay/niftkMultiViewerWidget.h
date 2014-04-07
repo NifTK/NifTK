@@ -85,12 +85,6 @@ public:
   /// do is to disconnect from the mitk::FocusManager.
   virtual ~niftkMultiViewerWidget();
 
-  /// \brief Used to activate the whole widget.
-  void Activated();
-
-  /// \brief Used to de-activate the whole widget.
-  void Deactivated();
-
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
@@ -235,7 +229,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
    */
-  virtual void EnableLinkedNavigation(bool enable);
+  virtual void EnableLinkedNavigation(bool enabled);
 
   /**
    * \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
@@ -387,12 +381,6 @@ private:
   /// \brief Selects the render window of the given viewer.
   void SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow);
 
-  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
-  void SetNavigationControllerEventListening(bool enabled);
-
-  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
-  bool GetNavigationControllerEventListening() const;
-
   niftkMultiViewerControls* CreateControlPanel(QWidget* parent);
 
   // Layouts
@@ -431,7 +419,7 @@ private:
   bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;
   bool m_SegmentationModeEnabled;
-  bool m_NavigationControllerEventListening;
+  bool m_LinkedNavigation;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;

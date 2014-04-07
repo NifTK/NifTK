@@ -129,7 +129,7 @@ bool IsNodeAGreyScaleImage(const mitk::DataNode::Pointer node)
 
   if (node.IsNotNull())
   {
-    mitk::Image::Pointer image = static_cast<mitk::Image*>(node->GetData());
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image.IsNotNull())
     {
       bool isBinary(false);
@@ -153,7 +153,7 @@ bool IsNodeABinaryImage(const mitk::DataNode::Pointer node)
 
   if (node.IsNotNull())
   {
-    mitk::Image::Pointer image = static_cast<mitk::Image*>(node->GetData());
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image.IsNotNull())
     {
       bool isBinary(false);

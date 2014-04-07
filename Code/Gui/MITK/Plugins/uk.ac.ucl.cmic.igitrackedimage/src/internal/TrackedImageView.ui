@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>514</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,22 +18,6 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_ImageLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>image</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ImageNode"/>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="m_ImageToWorldLabel">
          <property name="sizePolicy">
@@ -44,6 +28,22 @@
          </property>
          <property name="text">
           <string>image to world</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ImageNode"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_ImageLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>image</string>
          </property>
         </widget>
        </item>
@@ -60,6 +60,32 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="m_CloneImageGroupBox">
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="1">
+         <widget class="ctkPathLineEdit" name="m_CloneTrackedImageDirectoryChooser" native="true"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="m_ClonePushButton">
+          <property name="text">
+           <string>Clone</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_CloneToPathLabel">
+          <property name="text">
+           <string>Clone to folder</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QmitkRenderWindow" name="m_RenderWindow" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -67,6 +93,7 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <zorder>m_CloneImageGroupBox</zorder>
       </widget>
      </item>
     </layout>
@@ -84,6 +111,12 @@
    <class>QmitkRenderWindow</class>
    <extends>QWidget</extends>
    <header>QmitkRenderWindow.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

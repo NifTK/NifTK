@@ -648,13 +648,18 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
   catch (...)
   {
     state_message = "Glitched out";
-    current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    // mark our source as failed! otherwise we run the risk of silently corrupting a
+    // recording session where (due to flaky cable) one stream drops out, source recovers
+    // but enums only one channel, and recording just continues.
+    current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
     // dont re-setup too quickly
     SetInterval(500);
     // whatever sequence numbers we had in the ringbuffer are now obsolete.
     // if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
     sn2slot_map.clear();
     slot2sn_map.clear();
+
+    emit SignalFatalError(QString("SDI capture setup failed! Try to remove and add it again."));
     return;
   }
 }

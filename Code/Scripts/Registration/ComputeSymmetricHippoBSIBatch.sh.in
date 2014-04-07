@@ -53,7 +53,7 @@ Usage: $0 input_file ss_atlas output_dir
 Mandatory Arguments:
  
   input_file : is the input file containing paths to your images and regions. 
-                  image1, brain_region1, local_region1, ss_air_reg_file1, image2, brain_region2, local_region2, ss_air_reg_file2, ......
+                  "image1 brain_region1 local_region1 ss_air_reg_file1 image2 brain_region2 local_region2 ss_air_reg_file2 ......"
   ss_atlas   : atlas used in the standard space registration.
   output_dir : is the output directory.
   

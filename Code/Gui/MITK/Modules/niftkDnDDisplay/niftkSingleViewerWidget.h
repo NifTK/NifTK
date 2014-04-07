@@ -153,10 +153,10 @@ public:
   bool GetRememberSettingsPerWindowLayout() const;
 
   /// \brief Sets the background colour.
-  void SetBackgroundColor(QColor color);
+  void SetBackgroundColour(QColor colour);
 
   /// \brief Gets the background colour.
-  QColor GetBackgroundColor() const;
+  QColor GetBackgroundColour() const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
   int GetMaxSlice(MIDASOrientation orientation) const;
@@ -256,10 +256,10 @@ public:
   void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
-  void SetNavigationControllerEventListening(bool enabled);
+  void EnableLinkedNavigation(bool enabled);
 
   /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
-  bool GetNavigationControllerEventListening() const;
+  bool IsLinkedNavigationEnabled() const;
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
@@ -472,7 +472,7 @@ private:
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastCursorPositionTimes;
 
-  bool m_NavigationControllerEventListening;
+  bool m_LinkedNavigation;
   bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;

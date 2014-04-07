@@ -50,9 +50,15 @@ public slots:
 
 protected:
 
-  /// \brief Checks environment variable NIFTK_MITK_DISPLAY to see
-  /// if we are forcing the MITK display open.
-  void CheckIfLoadingMITKDisplay();
+  /**
+   * \brief Directly tries to open the given editor: use sparingly.
+   */
+  void OpenEditor(const std::string &editorName);
+
+  /**
+   * \brief Checks if the environment variable contains a string value "ON" or "1", and if so tries to open the given editor.
+   */
+  void OpenEditorIfEnvironmentVariableIsON(const std::string &envVariable, const std::string &editorName);
 };
 
 #endif /*QMITKBASEWORKBENCHWINDOWADVISOR_H_*/

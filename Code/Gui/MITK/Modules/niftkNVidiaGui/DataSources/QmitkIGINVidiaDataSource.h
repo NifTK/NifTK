@@ -125,6 +125,10 @@ signals:
    */
   void UpdateDisplay();
 
+protected slots:
+  // to be used by QmitkIGINVidiaDataSourceImpl to make us show a message box.
+  void ShowFatalErrorMessage(QString msg);
+
 protected:
 
   QmitkIGINVidiaDataSource(mitk::DataStorage* storage); // Purposefully hidden.

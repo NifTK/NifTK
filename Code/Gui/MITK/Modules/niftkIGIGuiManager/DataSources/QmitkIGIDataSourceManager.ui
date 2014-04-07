@@ -249,7 +249,9 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Double-click on a row in the list above to activate a preview/control GUI for that data source. Untick the checkbox to freeze-frame a data source. Recording incoming data will continue in the background; just Data Storage will not receive updates.</string>
+      <string>Double-click on a row in the list to activate a preview/control GUI for that data source.
+Untick the checkbox to freeze-frame a data source. Recording incoming data will continue in the background;
+just Data Storage will not receive updates.</string>
      </property>
      <property name="title">
       <string>Sources</string>
@@ -258,16 +260,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -287,15 +280,30 @@
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
         <property name="sortingEnabled">
          <bool>false</bool>
         </property>
         <property name="columnCount">
-         <number>6</number>
+         <number>7</number>
         </property>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
+        <column>
+         <property name="text">
+          <string>A</string>
+         </property>
+         <property name="toolTip">
+          <string>Active
+Click to freeze all sources.</string>
+         </property>
+        </column>
         <column>
          <property name="text">
           <string>Status</string>
@@ -346,16 +354,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -386,16 +385,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>

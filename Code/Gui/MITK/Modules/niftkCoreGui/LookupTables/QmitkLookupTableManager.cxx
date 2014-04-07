@@ -12,30 +12,29 @@
 
 =============================================================================*/
 
-#ifndef LOOKUPTABLEMANAGER_CPP
-#define LOOKUPTABLEMANAGER_CPP
+#include "QmitkLookupTableManager.h"
+#include "QmitkLookupTableContainer.h"
+#include "QmitkLookupTableSaxHandler.h"
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
 #include <QCoreApplication>
 #include <QDir>
 #include <map>
-#include "LookupTableManager.h"
-#include "LookupTableSaxHandler.h"
-#include "LookupTableContainer.h"
 #include <vtkLookupTable.h>
 #include <mitkLogMacros.h>
 
-LookupTableManager::LookupTableManager()
+//-----------------------------------------------------------------------------
+QmitkLookupTableManager::QmitkLookupTableManager()
 {
-	typedef std::pair<int, const LookupTableContainer*> PairType;
-	typedef std::map<int, const LookupTableContainer*> MapType;
+  typedef std::pair<int, const QmitkLookupTableContainer*> PairType;
+  typedef std::map<int, const QmitkLookupTableContainer*> MapType;
 
 	MapType map;
 
 	// TODO: How can I automatically read a list of filenames within a plugin?
 	QStringList fileList;
   fileList.push_back(":imagej_fire.lut");
-	fileList.push_back(":blue.lut");
+  fileList.push_back(":blue.lut");
   fileList.push_back(":cyan.lut");
   fileList.push_back(":green.lut");
   fileList.push_back(":grey.lut");
@@ -65,18 +64,18 @@ LookupTableManager::LookupTableManager()
 	{
 
 	  QString fileName = fileList[i];
-	  MITK_DEBUG << "LookupTableManager():Loading lut " << fileName.toLocal8Bit().constData();
+    MITK_DEBUG << "QmitkLookupTableManager():Loading lut " << fileName.toLocal8Bit().constData();
 
     QFile file(fileName);
 
 	  QXmlInputSource inputSource(&file);
 	  QXmlSimpleReader reader;
 
-    LookupTableSaxHandler handler;
+    QmitkLookupTableSaxHandler handler;
 	  reader.setContentHandler(&handler);
 	  reader.setErrorHandler(&handler);
 
-		LookupTableContainer *lut = NULL;
+    QmitkLookupTableContainer *lut = NULL;
 
 	  if (reader.parse(inputSource))
 	  {
@@ -84,17 +83,17 @@ LookupTableManager::LookupTableManager()
 	  }
 	  else
 	  {
-	    MITK_ERROR << "LookupTableManager():failed to parse XML file (" << fileName.toLocal8Bit().constData() \
+      MITK_ERROR << "QmitkLookupTableManager():failed to parse XML file (" << fileName.toLocal8Bit().constData() \
 	  			<< ") so returning null";
 	  }
 
 		if (lut != NULL)
 		{
-			map.insert(PairType(lut->GetOrder(), const_cast<const LookupTableContainer*>(lut)));
+      map.insert(PairType(lut->GetOrder(), const_cast<const QmitkLookupTableContainer*>(lut)));
 		}
 		else
 		{
-		  MITK_ERROR << "LookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
+      MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
 		}
 	}
 
@@ -104,10 +103,12 @@ LookupTableManager::LookupTableManager()
 		m_List.push_back((*iter).second);
 	}
 
-	MITK_DEBUG << "LookupTableManager():Constructed, with " << m_List.size() << " lookup tables";
+  MITK_DEBUG << "QmitkLookupTableManager():Constructed, with " << m_List.size() << " lookup tables";
 }
 
-LookupTableManager::~LookupTableManager()
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableManager::~QmitkLookupTableManager()
 {
 	for (unsigned int i = 0; i < m_List.size(); i++)
 	{
@@ -119,14 +120,18 @@ LookupTableManager::~LookupTableManager()
 	m_List.clear();
 }
 
-unsigned int LookupTableManager::GetNumberOfLookupTables()
+
+//-----------------------------------------------------------------------------
+unsigned int QmitkLookupTableManager::GetNumberOfLookupTables()
 {
 	return m_List.size();
 }
 
-const LookupTableContainer* LookupTableManager::GetLookupTableContainer(const unsigned int& n)
+
+//-----------------------------------------------------------------------------
+const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContainer(const unsigned int& n)
 {
-	const LookupTableContainer* result = NULL;
+  const QmitkLookupTableContainer* result = NULL;
 
 	if (this->CheckIndex(n))
 	{
@@ -140,22 +145,22 @@ const LookupTableContainer* LookupTableManager::GetLookupTableContainer(const un
 	return result;
 }
 
-vtkLookupTable* LookupTableManager::CloneLookupTable(const unsigned int& n)
+
+//-----------------------------------------------------------------------------
+QString QmitkLookupTableManager::GetName(const unsigned int& n)
 {
-  vtkLookupTable *result = NULL;
-
-  const LookupTableContainer* container = NULL;
-  container = this->GetLookupTableContainer(n);
-
-  if (container != NULL)
+  QString result = "";
+  const QmitkLookupTableContainer* container = this->GetLookupTableContainer(n);
+  if (container != 0)
   {
-    result->DeepCopy(const_cast<vtkLookupTable*>(container->GetLookupTable()));
+    result = container->GetDisplayName();
   }
-
   return result;
 }
 
-bool LookupTableManager::CheckIndex(const unsigned int& n)
+
+//-----------------------------------------------------------------------------
+bool QmitkLookupTableManager::CheckIndex(const unsigned int& n)
 {
 	if (n >= this->GetNumberOfLookupTables())
 	{
@@ -167,5 +172,3 @@ bool LookupTableManager::CheckIndex(const unsigned int& n)
 		return true;
 	}
 }
-
-#endif

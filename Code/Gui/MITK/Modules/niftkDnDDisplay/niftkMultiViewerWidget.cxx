@@ -71,7 +71,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_RememberSettingsPerWindowLayout(false)
 , m_IsThumbnailMode(false)
 , m_SegmentationModeEnabled(false)
-, m_NavigationControllerEventListening(false)
+, m_LinkedNavigation(false)
 , m_Magnification(0.0)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
@@ -229,7 +229,7 @@ niftkMultiViewerWidget::~niftkMultiViewerWidget()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
-  this->Deactivated();
+  this->EnableLinkedNavigation(false);
 }
 
 
@@ -241,7 +241,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   viewer->setObjectName(tr("niftkSingleViewerWidget"));
   viewer->setVisible(false);
 
-  viewer->SetBackgroundColor(m_BackgroundColour);
+  viewer->SetBackgroundColour(m_BackgroundColour);
   viewer->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
   viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
@@ -490,7 +490,7 @@ void niftkMultiViewerWidget::SetThumbnailMode(bool enabled)
   }
   else
   {
-    m_ControlPanel->SetSingleViewerControlsEnabled(m_NavigationControllerEventListening);
+    m_ControlPanel->SetSingleViewerControlsEnabled(m_LinkedNavigation);
     m_ControlPanel->SetMultiViewerControlsEnabled(true);
     m_ControlPanel->SetViewerNumber(m_ViewerRowsInNonThumbnailMode, m_ViewerColumnsInNonThumbnailMode);
     this->SetViewerNumber(m_ViewerRowsInNonThumbnailMode, m_ViewerColumnsInNonThumbnailMode, false);
@@ -560,7 +560,7 @@ void niftkMultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
 
   foreach (niftkSingleViewerWidget* viewer, m_Viewers)
   {
-    viewer->SetBackgroundColor(m_BackgroundColour);
+    viewer->SetBackgroundColour(m_BackgroundColour);
   }
 }
 
@@ -1696,55 +1696,25 @@ void niftkMultiViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::Activated()
+void niftkMultiViewerWidget::EnableLinkedNavigation(bool enabled)
 {
-//  this->setEnabled(true);
-  this->EnableLinkedNavigation(true);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::Deactivated()
-{
-//  this->setEnabled(false);
-  this->EnableLinkedNavigation(false);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::EnableLinkedNavigation(bool enable)
-{
-  this->SetNavigationControllerEventListening(enable);
+  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  if (enabled && !m_LinkedNavigation)
+  {
+    selectedViewer->EnableLinkedNavigation(true);
+  }
+  else if (!enabled && m_LinkedNavigation)
+  {
+    selectedViewer->EnableLinkedNavigation(false);
+  }
+  m_LinkedNavigation = enabled;
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::IsLinkedNavigationEnabled() const
 {
-  return this->GetNavigationControllerEventListening();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::GetNavigationControllerEventListening() const
-{
-  return m_NavigationControllerEventListening;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetNavigationControllerEventListening(bool enabled)
-{
-  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  if (enabled && !m_NavigationControllerEventListening)
-  {
-    selectedViewer->SetNavigationControllerEventListening(true);
-  }
-  else if (!enabled && m_NavigationControllerEventListening)
-  {
-    selectedViewer->SetNavigationControllerEventListening(false);
-  }
-  m_NavigationControllerEventListening = enabled;
+  return m_LinkedNavigation;
 }
 
 
@@ -1765,12 +1735,12 @@ void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
       if (viewer == selectedViewer)
       {
         viewer->SetSelected(nodesInWindow > 0);
-        viewer->SetNavigationControllerEventListening(true);
+        viewer->EnableLinkedNavigation(true);
       }
       else
       {
         viewer->SetSelected(false);
-        viewer->SetNavigationControllerEventListening(false);
+        viewer->EnableLinkedNavigation(false);
       }
     }
 

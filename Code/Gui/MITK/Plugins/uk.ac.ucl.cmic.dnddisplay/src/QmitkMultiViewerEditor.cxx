@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkDnDDisplayEditor.h"
+#include "QmitkMultiViewerEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -21,22 +21,21 @@
 #include <QWidget>
 #include <QGridLayout>
 
-#include <mitkGlobalInteraction.h>
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
-#include "niftkDnDDisplayPreferencePage.h"
+#include "QmitkDnDDisplayPreferencePage.h"
 
-const std::string niftkDnDDisplayEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
+const std::string QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
 
-class niftkDnDDisplayEditorPrivate
+class QmitkMultiViewerEditorPrivate
 {
 public:
-  niftkDnDDisplayEditorPrivate();
-  ~niftkDnDDisplayEditorPrivate();
+  QmitkMultiViewerEditorPrivate();
+  ~QmitkMultiViewerEditorPrivate();
 
   niftkMultiViewerWidget* m_MultiViewer;
   niftkMultiViewerVisibilityManager* m_MultiViewerVisibilityManager;
@@ -46,12 +45,12 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-struct niftkDnDDisplayEditorPartListener : public berry::IPartListener
+struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
 {
-  berryObjectMacro(niftkDnDDisplayEditorPartListener)
+  berryObjectMacro(QmitkMultiViewerEditorPartListener)
 
   //-----------------------------------------------------------------------------
-  niftkDnDDisplayEditorPartListener(niftkDnDDisplayEditorPrivate* dd)
+  QmitkMultiViewerEditorPartListener(QmitkMultiViewerEditorPrivate* dd)
     : d(dd)
   {}
 
@@ -66,14 +65,14 @@ struct niftkDnDDisplayEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == niftkDnDDisplayEditor::EDITOR_ID)
+    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
     {
-      niftkDnDDisplayEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<niftkDnDDisplayEditor>();
+      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
       {
-        d->m_MultiViewer->Deactivated();
+        d->m_MultiViewer->EnableLinkedNavigation(false);
       }
     }
   }
@@ -82,14 +81,14 @@ struct niftkDnDDisplayEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == niftkDnDDisplayEditor::EDITOR_ID)
+    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
     {
-      niftkDnDDisplayEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<niftkDnDDisplayEditor>();
+      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
       {
-        d->m_MultiViewer->Deactivated();
+        d->m_MultiViewer->EnableLinkedNavigation(false);
       }
     }
   }
@@ -98,31 +97,31 @@ struct niftkDnDDisplayEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == niftkDnDDisplayEditor::EDITOR_ID)
+    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
     {
-      niftkDnDDisplayEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<niftkDnDDisplayEditor>();
+      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
       {
-        d->m_MultiViewer->Activated();
+        d->m_MultiViewer->EnableLinkedNavigation(true);
       }
     }
   }
 
 private:
 
-  niftkDnDDisplayEditorPrivate* const d;
+  QmitkMultiViewerEditorPrivate* const d;
 
 };
 
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayEditorPrivate::niftkDnDDisplayEditorPrivate()
+QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate()
 : m_MultiViewer(0)
 , m_MultiViewerVisibilityManager(0)
 , m_RenderingManager(0)
-, m_PartListener(new niftkDnDDisplayEditorPartListener(this))
+, m_PartListener(new QmitkMultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 {
   m_RenderingManager = mitk::RenderingManager::GetInstance();
@@ -132,7 +131,7 @@ niftkDnDDisplayEditorPrivate::niftkDnDDisplayEditorPrivate()
 
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayEditorPrivate::~niftkDnDDisplayEditorPrivate()
+QmitkMultiViewerEditorPrivate::~QmitkMultiViewerEditorPrivate()
 {
   if (m_MultiViewerVisibilityManager != NULL)
   {
@@ -147,21 +146,21 @@ niftkDnDDisplayEditorPrivate::~niftkDnDDisplayEditorPrivate()
 
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayEditor::niftkDnDDisplayEditor()
-: d(new niftkDnDDisplayEditorPrivate)
+QmitkMultiViewerEditor::QmitkMultiViewerEditor()
+: d(new QmitkMultiViewerEditorPrivate)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkDnDDisplayEditor::~niftkDnDDisplayEditor()
+QmitkMultiViewerEditor::~QmitkMultiViewerEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::CreateQtPartControl(QWidget* parent)
+void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
 {
   if (d->m_MultiViewer == NULL)
   {
@@ -173,26 +172,26 @@ void niftkDnDDisplayEditor::CreateQtPartControl(QWidget* parent)
     assert( prefs );
 
     DnDDisplayInterpolationType defaultInterpolationType =
-        (DnDDisplayInterpolationType)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
+        (DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
     WindowLayout defaultLayout =
-        (WindowLayout)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
+        (WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
     DnDDisplayDropType defaultDropType =
-        (DnDDisplayDropType)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
+        (DnDDisplayDropType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
 
-    int defaultNumberOfRows = prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1);
-    int defaultNumberOfColumns = prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
-    bool showDropTypeControls = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
-    bool showDirectionAnnotations = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
-    bool showShowingOptions = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
-    bool showWindowLayoutControls = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
-    bool showViewerNumberControls = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
-    bool showMagnificationSlider = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
-    bool show3DWindowInMultiWindowLayout = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
-    bool show2DCursors = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
-    bool rememberSettingsPerLayout = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
-    bool sliceIndexTracking = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
-    bool magnificationTracking = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
-    bool timeStepTracking = prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
+    int defaultNumberOfRows = prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1);
+    int defaultNumberOfColumns = prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
+    bool showDropTypeControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
+    bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
+    bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
+    bool showViewerNumberControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
+    bool showMagnificationSlider = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
+    bool show3DWindowInMultiWindowLayout = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
+    bool show2DCursors = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
+    bool rememberSettingsPerLayout = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
+    bool sliceIndexTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
+    bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
+    bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
     d->m_MultiViewerVisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
     d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
@@ -233,21 +232,21 @@ void niftkDnDDisplayEditor::CreateQtPartControl(QWidget* parent)
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);
 
-    prefs->OnChanged.AddListener( berry::MessageDelegate1<niftkDnDDisplayEditor, const berry::IBerryPreferences*>( this, &niftkDnDDisplayEditor::OnPreferencesChanged ) );
+    prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkMultiViewerEditor, const berry::IBerryPreferences*>( this, &QmitkMultiViewerEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
   }
 }
 
 
 //-----------------------------------------------------------------------------
-niftkMultiViewerWidget* niftkDnDDisplayEditor::GetMultiViewer()
+niftkMultiViewerWidget* QmitkMultiViewerEditor::GetMultiViewer()
 {
   return d->m_MultiViewer;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::SetFocus()
+void QmitkMultiViewerEditor::SetFocus()
 {
   if (d->m_MultiViewer != 0)
   {
@@ -257,28 +256,28 @@ void niftkDnDDisplayEditor::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
+void QmitkMultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
 {
   if (d->m_MultiViewer != NULL)
   {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(niftkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
     QColor backgroundColour(backgroundColourName);
     d->m_MultiViewer->SetBackgroundColour(backgroundColour);
-    d->m_MultiViewer->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
-    d->m_MultiViewer->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
-    d->m_MultiViewer->SetDropType((DnDDisplayDropType)(prefs->GetInt(niftkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0)));
-    d->m_MultiViewer->SetShowDropTypeControls(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
-    d->m_MultiViewer->SetShowOptionsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
-    d->m_MultiViewer->SetWindowLayoutControlsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
-    d->m_MultiViewer->SetViewerNumberControlsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
-    d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
-    d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
-    d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
-    d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
-    d->m_MultiViewer->SetSliceTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
-    d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
-    d->m_MultiViewer->SetMagnificationTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
+    d->m_MultiViewer->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
+    d->m_MultiViewer->SetDropType((DnDDisplayDropType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0)));
+    d->m_MultiViewer->SetShowDropTypeControls(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
+    d->m_MultiViewer->SetShowOptionsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
+    d->m_MultiViewer->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
+    d->m_MultiViewer->SetViewerNumberControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
+    d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
+    d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
+    d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
+    d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
+    d->m_MultiViewer->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetMagnificationTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
   }
 }
 
@@ -287,7 +286,7 @@ void niftkDnDDisplayEditor::OnPreferencesChanged( const berry::IBerryPreferences
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *niftkDnDDisplayEditor::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow *QmitkMultiViewerEditor::GetActiveQmitkRenderWindow() const
 {
   QmitkRenderWindow* activeRenderWindow = d->m_MultiViewer->GetSelectedRenderWindow();
   if (!activeRenderWindow)
@@ -300,42 +299,42 @@ QmitkRenderWindow *niftkDnDDisplayEditor::GetActiveQmitkRenderWindow() const
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> niftkDnDDisplayEditor::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> QmitkMultiViewerEditor::GetQmitkRenderWindows() const
 {
   return d->m_MultiViewer->GetRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *niftkDnDDisplayEditor::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow *QmitkMultiViewerEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return d->m_MultiViewer->GetRenderWindow(id);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D niftkDnDDisplayEditor::GetSelectedPosition(const QString& id) const
+mitk::Point3D QmitkMultiViewerEditor::GetSelectedPosition(const QString& id) const
 {
   return d->m_MultiViewer->GetSelectedPosition(id);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::SetSelectedPosition(const mitk::Point3D &position, const QString& id)
+void QmitkMultiViewerEditor::SetSelectedPosition(const mitk::Point3D &position, const QString& id)
 {
   return d->m_MultiViewer->SetSelectedPosition(position, id);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::EnableDecorations(bool enable, const QStringList &decorations)
+void QmitkMultiViewerEditor::EnableDecorations(bool enable, const QStringList &decorations)
 {
   // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkDnDDisplayEditor::IsDecorationEnabled(const QString &decoration) const
+bool QmitkMultiViewerEditor::IsDecorationEnabled(const QString &decoration) const
 {
   // Deliberately deny having any decorations. ToDo - maybe get niftkMultiViewerWidget to support it.
   return false;
@@ -343,7 +342,7 @@ bool niftkDnDDisplayEditor::IsDecorationEnabled(const QString &decoration) const
 
 
 //-----------------------------------------------------------------------------
-QStringList niftkDnDDisplayEditor::GetDecorations() const
+QStringList QmitkMultiViewerEditor::GetDecorations() const
 {
   // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
   QStringList decorations;
@@ -352,14 +351,14 @@ QStringList niftkDnDDisplayEditor::GetDecorations() const
 
 
 //-----------------------------------------------------------------------------
-mitk::IRenderingManager* niftkDnDDisplayEditor::GetRenderingManager() const
+mitk::IRenderingManager* QmitkMultiViewerEditor::GetRenderingManager() const
 {
   return d->m_RenderingManagerInterface;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesRotator* niftkDnDDisplayEditor::GetSlicesRotator() const
+mitk::SlicesRotator* QmitkMultiViewerEditor::GetSlicesRotator() const
 {
   // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
   return NULL;
@@ -367,7 +366,7 @@ mitk::SlicesRotator* niftkDnDDisplayEditor::GetSlicesRotator() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesSwiveller* niftkDnDDisplayEditor::GetSlicesSwiveller() const
+mitk::SlicesSwiveller* QmitkMultiViewerEditor::GetSlicesSwiveller() const
 {
   // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
   return NULL;
@@ -375,7 +374,7 @@ mitk::SlicesSwiveller* niftkDnDDisplayEditor::GetSlicesSwiveller() const
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::EnableSlicingPlanes(bool enable)
+void QmitkMultiViewerEditor::EnableSlicingPlanes(bool enable)
 {
   // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
   Q_UNUSED(enable);
@@ -383,7 +382,7 @@ void niftkDnDDisplayEditor::EnableSlicingPlanes(bool enable)
 
 
 //-----------------------------------------------------------------------------
-bool niftkDnDDisplayEditor::IsSlicingPlanesEnabled() const
+bool QmitkMultiViewerEditor::IsSlicingPlanesEnabled() const
 {
   // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
   return false;
@@ -391,14 +390,14 @@ bool niftkDnDDisplayEditor::IsSlicingPlanesEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkDnDDisplayEditor::EnableLinkedNavigation(bool enable)
+void QmitkMultiViewerEditor::EnableLinkedNavigation(bool enable)
 {
   d->m_MultiViewer->EnableLinkedNavigation(enable);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkDnDDisplayEditor::IsLinkedNavigationEnabled() const
+bool QmitkMultiViewerEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MultiViewer->IsLinkedNavigationEnabled();
 }

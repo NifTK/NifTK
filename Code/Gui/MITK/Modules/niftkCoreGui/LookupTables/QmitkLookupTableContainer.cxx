@@ -12,20 +12,19 @@
 
 =============================================================================*/
 
-#ifndef LOOKUPTABLECONTAINER_CPP
-#define LOOKUPTABLECONTAINER_CPP
+#include "QmitkLookupTableContainer.h"
 
-#include <QFileInfo>
-#include "LookupTableContainer.h"
-
-LookupTableContainer::LookupTableContainer(const vtkLookupTable* lut)
+//-----------------------------------------------------------------------------
+QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 {
 	m_LookupTable = lut;
 	m_DisplayName = QString("");
 	m_Order = 0;
 }
 
-LookupTableContainer::~LookupTableContainer()
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableContainer::~QmitkLookupTableContainer()
 {
 	if (m_LookupTable != NULL)
 	{
@@ -34,5 +33,3 @@ LookupTableContainer::~LookupTableContainer()
 		nonConst = NULL;
 	}
 }
-
-#endif

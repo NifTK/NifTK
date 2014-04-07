@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkDnDDisplayPreferencePage_h
-#define niftkDnDDisplayPreferencePage_h
+#ifndef QmitkDnDDisplayPreferencePage_h
+#define QmitkDnDDisplayPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
@@ -26,19 +26,19 @@ class QSpinBox;
 class QCheckBox;
 
 /**
- * \class niftkDnDDisplayPreferencePage
+ * \class QmitkDnDDisplayPreferencePage
  * \brief Provides a preferences page for the NifTK DnD Display, including default number of rows,
  * default number of columns, image interpolation, default window layout and background colour.
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
-struct DNDDISPLAY_EXPORT niftkDnDDisplayPreferencePage : public QObject, public berry::IQtPreferencePage
+struct DNDDISPLAY_EXPORT QmitkDnDDisplayPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  niftkDnDDisplayPreferencePage();
-  niftkDnDDisplayPreferencePage(const niftkDnDDisplayPreferencePage& other);
+  QmitkDnDDisplayPreferencePage();
+  QmitkDnDDisplayPreferencePage(const QmitkDnDDisplayPreferencePage& other);
 
   void CreateQtControl(QWidget* widget);
   QWidget* GetQtControl() const;

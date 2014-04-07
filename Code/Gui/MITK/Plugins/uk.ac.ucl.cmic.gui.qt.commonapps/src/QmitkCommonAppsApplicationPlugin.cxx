@@ -16,6 +16,9 @@
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
 
+#include <mitkCoreServices.h>
+#include <mitkIPropertyExtensions.h>
+#include <mitkFloatPropertyExtension.h>
 #include <mitkProperties.h>
 #include <mitkVersion.h>
 #include <mitkLogMacros.h>
@@ -23,10 +26,21 @@
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkRenderingModeProperty.h>
+#include <mitkNamedLookupTableProperty.h>
+#include <mitkExceptionMacro.h>
 #include <itkStatisticsImageFilter.h>
+#include <itkCommand.h>
+#include <vtkLookupTable.h>
+#include <vtkSmartPointer.h>
 
 #include <service/cm/ctkConfigurationAdmin.h>
 #include <service/cm/ctkConfiguration.h>
+
+#include <usModule.h>
+#include <usModuleRegistry.h>
+#include <usModuleContext.h>
+#include <usModuleInitialization.h>
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -81,6 +95,14 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
   this->RegisterQmitkCommonAppsExtensions();
   this->RegisterDataStorageListener();
   this->BlankDepartmentalLogo();
+
+  // Get the MitkCore module context.
+  us::ModuleContext* mitkCoreContext = us::ModuleRegistry::GetModule(1)->GetModuleContext();
+
+  mitk::IPropertyExtensions* propertyExtensions = mitk::CoreServices::GetPropertyExtensions(mitkCoreContext);
+  mitk::FloatPropertyExtension::Pointer opacityPropertyExtension = mitk::FloatPropertyExtension::New(0.0, 1.0);
+  propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
+  propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 }
 
 
@@ -118,6 +140,11 @@ void QmitkCommonAppsApplicationPlugin::RegisterDataStorageListener()
   this->GetDataStorage()->AddNodeEvent.AddListener
       ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
         ( this, &QmitkCommonAppsApplicationPlugin::NodeAddedProxy ) );
+
+  this->GetDataStorage()->RemoveNodeEvent.AddListener
+      ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
+        ( this, &QmitkCommonAppsApplicationPlugin::NodeRemovedProxy ) );
+
 }
 
 
@@ -130,6 +157,10 @@ void QmitkCommonAppsApplicationPlugin::UnregisterDataStorageListener()
     this->GetDataStorage()->AddNodeEvent.RemoveListener
         ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
           ( this, &QmitkCommonAppsApplicationPlugin::NodeAddedProxy ) );
+
+    this->GetDataStorage()->RemoveNodeEvent.RemoveListener
+        ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>
+          ( this, &QmitkCommonAppsApplicationPlugin::NodeRemovedProxy ) );
 
     m_DataStorageServiceTracker->close();
     delete m_DataStorageServiceTracker;
@@ -189,7 +220,7 @@ void QmitkCommonAppsApplicationPlugin::BlankDepartmentalLogo()
 void QmitkCommonAppsApplicationPlugin::NodeAddedProxy(const mitk::DataNode *node)
 {
   // guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_InDataStorageChanged)
+  if (!m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     this->NodeAdded(node);
@@ -203,8 +234,56 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
 {
   mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
   this->RegisterInterpolationProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
-  this->RegisterBlackOpacityProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::NodeRemovedProxy(const mitk::DataNode *node)
+{
+  // guarantee no recursions when a new node event is thrown in NodeRemoved()
+  if (!m_InDataStorageChanged)
+  {
+    m_InDataStorageChanged = true;
+    this->NodeRemoved(node);
+    m_InDataStorageChanged = false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::NodeRemoved(const mitk::DataNode *constNode)
+{
+  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
+
+  // Removing observers on a node thats being deleted?
+
+  if (mitk::IsNodeAGreyScaleImage(node))
+  {
+    std::map<mitk::DataNode*, unsigned long int>::iterator lowestIter;
+    lowestIter = m_NodeToLowestOpacityObserverMap.find(node);
+
+    std::map<mitk::DataNode*, unsigned long int>::iterator highestIter;
+    highestIter = m_NodeToHighestOpacityObserverMap.find(node);
+
+    if (lowestIter != m_NodeToLowestOpacityObserverMap.end())
+    {
+      if (highestIter != m_NodeToHighestOpacityObserverMap.end())
+      {
+        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
+        lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+
+        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
+        highestIsOpaqueProperty->RemoveObserver(highestIter->second);
+
+        m_NodeToLowestOpacityObserverMap.erase(lowestIter->first);
+        m_NodeToHighestOpacityObserverMap.erase(highestIter->first);
+        m_PropertyToNodeMap.erase(lowestIsOpaqueProperty.GetPointer());
+        m_PropertyToNodeMap.erase(highestIsOpaqueProperty.GetPointer());
+      }
+    }
+  }
 }
 
 
@@ -377,6 +456,102 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::Object *object, const itk::EventObject & event)
+{
+  const mitk::BaseProperty* prop = dynamic_cast<const mitk::BaseProperty*>(object);
+  if (prop != NULL)
+  {
+    std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator iter;
+    iter = m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
+    if (iter != m_PropertyToNodeMap.end())
+    {
+      mitk::DataNode *node = iter->second;
+      if (node != NULL && mitk::IsNodeAGreyScaleImage(node))
+      {
+        float lowestOpacity = 1;
+        bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+        float highestOpacity = 1;
+        bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+        int lookupTableIndex = 0;
+        bool gotIndex = node->GetIntProperty("LookupTableIndex", lookupTableIndex);
+
+        if (gotLowest && gotHighest && gotIndex)
+        {
+          // Get LUT from Micro Service.
+          QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lookupTableIndex, lowestOpacity, highestOpacity);
+          node->SetProperty("LookupTable", mitkLUTProperty);
+        }
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTableProvider()
+{
+  us::ModuleContext* context = us::GetModuleContext();
+  us::ServiceReference<QmitkLookupTableProviderService> ref = context->GetServiceReference<QmitkLookupTableProviderService>();
+  QmitkLookupTableProviderService* lutService = context->GetService<QmitkLookupTableProviderService>(ref);
+
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  return lutService;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
+{
+  if (mitk::IsNodeAGreyScaleImage(node))
+  {
+    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+    if (prefNode != NULL)
+    {
+      float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
+      float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
+      unsigned int defaultIndex = 0;
+
+      // Get LUT from Micro Service.
+      QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
+
+      node->SetProperty("LookupTable", mitkLUTProperty);
+      node->SetIntProperty("LookupTableIndex", defaultIndex);
+      node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+      node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
+      node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
+
+      if (mitk::IsNodeAGreyScaleImage(node))
+      {
+        unsigned long int observerId;
+
+        itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::Pointer lowestIsOpaqueCommand = itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::New();
+        lowestIsOpaqueCommand->SetCallbackFunction(this, &QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged);
+        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
+        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
+        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(lowestIsOpaqueProperty.GetPointer(), node));
+        m_NodeToLowestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
+
+        itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::Pointer highestIsOpaqueCommand = itk::MemberCommand<QmitkCommonAppsApplicationPlugin>::New();
+        highestIsOpaqueCommand->SetCallbackFunction(this, &QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged);
+        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
+        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
+        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(highestIsOpaqueProperty.GetPointer(), node));
+        m_NodeToHighestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
+      }
+    } // end if have pref node
+  } // end if node is grey image
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
     const std::string& preferencesNodeName, mitk::DataNode *node)
 {
@@ -422,33 +597,6 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::RegisterBlackOpacityProperty(
-    const std::string& preferencesNodeName, mitk::DataNode *node)
-{
-  if (mitk::IsNodeAGreyScaleImage(node))
-  {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
-
-    if (prefNode != NULL && image.IsNotNull())
-    {
-      bool blackOpacity = prefNode->GetBool(QmitkCommonAppsApplicationPreferencePage::BLACK_OPACITY, true);
-
-      if (blackOpacity)
-      {
-        node->SetProperty("black opacity", mitk::FloatProperty::New(1));
-      }
-      else
-      {
-        node->SetProperty("black opacity", mitk::FloatProperty::New(0));
-      }
-
-    } // end if have pref node
-  } // end if node is grey image
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeABinaryImage(node))
@@ -481,3 +629,4 @@ void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
+US_INITIALIZE_MODULE("CommonApps", "libuk_ac_ucl_cmic_gui_qt_commonapps")

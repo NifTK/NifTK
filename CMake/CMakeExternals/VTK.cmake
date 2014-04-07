@@ -54,6 +54,13 @@ if(NOT DEFINED VTK_DIR)
     )
   endif()
 
+  if(APPLE)
+    set(additional_cmake_args
+        ${additional_cmake_args}
+        -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=""
+        )
+  endif(APPLE)
+
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
   ExternalProject_Add(${proj}
