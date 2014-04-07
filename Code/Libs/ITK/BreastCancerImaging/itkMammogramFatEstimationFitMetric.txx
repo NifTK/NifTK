@@ -166,30 +166,18 @@ MammogramFatEstimationFitMetric<TInputImage>
 
 
 /* -----------------------------------------------------------------------
-   GenerateFatImage()
+   CalculateFit()
    ----------------------------------------------------------------------- */
 
 template <typename TInputImage>
-void 
+double 
 MammogramFatEstimationFitMetric<TInputImage>
-::GenerateFatImage( const ParametersType &parameters )
+::CalculateFit( double d, const ParametersType &parameters, DistanceImageIndexType index )
 {
-  if ( ! m_InputImage )
-  {
-    itkExceptionMacro( << "ERROR: Input image not set." );
-    return;
-  }
-
-  if ( ! m_Distance )
-  {
-    itkExceptionMacro( << "ERROR: Distance image not set." );
-    return;
-  }
-
-  double d = 0.;
 
   // The width of the breast edge region should be have a minimum
   // of 3mm but be asymptotic to y = x i.e. hyperbolic
+
 #if 1
   double a = sqrt ( 3 + parameters[0]*parameters[0] );
 
@@ -223,7 +211,7 @@ MammogramFatEstimationFitMetric<TInputImage>
 #endif
 
   // The width and height of the skin
-#if 1
+#if 0
   double wSkin = fabs( parameters[5] );
   double hSkin = fabs( parameters[6] );
 
@@ -238,7 +226,71 @@ MammogramFatEstimationFitMetric<TInputImage>
 
   double offset;
   double fatEstimate;
-  DistanceImageIndexType index;
+
+  if ( d <= 0. )
+  {
+    return 0.;
+  }
+#if 0
+  else if ( d <= wSkin )
+  {
+    return hSkin*d/wSkin;
+  }
+#endif
+  else
+  {
+    d -= wSkin;
+  }
+  
+  offset = 
+    ax*static_cast<double>(index[0]) + 
+    ay*static_cast<double>(index[1]) + 
+    hSkin;
+  
+#if 1
+  if ( d > a )
+  {
+    fatEstimate = b + offset;
+  }
+  else
+  {
+    fatEstimate = b*pow( 1 - pow((a - d)/a, r), 1/r ) + offset; 
+  }
+  
+  if ( fatEstimate > 0. )
+  {
+    return fatEstimate ;
+  }
+  else
+  {
+    return 0.;
+  }
+#else
+  return b + offset;
+#endif
+}
+
+
+/* -----------------------------------------------------------------------
+   GenerateFatImage()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+void 
+MammogramFatEstimationFitMetric<TInputImage>
+::GenerateFatImage( const ParametersType &parameters )
+{
+  if ( ! m_InputImage )
+  {
+    itkExceptionMacro( << "ERROR: Input image not set." );
+    return;
+  }
+
+  if ( ! m_Distance )
+  {
+    itkExceptionMacro( << "ERROR: Distance image not set." );
+    return;
+  }
 
   DistanceIteratorWithIndexType itDistance( m_Distance, 
                                             m_Distance->GetLargestPossibleRegion() );
@@ -250,50 +302,7 @@ MammogramFatEstimationFitMetric<TInputImage>
         ! itDistance.IsAtEnd();
         ++itDistance, ++itFat )
   {
-    d = itDistance.Get();
-
-    if ( d <= 0. )
-    {
-      itFat.Set( 0. );
-      continue;
-    }
-    else if ( d <= wSkin )
-    {
-      itFat.Set( hSkin );
-      continue;
-    }
-    else
-    {
-      d -= wSkin;
-    }
-
-    index = itDistance.GetIndex();
-
-    offset = 
-      ax*static_cast<double>(index[0]) + 
-      ay*static_cast<double>(index[1]) + 
-      hSkin;
-#if 1
-    if ( d > a )
-    {
-      fatEstimate = b + offset;
-    }
-    else
-    {
-      fatEstimate = b*pow( 1 - pow((a - d)/a, r), 1/r ) + offset; 
-    }
-
-    if ( fatEstimate > 0. )
-    {
-      itFat.Set( fatEstimate );
-    }
-    else
-    {
-      itFat.Set( 0. );
-    }
-#else
-    itFat.Set( b + offset );
-#endif
+    itFat.Set( CalculateFit( itDistance.Get(), parameters, itDistance.GetIndex() ) );
   }
  
 }
@@ -340,6 +349,14 @@ MammogramFatEstimationFitMetric<TInputImage>
   IteratorConstType itFat( m_Fat,
                            m_Fat->GetLargestPossibleRegion() );
 
+  double a = sqrt ( 3 + parameters[0]*parameters[0] );
+  double wSkin = fabs( parameters[5] );
+
+  if ( wSkin > 3. )
+  {
+    wSkin = 3.;
+  }
+
   for ( itInput.GoToBegin(), itDistance.GoToBegin(), itFat.GoToBegin();
         ! itInput.IsAtEnd();
         ++itInput, ++itDistance, ++itFat )
@@ -351,7 +368,7 @@ MammogramFatEstimationFitMetric<TInputImage>
       diffSq = diff*diff;
 
       // If in the skin region then perform a standard least squares fit
-      if ( itDistance.Get() < parameters[5] )
+      if ( 0 && (itDistance.Get() < a ) )
       {
         similarity += diffSq;
       }
@@ -383,6 +400,95 @@ MammogramFatEstimationFitMetric<TInputImage>
   }
 
   return similarity;
+}
+
+
+/* -----------------------------------------------------------------------
+   WriteIntensityVsEdgeDistToFile()
+   ----------------------------------------------------------------------- */
+
+template<class TInputImage>
+void
+MammogramFatEstimationFitMetric<TInputImage>
+::WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist )
+{
+  std::ofstream fout( fileOutputIntensityVsEdgeDist.c_str() );
+
+  if ((! fout) || fout.bad()) {
+    std::cerr << "ERROR: Could not open file: " << fileOutputIntensityVsEdgeDist << std::endl;
+    return;
+  }
+
+
+  fout.precision(16);
+    
+  IteratorConstType itInput( m_InputImage,
+                             m_InputImage->GetLargestPossibleRegion() );
+
+  DistanceIteratorWithIndexType itDistance( m_Distance, 
+                                            m_Distance->GetLargestPossibleRegion() );
+
+  for ( itInput.GoToBegin(), itDistance.GoToBegin();
+        ! itInput.IsAtEnd();
+        ++itInput, ++itDistance )
+  {
+    if ( itDistance.Get() >= 0. )
+    {
+      fout << std::setw(12) << itDistance.Get() << " "
+           << std::setw(12) << itInput.Get() << std::endl;
+    }
+  }
+
+  fout.close();
+
+  std::cout << "Intensity vs edge distance data written to file: "
+            << fileOutputIntensityVsEdgeDist << std::endl;
+}
+
+
+/* -----------------------------------------------------------------------
+   WriteFitToFile()
+   ----------------------------------------------------------------------- */
+
+template<class TInputImage>
+void
+MammogramFatEstimationFitMetric<TInputImage>
+::WriteFitToFile( std::string fileOutputFit,
+                  const ParametersType &parameters )
+{
+  std::ofstream fout( fileOutputFit.c_str() );
+
+  if ((! fout) || fout.bad()) {
+    std::cerr << "ERROR: Could not open file: " << fileOutputFit << std::endl;
+    return;
+  }
+
+
+  fout.precision(16);
+    
+  DistanceIteratorWithIndexType itDistance( m_Distance, 
+                                            m_Distance->GetLargestPossibleRegion() );
+
+  IteratorConstType itFat( m_Fat,
+                           m_Fat->GetLargestPossibleRegion() );
+
+  DistanceImageIndexType index;
+
+  index[0] = 0.;
+  index[1] = 0.;
+
+  double d;
+
+  for ( d=0.; d<m_MaxDistance; d+=1. )
+  {
+    fout << std::setw(12) << d << " "
+         << std::setw(12) << CalculateFit( d, parameters, index) << std::endl;
+  }
+
+  fout.close();
+
+  std::cout << "Intensity vs edge distance data written to file: "
+            << fileOutputFit << std::endl;
 }
 
 

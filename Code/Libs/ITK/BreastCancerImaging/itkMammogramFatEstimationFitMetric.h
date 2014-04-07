@@ -148,6 +148,11 @@ public:
 
   void GenerateFatImage( const ParametersType &parameters );
 
+  void WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist );
+  void WriteFitToFile( std::string fileOutputFit,
+                       const ParametersType &parameters );
+
+
 protected:
 
   MammogramFatEstimationFitMetric();
@@ -170,6 +175,8 @@ protected:
 
   DistancePixelType      m_MaxDistance;
   DistanceImagePointer   m_Distance;
+
+  double CalculateFit( double d, const ParametersType &parameters, DistanceImageIndexType index );
 
 };
 
