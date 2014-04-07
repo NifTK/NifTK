@@ -56,6 +56,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   // Initialise the segmentation
   this->Initialise();
   this->SmoothTheInputImages();
+  this->GreyScaleClosing();
 
   // Calculate the Maximum Image
   this->CalculateTheMaximumImage();
@@ -65,6 +66,10 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
 
   // Find the nipple and mid-sternum landmarks
   this->FindBreastLandmarks();
+
+  // Compute a 2D map of the height of the patient's anterior skin
+  // surface and use it to remove the arms
+  this->ComputeElevationOfAnteriorSurface();
 
   // Segment the Pectoral Muscle
   typename InternalImageType::SizeType 

@@ -68,6 +68,10 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   // Find the nipple and mid-sternum landmarks
   this->FindBreastLandmarks();
 
+  // Compute a 2D map of the height of the patient's anterior skin
+  // surface and use it to remove the arms
+  this->ComputeElevationOfAnteriorSurface();
+
   // Segment the Pectoral Muscle
   RealType rYHeightOffset = static_cast<RealType>( 0.0 );
 
