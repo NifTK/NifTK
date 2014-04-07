@@ -43,6 +43,9 @@ public:
   /** Type macro that defines a name for this class. */
   itkTypeMacro( LewisGriffinRecursiveGaussianImageFilter, ImageToImageFilter );
 
+ /** ImageDimension enumeration. */
+  itkStaticConstMacro(ImageDimension, unsigned int, TInputImage::ImageDimension);
+
   /** Smart pointer typedef support.  */
   typedef typename TInputImage::Pointer       InputImagePointer;
   typedef typename TInputImage::ConstPointer  InputImageConstPointer;
@@ -75,6 +78,15 @@ public:
     
   /** Get Input Image. */
   const TInputImage * GetInputImage( void );
+
+  /** Optional mask image */
+  typedef unsigned char                                      MaskPixelType;
+  typedef typename itk::Image<MaskPixelType, ImageDimension> MaskImageType;
+  typedef typename MaskImageType::Pointer                    MaskImagePointer;
+
+  /// Set an optional mask image
+  itkSetObjectMacro( Mask, MaskImageType );
+
 
   /** Set/Get the Sigma, measured in world coordinates, of the Gaussian
    * kernel.  The default is 1.0.  */   
@@ -174,6 +186,9 @@ protected:
 
   /// The size of the kernel
   unsigned int m_KernelSize;
+
+  /// Optional mask image
+  MaskImagePointer m_Mask;
 };
 
 

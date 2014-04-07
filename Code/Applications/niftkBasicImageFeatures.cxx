@@ -633,7 +633,7 @@ int main( int argc, char *argv[] )
 
     try
       {
-	std::cout << "Computing basic image features";
+	std::cout << "Computing basic image features" << std::endl;
 	BIFsFilter->Update();
       }
     catch (itk::ExceptionObject &e)
