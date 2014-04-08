@@ -172,23 +172,6 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
       cameraToWorld =  MarkerToWorld[i]*(m_CameraToMarker); 
       gridToWorld = cameraToWorld *(GridToCamera[i]);
       gridToWorlds.push_back(gridToWorld);
-      std::ofstream gridCornersStream;
-      std::string gridCornersName = outputDirectory + "calib.gridcorners" +boost::lexical_cast<std::string>(i) + ".txt";
-      gridCornersStream.open (gridCornersName.c_str());
-      if (gridCornersStream )
-      {
-        for ( int i = 0 ; i < 2 ; i ++ ) 
-        {
-          for ( int j = 0 ; j < 2 ; j ++ ) 
-          {  
-            cv::Point3d x = cv::Point3d (i*(27.0)  , j * (39.0) , 0.0 );
-            cv::Point3d y = gridToWorld * x;
-            gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
-          }
-        }
-        gridCornersStream.close();
-      }
-
     }
     m_GridToWorld = mitk::AverageMatrices (gridToWorlds);
     MITK_INFO << "Average Grid to World Transform" << std::endl << m_GridToWorld;
