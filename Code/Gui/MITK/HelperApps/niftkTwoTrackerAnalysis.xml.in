@@ -40,6 +40,14 @@
       <label>A file to writeout the temporal handeye results</label>
     </file>
 
+    <integer>
+      <name>MatricesToUse</name>
+      <longflag>MatricesToUse</longflag>
+      <description>How Many Matrices to use for the handeye  </description>
+      <label>How many matrices to use for the handeye</label>
+      <default>40</default>
+    </integer>
+
   </parameters>
   
   <parameters>
