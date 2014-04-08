@@ -50,7 +50,7 @@ public:
    * the handeye calibration are optimised to minimise the residual error of the 
    * reconstructed point
    */
-  void HandeyeCalibration (bool visualise = false , std::string fileout = "" );
+  void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 );
 
 protected:
   TwoTrackerAnalysis();

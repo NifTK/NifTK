@@ -13,6 +13,7 @@
 =============================================================================*/
 #include "mitkTwoTrackerAnalysis.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkCameraCalibrationFacade.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -62,11 +63,22 @@ void TwoTrackerAnalysis::TemporalCalibration(
     {
       SetLagMilliseconds ( (unsigned long long) (Lag ) , false );
     }
-    
+   
+    if ( m_TrackingMatrixTimeStamps1.m_TimeStamps.size() > m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
+    {
+      // use 2 
+    }
+    else
+    {
+      //use 1
+    }
     //then do some kind of correlation between the signals
     //or it may be substantially quicker to not bother with the matcher each time, just 
     //construct two signals and move them back and forwards until there's a match
   }
+  //go through the shortest timestamp vector (should be the one with the lowest 
+  //mean error), load the matrix, convert to a velocity. Get correlation. How to move??
+  //Probably best to use the set lag method
 
   if ( fileout.length() != 0 ) 
   {
@@ -76,10 +88,8 @@ void TwoTrackerAnalysis::TemporalCalibration(
 }
 //---------------------------------------------------------------------------
 void TwoTrackerAnalysis::HandeyeCalibration(
-    bool visualise, std::string fileout)
+    bool visualise, std::string fileout, int HowManyMatrices)
 {
-  MITK_ERROR << "TwoTrackerAnalysis::OptimiseHandeyeCalibration is currently broken, do not use";
-  return;
   if ( !m_Ready )
   {
     MITK_ERROR << "Initialise two tracker matcher before attempting temporal calibration";
@@ -95,5 +105,61 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       MITK_WARN << "Failed to open output file for handeye calibration " << fileout;
     }
   }
+  std::vector<cv::Mat> SortedTracker1;
+  std::vector<cv::Mat> SortedTracker2;
+  std::vector<int> indexes;
+  //sort distance based on the shortest set. Select up to 80 matrices, evenly spread on distance
+  if ( m_TrackingMatrixTimeStamps1.m_TimeStamps.size() > m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
+  {
+    indexes = mitk::SortMatricesByDistance(m_TrackingMatrices22.m_TrackingMatrices);
+    for ( unsigned int i = 0; i < indexes.size(); i += indexes.size()/HowManyMatrices )
+    {
+      long long int timingError;
+      
+      GetTrackerMatrix(indexes[i],&timingError,1);
+
+      if ( fabs(timingError) < 50e6 )
+      {
+        SortedTracker1.push_back(m_TrackingMatrices22.m_TrackingMatrices[indexes[i]]);
+        SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,1).inv());
+      }
+      else
+      {
+        MITK_INFO << "Index " << indexes[i] << " Timing error too high, rejecting";
+      }
+
+    }
+  }
+  else
+  {
+    indexes = mitk::SortMatricesByDistance(m_TrackingMatrices11.m_TrackingMatrices);
+    for ( unsigned int i = 0; i < indexes.size(); i += indexes.size()/HowManyMatrices )
+    {
+      long long int timingError;
+      
+      GetTrackerMatrix(indexes[i],&timingError,1);
+
+      if ( fabs(timingError) < 50e6 )
+      {
+        SortedTracker1.push_back(m_TrackingMatrices11.m_TrackingMatrices[indexes[i]]);
+        SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0));
+      }
+      else
+      {
+        MITK_INFO << "Index " << indexes[i] << " Timing error too high, rejecting";
+      }
+    }
+  }
+  MITK_INFO << "Starting handeye with " << SortedTracker1.size() << "Matched matrices";
+
+  std::vector <double> residuals;
+  cv::Mat handeye =  HandeyeRotationAndTranslation(SortedTracker1, SortedTracker2,
+            residuals);
+  MITK_INFO << "Handeye finished " << handeye;
+  MITK_INFO << "Translational Residual " << residuals [1];
+  MITK_INFO << "Rotational Residual " << residuals [0];
+
+  fout << handeye;
+      
 }
 } // namespace
