@@ -153,11 +153,15 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   MITK_INFO << "Starting handeye with " << SortedTracker1.size() << "Matched matrices";
 
   std::vector <double> residuals;
+  cv::Mat w2ToW1 = cvCreateMat(4,4,CV_64FC1);
   cv::Mat handeye =  HandeyeRotationAndTranslation(SortedTracker1, SortedTracker2,
-            residuals);
-  MITK_INFO << "Handeye finished " << handeye;
+            residuals, &w2ToW1);
+  MITK_INFO << "Handeye finished ";
+  MITK_INFO << handeye;
   MITK_INFO << "Translational Residual " << residuals [1];
   MITK_INFO << "Rotational Residual " << residuals [0];
+  MITK_INFO << "World2 to World1 ";
+  MITK_INFO << w2ToW1;
 
   fout << handeye;
       
