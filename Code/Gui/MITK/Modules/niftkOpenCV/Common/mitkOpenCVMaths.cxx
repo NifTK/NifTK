@@ -1489,7 +1489,7 @@ cv::Mat HandeyeRotationAndTranslation ( const std::vector<cv::Mat>& Tracker1,
       world2ToWorld1 = tracker2ToWorld1 *(Tracker2[i]);
       world2ToWorld1s.push_back(world2ToWorld1);
     }
-  //  World2ToWorld1 = mitk::AverageMatrices (world2ToWorld1s);
+    *World2ToWorld1 = mitk::AverageMatrices (world2ToWorld1s);
   }
   else 
   {

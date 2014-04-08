@@ -138,8 +138,9 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     SortedMarkerToWorld.push_back(MarkerToWorld[indexes[i]]);
   }
  
+  cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
   m_CameraToMarker = HandeyeRotationAndTranslation(SortedMarkerToWorld, SortedGridToCamera,
-      residuals);
+      residuals, &gridToWorld);
   
   std::cout << "Camera To Marker Matrix = " << std::endl << m_CameraToMarker << std::endl;
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
@@ -162,18 +163,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   handeyeStream.close();
   if ( m_DoGridToWorld ) 
   {
-    std::vector<cv::Mat> gridToWorlds;
-    gridToWorlds.clear();
-    for ( int i = 0; i < NumberOfViews ; i ++ )
-    {
-      cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
-      cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
-
-      cameraToWorld =  MarkerToWorld[i]*(m_CameraToMarker); 
-      gridToWorld = cameraToWorld *(GridToCamera[i]);
-      gridToWorlds.push_back(gridToWorld);
-    }
-    m_GridToWorld = mitk::AverageMatrices (gridToWorlds);
+    m_GridToWorld = gridToWorld;
     MITK_INFO << "Average Grid to World Transform" << std::endl << m_GridToWorld;
     std::ofstream gridCornersStream;
     gridCornersStream.open((outputDirectory + "calib.gridcorners.txt").c_str());
