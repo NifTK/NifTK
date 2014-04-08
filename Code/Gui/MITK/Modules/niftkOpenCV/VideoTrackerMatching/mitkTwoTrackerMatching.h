@@ -82,14 +82,18 @@ protected:
   std::string                           m_Directory1;
   std::string                           m_Directory2;
 
+  TrackingMatrices                      m_TrackingMatrices11; //the tracking matrices in directory 1
+  TrackingMatrices                      m_TrackingMatrices22;  //the tracking matrices in directory 2
+
 private:
-  TrackingMatrices                      m_TrackingMatrices1; 
-  TrackingMatrices                      m_TrackingMatrices2; 
+  TrackingMatrices                      m_TrackingMatrices12; //the tracking matrices in directory 2 corresponding with the timestamps in directory 1
+  TrackingMatrices                      m_TrackingMatrices21; //the tracking matrices in directory 1 corresponding with the timestamps in directory 2
   
   TrackingMatrixTimeStamps              FindTrackingTimeStamps(std::string directory);
   bool                                  CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   bool                                  CheckTimingErrorStats();
   void                                  CreateLookUps();
+  void                                  LoadOwnMatrices();
 
   unsigned long long                    m_Lag; //the delay between tracker1 and tracker2
   bool                                  m_LagIsNegative; //controls the direction of lag

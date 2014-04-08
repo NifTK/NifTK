@@ -58,6 +58,7 @@ void TwoTrackerMatching::Initialise(std::string directory1, std::string director
   { 
     MITK_INFO << "TwoTrackerMatching initialised OK";
     m_Ready=true;
+    this->LoadOwnMatrices();
   }
   else
   {
@@ -72,8 +73,8 @@ void TwoTrackerMatching::CreateLookUps()
 {
   cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
   //do look up from 1 to 2
-  m_TrackingMatrices1.m_TimingErrors.clear();
-  m_TrackingMatrices1.m_TrackingMatrices.clear();
+  m_TrackingMatrices12.m_TimingErrors.clear();
+  m_TrackingMatrices12.m_TrackingMatrices.clear();
 
   for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.m_TimeStamps.size() ; i ++ )
   {
@@ -89,7 +90,7 @@ void TwoTrackerMatching::CreateLookUps()
       TargetTimeStamp = m_TrackingMatrixTimeStamps2.GetNearestTimeStamp(
           m_TrackingMatrixTimeStamps1.m_TimeStamps[i]-m_Lag,&timingError);
     }
-    m_TrackingMatrices1.m_TimingErrors.push_back(timingError);
+    m_TrackingMatrices12.m_TimingErrors.push_back(timingError);
     std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
     boost::filesystem::path MatrixFileNameFull (m_Directory2);
     MatrixFileNameFull /= MatrixFileName;
@@ -99,11 +100,11 @@ void TwoTrackerMatching::CreateLookUps()
     cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
     trackingMatrix.copyTo(tmpMatrix);
     
-    m_TrackingMatrices1.m_TrackingMatrices.push_back(tmpMatrix);
+    m_TrackingMatrices12.m_TrackingMatrices.push_back(tmpMatrix);
   }
   //do look up from 2 to 1
-  m_TrackingMatrices2.m_TimingErrors.clear();
-  m_TrackingMatrices2.m_TrackingMatrices.clear();
+  m_TrackingMatrices21.m_TimingErrors.clear();
+  m_TrackingMatrices21.m_TrackingMatrices.clear();
 
   for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.m_TimeStamps.size() ; i ++ )
   {
@@ -119,7 +120,7 @@ void TwoTrackerMatching::CreateLookUps()
       TargetTimeStamp = m_TrackingMatrixTimeStamps1.GetNearestTimeStamp(
           m_TrackingMatrixTimeStamps2.m_TimeStamps[i]+m_Lag,&timingError);
     }
-    m_TrackingMatrices2.m_TimingErrors.push_back(timingError);
+    m_TrackingMatrices21.m_TimingErrors.push_back(timingError);
     std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
     boost::filesystem::path MatrixFileNameFull (m_Directory1);
     MatrixFileNameFull /= MatrixFileName;
@@ -129,9 +130,48 @@ void TwoTrackerMatching::CreateLookUps()
     cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
     trackingMatrix.copyTo(tmpMatrix);
     
-    m_TrackingMatrices2.m_TrackingMatrices.push_back(tmpMatrix);
+    m_TrackingMatrices21.m_TrackingMatrices.push_back(tmpMatrix);
   }
 
+}
+//---------------------------------------------------------------------------
+void TwoTrackerMatching::LoadOwnMatrices()
+{
+  cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
+  m_TrackingMatrices11.m_TimingErrors.clear();
+  m_TrackingMatrices11.m_TrackingMatrices.clear();
+
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.m_TimeStamps.size() ; i ++ )
+  {
+    m_TrackingMatrices11.m_TimingErrors.push_back(0);
+    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps1.m_TimeStamps[i]) + ".txt";
+    boost::filesystem::path MatrixFileNameFull (m_Directory1);
+    MatrixFileNameFull /= MatrixFileName;
+  
+    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
+
+    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
+    trackingMatrix.copyTo(tmpMatrix);
+    
+    m_TrackingMatrices11.m_TrackingMatrices.push_back(tmpMatrix);
+  }
+  m_TrackingMatrices22.m_TimingErrors.clear();
+  m_TrackingMatrices22.m_TrackingMatrices.clear();
+
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.m_TimeStamps.size() ; i ++ )
+  {
+    m_TrackingMatrices22.m_TimingErrors.push_back(0);
+    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps2.m_TimeStamps[i]) + ".txt";
+    boost::filesystem::path MatrixFileNameFull (m_Directory2);
+    MatrixFileNameFull /= MatrixFileName;
+  
+    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
+
+    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
+    trackingMatrix.copyTo(tmpMatrix);
+    
+    m_TrackingMatrices22.m_TrackingMatrices.push_back(tmpMatrix);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -143,8 +183,10 @@ void TwoTrackerMatching::SetLagMilliseconds ( unsigned long long Lag, bool Video
   if ( m_Ready ) 
   {
     MITK_INFO << "Set lag after initialisation reprocessing";
+
     if ( CheckTimingErrorStats() )
     { 
+      this->CreateLookUps();
       MITK_INFO << "TwoTrackerMatching initialised OK";
       m_Ready=true;
     }
@@ -161,60 +203,59 @@ void TwoTrackerMatching::SetLagMilliseconds ( unsigned long long Lag, bool Video
 //---------------------------------------------------------------------------
 bool TwoTrackerMatching::CheckTimingErrorStats()
 {
-  //what exactly should this do??
   bool ok = true;
   //check sizes
-  if ( m_TrackingMatrices1.m_TrackingMatrices.size() != 
-        m_TrackingMatrices1.m_TimingErrors.size() )
+  if ( m_TrackingMatrices12.m_TrackingMatrices.size() != 
+        m_TrackingMatrices12.m_TimingErrors.size() )
   {
-    MITK_ERROR << "Wrong number of tracking matrices " << m_TrackingMatrices1.m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrices1.m_TimingErrors.size();
+    MITK_ERROR << "Wrong number of tracking matrices " << m_TrackingMatrices12.m_TrackingMatrices.size() 
+        << " != " <<  m_TrackingMatrices12.m_TimingErrors.size();
       ok = false;
   }
 
 
-  if ( m_TrackingMatrices1.m_TrackingMatrices.size() != 
+  if ( m_TrackingMatrices21.m_TrackingMatrices.size() != 
         m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
   {
-      MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices1.m_TrackingMatrices.size() 
+      MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices21.m_TrackingMatrices.size() 
         << " != " <<  m_TrackingMatrixTimeStamps2.m_TimeStamps.size();
       ok = false;
   }
-  if ( m_TrackingMatrices2.m_TrackingMatrices.size() != 
-        m_TrackingMatrices2.m_TimingErrors.size() )
+  if ( m_TrackingMatrices21.m_TrackingMatrices.size() != 
+        m_TrackingMatrices21.m_TimingErrors.size() )
   {
-    MITK_ERROR << "Wrong number of tracking matrices " << m_TrackingMatrices2.m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrices2.m_TimingErrors.size();
+    MITK_ERROR << "Wrong number of tracking matrices " << m_TrackingMatrices21.m_TrackingMatrices.size() 
+        << " != " <<  m_TrackingMatrices21.m_TimingErrors.size();
       ok = false;
   }
 
 
-  if ( m_TrackingMatrices2.m_TrackingMatrices.size() != 
+  if ( m_TrackingMatrices12.m_TrackingMatrices.size() != 
         m_TrackingMatrixTimeStamps1.m_TimeStamps.size() )
   {
-      MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices2.m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrixTimeStamps1.m_TimeStamps.size();
+      MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices12.m_TrackingMatrices.size() 
+        << " != " <<  m_TrackingMatrixTimeStamps2.m_TimeStamps.size();
       ok = false;
   }
 
 
   double mean = 0 ; 
   double absmean = 0 ; 
-  long long minimum = m_TrackingMatrices1.m_TimingErrors[0];
-  long long maximum = m_TrackingMatrices1.m_TimingErrors[0];
+  long long minimum = m_TrackingMatrices12.m_TimingErrors[0];
+  long long maximum = m_TrackingMatrices12.m_TimingErrors[0];
 
-  for (unsigned int j = 0 ; j < m_TrackingMatrices1.m_TimingErrors.size() ; j ++ ) 
+  for (unsigned int j = 0 ; j < m_TrackingMatrices12.m_TimingErrors.size() ; j ++ ) 
   {
-    mean += static_cast<double>(m_TrackingMatrices1.m_TimingErrors[j]);
-    absmean += fabs(static_cast<double>(m_TrackingMatrices1.m_TimingErrors[j]));
-    minimum = m_TrackingMatrices1.m_TimingErrors[j] < minimum ? m_TrackingMatrices1.m_TimingErrors[j] : minimum;
-    maximum = m_TrackingMatrices1.m_TimingErrors[j] > maximum ? m_TrackingMatrices1.m_TimingErrors[j] : maximum;
+    mean += static_cast<double>(m_TrackingMatrices12.m_TimingErrors[j]);
+    absmean += fabs(static_cast<double>(m_TrackingMatrices12.m_TimingErrors[j]));
+    minimum = m_TrackingMatrices12.m_TimingErrors[j] < minimum ? m_TrackingMatrices12.m_TimingErrors[j] : minimum;
+    maximum = m_TrackingMatrices12.m_TimingErrors[j] > maximum ? m_TrackingMatrices12.m_TimingErrors[j] : maximum;
 
   }
-  mean /= m_TrackingMatrices1.m_TimingErrors.size();
-  absmean /= m_TrackingMatrices1.m_TimingErrors.size();
+  mean /= m_TrackingMatrices12.m_TimingErrors.size();
+  absmean /= m_TrackingMatrices12.m_TimingErrors.size();
     
-  MITK_INFO << "There are " << m_TrackingMatrices1.m_TimingErrors.size() << " matched frames in for directory 1 to 2";
+  MITK_INFO << "There are " << m_TrackingMatrices12.m_TimingErrors.size() << " matched frames in for directory 1 to 2";
   MITK_INFO << "Average timing error = " << mean * 1e-6 << "ms";
   MITK_INFO << "Average absolute timing error  = " << absmean * 1e-6 << "ms";
   MITK_INFO << "Maximum timing error = " << maximum * 1e-6 << "ms";
@@ -222,21 +263,20 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
 
   mean = 0 ; 
   absmean = 0 ; 
-  minimum = m_TrackingMatrices1.m_TimingErrors[0];
-  maximum = m_TrackingMatrices1.m_TimingErrors[0];
+  minimum = m_TrackingMatrices21.m_TimingErrors[0];
+  maximum = m_TrackingMatrices21.m_TimingErrors[0];
 
-  for (unsigned int j = 0 ; j < m_TrackingMatrices2.m_TimingErrors.size() ; j ++ ) 
+  for (unsigned int j = 0 ; j < m_TrackingMatrices21.m_TimingErrors.size() ; j ++ ) 
   {
-    mean += static_cast<double>(m_TrackingMatrices2.m_TimingErrors[j]);
-    absmean += fabs(static_cast<double>(m_TrackingMatrices2.m_TimingErrors[j]));
-    minimum = m_TrackingMatrices2.m_TimingErrors[j] < minimum ? m_TrackingMatrices2.m_TimingErrors[j] : minimum;
-    maximum = m_TrackingMatrices2.m_TimingErrors[j] > maximum ? m_TrackingMatrices2.m_TimingErrors[j] : maximum;
-
+    mean += static_cast<double>(m_TrackingMatrices21.m_TimingErrors[j]);
+    absmean += fabs(static_cast<double>(m_TrackingMatrices21.m_TimingErrors[j]));
+    minimum = m_TrackingMatrices21.m_TimingErrors[j] < minimum ? m_TrackingMatrices21.m_TimingErrors[j] : minimum;
+    maximum = m_TrackingMatrices21.m_TimingErrors[j] > maximum ? m_TrackingMatrices21.m_TimingErrors[j] : maximum;
   }
-  mean /= m_TrackingMatrices2.m_TimingErrors.size();
-  absmean /= m_TrackingMatrices2.m_TimingErrors.size();
+  mean /= m_TrackingMatrices21.m_TimingErrors.size();
+  absmean /= m_TrackingMatrices21.m_TimingErrors.size();
     
-  MITK_INFO << "There are " << m_TrackingMatrices2.m_TimingErrors.size() << " matched frames in for directory 2 to 1";
+  MITK_INFO << "There are " << m_TrackingMatrices21.m_TimingErrors.size() << " matched frames in for directory 2 to 1";
   MITK_INFO << "Average timing error = " << mean * 1e-6 << "ms";
   MITK_INFO << "Average absolute timing error  = " << absmean * 1e-6 << "ms";
   MITK_INFO << "Maximum timing error = " << maximum * 1e-6 << "ms";
@@ -259,30 +299,30 @@ cv::Mat TwoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long l
   if ( TrackerIndex == 0 )
   {
 
-    if ( FrameNumber >= m_TrackingMatrices1.m_TrackingMatrices.size() )
+    if ( FrameNumber >= m_TrackingMatrices12.m_TrackingMatrices.size() )
     {
       MITK_WARN << "Attempted to get tracking matrix with invalid frame index";
       return returnMat;
     }
 
-    returnMat=m_TrackingMatrices1.m_TrackingMatrices[FrameNumber];
+    returnMat=m_TrackingMatrices12.m_TrackingMatrices[FrameNumber];
     if ( TimingError != NULL ) 
     {
-      *TimingError = m_TrackingMatrices1.m_TimingErrors[FrameNumber];
+      *TimingError = m_TrackingMatrices12.m_TimingErrors[FrameNumber];
     }
   }
   else
   {
-    if ( FrameNumber >= m_TrackingMatrices2.m_TrackingMatrices.size() )
+    if ( FrameNumber >= m_TrackingMatrices21.m_TrackingMatrices.size() )
     {
       MITK_WARN << "Attempted to get tracking matrix with invalid frame index";
       return returnMat;
     }
 
-    returnMat=m_TrackingMatrices2.m_TrackingMatrices[FrameNumber];
+    returnMat=m_TrackingMatrices21.m_TrackingMatrices[FrameNumber];
     if ( TimingError != NULL ) 
     {
-      *TimingError = m_TrackingMatrices2.m_TimingErrors[FrameNumber];
+      *TimingError = m_TrackingMatrices21.m_TimingErrors[FrameNumber];
     }
   }
  
