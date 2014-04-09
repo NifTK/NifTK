@@ -14,6 +14,7 @@
 
 #include "mitkCoordinateAxesData.h"
 #include <mitkVector.h>
+#include <mitkFileIOUtils.h>
 #include <itkMatrix.h>
 #include <itkVector.h>
 #include <vtkSmartPointer.h>
@@ -137,6 +138,15 @@ void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
     this->UpdateOutputInformation();
     this->Modified();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool CoordinateAxesData::SaveToFile(const std::string& fileName)
+{
+  vtkSmartPointer<vtkMatrix4x4> tmp = vtkMatrix4x4::New();
+  this->SetVtkMatrix(*tmp);
+  return mitk::SaveVtkMatrix4x4ToFile(fileName, *tmp);
 }
 
 
