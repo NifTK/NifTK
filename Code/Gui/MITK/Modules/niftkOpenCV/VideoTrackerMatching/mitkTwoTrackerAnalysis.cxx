@@ -96,11 +96,16 @@ void TwoTrackerAnalysis::HandeyeCalibration(
     return;
   }
 
-  std::ofstream fout;
+  std::ofstream fout_t2ToT1;
+  std::ofstream fout_w2ToW1;
   if ( fileout.length() != 0 ) 
   {
-    fout.open(fileout.c_str());
-    if ( !fout )
+    std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
+    std::string w2ToW1Out = fileout + "_W2ToW1.4x4";
+
+    fout_t2ToT1.open(t2ToT1Out.c_str());
+    fout_w2ToW1.open(w2ToW1Out.c_str());
+    if ( !fout_t2ToT1 || ! fout_w2ToW1 )
     {
       MITK_WARN << "Failed to open output file for handeye calibration " << fileout;
     }
@@ -108,9 +113,11 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   std::vector<cv::Mat> SortedTracker1;
   std::vector<cv::Mat> SortedTracker2;
   std::vector<int> indexes;
+  bool Tracker2ToTracker1 = false;
   //sort distance based on the shortest set. Select up to 80 matrices, evenly spread on distance
   if ( m_TrackingMatrixTimeStamps1.m_TimeStamps.size() > m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
   {
+    Tracker2ToTracker1 = false;
     indexes = mitk::SortMatricesByDistance(m_TrackingMatrices22.m_TrackingMatrices);
     for ( unsigned int i = 0; i < indexes.size(); i += indexes.size()/HowManyMatrices )
     {
@@ -132,6 +139,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   }
   else
   {
+    Tracker2ToTracker1 = true;
     indexes = mitk::SortMatricesByDistance(m_TrackingMatrices11.m_TrackingMatrices);
     for ( unsigned int i = 0; i < indexes.size(); i += indexes.size()/HowManyMatrices )
     {
@@ -154,16 +162,21 @@ void TwoTrackerAnalysis::HandeyeCalibration(
 
   std::vector <double> residuals;
   cv::Mat w2ToW1 = cvCreateMat(4,4,CV_64FC1);
-  cv::Mat handeye =  Tracker2ToTracker1RotationAndTranslation(SortedTracker1, SortedTracker2,
+  cv::Mat t2ToT1 =  Tracker2ToTracker1RotationAndTranslation(SortedTracker1, SortedTracker2,
             residuals, &w2ToW1);
+  if ( ! Tracker2ToTracker1 )
+  {
+    w2ToW1 = w2ToW1.inv();
+    t2ToT1 = t2ToT1.inv();
+  }
   MITK_INFO << "Handeye finished ";
-  MITK_INFO << handeye;
   MITK_INFO << "Translational Residual " << residuals [1];
   MITK_INFO << "Rotational Residual " << residuals [0];
-  MITK_INFO << "World2 to World1 ";
-  MITK_INFO << w2ToW1;
 
-  fout << handeye;
-      
+  fout_t2ToT1 << t2ToT1;
+  fout_w2ToW1 << w2ToW1;
+
+  fout_t2ToT1.close();
+  fout_w2ToW1.close();
 }
 } // namespace
