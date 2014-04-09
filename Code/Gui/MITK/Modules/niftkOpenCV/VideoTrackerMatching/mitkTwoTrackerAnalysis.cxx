@@ -142,7 +142,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       if ( fabs(timingError) < 50e6 )
       {
         SortedTracker1.push_back(m_TrackingMatrices11.m_TrackingMatrices[indexes[i]]);
-        SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0));
+        SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0).inv());
       }
       else
       {
@@ -154,7 +154,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
 
   std::vector <double> residuals;
   cv::Mat w2ToW1 = cvCreateMat(4,4,CV_64FC1);
-  cv::Mat handeye =  HandeyeRotationAndTranslation(SortedTracker1, SortedTracker2,
+  cv::Mat handeye =  Tracker2ToTracker1RotationAndTranslation(SortedTracker1, SortedTracker2,
             residuals, &w2ToW1);
   MITK_INFO << "Handeye finished ";
   MITK_INFO << handeye;

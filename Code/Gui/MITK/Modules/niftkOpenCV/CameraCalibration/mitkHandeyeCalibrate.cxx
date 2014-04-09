@@ -139,7 +139,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   }
  
   cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
-  m_CameraToMarker = HandeyeRotationAndTranslation(SortedMarkerToWorld, SortedGridToCamera,
+  m_CameraToMarker = Tracker2ToTracker1RotationAndTranslation(SortedMarkerToWorld, SortedGridToCamera,
       residuals, &gridToWorld);
   
   std::cout << "Camera To Marker Matrix = " << std::endl << m_CameraToMarker << std::endl;

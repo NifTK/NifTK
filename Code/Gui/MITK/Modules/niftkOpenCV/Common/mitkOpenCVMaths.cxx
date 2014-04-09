@@ -1274,17 +1274,17 @@ bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1,
 }
 
 //-----------------------------------------------------------------------------
-cv::Mat HandeyeRotation ( const std::vector<cv::Mat>& Tracker1, 
-    const std::vector<cv::Mat>& Tracker2, double& Residual)
+cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+    const std::vector<cv::Mat>& World2ToTracker2, double& Residual)
 {
  
-  if ( Tracker1.size() != Tracker2.size() ) 
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
   {
     MITK_ERROR << "Called HandeyeRotation with unequal matrix vectors";
     Residual = -1.0;
     return cv::Mat();
   }
-  int numberOfViews = Tracker1.size();
+  int numberOfViews = Tracker1ToWorld1.size();
 
   cv::Mat A = cvCreateMat ( 3 * (numberOfViews - 1), 3, CV_64FC1 );
   cv::Mat b = cvCreateMat ( 3 * (numberOfViews - 1), 1, CV_64FC1 );
@@ -1293,8 +1293,8 @@ cv::Mat HandeyeRotation ( const std::vector<cv::Mat>& Tracker1,
   {
     cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
     cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
-    mat1 = Tracker1[i+1].inv() * Tracker1[i];
-    mat2 = Tracker2[i+1] * Tracker2[i].inv();
+    mat1 = Tracker1ToWorld1[i+1].inv() * Tracker1ToWorld1[i];
+    mat2 = World2ToTracker2[i+1] * World2ToTracker2[i].inv();
 
     cv::Mat rotationMat1 = cvCreateMat(3,3,CV_64FC1);
     cv::Mat rotationMat2 = cvCreateMat(3,3,CV_64FC1);
@@ -1384,16 +1384,16 @@ cv::Mat HandeyeRotation ( const std::vector<cv::Mat>& Tracker1,
   return rcg;
 }
 //-----------------------------------------------------------------------------
-cv::Mat HandeyeTranslation ( const std::vector<cv::Mat>& Tracker1, 
-     const std::vector<cv::Mat>& Tracker2, double& Residual, const cv::Mat& rcg)
+cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+     const std::vector<cv::Mat>& World2ToTracker2, double& Residual, const cv::Mat& rcg)
 {
-  if ( Tracker1.size() != Tracker2.size() ) 
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
   {
     MITK_ERROR << "Called HandeyeTranslation with unequal matrix vectors";
     Residual = -1.0;
     return cv::Mat();
   }
-  int numberOfViews = Tracker1.size();
+  int numberOfViews = Tracker1ToWorld1.size();
 
   cv::Mat A = cvCreateMat ( 3 * (numberOfViews - 1), 3, CV_64FC1 );
   cv::Mat b = cvCreateMat ( 3 * (numberOfViews - 1), 1, CV_64FC1 );
@@ -1402,8 +1402,8 @@ cv::Mat HandeyeTranslation ( const std::vector<cv::Mat>& Tracker1,
   {
     cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
     cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
-    mat1 = Tracker1[i+1].inv() * Tracker1[i];
-    mat2 = Tracker2[i+1] * Tracker2[i].inv();
+    mat1 = Tracker1ToWorld1[i+1].inv() * Tracker1ToWorld1[i];
+    mat2 = World2ToTracker2[i+1] * World2ToTracker2[i].inv();
 
     A.at<double>(i*3+0,0)=mat1.at<double>(0,0) - 1.0;
     A.at<double>(i*3+0,1)=mat1.at<double>(0,1) - 0.0;
@@ -1440,8 +1440,8 @@ cv::Mat HandeyeTranslation ( const std::vector<cv::Mat>& Tracker1,
   return tcg;
 }
 //-----------------------------------------------------------------------------
-cv::Mat HandeyeRotationAndTranslation ( const std::vector<cv::Mat>& Tracker1, 
-     const std::vector<cv::Mat>& Tracker2, std::vector<double>& Residuals, 
+cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+     const std::vector<cv::Mat>& World2ToTracker2, std::vector<double>& Residuals, 
      cv::Mat * World2ToWorld1)
 {
   Residuals.clear();
@@ -1451,51 +1451,67 @@ cv::Mat HandeyeRotationAndTranslation ( const std::vector<cv::Mat>& Tracker1,
   Residuals.push_back(-100.0);
 
   double RotationalResidual;
-  cv::Mat rcg = mitk::HandeyeRotation ( Tracker1, Tracker2, RotationalResidual);
+  cv::Mat rcg = mitk::Tracker2ToTracker1Rotation ( Tracker1ToWorld1, World2ToTracker2, RotationalResidual);
   double TranslationalResidual;
-  cv::Mat tcg = mitk::HandeyeTranslation (Tracker1, Tracker2, TranslationalResidual, rcg);
+  cv::Mat tcg = mitk::Tracker2ToTracker1Translation (Tracker1ToWorld1, World2ToTracker2, TranslationalResidual, rcg);
 
   Residuals[0] = RotationalResidual;
   Residuals[1] = TranslationalResidual;
 
-  cv::Mat handeye = cvCreateMat(4,4,CV_64FC1);
+  cv::Mat tracker2ToTracker1 = cvCreateMat(4,4,CV_64FC1);
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
     {
-      handeye.at<double>(row,col) = rcg.at<double>(row,col);
+      tracker2ToTracker1.at<double>(row,col) = rcg.at<double>(row,col);
     }
   }
   for ( int row = 0; row < 3; row ++ )
   {
-    handeye.at<double>(row,3) = tcg.at<double>(row,0);
+    tracker2ToTracker1.at<double>(row,3) = tcg.at<double>(row,0);
   }
   for ( int col = 0; col < 3; col ++ )
   {
-    handeye.at<double>(3,col) = 0.0;
+    tracker2ToTracker1.at<double>(3,col) = 0.0;
   }
-  handeye.at<double>(3,3)=1.0;
+  tracker2ToTracker1.at<double>(3,3)=1.0;
 
   if ( World2ToWorld1 != NULL )
   {
     std::vector<cv::Mat> world2ToWorld1s;
     world2ToWorld1s.clear();
-    for ( int i = 0; i < Tracker1.size() ; i ++ )
+    for ( int i = 0; i < Tracker1ToWorld1.size() ; i ++ )
     {
       cv::Mat world2ToWorld1 = cvCreateMat(4,4,CV_64FC1);
       cv::Mat tracker2ToWorld1 = cvCreateMat(4,4,CV_64FC1);
 
-      tracker2ToWorld1 =  Tracker1[i]*(handeye);
-      world2ToWorld1 = tracker2ToWorld1 *(Tracker2[i]);
+      tracker2ToWorld1 =  Tracker1ToWorld1[i]*(tracker2ToTracker1);
+      world2ToWorld1 = tracker2ToWorld1 *(World2ToTracker2[i]);
       world2ToWorld1s.push_back(world2ToWorld1);
     }
     *World2ToWorld1 = mitk::AverageMatrices (world2ToWorld1s);
+    //lets do a check To get Tracker2 into Tracker1 
+    //Tracker1InWorld1 = (Tracker2InWorld2 * world2ToWorld1) * tracker2toTracker1
+    for ( int i = 0 ; i < Tracker1ToWorld1.size() ; i++ )
+    {
+      if ( i == 0 ) 
+      {
+        MITK_INFO << "Tracker 1: " << i ;
+        MITK_INFO << Tracker1ToWorld1[i];
+        MITK_INFO << "Tracker 2 in World 1 " << i ;
+        MITK_INFO << World2ToTracker2[i] * (*World2ToWorld1);
+        MITK_INFO << "Back to tracker 1"  << i ;
+        MITK_INFO << (World2ToTracker2[i] * (*World2ToWorld1) ) * tracker2ToTracker1;
+      }
+      MITK_INFO << "Difference " << i ; 
+      MITK_INFO << ((World2ToTracker2[i] * (*World2ToWorld1) ) * tracker2ToTracker1) - Tracker1ToWorld1[i];
+    }
   }
   else 
   {
     MITK_INFO << "Grid to world NULL ";
   }
-  return handeye;
+  return tracker2ToTracker1;
 } 
 
 //-----------------------------------------------------------------------------------------

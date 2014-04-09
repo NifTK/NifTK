@@ -365,24 +365,24 @@ extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsi
  * \brief works out the rigid rotation correspondence between two sets of corresponding 
  * rigid body transforms
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeRotation ( 
-    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Rotation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     double& Residual);
 
 /**
  * \brief works out the rigid translation correspondence between two sets of corresponding 
  * rigid body transforms
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeTranslation ( 
-    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Translation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     double& Residual, const cv::Mat & rcg);
 
 /**
  * \brief works out the rigid rotation and translation correspondence between two sets of corresponding 
  * rigid body transforms
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat HandeyeRotationAndTranslation ( 
-    const std::vector<cv::Mat>& Tracker1, const std::vector<cv::Mat>& Tracker2,
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1RotationAndTranslation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     std::vector<double>& Residuals, cv::Mat* World2ToWorld1 = NULL );
 
 
