@@ -25,7 +25,7 @@
 #include <QDir>
 #include <mitkIOUtil.h>
 #include <QmitkIGIUtils.h>
-
+#include <QFileDialog>
 //-----------------------------------------------------------------------------
 QmitkImageAndTransformSenderWidget::QmitkImageAndTransformSenderWidget(QWidget *parent)
 : m_DataStorage(NULL)
@@ -36,6 +36,9 @@ QmitkImageAndTransformSenderWidget::QmitkImageAndTransformSenderWidget(QWidget *
 , m_IsRecording(false)
 {
   setupUi(this);
+  m_OutputGroupBox->setCollapsed(true);
+  m_DirectoryPath->setOptions(ctkPathLineEdit::ShowDirsOnly);
+  m_DirectoryPath->setFilters(ctkPathLineEdit::Dirs | ctkPathLineEdit::Writable);
   connect(m_TransformStartServer, SIGNAL(pressed()), this, SLOT(OnStartTransformServerPressed()));
   connect(m_ImageStartServer, SIGNAL(pressed()), this, SLOT(OnStartImageServerPressed()));
   connect(m_StartRecording, SIGNAL(pressed()), this, SLOT(OnStartRecordingPressed()));
@@ -226,7 +229,7 @@ void QmitkImageAndTransformSenderWidget::SetTransformWidgetsVisible(const bool& 
 //-----------------------------------------------------------------------------
 void QmitkImageAndTransformSenderWidget::SetCollapsed(const bool& isCollapsed)
 {
-  m_GroupBox->setCollapsed(isCollapsed);
+  m_OutputGroupBox->setCollapsed(isCollapsed);
 }
 
 
