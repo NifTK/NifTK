@@ -195,7 +195,7 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
 
         if (nodeName.length() == 0)
         {
-          MITK_ERROR << "QmitkIGITrackerSource::HandleTrackerData: Can't work out a node name, aborting" << std::endl;
+          MITK_ERROR << "QmitkIGITrackerSource::Update: Can't work out a node name, aborting" << std::endl;
           return result;
         }
 
@@ -204,7 +204,7 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
         mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString(), false);
         if (node.IsNull())
         {
-          MITK_ERROR << "Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
+          MITK_ERROR << "QmitkIGITrackerSource::Update: Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
           return result;
         }
 
