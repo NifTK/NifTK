@@ -304,7 +304,6 @@ void TrackedImageView::OnClonePushButtonClicked()
     if ( image.IsNotNull() )
     {
       QString imageName = tr("TrackedImageView-%1").arg(m_NameCounter);
-      QString fileNameWithGeometry = directoryName + QDir::separator() + imageName + QString(".nii");
       QString fileNameWithoutGeometry = directoryName + QDir::separator() + imageName + QString(".png");
       QString fileNameForGeometry = directoryName + QDir::separator() + imageName + QString(".txt");
 
@@ -319,11 +318,6 @@ void TrackedImageView::OnClonePushButtonClicked()
 
       // clone the origin ultrasound image (without changing orientation) to disk.
       mitk::Image::Pointer savedMitkImage = image->Clone();
-      isSuccessful = mitk::IOUtil::SaveImage(savedMitkImage, fileNameWithGeometry.toStdString());
-      if (!isSuccessful)
-      {
-        mitkThrow() << "Failed to save oriented image " << fileNameWithGeometry.toStdString() << std::endl;
-      }
 
       // clone the origin ultrasound image (changing orientation) to disk.
       mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
