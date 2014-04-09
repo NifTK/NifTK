@@ -25,10 +25,7 @@ namespace mitk {
 /**
  * \class ArunLeastSquaresPointRegistration
  * \brief Performs SVD based registration of two point sets, as in
- *
- * Least-Squares Fitting of two, 3-D Point Sets, Arun, 1987,
- * 10.1109/TPAMI.1987.4767965
- *
+ * <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=4767965">Least-Squares Fitting of two, 3-D Point Sets, Arun, 1987, 10.1109/TPAMI.1987.4767965</a>.
  */
 class ArunLeastSquaresPointRegistration : public itk::Object
 {

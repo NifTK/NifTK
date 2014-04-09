@@ -30,6 +30,7 @@ set(CPP_FILES
   DataManagement/mitkDataStoragePropertyListener.cxx
   DataManagement/mitkDataStorageVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
+  DataManagement/mitkCoordinateAxesDataOpUpdate.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx

@@ -106,6 +106,13 @@ mitk::DataNode* QmitkStereoImageAndCameraSelectionWidget::GetCameraNode() const
 
 
 //-----------------------------------------------------------------------------
+void QmitkStereoImageAndCameraSelectionWidget::SetCameraNode(mitk::DataNode* node)
+{
+  m_CameraPositionComboBox->SetSelectedNode(node);
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::CoordinateAxesData* QmitkStereoImageAndCameraSelectionWidget::GetCameraTransform() const
 {
   mitk::CoordinateAxesData* result = NULL;

@@ -204,6 +204,7 @@ void mitk::ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& 
   GetDifference(a, b, aMinusB);
   GetDifference(c, b, cMinusB);
   CrossProduct(aMinusB, cMinusB, output);
+  Normalise(output);
 }
 
 
