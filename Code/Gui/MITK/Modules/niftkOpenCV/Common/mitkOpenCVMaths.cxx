@@ -1498,13 +1498,13 @@ cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& T
       {
         MITK_INFO << "Tracker 1: " << i ;
         MITK_INFO << Tracker1ToWorld1[i];
-        MITK_INFO << "Tracker 2 in World 1 " << i ;
-        MITK_INFO << World2ToTracker2[i] * (*World2ToWorld1);
-        MITK_INFO << "Back to tracker 1"  << i ;
-        MITK_INFO << (World2ToTracker2[i] * (*World2ToWorld1) ) * tracker2ToTracker1;
+        MITK_INFO << "Tracker 2 to World 1 " << i ;
+        MITK_INFO << (*World2ToWorld1) * World2ToTracker2[i].inv(); 
+        MITK_INFO << "Tracker 1 to world 1 "  << i ;
+        MITK_INFO <<  ((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv();
       }
       MITK_INFO << "Difference " << i ; 
-      MITK_INFO << ((World2ToTracker2[i] * (*World2ToWorld1) ) * tracker2ToTracker1) - Tracker1ToWorld1[i];
+      MITK_INFO << (((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv())- Tracker1ToWorld1[i];
     }
   }
   else 
