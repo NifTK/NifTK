@@ -361,6 +361,78 @@ extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1,
 extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
     const std::pair < unsigned int, cv::Point2d>& p2 );
 
+/**
+ * \brief works out the rigid rotation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Rotation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
+    double& Residual);
+
+/**
+ * \brief works out the rigid translation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Translation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
+    double& Residual, const cv::Mat & rcg);
+
+/**
+ * \brief works out the rigid rotation and translation correspondence between two sets of corresponding 
+ * rigid body transforms
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1RotationAndTranslation ( 
+    const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
+    std::vector<double>& Residuals, cv::Mat* World2ToWorld1 = NULL );
+
+
+/**
+ *  * \brief Flips the matrices in the vector from left handed coordinate 
+ *   * system to right handed and vice versa
+ *    */
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> matrices);
+
+
+/**
+ *  * \brief find the average of a vector of 4x4 matrices
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
+
+
+ /**
+  *  * \brief Sorts the matrices based on the translations , and returns the order
+  *   */
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> matrices);
+
+
+/**
+ *   * \brief Sorts the matrices based on the rotations, and returns the order
+ *     */
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
+
+/**
+ *  * \brief Returns the angular distance between two rotation matrices
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+
+/**
+ *  * \brief Converts a 3x3 rotation matrix to a quaternion
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+
+
+/**
+ *  * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT double ModifiedSignum(double value);
+
+
+/**
+ *  * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT double SafeSQRT(double value);
+
+
 } // end namespace
 
 #endif
