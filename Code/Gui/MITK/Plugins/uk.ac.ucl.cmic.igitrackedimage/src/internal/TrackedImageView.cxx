@@ -31,6 +31,7 @@
 #include <mitkRenderingManager.h>
 #include <mitkGeometry2DDataMapper2D.h>
 #include <mitkIOUtil.h>
+#include <mitkExceptionMacro.h>
 #include <QMessageBox>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
@@ -295,6 +296,7 @@ void TrackedImageView::OnClonePushButtonClicked()
     return;
   }
 
+  bool isSuccessful = false;
   mitk::DataNode::Pointer node = m_Controls->m_ImageNode->GetSelectedNode();
   if ( node.IsNotNull() )
   {    
@@ -304,10 +306,24 @@ void TrackedImageView::OnClonePushButtonClicked()
       QString imageName = tr("TrackedImageView-%1").arg(m_NameCounter);
       QString fileNameWithGeometry = directoryName + QDir::separator() + imageName + QString(".nii");
       QString fileNameWithoutGeometry = directoryName + QDir::separator() + imageName + QString(".png");
+      QString fileNameForGeometry = directoryName + QDir::separator() + imageName + QString(".txt");
+
+      // Save the 4x4 matrix of the geometry to disk.
+      mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
+      transform->SetGeometry(image->GetGeometry());
+      isSuccessful = transform->SaveToFile(fileNameForGeometry.toStdString());
+      if (!isSuccessful)
+      {
+        mitkThrow() << "Failed to save transformation " << fileNameForGeometry.toStdString() << std::endl;
+      }
 
       // clone the origin ultrasound image (without changing orientation) to disk.
       mitk::Image::Pointer savedMitkImage = image->Clone();
-      mitk::IOUtil::SaveImage(savedMitkImage, fileNameWithGeometry.toStdString());
+      isSuccessful = mitk::IOUtil::SaveImage(savedMitkImage, fileNameWithGeometry.toStdString());
+      if (!isSuccessful)
+      {
+        mitkThrow() << "Failed to save oriented image " << fileNameWithGeometry.toStdString() << std::endl;
+      }
 
       // clone the origin ultrasound image (changing orientation) to disk.
       mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
@@ -318,7 +334,11 @@ void TrackedImageView::OnClonePushButtonClicked()
         identityMatrix->Identity();
         geometry->SetIndexToWorldTransformByVtkMatrix(identityMatrix);
       }
-      mitk::IOUtil::SaveImage(untouchedImage, fileNameWithoutGeometry.toStdString());
+      isSuccessful = mitk::IOUtil::SaveImage(untouchedImage, fileNameWithoutGeometry.toStdString());
+      if (!isSuccessful)
+      {
+        mitkThrow() << "Failed to save un-oriented image " << fileNameWithoutGeometry.toStdString() << std::endl;
+      }
 
       // For immediate visualisation, we create a new DataNode with the new image.
       mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();

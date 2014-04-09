@@ -145,7 +145,7 @@ void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
 bool CoordinateAxesData::SaveToFile(const std::string& fileName)
 {
   vtkSmartPointer<vtkMatrix4x4> tmp = vtkMatrix4x4::New();
-  this->SetVtkMatrix(*tmp);
+  this->GetVtkMatrix(*tmp);
   return mitk::SaveVtkMatrix4x4ToFile(fileName, *tmp);
 }
 
