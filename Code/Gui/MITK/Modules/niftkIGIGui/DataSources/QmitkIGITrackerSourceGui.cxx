@@ -37,6 +37,7 @@ QmitkIGITrackerSourceGui::~QmitkIGITrackerSourceGui()
 void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, ClientDescriptorXMLBuilder* /*config*/)
 {
   setupUi(this);
+  m_GroupBox->setCollapsed(true);
 
   if (this->GetSource() != NULL)
   {
