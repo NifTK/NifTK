@@ -53,6 +53,11 @@ protected:
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config);
 
+private slots:
+
+  void OnPreMatrixModified();
+  void OnPostMatrixModified();
+
 private:
 
   QmitkIGITrackerSource* m_TrackerSource;
