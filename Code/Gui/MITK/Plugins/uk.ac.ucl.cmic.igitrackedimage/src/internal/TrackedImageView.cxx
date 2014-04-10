@@ -305,19 +305,19 @@ void TrackedImageView::OnClonePushButtonClicked()
     {
       QString imageName = tr("TrackedImageView-%1").arg(m_NameCounter);
       QString fileNameWithoutGeometry = directoryName + QDir::separator() + imageName + QString(".png");
-      QString fileNameForGeometry = directoryName + QDir::separator() + imageName + QString(".txt");
+      QString fileNameForGeometry = directoryName + QDir::separator() + imageName + QString("_mtx.txt");
+
+      // clone the image node to keep the geometry information unchanged during the process of saving.
+      mitk::Image::Pointer savedMitkImage = image->Clone();
 
       // Save the 4x4 matrix of the geometry to disk.
       mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
-      transform->SetGeometry(image->GetGeometry());
+      transform->SetGeometry(savedMitkImage->GetGeometry());
       isSuccessful = transform->SaveToFile(fileNameForGeometry.toStdString());
       if (!isSuccessful)
       {
         mitkThrow() << "Failed to save transformation " << fileNameForGeometry.toStdString() << std::endl;
       }
-
-      // clone the origin ultrasound image (without changing orientation) to disk.
-      mitk::Image::Pointer savedMitkImage = image->Clone();
 
       // clone the origin ultrasound image (changing orientation) to disk.
       mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
