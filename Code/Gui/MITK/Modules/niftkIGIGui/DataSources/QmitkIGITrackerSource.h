@@ -22,7 +22,8 @@
 #include <set>
 #include <map>
 #include <string>
-
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 /**
  * \class QmitkIGITrackerSource
@@ -61,6 +62,12 @@ public:
   virtual void StopPlayback();
   virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
+  void SetPreMultiplyMatrix(const vtkMatrix4x4&);
+  vtkMatrix4x4* ClonePreMultiplyMatrix();
+
+  void SetPostMultiplyMatrix(const vtkMatrix4x4&);
+  vtkMatrix4x4* ClonePostMultiplyMatrix();
+
 protected:
 
   QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject* socket); // Purposefully hidden.
@@ -86,6 +93,9 @@ private:
   std::map<std::string, std::set<igtlUint64> >    m_PlaybackIndex;
   std::string                                     m_PlaybackDirectoryName;
   QString                                         m_StatusMessage;
+  vtkSmartPointer<vtkMatrix4x4>                   m_PreMultiplyMatrix;
+  vtkSmartPointer<vtkMatrix4x4>                   m_PostMultiplyMatrix;
+
 }; // end class
 
 #endif

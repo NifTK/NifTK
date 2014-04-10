@@ -32,12 +32,49 @@
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
 : QmitkIGINiftyLinkDataSource(storage, socket)
 {
+  m_PreMultiplyMatrix = vtkMatrix4x4::New();
+  m_PreMultiplyMatrix->Identity();
+
+  m_PostMultiplyMatrix = vtkMatrix4x4::New();
+  m_PostMultiplyMatrix->Identity();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::~QmitkIGITrackerSource()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSource::SetPreMultiplyMatrix(const vtkMatrix4x4& mat)
+{
+  m_PreMultiplyMatrix->DeepCopy(&mat);
+}
+
+
+//-----------------------------------------------------------------------------
+vtkMatrix4x4* QmitkIGITrackerSource::ClonePreMultiplyMatrix()
+{
+  vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
+  tmp->DeepCopy(m_PreMultiplyMatrix);
+  return tmp;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSource::SetPostMultiplyMatrix(const vtkMatrix4x4& mat)
+{
+  m_PostMultiplyMatrix->DeepCopy(&mat);
+}
+
+
+//-----------------------------------------------------------------------------
+vtkMatrix4x4* QmitkIGITrackerSource::ClonePostMultiplyMatrix()
+{
+  vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
+  tmp->DeepCopy(m_PostMultiplyMatrix);
+  return tmp;
 }
 
 
