@@ -47,7 +47,7 @@ void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, ClientDescripto
 
     if (m_TrackerSource != NULL)
     {
-      vtkSmartPointer<vtkMatrix4x4> pre = m_TrackerSource->ClonePostMultiplyMatrix();
+      vtkSmartPointer<vtkMatrix4x4> pre = m_TrackerSource->ClonePreMultiplyMatrix();
       m_PreTransformWidget->SetMatrix(*pre);
 
       vtkSmartPointer<vtkMatrix4x4> post = m_TrackerSource->ClonePostMultiplyMatrix();
