@@ -125,7 +125,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       
       GetTrackerMatrix(indexes[i],&timingError,1);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( std::abs(double(timingError)) < 50e6 )
       {
         SortedTracker1.push_back(m_TrackingMatrices22.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,1).inv());
@@ -147,7 +147,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       
       GetTrackerMatrix(indexes[i],&timingError,1);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( std::abs(double(timingError)) < 50e6 )
       {
         SortedTracker1.push_back(m_TrackingMatrices11.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0).inv());
