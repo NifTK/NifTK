@@ -90,6 +90,8 @@ protected slots:
 
 private:
 
+  vtkMatrix4x4* CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform);
+
   std::map<std::string, std::set<igtlUint64> >    m_PlaybackIndex;
   std::string                                     m_PlaybackDirectoryName;
   QString                                         m_StatusMessage;

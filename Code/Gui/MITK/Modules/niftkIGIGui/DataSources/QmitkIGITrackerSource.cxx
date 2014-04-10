@@ -79,6 +79,28 @@ vtkMatrix4x4* QmitkIGITrackerSource::ClonePostMultiplyMatrix()
 
 
 //-----------------------------------------------------------------------------
+vtkMatrix4x4* QmitkIGITrackerSource::CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform)
+{
+  vtkSmartPointer<vtkMatrix4x4> vtkMatrixFromTracker = vtkMatrix4x4::New();
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      vtkMatrixFromTracker->SetElement(i,j, trackerTransform[i][j]);
+    }
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> tmp1 = vtkMatrix4x4::New();
+  vtkMatrix4x4::Multiply4x4(vtkMatrixFromTracker, this->m_PreMultiplyMatrix, tmp1);
+
+  vtkMatrix4x4* combinedTransform = vtkMatrix4x4::New();
+  vtkMatrix4x4::Multiply4x4(this->m_PostMultiplyMatrix, tmp1, combinedTransform);
+
+  return combinedTransform;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGITrackerSource::InterpretMessage(NiftyLinkMessage::Pointer msg)
 {
   if (msg->GetMessageType() == QString("STRING"))
@@ -245,15 +267,8 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
           return result;
         }
 
-        // Set up vtkMatrix, with transform.
-        vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkMatrix4x4::New();
-        for (int i = 0; i < 4; i++)
-        {
-          for (int j = 0; j < 4; j++)
-          {
-            vtkMatrix->SetElement(i,j, matrix[i][j]);
-          }
-        }
+        // Note: This extracts from the igtl::Matrix4x4 and Pre/Post multiplies it.
+        vtkSmartPointer<vtkMatrix4x4> combinedTransform = this->CombineTransformationsWithPreAndPost(matrix);
 
         // Extract transformation from node, and put it on the coordinateAxes object.
         mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
@@ -267,10 +282,10 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
           node->SetData(coordinateAxes);
           m_DataStorage->Add(node);
         }
-        coordinateAxes->SetVtkMatrix(*vtkMatrix);
+        coordinateAxes->SetVtkMatrix(*combinedTransform);
 
         mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
-        affTransProp->SetTransform(*vtkMatrix);
+        affTransProp->SetTransform(*combinedTransform);
 
         std::string propertyName = "niftk." + nodeName.toStdString();
         node->SetProperty(propertyName.c_str(), affTransProp);
@@ -478,7 +493,7 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
         msg->ChangeHostName("localhost");
         msg->SetTrackerToolName(QString::fromStdString(t->first));
         msg->SetMatrix(matrix);
-        //msg->SetT
+
         QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
         dataType->SetMessage(msg);
         dataType->SetTimeStampInNanoSeconds(*i);

@@ -16,6 +16,8 @@
 #include "QmitkIGITrackerSource.h"
 #include <Common/NiftyLinkXMLBuilder.h>
 #include "QmitkIGIDataSourceMacro.h"
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerSourceGui, "IGI Tracker Source Gui")
 
@@ -42,6 +44,40 @@ void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, ClientDescripto
   if (this->GetSource() != NULL)
   {
     m_TrackerSource = dynamic_cast<QmitkIGITrackerSource*>(this->GetSource());
+
+    if (m_TrackerSource != NULL)
+    {
+      vtkSmartPointer<vtkMatrix4x4> pre = m_TrackerSource->ClonePostMultiplyMatrix();
+      m_PreTransformWidget->SetMatrix(*pre);
+
+      vtkSmartPointer<vtkMatrix4x4> post = m_TrackerSource->ClonePostMultiplyMatrix();
+      m_PostTransformWidget->SetMatrix(*post);
+    }
+  }
+
+  connect(m_PreTransformWidget, SIGNAL(MatrixChanged()), this, SLOT(OnPreMatrixModified()));
+  connect(m_PostTransformWidget, SIGNAL(MatrixChanged()), this, SLOT(OnPostMatrixModified()));
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSourceGui::OnPreMatrixModified()
+{
+  if (m_TrackerSource != NULL)
+  {
+    vtkSmartPointer<vtkMatrix4x4> pre = m_PreTransformWidget->CloneMatrix();
+    m_TrackerSource->SetPreMultiplyMatrix(*pre);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSourceGui::OnPostMatrixModified()
+{
+  if (m_TrackerSource != NULL)
+  {
+    vtkSmartPointer<vtkMatrix4x4> post = m_PostTransformWidget->CloneMatrix();
+    m_TrackerSource->SetPostMultiplyMatrix(*post);
   }
 }
 
