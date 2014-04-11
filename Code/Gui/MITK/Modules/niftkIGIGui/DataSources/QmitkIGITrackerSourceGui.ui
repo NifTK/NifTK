@@ -66,7 +66,7 @@
   <customwidget>
    <class>QmitkMatrixWidget</class>
    <extends>QWidget</extends>
-   <header>qmitkmatrixwidget.h</header>
+   <header>QmitkMatrixWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
