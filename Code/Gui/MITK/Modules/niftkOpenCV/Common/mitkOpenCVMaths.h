@@ -39,12 +39,6 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Point3d> PointSetToVector(const 
 
 
 /**
- * \brief Returns true if fabs(value) is less than a small tolerance, which defaults to 0.000001.
- */
-extern "C++" NIFTKOPENCV_EXPORT bool IsCloseToZero(const double& value, const double& tolerance = 0.000001);
-
-
-/**
  * \brief Haven't found a direct method to do this yet.
  */
 extern "C++" NIFTKOPENCV_EXPORT void MakeIdentity(cv::Matx44d& outputMatrix);
@@ -159,17 +153,20 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p);
 
+
 /**
  * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
     const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
 
+
 /**
  * \brief multiplies a point and corresponding scalar value by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Scalar >  operator*(cv::Mat M, 
     const std::pair < cv::Point3d, cv::Scalar > & p);
+
 
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
@@ -277,20 +274,12 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
     const double& sz
     );
 
+
 /**
  * \brief Takes a point vector and finds the minimum value in each dimension. Returns the 
  * minimum values. Optionally returns the indexes of the minium values.
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
-
-
-/**
- * \brief Takes a vector of pairs and finds the minimum value in each dimension. Returns the 
- * minimum values. Optionally returns the indexes of the minium values.
- */
-extern "C++" NIFTKOPENCV_EXPORT std::pair < double, double > FindMinimumValues
-  ( std::vector < std::pair < double, double>  > inputValues, 
-    std::pair <unsigned int , unsigned int > * indexes = NULL ); 
 
 
 extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
@@ -305,6 +294,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
     double outlierSD = 2.0 );
 
+
 /** 
  * \brief Returns the RMS error between two point vectors, with the measured values containing 
  * a measure of the timing error
@@ -312,7 +302,6 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector 
 extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
     double outlierSD = 2.0, long long allowableTimingError = 30e6 );
-
 
 
 /**
@@ -325,22 +314,6 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const double rx, const double ry, const double rz );
 
 
-/**
- * \brief To return the sample mean of a vector.
- */
-extern "C++" NIFTKOPENCV_EXPORT double Mean(const std::vector<double>& input);
-
-
-/**
- * \brief To return the sample standard deviation of a vector.
- */
-extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
-
-/**
- * \brief Assuming input contains squared errors, will sum them, divide by N, and take sqrt for an RMS measure.
- */
-extern "C++" NIFTKOPENCV_EXPORT double RMS(const std::vector<double>& input);
-
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)
  * to the passed point, and returns the index of that point
@@ -349,17 +322,20 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d
     const std::vector < cv::Point2d >& matchingPonints , 
     double* minRatio = NULL , unsigned int * index = NULL );
 
+
 /**
  * \brief Compare two cv point based on their distance from 0,0
  */
 extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
     const cv::Point2d& p2 );
 
+
 /**
  * \brief Compare pairs based on the value of the first bit
  */
 extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
     const std::pair < unsigned int, cv::Point2d>& p2 );
+
 
 /**
  * \brief works out the rigid rotation correspondence between two sets of corresponding 
@@ -369,6 +345,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Rotation (
     const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     double& Residual);
 
+
 /**
  * \brief works out the rigid translation correspondence between two sets of corresponding 
  * rigid body transforms
@@ -376,6 +353,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Rotation (
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Translation ( 
     const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     double& Residual, const cv::Mat & rcg);
+
 
 /**
  * \brief works out the rigid rotation and translation correspondence between two sets of corresponding 
@@ -387,51 +365,40 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1RotationAndTranslation
 
 
 /**
- *  * \brief Flips the matrices in the vector from left handed coordinate 
- *   * system to right handed and vice versa
- *    */
+ * \brief Flips the matrices in the vector from left handed coordinate
+ * system to right handed and vice versa
+ */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> matrices);
 
 
 /**
- *  * \brief find the average of a vector of 4x4 matrices
- *   */
+ * \brief find the average of a vector of 4x4 matrices
+ */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
 
 
  /**
-  *  * \brief Sorts the matrices based on the translations , and returns the order
-  *   */
+  * \brief Sorts the matrices based on the translations , and returns the order
+  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> matrices);
 
 
 /**
- *   * \brief Sorts the matrices based on the rotations, and returns the order
- *     */
+ * \brief Sorts the matrices based on the rotations, and returns the order
+ */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
 
+
 /**
- *  * \brief Returns the angular distance between two rotation matrices
- *   */
+ * \brief Returns the angular distance between two rotation matrices
+ */
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
+
 /**
- *  * \brief Converts a 3x3 rotation matrix to a quaternion
- *   */
+ * \brief Converts a 3x3 rotation matrix to a quaternion
+ */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
-
-
-/**
- *  * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
- *   */
-extern "C++" NIFTKOPENCV_EXPORT double ModifiedSignum(double value);
-
-
-/**
- *  * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
- *   */
-extern "C++" NIFTKOPENCV_EXPORT double SafeSQRT(double value);
-
 
 } // end namespace
 

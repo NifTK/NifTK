@@ -25,6 +25,7 @@
 #include <vtkMatrix4x4.h>
 #include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkMathsUtils.h>
 
 /**
  * \class UltrasoundPinCalibrationRegressionTest
