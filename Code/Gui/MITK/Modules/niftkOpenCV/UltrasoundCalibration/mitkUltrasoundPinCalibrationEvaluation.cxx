@@ -15,6 +15,7 @@
 #include "mitkUltrasoundPinCalibrationEvaluation.h"
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkUltrasoundCalibration.h>
 #include <algorithm>
