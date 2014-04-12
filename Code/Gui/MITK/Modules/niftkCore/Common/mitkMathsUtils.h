@@ -17,6 +17,7 @@
 
 #include "niftkCoreExports.h"
 #include <vector>
+#include <cstdlib>
 
 /**
  * \file mitkMathsUtils.h
