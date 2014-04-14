@@ -95,11 +95,11 @@ int main(int argc, char** argv)
 
   double printerDotsPerMillimetre = (printerDotsPerInch / mmPerInch);
   int numberOfAvailablePixelsAlongLength = (int)(length*printerDotsPerMillimetre);
-  int numberOfTagsAlongLength = static_cast<int>(static_cast<double>(length)/static_cast<double>(actualTagSizeIncludingBorder));
+  int numberOfTagsAlongLength = std::floor(static_cast<double>(length)/static_cast<double>(actualTagSizeIncludingBorder));
   int numberOfPixelsRequiredAlongLength = numberOfTagsAlongLength*inputTagSize;
 
   double maxCircumferenceInMillimetres = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
-  int numberTagsAlongWidth = static_cast<int>(static_cast<double>(maxCircumferenceInMillimetres)/static_cast<double>(actualTagSizeIncludingBorder));
+  int numberTagsAlongWidth = std::floor(static_cast<double>(maxCircumferenceInMillimetres)/static_cast<double>(actualTagSizeIncludingBorder));
   int numberOfPixelsRequiredAlongWidth = numberTagsAlongWidth*inputTagSize;
 
   std::cout << "dots per inch to print at     = " << printerDotsPerInch << std::endl;
