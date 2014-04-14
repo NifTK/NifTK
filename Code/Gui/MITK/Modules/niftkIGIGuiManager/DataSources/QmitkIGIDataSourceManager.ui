@@ -37,12 +37,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="m_AddSourcePushButton">
-       <property name="maximumSize">
-        <size>
-         <width>22</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -57,12 +51,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="m_RemoveSourcePushButton">
-       <property name="maximumSize">
-        <size>
-         <width>22</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="font">
         <font>
          <pointsize>10</pointsize>
@@ -258,16 +246,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -346,16 +325,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -386,16 +356,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
