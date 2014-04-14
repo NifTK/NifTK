@@ -212,7 +212,7 @@ void UndistortView::UpdateNodeTable()
 
       QTableWidgetItem* nodenameitem = new QTableWidgetItem;
       nodenameitem->setText(s);
-      nodenameitem->setCheckState(Qt::Unchecked);
+      nodenameitem->setCheckState(Qt::Checked);
       nodenameitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       m_NodeTable->setItem(j, 0, nodenameitem);
 
@@ -376,11 +376,20 @@ void UndistortView::OnGoButtonClick()
           if (inputImage.IsNotNull())
           {
             bool    hascalib = false;
+            bool    nonemptycalibitem = false;
             if (calibparamitem != 0)
+            {
+              nonemptycalibitem = !calibparamitem->text().trimmed().isEmpty();
+            }
+
+            if (nonemptycalibitem)
             {
               try
               {
                 std::string   filename = calibparamitem->text().toStdString();
+                // we checked above that the cell has a non-empty non-whitespace string.
+                assert(!filename.empty());
+
                 // cache the parsed calib data, to avoid repeatedly (every frame!) reading the same stuff.
                 std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>::iterator fc = m_ParamFileCache.find(filename);
                 if (fc != m_ParamFileCache.end())
@@ -462,21 +471,16 @@ void UndistortView::OnGoButtonClick()
 
               m_BackgroundQueue.push_back(wi);
             }
-            else
-            {
-              nameitem->setCheckState(Qt::Unchecked);
-              std::cerr << "Undistortion: skipping node " << nodename << " without calib data" << std::endl;
-            }
           }
         }
         else
         {
-          std::cerr << "Undistortion: skipping unknown node with name: " << nodename << std::endl;
+          MITK_WARN << "Undistortion: skipping unknown node with name: " << nodename;
         }
       }
       else
       {
-        std::cerr << "Undistortion: skipping node with empty name." << std::endl;
+        MITK_INFO << "Undistortion: skipping node with empty name.";
       }
     }
   }
