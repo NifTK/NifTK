@@ -148,10 +148,10 @@ int main(int argc, char** argv)
       int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
 
       ConvertGridPointToCyclinderPoint(pointID+0,    lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+1000, lengthCounter, widthCounter, 0,                         0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+2000, lengthCounter, widthCounter, cornerOffsetInMillimetres, 0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+3000, lengthCounter, widthCounter, cornerOffsetInMillimetres, cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+4000, lengthCounter, widthCounter, 0,                         cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, 0,                         0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, cornerOffsetInMillimetres, 0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, cornerOffsetInMillimetres, cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, 0,                         cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
     }
   }
 
