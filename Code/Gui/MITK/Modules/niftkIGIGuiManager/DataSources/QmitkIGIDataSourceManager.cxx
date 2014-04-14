@@ -774,8 +774,9 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnTimestampEditFinished()
 {
-  // try to parse as single number, a timestamp in nano seconds.
+  igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
 
+  // try to parse as single number, a timestamp in nano seconds.
   bool  ok = false;
   qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
   if (ok)
@@ -784,18 +785,19 @@ void QmitkIGIDataSourceManager::OnTimestampEditFinished()
     ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
 
     // the last/highest timestamp we can playback
-    igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
     ok &= (maxSliderTime >= possibleTimeStamp);
   }
 
   if (!ok)
   {
     QDateTime   parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
-    MITK_INFO << parsed.toString("yyyy/MM/dd hh:mm:ss.zzz").toStdString();
     if (parsed.isValid())
     {
       possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
       ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
     }
   }
 
