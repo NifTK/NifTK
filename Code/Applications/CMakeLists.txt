@@ -124,8 +124,9 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
-      niftkMakeLapUSProbeModel
+      #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
+      niftkMakeLapUSProbeAprilTagsModel
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )

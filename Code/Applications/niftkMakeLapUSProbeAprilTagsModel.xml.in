@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Make ARUCO Model</title>
-  <description><![CDATA[Generates a VTK model to match the ARUCO board created by aruco_create_board.]]></description>
+  <title>Make April Tags Model</title>
+  <description><![CDATA[Generates a VTK model to match the April Tags board created by niftkMakeGridOf2DImages.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -12,13 +12,6 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/Output file parameters]]></description>
-    <file fileExtensions="*.txt">
-      <name>inputPointIDs</name>
-      <longflag>inputPointIDs</longflag>
-      <description>Input generated point IDs.</description>
-      <label>Input Point IDs</label>
-      <channel>input</channel>
-    </file>
     <file fileExtensions="*.vtk">
       <name>outputTrackingModel</name>
       <longflag>outputTrackingModel</longflag>
@@ -55,7 +48,7 @@
       <longflag>length</longflag>
       <description>The length of the probe (mm).</description>
       <label>Probe Length</label>
-      <default>63</default>
+      <default>47</default>
       <constraints>
         <minimum>1</minimum>
         <maximum>99</maximum>
@@ -67,48 +60,36 @@
       <longflag>surface</longflag>
       <description>The width of the flat probe sensor (mm).</description>
       <label>Probe Sensor</label>
-      <default>8</default>
+      <default>7</default>
       <constraints>
         <minimum>1</minimum>
         <maximum>99</maximum>
         <step>0.1</step>
       </constraints>
     </float>
-    <integer>
-      <name>numberSquares</name>
-      <longflag>numberSquares</longflag>
-      <description>The number of squares along the probe.</description>
-      <label>Number Squares</label>
-      <default>9</default>
+    <float>
+      <name>outputTagSize</name>
+      <longflag>outputTagSize</longflag>
+      <description>The required phyiscal size of the April Tag in millimetres.</description>
+      <label>Output Tag Size</label>
+      <default>3</default>
       <constraints>
-        <minimum>2</minimum>
-        <maximum>20</maximum>
+        <minimum>1</minimum>
+        <maximum>10</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <integer>
+      <name>inputTagSize</name>
+      <longflag>inputTagSize</longflag>
+      <description>The actual size of the April Tag .png image in pixels.</description>
+      <label>Input Tag Size</label>
+      <default>848</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>10000</maximum>
         <step>1</step>
       </constraints>
     </integer>
-    <float>
-      <name>tipZOffset</name>
-      <longflag>tipZOffset</longflag>
-      <description>Offset in Z axis of tip.</description>
-      <label>Z Offset</label>
-      <default>0</default>
-      <constraints>
-        <minimum>-99</minimum>
-        <maximum>99</maximum>
-        <step>0.1</step>
-      </constraints>
-    </float>
-    <float>
-      <name>squareOffset</name>
-      <longflag>squareOffset</longflag>
-      <description>Offset of square around circumference [0..1].</description>
-      <label>Square Offset</label>
-      <default>0</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>1</maximum>
-        <step>0.1</step>
-      </constraints>
-    </float>
   </parameters>
 </executable>

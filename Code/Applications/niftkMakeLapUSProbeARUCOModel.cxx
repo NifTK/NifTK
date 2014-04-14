@@ -29,7 +29,7 @@
 #include <vtkTransform.h>
 
 /**
- * \brief Generates a VTK model to match the ARTag board created by aruco_create_board.
+ * \brief Generates a VTK model to match the ARUCO board created by aruco_create_board.
  */
 int main(int argc, char** argv)
 {
