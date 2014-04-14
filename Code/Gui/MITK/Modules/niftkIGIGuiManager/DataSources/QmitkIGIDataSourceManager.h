@@ -292,7 +292,7 @@ private:
   // slider position is relative to this base value.
   // slider can only represent int values, but we need all 64 bit.
   igtlUint64                                m_PlaybackSliderBase;
-  double                                    m_PlaybackSliderFactor;
+  igtlUint64                                m_PlaybackSliderFactor;
 
   // This class now remembers the current GUI, and asks it to update
   // at the assigned frame rate.

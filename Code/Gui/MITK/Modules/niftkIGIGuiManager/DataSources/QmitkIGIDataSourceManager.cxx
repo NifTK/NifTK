@@ -784,7 +784,7 @@ void QmitkIGIDataSourceManager::OnTimestampEditFinished()
     ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
 
     // the last/highest timestamp we can playback
-    igtlUint64  maxSliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) m_PlaybackSlider->maximum() / m_PlaybackSliderFactor));
+    igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
     ok &= (maxSliderTime >= possibleTimeStamp);
   }
 
@@ -802,7 +802,7 @@ void QmitkIGIDataSourceManager::OnTimestampEditFinished()
 
   if (ok)
   {
-    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) * m_PlaybackSliderFactor);
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
   }
 }
 
@@ -816,7 +816,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   if (m_PlayPushButton->isChecked())
   {
     int         sliderValue = m_PlaybackSlider->value();
-    igtlUint64  sliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) sliderValue / m_PlaybackSliderFactor));
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
 
     m_CurrentTime = sliderTime;
   }
@@ -1267,11 +1267,11 @@ void QmitkIGIDataSourceManager::OnPlayStart()
           }
 
           m_PlaybackSliderBase = overallStartTime;
-          m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
           // if the time range is very short then dont upscale for the slider
-          m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
 
-          double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
           assert(sliderMax < std::numeric_limits<int>::max());
 
           m_PlaybackSlider->setMinimum(0);
