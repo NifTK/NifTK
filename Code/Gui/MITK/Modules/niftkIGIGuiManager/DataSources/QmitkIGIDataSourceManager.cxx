@@ -111,6 +111,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
     assert(ok);
+    ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -350,6 +352,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
   ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+  assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
   assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
@@ -768,6 +772,42 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnTimestampEditFinished()
+{
+  // try to parse as single number, a timestamp in nano seconds.
+
+  bool  ok = false;
+  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    igtlUint64  maxSliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) m_PlaybackSlider->maximum() / m_PlaybackSliderFactor));
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime   parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
+    MITK_INFO << parsed.toString("yyyy/MM/dd hh:mm:ss.zzz").toStdString();
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+      ok = true;
+    }
+  }
+
+
+  if (ok)
+  {
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) * m_PlaybackSliderFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
@@ -787,16 +827,20 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   }
 
   QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
-  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz");
-  // avoid flickering the text field. it makes copy-n-paste impossible
-  // during playback mode because it resets the selection every few milliseconds.
-  if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  // only update text if user is not editing
+  if (!m_TimeStampEdit->hasFocus())
   {
-    m_TimeStampEdit->setText(humanReadableTimeStamp);
-  }
-  if (m_TimeStampEdit->toolTip() != rawTimeStampString)
-  {
-    m_TimeStampEdit->setToolTip(rawTimeStampString);
+    // avoid flickering the text field. it makes copy-n-paste impossible
+    // during playback mode because it resets the selection every few milliseconds.
+    if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+    {
+      m_TimeStampEdit->setText(humanReadableTimeStamp);
+    }
+    if (m_TimeStampEdit->toolTip() != rawTimeStampString)
+    {
+      m_TimeStampEdit->setToolTip(rawTimeStampString);
+    }
   }
 
   igtlUint64 idNow = m_CurrentTime;

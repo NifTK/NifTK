@@ -261,6 +261,8 @@ private slots:
 
   void OnPlayStart();
 
+  void OnTimestampEditFinished();
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;
