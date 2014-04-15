@@ -19,6 +19,12 @@
 QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 {
   this->setupUi(parent);
+
+  /// Note: If we did not set a layout for the GUI container then one would be
+  /// created with 9,9,9,9 margins.
+  m_ManualToolGUIContainer->setLayout(new QHBoxLayout());
+  m_ManualToolGUIContainer->layout()->setContentsMargins(0, 0, 0, 0);
+
   this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
