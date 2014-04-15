@@ -95,6 +95,7 @@ class ImageStatisticsView : public QmitkAbstractView
         PixelType &min,
         PixelType &max,
         double &mean,
+        double median,
         double &stdDev,
         unsigned long int &count,
         double &volume);
@@ -170,6 +171,8 @@ class ImageStatisticsView : public QmitkAbstractView
         );
 
     /// \brief Used to check value against min, max etc.
+    /// It copies the pixels designated by the mask to the imagePixelsCopy array, continuously.
+    /// The number of processed element (same as the copied elements) is in 'counter'.
     template <typename TPixel1, typename TPixel2, typename LabelType>
     void AccumulateValue(
         bool    &invert,
@@ -182,7 +185,8 @@ class ImageStatisticsView : public QmitkAbstractView
         double  &s0,
         double  &s1,
         double  &s2,
-        unsigned long int &counter
+        unsigned long int &counter,
+        TPixel1* imagePixelsCopy
         );
 
     /// See: http://docs.mitk.org/nightly-qt4/group__Adaptor.html
