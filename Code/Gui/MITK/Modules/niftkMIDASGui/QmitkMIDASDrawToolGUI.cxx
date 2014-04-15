@@ -34,6 +34,7 @@ QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
   QBoxLayout* layout = new QHBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->setSpacing(3);
+  this->setLayout(layout);
 
   QLabel* label = new QLabel("Eraser radius (mm):", this);
   layout->addWidget(label);

@@ -131,7 +131,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
   {
     m_Layout = new QGridLayout(parent);
     m_Layout->setContentsMargins(9, 9, 9, 0);
-    m_Layout->setSpacing(6);
+    m_Layout->setSpacing(0);
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
@@ -139,16 +139,16 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
+    m_GeneralControls->setContentsMargins(0, 0, 0, 0);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
-    m_Layout->addWidget(new QWidget(parent), 2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+    m_Layout->setSpacing(3);
 
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 0);
-    m_Layout->setRowStretch(2, 1);
-    m_Layout->setRowStretch(3, 0);
+    m_Layout->setRowStretch(1, 1);
+    m_Layout->setRowStretch(2, 0);
 
     m_GeneralControls->SetThresholdingCheckboxEnabled(false);
     m_GeneralControls->SetThresholdingWidgetsEnabled(false);
