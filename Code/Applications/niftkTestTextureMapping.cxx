@@ -14,6 +14,7 @@
 
 #include <niftkTestTextureMappingCLP.h>
 #include <vtkSmartPointer.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkImageReader2.h>
@@ -24,6 +25,11 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkPoints.h>
+#include <vtkCellArray.h>
+#include <vtkPolygon.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 
 /**
  * \brief Renders a VTK model using Texture Mapping.
@@ -49,13 +55,16 @@ int main(int argc, char** argv)
   modelReader->SetFileName(model.c_str());
   modelReader->Update();
 
+  vtkSmartPointer<vtkPolyDataNormals> normals = vtkPolyDataNormals::New();
+  normals->SetInputConnection(modelReader->GetOutputPort());
+
   std::cout << "Loaded " << model << std::endl;
 
   vtkSmartPointer<vtkTexture> text = vtkTexture::New();
   text->SetInputConnection(imageReader->GetOutputPort());
 
   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkPolyDataMapper::New();
-  mapper->SetInputConnection(modelReader->GetOutputPort());
+  mapper->SetInputConnection(normals->GetOutputPort());
 
   vtkSmartPointer<vtkActor> actor = vtkActor::New();
   actor->SetMapper(mapper);
@@ -67,7 +76,8 @@ int main(int argc, char** argv)
   renWin->AddRenderer(renderer);
 
   renderer->AddActor(actor);
-  renderer->SetBackground(0, 0, 0);
+  renderer->SetBackground(1, 1, 1);
+  renderer->ResetCamera();
 
   renWin->Render();
 

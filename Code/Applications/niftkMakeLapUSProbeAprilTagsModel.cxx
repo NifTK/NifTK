@@ -26,6 +26,7 @@
 #include <vtkCylinderSource.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
+#include <vtkFloatArray.h>
 
 void ConvertGridPointToCyclinderPoint(int pointId,
                                       int lengthCounter, int widthCounter,
@@ -147,7 +148,7 @@ int main(int argc, char** argv)
     {
       int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
 
-      ConvertGridPointToCyclinderPoint(pointID+0,    lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, 0,                         0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, cornerOffsetInMillimetres, 0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, cornerOffsetInMillimetres, cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
@@ -190,10 +191,43 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
     transformFilter->SetInput(cylinderSource->GetOutput());
     transformFilter->SetTransform(transform);
+    transformFilter->Update();
+
+    if (textureMap.size() > 0)
+    {
+
+      vtkIdType numberPoints = transformFilter->GetOutput()->GetPoints()->GetNumberOfPoints();
+
+      vtkFloatArray* tc = vtkFloatArray::New();
+      tc->SetNumberOfComponents( 2 );
+      tc->Allocate(numberPoints);
+
+      for (vtkIdType counter = 0; counter < numberPoints; counter++)
+      {
+        if (counter %4 == 0)
+        {
+          tc->InsertNextTuple2(0, 0);
+        }
+        else if (counter %4 == 1)
+        {
+          tc->InsertNextTuple2(0, 1);
+        }
+        else if (counter %4 == 2)
+        {
+          tc->InsertNextTuple2(1, 0);
+        }
+        else if (counter %4 == 3)
+        {
+          tc->InsertNextTuple2(1, 1);
+        }
+      }
+      transformFilter->GetOutput()->GetPointData()->SetTCoords( tc );
+    }
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
     writer->SetInput(transformFilter->GetOutput());
     writer->SetFileName(outputVisualisationModel.c_str());
+    writer->SetFileTypeToASCII();
     writer->Update();
 
     std::cout << "written visualisation model to = " << outputVisualisationModel << std::endl;
