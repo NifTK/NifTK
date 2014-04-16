@@ -39,7 +39,13 @@ QmitkMIDASToolSelectorWidget::~QmitkMIDASToolSelectorWidget()
 //-----------------------------------------------------------------------------
 mitk::ToolManager* QmitkMIDASToolSelectorWidget::GetToolManager() const
 {
-  return mitk::ToolManagerProvider::GetInstance()->GetToolManager();
+  return m_ManualToolSelectionBox->GetToolManager();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager& toolManager) // no NULL pointer allowed here, a manager is required
+{
+  m_ManualToolSelectionBox->SetToolManager(toolManager);
 }
 
 
