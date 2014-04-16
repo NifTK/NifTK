@@ -127,9 +127,9 @@ if(SlicerExecutionModel_FOUND)
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
       niftkMakeLapUSProbeAprilTagsModel
+      niftkMakeLapUSProbeAprilTagsVisualisation
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
-      niftkTestTextureMapping
     )
     list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
 
