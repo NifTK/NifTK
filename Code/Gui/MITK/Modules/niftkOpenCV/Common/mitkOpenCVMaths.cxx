@@ -1673,13 +1673,6 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
 
   while ( fabs(distance) > 0 )
   {
-    cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
-    cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
-   
-    for ( int row = 0; row < 3; row ++ )
-    {
-      t1.at<double>(row,0) = Matrices[startIndex].at<double>(row,3);
-    }
     used [startIndex] = 0;
     index [counter] = startIndex;
     counter++;
@@ -1689,11 +1682,7 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
     {
       if ( ( startIndex != i ) && ( used[i] != 0 ))
       {
-        for ( int row = 0; row < 3; row ++ )
-        {
-          t2.at<double>(row,0) = Matrices[i].at<double>(row,3);
-        }
-        double d = cv::norm(t1-t2);
+        double d = mitk::DistanceBetweenMatrices(Matrices[startIndex],Matrices[i]);
         if ( d > distance )
         {
           distance = d;
@@ -1706,8 +1695,6 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
       index[counter] = CurrentIndex;
     }
     startIndex = CurrentIndex;
-
-   
   }
   return index;
 }
@@ -1787,6 +1774,21 @@ double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
       + q1.at<double>(2,0) * q2.at<double>(2,0));
 
 }
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
+{
+  cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
+  cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
+   
+  for ( int row = 0; row < 3; row ++ )
+  {
+    t1.at<double>(row,0) = Mat1.at<double>(row,3);
+    t2.at<double>(row,0) = Mat2.at<double>(row,3);
+  }
+  return cv::norm(t1-t2);
+}
+
 //-----------------------------------------------------------------------------
 cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
 {
