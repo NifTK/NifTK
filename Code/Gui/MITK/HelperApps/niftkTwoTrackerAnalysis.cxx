@@ -33,6 +33,16 @@ int main(int argc, char** argv)
   {
     mitk::TwoTrackerAnalysis::Pointer trackerMatcherObject = mitk::TwoTrackerAnalysis::New();
     trackerMatcherObject->Initialise(Directory1, Directory2);
+    //check it's a rigid body first
+    if ( FlipDir1 ) 
+    {
+      trackerMatcherObject->FlipMats1();
+    }
+    if ( FlipDir2 )
+    {
+      trackerMatcherObject->FlipMats2();
+    }
+    trackerMatcherObject->CheckRigidBody();
     if ( TCfileout.length() != 0 )
     {
       trackerMatcherObject->TemporalCalibration(temporalWindowLow, temporalWindowHigh, true, TCfileout);
