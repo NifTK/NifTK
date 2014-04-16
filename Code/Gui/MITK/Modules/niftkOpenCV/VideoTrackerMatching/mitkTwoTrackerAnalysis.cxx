@@ -145,7 +145,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
     {
       long long int timingError;
       
-      GetTrackerMatrix(indexes[i],&timingError,1);
+      GetTrackerMatrix(indexes[i],&timingError,0);
 
       if ( fabs(timingError) < 50e6 )
       {
@@ -179,4 +179,65 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   fout_t2ToT1.close();
   fout_w2ToW1.close();
 }
+//---------------------------------------------------------------------------
+bool TwoTrackerAnalysis::CheckRigidBody()
+{
+  if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise two tracker matcher before attempting temporal calibration";
+    return false;
+  }
+  //if it's a rigid body the distance between the two trackers should not change, 
+  //regardless of tracker origins ??
+
+  bool Tracker2ToTracker1 = false;
+  std::vector < double > distances;
+  if ( m_TrackingMatrixTimeStamps1.m_TimeStamps.size() > m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
+  {
+    Tracker2ToTracker1 = false;
+    for ( unsigned int i = 0; i < m_TrackingMatrices22.m_TrackingMatrices.size() ; i ++  )
+    {
+      long long int timingError;
+      
+      GetTrackerMatrix(i,&timingError,1);
+
+      if ( fabs(timingError) < 50e6 )
+      {
+        cv::Mat tracker1 = m_TrackingMatrices22.m_TrackingMatrices[i];
+        cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
+        distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
+      }
+      else
+      {
+        MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+      }
+    }
+  }
+  else
+  {
+    Tracker2ToTracker1 = true;
+
+    for ( unsigned int i = 0; i < m_TrackingMatrices11.m_TrackingMatrices.size() ; i ++  )
+    {
+      long long int timingError;
+      GetTrackerMatrix(i,&timingError,0);
+
+      if ( fabs(timingError) < 50e6 )
+      {
+        cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
+        cv::Mat tracker2 = GetTrackerMatrix(i,NULL,0);
+        distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
+      }
+      else
+      {
+        MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+      }
+    }
+  }
+
+  MITK_INFO << "Mean Distance " << mitk::Mean(distances);
+  MITK_INFO << "Standard Deviation " << mitk::StdDev(distances);
+  return true;
+}
+
 } // namespace

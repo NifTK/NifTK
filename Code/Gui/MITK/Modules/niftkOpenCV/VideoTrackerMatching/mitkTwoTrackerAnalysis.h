@@ -52,6 +52,11 @@ public:
    */
   void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 );
 
+  /**
+   * check it's a rigid body
+   */
+  bool CheckRigidBody ( );
+
 protected:
   TwoTrackerAnalysis();
   virtual ~TwoTrackerAnalysis();
