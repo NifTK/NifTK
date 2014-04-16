@@ -130,8 +130,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
   if (!m_GeneralControls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(9, 9, 9, 0);
-    m_Layout->setSpacing(0);
+    m_Layout->setContentsMargins(6, 6, 6, 0);
+    m_Layout->setSpacing(3);
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
@@ -144,7 +144,6 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
     m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
-    m_Layout->setSpacing(3);
 
     m_Layout->setRowStretch(0, 0);
     m_Layout->setRowStretch(1, 1);
