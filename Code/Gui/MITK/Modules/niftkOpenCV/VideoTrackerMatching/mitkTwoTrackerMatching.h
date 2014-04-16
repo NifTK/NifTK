@@ -68,6 +68,9 @@ public:
    */
   void SetLagMilliseconds(unsigned long long Lag, bool LagIsNegative =false);
 
+  void FlipMats1 ();
+  void FlipMats2 ();
+
 protected:
   TwoTrackerMatching();
   virtual ~TwoTrackerMatching();
@@ -97,6 +100,10 @@ private:
 
   unsigned long long                    m_Lag; //the delay between tracker1 and tracker2
   bool                                  m_LagIsNegative; //controls the direction of lag
+
+  bool                                  m_FlipMat1; // flip matrices in directory1
+  bool                                  m_FlipMat2; // flip matrices in directory2
+
 };
 
 
