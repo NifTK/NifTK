@@ -26,6 +26,11 @@
 #include <vtkCylinderSource.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
+#include <vtkFloatArray.h>
+#include <vtkPolyDataNormals.h>
+#include <vtkTriangleFilter.h>
+#include <vtkLinearSubdivisionFilter.h>
+#include <vtkDecimatePolylineFilter.h>
 
 void ConvertGridPointToCyclinderPoint(int pointId,
                                       int lengthCounter, int widthCounter,
@@ -76,7 +81,10 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
-  if ( outputTrackingModel.length() == 0)
+  if ( outputTrackingModel.length() == 0
+       || outputVisualisationModel.length() == 0
+       || textureMap.length() == 0
+       )
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
@@ -87,8 +95,10 @@ int main(int argc, char** argv)
   int printerDotsPerInch = 300;
 
   double radius = diameter / 2.0;
+  double circumference = pi*diameter;
   double actualTagSizeIncludingBorder = outputTagSize*9/static_cast<double>(7);
   double blockSizeInMillimetres = actualTagSizeIncludingBorder/static_cast<double>(9);
+  double borderSizeInMillimetres = actualTagSizeIncludingBorder / static_cast<double>(9);
   double cornerOffsetInMillimetres = blockSizeInMillimetres * 7;
   double centreOffsetInMillimetres = blockSizeInMillimetres * 3.5;
   double spacingBetweenTags = blockSizeInMillimetres * 2;
@@ -102,18 +112,29 @@ int main(int argc, char** argv)
   int numberTagsAlongWidth = std::floor(static_cast<double>(maxCircumferenceInMillimetres)/static_cast<double>(actualTagSizeIncludingBorder));
   int numberOfPixelsRequiredAlongWidth = numberTagsAlongWidth*inputTagSize;
 
-  std::cout << "dots per inch to print at     = " << printerDotsPerInch << std::endl;
-  std::cout << "dots per millimetres          = " << printerDotsPerMillimetre << std::endl;
-  std::cout << "number of pixels available    = " << numberOfAvailablePixelsAlongLength << std::endl;
-  std::cout << "number of tags along length   = " << numberOfTagsAlongLength << std::endl;
-  std::cout << "circumference in millimetres  = " << maxCircumferenceInMillimetres << std::endl;
-  std::cout << "number of tags along width    = " << numberTagsAlongWidth << std::endl;
-  std::cout << "block size in millimetres     = " << blockSizeInMillimetres << std::endl;
-  std::cout << "corner offset in millimetres  = " << cornerOffsetInMillimetres << std::endl;
-  std::cout << "centre offset in millimetres  = " << centreOffsetInMillimetres << std::endl;
-  std::cout << "spacing between tags (mm)     = " << spacingBetweenTags << std::endl;
-  std::cout << "Tag Size To Print (pixels)    = " << numberOfPixelsRequiredAlongWidth << " x " << numberOfPixelsRequiredAlongLength << std::endl;
-  std::cout << "Tag Size To Print (mm)        = " << numberTagsAlongWidth*actualTagSizeIncludingBorder << " x " << numberOfTagsAlongLength*actualTagSizeIncludingBorder << std::endl;
+  double minXInMillimetres = 0 - borderSizeInMillimetres;
+  double minYInMillimetres = 0 - borderSizeInMillimetres;
+  double maxXInMillimetres = minXInMillimetres + (numberTagsAlongWidth*actualTagSizeIncludingBorder);
+  double maxYInMillimetres = minYInMillimetres + (numberOfTagsAlongLength*actualTagSizeIncludingBorder);
+
+  double cyclinderLength = numberOfTagsAlongLength*actualTagSizeIncludingBorder;
+
+  std::cout << "dots per inch to print at      = " << printerDotsPerInch << std::endl;
+  std::cout << "dots per millimetres           = " << printerDotsPerMillimetre << std::endl;
+  std::cout << "number of pixels available     = " << numberOfAvailablePixelsAlongLength << std::endl;
+  std::cout << "number of tags along length    = " << numberOfTagsAlongLength << std::endl;
+  std::cout << "circumference in millimetres   = " << maxCircumferenceInMillimetres << std::endl;
+  std::cout << "number of tags along width     = " << numberTagsAlongWidth << std::endl;
+  std::cout << "block size in millimetres      = " << blockSizeInMillimetres << std::endl;
+  std::cout << "corner offset in millimetres   = " << cornerOffsetInMillimetres << std::endl;
+  std::cout << "centre offset in millimetres   = " << centreOffsetInMillimetres << std::endl;
+  std::cout << "spacing between tags (mm)      = " << spacingBetweenTags << std::endl;
+  std::cout << "Tag Size To Print (pixels)     = " << numberOfPixelsRequiredAlongWidth << " x " << numberOfPixelsRequiredAlongLength << std::endl;
+  std::cout << "Tag Size To Print (mm)         = " << numberTagsAlongWidth*actualTagSizeIncludingBorder << " x " << numberOfTagsAlongLength*actualTagSizeIncludingBorder << std::endl;
+  std::cout << "Board region in millimetres    = " << minXInMillimetres << ", " << minYInMillimetres << " to " << maxXInMillimetres << ", " << maxYInMillimetres << std::endl;
+  std::cout << "Cylinder length                = " << cyclinderLength << std::endl;
+  std::cout << "Cylinder circumference         = " << circumference << std::endl;
+  std::cout << "Cylinder radius                = " << radius << std::endl;
 
   // Aim is:
   // 1. to make wrap the coordinates of the corner of each tag, and the centre of each tag around a cylinder.
@@ -147,7 +168,7 @@ int main(int argc, char** argv)
     {
       int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
 
-      ConvertGridPointToCyclinderPoint(pointID+0,    lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, 0,                         0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, cornerOffsetInMillimetres, 0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
       ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, cornerOffsetInMillimetres, cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
@@ -173,14 +194,19 @@ int main(int argc, char** argv)
 
   if (outputVisualisationModel.size() > 0)
   {
-
-    double cyclinderLength = numberOfTagsAlongLength*cornerOffsetInMillimetres + ((numberOfTagsAlongLength-1)*spacingBetweenTags);
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkCylinderSource::New();
-    cylinderSource->SetCenter(0, cyclinderLength/2.0, 0);
+    cylinderSource->SetCenter(0, cyclinderLength/2.0 - borderSizeInMillimetres, 0);
     cylinderSource->SetRadius(radius);
     cylinderSource->SetHeight(cyclinderLength);
-    cylinderSource->SetResolution(36);
+    cylinderSource->SetResolution(360);
     cylinderSource->SetCapping(false);
+
+    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
+    triangleFilter->SetInputConnection(cylinderSource->GetOutputPort());
+
+    vtkSmartPointer<vtkLinearSubdivisionFilter> subdivide = vtkLinearSubdivisionFilter::New();
+    subdivide->SetInputConnection(triangleFilter->GetOutputPort());
+    subdivide->SetNumberOfSubdivisions(7);
 
     vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
     transform->Identity();
@@ -188,8 +214,65 @@ int main(int argc, char** argv)
     transform->Translate(radius, 0, 0);
 
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(cylinderSource->GetOutput());
+    transformFilter->SetInput(subdivide->GetOutput());
     transformFilter->SetTransform(transform);
+    transformFilter->Update();
+
+    vtkSmartPointer<vtkDoubleArray> normals2 = vtkDoubleArray::New();
+    normals2->SetNumberOfComponents(3);
+    normals2->SetName("Normals");
+    normals2->Initialize();
+
+    if (textureMap.size() > 0)
+    {
+      vtkPoints *points = transformFilter->GetOutput()->GetPoints();
+      vtkIdType numberPoints = points->GetNumberOfPoints();
+
+      vtkFloatArray* tc = vtkFloatArray::New();
+      tc->SetNumberOfComponents( 2 );
+      tc->Allocate(numberPoints);
+
+      for (vtkIdType counter = 0; counter < numberPoints; counter++)
+      {        
+        double *p = points->GetPoint(counter);
+
+        // Need to measure distance around curvature of probe.
+        double norm[2] = {0, 0};
+        norm[0] = p[0] - radius;
+        norm[1] = p[1];
+        double distance = sqrt(norm[0]*norm[0] + norm[1]*norm[1]);
+        norm[0] /= distance;
+        norm[1] /= distance;
+        double cosTheta = -norm[0];
+        double theta = acos(cosTheta);
+        if (norm[1] < 0)
+        {
+          theta = pi + (pi-theta);
+        }
+        double portionOfCircle = theta/(2*pi);
+
+        double dx = portionOfCircle*circumference;
+
+        // z axis in space, maps to y axis in texture map. So distance along z = how far along texture map we travel in y direction.
+        double dy = p[2];
+
+        if (dx > ((numberTagsAlongWidth*actualTagSizeIncludingBorder) - borderSizeInMillimetres)
+            )
+        {
+          dx = 1*borderSizeInMillimetres;
+          dy = 1*borderSizeInMillimetres;
+        }
+
+        double tx = (dx-minXInMillimetres) / (maxXInMillimetres - minXInMillimetres);
+        double ty = -(dy-minYInMillimetres) / (maxYInMillimetres - minYInMillimetres);
+
+        // Convert to texture coord.
+        tc->InsertNextTuple2(tx, ty);
+        normals2->InsertNextTuple3(norm[0], norm[1], 0);
+      }
+      transformFilter->GetOutput()->GetPointData()->SetTCoords(tc);
+      transformFilter->GetOutput()->GetPointData()->SetNormals(normals2);
+    }
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
     writer->SetInput(transformFilter->GetOutput());

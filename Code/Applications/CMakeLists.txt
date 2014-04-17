@@ -127,6 +127,7 @@ if(SlicerExecutionModel_FOUND)
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
       niftkMakeLapUSProbeAprilTagsModel
+      niftkMakeLapUSProbeAprilTagsVisualisation
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )

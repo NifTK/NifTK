@@ -26,6 +26,13 @@
       <label>Output Visualisation Model</label>
       <channel>output</channel>
     </file>
+    <file fileExtensions="*.png,*.jpg">
+      <name>textureMap</name>
+      <longflag>textureMap</longflag>
+      <description>Optional texture map image.</description>
+      <label>Texture Map</label>
+      <channel>input</channel>
+    </file>
   </parameters>
   
   <parameters>
