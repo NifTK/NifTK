@@ -21,6 +21,7 @@
 #include <QDoubleSpinBox>
 #include <QPushButton>
 #include <QColorDialog>
+#include <QCheckBox>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
@@ -30,6 +31,7 @@ const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR_STYLE_S
 const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
 const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
 const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
+const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("thumbnail track only main windows");
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
@@ -37,6 +39,7 @@ QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
 , m_BoxThickness(0)
 , m_BoxOpacity(0)
 , m_BoxLayer(0)
+, m_TrackOnlyMainWindows(0)
 , m_Initializing(false)
 {
 
@@ -97,6 +100,13 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
   m_BoxLayer->setSingleStep(1);
   m_BoxLayer->setValue(99);
 
+  m_TrackOnlyMainWindows = new QCheckBox();
+  m_TrackOnlyMainWindows->setChecked(true);
+  QString trackOnlyMainWindowsToolTip =
+      "If checked, the thumbnail viewer will not track windows\n"
+      "that are not on the main display, but on some side view.";
+  m_TrackOnlyMainWindows->setToolTip(trackOnlyMainWindowsToolTip);
+
   QFormLayout *formLayout = new QFormLayout;
   formLayout->addRow("line width", m_BoxThickness );
   formLayout->addRow("line opacity", m_BoxOpacity );
@@ -114,6 +124,8 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
 
   formLayout->addRow("line colour", boxColorLayout);
   formLayout->addRow("rendering layer", m_BoxLayer );
+  formLayout->addRow("track only windows of the main display", m_TrackOnlyMainWindows);
+  formLayout->labelForField(m_TrackOnlyMainWindows)->setToolTip(trackOnlyMainWindowsToolTip);
 
   m_MainControl->setLayout(formLayout);
 
@@ -141,6 +153,7 @@ bool QmitkThumbnailViewPreferencePage::PerformOk()
   m_ThumbnailPreferencesNode->PutDouble(THUMBNAIL_BOX_OPACITY, m_BoxOpacity->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_THICKNESS, m_BoxThickness->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_LAYER, m_BoxLayer->value());
+  m_ThumbnailPreferencesNode->PutBool(THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, m_TrackOnlyMainWindows->isChecked());
   return true;
 }
 
@@ -170,6 +183,7 @@ void QmitkThumbnailViewPreferencePage::Update()
   m_BoxThickness->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_THICKNESS, 1));
   m_BoxLayer->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_LAYER, 99));
   m_BoxOpacity->setValue(m_ThumbnailPreferencesNode->GetDouble(THUMBNAIL_BOX_OPACITY, 1));
+  m_TrackOnlyMainWindows->setChecked(m_ThumbnailPreferencesNode->GetBool(THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true));
 }
 
 

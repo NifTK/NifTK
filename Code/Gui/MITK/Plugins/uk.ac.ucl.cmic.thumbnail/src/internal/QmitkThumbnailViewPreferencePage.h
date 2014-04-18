@@ -60,17 +60,20 @@ public:
   /// \brief Stores the name of the preferences node that stores the box outline colour
   static const std::string THUMBNAIL_BOX_COLOUR;
 
-  /// \brief Stores the name of the preferences name that stores the box outline colour style sheet.
+  /// \brief Stores the name of the preferences node that stores the box outline colour style sheet.
   static const std::string THUMBNAIL_BOX_COLOUR_STYLE_SHEET;
 
-  /// \brief Stores the name of the preferences name that stores the box line thickness
+  /// \brief Stores the name of the preferences node that stores the box line thickness
   static const std::string THUMBNAIL_BOX_THICKNESS;
 
-  /// \brief Stores the name of the preferences name that stores the box opacity
+  /// \brief Stores the name of the preferences node that stores the box opacity
   static const std::string THUMBNAIL_BOX_OPACITY;
 
-  /// \brief Stores the name of the preferences name that stores the box layer.
+  /// \brief Stores the name of the preferences node that stores the box layer.
   static const std::string THUMBNAIL_BOX_LAYER;
+
+  /// \brief Stores the name of the preferences node that tells if only main windows should be tracked.
+  static const std::string THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS;
 
 protected slots:
 
@@ -86,6 +89,7 @@ protected:
   QPushButton    *m_BoxColorPushButton;
   QString         m_BoxColorStyleSheet;
   std::string     m_BoxColor;
+  QCheckBox* m_TrackOnlyMainWindows;
 
   bool m_Initializing;
 
