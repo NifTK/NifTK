@@ -69,7 +69,11 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::ThumbnailViewControls();
     m_Controls->setupUi(parent);
 
-    RetrievePreferenceValues();
+    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+    assert(dataStorage);
+    m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
+
+    this->RetrievePreferenceValues();
 
     mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
     if (focusManager != NULL)
@@ -81,10 +85,6 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
       m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
     }
 
-    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-    assert(dataStorage);
-
-    m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
     m_Controls->m_RenderWindow->Activated();
     m_Controls->m_RenderWindow->SetDisplayInteractionsEnabled(true);
 
@@ -103,7 +103,7 @@ void ThumbnailView::SetFocus()
 //-----------------------------------------------------------------------------
 void ThumbnailView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
-  RetrievePreferenceValues();
+  this->RetrievePreferenceValues();
 }
 
 
@@ -143,18 +143,43 @@ void ThumbnailView::RetrievePreferenceValues()
     colour[2] = boxColor.blue() / 255.0;
   }
 
-  MITK_DEBUG << "ThumbnailView::RetrievePreferenceValues" \
-      " , thickness=" << thickness \
-      << ", layer=" << layer \
-      << ", opacity=" << opacity \
-      << ", colourName=" << boxColorName.toLocal8Bit().constData() \
-      << ", colour=" << colour \
-      << std::endl;
-
   m_Controls->m_RenderWindow->setBoundingBoxColor(colour[0], colour[1], colour[2]);
   m_Controls->m_RenderWindow->setBoundingBoxLineThickness(thickness);
   m_Controls->m_RenderWindow->setBoundingBoxOpacity(opacity);
   m_Controls->m_RenderWindow->setBoundingBoxLayer(layer);
+
+  bool onlyMainWindowsWereTracked = m_TrackOnlyMainWindows;
+  m_TrackOnlyMainWindows = prefs->GetBool(QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true);
+
+  if (m_TrackOnlyMainWindows != onlyMainWindowsWereTracked)
+  {
+    if (m_TrackOnlyMainWindows)
+    {
+      mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+      if (renderWindowPart)
+      {
+        QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+        if (mainWindow && mainWindow->GetRenderer()->GetMapperID() == mitk::BaseRenderer::Standard2D)
+        {
+          m_Controls->m_RenderWindow->TrackRenderer(mainWindow->GetRenderer());
+        }
+      }
+    }
+    else
+    {
+      mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+      if (focusManager)
+      {
+        mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+        if (focusedRenderer != m_Controls->m_RenderWindow->GetRenderer()
+            && focusedRenderer.IsNotNull()
+            && focusedRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+        {
+          m_Controls->m_RenderWindow->TrackRenderer(focusedRenderer);
+        }
+      }
+    }
+  }
 }
 
 

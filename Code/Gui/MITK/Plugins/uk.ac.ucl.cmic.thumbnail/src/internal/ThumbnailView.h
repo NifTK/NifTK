@@ -81,6 +81,10 @@ private:
 
   // All the controls for the main view part.
   Ui::ThumbnailViewControls *m_Controls;
+
+  /// \brief Tells if the plugin should track only windows of editors, not views.
+  bool m_TrackOnlyMainWindows;
+
 };
 
 #endif // ThumbnailView_h
