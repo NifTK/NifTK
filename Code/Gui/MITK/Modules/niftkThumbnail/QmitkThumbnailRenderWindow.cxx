@@ -506,24 +506,19 @@ void QmitkThumbnailRenderWindow::OnWorldGeometryChanged()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (m_TrackedRenderer.IsNotNull())
   {
-    mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
-    if (focusedRenderer.IsNotNull())
+    // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
+    m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(m_TrackedRenderer->GetTimeWorldGeometry()));
+
+    // Display geometry of widget must encompass whole of world geometry
+    if (fitToDisplay)
     {
-      // World geometry of thumbnail must be same (or larger) as world geometry of the focused window.
-      m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(focusedRenderer->GetTimeWorldGeometry()));
-
-      // Display geometry of widget must encompass whole of world geometry
-      if (fitToDisplay)
-      {
-        m_Renderer->GetDisplayGeometry()->Fit();
-      }
-
-      // Request a single update at the end of the method.
-      mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+      m_Renderer->GetDisplayGeometry()->Fit();
     }
+
+    // Request a single update at the end of the method.
+    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
 }
 
