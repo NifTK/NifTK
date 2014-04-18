@@ -95,7 +95,9 @@ public:
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
 
-  /// \brief Returns the selected window, that is the one with the coloured border.
+  /// \brief Returns the selected window.
+  /// If a window has the focus (and it has a coloured border) then it is
+  /// returned. Otherwise, the first visible window is returned.
   QmitkRenderWindow* GetSelectedRenderWindow() const;
 
   /// \brief Selects the render window and puts put a coloured border round it.
