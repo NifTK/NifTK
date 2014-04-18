@@ -19,8 +19,6 @@
 #include <mitkDataStorage.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkDisplayGeometry.h>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
 
 #include <QmitkMouseEventEater.h>
 #include <QmitkWheelEventEater.h>
@@ -38,10 +36,10 @@
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
-, m_FocusedWindowWorldGeometryTag(-1)
-, m_FocusedWindowDisplayGeometryTag(-1)
-, m_FocusedWindowSliceSelectorTag(-1)
-, m_FocusedWindowTimeStepSelectorTag(-1)
+, m_TrackedWorldGeometryTag(-1)
+, m_TrackedDisplayGeometryTag(-1)
+, m_TrackedSliceSelectorTag(-1)
+, m_TrackedTimeStepSelectorTag(-1)
 , m_DataStorage(NULL)
 , m_BoundingBoxNode(NULL)
 , m_BoundingBox(NULL)
@@ -253,14 +251,14 @@ void QmitkThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
 
   if (m_TrackedWorldGeometry.IsNotNull() && m_TrackedDisplayGeometry.IsNotNull())
   {
-    m_TrackedWorldGeometry->RemoveObserver(m_FocusedWindowWorldGeometryTag);
-    m_FocusedWindowWorldGeometryTag = -1;
-    m_TrackedDisplayGeometry->RemoveObserver(m_FocusedWindowDisplayGeometryTag);
-    m_FocusedWindowDisplayGeometryTag = -1;
-    m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowSliceSelectorTag);
-    m_FocusedWindowSliceSelectorTag = -1;
-    m_TrackedSliceNavigator->RemoveObserver(m_FocusedWindowTimeStepSelectorTag);
-    m_FocusedWindowTimeStepSelectorTag = -1;
+    m_TrackedWorldGeometry->RemoveObserver(m_TrackedWorldGeometryTag);
+    m_TrackedWorldGeometryTag = -1;
+    m_TrackedDisplayGeometry->RemoveObserver(m_TrackedDisplayGeometryTag);
+    m_TrackedDisplayGeometryTag = -1;
+    m_TrackedSliceNavigator->RemoveObserver(m_TrackedSliceSelectorTag);
+    m_TrackedSliceSelectorTag = -1;
+    m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
+    m_TrackedTimeStepSelectorTag = -1;
   }
 }
 
@@ -322,7 +320,7 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
 {
   if (m_TrackedDisplayGeometry.IsNotNull())
   {
-    // Get min and max extent of the focused render window's display geometry.
+    // Get min and max extent of the tracked render window's display geometry.
     mitk::Point3D points[4];
     points[0] = this->Get3DPoint(0, 0);
     points[1] = this->Get3DPoint(m_TrackedDisplayGeometry->GetDisplayWidth()-1, 0);
@@ -549,22 +547,22 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
     itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
       itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
     onWorldGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnWorldGeometryChanged );
-    m_FocusedWindowWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
+    m_TrackedWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
 
     itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
       itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
     onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
-    m_FocusedWindowDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+    m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
 
     itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onSliceChangedCommand =
       itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
     onSliceChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnSliceChanged );
-    m_FocusedWindowSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
+    m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
 
     itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onTimeChangedCommand =
       itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
     onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
-    m_FocusedWindowTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
+    m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
 
     // I'm doing this in this method so that when the initial first
     // window starts (i.e. before any data is loaded),
