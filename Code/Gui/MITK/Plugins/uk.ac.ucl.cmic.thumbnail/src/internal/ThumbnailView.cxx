@@ -30,6 +30,7 @@ const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 ThumbnailView::ThumbnailView()
 : m_FocusManagerObserverTag(-1)
 , m_Controls(NULL)
+, m_TrackOnlyMainWindows(true)
 {
 }
 
@@ -172,6 +173,22 @@ void ThumbnailView::OnFocusChanged()
       || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D)
   {
     return;
+  }
+
+  if (m_TrackOnlyMainWindows)
+  {
+    /// Track only render windows of the main display (aka. editor).
+    mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+    if (!renderWindowPart)
+    {
+      return;
+    }
+
+    QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+    if (!mainWindow || mainWindow->GetRenderer() != focusedRenderer)
+    {
+      return;
+    }
   }
 
   m_Controls->m_RenderWindow->TrackRenderer(focusedRenderer);
