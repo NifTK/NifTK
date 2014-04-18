@@ -194,7 +194,20 @@ bool niftkSingleViewerWidget::IsSelected() const
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetSelectedRenderWindow() const
 {
-  return m_MultiWidget->GetSelectedRenderWindow();
+  QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
+  if (!selectedRenderWindow)
+  {
+    std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
+    if (!visibleRenderWindows.empty())
+    {
+      selectedRenderWindow = visibleRenderWindows[0];
+    }
+    else
+    {
+      selectedRenderWindow = m_MultiWidget->GetRenderWindow1();
+    }
+  }
+  return selectedRenderWindow;
 }
 
 
