@@ -217,6 +217,8 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
+  /// The vector contains the cursor positions in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are undefined.
   const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
   /// \brief Sets the positions of the cursor in the 2D render windows normalised with the render window size.
@@ -225,6 +227,8 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
+  /// The vector should contain the cursor positions in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are not used by this function.
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
@@ -237,9 +241,16 @@ public:
   void SetScaleFactor(int windowIndex, double scaleFactor);
 
   /// \brief Gets the scale factors of the 2D render windows.
+  ///
+  /// The vector contains the scale factors in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are undefined.
+  ///
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the scale factor of the render windows to the given values.
+  ///
+  /// The vector should contain the scale factors in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are not used by this function.
   void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).

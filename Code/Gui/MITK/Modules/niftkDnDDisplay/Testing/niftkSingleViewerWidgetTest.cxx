@@ -899,6 +899,16 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  /// Note:
+  /// The GetCursorPositions/SetCursorPositions functions return/accept
+  /// a vector of size 3, but they consider only the elements that
+  /// correspond to the actually visible render windows.
+  /// Accordingly, the CursorPositionChanged and ScaleFactorChanged
+  /// signals are emitted only for the visible windows.
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  d->StateTester->Clear();
+
   ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
   std::vector<mitk::Vector2D> cursorPositions = d->Viewer->GetCursorPositions();
@@ -911,10 +921,20 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
 
   QVERIFY(Self::Equals(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL), cursorPositions[MIDAS_ORIENTATION_AXIAL]));
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QVERIFY(d->StateTester->GetQtSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  d->StateTester->Clear();
+
+  /// Note:
+  /// Changing the window layout may change the orientation, selected render window,
+  /// scale factors, cursor and scale factor binding, but we do not want to test
+  /// those changes here. Therefore, we retrieve the current state again, and change
+  /// just the cursor positions.
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.52;
   cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.72;
@@ -925,10 +945,14 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
 
   QVERIFY(Self::Equals(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL), cursorPositions[MIDAS_ORIENTATION_SAGITTAL]));
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QVERIFY(d->StateTester->GetQtSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_CORONAL][0] = 0.33;
   cursorPositions[MIDAS_ORIENTATION_CORONAL][1] = 0.23;
@@ -942,6 +966,10 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.44;
   cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.74;
@@ -953,10 +981,14 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QVERIFY(d->StateTester->GetQtSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.25;
   cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.35;
@@ -968,11 +1000,14 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.16;
   cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.56;
@@ -984,11 +1019,14 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
 
   cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.27;
   cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.37;
@@ -1002,9 +1040,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  /// Note that the CursorPositionChanged and ScaleFactorChanged signals are emitted only for the visible windows.
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 }
 
 

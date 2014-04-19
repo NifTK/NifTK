@@ -2197,7 +2197,7 @@ void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D
   bool updateWasBlocked = this->BlockUpdate(true);
   for (std::size_t i = 0; i < 3; ++i)
   {
-    if (cursorPositions[i] != m_CursorPositions[i])
+    if (m_RenderWindows[i]->isVisible() && cursorPositions[i] != m_CursorPositions[i])
     {
       m_CursorPositions[i] = cursorPositions[i];
       m_CursorPositionHasChanged[i] = true;
@@ -2278,12 +2278,17 @@ const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
+  assert(scaleFactors.size() == 3);
+
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_ScaleFactors = scaleFactors;
-  for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+  for (std::size_t i = 0; i < 3; ++i)
   {
-    m_ScaleFactorHasChanged[windowIndex] = true;
+    if (m_RenderWindows[i]->isVisible() && scaleFactors[i] != m_ScaleFactors[i])
+    {
+      m_ScaleFactors[i] = scaleFactors[i];
+      m_ScaleFactorHasChanged[i] = true;
+    }
   }
 
   this->BlockUpdate(updateWasBlocked);
