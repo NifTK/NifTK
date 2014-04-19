@@ -1,0 +1,13 @@
+Unexpected cursor position after changing window layout:
+
+Steps to reproduce:
+1. Open an image and drag it onto the DnD display.
+2. Press 'w' to switch to sagittal.
+3. Press 'q' to switch to axial.
+4. Press 'e' to switch back to coronal.
+5. Press 'q'. So far so good.
+6. Press 'w'.
+
+At this point the image should be in the centre, just like after step 2.
+But it is not. If you resize the window, the image is moved to the
+expected, central position.
