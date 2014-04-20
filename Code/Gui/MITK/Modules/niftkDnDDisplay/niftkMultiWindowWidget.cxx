@@ -872,58 +872,55 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
 
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  int width = m_RenderWindowSizes[windowIndex][0];
-  int height = m_RenderWindowSizes[windowIndex][1];
+  double windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+  double windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-  double widthInMm;
-  double heightInMm;
+  double regionWidthInMm;
+  double regionHeightInMm;
   if (windowIndex == AXIAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
   }
   else if (windowIndex == SAGITTAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
   else if (windowIndex == CORONAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
   if (scaleFactor == -1.0)
   {
-    double sfh = widthInMm / width;
-    double sfv = heightInMm / height;
+    double sfh = regionWidthInMm / windowWidthInPx;
+    double sfv = regionHeightInMm / windowHeightInPx;
     scaleFactor = sfh > sfv ? sfh : sfv;
   }
 
-  int w = static_cast<int>(widthInMm / scaleFactor);
-  int h = static_cast<int>(heightInMm / scaleFactor);
-
-  /// TODO
-  /// The display geometry should not be manipulated here.
-  /// Instead, we should set the state of the viewer (e.g. m_CursorPositions)
-  /// and the display geometry should be set accordingly when the update
-  /// is unblocked (this->BlockUpdate(false)).
-
-  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+  double regionWidthInPx = regionWidthInMm / scaleFactor;
+  double regionHeightInPx = regionHeightInMm / scaleFactor;
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-  displayGeometry->SetScaleFactor(scaleFactor);
 
-  mitk::Vector2D origin;
-  origin[0] = (w - width) / 2.0;
-  origin[1] = (h - height) / 2.0;
-  displayGeometry->SetOriginInMM(origin * scaleFactor);
+  mitk::Point2D selectedPosition2D;
+  displayGeometry->Map(m_SelectedPosition, selectedPosition2D);
 
-  this->UpdateCursorPosition(windowIndex);
+  mitk::Vector2D selectedPosition2DInPx;
+  selectedPosition2DInPx[0] = selectedPosition2D[0] / scaleFactor;
+  selectedPosition2DInPx[1] = selectedPosition2D[1] / scaleFactor;
+
+  mitk::Vector2D originInPx;
+  originInPx[0] = (regionWidthInPx - windowWidthInPx) / 2.0;
+  originInPx[1] = (regionHeightInPx - windowHeightInPx) / 2.0;
+
+  m_CursorPositions[windowIndex][0] = (selectedPosition2DInPx[0] - originInPx[0]) / windowWidthInPx;
+  m_CursorPositions[windowIndex][1] = (selectedPosition2DInPx[1] - originInPx[1]) / windowHeightInPx;
+  m_CursorPositionHasChanged[windowIndex] = true;
   m_ScaleFactors[windowIndex] = scaleFactor;
   m_ScaleFactorHasChanged[windowIndex] = true;
-
-  this->BlockDisplayEvents(displayEventsWereBlocked);
 
   this->BlockUpdate(updateWasBlocked);
 }
