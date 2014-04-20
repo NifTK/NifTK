@@ -298,9 +298,22 @@ public:
   void SetScaleFactorBinding(bool scaleFactorBinding);
 
   /// \brief Blocks the update of the widget.
+  ///
   /// Returns true if the update was already blocked, otherwise false.
-  /// This render windows are updated and the "pending" signals are sent out
-  /// when the update is unblocked.
+  /// While the update is blocked, the state changes are recorded but the render windows are
+  /// not updated and no signals are sent out. The render windows are updated and the "pending"
+  /// signals are sent out when the update is unblocked.
+  /// The purpose of this function is to avoid unnecessary updates and signals when a serious of
+  /// operations needs to be performed on the viewer as a single atomic unit, e.g. changing
+  /// layout and setting positions.
+  /// After the required state of the viewer is set, the previous blocking state should be restored.
+  ///
+  /// Pattern of usage:
+  ///
+  ///     bool updateWasBlocked = multiWidget->BlockUpdate(true);
+  ///     ... set the required state ...
+  ///     multiWidget->BlockUpdate(updateWasBlocked);
+  ///
   bool BlockUpdate(bool blocked);
 
   bool BlockDisplayEvents(bool blocked);

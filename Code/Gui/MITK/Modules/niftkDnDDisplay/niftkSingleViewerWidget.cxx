@@ -671,7 +671,7 @@ WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool restoreCursorPositions, bool restoreScaleFactors)
+void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
@@ -717,49 +717,25 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool re
 
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
-    bool windowLayoutInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
-    if (m_RememberSettingsPerWindowLayout && windowLayoutInitialised)
+    if (m_RememberSettingsPerWindowLayout && m_WindowLayoutInitialised[Index(windowLayout)])
     {
-      if (restoreCursorPositions)
-      {
-        m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-      }
-
-      if (restoreScaleFactors)
-      {
-        m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-      }
+      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
+      m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
 
       if (wasSelected)
       {
         m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
       }
 
-      if (restoreCursorPositions)
-      {
-        m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
-      }
-      if (restoreScaleFactors)
-      {
-        m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
-      }
-
-      this->ResetLastPositions();
+      m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
+      m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
     }
     else
     {
       /// If the positions are not remembered for each window layout, we reset them.
-      if (restoreCursorPositions || restoreScaleFactors)
-      {
-        m_MultiWidget->FitRenderWindows();
-      }
-
-      this->ResetLastPositions();
-
-      m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
-      m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
-
-      m_WindowLayoutInitialised[Index(windowLayout)] = true;
+      /// This sets the cursor positions to the window centre (0.5, 0.5) and the
+      /// scale factor such that the image fits the render window.
+      m_MultiWidget->FitRenderWindows();
 
       if (wasSelected)
       {
@@ -773,7 +749,14 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool re
           m_MultiWidget->SetSelectedRenderWindow(visibleRenderWindows[0]);
         }
       }
+
+      m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
+
+      m_WindowLayoutInitialised[Index(windowLayout)] = true;
     }
+
+    this->ResetLastPositions();
 
     m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
@@ -1076,4 +1059,11 @@ void niftkSingleViewerWidget::SetFocus()
   {
     this->setFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkSingleViewerWidget::BlockUpdate(bool blocked)
+{
+  return m_MultiWidget->BlockUpdate(blocked);
 }
