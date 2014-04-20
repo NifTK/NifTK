@@ -265,8 +265,10 @@ public:
   /// \brief Makes the displayed 2D geometries fit the render windows.
   void FitRenderWindows();
 
-  /// \brief Makes the displayed 2D geometry fit the given render window.
-  void FitRenderWindow(int windowIndex);
+  /// \brief Moves the region to the centre of the render window and makes it fit the window.
+  /// If a scale factor is given then the region is moved to the centre and the given scaling is
+  /// applied. Otherwise, the maximal scaling is calculated so that the image fits the window.
+  void FitRenderWindow(int windowIndex, double scaleFactor = -1.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);

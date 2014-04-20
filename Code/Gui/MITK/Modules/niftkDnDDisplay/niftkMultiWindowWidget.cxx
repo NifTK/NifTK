@@ -855,50 +855,7 @@ void niftkMultiWindowWidget::FitRenderWindows()
       {
         if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
         {
-          int width = m_RenderWindowSizes[otherWindowIndex][0];
-          int height = m_RenderWindowSizes[otherWindowIndex][1];
-          double widthInMm;
-          double heightInMm;
-          if (otherWindowIndex == AXIAL)
-          {
-            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-          }
-          else if (otherWindowIndex == SAGITTAL)
-          {
-            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-          }
-          else if (otherWindowIndex == CORONAL)
-          {
-            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-          }
-
-          int w = static_cast<int>(widthInMm / largestScaleFactor);
-          int h = static_cast<int>(heightInMm / largestScaleFactor);
-
-          /// TODO
-          /// The display geometry should not be manipulated here.
-          /// Here we should set the state of the viewer (e.g. m_CursorPositions)
-          /// and the display geometry should be set accordingly when the update
-          /// is unblocked (this->BlockUpdate(false)).
-
-          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-
-          mitk::DisplayGeometry* displayGeometry = m_RenderWindows[otherWindowIndex]->GetRenderer()->GetDisplayGeometry();
-          displayGeometry->SetScaleFactor(largestScaleFactor);
-
-          mitk::Vector2D origin;
-          origin[0] = (w - width) / 2.0;
-          origin[1] = (h - height) / 2.0;
-          displayGeometry->SetOriginInMM(origin * largestScaleFactor);
-
-          this->UpdateCursorPosition(otherWindowIndex);
-          m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
-          m_ScaleFactorHasChanged[otherWindowIndex] = true;
-
-          this->BlockDisplayEvents(displayEventsWereBlocked);
+          this->FitRenderWindow(otherWindowIndex, largestScaleFactor);
         }
       }
     }
@@ -909,15 +866,14 @@ void niftkMultiWindowWidget::FitRenderWindows()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
+void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 {
   assert(windowIndex < 3);
 
+  bool updateWasBlocked = this->BlockUpdate(true);
+
   int width = m_RenderWindowSizes[windowIndex][0];
   int height = m_RenderWindowSizes[windowIndex][1];
-
-  int w = width;
-  int h = height;
 
   double widthInMm;
   double heightInMm;
@@ -937,23 +893,19 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
     heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
-  double sfh = widthInMm / width;
-  double sfv = heightInMm / height;
-  double scaleFactor;
-  if (sfh > sfv)
+  if (scaleFactor == -1.0)
   {
-    h = static_cast<int>(heightInMm / sfh);
-    scaleFactor = sfh;
+    double sfh = widthInMm / width;
+    double sfv = heightInMm / height;
+    scaleFactor = sfh > sfv ? sfh : sfv;
   }
-  else
-  {
-    w = static_cast<int>(widthInMm / sfv);
-    scaleFactor = sfv;
-  }
+
+  int w = static_cast<int>(widthInMm / scaleFactor);
+  int h = static_cast<int>(heightInMm / scaleFactor);
 
   /// TODO
   /// The display geometry should not be manipulated here.
-  /// Here we should set the state of the viewer (e.g. m_CursorPositions)
+  /// Instead, we should set the state of the viewer (e.g. m_CursorPositions)
   /// and the display geometry should be set accordingly when the update
   /// is unblocked (this->BlockUpdate(false)).
 
@@ -972,6 +924,8 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
   m_ScaleFactorHasChanged[windowIndex] = true;
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
