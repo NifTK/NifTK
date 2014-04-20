@@ -855,11 +855,50 @@ void niftkMultiWindowWidget::FitRenderWindows()
       {
         if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
         {
-          mitk::Vector2D cursorPosition;
-          cursorPosition.Fill(0.5);
-          this->SetCursorPosition(otherWindowIndex, cursorPosition);
+          int width = m_RenderWindowSizes[otherWindowIndex][0];
+          int height = m_RenderWindowSizes[otherWindowIndex][1];
+          double widthInMm;
+          double heightInMm;
+          if (otherWindowIndex == AXIAL)
+          {
+            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+          }
+          else if (otherWindowIndex == SAGITTAL)
+          {
+            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
+          else if (otherWindowIndex == CORONAL)
+          {
+            widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
+
+          int w = static_cast<int>(widthInMm / largestScaleFactor);
+          int h = static_cast<int>(heightInMm / largestScaleFactor);
+
+          /// TODO
+          /// The display geometry should not be manipulated here.
+          /// Here we should set the state of the viewer (e.g. m_CursorPositions)
+          /// and the display geometry should be set accordingly when the update
+          /// is unblocked (this->BlockUpdate(false)).
+
+          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+
+          mitk::DisplayGeometry* displayGeometry = m_RenderWindows[otherWindowIndex]->GetRenderer()->GetDisplayGeometry();
+          displayGeometry->SetScaleFactor(largestScaleFactor);
+
+          mitk::Vector2D origin;
+          origin[0] = (w - width) / 2.0;
+          origin[1] = (h - height) / 2.0;
+          displayGeometry->SetOriginInMM(origin * largestScaleFactor);
+
+          this->UpdateCursorPosition(otherWindowIndex);
           m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
           m_ScaleFactorHasChanged[otherWindowIndex] = true;
+
+          this->BlockDisplayEvents(displayEventsWereBlocked);
         }
       }
     }
@@ -872,7 +911,7 @@ void niftkMultiWindowWidget::FitRenderWindows()
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
 {
-  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+  assert(windowIndex < 3);
 
   int width = m_RenderWindowSizes[windowIndex][0];
   int height = m_RenderWindowSizes[windowIndex][1];
@@ -880,8 +919,8 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
   int w = width;
   int h = height;
 
-  double widthInMm = width;
-  double heightInMm = height;
+  double widthInMm;
+  double heightInMm;
   if (windowIndex == AXIAL)
   {
     widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
@@ -918,6 +957,8 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
   /// and the display geometry should be set accordingly when the update
   /// is unblocked (this->BlockUpdate(false)).
 
+  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
   displayGeometry->SetScaleFactor(scaleFactor);
 
@@ -926,9 +967,9 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
   origin[1] = (h - height) / 2.0;
   displayGeometry->SetOriginInMM(origin * scaleFactor);
 
+  this->UpdateCursorPosition(windowIndex);
   m_ScaleFactors[windowIndex] = scaleFactor;
   m_ScaleFactorHasChanged[windowIndex] = true;
-  this->UpdateCursorPosition(windowIndex);
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
 }
