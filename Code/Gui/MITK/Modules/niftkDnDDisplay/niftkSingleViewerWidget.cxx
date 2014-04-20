@@ -685,7 +685,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool re
 
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
-    bool wasSelected = this->IsSelected();
+    bool wasSelected = m_MultiWidget->IsSelected();
     QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
@@ -748,22 +748,18 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool re
     }
     else
     {
-      /// If the positions are not remembered for each window layout,
-      /// we reset them.
-//      if (!hasBeenInitialised)
+      /// If the positions are not remembered for each window layout, we reset them.
+      if (restoreCursorPositions || restoreScaleFactors)
       {
-        if (restoreCursorPositions || restoreScaleFactors)
-        {
-          m_MultiWidget->FitRenderWindows();
-        }
-
-        this->ResetLastPositions();
-
-        m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
-        m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
-
-        m_WindowLayoutInitialised[Index(windowLayout)] = true;
+        m_MultiWidget->FitRenderWindows();
       }
+
+      this->ResetLastPositions();
+
+      m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
+
+      m_WindowLayoutInitialised[Index(windowLayout)] = true;
 
       if (wasSelected)
       {
