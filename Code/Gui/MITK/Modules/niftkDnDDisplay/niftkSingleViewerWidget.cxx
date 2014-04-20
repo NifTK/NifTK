@@ -520,6 +520,21 @@ void niftkSingleViewerWidget::RequestUpdate()
 
 
 //-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::ResetLastPositions()
+{
+  m_LastSelectedPositions.clear();
+  m_LastSelectedPositionTimes.clear();
+  m_LastCursorPositions.clear();
+  m_LastCursorPositionTimes.clear();
+
+  m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
+  m_LastSelectedPositionTimes.push_back(QTime::currentTime());
+  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
+  m_LastCursorPositionTimes.push_back(QTime::currentTime());
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
 {
   assert(timeGeometry);
@@ -534,16 +549,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      m_LastSelectedPositions.clear();
-      m_LastSelectedPositionTimes.clear();
-      m_LastCursorPositions.clear();
-      m_LastCursorPositionTimes.clear();
-
-      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
-      m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
-      m_LastCursorPositionTimes.push_back(QTime::currentTime());
-
+      this->ResetLastPositions();
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -585,16 +591,7 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeG
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      m_LastSelectedPositions.clear();
-      m_LastSelectedPositionTimes.clear();
-      m_LastCursorPositions.clear();
-      m_LastCursorPositionTimes.clear();
-
-      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
-      m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
-      m_LastCursorPositionTimes.push_back(QTime::currentTime());
-
+      this->ResetLastPositions();
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -674,7 +671,7 @@ WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool dontSetCursorPositions, bool dontSetScaleFactors)
+void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool restoreCursorPositions, bool restoreScaleFactors)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
@@ -694,7 +691,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
-      m_CursorPositions[Index(m_WindowLayout)] = m_LastCursorPositions.back();
+      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
@@ -723,12 +720,12 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     bool windowLayoutInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
     if (m_RememberSettingsPerWindowLayout && windowLayoutInitialised)
     {
-      if (!dontSetCursorPositions)
+      if (restoreCursorPositions)
       {
         m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       }
 
-      if (!dontSetScaleFactors)
+      if (restoreScaleFactors)
       {
         m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
       }
@@ -738,25 +735,16 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
       }
 
-      if (!dontSetCursorPositions)
+      if (restoreCursorPositions)
       {
         m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       }
-      if (!dontSetScaleFactors)
+      if (restoreScaleFactors)
       {
         m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
       }
 
-      m_LastSelectedPositions.clear();
-      m_LastSelectedPositionTimes.clear();
-      m_LastCursorPositions.clear();
-      m_LastCursorPositionTimes.clear();
-
-      //      m_LastSelectedPositions.push_back(m_SelectedPositions[Index(windowLayout)]);
-      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
-      m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCursorPositions.push_back(m_CursorPositions[Index(windowLayout)]);
-      m_LastCursorPositionTimes.push_back(QTime::currentTime());
+      this->ResetLastPositions();
     }
     else
     {
@@ -764,20 +752,12 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       /// we reset them.
 //      if (!hasBeenInitialised)
       {
-        if (!dontSetCursorPositions || !dontSetScaleFactors)
+        if (restoreCursorPositions || restoreScaleFactors)
         {
           m_MultiWidget->FitRenderWindows();
         }
 
-        m_LastSelectedPositions.clear();
-        m_LastSelectedPositionTimes.clear();
-        m_LastCursorPositions.clear();
-        m_LastCursorPositionTimes.clear();
-
-        m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
-        m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-        m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
-        m_LastCursorPositionTimes.push_back(QTime::currentTime());
+        this->ResetLastPositions();
 
         m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
         m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
@@ -1043,7 +1023,7 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
   int doubleClickInterval = QApplication::doubleClickInterval();
   QTime doubleClickTime = currentTime;
 
-  while (m_LastSelectedPositions.size() > 1 && m_LastSelectedPositionTimes.back().msecsTo(currentTime) <= doubleClickInterval)
+  while (m_LastSelectedPositions.size() > 1 && m_LastSelectedPositionTimes.back().msecsTo(currentTime) < doubleClickInterval)
   {
     doubleClickTime = m_LastSelectedPositionTimes.back();
     m_LastSelectedPositions.pop_back();
@@ -1057,7 +1037,16 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     m_LastCursorPositionTimes.pop_back();
   }
 
+  bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+
+  /// Restore the selected position and cursor positions from before the double clicking.
+  m_MultiWidget->SetSelectedPosition(m_LastSelectedPositions.back());
+  m_MultiWidget->SetCursorPositions(m_LastCursorPositions.back());
+
   this->SetWindowLayout(nextWindowLayout);
+
+  m_MultiWidget->BlockUpdate(updateWasBlocked);
+
   emit WindowLayoutChanged(this, nextWindowLayout);
 
   return true;

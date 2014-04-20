@@ -219,7 +219,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
-  void SetWindowLayout(WindowLayout windowLayout, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
+  void SetWindowLayout(WindowLayout windowLayout, bool restoreCursorPositions = true, bool restoreScaleFactors = true);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   const mitk::Point3D& GetSelectedPosition() const;
@@ -402,6 +402,13 @@ private:
 
   /// \brief Used to move either anterior/posterior by a certain number of slices.
   bool MoveAnteriorPosterior(int slices);
+
+  /// \brief Resets the last few remembered selected and cursor positions.
+  /// These positions are remembered so that if you double click to toggle between single and
+  /// multiple window layout, the position changing side-effect of the double clicking can be
+  /// un-done, and the positions can be restored from the time before the double clicking.
+  /// This function clears the previous remembered positions and remembers the actual positions.
+  void ResetLastPositions();
 
   mitk::DataStorage::Pointer m_DataStorage;
   mitk::RenderingManager::Pointer m_RenderingManager;
