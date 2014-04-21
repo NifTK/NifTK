@@ -399,9 +399,9 @@ MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::FitToDisplay()
+void niftkSingleViewerWidget::FitToDisplay(double scaleFactor)
 {
-  m_MultiWidget->FitRenderWindows();
+  m_MultiWidget->FitRenderWindows(scaleFactor);
 }
 
 

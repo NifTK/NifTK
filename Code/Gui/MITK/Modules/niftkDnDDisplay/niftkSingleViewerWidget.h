@@ -281,8 +281,15 @@ public:
   /// \brief Sets the flag that controls whether the scale factors are bound across the render windows.
   void SetScaleFactorBinding(bool bound);
 
-  /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
-  void FitToDisplay();
+  /// \brief Moves the displayed regions to the centre of the 2D render windows and scales them, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the maximal zooming is
+  /// applied, using which each region fits into their window, also considering whether the scale
+  /// factors are bound across the windows.
+  /// If a positive scale factor is given then the scale factor of each render window is set
+  /// to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The regions are moved to the middle of the render windows in each cases.
+  void FitToDisplay(double scaleFactor = 0.0);
 
   /// \brief Returns pointers to the widget planes.
   std::vector<mitk::DataNode*> GetWidgetPlanes();
