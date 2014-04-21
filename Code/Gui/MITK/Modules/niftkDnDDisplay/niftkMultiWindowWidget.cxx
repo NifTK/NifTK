@@ -788,9 +788,10 @@ void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  if (!m_ScaleFactorBinding)
+  if (!m_CursorPositionBinding && !m_ScaleFactorBinding)
   {
-    /// If the scale factors are not bound, we simply fit each 'world' into their window.
+    /// If neither the cursor positions nor the scale factors are not bound,
+    /// we simply fit each displayed region into their window.
     for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
       if (m_RenderWindows[windowIndex]->isVisible())
@@ -799,8 +800,44 @@ void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
       }
     }
   }
+  else if (m_CursorPositionBinding && !m_ScaleFactorBinding)
+  {
+    /// If the cursor positions are bound but the scale factors are not,
+    /// first we fit the active window then synchronise the positions
+    /// in the other windows to it.
+
+    /// Work out a window so that if the cursor positions are bound then
+    /// we can synchronise the other two render windows to it.
+    /// This will be the selected render window, or the first visible window
+    /// if no window is selected.
+    int windowIndex = m_SelectedWindowIndex;
+    if (windowIndex == -1 || windowIndex == THREE_D)
+    {
+      if (m_RenderWindows[CORONAL]->isVisible())
+      {
+        windowIndex = CORONAL;
+      }
+      else if (m_RenderWindows[SAGITTAL]->isVisible())
+      {
+        windowIndex = SAGITTAL;
+      }
+      else if (m_RenderWindows[AXIAL]->isVisible())
+      {
+        windowIndex = AXIAL;
+      }
+    }
+    if (windowIndex >= 0 && windowIndex < 3)
+    {
+      this->FitRenderWindow(windowIndex, scaleFactor);
+      this->SynchroniseCursorPositions();
+    }
+  }
   else
   {
+    /// If the scale factors are bound then after moving the regions to the center
+    /// the cursors will be aligned. Therefore we do not need to handle differently
+    /// if the cursors are bound or not.
+
     if (scaleFactor == 0.0)
     {
       /// If the scale factors are bound and no scale factor is given then
