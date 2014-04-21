@@ -733,8 +733,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     else
     {
       /// If the positions are not remembered for each window layout, we reset them.
-      /// This sets the cursor positions to the window centre (0.5, 0.5) and the
-      /// scale factor such that the image fits the render window.
+      /// This moves the displayed region to the middle of the render window and the
+      /// sets the scale factor so that the image fits the render window.
       m_MultiWidget->FitRenderWindows();
 
       if (wasSelected)

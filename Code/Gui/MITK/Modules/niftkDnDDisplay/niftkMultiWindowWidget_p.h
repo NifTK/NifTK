@@ -262,13 +262,24 @@ public:
   /// \brief Sets the magnification of a render window to the given value.
   void SetMagnification(int windowIndex, double magnification);
 
-  /// \brief Makes the displayed 2D geometries fit the render windows.
-  void FitRenderWindows();
+  /// \brief Moves the displayed regions to the centre of the 2D render windows and scales them, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the maximal zooming is
+  /// applied, using which each region fits into their window, also considering whether the scale
+  /// factors are bound across the windows.
+  /// If a positive scale factor is given then the scale factor of each render window is set
+  /// to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The regions are moved to the middle of the render windows in each cases.
+  void FitRenderWindows(double scaleFactor = 0.0);
 
-  /// \brief Moves the region to the centre of the render window and makes it fit the window.
-  /// If a scale factor is given then the region is moved to the centre and the given scaling is
-  /// applied. Otherwise, the maximal scaling is calculated so that the image fits the window.
-  void FitRenderWindow(int windowIndex, double scaleFactor = -1.0);
+  /// \brief Moves the displayed region to the centre of the 2D render window and scales it, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the region is scaled to
+  /// the maximum size that fits into the render window.
+  /// If a positive scale factor is given then the region is scaled to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The region is moved to the middle of the render window in each cases.
+  /// The function c
+  void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);

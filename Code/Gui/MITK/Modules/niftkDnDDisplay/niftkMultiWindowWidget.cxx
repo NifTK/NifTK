@@ -784,7 +784,7 @@ const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows(
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindows()
+void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -795,68 +795,61 @@ void niftkMultiWindowWidget::FitRenderWindows()
     {
       if (m_RenderWindows[windowIndex]->isVisible())
       {
-        this->FitRenderWindow(windowIndex);
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
     }
   }
   else
   {
-    /// If the scale factors are bound, first we find the window that requires the largest scaling...
-    double largestScaleFactor = -1.0;
-    int windowWithLargestScaleFactor = -1;
-
-    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+    if (scaleFactor == 0.0)
     {
-      if (m_RenderWindows[windowIndex]->isVisible())
+      /// If the scale factors are bound and no scale factor is given then
+      /// we need to find the window that requires the largest scaling.
+      for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
       {
-        int width = m_RenderWindowSizes[windowIndex][0];
-        int height = m_RenderWindowSizes[windowIndex][1];
+        if (m_RenderWindows[windowIndex]->isVisible())
+        {
+          int windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+          int windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-        double widthInMm = width;
-        double heightInMm = height;
-        if (windowIndex == AXIAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-        }
-        else if (windowIndex == SAGITTAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
-        else if (windowIndex == CORONAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
+          double regionWidthInMm;
+          double regionHeightInMm;
+          if (windowIndex == AXIAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+          }
+          else if (windowIndex == SAGITTAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
+          else if (windowIndex == CORONAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
 
-        double widthMmPerPx = widthInMm / width;
-        double heightMmPerPx = heightInMm / height;
-        if (widthMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = widthMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
-        }
-        if (heightMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = heightMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
+          double sfh = regionWidthInMm / windowWidthInPx;
+          double sfv = regionHeightInMm / windowHeightInPx;
+          if (sfh > scaleFactor)
+          {
+            scaleFactor = sfh;
+          }
+          if (sfv > scaleFactor)
+          {
+            scaleFactor = sfv;
+          }
         }
       }
     }
 
-    /// ... then we 'fit' that window ...
-    if (windowWithLargestScaleFactor != -1)
+    /// Finally, we apply the same scale factor to every render window.
+    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
-      this->FitRenderWindow(windowWithLargestScaleFactor);
-
-      /// ... and finally, apply the same scale factor for the other render windows.
-      for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
+      if (m_RenderWindows[windowIndex]->isVisible())
       {
-        if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
-        {
-          this->FitRenderWindow(otherWindowIndex, largestScaleFactor);
-        }
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
     }
   }
@@ -893,11 +886,15 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
     regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
-  if (scaleFactor == -1.0)
+  if (scaleFactor == 0.0)
   {
     double sfh = regionWidthInMm / windowWidthInPx;
     double sfv = regionHeightInMm / windowHeightInPx;
     scaleFactor = sfh > sfv ? sfh : sfv;
+  }
+  else if (scaleFactor == -1.0)
+  {
+    scaleFactor = m_ScaleFactors[windowIndex];
   }
 
   double regionWidthInPx = regionWidthInMm / scaleFactor;
@@ -916,11 +913,20 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
   originInPx[0] = (regionWidthInPx - windowWidthInPx) / 2.0;
   originInPx[1] = (regionHeightInPx - windowHeightInPx) / 2.0;
 
-  m_CursorPositions[windowIndex][0] = (selectedPosition2DInPx[0] - originInPx[0]) / windowWidthInPx;
-  m_CursorPositions[windowIndex][1] = (selectedPosition2DInPx[1] - originInPx[1]) / windowHeightInPx;
-  m_CursorPositionHasChanged[windowIndex] = true;
-  m_ScaleFactors[windowIndex] = scaleFactor;
-  m_ScaleFactorHasChanged[windowIndex] = true;
+  mitk::Vector2D cursorPosition;
+  cursorPosition[0] = (selectedPosition2DInPx[0] - originInPx[0]) / windowWidthInPx;
+  cursorPosition[1] = (selectedPosition2DInPx[1] - originInPx[1]) / windowHeightInPx;
+  if (cursorPosition != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPosition;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
+
+  if (scaleFactor != m_ScaleFactors[windowIndex])
+  {
+    m_ScaleFactors[windowIndex] = scaleFactor;
+    m_ScaleFactorHasChanged[windowIndex] = true;
+  }
 
   this->BlockUpdate(updateWasBlocked);
 }
