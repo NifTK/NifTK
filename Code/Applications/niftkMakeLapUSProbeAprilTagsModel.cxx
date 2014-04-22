@@ -34,8 +34,12 @@
 
 void ConvertGridPointToCyclinderPoint(int pointId,
                                       int lengthCounter, int widthCounter,
-                                      double offsetXInMillimetres, double offsetYInMillimetres,
+                                      double originX,
+                                      double originY,
+                                      double borderSizeInMillimetres,
                                       double tagSizeInMillimetres,
+                                      double offsetXInMillimetres,
+                                      double offsetYInMillimetres,
                                       double radius,
                                       vtkPoints *points,
                                       vtkDoubleArray *normals,
@@ -44,6 +48,7 @@ void ConvertGridPointToCyclinderPoint(int pointId,
                                       )
 {
   double pi = 3.14159265358979;
+
   double xOnGrid, yOnGrid, proportionOfCircumference, angleAroundCircumferenceInRadians;
   double xOnPolarDiagram, yOnPolarDiagram;
   double cylinderCentre[3];
@@ -51,18 +56,22 @@ void ConvertGridPointToCyclinderPoint(int pointId,
   double cylinderNormal[3];
   double circumferenceInMillimetres = pi * radius * 2.0;
 
-  xOnGrid = offsetXInMillimetres + widthCounter*tagSizeInMillimetres;
-  yOnGrid = offsetYInMillimetres + lengthCounter*tagSizeInMillimetres;
-  proportionOfCircumference = xOnGrid / circumferenceInMillimetres;
+  xOnGrid = originX + widthCounter*tagSizeInMillimetres + borderSizeInMillimetres + offsetXInMillimetres;
+  yOnGrid = originY + lengthCounter*tagSizeInMillimetres + borderSizeInMillimetres + offsetYInMillimetres;
+
+  proportionOfCircumference = (xOnGrid - originX)/ circumferenceInMillimetres;
   angleAroundCircumferenceInRadians = 2*pi*proportionOfCircumference;
+
   xOnPolarDiagram = cos(angleAroundCircumferenceInRadians);
   yOnPolarDiagram = sin(angleAroundCircumferenceInRadians);
-  cylinderPoint[0] = -radius*(xOnPolarDiagram-1);
+
+  cylinderPoint[0] = -radius*(xOnPolarDiagram);
   cylinderPoint[1] = radius*(yOnPolarDiagram);
   cylinderPoint[2] = yOnGrid;
-  cylinderCentre[0] = radius;
+  cylinderCentre[0] = 0;
   cylinderCentre[1] = 0;
   cylinderCentre[2] = yOnGrid;
+
   niftk::CalculateUnitVector(cylinderPoint, cylinderCentre, cylinderNormal);
 
   points->InsertNextPoint(cylinderPoint[0], cylinderPoint[1], cylinderPoint[2]);
@@ -81,7 +90,7 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
-  if ( outputTrackingModel.length() == 0
+  if (    outputTrackingModel.length() == 0
        || outputVisualisationModel.length() == 0
        || textureMap.length() == 0
        )
@@ -97,11 +106,10 @@ int main(int argc, char** argv)
   double radius = diameter / 2.0;
   double circumference = pi*diameter;
   double actualTagSizeIncludingBorder = outputTagSize*9/static_cast<double>(7);
-  double blockSizeInMillimetres = actualTagSizeIncludingBorder/static_cast<double>(9);
   double borderSizeInMillimetres = actualTagSizeIncludingBorder / static_cast<double>(9);
-  double cornerOffsetInMillimetres = blockSizeInMillimetres * 7;
-  double centreOffsetInMillimetres = blockSizeInMillimetres * 3.5;
-  double spacingBetweenTags = blockSizeInMillimetres * 2;
+  double cornerOffsetInMillimetres = borderSizeInMillimetres * 7;
+  double centreOffsetInMillimetres = borderSizeInMillimetres * 3.5;
+  double spacingBetweenTags = borderSizeInMillimetres * 2;
 
   double printerDotsPerMillimetre = (printerDotsPerInch / mmPerInch);
   int numberOfAvailablePixelsAlongLength = (int)(length*printerDotsPerMillimetre);
@@ -112,8 +120,8 @@ int main(int argc, char** argv)
   int numberTagsAlongWidth = std::floor(static_cast<double>(maxCircumferenceInMillimetres)/static_cast<double>(actualTagSizeIncludingBorder));
   int numberOfPixelsRequiredAlongWidth = numberTagsAlongWidth*inputTagSize;
 
-  double minXInMillimetres = 0 - borderSizeInMillimetres;
-  double minYInMillimetres = 0 - borderSizeInMillimetres;
+  double minXInMillimetres = 0 - ((numberTagsAlongWidth*actualTagSizeIncludingBorder)/2.0);
+  double minYInMillimetres = 0;
   double maxXInMillimetres = minXInMillimetres + (numberTagsAlongWidth*actualTagSizeIncludingBorder);
   double maxYInMillimetres = minYInMillimetres + (numberOfTagsAlongLength*actualTagSizeIncludingBorder);
 
@@ -125,7 +133,7 @@ int main(int argc, char** argv)
   std::cout << "number of tags along length    = " << numberOfTagsAlongLength << std::endl;
   std::cout << "circumference in millimetres   = " << maxCircumferenceInMillimetres << std::endl;
   std::cout << "number of tags along width     = " << numberTagsAlongWidth << std::endl;
-  std::cout << "block size in millimetres      = " << blockSizeInMillimetres << std::endl;
+  std::cout << "border size in millimetres     = " << borderSizeInMillimetres << std::endl;
   std::cout << "corner offset in millimetres   = " << cornerOffsetInMillimetres << std::endl;
   std::cout << "centre offset in millimetres   = " << centreOffsetInMillimetres << std::endl;
   std::cout << "spacing between tags (mm)      = " << spacingBetweenTags << std::endl;
@@ -141,7 +149,7 @@ int main(int argc, char** argv)
   // 2. We also want surface normals.
   // 3. Z axis = along the probe.
   // 4. Right hand coordinate system.
-  // 5. Origin is the corner of the first tag.... NOT including the white border.
+  // 5. Origin is the centre of the probe, aligned with the face .... i.e. NOT including the white border.
 
   vtkSmartPointer<vtkPolyData> polyData = vtkPolyData::New();
 
@@ -168,11 +176,11 @@ int main(int argc, char** argv)
     {
       int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
 
-      ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, centreOffsetInMillimetres, centreOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, 0,                         0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, cornerOffsetInMillimetres, 0,                         actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, cornerOffsetInMillimetres, cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, 0,                         cornerOffsetInMillimetres, actualTagSizeIncludingBorder, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, centreOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         0,                         radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, 0,                         radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, cornerOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         cornerOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
     }
   }
 
@@ -195,26 +203,26 @@ int main(int argc, char** argv)
   if (outputVisualisationModel.size() > 0)
   {
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkCylinderSource::New();
-    cylinderSource->SetCenter(0, cyclinderLength/2.0 - borderSizeInMillimetres, 0);
+    cylinderSource->SetCenter(0, cyclinderLength/2.0, 0);
     cylinderSource->SetRadius(radius);
     cylinderSource->SetHeight(cyclinderLength);
     cylinderSource->SetResolution(360);
     cylinderSource->SetCapping(false);
-
+/*
     vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
     triangleFilter->SetInputConnection(cylinderSource->GetOutputPort());
 
     vtkSmartPointer<vtkLinearSubdivisionFilter> subdivide = vtkLinearSubdivisionFilter::New();
     subdivide->SetInputConnection(triangleFilter->GetOutputPort());
     subdivide->SetNumberOfSubdivisions(7);
-
+*/
     vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
     transform->Identity();
     transform->RotateX(90);
-    transform->Translate(radius, 0, 0);
+    transform->Translate(0, 0, 0);
 
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(subdivide->GetOutput());
+    transformFilter->SetInput(cylinderSource->GetOutput());
     transformFilter->SetTransform(transform);
     transformFilter->Update();
 
@@ -238,7 +246,7 @@ int main(int argc, char** argv)
 
         // Need to measure distance around curvature of probe.
         double norm[2] = {0, 0};
-        norm[0] = p[0] - radius;
+        norm[0] = p[0];
         norm[1] = p[1];
         double distance = sqrt(norm[0]*norm[0] + norm[1]*norm[1]);
         norm[0] /= distance;
@@ -256,15 +264,14 @@ int main(int argc, char** argv)
         // z axis in space, maps to y axis in texture map. So distance along z = how far along texture map we travel in y direction.
         double dy = p[2];
 
-        if (dx > ((numberTagsAlongWidth*actualTagSizeIncludingBorder) - borderSizeInMillimetres)
-            )
+        if (dx > (numberTagsAlongWidth*actualTagSizeIncludingBorder))
         {
           dx = 1*borderSizeInMillimetres;
           dy = 1*borderSizeInMillimetres;
         }
 
-        double tx = (dx-minXInMillimetres) / (maxXInMillimetres - minXInMillimetres);
-        double ty = -(dy-minYInMillimetres) / (maxYInMillimetres - minYInMillimetres);
+        double tx = dx / (maxXInMillimetres - minXInMillimetres);
+        double ty = -dy / (maxYInMillimetres - minYInMillimetres);
 
         // Convert to texture coord.
         tc->InsertNextTuple2(tx, ty);
