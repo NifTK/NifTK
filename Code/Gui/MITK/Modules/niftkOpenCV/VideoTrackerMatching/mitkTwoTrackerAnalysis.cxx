@@ -125,7 +125,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       
       GetTrackerMatrix(indexes[i],&timingError,1);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( abs(timingError) < 50e6 )
       {
         SortedTracker1.push_back(m_TrackingMatrices22.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,1).inv());
@@ -147,7 +147,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       
       GetTrackerMatrix(indexes[i],&timingError,0);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( abs(timingError) < 50e6 )
       {
         SortedTracker1.push_back(m_TrackingMatrices11.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0).inv());
@@ -202,7 +202,7 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
       
       GetTrackerMatrix(i,&timingError,1);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( abs(timingError) < 50e6 )
       {
         cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
         cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
@@ -223,7 +223,7 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
       long long int timingError;
       GetTrackerMatrix(i,&timingError,0);
 
-      if ( fabs(timingError) < 50e6 )
+      if ( abs(timingError) < 50e6 )
       {
         cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
         cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
@@ -256,7 +256,7 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
       
         GetTrackerMatrix(i,&timingError,1);
 
-        if ( fabs(timingError) < 50e6 )
+        if ( abs(timingError) < 50e6 )
         {
           cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
           cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
@@ -279,7 +279,7 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
         long long int timingError;
         GetTrackerMatrix(i,&timingError,0);
 
-        if ( fabs(timingError) < 50e6 )
+        if ( abs(timingError) < 50e6 )
         {
           cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
           cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
