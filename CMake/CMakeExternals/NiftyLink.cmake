@@ -38,10 +38,17 @@ if(BUILD_IGI)
         GIT_TAG ${revision_tag}
       )
     else ()
-      niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
+      # Must Not Leave Tarballs on Web Server
+      # niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
+      # set(NiftyLink_location_options
+      #   URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
+      #   URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
+      # )
+      #
+      # But we still want a specific version
       set(NiftyLink_location_options
-        URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
-        URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
+        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
+        GIT_TAG ${NIFTK_VERSION_NIFTYLINK}
       )
     endif ()
 
