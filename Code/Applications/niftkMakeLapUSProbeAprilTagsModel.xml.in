@@ -26,6 +26,13 @@
       <label>Output Visualisation Model</label>
       <channel>output</channel>
     </file>
+    <file fileExtensions="*.vtk">
+      <name>outputPhotoConsistencyModel</name>
+      <longflag>outputPhotoConsistencyModel</longflag>
+      <description>Output VTK file (vtkPolyData) for photo-consistency.</description>
+      <label>Output Photoconsistency Model</label>
+      <channel>output</channel>
+    </file>
     <file fileExtensions="*.png,*.jpg">
       <name>textureMap</name>
       <longflag>textureMap</longflag>
@@ -79,7 +86,7 @@
       <longflag>outputTagSize</longflag>
       <description>The required phyiscal size of the April Tag in millimetres.</description>
       <label>Output Tag Size</label>
-      <default>3</default>
+      <default>4</default>
       <constraints>
         <minimum>1</minimum>
         <maximum>10</maximum>
@@ -94,6 +101,30 @@
       <default>848</default>
       <constraints>
         <minimum>1</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>pointsAlongLength</name>
+      <longflag>pointsAlongLength</longflag>
+      <description>The number of points along the length of the probe in the visualisation model.</description>
+      <label>Points Along Length</label>
+      <default>100</default>
+      <constraints>
+        <minimum>2</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>pointsAroundCircumference</name>
+      <longflag>pointsAroundCircumference</longflag>
+      <description>The number of points around the circumference of the probe in the visualisation model.</description>
+      <label>Points Around Circumference</label>
+      <default>361</default>
+      <constraints>
+        <minimum>6</minimum>
         <maximum>10000</maximum>
         <step>1</step>
       </constraints>

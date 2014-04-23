@@ -32,6 +32,7 @@
 #include <vtkImageData.h>
 #include <vtkSphereSource.h>
 #include <vtkGlyph3D.h>
+#include <vtkProperty.h>
 
 /**
  * \brief Renders a VTK model using Texture Mapping.
@@ -69,6 +70,7 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkTexture> text = vtkTexture::New();
   text->SetInputConnection(imageReader->GetOutputPort());
+  text->InterpolateOn();
 
   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkPolyDataMapper::New();
   mapper->SetInputConnection(modelReader->GetOutputPort());
@@ -77,6 +79,7 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkActor> actor = vtkActor::New();
   actor->SetMapper(mapper);
   actor->SetTexture(text);
+  actor->GetProperty()->BackfaceCullingOn();
 
   vtkSmartPointer<vtkSphereSource> sphereForGlyph = vtkSphereSource::New();
   sphereForGlyph->SetRadius(0.25);
@@ -93,6 +96,7 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkActor> trackingModelActor = vtkActor::New();
   trackingModelActor->SetMapper(trackingModelMapper);
+  trackingModelActor->GetProperty()->BackfaceCullingOn();
 
   vtkSmartPointer<vtkRenderer> renderer = vtkRenderer::New();
   vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
