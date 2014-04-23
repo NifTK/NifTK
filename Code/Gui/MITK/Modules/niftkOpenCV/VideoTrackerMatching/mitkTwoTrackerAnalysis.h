@@ -65,6 +65,7 @@ protected:
   TwoTrackerAnalysis& operator=(const TwoTrackerAnalysis&); // Purposefully not implemented.
 
 private:
+  long long int m_TimingTolerance;        // the maximum allowable timing error
 };
 
 
