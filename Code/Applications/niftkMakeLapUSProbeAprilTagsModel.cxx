@@ -29,8 +29,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkTriangleFilter.h>
-#include <vtkLinearSubdivisionFilter.h>
-#include <vtkDecimatePolylineFilter.h>
+#include <vtkDecimatePro.h>
+#include <vtkCleanPolyData.h>
 
 void ConvertGridPointToCyclinderPoint(int pointId,
                                       int lengthCounter, int widthCounter,
@@ -92,6 +92,7 @@ int main(int argc, char** argv)
 
   if (    outputTrackingModel.length() == 0
        || outputVisualisationModel.length() == 0
+       || outputPhotoConsistencyModel.length() == 0
        || textureMap.length() == 0
        )
   {
@@ -304,12 +305,12 @@ int main(int argc, char** argv)
 
       if (dx > (numberTagsAlongWidth*actualTagSizeIncludingBorder))
       {
-        dx = 1*borderSizeInMillimetres;
-        dy = 1*borderSizeInMillimetres;
+        dx = 2*borderSizeInMillimetres;
+        dy = 2*borderSizeInMillimetres;
       }
 
-      double tx = dx / (maxXInMillimetres - minXInMillimetres);
-      double ty = -dy / (maxYInMillimetres - minYInMillimetres);
+      double tx =  (dx) / (maxXInMillimetres - minXInMillimetres);
+      double ty =  1- ((dy) / (maxYInMillimetres - minYInMillimetres));
 
       // Convert to texture coord.
       tc->InsertNextTuple2(tx, ty);
@@ -321,8 +322,33 @@ int main(int argc, char** argv)
     polyData2->GetPointData()->SetNormals(normals2);
     polyData2->GetPointData()->SetTCoords(tc);
 
+    // We output 2 versions of this poly data.
+    // 1. Photoconsistency model
+    //   ideal, surface normals at each point of quad, as computed above.
+    //   merge points to remove duplicates.
+    // 2. Visualisation model:
+    //   each normal, for each corner of quad must point the same way for texture mapping purposes.
+    //   convert to triangles for faster rendering.
+
+    // Photo-consistency model.
+    vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkCleanPolyData::New();
+    cleanFilter->SetInput(polyData2);
+
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
-    writer->SetInput(polyData2);
+    writer->SetInput(cleanFilter->GetOutput());
+    writer->SetFileName(outputPhotoConsistencyModel.c_str());
+    writer->Update();
+
+    std::cout << "written photo consistency model to = " << outputPhotoConsistencyModel << std::endl;
+
+    vtkSmartPointer<vtkPolyDataNormals> normalsFilter = vtkPolyDataNormals::New();
+    normalsFilter->SetInput(polyData2);
+    normalsFilter->FlipNormalsOn();
+
+    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
+    triangleFilter->SetInput(normalsFilter->GetOutput());
+
+    writer->SetInput(triangleFilter->GetOutput());
     writer->SetFileName(outputVisualisationModel.c_str());
     writer->Update();
 
