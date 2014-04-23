@@ -79,7 +79,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(int)), SLOT(OnSelectedRenderWindowChanged(int)));
+  this->connect(m_MultiWidget, SIGNAL(FocusChanged(int)), SLOT(OnFocusChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
@@ -109,14 +109,14 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   emit NodesDropped(this, renderWindow, nodes);
-  m_MultiWidget->SetSelected(true);
+  m_MultiWidget->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int windowIndex)
+void niftkSingleViewerWidget::OnFocusChanged(int windowIndex)
 {
-  emit SelectedRenderWindowChanged(MIDASOrientation(windowIndex));
+  emit FocusChanged(windowIndex);
 }
 
 
@@ -179,36 +179,23 @@ void niftkSingleViewerWidget::OnScaleFactorBindingChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSelected(bool selected)
+bool niftkSingleViewerWidget::IsFocused() const
 {
-  m_MultiWidget->SetSelected(selected);
+  return m_MultiWidget->IsFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsSelected() const
+void niftkSingleViewerWidget::SetFocused()
 {
-  return m_MultiWidget->IsSelected();
+  m_MultiWidget->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
-  if (!selectedRenderWindow)
-  {
-    std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
-    if (!visibleRenderWindows.empty())
-    {
-      selectedRenderWindow = visibleRenderWindows[0];
-    }
-    else
-    {
-      selectedRenderWindow = m_MultiWidget->GetRenderWindow1();
-    }
-  }
-  return selectedRenderWindow;
+  return m_MultiWidget->GetSelectedRenderWindow();
 }
 
 
@@ -369,32 +356,10 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 //-----------------------------------------------------------------------------
 MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
-  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-
-  QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-  if (!renderWindow)
-  {
-    std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
-    if (!visibleRenderWindows.empty())
-    {
-      renderWindow = visibleRenderWindows[0];
-    }
-  }
-
-  if (renderWindow == this->GetAxialWindow())
-  {
-    orientation = MIDAS_ORIENTATION_AXIAL;
-  }
-  else if (renderWindow == this->GetSagittalWindow())
-  {
-    orientation = MIDAS_ORIENTATION_SAGITTAL;
-  }
-  else if (renderWindow == this->GetCoronalWindow())
-  {
-    orientation = MIDAS_ORIENTATION_CORONAL;
-  }
-
-  return orientation;
+  /// Note:
+  /// This line exploits that the order of orientations are the same and
+  /// THREE_D equals to MIDAS_ORIENTATION_UNKNOWN.
+  return MIDASOrientation(m_MultiWidget->GetSelectedWindowIndex());
 }
 
 
@@ -685,15 +650,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
-    bool wasSelected = m_MultiWidget->IsSelected();
-    QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
-
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
       m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
-      m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
       m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactorBinding();
     }
@@ -721,12 +682,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     {
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-
-      if (wasSelected)
-      {
-        m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
-      }
-
       m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
     }
@@ -736,20 +691,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       /// This moves the displayed region to the middle of the render window and the
       /// sets the scale factor so that the image fits the render window.
       m_MultiWidget->FitRenderWindows();
-
-      if (wasSelected)
-      {
-        /// If this viewer was selected before the window layout change, we select a window in the new layout.
-        /// If the previously selected window is still visible, we do not do anything.
-        /// Otherwise, we select the first visible window.
-        std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
-        if (!visibleRenderWindows.empty()
-            && std::find(visibleRenderWindows.begin(), visibleRenderWindows.end(), selectedRenderWindow) == visibleRenderWindows.end())
-        {
-          m_MultiWidget->SetSelectedRenderWindow(visibleRenderWindows[0]);
-        }
-      }
-
       m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
       m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
 
@@ -912,21 +853,15 @@ void niftkSingleViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLay
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::MoveAnterior()
 {
-  return this->MoveAnteriorPosterior(+1);
+  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), +1);
+  return true;
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::MovePosterior()
 {
-  return this->MoveAnteriorPosterior(-1);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::MoveAnteriorPosterior(int slices)
-{
-  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), slices);
+  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), -1);
   return true;
 }
 
@@ -1044,21 +979,6 @@ bool niftkSingleViewerWidget::ToggleCursorVisibility()
   emit CursorVisibilityChanged(this, visible);
 
   return true;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetFocus()
-{
-  QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-  if (renderWindow)
-  {
-    renderWindow->setFocus();
-  }
-  else
-  {
-    this->setFocus();
-  }
 }
 
 

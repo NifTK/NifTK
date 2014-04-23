@@ -115,6 +115,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+    m_MultiWindowWidget->SetFocused();
   }
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
@@ -139,6 +140,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+    m_MultiWindowWidget->SetFocused();
   }
 
   /// Note:
@@ -150,7 +152,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
 
 //  bool result = Superclass::ScrollOneUp(action, interactionEvent);
 
-  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+  int orientation = this->GetOrientation(renderer);
 
   m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, +1);
 
@@ -171,6 +173,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+    m_MultiWindowWidget->SetFocused();
   }
 
   /// Note:
@@ -182,7 +185,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
 
 //  bool result = Superclass::ScrollOneDown(action, interactionEvent);
 
-  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+  int orientation = this->GetOrientation(renderer);
 
   m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, -1);
 
@@ -217,6 +220,7 @@ bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, Interactio
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+    m_MultiWindowWidget->SetFocused();
   }
 
   bool result = this->Init(action, interactionEvent);
@@ -251,6 +255,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+    m_MultiWindowWidget->SetFocused();
   }
 
   /// Note that the zoom focus must always be the selected position,

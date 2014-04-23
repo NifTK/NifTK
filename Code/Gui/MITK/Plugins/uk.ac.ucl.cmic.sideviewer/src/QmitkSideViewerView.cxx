@@ -131,7 +131,7 @@ void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void QmitkSideViewerView::SetFocus()
 {
-  m_SideViewerWidget->m_Viewer->SetSelected(true);
+  m_SideViewerWidget->m_Viewer->SetFocused();
 }
 
 

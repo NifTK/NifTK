@@ -397,7 +397,7 @@ void QmitkSingleViewerEditor::SetFocus()
 {
   if (d->m_SingleViewer != 0)
   {
-    d->m_SingleViewer->SetFocus();
+    d->m_SingleViewer->SetFocused();
   }
 }
 

@@ -37,9 +37,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <mitkFocusManager.h>
 #include <mitkGeometry3D.h>
-#include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 
 #include <niftkSingleViewerWidget.h>
@@ -62,7 +60,6 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_VisibilityManager(visibilityManager)
 , m_DataStorage(dataStorage)
 , m_RenderingManager(renderingManager)
-, m_FocusManagerObserverTag(0)
 , m_SelectedViewerIndex(0)
 , m_DefaultViewerRows(defaultViewerRows)
 , m_DefaultViewerColumns(defaultViewerColumns)
@@ -196,14 +193,6 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateChanged(bool)));
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
-
-  // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
-  itk::SimpleMemberCommand<niftkMultiViewerWidget>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<niftkMultiViewerWidget>::New();
-  onFocusChangedCommand->SetCallbackFunction( this, &niftkMultiViewerWidget::OnFocusChanged );
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
@@ -224,11 +213,6 @@ niftkMultiViewerControls* niftkMultiViewerWidget::CreateControlPanel(QWidget* pa
 //-----------------------------------------------------------------------------
 niftkMultiViewerWidget::~niftkMultiViewerWidget()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
   this->EnableLinkedNavigation(false);
 }
 
@@ -252,6 +236,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 
   m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(viewer, SIGNAL(FocusChanged(int)), SLOT(OnFocusChanged(int)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
@@ -517,7 +502,6 @@ void niftkMultiViewerWidget::SetSegmentationModeEnabled(bool enabled)
     m_ControlPanel->SetMultiViewerControlsEnabled(false);
     this->SetViewerNumber(1, 1, false);
     this->SetSelectedViewerByIndex(0);
-    this->UpdateFocusManagerToSelectedViewer();
   }
   else
   {
@@ -707,7 +691,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   {
     selectedViewer = m_Viewers[selectedViewerIndex];
   }
-  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
+//  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
@@ -932,9 +916,6 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
-  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first viewer already has focus.
-  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
-
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
     bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
@@ -1056,43 +1037,26 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetFocus()
+bool niftkMultiViewerWidget::IsFocused()
 {
-  this->GetSelectedViewer()->SetFocus();
+  return this->GetSelectedViewer()->IsFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnFocusChanged()
+void niftkMultiViewerWidget::SetFocused()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  this->GetSelectedViewer()->SetFocused();
+}
 
-  int selectedViewerIndex = -1;
-  QmitkRenderWindow* focusedRenderWindow = NULL;
 
-  if (focusedRenderer)
-  {
-    for (int i = 0; i < m_Viewers.size(); i++)
-    {
-      const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewers[i]->GetRenderWindows();
-      for (int j = 0; j < viewerRenderWindows.size(); ++j)
-      {
-        if (focusedRenderer == viewerRenderWindows[j]->GetRenderer())
-        {
-          selectedViewerIndex = i;
-          focusedRenderWindow = viewerRenderWindows[j];
-          break;
-        }
-      }
-      if (focusedRenderWindow)
-      {
-        break;
-      }
-    }
-  }
-
-  this->SetSelectedRenderWindow(selectedViewerIndex, focusedRenderWindow);
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnFocusChanged(int windowIndex)
+{
+  niftkSingleViewerWidget* selectedViewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  int selectedViewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), selectedViewer) - m_Viewers.end();
+  QmitkRenderWindow* selectedRenderWindow = selectedViewer->GetRenderWindows()[windowIndex];
+  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
 }
 
 
@@ -1224,12 +1188,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
     this->SetWindowLayout(windowLayout);
-
-    // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
-    // (or indeed anything that's listening to the FocusManager).
-    this->UpdateFocusManagerToSelectedViewer();
   }
-
 }
 
 
@@ -1239,7 +1198,6 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
   m_ControlPanel->SetWindowLayout(windowLayout);
   m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
   m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
-  this->UpdateFocusManagerToSelectedViewer();
 
   foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
   {
@@ -1380,23 +1338,6 @@ void niftkMultiViewerWidget::OnShow3DWindowChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::UpdateFocusManagerToSelectedViewer()
-{
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  if (QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow())
-  {
-    mitk::BaseRenderer* selectedRenderer = selectedRenderWindow->GetRenderer();
-    if (selectedRenderer != focusedRenderer)
-    {
-      focusManager->SetFocused(selectedRenderer);
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::ToggleCursorVisibility()
 {
   this->SetCursorVisible(!this->IsCursorVisible());
@@ -1521,19 +1462,7 @@ MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 int niftkMultiViewerWidget::GetSelectedViewerIndex() const
 {
-  int selectedViewerIndex = m_SelectedViewerIndex;
-  if (selectedViewerIndex < 0 || selectedViewerIndex >= m_Viewers.size())
-  {
-    // Default back to first viewer.
-    selectedViewerIndex = 0;
-  }
-
-  // Note the following specification.
-  assert(selectedViewerIndex >= 0);
-  assert(selectedViewerIndex < m_Viewers.size());
-
-  // Return a valid selected viewer index.
-  return selectedViewerIndex;
+  return m_SelectedViewerIndex;
 }
 
 
@@ -1702,16 +1631,13 @@ void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
     {
       niftkSingleViewerWidget* viewer = m_Viewers[i];
 
-      int nodesInWindow = m_VisibilityManager->GetNodesInViewer(i);
-
       if (viewer == selectedViewer)
       {
-        viewer->SetSelected(nodesInWindow > 0);
+        viewer->SetFocused();
         viewer->EnableLinkedNavigation(true);
       }
       else
       {
-        viewer->SetSelected(false);
         viewer->EnableLinkedNavigation(false);
       }
     }

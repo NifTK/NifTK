@@ -80,9 +80,8 @@ public:
       int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
-  /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically,
-  /// and we don't create or own the niftkMultiViewerVisibilityManager, so the remaining thing to
-  /// do is to disconnect from the mitk::FocusManager.
+  /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
+  /// Note that we don't create or own the niftkMultiViewerVisibilityManager.
   virtual ~niftkMultiViewerWidget();
 
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
@@ -193,9 +192,6 @@ public:
   /// \brief Returns the orientation from the window layout, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
   MIDASOrientation GetOrientation() const;
 
-  // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
-  void OnFocusChanged();
-
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   niftkSingleViewerWidget* GetSelectedViewer() const;
 
@@ -236,11 +232,11 @@ public:
    */
   virtual bool IsLinkedNavigationEnabled() const;
 
-  /**
-   * \brief To be called from the editor, to set the focus to the currently selected
-   * viewer, or the first viewer.
-   */
-  virtual void SetFocus();
+  /// \brief Tells if the selected viewer is focused.
+  bool IsFocused();
+
+  /// \brief Sets the focus to the selected viewer.
+  void SetFocused();
 
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
@@ -302,6 +298,9 @@ protected slots:
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief Called when one of the viewers receives the focus.
+  void OnFocusChanged(int windowIndex);
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
@@ -372,9 +371,6 @@ private:
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
 
-  /// \brief Updates focus manager to auto-focus on the 'currently selected' viewer.
-  void UpdateFocusManagerToSelectedViewer();
-
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry(bool isBoundNow);
 
@@ -405,7 +401,6 @@ private:
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.
-  unsigned long m_FocusManagerObserverTag;
   int m_SelectedViewerIndex;
   int m_DefaultViewerRows;
   int m_DefaultViewerColumns;
