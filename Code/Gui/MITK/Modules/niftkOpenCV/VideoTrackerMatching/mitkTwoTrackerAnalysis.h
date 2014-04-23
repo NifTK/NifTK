@@ -53,9 +53,9 @@ public:
   void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 );
 
   /**
-   * check it's a rigid body
+   * check it's a rigid body, need to have an estimate of w2ToW1 first
    */
-  bool CheckRigidBody ( );
+  bool CheckRigidBody (cv::Mat  w2ToW1 , bool CullOutliers = false );
 
 protected:
   TwoTrackerAnalysis();

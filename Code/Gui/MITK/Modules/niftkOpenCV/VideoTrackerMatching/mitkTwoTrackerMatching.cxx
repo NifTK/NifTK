@@ -300,7 +300,7 @@ void TwoTrackerMatching::FlipMats1 ( )
     return;
   }
   m_TrackingMatrices11.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
-  m_TrackingMatrices21.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
+  m_TrackingMatrices21.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices21.m_TrackingMatrices);
 }
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::FlipMats2 ( )
@@ -315,8 +315,8 @@ void TwoTrackerMatching::FlipMats2 ( )
     MITK_WARN << "Called flip mat 2 but already done";
     return;
   }
-  m_TrackingMatrices22.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
-  m_TrackingMatrices11.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
+  m_TrackingMatrices22.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices22.m_TrackingMatrices);
+  m_TrackingMatrices12.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices12.m_TrackingMatrices);
 }
 
 

@@ -172,7 +172,8 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   MITK_INFO << "Handeye finished ";
   MITK_INFO << "Translational Residual " << residuals [1];
   MITK_INFO << "Rotational Residual " << residuals [0];
-
+  
+  CheckRigidBody ( w2ToW1, true );
   fout_t2ToT1 << t2ToT1;
   fout_w2ToW1 << w2ToW1;
 
@@ -180,7 +181,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   fout_w2ToW1.close();
 }
 //---------------------------------------------------------------------------
-bool TwoTrackerAnalysis::CheckRigidBody()
+bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
 {
   if ( !m_Ready )
   {
@@ -203,7 +204,7 @@ bool TwoTrackerAnalysis::CheckRigidBody()
 
       if ( fabs(timingError) < 50e6 )
       {
-        cv::Mat tracker1 = m_TrackingMatrices22.m_TrackingMatrices[i];
+        cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
         cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
         distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
       }
@@ -225,7 +226,7 @@ bool TwoTrackerAnalysis::CheckRigidBody()
       if ( fabs(timingError) < 50e6 )
       {
         cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
-        cv::Mat tracker2 = GetTrackerMatrix(i,NULL,0);
+        cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
         distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
       }
       else
@@ -234,9 +235,67 @@ bool TwoTrackerAnalysis::CheckRigidBody()
       }
     }
   }
+  std::ofstream fout_distanceCheck;
+  fout_distanceCheck.open("distanceCheck.txt");
+  for ( int i = 0 ; i < distances.size() ; i++ )
+  {
+    fout_distanceCheck << i << " " << distances[i]<< std::endl;
+  }
+  fout_distanceCheck.close();
+  double meanError = mitk::Mean(distances);
+  double stdDev = mitk::StdDev(distances);
+  MITK_INFO << "Mean Distance " << meanError ;
+  MITK_INFO << "Standard Deviation " << stdDev ;
+  if ( CullOutliers )
+  {
+    if ( ! Tracker2ToTracker1 ) 
+    {
+      for ( unsigned int i = 0; i < m_TrackingMatrices22.m_TrackingMatrices.size() ; i ++  )
+      {
+        long long int timingError;
+      
+        GetTrackerMatrix(i,&timingError,1);
 
-  MITK_INFO << "Mean Distance " << mitk::Mean(distances);
-  MITK_INFO << "Standard Deviation " << mitk::StdDev(distances);
+        if ( fabs(timingError) < 50e6 )
+        {
+          cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
+          cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
+          double distance = mitk::DistanceBetweenMatrices(tracker1, tracker2);
+          if ( ( distance > ( meanError + 2 * stdDev )  ) || ( distance < ( meanError - 2 * stdDev) ) ) 
+          {
+            m_TrackingMatrices21.m_TimingErrors[i] = 1000e6;
+          }
+        }
+        else
+        {
+          MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+        }
+      }
+    }
+    else
+    {
+      for ( unsigned int i = 0; i < m_TrackingMatrices11.m_TrackingMatrices.size() ; i ++  )
+      {
+        long long int timingError;
+        GetTrackerMatrix(i,&timingError,0);
+
+        if ( fabs(timingError) < 50e6 )
+        {
+          cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
+          cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
+          double distance = mitk::DistanceBetweenMatrices(tracker1, tracker2);
+          if ( ( distance > ( meanError + 2 * stdDev )  ) || ( distance < ( meanError - 2 * stdDev) ) ) 
+          {
+            m_TrackingMatrices12.m_TimingErrors[i] = 1000e6;
+          }
+        }
+        else
+        {
+          MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+        }
+      }
+    }
+  }
   return true;
 }
 

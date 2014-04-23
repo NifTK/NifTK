@@ -42,13 +42,13 @@ int main(int argc, char** argv)
     {
       trackerMatcherObject->FlipMats2();
     }
-    trackerMatcherObject->CheckRigidBody();
     if ( TCfileout.length() != 0 )
     {
       trackerMatcherObject->TemporalCalibration(temporalWindowLow, temporalWindowHigh, true, TCfileout);
     }
     if ( HEfileout.length() != 0 ) 
     {
+      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse);
       trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse);
     }
  

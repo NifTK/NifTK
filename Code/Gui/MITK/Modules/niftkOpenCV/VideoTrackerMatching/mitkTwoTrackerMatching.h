@@ -87,10 +87,10 @@ protected:
 
   TrackingMatrices                      m_TrackingMatrices11; //the tracking matrices in directory 1
   TrackingMatrices                      m_TrackingMatrices22;  //the tracking matrices in directory 2
-
-private:
   TrackingMatrices                      m_TrackingMatrices12; //the tracking matrices in directory 2 corresponding with the timestamps in directory 1
   TrackingMatrices                      m_TrackingMatrices21; //the tracking matrices in directory 1 corresponding with the timestamps in directory 2
+
+private:
   
   TrackingMatrixTimeStamps              FindTrackingTimeStamps(std::string directory);
   bool                                  CheckIfDirectoryContainsTrackingMatrices(std::string directory);
