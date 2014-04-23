@@ -177,12 +177,6 @@ public:
   /// \brief Shows or hides the cursor.
   virtual bool ToggleCursorVisibility();
 
-  /// \brief Sets whether the interaction is enabled, and a single viewer.
-  void SetSegmentationModeEnabled(bool enabled);
-
-  /// \brief Gets the flag indicating whether this viewer is currently in segmentation mode, which means a single viewer.
-  bool IsSegmentationModeEnabled() const;
-
   /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
   void SetThumbnailMode(bool enabled);
 
@@ -353,9 +347,6 @@ private:
   /// \brief Gets the index, given a row [0, m_MaxRows - 1] and column [0, m_MaxCols - 1] number.
   int GetViewerIndexFromRowAndColumn(int row, int column) const;
 
-  /// \brief Will look at the default window layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  WindowLayout GetDefaultWindowLayoutForSegmentation() const;
-
   /// \brief Main method to change the number of viewers.
   void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
@@ -406,14 +397,11 @@ private:
   int m_DefaultViewerColumns;
   int m_ViewerRowsInNonThumbnailMode;
   int m_ViewerColumnsInNonThumbnailMode;
-  int m_ViewerRowsBeforeSegmentationMode;
-  int m_ViewerColumnsBeforeSegmentationMode;
   bool m_Show3DWindowIn2x2WindowLayout;
   bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;
-  bool m_SegmentationModeEnabled;
   bool m_LinkedNavigation;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;

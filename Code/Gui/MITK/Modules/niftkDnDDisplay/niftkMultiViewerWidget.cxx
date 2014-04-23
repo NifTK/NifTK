@@ -67,7 +67,6 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_CursorDefaultVisibility(true)
 , m_RememberSettingsPerWindowLayout(false)
 , m_IsThumbnailMode(false)
-, m_SegmentationModeEnabled(false)
 , m_LinkedNavigation(false)
 , m_Magnification(0.0)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
@@ -487,53 +486,6 @@ void niftkMultiViewerWidget::SetThumbnailMode(bool enabled)
 bool niftkMultiViewerWidget::GetThumbnailMode() const
 {
   return m_IsThumbnailMode;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSegmentationModeEnabled(bool enabled)
-{
-  m_SegmentationModeEnabled = enabled;
-
-  if (enabled)
-  {
-    m_ViewerRowsBeforeSegmentationMode = m_ControlPanel->GetViewerRows();
-    m_ViewerColumnsBeforeSegmentationMode = m_ControlPanel->GetViewerColumns();
-    m_ControlPanel->SetMultiViewerControlsEnabled(false);
-    this->SetViewerNumber(1, 1, false);
-    this->SetSelectedViewerByIndex(0);
-  }
-  else
-  {
-    m_ControlPanel->SetMultiViewerControlsEnabled(true);
-    this->SetViewerNumber(m_ViewerRowsBeforeSegmentationMode, m_ViewerColumnsBeforeSegmentationMode, false);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::IsSegmentationModeEnabled() const
-{
-  return m_SegmentationModeEnabled;
-}
-
-
-//-----------------------------------------------------------------------------
-WindowLayout niftkMultiViewerWidget::GetDefaultWindowLayoutForSegmentation() const
-{
-  assert(m_VisibilityManager);
-
-  WindowLayout windowLayout = m_VisibilityManager->GetDefaultWindowLayout();
-
-  if (   windowLayout != WINDOW_LAYOUT_AXIAL
-      && windowLayout != WINDOW_LAYOUT_SAGITTAL
-      && windowLayout != WINDOW_LAYOUT_CORONAL
-     )
-  {
-    windowLayout = WINDOW_LAYOUT_CORONAL;
-  }
-
-  return windowLayout;
 }
 
 
@@ -1189,6 +1141,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   {
     this->SetWindowLayout(windowLayout);
   }
+
 }
 
 
@@ -1627,18 +1580,14 @@ void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
     m_SelectedViewerIndex = selectedViewerIndex;
     niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
 
-    for (int i = 0; i < m_Viewers.size(); i++)
-    {
-      niftkSingleViewerWidget* viewer = m_Viewers[i];
+    selectedViewer->SetFocused();
+    selectedViewer->EnableLinkedNavigation(true);
 
-      if (viewer == selectedViewer)
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer)
       {
-        viewer->SetFocused();
-        viewer->EnableLinkedNavigation(true);
-      }
-      else
-      {
-        viewer->EnableLinkedNavigation(false);
+        otherViewer->EnableLinkedNavigation(false);
       }
     }
 
