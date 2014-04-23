@@ -202,87 +202,127 @@ int main(int argc, char** argv)
 
   if (outputVisualisationModel.size() > 0)
   {
-    vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkCylinderSource::New();
-    cylinderSource->SetCenter(0, cyclinderLength/2.0, 0);
-    cylinderSource->SetRadius(radius);
-    cylinderSource->SetHeight(cyclinderLength);
-    cylinderSource->SetResolution(360);
-    cylinderSource->SetCapping(false);
-/*
-    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
-    triangleFilter->SetInputConnection(cylinderSource->GetOutputPort());
+    // Generate an open ended cylinder, along +z axis.
+    // Note each quad is completely independant.
 
-    vtkSmartPointer<vtkLinearSubdivisionFilter> subdivide = vtkLinearSubdivisionFilter::New();
-    subdivide->SetInputConnection(triangleFilter->GetOutputPort());
-    subdivide->SetNumberOfSubdivisions(7);
-*/
-    vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
-    transform->Identity();
-    transform->RotateX(90);
-    transform->Translate(0, 0, 0);
+    vtkSmartPointer<vtkPolyData> polyData2 = vtkPolyData::New();
 
-    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(cylinderSource->GetOutput());
-    transformFilter->SetTransform(transform);
-    transformFilter->Update();
+    vtkSmartPointer<vtkPoints> points2 = vtkPoints::New();
+    points2->SetDataTypeToDouble();
+    points2->Initialize();
+
+    vtkSmartPointer<vtkIntArray> pointIDArray2 = vtkIntArray::New();
+    pointIDArray2->SetNumberOfComponents(1);
+    pointIDArray2->SetName("Point IDs");
+    pointIDArray2->Initialize();
+
+    vtkSmartPointer<vtkCellArray> quads = vtkCellArray::New();
+    quads->Initialize();
+
+    vtkIdType pointsFor1Quad[4];
+    double cylinderPoint[3];
+
+    for (vtkIdType lengthCounter = 0; lengthCounter < pointsAlongLength-1; lengthCounter++)
+    {
+      for (vtkIdType circumferenceCounter = 0; circumferenceCounter < pointsAroundCircumference-1; circumferenceCounter++)
+      {
+        double thetaAtStartOfQuad = 2*pi*circumferenceCounter/static_cast<double>(pointsAroundCircumference-1);
+        double xOnPolarDiagramStart = cos(thetaAtStartOfQuad);
+        double yOnPolarDiagramStart = sin(thetaAtStartOfQuad);
+
+        double thetaAtEndOfQuad = 2*pi*(circumferenceCounter+1)/static_cast<double>(pointsAroundCircumference-1);
+        double xOnPolarDiagramEnd = cos(thetaAtEndOfQuad);
+        double yOnPolarDiagramEnd = sin(thetaAtEndOfQuad);
+
+        double zStart = cyclinderLength*lengthCounter/static_cast<double>(pointsAlongLength-1);
+        double zEnd = cyclinderLength*(lengthCounter+1)/static_cast<double>(pointsAlongLength-1);
+
+        cylinderPoint[0] = -radius*(xOnPolarDiagramStart);
+        cylinderPoint[1] = radius*(yOnPolarDiagramStart);
+        cylinderPoint[2] = zStart;
+        pointsFor1Quad[0] = points2->InsertNextPoint(cylinderPoint[0], cylinderPoint[1], cylinderPoint[2]);
+        pointIDArray2->InsertNextTuple1(pointsFor1Quad[0]);
+
+        cylinderPoint[0] = -radius*(xOnPolarDiagramEnd);
+        cylinderPoint[1] = radius*(yOnPolarDiagramEnd);
+        cylinderPoint[2] = zStart;
+        pointsFor1Quad[1] = points2->InsertNextPoint(cylinderPoint[0], cylinderPoint[1], cylinderPoint[2]);
+        pointIDArray2->InsertNextTuple1(pointsFor1Quad[1]);
+
+        cylinderPoint[0] = -radius*(xOnPolarDiagramEnd);
+        cylinderPoint[1] = radius*(yOnPolarDiagramEnd);
+        cylinderPoint[2] = zEnd;
+        pointsFor1Quad[2] = points2->InsertNextPoint(cylinderPoint[0], cylinderPoint[1], cylinderPoint[2]);
+        pointIDArray2->InsertNextTuple1(pointsFor1Quad[2]);
+
+        cylinderPoint[0] = -radius*(xOnPolarDiagramStart);
+        cylinderPoint[1] = radius*(yOnPolarDiagramStart);
+        cylinderPoint[2] = zEnd;
+        pointsFor1Quad[3] = points2->InsertNextPoint(cylinderPoint[0], cylinderPoint[1], cylinderPoint[2]);
+        pointIDArray2->InsertNextTuple1(pointsFor1Quad[3]);
+
+        quads->InsertNextCell(4, pointsFor1Quad);
+      }
+    }
+
+    // Now generate texture coords for each point on visualisation model.
+
+    vtkIdType numberPoints = points2->GetNumberOfPoints();
+
+    vtkFloatArray* tc = vtkFloatArray::New();
+    tc->SetNumberOfComponents( 2 );
+    tc->Allocate(numberPoints);
 
     vtkSmartPointer<vtkDoubleArray> normals2 = vtkDoubleArray::New();
     normals2->SetNumberOfComponents(3);
     normals2->SetName("Normals");
     normals2->Initialize();
 
-    if (textureMap.size() > 0)
+    for (vtkIdType counter = 0; counter < numberPoints; counter++)
     {
-      vtkPoints *points = transformFilter->GetOutput()->GetPoints();
-      vtkIdType numberPoints = points->GetNumberOfPoints();
+      double *p = points2->GetPoint(counter);
 
-      vtkFloatArray* tc = vtkFloatArray::New();
-      tc->SetNumberOfComponents( 2 );
-      tc->Allocate(numberPoints);
-
-      for (vtkIdType counter = 0; counter < numberPoints; counter++)
-      {        
-        double *p = points->GetPoint(counter);
-
-        // Need to measure distance around curvature of probe.
-        double norm[2] = {0, 0};
-        norm[0] = p[0];
-        norm[1] = p[1];
-        double distance = sqrt(norm[0]*norm[0] + norm[1]*norm[1]);
-        norm[0] /= distance;
-        norm[1] /= distance;
-        double cosTheta = -norm[0];
-        double theta = acos(cosTheta);
-        if (norm[1] < 0)
-        {
-          theta = pi + (pi-theta);
-        }
-        double portionOfCircle = theta/(2*pi);
-
-        double dx = portionOfCircle*circumference;
-
-        // z axis in space, maps to y axis in texture map. So distance along z = how far along texture map we travel in y direction.
-        double dy = p[2];
-
-        if (dx > (numberTagsAlongWidth*actualTagSizeIncludingBorder))
-        {
-          dx = 1*borderSizeInMillimetres;
-          dy = 1*borderSizeInMillimetres;
-        }
-
-        double tx = dx / (maxXInMillimetres - minXInMillimetres);
-        double ty = -dy / (maxYInMillimetres - minYInMillimetres);
-
-        // Convert to texture coord.
-        tc->InsertNextTuple2(tx, ty);
-        normals2->InsertNextTuple3(norm[0], norm[1], 0);
+      // Need to measure distance around curvature of probe.
+      double norm[2] = {0, 0};
+      norm[0] = p[0];
+      norm[1] = p[1];
+      double distance = sqrt(norm[0]*norm[0] + norm[1]*norm[1]);
+      norm[0] /= distance;
+      norm[1] /= distance;
+      double cosTheta = -norm[0];
+      double theta = acos(cosTheta);
+      if (norm[1] < 0)
+      {
+        theta = pi + (pi-theta);
       }
-      transformFilter->GetOutput()->GetPointData()->SetTCoords(tc);
-      transformFilter->GetOutput()->GetPointData()->SetNormals(normals2);
+      double portionOfCircle = theta/(2*pi);
+
+      double dx = portionOfCircle*circumference;
+
+      // z axis in space, maps to y axis in texture map. So distance along z = how far along texture map we travel in y direction.
+      double dy = p[2];
+
+      if (dx > (numberTagsAlongWidth*actualTagSizeIncludingBorder))
+      {
+        dx = 1*borderSizeInMillimetres;
+        dy = 1*borderSizeInMillimetres;
+      }
+
+      double tx = dx / (maxXInMillimetres - minXInMillimetres);
+      double ty = -dy / (maxYInMillimetres - minYInMillimetres);
+
+      // Convert to texture coord.
+      tc->InsertNextTuple2(tx, ty);
+      normals2->InsertNextTuple3(norm[0], norm[1], 0);
     }
 
+    polyData2->SetPoints(points2);
+    polyData2->SetPolys(quads);
+    polyData2->GetPointData()->SetNormals(normals2);
+    polyData2->GetPointData()->SetTCoords(tc);
+
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
-    writer->SetInput(transformFilter->GetOutput());
+    writer->SetInput(polyData2);
     writer->SetFileName(outputVisualisationModel.c_str());
     writer->Update();
 
