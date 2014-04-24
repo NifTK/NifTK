@@ -1530,18 +1530,14 @@ void niftkMultiViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::EnableLinkedNavigation(bool enabled)
+void niftkMultiViewerWidget::EnableLinkedNavigation(bool linkedNavigation)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  if (enabled && !m_LinkedNavigation)
+  if (linkedNavigation != m_LinkedNavigation)
   {
-    selectedViewer->EnableLinkedNavigation(true);
+    m_LinkedNavigation = linkedNavigation;
+    selectedViewer->EnableLinkedNavigation(linkedNavigation);
   }
-  else if (!enabled && m_LinkedNavigation)
-  {
-    selectedViewer->EnableLinkedNavigation(false);
-  }
-  m_LinkedNavigation = enabled;
 }
 
 

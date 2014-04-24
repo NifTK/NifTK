@@ -421,10 +421,10 @@ void niftkSingleViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStor
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::EnableLinkedNavigation(bool enabled)
+void niftkSingleViewerWidget::EnableLinkedNavigation(bool linkedNavigation)
 {
-  m_MultiWidget->SetWidgetPlanesLocked(!enabled);
-  m_LinkedNavigation = enabled;
+  m_MultiWidget->SetWidgetPlanesLocked(!linkedNavigation);
+  m_LinkedNavigation = linkedNavigation;
 }
 
 
