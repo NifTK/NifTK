@@ -53,8 +53,11 @@ int main(int argc, char** argv)
     }
     if ( HEfileout.length() != 0 ) 
     {
-      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse);
-      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse);
+      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse, CullOnDistance);
+      if ( CullOnDistance )
+      {
+        trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse, false);
+      }
     }
  
     returnStatus = EXIT_SUCCESS;

@@ -90,7 +90,7 @@ void TwoTrackerAnalysis::TemporalCalibration(
 }
 //---------------------------------------------------------------------------
 void TwoTrackerAnalysis::HandeyeCalibration(
-    bool visualise, std::string fileout, int HowManyMatrices)
+    bool visualise, std::string fileout, int HowManyMatrices, bool CullOutliers)
 {
   if ( !m_Ready )
   {
@@ -161,7 +161,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   MITK_INFO << "Translational Residual " << residuals [1];
   MITK_INFO << "Rotational Residual " << residuals [0];
   
-  CheckRigidBody ( w2ToW1, true );
+  CheckRigidBody ( w2ToW1, CullOutliers );
 
   std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
   std::string w2ToW1Out = fileout + "_W2ToW1.4x4";

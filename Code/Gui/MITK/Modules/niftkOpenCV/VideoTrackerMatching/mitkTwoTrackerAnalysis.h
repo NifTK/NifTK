@@ -50,7 +50,7 @@ public:
    * the handeye calibration are optimised to minimise the residual error of the 
    * reconstructed point
    */
-  void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 );
+  void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 , bool CullOutliers = false);
 
   /**
    * check it's a rigid body, need to have an estimate of w2ToW1 first
