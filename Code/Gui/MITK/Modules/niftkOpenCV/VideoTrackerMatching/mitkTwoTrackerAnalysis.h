@@ -57,6 +57,8 @@ public:
    */
   bool CheckRigidBody (cv::Mat  w2ToW1 , bool CullOutliers = false );
 
+  itkSetMacro (TimingTolerance, long long int);
+
 protected:
   TwoTrackerAnalysis();
   virtual ~TwoTrackerAnalysis();

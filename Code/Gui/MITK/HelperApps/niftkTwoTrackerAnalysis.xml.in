@@ -63,6 +63,24 @@
       <label>Flip the matrices in directory 2</label>
       <default>0</default>
     </boolean>
+   
+    <integer>
+      <name>MaxTimingError</name>
+      <longflag>MaxTimingError</longflag>
+      <description>The maximum allowable timing error in milliseconds</description>
+      <label>The maximum allowable timing error in milliseconds</label>
+      <default>50</default>
+    </integer>
+   
+    <boolean>
+      <name>CullOnDistance</name>
+      <longflag>CullOnDistance</longflag>
+      <description>Use rigid body distances to remove outliers</description>
+      <label>Use rigid body distances to remove outliers</label>
+      <default>0</default>
+    </boolean>
+   
+
 
 
  
