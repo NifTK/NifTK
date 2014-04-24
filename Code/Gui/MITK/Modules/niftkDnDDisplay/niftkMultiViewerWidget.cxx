@@ -922,73 +922,6 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow)
-{
-  if (selectedViewerIndex >= 0 && selectedViewerIndex < m_Viewers.size())
-  {
-    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
-
-    // This, to turn off borders on all other windows.
-    this->SetSelectedViewerByIndex(selectedViewerIndex);
-
-    // This to specifically set the border round one sub-pane for if its in 2x2 window layout.
-    if (selectedRenderWindow != NULL)
-    {
-      int numberOfNodes = m_VisibilityManager->GetNodesInViewer(selectedViewerIndex);
-      if (numberOfNodes > 0)
-      {
-        bool signalsWereBlocked = selectedViewer->blockSignals(true);
-        selectedViewer->SetSelectedRenderWindow(selectedRenderWindow);
-        selectedViewer->blockSignals(signalsWereBlocked);
-      }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
-    WindowLayout windowLayout = selectedViewer->GetWindowLayout();
-
-    if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
-    {
-      m_ControlPanel->SetWindowLayout(windowLayout);
-    }
-
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-    {
-      int maxSlice = selectedViewer->GetMaxSlice(orientation);
-      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
-      m_ControlPanel->SetMaxSlice(maxSlice);
-      m_ControlPanel->SetSelectedSlice(selectedSlice);
-    }
-
-    int maxTimeStep = selectedViewer->GetMaxTimeStep();
-    int timeStep = selectedViewer->GetTimeStep();
-    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
-    m_ControlPanel->SetTimeStep(timeStep);
-
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-    {
-      m_ControlPanel->SetMagnificationControlsEnabled(true);
-      double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
-      double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
-      double magnification = selectedViewer->GetMagnification(orientation);
-      m_ControlPanel->SetMinMagnification(minMagnification);
-      m_ControlPanel->SetMaxMagnification(maxMagnification);
-      m_ControlPanel->SetMagnification(magnification);
-    }
-    else
-    {
-      m_ControlPanel->SetMagnificationControlsEnabled(false);
-    }
-
-    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
-  }
-  this->RequestUpdateAll();
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::IsFocused()
 {
   return this->GetSelectedViewer()->IsFocused();
@@ -1006,9 +939,56 @@ void niftkMultiViewerWidget::SetFocused()
 void niftkMultiViewerWidget::OnFocusChanged(int windowIndex)
 {
   niftkSingleViewerWidget* selectedViewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
-  int selectedViewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), selectedViewer) - m_Viewers.end();
-  QmitkRenderWindow* selectedRenderWindow = selectedViewer->GetRenderWindows()[windowIndex];
-  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
+  int selectedViewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), selectedViewer) - m_Viewers.begin();
+
+  if (selectedViewerIndex < m_Viewers.size())
+  {
+    m_SelectedViewerIndex = selectedViewerIndex;
+    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
+
+    selectedViewer->EnableLinkedNavigation(true);
+
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer)
+      {
+        otherViewer->EnableLinkedNavigation(false);
+      }
+    }
+
+    m_ControlPanel->SetWindowLayout(selectedViewer->GetWindowLayout());
+
+    int maxTimeStep = selectedViewer->GetMaxTimeStep();
+    int timeStep = selectedViewer->GetTimeStep();
+    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
+    m_ControlPanel->SetTimeStep(timeStep);
+
+    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      int maxSlice = selectedViewer->GetMaxSlice(orientation);
+      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
+      m_ControlPanel->SetMaxSlice(maxSlice);
+      m_ControlPanel->SetSelectedSlice(selectedSlice);
+
+      m_ControlPanel->SetMagnificationControlsEnabled(true);
+      double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
+      double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
+      double magnification = selectedViewer->GetMagnification(orientation);
+      m_ControlPanel->SetMinMagnification(minMagnification);
+      m_ControlPanel->SetMaxMagnification(maxMagnification);
+      m_ControlPanel->SetMagnification(magnification);
+    }
+    else
+    {
+      m_ControlPanel->SetMagnificationControlsEnabled(false);
+    }
+
+    m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
+
+    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
+  }
 }
 
 
@@ -1569,38 +1549,6 @@ void niftkMultiViewerWidget::EnableLinkedNavigation(bool enabled)
 bool niftkMultiViewerWidget::IsLinkedNavigationEnabled() const
 {
   return m_LinkedNavigation;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
-{
-  if (selectedViewerIndex >= 0 && selectedViewerIndex < m_Viewers.size())
-  {
-    m_SelectedViewerIndex = selectedViewerIndex;
-    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
-
-    selectedViewer->SetFocused();
-    selectedViewer->EnableLinkedNavigation(true);
-
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer)
-      {
-        otherViewer->EnableLinkedNavigation(false);
-      }
-    }
-
-    m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
-    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
-
-    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
-    this->RequestUpdateAll();
-  }
-  else
-  {
-    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedViewerIndex << std::endl;
-  }
 }
 
 

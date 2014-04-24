@@ -350,11 +350,8 @@ private:
   /// \brief Main method to change the number of viewers.
   void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
-  // Called from the QRadioButtons to set the layout.
+  /// \brief Called from the QRadioButtons to set the layout.
   void SetWindowLayout(WindowLayout windowLayout);
-
-  /// \brief If a particular viewer is selected, we need to iterate through all viewers, and make the rest unselected.
-  void SetSelectedViewerByIndex(int index);
 
   /// \brief Creates a new viewer.
   niftkSingleViewerWidget* CreateViewer();
