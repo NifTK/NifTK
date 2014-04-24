@@ -112,7 +112,6 @@ std::vector<std::string> FindVideoFrameMapFiles(const std::string directory)
   return returnStrings;
 }
 
-
 //---------------------------------------------------------------------------
 bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 {
@@ -143,5 +142,45 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   isSuccessful = true;
   return isSuccessful;
 }
+
+
+//---------------------------------------------------------------------------
+bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
+{
+  bool isSuccessful = false;
+  if (outputMatrix.rows != 4)
+  {
+    mitkThrow() << "SaveTrackerMatrix: Matrix does not have 4 rows" << std::endl;
+  }
+  if (outputMatrix.cols != 4)
+  {
+    mitkThrow() << "SaveTrackerMatrix: Matrix does not have 4 columns" << std::endl;
+  }
+
+  std::ofstream fout(filename.c_str());
+  if ( !fout )
+  {
+    MITK_WARN << "SaveTrackerMatrix: Failed to open matrix file " << filename;
+    return isSuccessful;
+  }
+  for ( int row = 0 ; row < 4 ; row ++ )
+  {
+    for ( int col = 0 ; col < 4 ; col ++ ) 
+    {
+      fout << outputMatrix.at<double>(row,col);
+      if ( col < 3 ) 
+      {
+        fout << " ";
+      }
+    }
+    if ( row < 3 ) 
+    {
+      fout << std::endl;
+    }
+  }
+  isSuccessful = true;
+  return isSuccessful;
+}
+
 
 } // end namespace

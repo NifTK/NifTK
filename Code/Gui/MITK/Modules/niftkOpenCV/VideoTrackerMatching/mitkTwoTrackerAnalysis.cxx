@@ -13,6 +13,7 @@
 =============================================================================*/
 #include "mitkTwoTrackerAnalysis.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -97,20 +98,6 @@ void TwoTrackerAnalysis::HandeyeCalibration(
     return;
   }
 
-  std::ofstream fout_t2ToT1;
-  std::ofstream fout_w2ToW1;
-  if ( fileout.length() != 0 ) 
-  {
-    std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
-    std::string w2ToW1Out = fileout + "_W2ToW1.4x4";
-
-    fout_t2ToT1.open(t2ToT1Out.c_str());
-    fout_w2ToW1.open(w2ToW1Out.c_str());
-    if ( !fout_t2ToT1 || ! fout_w2ToW1 )
-    {
-      MITK_WARN << "Failed to open output file for handeye calibration " << fileout;
-    }
-  }
   std::vector<cv::Mat> SortedTracker1;
   std::vector<cv::Mat> SortedTracker2;
   std::vector<int> indexes;
@@ -175,11 +162,16 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   MITK_INFO << "Rotational Residual " << residuals [0];
   
   CheckRigidBody ( w2ToW1, true );
-  fout_t2ToT1 << t2ToT1;
-  fout_w2ToW1 << w2ToW1;
 
-  fout_t2ToT1.close();
-  fout_w2ToW1.close();
+  std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
+  std::string w2ToW1Out = fileout + "_W2ToW1.4x4";
+
+  if ( ( ! mitk::SaveTrackerMatrix(t2ToT1Out, t2ToT1) ) || 
+    ( ! mitk::SaveTrackerMatrix(w2ToW1Out, w2ToW1) ) )
+  {
+    MITK_ERROR << "Error failed to write out results " << t2ToT1Out << " or " << w2ToW1Out;
+  }
+
 }
 //---------------------------------------------------------------------------
 bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
