@@ -2,7 +2,7 @@
   \defgroup uk_ac_ucl_cmic_igisurfacereg uk.ac.ucl.cmic.igisurfacereg  Plugin
   \ingroup CMICPlugins
 
-  \brief Plugin to provide point based registration. 
+  \brief Plugin to provide surface registration. 
   
   Written by Matt Clarkson (m.clarkson@ucl.ac.uk) and Steve Thompson (s.thompson@ucl.ac.uk).a
   

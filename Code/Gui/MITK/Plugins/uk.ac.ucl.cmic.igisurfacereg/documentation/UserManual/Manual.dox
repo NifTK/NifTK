@@ -5,11 +5,34 @@
 
 \section SurfaceRegIntro Introduction
 
-Do an introduction here.
+This plugin provides registration of two data nodes when at least the moving data is 
+a surface. Generally a point set with surface cells and normals defined between the 
+points. Defining the moving data as a surface enable interpolation between points and 
+removal of hidden surfaces. The fixed data may be a surface or a point set. In the current 
+implementation however any surface information in the fixed data is ignored. i.e. the fixed
+data is treated as a point cloud.
+
+The current implementation allows a rigid (6 degree of freedom) transform between the 
+moving and fixed data, using VTK's iterative closest point algorithm. It is intended that 
+other point to surface or surface to surface algorithms may be given an interface here if 
+and when they become available.
+
+The resulting transform is not composed with the moving node by default. To physically move the 
+data the user is required to use the "compose with data" button.
 
 \section SurfaceRegUsage Usage
 
-Put all usage information here.
+The user must select a fixed data node. Only nodes containing points or surfaces are available. 
+The user must select a moving data node. Only nodes containing surfaces are available.
+
+Pressing the calculate button will begin the registration algorithm. When the algorithm 
+completes, the resulting transform is displayed. The user may save the transform to 
+file and/or compose a selection of data nodes with the transform.
+
+Registration residual error may be displayed using the "compute live distance" button.
+
+\subsection SurfaceRegHiddenSurfaceRemoval Hidden Surface Removal
+
 
 \section SurfaceRegPreferences Preferences
 
@@ -17,6 +40,7 @@ Put all information on user configurable preferences here.
 
 \section SurfaceRegReferences References
 
+reference to VTK's ICP.
 Put lots of useful references here, including html links, and DOI references.
 
 */
