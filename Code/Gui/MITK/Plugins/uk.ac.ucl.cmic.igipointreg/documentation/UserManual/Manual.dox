@@ -1,11 +1,20 @@
 /**
 \page uk.ac.ucl.cmic.igipointreg The Point Based Registration View
 
-\image html icon.png "The Icon for the Point Based Registration View"
+\image html PointRegIcon.png "The Icon for the Point Based Registration View"
 
 \section PointRegIntro Introduction
 
-Do an introduction here.
+This view provides registration of two data nodes containing points.
+The current implementation allows a rigid (6 degree of freedom) registration between the
+moving and fixed data.
+Two methods are available. For ordered point sets, where the correspondence between points is known
+a "Procrustes" registration using SVD. For point sets of unequal size or where the 
+correspondence is not known, an implementation of ITK's iterative closest point algorithm is used.
+
+The resulting transform is not composed with the moving node by default. To physically move the
+data the user is required to use the "compose with data" button. The interface allows the transform
+to be composed with any available data node.
 
 \section PointRegUsage Usage
 
