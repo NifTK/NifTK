@@ -1241,58 +1241,30 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
   m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
   this->UpdateFocusManagerToSelectedViewer();
 
-  if (m_ControlPanel->AreViewerWindowLayoutsBound())
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
   {
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    if (otherViewer != selectedViewer && otherViewer->isVisible())
     {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      bool updateWasBlocked = otherViewer->BlockUpdate(true);
+      if (m_ControlPanel->AreViewerWindowLayoutsBound())
       {
-        bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetWindowLayout(windowLayout, m_ControlPanel->AreViewerPositionsBound(), m_ControlPanel->AreViewerCursorsBound(), m_ControlPanel->AreViewerMagnificationsBound());
-        otherViewer->blockSignals(signalsWereBlocked);
+        otherViewer->SetWindowLayout(windowLayout);
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerPositionsBound())
-  {
-    const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerPositionsBound())
       {
-        bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetSelectedPosition(selectedPosition);
-        otherViewer->blockSignals(signalsWereBlocked);
+        otherViewer->SetSelectedPosition(selectedViewer->GetSelectedPosition());
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerCursorsBound())
-  {
-    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerCursorsBound())
       {
-        bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetCursorPositions(cursorPositions);
-        otherViewer->blockSignals(signalsWereBlocked);
+        otherViewer->SetCursorPositions(selectedViewer->GetCursorPositions());
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerMagnificationsBound())
-  {
-    std::vector<double> scaleFactors = selectedViewer->GetScaleFactors();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerMagnificationsBound())
       {
-        bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetScaleFactors(scaleFactors);
-        otherViewer->blockSignals(signalsWereBlocked);
+        otherViewer->SetScaleFactors(selectedViewer->GetScaleFactors());
       }
+      otherViewer->BlockUpdate(updateWasBlocked);
+      otherViewer->blockSignals(signalsWereBlocked);
     }
   }
 }

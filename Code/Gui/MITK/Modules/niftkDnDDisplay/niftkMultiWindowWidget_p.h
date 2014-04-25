@@ -262,11 +262,24 @@ public:
   /// \brief Sets the magnification of a render window to the given value.
   void SetMagnification(int windowIndex, double magnification);
 
-  /// \brief Makes the displayed 2D geometries fit the render windows.
-  void FitRenderWindows();
+  /// \brief Moves the displayed regions to the centre of the 2D render windows and scales them, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the maximal zooming is
+  /// applied, using which each region fits into their window, also considering whether the scale
+  /// factors are bound across the windows.
+  /// If a positive scale factor is given then the scale factor of each render window is set
+  /// to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The regions are moved to the middle of the render windows in each cases.
+  void FitRenderWindows(double scaleFactor = 0.0);
 
-  /// \brief Makes the displayed 2D geometry fit the given render window.
-  void FitRenderWindow(int windowIndex);
+  /// \brief Moves the displayed region to the centre of the 2D render window and scales it, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the region is scaled to
+  /// the maximum size that fits into the render window.
+  /// If a positive scale factor is given then the region is scaled to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The region is moved to the middle of the render window in each cases.
+  /// The function c
+  void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
@@ -298,9 +311,22 @@ public:
   void SetScaleFactorBinding(bool scaleFactorBinding);
 
   /// \brief Blocks the update of the widget.
+  ///
   /// Returns true if the update was already blocked, otherwise false.
-  /// This render windows are updated and the "pending" signals are sent out
-  /// when the update is unblocked.
+  /// While the update is blocked, the state changes are recorded but the render windows are
+  /// not updated and no signals are sent out. The render windows are updated and the "pending"
+  /// signals are sent out when the update is unblocked.
+  /// The purpose of this function is to avoid unnecessary updates and signals when a serious of
+  /// operations needs to be performed on the viewer as a single atomic unit, e.g. changing
+  /// layout and setting positions.
+  /// After the required state of the viewer is set, the previous blocking state should be restored.
+  ///
+  /// Pattern of usage:
+  ///
+  ///     bool updateWasBlocked = multiWidget->BlockUpdate(true);
+  ///     ... set the required state ...
+  ///     multiWidget->BlockUpdate(updateWasBlocked);
+  ///
   bool BlockUpdate(bool blocked);
 
   bool BlockDisplayEvents(bool blocked);

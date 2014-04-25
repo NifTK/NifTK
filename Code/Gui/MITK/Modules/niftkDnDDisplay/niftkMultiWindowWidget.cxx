@@ -784,83 +784,109 @@ const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows(
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindows()
+void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  if (!m_ScaleFactorBinding)
+  if (!m_CursorPositionBinding && !m_ScaleFactorBinding)
   {
-    /// If the scale factors are not bound, we simply fit each 'world' into their window.
+    /// If neither the cursor positions nor the scale factors are not bound,
+    /// we simply fit each displayed region into their window.
     for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
       if (m_RenderWindows[windowIndex]->isVisible())
       {
-        this->FitRenderWindow(windowIndex);
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
+    }
+  }
+  else if (m_CursorPositionBinding && !m_ScaleFactorBinding)
+  {
+    /// If the cursor positions are bound but the scale factors are not,
+    /// first we fit the active window then synchronise the positions
+    /// in the other windows to it.
+
+    /// Work out a window so that if the cursor positions are bound then
+    /// we can synchronise the other two render windows to it.
+    /// This will be the selected render window, or the first visible window
+    /// if no window is selected.
+    int windowIndex = m_SelectedWindowIndex;
+    if (windowIndex == -1 || windowIndex == THREE_D)
+    {
+      if (m_RenderWindows[CORONAL]->isVisible())
+      {
+        windowIndex = CORONAL;
+      }
+      else if (m_RenderWindows[SAGITTAL]->isVisible())
+      {
+        windowIndex = SAGITTAL;
+      }
+      else if (m_RenderWindows[AXIAL]->isVisible())
+      {
+        windowIndex = AXIAL;
+      }
+    }
+    if (windowIndex >= 0 && windowIndex < 3)
+    {
+      this->FitRenderWindow(windowIndex, scaleFactor);
+      this->SynchroniseCursorPositions();
     }
   }
   else
   {
-    /// If the scale factors are bound, first we find the window that requires the largest scaling...
-    double largestScaleFactor = -1.0;
-    int windowWithLargestScaleFactor = -1;
+    /// If the scale factors are bound then after moving the regions to the center
+    /// the cursors will be aligned. Therefore we do not need to handle differently
+    /// if the cursors are bound or not.
 
-    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+    if (scaleFactor == 0.0)
     {
-      if (m_RenderWindows[windowIndex]->isVisible())
+      /// If the scale factors are bound and no scale factor is given then
+      /// we need to find the window that requires the largest scaling.
+      for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
       {
-        int width = m_RenderWindowSizes[windowIndex][0];
-        int height = m_RenderWindowSizes[windowIndex][1];
+        if (m_RenderWindows[windowIndex]->isVisible())
+        {
+          int windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+          int windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-        double widthInMm = width;
-        double heightInMm = height;
-        if (windowIndex == AXIAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-        }
-        else if (windowIndex == SAGITTAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
-        else if (windowIndex == CORONAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
+          double regionWidthInMm;
+          double regionHeightInMm;
+          if (windowIndex == AXIAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+          }
+          else if (windowIndex == SAGITTAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
+          else if (windowIndex == CORONAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
 
-        double widthMmPerPx = widthInMm / width;
-        double heightMmPerPx = heightInMm / height;
-        if (widthMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = widthMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
-        }
-        if (heightMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = heightMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
+          double sfh = regionWidthInMm / windowWidthInPx;
+          double sfv = regionHeightInMm / windowHeightInPx;
+          if (sfh > scaleFactor)
+          {
+            scaleFactor = sfh;
+          }
+          if (sfv > scaleFactor)
+          {
+            scaleFactor = sfv;
+          }
         }
       }
     }
 
-    /// ... then we 'fit' that window ...
-    if (windowWithLargestScaleFactor != -1)
+    /// Finally, we apply the same scale factor to every render window.
+    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
-      this->FitRenderWindow(windowWithLargestScaleFactor);
-
-      /// ... and finally, apply the same scale factor for the other render windows.
-      for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
+      if (m_RenderWindows[windowIndex]->isVisible())
       {
-        if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
-        {
-          mitk::Vector2D cursorPosition;
-          cursorPosition.Fill(0.5);
-          this->SetCursorPosition(otherWindowIndex, cursorPosition);
-          m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
-          m_ScaleFactorHasChanged[otherWindowIndex] = true;
-        }
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
     }
   }
@@ -870,67 +896,76 @@ void niftkMultiWindowWidget::FitRenderWindows()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
+void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 {
-  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+  assert(windowIndex < 3);
 
-  int width = m_RenderWindowSizes[windowIndex][0];
-  int height = m_RenderWindowSizes[windowIndex][1];
+  bool updateWasBlocked = this->BlockUpdate(true);
 
-  int w = width;
-  int h = height;
+  double windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+  double windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-  double widthInMm = width;
-  double heightInMm = height;
+  double regionWidthInMm;
+  double regionHeightInMm;
   if (windowIndex == AXIAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
   }
   else if (windowIndex == SAGITTAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
   else if (windowIndex == CORONAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
-  double sfh = widthInMm / width;
-  double sfv = heightInMm / height;
-  double scaleFactor;
-  if (sfh > sfv)
+  if (scaleFactor == 0.0)
   {
-    h = static_cast<int>(heightInMm / sfh);
-    scaleFactor = sfh;
+    double sfh = regionWidthInMm / windowWidthInPx;
+    double sfv = regionHeightInMm / windowHeightInPx;
+    scaleFactor = sfh > sfv ? sfh : sfv;
   }
-  else
+  else if (scaleFactor == -1.0)
   {
-    w = static_cast<int>(widthInMm / sfv);
-    scaleFactor = sfv;
+    scaleFactor = m_ScaleFactors[windowIndex];
   }
 
-  /// TODO
-  /// The display geometry should not be manipulated here.
-  /// Here we should set the state of the viewer (e.g. m_CursorPositions)
-  /// and the display geometry should be set accordingly when the update
-  /// is unblocked (this->BlockUpdate(false)).
+  double regionWidthInPx = regionWidthInMm / scaleFactor;
+  double regionHeightInPx = regionHeightInMm / scaleFactor;
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-  displayGeometry->SetScaleFactor(scaleFactor);
 
-  mitk::Vector2D origin;
-  origin[0] = (w - width) / 2.0;
-  origin[1] = (h - height) / 2.0;
-  displayGeometry->SetOriginInMM(origin * scaleFactor);
+  mitk::Point2D selectedPosition2D;
+  displayGeometry->Map(m_SelectedPosition, selectedPosition2D);
 
-  m_ScaleFactors[windowIndex] = scaleFactor;
-  m_ScaleFactorHasChanged[windowIndex] = true;
-  this->UpdateCursorPosition(windowIndex);
+  mitk::Vector2D selectedPosition2DInPx;
+  selectedPosition2DInPx[0] = selectedPosition2D[0] / scaleFactor;
+  selectedPosition2DInPx[1] = selectedPosition2D[1] / scaleFactor;
 
-  this->BlockDisplayEvents(displayEventsWereBlocked);
+  mitk::Vector2D originInPx;
+  originInPx[0] = (regionWidthInPx - windowWidthInPx) / 2.0;
+  originInPx[1] = (regionHeightInPx - windowHeightInPx) / 2.0;
+
+  mitk::Vector2D cursorPosition;
+  cursorPosition[0] = (selectedPosition2DInPx[0] - originInPx[0]) / windowWidthInPx;
+  cursorPosition[1] = (selectedPosition2DInPx[1] - originInPx[1]) / windowHeightInPx;
+  if (cursorPosition != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPosition;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
+
+  if (scaleFactor != m_ScaleFactors[windowIndex])
+  {
+    m_ScaleFactors[windowIndex] = scaleFactor;
+    m_ScaleFactorHasChanged[windowIndex] = true;
+  }
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
