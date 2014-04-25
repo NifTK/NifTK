@@ -31,6 +31,8 @@ TwoTrackerMatching::TwoTrackerMatching ()
 : m_Ready(false)
 , m_Lag (0)
 , m_LagIsNegative(false)
+, m_FlipMat1(false)
+, m_FlipMat2(false)
 {}
 
 
@@ -284,6 +286,39 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
 
   return ok;
 }
+//---------------------------------------------------------------------------
+void TwoTrackerMatching::FlipMats1 ( )
+{
+  if ( !m_Ready ) 
+  {
+    MITK_WARN << "Attempted to flip matrix 1 when videoTrackerMatching not initialised.";
+    return;
+  }
+  if ( m_FlipMat1 )
+  {
+    MITK_WARN << "Called flip mat 1 but already done";
+    return;
+  }
+  m_TrackingMatrices11.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
+  m_TrackingMatrices21.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices21.m_TrackingMatrices);
+}
+//---------------------------------------------------------------------------
+void TwoTrackerMatching::FlipMats2 ( )
+{
+  if ( !m_Ready ) 
+  {
+    MITK_WARN << "Attempted to flip matrix 2 when videoTrackerMatching not initialised.";
+    return;
+  }
+  if ( m_FlipMat2 )
+  {
+    MITK_WARN << "Called flip mat 2 but already done";
+    return;
+  }
+  m_TrackingMatrices22.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices22.m_TrackingMatrices);
+  m_TrackingMatrices12.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices12.m_TrackingMatrices);
+}
+
 
 //---------------------------------------------------------------------------
 cv::Mat TwoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )

@@ -51,6 +51,13 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<std::string> FindVideoFrameMapFiles(
  */
 extern "C++" NIFTKOPENCV_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
+/**
+ * \brief Saves a 4x4 matrix;
+ * @return true if successful and false otherwise
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+
+
 } // end namespace
 
 #endif

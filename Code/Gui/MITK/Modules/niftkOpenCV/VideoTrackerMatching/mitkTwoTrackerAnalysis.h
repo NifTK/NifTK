@@ -50,7 +50,14 @@ public:
    * the handeye calibration are optimised to minimise the residual error of the 
    * reconstructed point
    */
-  void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 );
+  void HandeyeCalibration (bool visualise = false , std::string fileout = "", int HowManyMatrices = 4 , bool CullOutliers = false);
+
+  /**
+   * check it's a rigid body, need to have an estimate of w2ToW1 first
+   */
+  bool CheckRigidBody (cv::Mat  w2ToW1 , bool CullOutliers = false );
+
+  itkSetMacro (TimingTolerance, long long int);
 
 protected:
   TwoTrackerAnalysis();
@@ -60,6 +67,7 @@ protected:
   TwoTrackerAnalysis& operator=(const TwoTrackerAnalysis&); // Purposefully not implemented.
 
 private:
+  long long int m_TimingTolerance;        // the maximum allowable timing error
 };
 
 

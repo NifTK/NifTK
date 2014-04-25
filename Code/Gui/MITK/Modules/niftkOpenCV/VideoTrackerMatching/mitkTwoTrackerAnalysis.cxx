@@ -13,6 +13,8 @@
 =============================================================================*/
 #include "mitkTwoTrackerAnalysis.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkMathsUtils.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -27,6 +29,7 @@ namespace mitk
 {
 //---------------------------------------------------------------------------
 TwoTrackerAnalysis::TwoTrackerAnalysis () 
+: m_TimingTolerance(50e6)
 {}
 
 //---------------------------------------------------------------------------
@@ -88,7 +91,7 @@ void TwoTrackerAnalysis::TemporalCalibration(
 }
 //---------------------------------------------------------------------------
 void TwoTrackerAnalysis::HandeyeCalibration(
-    bool visualise, std::string fileout, int HowManyMatrices)
+    bool visualise, std::string fileout, int HowManyMatrices, bool CullOutliers)
 {
   if ( !m_Ready )
   {
@@ -96,20 +99,6 @@ void TwoTrackerAnalysis::HandeyeCalibration(
     return;
   }
 
-  std::ofstream fout_t2ToT1;
-  std::ofstream fout_w2ToW1;
-  if ( fileout.length() != 0 ) 
-  {
-    std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
-    std::string w2ToW1Out = fileout + "_W2ToW1.4x4";
-
-    fout_t2ToT1.open(t2ToT1Out.c_str());
-    fout_w2ToW1.open(w2ToW1Out.c_str());
-    if ( !fout_t2ToT1 || ! fout_w2ToW1 )
-    {
-      MITK_WARN << "Failed to open output file for handeye calibration " << fileout;
-    }
-  }
   std::vector<cv::Mat> SortedTracker1;
   std::vector<cv::Mat> SortedTracker2;
   std::vector<int> indexes;
@@ -125,7 +114,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
       
       GetTrackerMatrix(indexes[i],&timingError,1);
 
-      if ( std::abs(double(timingError)) < 50e6 )
+      if ( std::abs(timingError) < m_TimingTolerance )
       {
         SortedTracker1.push_back(m_TrackingMatrices22.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,1).inv());
@@ -145,9 +134,9 @@ void TwoTrackerAnalysis::HandeyeCalibration(
     {
       long long int timingError;
       
-      GetTrackerMatrix(indexes[i],&timingError,1);
+      GetTrackerMatrix(indexes[i],&timingError,0);
 
-      if ( std::abs(double(timingError)) < 50e6 )
+      if ( std::abs(timingError) < m_TimingTolerance )
       {
         SortedTracker1.push_back(m_TrackingMatrices11.m_TrackingMatrices[indexes[i]]);
         SortedTracker2.push_back(GetTrackerMatrix(indexes[i],NULL,0).inv());
@@ -172,11 +161,127 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   MITK_INFO << "Handeye finished ";
   MITK_INFO << "Translational Residual " << residuals [1];
   MITK_INFO << "Rotational Residual " << residuals [0];
+  
+  CheckRigidBody ( w2ToW1, CullOutliers );
 
-  fout_t2ToT1 << t2ToT1;
-  fout_w2ToW1 << w2ToW1;
+  std::string t2ToT1Out = fileout + "_T2ToT1.4x4";
+  std::string w2ToW1Out = fileout + "_W2ToW1.4x4";
 
-  fout_t2ToT1.close();
-  fout_w2ToW1.close();
+  if ( ( ! mitk::SaveTrackerMatrix(t2ToT1Out, t2ToT1) ) || 
+    ( ! mitk::SaveTrackerMatrix(w2ToW1Out, w2ToW1) ) )
+  {
+    MITK_ERROR << "Error failed to write out results " << t2ToT1Out << " or " << w2ToW1Out;
+  }
+
 }
+//---------------------------------------------------------------------------
+bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
+{
+  if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise two tracker matcher before attempting temporal calibration";
+    return false;
+  }
+
+  bool Tracker2ToTracker1 = false;
+  std::vector < double > distances;
+  if ( m_TrackingMatrixTimeStamps1.m_TimeStamps.size() > m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
+  {
+    Tracker2ToTracker1 = false;
+    for ( unsigned int i = 0; i < m_TrackingMatrices22.m_TrackingMatrices.size() ; i ++  )
+    {
+      long long int timingError;
+      
+      GetTrackerMatrix(i,&timingError,1);
+
+      if ( std::abs(timingError) < m_TimingTolerance )
+      {
+        cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
+        cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
+        distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
+      }
+      else
+      {
+        MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+      }
+    }
+  }
+  else
+  {
+    Tracker2ToTracker1 = true;
+
+    for ( unsigned int i = 0; i < m_TrackingMatrices11.m_TrackingMatrices.size() ; i ++  )
+    {
+      long long int timingError;
+      GetTrackerMatrix(i,&timingError,0);
+
+      if ( std::abs(timingError) < m_TimingTolerance )
+      {
+        cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
+        cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
+        distances.push_back(mitk::DistanceBetweenMatrices(tracker1, tracker2));
+      }
+      else
+      {
+        MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+      }
+    }
+  }
+  double meanError = mitk::Mean(distances);
+  double stdDev = mitk::StdDev(distances);
+  MITK_INFO << "Mean Distance " << meanError ;
+  MITK_INFO << "Standard Deviation " << stdDev ;
+  if ( CullOutliers )
+  {
+    if ( ! Tracker2ToTracker1 ) 
+    {
+      for ( unsigned int i = 0; i < m_TrackingMatrices22.m_TrackingMatrices.size() ; i ++  )
+      {
+        long long int timingError;
+      
+        GetTrackerMatrix(i,&timingError,1);
+
+        if ( std::abs(timingError) < m_TimingTolerance )
+        {
+          cv::Mat tracker1 = w2ToW1 * m_TrackingMatrices22.m_TrackingMatrices[i];
+          cv::Mat tracker2 = GetTrackerMatrix(i,NULL,1);
+          double distance = mitk::DistanceBetweenMatrices(tracker1, tracker2);
+          if ( ( distance > ( meanError + 2 * stdDev )  ) || ( distance < ( meanError - 2 * stdDev) ) ) 
+          {
+            m_TrackingMatrices21.m_TimingErrors[i] = m_TimingTolerance + 1;
+          }
+        }
+        else
+        {
+          MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+        }
+      }
+    }
+    else
+    {
+      for ( unsigned int i = 0; i < m_TrackingMatrices11.m_TrackingMatrices.size() ; i ++  )
+      {
+        long long int timingError;
+        GetTrackerMatrix(i,&timingError,0);
+
+        if ( std::abs(timingError) < m_TimingTolerance )
+        {
+          cv::Mat tracker1 = m_TrackingMatrices11.m_TrackingMatrices[i];
+          cv::Mat tracker2 = w2ToW1 * GetTrackerMatrix(i,NULL,0);
+          double distance = mitk::DistanceBetweenMatrices(tracker1, tracker2);
+          if ( ( distance > ( meanError + 2 * stdDev )  ) || ( distance < ( meanError - 2 * stdDev) ) ) 
+          {
+            m_TrackingMatrices12.m_TimingErrors[i] = m_TimingTolerance + 1;
+          }
+        }
+        else
+        {
+          MITK_INFO << "Index " << i << " Timing error too high, rejecting";
+        }
+      }
+    }
+  }
+  return true;
+}
+
 } // namespace

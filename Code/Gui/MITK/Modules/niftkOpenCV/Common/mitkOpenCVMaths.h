@@ -388,16 +388,19 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const s
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
 
-
 /**
- * \brief Returns the angular distance between two rotation matrices
- */
+ *  * \brief Returns the angular distance between two rotation matrices
+ *   */
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
+/**
+ *  * \brief Returns the distance between two 4x4 matrices
+ *   */
+extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
 /**
- * \brief Converts a 3x3 rotation matrix to a quaternion
- */
+ *  * \brief Converts a 3x3 rotation matrix to a quaternion
+ *   */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
 
 } // end namespace

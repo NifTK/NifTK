@@ -32,14 +32,32 @@ int main(int argc, char** argv)
   try
   {
     mitk::TwoTrackerAnalysis::Pointer trackerMatcherObject = mitk::TwoTrackerAnalysis::New();
+    trackerMatcherObject->SetTimingTolerance(MaxTimingError * 1e6);
+    if ( CullOnDistance ) 
+    {
+      MITK_INFO << "do something";
+    }
     trackerMatcherObject->Initialise(Directory1, Directory2);
+    //check it's a rigid body first
+    if ( FlipDir1 ) 
+    {
+      trackerMatcherObject->FlipMats1();
+    }
+    if ( FlipDir2 )
+    {
+      trackerMatcherObject->FlipMats2();
+    }
     if ( TCfileout.length() != 0 )
     {
       trackerMatcherObject->TemporalCalibration(temporalWindowLow, temporalWindowHigh, true, TCfileout);
     }
     if ( HEfileout.length() != 0 ) 
     {
-      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse);
+      trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse, CullOnDistance);
+      if ( CullOnDistance )
+      {
+        trackerMatcherObject->HandeyeCalibration( false, HEfileout, MatricesToUse, false);
+      }
     }
  
     returnStatus = EXIT_SUCCESS;
