@@ -14,13 +14,12 @@
 
 #include <QStackedLayout>
 #include <QDebug>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 #include <itkMatrix.h>
 #include <itkSpatialOrientationAdapter.h>
 
 #include <itkConversionUtils.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkPointUtils.h>
 #include "niftkSingleViewerWidget.h"
 #include "niftkMultiWindowWidget_p.h"
@@ -38,7 +37,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_LinkedNavigation(false)
 , m_GeometryInitialised(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
@@ -65,7 +63,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  this->EnableLinkedNavigation(false);
 
   m_GridLayout = new QGridLayout(this);
   m_GridLayout->setObjectName(QString::fromUtf8("niftkSingleViewerWidget::m_GridLayout"));
@@ -79,7 +76,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(m_MultiWidget, SIGNAL(FocusChanged(int)), SLOT(OnFocusChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
@@ -110,13 +106,6 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, st
 {
   emit NodesDropped(this, renderWindow, nodes);
   m_MultiWidget->SetFocused();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnFocusChanged(int windowIndex)
-{
-  emit FocusChanged(windowIndex);
 }
 
 
@@ -421,17 +410,16 @@ void niftkSingleViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStor
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::EnableLinkedNavigation(bool linkedNavigation)
+bool niftkSingleViewerWidget::IsLinkedNavigationEnabled() const
 {
-  m_MultiWidget->SetWidgetPlanesLocked(!linkedNavigation);
-  m_LinkedNavigation = linkedNavigation;
+  return m_MultiWidget->IsLinkedNavigationEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsLinkedNavigationEnabled() const
+void niftkSingleViewerWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
 {
-  return m_LinkedNavigation;
+  m_MultiWidget->SetLinkedNavigationEnabled(linkedNavigationEnabled);
 }
 
 
@@ -905,63 +893,66 @@ bool niftkSingleViewerWidget::SwitchTo3D()
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 {
-  WindowLayout nextWindowLayout;
+  if (m_GeometryInitialised)
+  {
+    WindowLayout nextWindowLayout;
 
-  if (::IsSingleWindowLayout(m_WindowLayout))
-  {
-    nextWindowLayout = m_MultiWindowLayout;
-  }
-  else
-  {
-    switch (this->GetOrientation())
+    if (::IsSingleWindowLayout(m_WindowLayout))
     {
-    case MIDAS_ORIENTATION_AXIAL:
-      nextWindowLayout = WINDOW_LAYOUT_AXIAL;
-      break;
-    case MIDAS_ORIENTATION_SAGITTAL:
-      nextWindowLayout = WINDOW_LAYOUT_SAGITTAL;
-      break;
-    case MIDAS_ORIENTATION_CORONAL:
-      nextWindowLayout = WINDOW_LAYOUT_CORONAL;
-      break;
-    case MIDAS_ORIENTATION_UNKNOWN:
-      nextWindowLayout = WINDOW_LAYOUT_3D;
-      break;
-    default:
-      nextWindowLayout = WINDOW_LAYOUT_CORONAL;
+      nextWindowLayout = m_MultiWindowLayout;
     }
+    else
+    {
+      switch (this->GetOrientation())
+      {
+      case MIDAS_ORIENTATION_AXIAL:
+        nextWindowLayout = WINDOW_LAYOUT_AXIAL;
+        break;
+      case MIDAS_ORIENTATION_SAGITTAL:
+        nextWindowLayout = WINDOW_LAYOUT_SAGITTAL;
+        break;
+      case MIDAS_ORIENTATION_CORONAL:
+        nextWindowLayout = WINDOW_LAYOUT_CORONAL;
+        break;
+      case MIDAS_ORIENTATION_UNKNOWN:
+        nextWindowLayout = WINDOW_LAYOUT_3D;
+        break;
+      default:
+        nextWindowLayout = WINDOW_LAYOUT_CORONAL;
+      }
+    }
+
+    /// We have to discard the selected position changes during the double clicking.
+    QTime currentTime = QTime::currentTime();
+    int doubleClickInterval = QApplication::doubleClickInterval();
+    QTime doubleClickTime = currentTime;
+
+    while (m_LastSelectedPositions.size() > 1 && m_LastSelectedPositionTimes.back().msecsTo(currentTime) < doubleClickInterval)
+    {
+      doubleClickTime = m_LastSelectedPositionTimes.back();
+      m_LastSelectedPositions.pop_back();
+      m_LastSelectedPositionTimes.pop_back();
+    }
+
+    /// We also discard the cursor position changes since the double click.
+    while (m_LastCursorPositions.size() > 1 && m_LastCursorPositionTimes.back() >= doubleClickTime)
+    {
+      m_LastCursorPositions.pop_back();
+      m_LastCursorPositionTimes.pop_back();
+    }
+
+    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+
+    /// Restore the selected position and cursor positions from before the double clicking.
+    m_MultiWidget->SetSelectedPosition(m_LastSelectedPositions.back());
+    m_MultiWidget->SetCursorPositions(m_LastCursorPositions.back());
+
+    this->SetWindowLayout(nextWindowLayout);
+
+    m_MultiWidget->BlockUpdate(updateWasBlocked);
+
+    emit WindowLayoutChanged(this, nextWindowLayout);
   }
-
-  /// We have to discard the selected position changes during the double clicking.
-  QTime currentTime = QTime::currentTime();
-  int doubleClickInterval = QApplication::doubleClickInterval();
-  QTime doubleClickTime = currentTime;
-
-  while (m_LastSelectedPositions.size() > 1 && m_LastSelectedPositionTimes.back().msecsTo(currentTime) < doubleClickInterval)
-  {
-    doubleClickTime = m_LastSelectedPositionTimes.back();
-    m_LastSelectedPositions.pop_back();
-    m_LastSelectedPositionTimes.pop_back();
-  }
-
-  /// We also discard the cursor position changes since the double click.
-  while (m_LastCursorPositions.size() > 1 && m_LastCursorPositionTimes.back() >= doubleClickTime)
-  {
-    m_LastCursorPositions.pop_back();
-    m_LastCursorPositionTimes.pop_back();
-  }
-
-  bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
-
-  /// Restore the selected position and cursor positions from before the double clicking.
-  m_MultiWidget->SetSelectedPosition(m_LastSelectedPositions.back());
-  m_MultiWidget->SetCursorPositions(m_LastCursorPositions.back());
-
-  this->SetWindowLayout(nextWindowLayout);
-
-  m_MultiWidget->BlockUpdate(updateWasBlocked);
-
-  emit WindowLayoutChanged(this, nextWindowLayout);
 
   return true;
 }

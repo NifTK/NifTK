@@ -89,7 +89,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(false);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(false);
       }
     }
   }
@@ -105,7 +105,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(false);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(false);
       }
     }
   }
@@ -121,7 +121,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(true);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(true);
       }
     }
   }
@@ -611,9 +611,9 @@ bool QmitkSingleViewerEditor::IsSlicingPlanesEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::EnableLinkedNavigation(bool enable)
+void QmitkSingleViewerEditor::EnableLinkedNavigation(bool linkedNavigationEnabled)
 {
-  d->m_SingleViewer->EnableLinkedNavigation(enable);
+  d->m_SingleViewer->SetLinkedNavigationEnabled(linkedNavigationEnabled);
 }
 
 
@@ -768,10 +768,6 @@ void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
     bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
     d->m_SingleViewer->SetWindowLayout(windowLayout);
     d->m_SingleViewer->blockSignals(signalsWereBlocked);
-
-    // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
-    // (or indeed anything that's listening to the FocusManager).
-//    this->UpdateFocusManagerToSelectedViewer();
   }
 }
 

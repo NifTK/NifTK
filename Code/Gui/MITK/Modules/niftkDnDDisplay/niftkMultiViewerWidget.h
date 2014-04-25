@@ -217,14 +217,14 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
-   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
-   */
-  virtual void EnableLinkedNavigation(bool enabled);
-
-  /**
    * \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
    */
   virtual bool IsLinkedNavigationEnabled() const;
+
+  /**
+   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
+   */
+  virtual void EnableLinkedNavigation(bool enabled);
 
   /// \brief Tells if the selected viewer is focused.
   bool IsFocused();
@@ -294,7 +294,7 @@ protected slots:
   void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when one of the viewers receives the focus.
-  void OnFocusChanged(int windowIndex);
+  void OnFocusChanged();
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
@@ -399,12 +399,14 @@ private:
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;
-  bool m_LinkedNavigation;
+  bool m_LinkedNavigationEnabled;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
   niftkMultiViewerControls* m_ControlPanel;
+
+  unsigned long m_FocusManagerObserverTag;
 };
 
 #endif

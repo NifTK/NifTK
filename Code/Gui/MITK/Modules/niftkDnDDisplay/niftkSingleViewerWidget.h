@@ -256,11 +256,11 @@ public:
   /// \brief Set the current magnification.
   void SetMagnification(MIDASOrientation orientation, double magnification);
 
-  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
-  void EnableLinkedNavigation(bool enabled);
-
   /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool IsLinkedNavigationEnabled() const;
+
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
+  void SetLinkedNavigationEnabled(bool linkedNavigationEnabled);
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
@@ -352,9 +352,6 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Emitted when a render window has got selected in this viewer.
-  void FocusChanged(int windowIndex);
-
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
@@ -393,9 +390,6 @@ protected:
   virtual void paintEvent(QPaintEvent* event);
 
 protected slots:
-
-  /// \brief Called when the selected render window has changed.
-  virtual void OnFocusChanged(int windowIndex);
 
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -491,7 +485,6 @@ private:
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastCursorPositionTimes;
 
-  bool m_LinkedNavigation;
   bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;

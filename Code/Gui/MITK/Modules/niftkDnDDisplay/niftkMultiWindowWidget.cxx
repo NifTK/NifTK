@@ -79,6 +79,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SagittalSliceTag(0ul)
 , m_CoronalSliceTag(0ul)
 , m_IsFocused(false)
+, m_LinkedNavigationEnabled(false)
 , m_Enabled(false)
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
@@ -137,7 +138,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->AddDisplayPlaneSubTree();
   this->SetCursorGloballyVisible(false);
   this->SetCursorVisible(false);
-  this->SetWidgetPlanesLocked(false);
+  this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
 
   // Need each widget to react to Qt drag/drop events.
@@ -253,10 +254,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 niftkMultiWindowWidget::~niftkMultiWindowWidget()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
+  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
@@ -2473,6 +2471,24 @@ void niftkMultiWindowWidget::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
+bool niftkMultiWindowWidget::IsLinkedNavigationEnabled() const
+{
+  return m_LinkedNavigationEnabled;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
+{
+  if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
+  {
+    m_LinkedNavigationEnabled = linkedNavigationEnabled;
+    this->SetWidgetPlanesLocked(!linkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
   if (enabled == this->AreDisplayInteractionsEnabled())
@@ -2619,14 +2635,10 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 
       if (m_FocusHasChanged)
       {
-        if (m_IsFocused && m_Geometry)
-        {
-          m_BlockFocusEvents = true;
-          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
-          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
-          m_BlockFocusEvents = false;
-        }
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+
         this->UpdateBorders();
+
         if (m_FocusLosingWindowIndex != -1)
         {
           rendererNeedsUpdate[m_FocusLosingWindowIndex] = true;
@@ -2637,17 +2649,12 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 
       if (m_GeometryHasChanged || m_TimeStepHasChanged)
       {
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+
         /// Note:
         /// A viewer has a border iff it has the focus *and* it has a valid geometry.
         /// Therefore, the borders should be updated at the first time when m_Geometry
         /// is assigned a valid geometry.
-        if (m_IsFocused && m_Geometry)
-        {
-          m_BlockFocusEvents = true;
-          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
-          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
-          m_BlockFocusEvents = false;
-        }
         this->UpdateBorders();
 
         for (unsigned i = 0; i < 4; ++i)
@@ -2697,12 +2704,25 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       if (m_FocusHasChanged)
       {
         m_FocusHasChanged = false;
-        emit FocusChanged(m_SelectedWindowIndex);
+        if (m_IsFocused && m_Geometry)
+        {
+          m_BlockFocusEvents = true;
+          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
+          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+          m_BlockFocusEvents = false;
+        }
       }
 
       if (m_GeometryHasChanged)
       {
         m_GeometryHasChanged = false;
+        if (m_IsFocused && m_Geometry)
+        {
+          m_BlockFocusEvents = true;
+          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
+          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+          m_BlockFocusEvents = false;
+        }
         for (unsigned i = 0; i < 3; ++i)
         {
           m_BlockSncEvents = true;

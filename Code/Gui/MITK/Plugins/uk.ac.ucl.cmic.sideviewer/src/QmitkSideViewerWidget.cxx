@@ -50,7 +50,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality,
 
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
-  m_Viewer->SetSelected(false);
 
   m_MultiWindowComboBox->addItem("2H");
   m_MultiWindowComboBox->addItem("2V");
@@ -140,7 +139,7 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
   }
 
-  // Register focus observer.
+  // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager)
   {
@@ -368,20 +367,40 @@ void QmitkSideViewerWidget::OnFocusChanged()
   {
     m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
 
-    int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
-    int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
+    MIDASOrientation orientation = m_Viewer->GetOrientation();
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
+      int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
 
-    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
-    m_SliceSpinBox->setMaximum(maxSlice);
-    m_SliceSpinBox->setValue(selectedSlice);
-    m_SliceSpinBox->blockSignals(wasBlocked);
+      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+      m_SliceSpinBox->setMaximum(maxSlice);
+      m_SliceSpinBox->setValue(selectedSlice);
+      m_SliceSpinBox->setEnabled(true);
+      m_SliceSpinBox->blockSignals(wasBlocked);
 
-    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
-    m_Magnification = magnification;
+      double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
+      m_Magnification = magnification;
 
-    wasBlocked = m_MagnificationSpinBox->blockSignals(true);
-    m_MagnificationSpinBox->setValue(magnification);
-    m_MagnificationSpinBox->blockSignals(wasBlocked);
+      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+      m_MagnificationSpinBox->setValue(magnification);
+      m_MagnificationSpinBox->setEnabled(true);
+      m_MagnificationSpinBox->blockSignals(wasBlocked);
+    }
+    else
+    {
+      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+      m_SliceSpinBox->setValue(0);
+      m_SliceSpinBox->setEnabled(false);
+      m_SliceSpinBox->blockSignals(wasBlocked);
+
+      m_Magnification = 0;
+
+      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+      m_MagnificationSpinBox->setValue(0.0);
+      m_MagnificationSpinBox->setEnabled(false);
+      m_MagnificationSpinBox->blockSignals(wasBlocked);
+    }
 
     return;
   }

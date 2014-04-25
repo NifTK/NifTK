@@ -145,6 +145,12 @@ public:
   /// and has a coloured border.
   void SetFocused();
 
+  /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
+  bool IsLinkedNavigationEnabled() const;
+
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
+  void SetLinkedNavigationEnabled(bool linkedNavigationEnabled);
+
   /// \brief Returns the selected render window.
   /// The selected render window is one of the visible render windows. If this widget has the focus
   /// then the selected render window is the focused render window. Otherwise, it is is the render
@@ -351,9 +357,6 @@ public:
 
 signals:
 
-  /// \brief Emitted when one of the render windows of this widget received the focus.
-  void FocusChanged(int windowIndex);
-
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
@@ -444,6 +447,7 @@ private:
   unsigned long m_SagittalSliceTag;
   unsigned long m_CoronalSliceTag;
   bool m_IsFocused;
+  bool m_LinkedNavigationEnabled;
   bool m_Enabled;
   int m_SelectedWindowIndex;
   int m_FocusLosingWindowIndex;
