@@ -30,7 +30,7 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkSideViewerView;
+class QmitkBaseView;
 class QmitkRenderWindow;
 
 /**
@@ -59,12 +59,12 @@ public:
   /**
    * Constructs a QmitkSideViewerWidget object.
    *
-   * \param functionality Sets the containing functionality for callback purposes.
+   * \param view Sets the containing view for callback purposes.
    *
    *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
    *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
    */
-  QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent = 0);
+  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent = 0);
   virtual ~QmitkSideViewerWidget();
 
   /**
@@ -146,7 +146,7 @@ private slots:
 
 private:
 
-  QmitkSideViewerView* m_ContainingFunctionality;
+  QmitkBaseView* m_ContainingView;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.

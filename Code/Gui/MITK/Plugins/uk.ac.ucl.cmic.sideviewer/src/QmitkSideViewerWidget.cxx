@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkSideViewerWidget.h"
-#include "QmitkSideViewerView.h"
+#include "QmitkBaseView.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
@@ -27,8 +27,8 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent)
-: m_ContainingFunctionality(functionality)
+QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
+: m_ContainingView(view)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_MainWindow(0)
@@ -405,7 +405,7 @@ void QmitkSideViewerWidget::OnFocusChanged()
     return;
   }
 
-  this->SetMainWindow(m_ContainingFunctionality->GetSelectedRenderWindow());
+  this->SetMainWindow(m_ContainingView->GetSelectedRenderWindow());
 }
 
 
@@ -418,9 +418,9 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
-  QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
-  QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
+  QmitkRenderWindow* mainAxialWindow = m_ContainingView->GetRenderWindow("axial");
+  QmitkRenderWindow* mainSagittalWindow = m_ContainingView->GetRenderWindow("sagittal");
+  QmitkRenderWindow* mainCoronalWindow = m_ContainingView->GetRenderWindow("coronal");
 
   if (mainWindow != mainAxialWindow
       && mainWindow != mainSagittalWindow
