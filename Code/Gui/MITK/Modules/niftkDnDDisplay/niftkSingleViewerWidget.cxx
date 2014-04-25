@@ -641,7 +641,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
-      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
+      m_CentrePositions[Index(m_WindowLayout)] = m_MultiWidget->GetCentrePositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
       m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactorBinding();
@@ -668,7 +668,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
     if (m_RememberSettingsPerWindowLayout && m_WindowLayoutInitialised[Index(windowLayout)])
     {
-      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
+      m_MultiWidget->SetCentrePositions(m_CentrePositions[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
       m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
