@@ -181,8 +181,6 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
     MITK_ERROR << "Initialise two tracker matcher before attempting temporal calibration";
     return false;
   }
-  //if it's a rigid body the distance between the two trackers should not change, 
-  //regardless of tracker origins ??
 
   bool Tracker2ToTracker1 = false;
   std::vector < double > distances;
@@ -228,13 +226,6 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
       }
     }
   }
-  std::ofstream fout_distanceCheck;
-  fout_distanceCheck.open("distanceCheck.txt");
-  for ( int i = 0 ; i < distances.size() ; i++ )
-  {
-    fout_distanceCheck << i << " " << distances[i]<< std::endl;
-  }
-  fout_distanceCheck.close();
   double meanError = mitk::Mean(distances);
   double stdDev = mitk::StdDev(distances);
   MITK_INFO << "Mean Distance " << meanError ;
