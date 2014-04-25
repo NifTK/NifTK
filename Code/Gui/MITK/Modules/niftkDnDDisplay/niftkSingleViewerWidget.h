@@ -88,12 +88,11 @@ public:
   /// \brief Returns the enabled flag.
   bool IsEnabled() const;
 
-  /// \brief If b==true, this widget is "selected" meaning it will have coloured borders,
-  /// and if b==false, it is not selected, and will not have coloured borders.
-  void SetSelected(bool b);
+  /// \brief Tells if the selected render window has the focus.
+  bool IsFocused() const;
 
-  /// \brief Returns true if this widget is selected and false otherwise.
-  bool IsSelected() const;
+  /// \brief Sets the focus to the selected render window.
+  void SetFocused();
 
   /// \brief Returns the selected window.
   /// If a window has the focus (and it has a coloured border) then it is
@@ -257,11 +256,11 @@ public:
   /// \brief Set the current magnification.
   void SetMagnification(MIDASOrientation orientation, double magnification);
 
-  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
-  void EnableLinkedNavigation(bool enabled);
-
   /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool IsLinkedNavigationEnabled() const;
+
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
+  void SetLinkedNavigationEnabled(bool linkedNavigationEnabled);
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
@@ -329,12 +328,6 @@ public:
   /// \brief Shows or hides the cursor.
   bool ToggleCursorVisibility();
 
-  /**
-   * \brief Sets the focus to the currently selected window, or to this viewer
-   * itself if no window is selected.
-   */
-  virtual void SetFocus();
-
   /// \brief Blocks the update of the viewer.
   ///
   /// Returns true if the update was already blocked, otherwise false.
@@ -358,9 +351,6 @@ signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-
-  /// \brief Emitted when a render window has got selected in this viewer.
-  void SelectedRenderWindowChanged(MIDASOrientation orientation);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
@@ -401,9 +391,6 @@ protected:
 
 protected slots:
 
-  /// \brief Called when the selected render window has changed.
-  virtual void OnSelectedRenderWindowChanged(int orientation);
-
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
@@ -425,9 +412,6 @@ private:
   {
     return (index << 1) + m_IsBoundGeometryActive;
   }
-
-  /// \brief Used to move either anterior/posterior by a certain number of slices.
-  bool MoveAnteriorPosterior(int slices);
 
   /// \brief Resets the last few remembered selected and cursor positions.
   /// These positions are remembered so that if you double click to toggle between single and
@@ -458,9 +442,6 @@ private:
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the scale factors of the render windows of the layout.
   std::vector<double> m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];
-
-  /// \brief Stores the selected render window for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
-  QmitkRenderWindow* m_SelectedRenderWindow[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores the cursor position binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_CursorPositionBinding[WINDOW_LAYOUT_NUMBER * 2];
@@ -504,7 +485,6 @@ private:
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastCursorPositionTimes;
 
-  bool m_LinkedNavigation;
   bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;

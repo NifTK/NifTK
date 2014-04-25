@@ -201,7 +201,7 @@ public:
 
   void Check() const
   {
-    if (m_Viewer->IsSelected())
+    if (m_Viewer->IsFocused())
     {
       QmitkRenderWindow* selectedRenderWindow = m_Viewer->GetSelectedRenderWindow();
       if (!selectedRenderWindow)

@@ -137,9 +137,6 @@ protected slots:
 
 private:
 
-  /// \brief Given a window, will return the corresponding list index, or -1 if not found.
-  int GetViewerIndexFromWindow(QmitkRenderWindow* window);
-
   /// \brief Will remove all observers from the ObserverToVisibilityMap, called from UpdateObserverToVisibilityMap and the destructor.
   void RemoveAllFromObserverToVisibilityMap();
 
