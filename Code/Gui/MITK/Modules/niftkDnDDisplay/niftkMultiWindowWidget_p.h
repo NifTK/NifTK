@@ -255,45 +255,6 @@ public:
   /// The values that correspond to a currently not visible window are not used by this function.
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
-  /// \brief Gets the position of the centre of the displayed region normalised with the render window size.
-  ///
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  mitk::Vector2D GetCentrePosition(int windowIndex) const;
-
-  /// \brief Sets the position of the centre of the displayed region normalised with the render window size.
-  ///
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  /// This function does not change the selected point in world but moves the image
-  /// in the given render window so that the cursor (aka. crosshair) gets to the specified
-  /// position in the render window.
-  void SetCentrePosition(int windowIndex, const mitk::Vector2D& centrePosition);
-
-  /// \brief Gets the positions of the centre of displayed regions in the 2D render windows normalised with the render window size.
-  ///
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  /// The vector contains the centre positions in the following order: axial, sagittal, coronal.
-  /// The values that correspond to a currently not visible window are undefined.
-  std::vector<mitk::Vector2D> GetCentrePositions() const;
-
-  /// \brief Sets the positions of the centre of displayed regions in the 2D render windows normalised with the render window size.
-  ///
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  /// The vector should contain the centre positions in the following order: axial, sagittal, coronal.
-  /// The values that correspond to a currently not visible window are not used by this function.
-  void SetCentrePositions(const std::vector<mitk::Vector2D>& centrePositions);
-
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(int windowIndex) const;
 

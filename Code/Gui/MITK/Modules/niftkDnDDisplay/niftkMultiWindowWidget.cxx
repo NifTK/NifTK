@@ -1703,71 +1703,6 @@ void niftkMultiWindowWidget::MoveToCursorPosition(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D niftkMultiWindowWidget::GetCentrePosition(int windowIndex) const
-{
-  assert(windowIndex >= 0 && windowIndex < 3);
-
-  mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-  const mitk::Geometry2D* worldGeometry2D = m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry2D();
-
-  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
-  mitk::Point2D centreInMm2D;
-  displayGeometry->Map(centreInMm, centreInMm2D);
-  mitk::Point2D centreInPx2D;
-  displayGeometry->WorldToDisplay(centreInMm2D, centreInPx2D);
-
-  mitk::Vector2D centrePosition;
-  centrePosition[0] = centreInPx2D[0] / m_RenderWindows[windowIndex]->width();
-  centrePosition[1] = centreInPx2D[1] / m_RenderWindows[windowIndex]->height();
-
-  return centrePosition;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCentrePosition(int windowIndex, const mitk::Vector2D& centrePosition)
-{
-  assert(windowIndex >= 0 && windowIndex < 3);
-
-  /// We calculate the difference (vector) of the required centre position
-  /// and the actual centre position, then shift the cursor position with it.
-
-  mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-  const mitk::Geometry2D* worldGeometry2D = m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry2D();
-
-  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
-  mitk::Point2D centre2DInMm;
-  displayGeometry->Map(centreInMm, centre2DInMm);
-  mitk::Point2D centre2DInPx;
-  displayGeometry->WorldToDisplay(centre2DInMm, centre2DInPx);
-
-  mitk::Vector2D currentCentrePosition;
-  currentCentrePosition[0] = centre2DInPx[0] / m_RenderWindows[windowIndex]->width();
-  currentCentrePosition[1] = centre2DInPx[1] / m_RenderWindows[windowIndex]->height();
-
-  mitk::Point2D selectedPosition2DInMm;
-  displayGeometry->Map(m_SelectedPosition, selectedPosition2DInMm);
-  mitk::Point2D selectedPosition2DInPx;
-  displayGeometry->WorldToDisplay(selectedPosition2DInMm, selectedPosition2DInPx);
-
-  mitk::Vector2D currentCursorPosition;
-  currentCursorPosition[0] = selectedPosition2DInPx[0] / m_RenderWindows[windowIndex]->width();
-  currentCursorPosition[1] = selectedPosition2DInPx[1] / m_RenderWindows[windowIndex]->height();
-
-  bool updateWasBlocked = this->BlockUpdate(true);
-
-  mitk::Vector2D cursorPosition = currentCursorPosition + centrePosition - currentCentrePosition;
-  if (cursorPosition != m_CursorPositions[windowIndex])
-  {
-    m_CursorPositions[windowIndex] = cursorPosition;
-    m_CursorPositionHasChanged[windowIndex] = true;
-  }
-
-  this->BlockUpdate(updateWasBlocked);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 {
   if (m_BlockDisplayEvents || !m_Geometry)
@@ -2314,38 +2249,6 @@ void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
   m_CursorPositions[windowIndex][1] = point2DInPx[1] / displaySize[1];
   m_CursorPositionHasChanged[windowIndex] = true;
 
-  this->BlockUpdate(updateWasBlocked);
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::Vector2D> niftkMultiWindowWidget::GetCentrePositions() const
-{
-  std::vector<mitk::Vector2D> centrePositions(3);
-  for (std::size_t windowIndex = 0; windowIndex < 3; ++windowIndex)
-  {
-    if (m_RenderWindows[windowIndex]->isVisible())
-    {
-      centrePositions[windowIndex] = this->GetCentrePosition(windowIndex);
-    }
-  }
-  return centrePositions;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCentrePositions(const std::vector<mitk::Vector2D>& centrePositions)
-{
-  assert(centrePositions.size() == 3);
-
-  bool updateWasBlocked = this->BlockUpdate(true);
-  for (std::size_t windowIndex = 0; windowIndex < 3; ++windowIndex)
-  {
-    if (m_RenderWindows[windowIndex]->isVisible())
-    {
-      this->SetCentrePosition(windowIndex, centrePositions[windowIndex]);
-    }
-  }
   this->BlockUpdate(updateWasBlocked);
 }
 
