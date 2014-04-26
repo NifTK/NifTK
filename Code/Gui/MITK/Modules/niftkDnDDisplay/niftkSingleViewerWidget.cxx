@@ -641,6 +641,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
+      m_SelectedPositions[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedPosition();
       m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
@@ -665,11 +666,35 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     }
 
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
-    // we should go back to the same slice index, time step, cursor position on display, scale factor.
+    // we should go back to the same cursor position on display and scale factor.
     if (m_RememberSettingsPerWindowLayout && m_WindowLayoutInitialised[Index(windowLayout)])
     {
+      /// Although the selected position should not be remembered per window layout, we have to
+      /// temporarily restore the previous selected position (that was the actual selected position
+      /// when we left the window layout) because the cursor positions and the scale factors are
+      /// relative to that.
+      /// That is, first we restore everything, and we must do it in this order: selected position,
+      /// cursor positions, scale factors. Then, we reset the actual selected position what
+      /// should not move the image just put the cursor to the required place.
+      mitk::Point3D selectedPosition = m_MultiWidget->GetSelectedPosition();
+      m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
+      /// We cannot call BlockUpdate(false) here, because that would send out the signals
+      /// about the selected position change, and the current selected position is just
+      /// temporary, nobody should get notified about it.
+      /// However, we need to update the display geometry so that the correct cursor positions
+      /// are set during the following SetSelectedPosition call.
+      const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWidget->GetRenderWindows();
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (renderWindows[i]->isVisible())
+        {
+          m_MultiWidget->MoveToCursorPosition(i);
+          m_MultiWidget->ZoomAroundCursorPosition(i);
+        }
+      }
+      m_MultiWidget->SetSelectedPosition(selectedPosition);
       m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
     }

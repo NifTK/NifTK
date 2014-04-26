@@ -435,6 +435,9 @@ private:
 
   WindowLayout m_WindowLayout;
 
+  /// \brief Stores the selected position for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];
+
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the cursor positions for the render windows of the layout.
   std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
