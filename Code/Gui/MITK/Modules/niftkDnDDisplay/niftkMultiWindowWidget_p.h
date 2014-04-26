@@ -78,6 +78,8 @@ class niftkMultiWindowWidget : public QmitkStdMultiWidget
 
   Q_OBJECT
 
+  friend class niftkSingleViewerWidget;
+
 public:
 
   /// \brief Constructor.

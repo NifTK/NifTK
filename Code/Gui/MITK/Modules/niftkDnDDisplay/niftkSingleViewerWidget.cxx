@@ -680,8 +680,20 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-      /// TODO This should not be needed!
-      m_MultiWidget->BlockUpdate(false);
+      /// We cannot call BlockUpdate(false) here, because that would send out the signals
+      /// about the selected position change, and the current selected position is just
+      /// temporary, nobody should get notified about it.
+      /// However, we need to update the display geometry so that the correct cursor positions
+      /// are set during the following SetSelectedPosition call.
+      const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWidget->GetRenderWindows();
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (renderWindows[i]->isVisible())
+        {
+          m_MultiWidget->MoveToCursorPosition(i);
+          m_MultiWidget->ZoomAroundCursorPosition(i);
+        }
+      }
       m_MultiWidget->SetSelectedPosition(selectedPosition);
       m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
