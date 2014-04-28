@@ -169,11 +169,11 @@ public:
     {
       os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
     }
-    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition()))
+    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition(), 0.001))
     {
       os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
-    if (this->GetCursorPositions() != otherState->GetCursorPositions())
+    if (!this->EqualsWithTolerance(this->GetCursorPositions(), otherState->GetCursorPositions(), 0.01))
     {
       std::vector<mitk::Vector2D> otherStateCursorPositions = otherState->GetCursorPositions();
       os << indent << "Cursor positions:" << std::endl;
@@ -181,7 +181,7 @@ public:
       os << indent << "    " << m_CursorPositions[1] << ", " << otherStateCursorPositions[1] << std::endl;
       os << indent << "    " << m_CursorPositions[2] << ", " << otherStateCursorPositions[2] << std::endl;
     }
-    if (this->GetScaleFactors() != otherState->GetScaleFactors())
+    if (!this->EqualsWithTolerance(this->GetScaleFactors(), otherState->GetScaleFactors(), 0.01))
     {
       std::vector<double> otherStateScaleFactors = otherState->GetScaleFactors();
       os << indent << "Scale factors:" << std::endl;
