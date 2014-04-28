@@ -14,6 +14,8 @@
 
 #include "niftkSingleViewerWidgetTest.h"
 
+#include <climits>
+
 #include <QApplication>
 #include <QSignalSpy>
 #include <QTest>
@@ -182,6 +184,55 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtPoint(Qmitk
 
 
 // --------------------------------------------------------------------------
+mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCentrePosition(int windowIndex)
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  mitk::BaseRenderer* renderer = d->Viewer->GetRenderWindows()[windowIndex]->GetRenderer();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+
+  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point2D centreInMm2D;
+  displayGeometry->Map(centreInMm, centreInMm2D);
+  mitk::Point2D centreInPx2D;
+  displayGeometry->WorldToDisplay(centreInMm2D, centreInPx2D);
+
+  mitk::Vector2D centrePosition;
+  centrePosition[0] = centreInPx2D[0] / renderer->GetSizeX();
+  centrePosition[1] = centreInPx2D[1] / renderer->GetSizeY();
+
+  return centrePosition;
+}
+
+
+// --------------------------------------------------------------------------
+std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetCentrePositions()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  const std::vector<QmitkRenderWindow*>& renderWindows = d->Viewer->GetRenderWindows();
+
+  std::vector<mitk::Vector2D> centrePositions(3);
+  for (std::size_t windowIndex = 0; windowIndex < 3; ++windowIndex)
+  {
+    if (renderWindows[windowIndex]->isVisible())
+    {
+      centrePositions[windowIndex] = this->GetCentrePosition(windowIndex);
+    }
+    else
+    {
+      /// This is not necessary but makes the printed results easier to read.
+      centrePositions[windowIndex][0] = std::numeric_limits<double>::quiet_NaN();
+      centrePositions[windowIndex][1] = std::numeric_limits<double>::quiet_NaN();
+    }
+  }
+
+  return centrePositions;
+}
+
+
+// --------------------------------------------------------------------------
 bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2)
 {
   Q_D(niftkSingleViewerWidgetTestClass);
@@ -209,11 +260,15 @@ bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Vector2D& cursorPositi
 // --------------------------------------------------------------------------
 bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance)
 {
+  Q_D(const niftkSingleViewerWidgetTestClass);
+
+  const std::vector<QmitkRenderWindow*>& renderWindows = d->Viewer->GetRenderWindows();
+
   return cursorPositions1.size() == std::size_t(3)
       && cursorPositions2.size() == std::size_t(3)
-      && Self::Equals(cursorPositions1[0], cursorPositions2[0], tolerance)
-      && Self::Equals(cursorPositions1[1], cursorPositions2[1], tolerance)
-      && Self::Equals(cursorPositions1[2], cursorPositions2[2], tolerance);
+      && (!renderWindows[0]->isVisible() || Self::Equals(cursorPositions1[0], cursorPositions2[0], tolerance))
+      && (!renderWindows[1]->isVisible() || Self::Equals(cursorPositions1[1], cursorPositions2[1], tolerance))
+      && (!renderWindows[2]->isVisible() || Self::Equals(cursorPositions1[2], cursorPositions2[2], tolerance));
 }
 
 
@@ -1126,8 +1181,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(Self::Equals(d->Viewer->GetSelectedPosition(), centreWorldPosition));
   QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), centreDisplayPosition));
 
-  ViewerState::Pointer stateCoronal = ViewerState::New(d->Viewer);
-
   /// We cannot test the full state because the cursor position and scale factor
   /// of the sagittal and the axial windows have not been initialised yet.
   /// They will be initialised when we first switch to those windows.
@@ -1150,8 +1203,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetQtSignals(d->ScaleFactorChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
-  ViewerState::Pointer stateSagittal = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
 
@@ -1169,8 +1220,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->ScaleFactorChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
-
-  ViewerState::Pointer stateAxial = ViewerState::New(d->Viewer);
 
   ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
@@ -1215,8 +1264,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(0));
 
-  ViewerState::Pointer state3D = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
@@ -1239,8 +1286,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(scaleFactorChanges == std::size_t(3));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
 
-  ViewerState::Pointer state3H = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
@@ -1263,8 +1308,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(scaleFactorChanges <= std::size_t(3));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
 
-  ViewerState::Pointer state3V = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
@@ -1285,8 +1328,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
-
-  ViewerState::Pointer stateCorAxH = ViewerState::New(d->Viewer);
 
   d->StateTester->Clear();
 
@@ -1309,8 +1350,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
 
-  ViewerState::Pointer stateCorAxV = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
@@ -1332,8 +1371,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
 
-  ViewerState::Pointer stateCorSagH = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
@@ -1354,8 +1391,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
-
-  ViewerState::Pointer stateCorSagV = ViewerState::New(d->Viewer);
 
   d->StateTester->Clear();
 
@@ -1378,8 +1413,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
 
-  ViewerState::Pointer stateSagAxH = ViewerState::New(d->Viewer);
-
   d->StateTester->Clear();
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
@@ -1400,8 +1433,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges <= std::size_t(2));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
-
-  ViewerState::Pointer stateSagAxV = ViewerState::New(d->Viewer);
 
   d->StateTester->Clear();
 
@@ -1424,131 +1455,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges <= std::size_t(3));
   QCOMPARE(d->StateTester->GetQtSignals().size(), cursorPositionChanges + scaleFactorChanges);
-
-  ViewerState::Pointer stateOrtho = ViewerState::New(d->Viewer);
-
-  ///
-  /// Check if we get the same state when returning to a previously selected orientation.
-  ///
-
-  this->SetRandomPositions();
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateAxial);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateAxial);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagittal);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagittal);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCoronal);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCoronal);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3D);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3D);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3H);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3H);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3V);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(state3V);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorAxH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorAxH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorAxV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorAxV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorSagH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorSagH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorSagV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateCorSagV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagAxH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagAxH);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagAxV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateSagAxV);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
-
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateOrtho);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
-
-  this->SetRandomPositions();
-  d->StateTester->Clear();
-  d->StateTester->SetExpectedState(stateOrtho);
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 }
 
 
@@ -1563,122 +1469,218 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   this->SetRandomPositions();
   ViewerState::Pointer axialState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> axialCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
   this->SetRandomPositions();
   ViewerState::Pointer sagittalState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> sagittalCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
   this->SetRandomPositions();
   ViewerState::Pointer coronalState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> coronalCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
   this->SetRandomPositions();
   ViewerState::Pointer _3DState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> _3DCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
   this->SetRandomPositions();
   ViewerState::Pointer _3HState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> _3HCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
   this->SetRandomPositions();
   ViewerState::Pointer _3VState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> _3VCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
   this->SetRandomPositions();
   ViewerState::Pointer corAxHState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> corAxHCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
   this->SetRandomPositions();
   ViewerState::Pointer corAxVState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> corAxVCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
   this->SetRandomPositions();
   ViewerState::Pointer corSagHState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> corSagHCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
   this->SetRandomPositions();
   ViewerState::Pointer corSagVState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> corSagVCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
   this->SetRandomPositions();
   ViewerState::Pointer sagAxHState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> sagAxHCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
   this->SetRandomPositions();
   ViewerState::Pointer sagAxVState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> sagAxVCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
   this->SetRandomPositions();
   ViewerState::Pointer orthoState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> orthoCentres = this->GetCentrePositions();
 
   ///
   /// Switch back to each layout and check if the states are correctly restored.
+  /// Note that the selected position is not restored, and therefore the cursor position
+  /// will also be different, but the centre of the image should be at the same position
+  /// as last time.
   ///
 
+  mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
+  ViewerState::Pointer newState;
+
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(axialState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  axialState->SetSelectedPosition(selectedPosition);
+  axialState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *axialState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), axialCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(sagittalState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  sagittalState->SetSelectedPosition(selectedPosition);
+  sagittalState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *sagittalState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), sagittalCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(coronalState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+  coronalState->SetSelectedPosition(selectedPosition);
+  coronalState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *coronalState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), coronalCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(_3DState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
+  _3DState->SetSelectedPosition(selectedPosition);
+  _3DState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *_3DState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), _3DCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(_3HState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
+  _3HState->SetSelectedPosition(selectedPosition);
+  _3HState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *_3HState);
+  /// TODO
+  /// This fails at the moment.
+  /// See testRememberPositionsPerWindowLayout2.
+  QVERIFY(this->Equals(this->GetCentrePositions(), _3HCentres));
+  MITK_INFO << "3H";
+  MITK_INFO << "old centre positions: " << _3HCentres[0] << " " << _3HCentres[1] << " " << _3HCentres[2];
+  std::vector<mitk::Vector2D> newCentrePositions = this->GetCentrePositions();
+  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(_3VState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
+  _3VState->SetSelectedPosition(selectedPosition);
+  _3VState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *_3VState);
+  /// TODO
+  /// This fails at the moment.
+  QVERIFY(this->Equals(this->GetCentrePositions(), _3VCentres));
+  MITK_INFO << "3V";
+  MITK_INFO << "old centre positions: " << _3VCentres[0] << " " << _3VCentres[1] << " " << _3VCentres[2];
+  newCentrePositions = this->GetCentrePositions();
+  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(corAxHState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
+  corAxHState->SetSelectedPosition(selectedPosition);
+  corAxHState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *corAxHState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), corAxHCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(corAxVState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
+  corAxVState->SetSelectedPosition(selectedPosition);
+  corAxVState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *corAxVState);
+  /// TODO
+  /// This fails at the moment.
+  QVERIFY(this->Equals(this->GetCentrePositions(), corAxVCentres));
+  MITK_INFO << "CorAxV";
+  MITK_INFO << "old centre positions: " << corAxVCentres[0] << " " << corAxVCentres[1] << " " << corAxVCentres[2];
+  newCentrePositions = this->GetCentrePositions();
+  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(corSagHState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
+  corSagHState->SetSelectedPosition(selectedPosition);
+  corSagHState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *corSagHState);
+  /// TODO
+  /// This fails at the moment.
+  QVERIFY(this->Equals(this->GetCentrePositions(), corSagHCentres));
+  MITK_INFO << "CorSagH";
+  MITK_INFO << "old centre positions: " << corSagHCentres[0] << " " << corSagHCentres[1] << " " << corSagHCentres[2];
+  newCentrePositions = this->GetCentrePositions();
+  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(corSagVState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
+  corSagVState->SetSelectedPosition(selectedPosition);
+  corSagVState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *corSagVState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), corSagVCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(sagAxHState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
+  sagAxHState->SetSelectedPosition(selectedPosition);
+  sagAxHState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *sagAxHState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), sagAxHCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(sagAxVState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
+  sagAxVState->SetSelectedPosition(selectedPosition);
+  sagAxVState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *sagAxVState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), sagAxVCentres));
 
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(orthoState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  orthoState->SetSelectedPosition(selectedPosition);
+  orthoState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *orthoState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), orthoCentres));
 
   //// -------------------------------------------------------------------------
 
@@ -1696,12 +1698,57 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   QVERIFY(this->Equals(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), cursorPosition));
 
   coronalState = ViewerState::New(d->Viewer);
+  coronalCentres = this->GetCentrePositions();
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+
   d->StateTester->Clear();
-  d->StateTester->SetExpectedState(coronalState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+  coronalState->SetSelectedPosition(d->Viewer->GetSelectedPosition());
+  coronalState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *coronalState);
+  QVERIFY(this->Equals(this->GetCentrePositions(), coronalCentres));
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout2()
+{
+  /// TODO
+  /// This is an extracted version of one of the failing tests from testRememberPositionsPerWindowLayout().
+  /// Only for testing, until the problem gets fixed, should be removed afterwards.
+  return;
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->Viewer->SetRememberSettingsPerWindowLayout(true);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
+  this->SetRandomPositions();
+  ViewerState::Pointer _3HState = ViewerState::New(d->Viewer);
+  std::vector<mitk::Vector2D> _3HCentres = this->GetCentrePositions();
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
+  this->SetRandomPositions();
+
+  mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
+  ViewerState::Pointer newState;
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
+  _3HState->SetSelectedPosition(selectedPosition);
+  _3HState->SetCursorPositions(d->Viewer->GetCursorPositions());
+  newState = ViewerState::New(d->Viewer);
+  QVERIFY(*newState == *_3HState);
+  /// TODO
+//  QVERIFY(this->Equals(this->GetCentrePositions(), _3HCentres));
+  MITK_INFO << "3H";
+  MITK_INFO << "old centre positions: " << _3HCentres[0] << " " << _3HCentres[1] << " " << _3HCentres[2];
+  std::vector<mitk::Vector2D> newCentrePositions = this->GetCentrePositions();
+  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 }
 
 
