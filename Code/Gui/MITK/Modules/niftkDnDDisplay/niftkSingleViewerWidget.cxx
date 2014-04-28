@@ -623,6 +623,126 @@ WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 }
 
 
+// --------------------------------------------------------------------------
+mitk::Vector2D niftkSingleViewerWidget::GetCentrePosition(int windowIndex)
+{
+  mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+
+  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point2D centreInMm2D;
+  displayGeometry->Map(centreInMm, centreInMm2D);
+  mitk::Point2D centreInPx2D;
+  displayGeometry->WorldToDisplay(centreInMm2D, centreInPx2D);
+
+  mitk::Vector2D centrePosition;
+  centrePosition[0] = centreInPx2D[0] / this->GetRenderWindows()[windowIndex]->width();
+  centrePosition[1] = centreInPx2D[1] / this->GetRenderWindows()[windowIndex]->height();
+
+  return centrePosition;
+}
+
+
+// --------------------------------------------------------------------------
+std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCentrePositions()
+{
+  const std::vector<QmitkRenderWindow*>& renderWindows = this->GetRenderWindows();
+
+  std::vector<mitk::Vector2D> centrePositions(3);
+  for (std::size_t windowIndex = 0; windowIndex < 3; ++windowIndex)
+  {
+    if (renderWindows[windowIndex]->isVisible())
+    {
+      centrePositions[windowIndex] = this->GetCentrePosition(windowIndex);
+    }
+    else
+    {
+      /// This is not necessary but makes the printed results easier to read.
+      centrePositions[windowIndex][0] = std::numeric_limits<double>::quiet_NaN();
+      centrePositions[windowIndex][1] = std::numeric_limits<double>::quiet_NaN();
+    }
+  }
+
+  return centrePositions;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Vector2D niftkSingleViewerWidget::GetCursorPositionFromCentre(int windowIndex, const mitk::Vector2D& centrePosition)
+{
+  mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+
+  const mitk::Point3D& selectedPosition = m_MultiWidget->GetSelectedPosition();
+  double scaleFactor = m_MultiWidget->GetScaleFactor(windowIndex);
+
+  /// World centre relative to the display origin, in pixels.
+  mitk::Vector2D centreOnDisplayInPx;
+  centreOnDisplayInPx[0] = centrePosition[0] * renderer->GetSizeX();
+  centreOnDisplayInPx[1] = centrePosition[1] * renderer->GetSizeY();
+
+  /// World centre in mm.
+  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point2D centreInMm2D;
+  displayGeometry->Map(centreInMm, centreInMm2D);
+
+  /// World origin in mm.
+  mitk::Point3D originInMm = worldGeometry2D->GetOrigin();
+  mitk::Point2D originInMm2D;
+  displayGeometry->Map(originInMm, originInMm2D);
+
+  /// World centre relative to the world origin, in pixels.
+  mitk::Vector2D centreInWorldInPx;
+  centreInWorldInPx[0] = centreInMm2D[0] - originInMm2D[0];
+  centreInWorldInPx[1] = centreInMm2D[1] - originInMm2D[1];
+  centreInWorldInPx /= scaleFactor;
+
+  /// World origin relative to the display origin, in pixels.
+  mitk::Vector2D worldOriginInPx;
+  worldOriginInPx = centreOnDisplayInPx - centreInWorldInPx;
+
+  /// Cursor position relative to the world origin.
+  mitk::Point2D cursorPosition2DInMm;
+  displayGeometry->Map(selectedPosition, cursorPosition2DInMm);
+  mitk::Vector2D cursorPositionInWorldInPx;
+  cursorPositionInWorldInPx[0] = cursorPosition2DInMm[0] / scaleFactor;
+  cursorPositionInWorldInPx[1] = cursorPosition2DInMm[1] / scaleFactor;
+
+  mitk::Vector2D cursorPosition;
+  cursorPosition = worldOriginInPx + cursorPositionInWorldInPx;
+  cursorPosition[0] /= renderer->GetSizeX();
+  cursorPosition[1] /= renderer->GetSizeY();
+
+  return cursorPosition;
+}
+
+
+// --------------------------------------------------------------------------
+std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions)
+{
+  const std::vector<QmitkRenderWindow*>& renderWindows = this->GetRenderWindows();
+
+  std::vector<mitk::Vector2D> cursorPositions(3);
+  for (std::size_t windowIndex = 0; windowIndex < 3; ++windowIndex)
+  {
+    if (renderWindows[windowIndex]->isVisible())
+    {
+      cursorPositions[windowIndex] = this->GetCursorPositionFromCentre(windowIndex, centrePositions[windowIndex]);
+    }
+    else
+    {
+      /// This is not necessary but makes the printed results easier to read.
+      cursorPositions[windowIndex][0] = std::numeric_limits<double>::quiet_NaN();
+      cursorPositions[windowIndex][1] = std::numeric_limits<double>::quiet_NaN();
+    }
+  }
+
+  return cursorPositions;
+}
+
+
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
@@ -642,7 +762,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
       m_SelectedPositions[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedPosition();
-      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
+      m_CentrePositions[Index(m_WindowLayout)] = this->GetCentrePositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
       m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactorBinding();
@@ -669,32 +789,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     // we should go back to the same cursor position on display and scale factor.
     if (m_RememberSettingsPerWindowLayout && m_WindowLayoutInitialised[Index(windowLayout)])
     {
-      /// Although the selected position should not be remembered per window layout, we have to
-      /// temporarily restore the previous selected position (that was the actual selected position
-      /// when we left the window layout) because the cursor positions and the scale factors are
-      /// relative to that.
-      /// That is, first we restore everything, and we must do it in this order: selected position,
-      /// cursor positions, scale factors. Then, we reset the actual selected position what
-      /// should not move the image just put the cursor to the required place.
-      mitk::Point3D selectedPosition = m_MultiWidget->GetSelectedPosition();
-      m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
-      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
+      /// Note: We set the scale factors first because the cursor position calculation relies on it.
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-      /// We cannot call BlockUpdate(false) here, because that would send out the signals
-      /// about the selected position change, and the current selected position is just
-      /// temporary, nobody should get notified about it.
-      /// However, we need to update the display geometry so that the correct cursor positions
-      /// are set during the following SetSelectedPosition call.
-      const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWidget->GetRenderWindows();
-      for (unsigned i = 0; i < 3; ++i)
-      {
-        if (renderWindows[i]->isVisible())
-        {
-          m_MultiWidget->MoveToCursorPosition(i);
-          m_MultiWidget->ZoomAroundCursorPosition(i);
-        }
-      }
-      m_MultiWidget->SetSelectedPosition(selectedPosition);
+      std::vector<mitk::Vector2D> cursorPositions = this->GetCursorPositionsFromCentres(m_CentrePositions[Index(windowLayout)]);
+      m_MultiWidget->SetCursorPositions(cursorPositions);
       m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
     }

@@ -170,7 +170,6 @@ private slots:
 
   /// \brief Tests remembering selected position when changing window layout.
   void testRememberPositionsPerWindowLayout();
-  void testRememberPositionsPerWindowLayout2();
 
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectPositionByInteraction();
