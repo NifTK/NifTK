@@ -420,6 +420,18 @@ private:
   /// This function clears the previous remembered positions and remembers the actual positions.
   void ResetLastPositions();
 
+  /// \brief Gets the position of the centre of the displayed region, relative to the render window.
+  mitk::Vector2D GetCentrePosition(int windowIndex);
+
+  /// \brief Gets the position of the centre of the displayed regions, relative to their render windows.
+  std::vector<mitk::Vector2D> GetCentrePositions();
+
+  /// \brief Gets the cursor position in the given render window, assuming that the centre of the displayed region is at the given display position.
+  mitk::Vector2D GetCursorPositionFromCentre(int windowIndex, const mitk::Vector2D& centrePosition);
+
+  /// \brief Gets the cursor positions in the render windows, assuming that the centre of the displayed regions is at the given display positions.
+  std::vector<mitk::Vector2D> GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions);
+
   mitk::DataStorage::Pointer m_DataStorage;
   mitk::RenderingManager::Pointer m_RenderingManager;
 
@@ -438,9 +450,9 @@ private:
   /// \brief Stores the selected position for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];
 
-  /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
-  /// The vectors store the cursor positions for the render windows of the layout.
-  std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+  /// \brief Stores the centre positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// The vectors store the centre positions for the render windows of the layout.
+  std::vector<mitk::Vector2D> m_CentrePositions[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the scale factors of the render windows of the layout.

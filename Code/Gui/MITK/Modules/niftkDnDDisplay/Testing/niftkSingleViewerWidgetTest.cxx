@@ -1591,14 +1591,7 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   _3HState->SetCursorPositions(d->Viewer->GetCursorPositions());
   newState = ViewerState::New(d->Viewer);
   QVERIFY(*newState == *_3HState);
-  /// TODO
-  /// This fails at the moment.
-  /// See testRememberPositionsPerWindowLayout2.
   QVERIFY(this->Equals(this->GetCentrePositions(), _3HCentres));
-  MITK_INFO << "3H";
-  MITK_INFO << "old centre positions: " << _3HCentres[0] << " " << _3HCentres[1] << " " << _3HCentres[2];
-  std::vector<mitk::Vector2D> newCentrePositions = this->GetCentrePositions();
-  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
@@ -1606,13 +1599,7 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   _3VState->SetCursorPositions(d->Viewer->GetCursorPositions());
   newState = ViewerState::New(d->Viewer);
   QVERIFY(*newState == *_3VState);
-  /// TODO
-  /// This fails at the moment.
   QVERIFY(this->Equals(this->GetCentrePositions(), _3VCentres));
-  MITK_INFO << "3V";
-  MITK_INFO << "old centre positions: " << _3VCentres[0] << " " << _3VCentres[1] << " " << _3VCentres[2];
-  newCentrePositions = this->GetCentrePositions();
-  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
@@ -1628,13 +1615,7 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   corAxVState->SetCursorPositions(d->Viewer->GetCursorPositions());
   newState = ViewerState::New(d->Viewer);
   QVERIFY(*newState == *corAxVState);
-  /// TODO
-  /// This fails at the moment.
   QVERIFY(this->Equals(this->GetCentrePositions(), corAxVCentres));
-  MITK_INFO << "CorAxV";
-  MITK_INFO << "old centre positions: " << corAxVCentres[0] << " " << corAxVCentres[1] << " " << corAxVCentres[2];
-  newCentrePositions = this->GetCentrePositions();
-  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
@@ -1642,13 +1623,7 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   corSagHState->SetCursorPositions(d->Viewer->GetCursorPositions());
   newState = ViewerState::New(d->Viewer);
   QVERIFY(*newState == *corSagHState);
-  /// TODO
-  /// This fails at the moment.
   QVERIFY(this->Equals(this->GetCentrePositions(), corSagHCentres));
-  MITK_INFO << "CorSagH";
-  MITK_INFO << "old centre positions: " << corSagHCentres[0] << " " << corSagHCentres[1] << " " << corSagHCentres[2];
-  newCentrePositions = this->GetCentrePositions();
-  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
@@ -1710,45 +1685,6 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
   newState = ViewerState::New(d->Viewer);
   QVERIFY(*newState == *coronalState);
   QVERIFY(this->Equals(this->GetCentrePositions(), coronalCentres));
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout2()
-{
-  /// TODO
-  /// This is an extracted version of one of the failing tests from testRememberPositionsPerWindowLayout().
-  /// Only for testing, until the problem gets fixed, should be removed afterwards.
-  return;
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  d->Viewer->SetRememberSettingsPerWindowLayout(true);
-
-  d->StateTester->Clear();
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
-  this->SetRandomPositions();
-  ViewerState::Pointer _3HState = ViewerState::New(d->Viewer);
-  std::vector<mitk::Vector2D> _3HCentres = this->GetCentrePositions();
-
-  d->StateTester->Clear();
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
-  this->SetRandomPositions();
-
-  mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
-  ViewerState::Pointer newState;
-
-  d->StateTester->Clear();
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
-  _3HState->SetSelectedPosition(selectedPosition);
-  _3HState->SetCursorPositions(d->Viewer->GetCursorPositions());
-  newState = ViewerState::New(d->Viewer);
-  QVERIFY(*newState == *_3HState);
-  /// TODO
-//  QVERIFY(this->Equals(this->GetCentrePositions(), _3HCentres));
-  MITK_INFO << "3H";
-  MITK_INFO << "old centre positions: " << _3HCentres[0] << " " << _3HCentres[1] << " " << _3HCentres[2];
-  std::vector<mitk::Vector2D> newCentrePositions = this->GetCentrePositions();
-  MITK_INFO << "new centre positions: " << newCentrePositions[0] << " " << newCentrePositions[1] << " " << newCentrePositions[2];
 }
 
 
