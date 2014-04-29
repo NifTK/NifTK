@@ -76,6 +76,14 @@ QString CreateTestDeviceDescriptor()
 
 
 //-----------------------------------------------------------------------------
+QString ConvertNanoSecondsToString(const igtlUint32& nanosec)
+{
+  QString result = QString("%1").arg(nanosec, 9, 10, QChar('0'));
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName)
 {
   bool isSuccessful = false;

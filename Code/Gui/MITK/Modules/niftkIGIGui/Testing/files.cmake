@@ -16,6 +16,7 @@
 set(MODULE_TESTS
   QmitkIGINiftyLinkDataSourceMemoryTest.cxx
   QmitkIGITrackerSourceTransformTest.cxx
+  QmitkIGIUtilsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
