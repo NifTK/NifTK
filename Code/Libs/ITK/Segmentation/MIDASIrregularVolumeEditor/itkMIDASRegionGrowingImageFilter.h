@@ -110,20 +110,14 @@ public:
   itkSetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
   itkGetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
 
-  itkSetMacro(SegmentationContourImageInsideValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageInsideValue, OutputPixelType);
+  itkSetMacro(SegmentationContourImageBorderInsideValue, OutputPixelType);
+  itkGetConstMacro(SegmentationContourImageBorderInsideValue, OutputPixelType);
 
-  itkSetMacro(SegmentationContourImageBorderValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageBorderValue, OutputPixelType);
-
-  itkSetMacro(SegmentationContourImageOutsideValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageOutsideValue, OutputPixelType);
+  itkSetMacro(SegmentationContourImageBorderOutsideValue, OutputPixelType);
+  itkGetConstMacro(SegmentationContourImageBorderOutsideValue, OutputPixelType);
 
   itkSetMacro(ManualContourImageBorderValue, OutputPixelType);
   itkGetConstMacro(ManualContourImageBorderValue, OutputPixelType);
-
-  itkSetMacro(ManualContourImageNonBorderValue, OutputPixelType);
-  itkGetConstMacro(ManualContourImageNonBorderValue, OutputPixelType);
 
   /**
    * \brief Within MIDAS, if region growing covers the whole slice, the output
@@ -266,12 +260,10 @@ private:
   bool                                   m_ProjectSeedsIntoRegion;
   unsigned int                           m_MaximumSeedProjectionDistanceInVoxels;
 	typename OutputImageType::ConstPointer m_SegmentationContourImage;
-	OutputPixelType                        m_SegmentationContourImageInsideValue;
-	OutputPixelType                        m_SegmentationContourImageBorderValue;
-	OutputPixelType                        m_SegmentationContourImageOutsideValue;
+  OutputPixelType                        m_SegmentationContourImageBorderInsideValue;
+  OutputPixelType                        m_SegmentationContourImageBorderOutsideValue;
 	typename OutputImageType::ConstPointer m_ManualContourImage;
 	OutputPixelType                        m_ManualContourImageBorderValue;
-	OutputPixelType                        m_ManualContourImageNonBorderValue;
 	ParametricPathVectorType*              m_ManualContours;
 	bool                                   m_EraseFullSlice;
 	OutputImageIndexType                   m_PropMask;

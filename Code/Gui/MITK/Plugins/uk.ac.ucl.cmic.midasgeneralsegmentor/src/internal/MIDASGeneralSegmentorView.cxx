@@ -3888,10 +3888,8 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetEraseFullSlice(false);
   regionGrowingFilter->SetForegroundValue(1);
   regionGrowingFilter->SetBackgroundValue(0);
-  regionGrowingFilter->SetSegmentationContourImageInsideValue(0);
-  regionGrowingFilter->SetSegmentationContourImageBorderValue(1);
-  regionGrowingFilter->SetSegmentationContourImageOutsideValue(2);
-  regionGrowingFilter->SetManualContourImageNonBorderValue(0);
+  regionGrowingFilter->SetSegmentationContourImageBorderInsideValue(1);
+  regionGrowingFilter->SetSegmentationContourImageBorderOutsideValue(2);
   regionGrowingFilter->SetManualContourImageBorderValue(1);
   regionGrowingFilter->SetLowerThreshold(static_cast<TPixel>(lowerThreshold));
   regionGrowingFilter->SetUpperThreshold(static_cast<TPixel>(upperThreshold));
