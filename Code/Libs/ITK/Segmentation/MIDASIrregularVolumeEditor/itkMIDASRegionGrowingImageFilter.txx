@@ -23,11 +23,9 @@ MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 , m_UseRegionOfInterest(false)
 , m_ProjectSeedsIntoRegion(false)
 , m_MaximumSeedProjectionDistanceInVoxels(1)
-, m_SegmentationContourImageInsideValue(0)
-, m_SegmentationContourImageBorderValue(1)
-, m_SegmentationContourImageOutsideValue(2)
+, m_SegmentationContourImageBorderInsideValue(1)
+, m_SegmentationContourImageBorderOutsideValue(2)
 , m_ManualContourImageBorderValue(1)
-, m_ManualContourImageNonBorderValue(0)
 , m_EraseFullSlice(false)
 , m_UsePropMaskMode(false)
 {
@@ -142,21 +140,24 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType segmentationContourImageCurrentPixel = segmentationContourImage->GetPixel(currentImgIdx);
     OutputPixelType segmentationContourImageNextPixel = segmentationContourImage->GetPixel(nextImgIdx);
 
-    if ((segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-         || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageInsideValue)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected))
+    if ((segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderInsideValue
+         && segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderOutsideValue
+         && isFullyConnected)
+        || (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderInsideValue
+            && segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderOutsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderInsideValue
+            && !isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderInsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderInsideValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderInsideValue
+            && segmentationContourImageNextPixel != m_SegmentationContourImageBorderInsideValue
+            && segmentationContourImageNextPixel != m_SegmentationContourImageBorderOutsideValue)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderOutsideValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderOutsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderInsideValue
+            && !isFullyConnected))
     {
       return;
     }
@@ -168,17 +169,21 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType manualContourCurrentPixel = manualContourImage->GetPixel(currentImgIdx);
     OutputPixelType manualContourNextPixel = manualContourImage->GetPixel(nextImgIdx);
 
-    if (manualContourCurrentPixel == m_ManualContourImageNonBorderValue)
+    if (manualContourCurrentPixel != m_ManualContourImageBorderValue)
     {
-      if (manualContourNextPixel != m_ManualContourImageNonBorderValue
+      /// For non-border pixels we add the 8-connected non-border pixels
+      /// and the 4-connected border pixels. Otherwise, we skip.
+      if (manualContourNextPixel == m_ManualContourImageBorderValue
           && !isFullyConnected)
       {
         return;
       }
     }
-    else // if (manualContourCurrentPixel != m_ManualContourImageNonBorderValue)
+    else
     {
-      if (manualContourNextPixel == m_ManualContourImageNonBorderValue
+      /// For border pixels we add the 4-connected border pixels, unless there
+      /// is a contour line on the intermediate orthogonal edge. Otherwise, we skip.
+      if (manualContourNextPixel != m_ManualContourImageBorderValue
           || !isFullyConnected
           || this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))
       {
