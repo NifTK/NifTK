@@ -118,15 +118,15 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     paintingRegion.SetIndex(m_AxisNumber, m_SliceNumber);
     paintingRegion.SetSize(m_AxisNumber, 1);
 
-    const unsigned char segmentationContourImageNonBorderValue = 0;
-    const unsigned char segmentationContourImageBorderInsideValue = 1;
-    const unsigned char segmentationContourImageBorderOutsideValue = 2;
-    const unsigned char manualContourImageNonBorderValue = 1;
-    const unsigned char manualContourImageBorderValue = 1;
-
+    unsigned char segImageInside = 0;
+    unsigned char segImageBorder = 1;
+    unsigned char segImageOutside = 2;
+    unsigned char manualImageNonBorder = 0;
+    unsigned char manualImageBorder = 1;
+        
     // 6. Blank the contour images.
-    segmentationContourImage->FillBuffer(segmentationContourImageNonBorderValue);
-    manualContourImage->FillBuffer(manualContourImageNonBorderValue);
+    segmentationContourImage->FillBuffer(segImageInside);
+    manualContourImage->FillBuffer(manualImageNonBorder);
 
     /// 7. Render the segmentation contours into the segmentation contour image.
     /// 7.a First, process every side point and the internal corner points.
@@ -153,15 +153,15 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
                !countourImageIt.IsAtEnd();
                ++countourImageIt, ++segmentationImageIt)
           {
-            if (countourImageIt.Get() == segmentationContourImageNonBorderValue)
+            if (countourImageIt.Get() == segImageInside)
             {
               if (segmentationImageIt.Get())
               {
-                countourImageIt.Set(segmentationContourImageBorderInsideValue);
+                countourImageIt.Set(segImageBorder);
               }
               else
               {
-                countourImageIt.Set(segmentationContourImageBorderOutsideValue);
+                countourImageIt.Set(segImageOutside);
               }
             }
           }
@@ -270,7 +270,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           unsigned char unsetVoxels = 0;
           for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
           {
-            if (countourImageIt.Get() == segmentationContourImageNonBorderValue)
+            if (countourImageIt.Get() == segImageInside)
             {
               ++unsetVoxels;
             }
@@ -303,15 +303,15 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
                    !countourImageIt.IsAtEnd();
                    ++countourImageIt, ++segmentationImageIt)
               {
-                if (countourImageIt.Get() == segmentationContourImageNonBorderValue)
+                if (countourImageIt.Get() == segImageInside)
                 {
                   if (segmentationImageIt.Get())
                   {
-                    countourImageIt.Set(segmentationContourImageBorderInsideValue);
+                    countourImageIt.Set(segImageBorder);
                   }
                   else
                   {
-                    countourImageIt.Set(segmentationContourImageBorderOutsideValue);
+                    countourImageIt.Set(segImageOutside);
                   }
                 }
               }
@@ -343,7 +343,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
           for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
           {
-            countourImageIt.Set(manualContourImageBorderValue);
+            countourImageIt.Set(manualImageBorder);
           }
         }
       }
@@ -370,7 +370,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
           unsigned char unsetVoxels = 0;
           for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
           {
-            if (countourImageIt.Get() == manualContourImageNonBorderValue)
+            if (countourImageIt.Get() == manualImageNonBorder)
             {
               ++unsetVoxels;
             }
@@ -382,9 +382,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
             for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
             {
-              if (countourImageIt.Get() == manualContourImageNonBorderValue)
+              if (countourImageIt.Get() == manualImageNonBorder)
               {
-                countourImageIt.Set(manualContourImageBorderValue);
+                countourImageIt.Set(manualImageBorder);
               }
             }
           }
@@ -418,10 +418,12 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
     m_RegionGrowingFilter->SetSegmentationContourImage(segmentationContourImage);
-    m_RegionGrowingFilter->SetSegmentationContourImageBorderInsideValue(segmentationContourImageBorderInsideValue);
-    m_RegionGrowingFilter->SetSegmentationContourImageBorderOutsideValue(segmentationContourImageBorderOutsideValue);
+    m_RegionGrowingFilter->SetSegmentationContourImageInsideValue(segImageInside);
+    m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
+    m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
     m_RegionGrowingFilter->SetManualContourImage(manualContourImage);
-    m_RegionGrowingFilter->SetManualContourImageBorderValue(manualContourImageBorderValue);
+    m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
+    m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
     
