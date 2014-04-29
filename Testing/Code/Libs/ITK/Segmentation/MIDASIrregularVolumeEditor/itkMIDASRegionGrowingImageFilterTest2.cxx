@@ -77,7 +77,6 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   filter->SetProjectSeedsIntoRegion(false);
   filter->SetSeedPoints(*(points));
   filter->SetManualContourImage(contourImage);
-  filter->SetManualContourImageBorderValue(255);
   filter->SetInput(greyImage);
   filter->Update();
 
