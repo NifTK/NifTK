@@ -20,6 +20,7 @@
 #include <QString>
 #include <vtkMatrix4x4.h>
 #include <QmitkDataStorageCheckableComboBox.h>
+#include "igtlTypes.h"
 
 /**
  * \brief For testing purposes, loads an STL file.
@@ -84,5 +85,10 @@ NIFTKIGIGUI_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const
  * \param the file name
  */
 NIFTKIGIGUI_EXPORT std::vector<float [3]> ReadRigidBodyDefinitionFile(QString& rigidBodyFilename);
+
+/**
+ * \brief Converts an integer number of nanoseconds to a 9 digit string, prefixed with zeros.
+ */
+NIFTKIGIGUI_EXPORT QString ConvertNanoSecondsToString(const igtlUint32& nanosec);
 
 #endif

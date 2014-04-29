@@ -26,6 +26,7 @@
 #include <mitkIOUtil.h>
 #include <QmitkIGIUtils.h>
 #include <QFileDialog>
+
 //-----------------------------------------------------------------------------
 QmitkImageAndTransformSenderWidget::QmitkImageAndTransformSenderWidget(QWidget *parent)
 : m_DataStorage(NULL)
@@ -319,7 +320,7 @@ void QmitkImageAndTransformSenderWidget::SendImageAndTransform(const mitk::Image
     secString.setNum(sec);
 
     // This must be 9 digits. So, 1 nanosecond past the second is 000000001 not 1.
-    QString nanoString = QString("%1").arg(nanosec, 9, QChar('0'));
+    QString nanoString = ConvertNanoSecondsToString(nanosec);
 
     QString baseName = m_DirectoryPath->currentPath() + QDir::separator() + secString + nanoString;
     QString imageName = baseName + QString(".nii");
