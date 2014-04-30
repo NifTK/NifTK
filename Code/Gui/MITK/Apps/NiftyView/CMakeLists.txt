@@ -20,6 +20,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.gui.qt.niftymidas
   uk.ac.ucl.cmic.niftyseg
+  uk.ac.ucl.cmic.sideviewer
 )
 
 NIFTK_CREATE_GUI_APPLICATION(
