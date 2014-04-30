@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
- <qresource prefix="/uk.ac.ucl.cmic.gui.qt.igirmserror">
+ <qresource prefix="/uk.ac.ucl.cmic.igirmserror">
    <file>icon.png</file>
  </qresource>
  </RCC>
