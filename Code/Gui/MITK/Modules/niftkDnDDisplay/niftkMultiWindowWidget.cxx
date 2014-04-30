@@ -402,6 +402,8 @@ void niftkMultiWindowWidget::SetFocused()
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkMultiWindowWidget::GetSelectedRenderWindow() const
 {
+  assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
+
   return m_RenderWindows[m_SelectedWindowIndex];
 }
 
@@ -410,6 +412,8 @@ QmitkRenderWindow* niftkMultiWindowWidget::GetSelectedRenderWindow() const
 void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   std::size_t selectedWindowIndex = std::find(m_RenderWindows.begin(), m_RenderWindows.end(), renderWindow) - m_RenderWindows.begin();
+  assert(selectedWindowIndex != m_RenderWindows.size());
+
   this->SetSelectedWindowIndex(selectedWindowIndex);
 }
 
@@ -417,13 +421,17 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
 //-----------------------------------------------------------------------------
 int niftkMultiWindowWidget::GetSelectedWindowIndex() const
 {
+  assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
+
   return m_SelectedWindowIndex;
 }
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 {
-  if (selectedWindowIndex < 4 && selectedWindowIndex != m_SelectedWindowIndex)
+  assert(selectedWindowIndex >= 0 && selectedWindowIndex < m_RenderWindows.size());
+
+  if (selectedWindowIndex != m_SelectedWindowIndex)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
     if (m_IsFocused)

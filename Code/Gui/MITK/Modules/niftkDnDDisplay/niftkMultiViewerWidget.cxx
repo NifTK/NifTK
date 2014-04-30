@@ -643,20 +643,12 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   m_ControlPanel->SetViewerNumber(viewerRows, viewerColumns);
 
   // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
-  int selectedViewerIndex = this->GetSelectedViewerIndex();
-  niftkSingleViewerWidget* selectedViewer;
-  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
-  if (this->GetViewerRowFromIndex(selectedViewerIndex) >= viewerRows || this->GetViewerColumnFromIndex(selectedViewerIndex) >= viewerColumns)
+  if (this->GetViewerRowFromIndex(m_SelectedViewerIndex) >= viewerRows
+      || this->GetViewerColumnFromIndex(m_SelectedViewerIndex) >= viewerColumns)
   {
-    selectedViewerIndex = 0;
-    selectedViewer = m_Viewers[selectedViewerIndex];
-    selectedRenderWindow = selectedViewer->GetSelectedRenderWindow();
+    m_SelectedViewerIndex = 0;
   }
-  else
-  {
-    selectedViewer = m_Viewers[selectedViewerIndex];
-  }
-//  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
+  niftkSingleViewerWidget* selectedViewer = m_Viewers[m_SelectedViewerIndex];
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
@@ -1407,6 +1399,7 @@ MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 int niftkMultiViewerWidget::GetSelectedViewerIndex() const
 {
+  assert(m_SelectedViewerIndex >= 0 && m_SelectedViewerIndex < m_Viewers.size());
   return m_SelectedViewerIndex;
 }
 
