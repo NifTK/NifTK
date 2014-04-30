@@ -9,7 +9,8 @@ This view provides registration of two data nodes containing points.
 The current implementation allows a rigid (6 degree of freedom) registration between the
 moving and fixed data.
 Two methods are available. For ordered point sets, where the correspondence between points is known
-a "Procrustes" registration using SVD. For point sets of unequal size or where the 
+the registration can be posed as an orthogonal Procrustes problem and the optimal 
+registration found using matrix SVD. For point sets of unequal size or where the 
 correspondence is not known, an implementation of ITK's iterative closest point algorithm is used.
 
 The resulting transform is not composed with the moving node by default. To physically move the
@@ -32,9 +33,8 @@ methods to determine the point order for ordered point registration.
 
 \section PointRegReferences References
 
-ITK ICP 
-Wikipedia ICP 
-Wikipedia Procrustes
+All about ICP <http://en.wikipedia.org/wiki/Iterative_closest_point>
+Orthogonal Procrustes <http://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem>
 
 */
 

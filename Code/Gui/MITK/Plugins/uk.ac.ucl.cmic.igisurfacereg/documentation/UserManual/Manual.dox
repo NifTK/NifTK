@@ -48,6 +48,6 @@ The preference page contains options to set the maximum number of points used an
 \section SurfaceRegReferences References
 
 VTK's ICP class <http://www.vtk.org/doc/nightly/html/classvtkIterativeClosestPointTransform.html>
-
+All about ICP <http://en.wikipedia.org/wiki/Iterative_closest_point>
 */
 
