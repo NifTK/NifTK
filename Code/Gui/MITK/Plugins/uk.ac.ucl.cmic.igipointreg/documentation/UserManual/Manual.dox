@@ -18,15 +18,23 @@ to be composed with any available data node.
 
 \section PointRegUsage Usage
 
-Put all usage information here.
+The user must select a fixed data node. Only nodes containing points or surfaces are available.
+The user must select a moving data node. Only nodes containing surfaces are available.
+
+Pressing the calculate button will begin the registration algorithm. When the algorithm
+completes, the resulting transform is displayed. The user may save the transform to
+file and/or compose a selection of data nodes with the transform.
 
 \section PointRegPreferences Preferences
 
-Put all information on user configurable preferences here.
+The preference page contains contains options to determine the registration method and 
+methods to determine the point order for ordered point registration.
 
 \section PointRegReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+ITK ICP 
+Wikipedia ICP 
+Wikipedia Procrustes
 
 */
 
