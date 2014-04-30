@@ -26,21 +26,23 @@
 //-----------------------------------------------------------------------------
 QmitkVideoPointPickingWidget::QmitkVideoPointPickingWidget(
   const QString& inputTrackerDirectory,
-  const QString& inputImageDirectory,
-  const QString& outputMatrixDirectory,
+  const QString& inputVideoDirectory,
   const QString& outputPointDirectory,  
   const unsigned long long timingToleranceInMilliseconds,
   const bool& skipForward,
   const bool& multiPointMode,
+  const bool& skipExistingFrames,
+  const unsigned int& samplingFrequency,
   QWidget *parent)
 : QVTKWidget(parent)
 , m_InputTrackerDirectory(inputTrackerDirectory)
-, m_InputImageDirectory(inputImageDirectory)
-, m_OutputMatrixDirectory(outputMatrixDirectory)
+, m_InputVideoDirectory(inputVideoDirectory)
 , m_OutputPointDirectory(outputPointDirectory)
 , m_TimingToleranceInMilliseconds(timingToleranceInMilliseconds)
 , m_SkipForward(skipForward)
 , m_MultiPointMode(multiPointMode)
+, m_SkipExistingFrames(skipExistingFrames)
+, m_SamplingFrequency(samplingFrequency)
 {
   m_ImageViewer = vtkImageViewer::New();
   this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
@@ -48,7 +50,7 @@ QmitkVideoPointPickingWidget::QmitkVideoPointPickingWidget(
   m_ImageViewer->SetColorLevel(127.5);
   m_ImageViewer->SetColorWindow(255);  
   
-  m_PNGReader = vtkPNGReader::New();
+  m_Matcher = mitk::VideoTrackerMatching::New();
 
   // Load all data, and set up the PNG reader to the first image.
   bool canFindTrackingData = mitk::CheckIfDirectoryContainsTrackingMatrices(m_InputTrackerDirectory.toStdString());
@@ -58,16 +60,13 @@ QmitkVideoPointPickingWidget::QmitkVideoPointPickingWidget(
   }
 
   m_TrackingTimeStamps = mitk::FindTrackingTimeStamps(m_InputTrackerDirectory.toStdString());
-  m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".png");
-  std::sort(m_ImageFiles.begin(), m_ImageFiles.end());
 
-  std::cout << "Found " << m_ImageFiles.size() << " image files..." << std::endl;
   std::cout << "Found " << m_TrackingTimeStamps.m_TimeStamps.size() << " tracking matrices..." << std::endl;
 
   m_ImageFileCounter = 0;
   m_PointsOutputCounter = 0;
 
-  m_PNGReader->SetFileName(m_ImageFiles[m_ImageFileCounter].c_str());
+  /*
   m_ImageViewer->SetInputConnection(m_PNGReader->GetOutputPort());
   m_PNGReader->Update();
 
@@ -75,6 +74,7 @@ QmitkVideoPointPickingWidget::QmitkVideoPointPickingWidget(
   m_PNGReader->GetDataExtent(extent);
   m_ImageWidth = extent[1] + 1;
   m_ImageHeight = extent[3] + 1;
+  */
 }
 
 
@@ -121,11 +121,6 @@ void QmitkVideoPointPickingWidget::keyPressEvent(QKeyEvent* event)
     this->NextImage();
     event->accept();    
   }
-  else if (event->key() == Qt::Key_P)
-  {
-    this->PreviousImage();
-    event->accept();
-  }
   else if (event->key() == Qt::Key_Q)
   {
     this->QuitApplication();
@@ -148,16 +143,16 @@ void QmitkVideoPointPickingWidget::QuitApplication()
 //-----------------------------------------------------------------------------
 void QmitkVideoPointPickingWidget::ShowImage(const unsigned long int& imageNumber)
 {
-  m_PNGReader->SetFileName(m_ImageFiles[imageNumber].c_str());
+ /* m_PNGReader->SetFileName(m_ImageFiles[imageNumber].c_str());
   m_ImageViewer->Render();
-  std::cout << "Displaying image[" << imageNumber << "/" << m_ImageFiles.size() << ", " << imageNumber*100/m_ImageFiles.size() << "%]=" << m_ImageFiles[imageNumber] << ", stored " << m_PointsOutputCounter << " so far." << std::endl;
+  std::cout << "Displaying image[" << imageNumber << "/" << m_ImageFiles.size() << ", " << imageNumber*100/m_ImageFiles.size() << "%]=" << m_ImageFiles[imageNumber] << ", stored " << m_PointsOutputCounter << " so far." << std::endl; */
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkVideoPointPickingWidget::NextImage()
 {
-  if (m_ImageFileCounter < m_ImageFiles.size() - 1)
+/*  if (m_ImageFileCounter < m_ImageFiles.size() - 1)
   {
     unsigned int offset = 1;
 
@@ -194,20 +189,8 @@ void QmitkVideoPointPickingWidget::NextImage()
 
     m_ImageFileCounter += offset;
     this->ShowImage(m_ImageFileCounter);
-  }
+  }*/
 }
-
-
-//-----------------------------------------------------------------------------
-void QmitkVideoPointPickingWidget::PreviousImage()
-{
-  if (m_ImageFileCounter > 0)
-  {
-    m_ImageFileCounter--;
-    this->ShowImage(m_ImageFileCounter);
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 void QmitkVideoPointPickingWidget::CreateDir(const std::string& dir)
@@ -216,7 +199,7 @@ void QmitkVideoPointPickingWidget::CreateDir(const std::string& dir)
   {
     if (!niftk::CreateDirAndParents(dir))
     {
-      QMessageBox::critical(this, tr("niftkUltrasoundPinCalibrationSorter"),
+      QMessageBox::critical(this, tr("QmitkVideoPointPickingWidget"),
                                   tr("Can't write to\n%1").arg(QString::fromStdString(dir)),
                                   QMessageBox::Ok);
       QApplication::exit(-1);
@@ -228,7 +211,7 @@ void QmitkVideoPointPickingWidget::CreateDir(const std::string& dir)
 //-----------------------------------------------------------------------------
 void QmitkVideoPointPickingWidget::StorePoint(QMouseEvent* event)
 {
-  if (event != NULL)
+/*  if (event != NULL)
   {
     this->CreateDir(m_OutputPointDirectory.toStdString());
     this->CreateDir(m_OutputMatrixDirectory.toStdString());
@@ -326,6 +309,6 @@ void QmitkVideoPointPickingWidget::StorePoint(QMouseEvent* event)
                                   tr("Invalid image file name\n%1").arg(imageFileName),
                                   QMessageBox::Ok);
     }
-  }
+  } */
 }
 

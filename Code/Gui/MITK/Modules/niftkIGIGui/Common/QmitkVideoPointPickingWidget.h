@@ -23,12 +23,12 @@
 #include <QString>
 #include <vtkImageViewer.h>
 #include <vtkSmartPointer.h>
-#include <vtkPNGReader.h>
+#include <mitkVideoTrackerMatching.h>
 #include <mitkTrackingMatrixTimeStamps.h>
 
 /**
  * \class QmitkVideoPointPickingWidget
- * \brief Very prototypyish.. don't copy this one.
+ * \brief Very very prototypyish.. don't copy this one, copy QmitkUltrasoundPinCalibrationWidget instead.
  */
 class NIFTKIGIGUI_EXPORT QmitkVideoPointPickingWidget : public QVTKWidget 
 {
@@ -38,21 +38,20 @@ public:
 
   QmitkVideoPointPickingWidget(
     const QString& inputTrackerDirectory,
-    const QString& inputImageDirectory,
-    const QString& outputMatrixDirectory,
+    const QString& inputVideoDirectory,
     const QString& outputPointDirectory,
     const unsigned long long timingToleranceInMilliseconds,
     const bool& skipForward,
     const bool& multiPointMode,
+    const bool& skipExistingFrames,
+    const unsigned int& samplingFrequency,
     QWidget *parent = 0
   );
   virtual ~QmitkVideoPointPickingWidget();
 
   /**
-   * \brief When mouse is pressed, we store the 2D pixel location, in a single line, in a new file.
-   * 
-   * This will only save if the timing difference between an ultrasound image and the tracking data
-   * is within a certain tolerance. An error message is raised if there is no tracking information.
+   * \brief When mouse is pressed, we store the 2D pixel location, in a single line, in a 
+   * file carrying the time stamp of the video frame. 
    */
   virtual void mousePressEvent(QMouseEvent* event);
   
@@ -62,7 +61,6 @@ public:
    * Valid keys are
    * <pre>
    *   N = next image
-   *   P = previous image
    *   Q = quit application
    * </pre>
    */
@@ -78,24 +76,23 @@ private slots:
 private:
 
   const QString m_InputTrackerDirectory;
-  const QString m_InputImageDirectory;
-  const QString m_OutputMatrixDirectory;
+  const QString m_InputVideoDirectory;
   const QString m_OutputPointDirectory;
   const unsigned long long m_TimingToleranceInMilliseconds;
   const bool m_SkipForward;
   const bool m_MultiPointMode;
+  const bool m_SkipExistingFrames;
+  const unsigned int m_SamplingFrequency;
 
   vtkSmartPointer<vtkImageViewer> m_ImageViewer;
-  vtkSmartPointer<vtkPNGReader> m_PNGReader;
+  mitk::VideoTrackerMatching::Pointer m_Matcher;
   mitk::TrackingMatrixTimeStamps m_TrackingTimeStamps;
-  std::vector<std::string> m_ImageFiles;
   int m_ImageWidth;
   int m_ImageHeight;
   unsigned long int m_ImageFileCounter;
   unsigned long int m_PointsOutputCounter;
 
   void NextImage();
-  void PreviousImage();
   void QuitApplication();
   void StorePoint(QMouseEvent* event);
   void ShowImage(const unsigned long int& imageNumber);
