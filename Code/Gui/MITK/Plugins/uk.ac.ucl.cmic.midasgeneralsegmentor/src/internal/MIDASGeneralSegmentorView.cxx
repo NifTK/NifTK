@@ -1262,12 +1262,20 @@ bool MIDASGeneralSegmentorView::SelectViewMode()
 {
   if (!this->HasInitialisedWorkingData())
   {
-    return false;
+    QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
+    foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
+    {
+      selectedNode->SetVisibility(!selectedNode->IsVisible(0));
+    }
+    this->RequestRenderWindowUpdate();
+
+    return true;
   }
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   bool segmentationNodeIsVisible = workingNodes[0]->IsVisible(0);
-  this->OnSeeImageCheckBoxToggled(!segmentationNodeIsVisible);
+  workingNodes[0]->SetVisibility(!segmentationNodeIsVisible);
+  this->RequestRenderWindowUpdate();
 
   return true;
 }
@@ -1528,35 +1536,6 @@ void MIDASGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
     this->UpdatePriorAndNext();
   }
   workingNodes[5]->SetVisibility(checked);
-  this->RequestRenderWindowUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSeeImageCheckBoxToggled(bool checked)
-{
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-
-  workingNodes[0]->SetVisibility(!checked); // segmentation image
-  workingNodes[1]->SetVisibility(!checked); // seeds
-  workingNodes[2]->SetVisibility(!checked); // orange contours from current segmentation
-  workingNodes[3]->SetVisibility(!checked); // draw tool contours
-  workingNodes[4]->SetVisibility(!checked && m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
-  workingNodes[5]->SetVisibility(!checked && m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
-  workingNodes[6]->SetVisibility(!checked && m_GeneralControls->m_ThresholdingCheckBox->isChecked()); // region growing
-
-  // Also need to check if feedback contour from poly line is off/on.
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-  assert(polyTool);
-
-  polyTool->SetFeedbackContourVisible(!checked && toolManager->GetActiveTool() == polyTool);
-
   this->RequestRenderWindowUpdate();
 }
 

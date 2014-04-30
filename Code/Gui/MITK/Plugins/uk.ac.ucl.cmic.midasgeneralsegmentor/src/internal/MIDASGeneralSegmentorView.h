@@ -230,10 +230,6 @@ protected slots:
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called from the "view" checkbox so that when the checkbox is checked, we just
-  /// see the image, when it is not, we additionally see all the contours and reference data.
-  void OnSeeImageCheckBoxToggled(bool checked);
-
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
   /// currently at:  https://cmicdev.cs.ucl.ac.uk/trac/ticket/1096
