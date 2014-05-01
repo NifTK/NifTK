@@ -62,7 +62,7 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
 {
-  assert(dataStorage);
+  assert(dataStorage.IsNotNull());
   m_DataStorage = dataStorage;
 
   m_DataStorage->AddNodeEvent.AddListener(
@@ -78,50 +78,20 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
 //-----------------------------------------------------------------------------
 niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 {
-  if (m_DataStorage.IsNotNull())
+  std::map<mitk::BaseProperty*, unsigned long>::iterator it = m_GlobalVisibilityObserverTags.begin();
+  std::map<mitk::BaseProperty*, unsigned long>::iterator itEnd = m_GlobalVisibilityObserverTags.end();
+  for ( ; it != itEnd; ++it)
   {
-    m_DataStorage->AddNodeEvent.RemoveListener(
-        mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
-    ( this, &niftkMultiViewerVisibilityManager::NodeAddedProxy ));
-
-    m_DataStorage->RemoveNodeEvent.RemoveListener(
-        mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
-    ( this, &niftkMultiViewerVisibilityManager::NodeRemovedProxy ));
-
-    m_DataStorage = NULL;
+    it->first->RemoveObserver(it->second);
   }
-  this->RemoveAllFromObserverToVisibilityMap();
-}
 
+  m_DataStorage->AddNodeEvent.RemoveListener(
+      mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+  ( this, &niftkMultiViewerVisibilityManager::NodeAddedProxy ));
 
-//-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::RemoveAllFromObserverToVisibilityMap()
-{
-  for( std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter = m_ObserverToVisibilityMap.begin(); iter != m_ObserverToVisibilityMap.end(); ++iter )
-  {
-    (*iter).second->RemoveObserver((*iter).first);
-  }
-  m_ObserverToVisibilityMap.clear();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::UpdateObserverToVisibilityMap()
-{
-  this->RemoveAllFromObserverToVisibilityMap();
-
-  assert(m_DataStorage);
-
-  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
-  {
-    mitk::BaseProperty* property = it->Value()->GetProperty("visible");
-    if (property)
-    {
-      VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, it->Value());
-      m_ObserverToVisibilityMap[property->AddObserver(itk::ModifiedEvent(), command)] = property;
-    }
-  }
+  m_DataStorage->RemoveNodeEvent.RemoveListener(
+      mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+  ( this, &niftkMultiViewerVisibilityManager::NodeRemovedProxy ));
 }
 
 
@@ -221,52 +191,62 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
     m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
   }
 
-  bool globalVisibility = false;
-  node->GetBoolProperty("visible", globalVisibility);
-
-  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
-  // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
-  // registered as a child of a grey scale image. If the parent grey scale image is already
-  // registered as visible in a viewer, then the child image is made visible, which has the effect of
-  // immediately showing the segmented volume.
-  mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(m_DataStorage, node);
-  if (parent.IsNotNull())
+  mitk::BoolProperty* property = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
+  if (property)
   {
-    for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
+    bool globalVisibility = property->GetValue();
+
+    // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
+    // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
+    // registered as a child of a grey scale image. If the parent grey scale image is already
+    // registered as visible in a viewer, then the child image is made visible, which has the effect of
+    // immediately showing the segmented volume.
+    mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(m_DataStorage, node);
+    if (parent.IsNotNull())
     {
-      std::set<mitk::DataNode*>::iterator iter;
-      for (iter = m_DataNodesPerViewer[i].begin(); iter != m_DataNodesPerViewer[i].end(); iter++)
+      for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
       {
-        if (*iter == parent)
+        std::set<mitk::DataNode*>::iterator iter;
+        for (iter = m_DataNodesPerViewer[i].begin(); iter != m_DataNodesPerViewer[i].end(); iter++)
         {
-          this->AddNodeToViewer(i, node, globalVisibility);
+          if (*iter == parent)
+          {
+            this->AddNodeToViewer(i, node, globalVisibility);
+          }
         }
       }
     }
-  }
-  else
-  {
-    /// TODO This should not be handled here.
-    if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
+    else
     {
-      for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+      /// TODO This should not be handled here.
+      if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
       {
-        if (m_Viewers[viewerIndex]->IsFocused())
+        for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
         {
-          this->AddNodeToViewer(viewerIndex, node, globalVisibility);
+          if (m_Viewers[viewerIndex]->IsFocused())
+          {
+            this->AddNodeToViewer(viewerIndex, node, globalVisibility);
+          }
         }
       }
     }
-  }
 
-  this->UpdateObserverToVisibilityMap();
+    VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
+    unsigned long observerTag = property->AddObserver(itk::ModifiedEvent(), command);
+    m_GlobalVisibilityObserverTags[property] = observerTag;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 {
-  this->UpdateObserverToVisibilityMap();
+  mitk::BoolProperty* property = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
+  if (property)
+  {
+    property->RemoveObserver(m_GlobalVisibilityObserverTags[property]);
+    m_GlobalVisibilityObserverTags.erase(property);
+  }
 
   for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
   {

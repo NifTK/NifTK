@@ -124,12 +124,6 @@ protected slots:
 
 private:
 
-  /// \brief Will remove all observers from the ObserverToVisibilityMap, called from UpdateObserverToVisibilityMap and the destructor.
-  void RemoveAllFromObserverToVisibilityMap();
-
-  /// \brief Will refresh the observers of all the visibility properties... called when NodeAdded or NodeRemoved.
-  void UpdateObserverToVisibilityMap();
-
   /// \brief Works out the correct window layout from the data, and from the preferences.
   WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);
 
@@ -161,8 +155,7 @@ private:
   std::vector< niftkSingleViewerWidget* > m_Viewers;
 
   // We also observe all the global visibility properties for each registered node.
-  typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
-  ObserverToPropertyMap m_ObserverToVisibilityMap;
+  std::map<mitk::BaseProperty*, unsigned long> m_GlobalVisibilityObserverTags;
 
   // Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
   bool m_BlockDataStorageEvents;
