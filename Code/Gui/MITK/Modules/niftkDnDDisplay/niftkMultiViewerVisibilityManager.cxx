@@ -296,11 +296,11 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node)
 
   if (!m_NodeFilter->Pass(node))
   {
-    return;
+//    return;
   }
 
-  this->UpdateObserverToVisibilityMap();
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
+  this->UpdateObserverToVisibilityMap();
 }
 
 
@@ -309,6 +309,9 @@ void niftkMultiViewerVisibilityManager::SetInitialNodeProperties(mitk::DataNode*
 {
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   this->SetNodeVisibilityForAllViewers(node, false);
+
+  bool globalVisibility = false;
+  node->GetBoolProperty("visible", globalVisibility);
 
   // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
   // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
@@ -325,9 +328,21 @@ void niftkMultiViewerVisibilityManager::SetInitialNodeProperties(mitk::DataNode*
       {
         if (*iter == parent)
         {
-          bool globalVisibility = false;
-          node->GetBoolProperty("visible", globalVisibility);
           this->AddNodeToViewer(i, node, globalVisibility);
+        }
+      }
+    }
+  }
+  else
+  {
+    /// TODO This should not be handled here.
+    if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
+    {
+      for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+      {
+        if (m_Viewers[viewerIndex]->IsFocused())
+        {
+          this->AddNodeToViewer(viewerIndex, node, globalVisibility);
         }
       }
     }
