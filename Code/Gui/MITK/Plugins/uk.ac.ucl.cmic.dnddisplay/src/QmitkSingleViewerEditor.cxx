@@ -335,7 +335,6 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 //    d->m_SingleViewer->SetDefaultMultiWindowLayout(multiWindowLayout);
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
-    d->m_VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 

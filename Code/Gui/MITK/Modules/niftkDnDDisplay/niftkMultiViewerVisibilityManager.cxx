@@ -26,7 +26,7 @@
 
 //-----------------------------------------------------------------------------
 niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
-: m_InDataStorageChanged(false)
+: m_BlockDataStorageEvents(false)
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
 {
@@ -116,39 +116,35 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *
   std::set<mitk::DataNode*> newNodes;
   m_DataNodes.push_back(newNodes);
   m_Viewers.push_back(viewer);
+
+  this->SetAllNodeVisibilityForViewer(m_Viewers.size() - 1, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::DeRegisterAllViewers()
+void niftkMultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std::size_t endIndex)
 {
-  this->DeRegisterViewers(0, m_Viewers.size()-1);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::DeRegisterViewers(std::size_t startViewerIndex, std::size_t endViewerIndex)
-{
-  for (std::size_t i = startViewerIndex; i <= endViewerIndex; i++)
+  if (endIndex == -1)
+  {
+    endIndex = m_Viewers.size();
+  }
+  for (std::size_t i = startIndex; i < endIndex; ++i)
   {
     this->RemoveNodesFromViewer(i);
   }
-  m_DataNodes.erase(m_DataNodes.begin() + startViewerIndex, m_DataNodes.begin() + endViewerIndex+1);
-  m_Viewers.erase(m_Viewers.begin() + startViewerIndex, m_Viewers.begin() + endViewerIndex+1);
+  m_DataNodes.erase(m_DataNodes.begin() + startIndex, m_DataNodes.begin() + endIndex);
+  m_Viewers.erase(m_Viewers.begin() + startIndex, m_Viewers.begin() + endIndex);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::ClearAllViewers()
+void niftkMultiViewerVisibilityManager::ClearViewers(std::size_t startIndex, std::size_t endIndex)
 {
-  this->ClearViewers(0, m_Viewers.size() - 1);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::ClearViewers(std::size_t startViewerIndex, std::size_t endViewerIndex)
-{
-  for (std::size_t i = startViewerIndex; i <= endViewerIndex; i++)
+  if (endIndex == -1)
+  {
+    endIndex = m_Viewers.size();
+  }
+  for (std::size_t i = startIndex; i < endIndex; i++)
   {
     this->RemoveNodesFromViewer(i);
   }
@@ -212,11 +208,11 @@ void niftkMultiViewerVisibilityManager::SetNodeVisibilityForViewer(mitk::DataNod
 void niftkMultiViewerVisibilityManager::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_InDataStorageChanged)
+  if(!m_BlockDataStorageEvents)
   {
-    m_InDataStorageChanged = true;
+    m_BlockDataStorageEvents = true;
     this->NodeRemoved(node);
-    m_InDataStorageChanged = false;
+    m_BlockDataStorageEvents = false;
   }
 }
 
@@ -242,11 +238,11 @@ void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_InDataStorageChanged)
+  if(!m_BlockDataStorageEvents)
   {
-    m_InDataStorageChanged = true;
+    m_BlockDataStorageEvents = true;
     this->NodeAdded(node);
-    m_InDataStorageChanged = false;
+    m_BlockDataStorageEvents = false;
   }
 }
 
@@ -718,7 +714,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
       // Clear all nodes from every viewer.
       if (this->GetNodesInViewer(0) > 0 && !this->GetAccumulateWhenDropped())
       {
-        this->ClearAllViewers();
+        this->ClearViewers();
       }
 
       // Note: Remember that we have window layout = axial, coronal, sagittal, 3D and ortho (+ others maybe)

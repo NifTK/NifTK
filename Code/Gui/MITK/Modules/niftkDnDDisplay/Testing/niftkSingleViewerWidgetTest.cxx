@@ -418,7 +418,6 @@ void niftkSingleViewerWidgetTestClass::init()
 //  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
 
   d->VisibilityManager->RegisterViewer(d->Viewer);
-  d->VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
 
   d->Viewer->resize(1024, 1024);
   d->Viewer->show();
@@ -469,7 +468,7 @@ void niftkSingleViewerWidgetTestClass::cleanup()
     loop.exec();
   }
 
-  d->VisibilityManager->DeRegisterAllViewers();
+  d->VisibilityManager->DeregisterViewers();
 
   delete d->Viewer;
   d->Viewer = 0;

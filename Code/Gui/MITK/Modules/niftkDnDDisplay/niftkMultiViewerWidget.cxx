@@ -374,7 +374,7 @@ void niftkMultiViewerWidget::SetDropType(DnDDisplayDropType dropType)
   {
     m_ControlPanel->SetDropType(dropType);
 
-    m_VisibilityManager->ClearAllViewers();
+    m_VisibilityManager->ClearViewers();
     m_VisibilityManager->SetDropType(dropType);
     this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
   }
@@ -563,13 +563,12 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
       m_Viewers.push_back(viewer);
       m_VisibilityManager->RegisterViewer(viewer);
-      m_VisibilityManager->SetAllNodeVisibilityForViewer(currentNumberOfViewers + i, false);
     }
   }
   else if (requiredNumberOfViewers < currentNumberOfViewers)
   {
     // destroy surplus viewers
-    m_VisibilityManager->DeRegisterViewers(requiredNumberOfViewers, m_Viewers.size() - 1);
+    m_VisibilityManager->DeregisterViewers(requiredNumberOfViewers, m_Viewers.size());
 
     for (int i = requiredNumberOfViewers; i < m_Viewers.size(); i++)
     {
@@ -999,7 +998,7 @@ void niftkMultiViewerWidget::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnDropTypeChanged(DnDDisplayDropType dropType)
 {
-  m_VisibilityManager->ClearAllViewers();
+  m_VisibilityManager->ClearViewers();
   m_VisibilityManager->SetDropType(dropType);
   this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
 }
