@@ -102,9 +102,10 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
-  emit NodesDropped(this, renderWindow, nodes);
+  Q_UNUSED(renderWindow);
+  emit NodesDropped(this, nodes);
   m_MultiWidget->SetFocused();
 }
 

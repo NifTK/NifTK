@@ -538,12 +538,12 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes)
 {
   int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewer) - m_Viewers.begin();
   WindowLayout windowLayout = this->GetWindowLayout(nodes);
 
-  if (m_DataStorage.IsNotNull() && viewerIndex != -1)
+  if (viewerIndex != m_Viewers.size())
   {
     for (std::size_t i = 0; i < nodes.size(); i++)
     {

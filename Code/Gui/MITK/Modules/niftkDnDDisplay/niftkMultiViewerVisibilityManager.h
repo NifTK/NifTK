@@ -101,7 +101,7 @@ public:
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
 
 signals:
 
