@@ -627,39 +627,29 @@ void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
     return;
   }
 
-  mitk::BaseRenderer* mainRenderer = this->GetSelectedRenderWindow()->GetRenderer();
-
   std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodesFromToolManager();
   if (!workingNodes.empty() && node == workingNodes[0])
   {
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-//      workingNodes[1]->SetVisibility(true);
-      workingNodes[1]->SetVisibility(true, mainRenderer);
-//      workingNodes[2]->SetVisibility(true);
-      workingNodes[2]->SetVisibility(true, mainRenderer);
-//      workingNodes[3]->SetVisibility(true);
-      workingNodes[3]->SetVisibility(true, mainRenderer);
+      workingNodes[1]->SetVisibility(true);
+      workingNodes[2]->SetVisibility(true);
+      workingNodes[3]->SetVisibility(true);
       if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
       {
-//        workingNodes[4]->SetVisibility(true);
-        workingNodes[4]->SetVisibility(true, mainRenderer);
+        workingNodes[4]->SetVisibility(true);
       }
       if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
       {
-//        workingNodes[5]->SetVisibility(true);
-        workingNodes[5]->SetVisibility(true, mainRenderer);
+        workingNodes[5]->SetVisibility(true);
       }
       if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
       {
-//        workingNodes[6]->SetVisibility(true);
-        workingNodes[6]->SetVisibility(true, mainRenderer);
+        workingNodes[6]->SetVisibility(true);
       }
-//      workingNodes[7]->SetVisibility(false);
-      workingNodes[7]->SetVisibility(false, mainRenderer);
-//      workingNodes[8]->SetVisibility(false);
-      workingNodes[8]->SetVisibility(false, mainRenderer);
+      workingNodes[7]->SetVisibility(false);
+      workingNodes[8]->SetVisibility(false);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
@@ -670,8 +660,7 @@ void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
     {
       for (std::size_t i = 1; i < workingNodes.size(); ++i)
       {
-//        workingNodes[i]->SetVisibility(false);
-        workingNodes[i]->SetVisibility(false, mainRenderer);
+        workingNodes[i]->SetVisibility(false);
       }
     }
   }
