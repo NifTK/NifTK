@@ -62,6 +62,9 @@ public:
   /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and calls NodeRemoved afterwards.
   void NodeRemovedProxy(const mitk::DataNode* node);
 
+  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
+  void OnGlobalVisibilityChanged(const mitk::DataNode* node);
+
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
   void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
 
@@ -126,9 +129,6 @@ private:
 
   /// \brief Will refresh the observers of all the visibility properties... called when NodeAdded or NodeRemoved.
   void UpdateObserverToVisibilityMap();
-
-  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
-  void OnGlobalVisibilityChanged(const itk::EventObject&);
 
   /// \brief Works out the correct window layout from the data, and from the preferences.
   WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);

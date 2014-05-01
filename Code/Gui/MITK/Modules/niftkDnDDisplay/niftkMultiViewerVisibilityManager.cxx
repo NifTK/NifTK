@@ -24,6 +24,36 @@
 #include <itkSpatialOrientationAdapter.h>
 
 
+class VisibilityChangedCommand : public itk::Command
+{
+public:
+  mitkClassMacro(VisibilityChangedCommand, itk::Command);
+  mitkNewMacro2Param(VisibilityChangedCommand, niftkMultiViewerVisibilityManager*, const mitk::DataNode*);
+
+  VisibilityChangedCommand(niftkMultiViewerVisibilityManager* observer, const mitk::DataNode* node)
+  : m_Observer(observer),
+    m_Node(node)
+  {
+  }
+  virtual ~VisibilityChangedCommand()
+  {
+  }
+
+  virtual void Execute(itk::Object* /*caller*/, const itk::EventObject& /*event*/)
+  {
+    m_Observer->OnGlobalVisibilityChanged(m_Node);
+  }
+  virtual void Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/)
+  {
+    m_Observer->OnGlobalVisibilityChanged(m_Node);
+  }
+
+private:
+  niftkMultiViewerVisibilityManager* m_Observer;
+  const mitk::DataNode* m_Node;
+};
+
+
 //-----------------------------------------------------------------------------
 niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_BlockDataStorageEvents(false)
@@ -32,10 +62,6 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
 {
   assert(dataStorage);
   m_DataStorage = dataStorage;
-
-  m_DataNodesPerViewer.clear();
-  m_Viewers.clear();
-  m_ObserverToVisibilityMap.clear();
 
   m_DataStorage->AddNodeEvent.AddListener(
       mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
@@ -87,15 +113,12 @@ void niftkMultiViewerVisibilityManager::UpdateObserverToVisibilityMap()
   mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
-    if (it->Value().IsNull() || it->Value()->GetProperty("visible") == NULL)
+    mitk::BaseProperty* property = it->Value()->GetProperty("visible");
+    if (property)
     {
-      continue;
+      VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, it->Value());
+      m_ObserverToVisibilityMap[property->AddObserver(itk::ModifiedEvent(), command)] = property;
     }
-
-    /* register listener for changes in visible property */
-    itk::ReceptorMemberCommand<niftkMultiViewerVisibilityManager>::Pointer command = itk::ReceptorMemberCommand<niftkMultiViewerVisibilityManager>::New();
-    command->SetCallbackFunction(this, &niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged);
-    m_ObserverToVisibilityMap[it->Value()->GetProperty("visible")->AddObserver( itk::ModifiedEvent(), command )] = it->Value()->GetProperty("visible");
   }
 }
 
@@ -256,7 +279,7 @@ void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(const itk::EventObject&)
+void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(const mitk::DataNode* node)
 {
   // We have to iterate through all nodes registered with DataStorage,
   // and see if the global visibility property should override the renderer specific one for any
