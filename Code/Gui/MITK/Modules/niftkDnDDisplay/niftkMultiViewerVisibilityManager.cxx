@@ -28,13 +28,14 @@ class VisibilityChangedCommand : public itk::Command
 {
 public:
   mitkClassMacro(VisibilityChangedCommand, itk::Command);
-  mitkNewMacro2Param(VisibilityChangedCommand, niftkMultiViewerVisibilityManager*, const mitk::DataNode*);
+  mitkNewMacro2Param(VisibilityChangedCommand, niftkMultiViewerVisibilityManager*, mitk::DataNode*);
 
-  VisibilityChangedCommand(niftkMultiViewerVisibilityManager* observer, const mitk::DataNode* node)
+  VisibilityChangedCommand(niftkMultiViewerVisibilityManager* observer, mitk::DataNode* node)
   : m_Observer(observer),
     m_Node(node)
   {
   }
+
   virtual ~VisibilityChangedCommand()
   {
   }
@@ -43,6 +44,7 @@ public:
   {
     m_Observer->OnGlobalVisibilityChanged(m_Node);
   }
+
   virtual void Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/)
   {
     m_Observer->OnGlobalVisibilityChanged(m_Node);
@@ -50,7 +52,7 @@ public:
 
 private:
   niftkMultiViewerVisibilityManager* m_Observer;
-  const mitk::DataNode* m_Node;
+  mitk::DataNode* m_Node;
 };
 
 
@@ -279,45 +281,27 @@ void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(mitk::DataNode* node)
 {
-  // We have to iterate through all nodes registered with DataStorage,
-  // and see if the global visibility property should override the renderer specific one for any
-  // node that is registered as having been dropped into and of our registered render windows.
-
-  // Outer loop, iterates through all nodes in DataStorage.
-  mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-  for (mitk::DataStorage::SetOfObjects::ConstIterator dataNodesIt = all->Begin(); dataNodesIt != all->End(); ++dataNodesIt)
+  for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
   {
-    // Make sure each node is non-NULL and has a global visibility property.
-    if (dataNodesIt->Value().IsNull() || dataNodesIt->Value()->GetProperty("visible") == NULL)
+    if (m_Viewers[viewerIndex]->IsFocused())
     {
-      continue;
-    }
-
-    for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
-    {
-      if (m_Viewers[viewerIndex]->IsFocused())
+      std::set<mitk::DataNode*>::iterator nodesBegin = m_DataNodesPerViewer[viewerIndex].begin();
+      std::set<mitk::DataNode*>::iterator nodesEnd = m_DataNodesPerViewer[viewerIndex].end();
+      if (std::find(nodesBegin, nodesEnd, node) != nodesEnd)
       {
-        std::set<mitk::DataNode*>::iterator nodesPerViewerIt = m_DataNodesPerViewer[viewerIndex].begin();
-        std::set<mitk::DataNode*>::iterator nodesPerViewerEnd = m_DataNodesPerViewer[viewerIndex].end();
-        for ( ; nodesPerViewerIt != nodesPerViewerEnd; ++nodesPerViewerIt)
-        {
-          if (dataNodesIt->Value() == (*nodesPerViewerIt))
-          {
-            bool globalVisibility = false;
-            dataNodesIt->Value()->GetBoolProperty("visible", globalVisibility);
+        bool globalVisibility = false;
+        node->GetBoolProperty("visible", globalVisibility);
 
-            std::vector<mitk::DataNode*> nodes;
-            nodes.push_back(dataNodesIt->Value());
+        std::vector<mitk::DataNode*> nodes;
+        nodes.push_back(node);
 
-            m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, globalVisibility);
-          }
-        }
-
-        /// Only one viewer can be focused at a time.
-        break;
+        m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, globalVisibility);
       }
+
+      /// Only one viewer can be focused at a time.
+      break;
     }
   }
 }

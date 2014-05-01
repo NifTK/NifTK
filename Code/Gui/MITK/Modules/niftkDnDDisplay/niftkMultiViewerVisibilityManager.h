@@ -63,7 +63,7 @@ public:
   void NodeRemovedProxy(const mitk::DataNode* node);
 
   /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
-  void OnGlobalVisibilityChanged(const mitk::DataNode* node);
+  void OnGlobalVisibilityChanged(mitk::DataNode* node);
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
   void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
