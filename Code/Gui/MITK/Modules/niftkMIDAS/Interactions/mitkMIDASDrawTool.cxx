@@ -64,9 +64,6 @@ mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
   m_EraserScopeNode->SetData(m_EraserScope);
   m_EraserScopeNode->SetName("Draw tool eraser");
   m_EraserScopeNode->SetBoolProperty("helper object", true);
-  // This is for the DnD display, so that it does not try to change the
-  // visibility after node addition.
-//  m_EraserScopeNode->SetBoolProperty("managed visibility", false);
   m_EraserScopeNode->SetBoolProperty("includeInBoundingBox", false);
   m_EraserScopeNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
   m_EraserScopeNode->SetBoolProperty("planarfigure.drawname", false);

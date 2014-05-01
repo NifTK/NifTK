@@ -23,7 +23,6 @@
 #include <mitkBaseProperty.h>
 #include <mitkProperties.h>
 #include <itkImage.h>
-#include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkRenderWindow;
 class niftkSingleViewerWidget;
@@ -202,9 +201,6 @@ private:
 
   // Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
-
-  // Filter to exclude data nodes.
-  mitk::DataNodeStringPropertyFilter::Pointer m_NodeFilter;
 
 };
 

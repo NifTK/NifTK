@@ -37,30 +37,6 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
   m_Viewers.clear();
   m_ObserverToVisibilityMap.clear();
 
-  // TODO: Is there a way round this, because its ugly.
-  // Basically, when drawing on an image, you interactively add/remove contours or seeds.
-  // So, these objects are not "dropped" into a viewer, they are like overlays.
-  // So, as soon as a drawing tool creates them, they must be visible.
-  // Then they are removed from data storage when no longer needed.
-  // So, for now, we just make sure they are not processed by this class.
-  m_NodeFilter = mitk::DataNodeStringPropertyFilter::New();
-  m_NodeFilter->SetPropertyName("name");
-  m_NodeFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-  m_NodeFilter->AddToList("MIDASContourTool");
-  m_NodeFilter->AddToList("MIDAS_SEEDS");
-  m_NodeFilter->AddToList("MIDAS_CURRENT_CONTOURS");
-  m_NodeFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-  m_NodeFilter->AddToList("MIDAS_PRIOR_CONTOURS");
-  m_NodeFilter->AddToList("MIDAS_NEXT_CONTOURS");
-  m_NodeFilter->AddToList("MIDAS_DRAW_CONTOURS");
-  m_NodeFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-  m_NodeFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-  m_NodeFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-  m_NodeFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-  m_NodeFilter->AddToList("MIDAS PolyTool anchor points");
-  m_NodeFilter->AddToList("MIDAS PolyTool previous contour");
-  m_NodeFilter->AddToList("Paintbrush_Node");
-
   m_DataStorage->AddNodeEvent.AddListener(
       mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
     ( this, &niftkMultiViewerVisibilityManager::NodeAddedProxy ) );
@@ -278,27 +254,6 @@ void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* no
 //-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node)
 {
-  // If the node has a "managed visibility" property and it is set to false,
-  // then we do not manage its visibility.
-  bool managedVisibility;
-  if (node->GetBoolProperty("managed visibility", managedVisibility)
-      && !managedVisibility)
-  {
-    return;
-  }
-
-  // TODO: Is there a way round this, because its ugly.
-  // Basically, when drawing on an image, you interactively add/remove contours or seeds.
-  // So, these objects are not "dropped" into a viewer, they are like overlays.
-  // So, as soon as a drawing tool creates them, they must be visible.
-  // Then they are removed from data storage when no longer needed.
-  // So, for now, we just make sure they are not processed by this class.
-
-  if (!m_NodeFilter->Pass(node))
-  {
-//    return;
-  }
-
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
   this->UpdateObserverToVisibilityMap();
 }
