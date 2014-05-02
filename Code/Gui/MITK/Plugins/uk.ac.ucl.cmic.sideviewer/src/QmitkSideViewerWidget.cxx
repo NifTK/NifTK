@@ -51,10 +51,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
 
-  m_MultiWindowComboBox->addItem("2H");
-  m_MultiWindowComboBox->addItem("2V");
-  m_MultiWindowComboBox->addItem("2x2");
-
   m_CoronalWindowRadioButton->setChecked(true);
 
   m_SingleWindowLayouts[MIDAS_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
