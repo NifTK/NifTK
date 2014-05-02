@@ -59,6 +59,7 @@ private:
 //-----------------------------------------------------------------------------
 niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_BlockDataStorageEvents(false)
+, m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION)
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
 {
@@ -191,10 +192,28 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
     m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
   }
 
-  mitk::BoolProperty* property = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (property)
+  mitk::VtkResliceInterpolationProperty* interpolationProperty =
+      dynamic_cast<mitk::VtkResliceInterpolationProperty*>(node->GetProperty("reslice interpolation"));
+  if (interpolationProperty)
   {
-    bool globalVisibility = property->GetValue();
+    if (m_InterpolationType == DNDDISPLAY_NO_INTERPOLATION)
+    {
+      interpolationProperty->SetInterpolationToNearest();
+    }
+    else if (m_InterpolationType == DNDDISPLAY_LINEAR_INTERPOLATION)
+    {
+      interpolationProperty->SetInterpolationToLinear();
+    }
+    else if (m_InterpolationType == DNDDISPLAY_CUBIC_INTERPOLATION)
+    {
+      interpolationProperty->SetInterpolationToCubic();
+    }
+  }
+
+  mitk::BoolProperty* globalVisibilityProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
+  if (globalVisibilityProperty)
+  {
+    bool globalVisibility = globalVisibilityProperty->GetValue();
 
     // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
     // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
@@ -229,8 +248,8 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
     }
 
     VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
-    unsigned long observerTag = property->AddObserver(itk::ModifiedEvent(), command);
-    m_GlobalVisibilityObserverTags[property] = observerTag;
+    unsigned long observerTag = globalVisibilityProperty->AddObserver(itk::ModifiedEvent(), command);
+    m_GlobalVisibilityObserverTags[globalVisibilityProperty] = observerTag;
   }
 }
 
