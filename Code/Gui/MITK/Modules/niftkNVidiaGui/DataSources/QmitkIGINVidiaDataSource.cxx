@@ -385,6 +385,9 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
             haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
             haswrongsize |= imageInNode->GetDimension(2) != 1;
+            // check image type as well.
+            haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()   != subimg.depth;
+            haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != subimg.nChannels;
 
             if (haswrongsize)
             {
