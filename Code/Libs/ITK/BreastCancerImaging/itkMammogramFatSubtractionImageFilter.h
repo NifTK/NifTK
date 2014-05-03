@@ -105,6 +105,9 @@ public:
   void SetComputeFatEstimationFitOn( void ) { m_flgComputeFatEstimationFit = true; }
   void SetComputeFatEstimationFitOff( void ) { m_flgComputeFatEstimationFit = false; }
 
+  void SetFileOutputIntensityVsEdgeDist( std::string fn ) { m_fileOutputIntensityVsEdgeDist = fn; }
+  void SetFileOutputFit( std::string fn ) { m_fileOutputFit = fn; }
+
 
 protected:
 
@@ -114,6 +117,9 @@ protected:
 
   bool m_flgVerbose;
   bool m_flgComputeFatEstimationFit;
+
+  std::string m_fileOutputIntensityVsEdgeDist;  
+  std::string m_fileOutputFit;  
 
   InputImagePointer m_Image;
   MaskImagePointer m_Mask;

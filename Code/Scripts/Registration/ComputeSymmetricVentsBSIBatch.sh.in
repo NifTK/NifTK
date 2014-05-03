@@ -53,7 +53,7 @@ Usage: $0 input_file ss_atlas output_dir
 Mandatory Arguments:
  
   input_file : is the input file containing paths to your images and regions. 
-                  image1, brain_region1, local_region1, ss_air_reg_file1, image2, brain_region2, local_region2, ss_air_reg_file2, ......
+                  "image1 brain_region1 local_region1 ss_air_reg_file1 image2 brain_region2 local_region2 ss_air_reg_file2 ......"
   ss_atlas   : atlas used in the standard space registration.
   output_dir : is the output directory.
   
@@ -73,7 +73,9 @@ Optional arguements:
                         9. Normalized Mutual Information
   -pptol [float]      : stopping criteria for the powell optimization. [0.01]
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI.
-                          
+  -brain_reg_dir [dir]          : brain-to-brain reg results to be reused. All dof files will be copied to output dir.
+  -reset_vox_offset [yes/no]    : reset vox_offset or not [no].
+
 EOF
 exit 127
 }
@@ -84,7 +86,7 @@ if [ $# -lt ${ndefargs} ]; then
   Usage
 fi
 
-ComputeSymmetricLocalBSIBatch.sh -double_window no $*
+ComputeSymmetricLocalBSIBatch.sh  $* -double_window no
 
 
 

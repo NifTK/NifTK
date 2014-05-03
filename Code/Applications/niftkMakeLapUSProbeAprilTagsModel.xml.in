@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make April Tags Model</title>
+  <description><![CDATA[Generates a VTK model to match the April Tags board created by niftkMakeGridOf2DImages.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/Output file parameters]]></description>
+    <file fileExtensions="*.vtk">
+      <name>outputTrackingModel</name>
+      <longflag>outputTrackingModel</longflag>
+      <description>Output VTK file (vtkPolyData) for matching/tracking.</description>
+      <label>Output Tracking Model</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.vtk">
+      <name>outputVisualisationModel</name>
+      <longflag>outputVisualisationModel</longflag>
+      <description>Output VTK file (vtkPolyData) for visualisation.</description>
+      <label>Output Visualisation Model</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.vtk">
+      <name>outputPhotoConsistencyModel</name>
+      <longflag>outputPhotoConsistencyModel</longflag>
+      <description>Output VTK file (vtkPolyData) for photo-consistency.</description>
+      <label>Output Photoconsistency Model</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.png,*.jpg">
+      <name>textureMap</name>
+      <longflag>textureMap</longflag>
+      <description>Optional texture map image.</description>
+      <label>Texture Map</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Probe Parameters</label>
+    <description><![CDATA[Parameters for probe geometry]]></description>  
+    <float>
+      <name>diameter</name>
+      <longflag>diameter</longflag>
+      <description>The diameter of the probe (mm).</description>
+      <label>Probe Diameter</label>
+      <default>10</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>length</name>
+      <longflag>length</longflag>
+      <description>The length of the probe (mm).</description>
+      <label>Probe Length</label>
+      <default>47</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>    
+    <float>
+      <name>surface</name>
+      <longflag>surface</longflag>
+      <description>The width of the flat probe sensor (mm).</description>
+      <label>Probe Sensor</label>
+      <default>7</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>outputTagSize</name>
+      <longflag>outputTagSize</longflag>
+      <description>The required phyiscal size of the April Tag in millimetres.</description>
+      <label>Output Tag Size</label>
+      <default>4</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>10</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <integer>
+      <name>inputTagSize</name>
+      <longflag>inputTagSize</longflag>
+      <description>The actual size of the April Tag .png image in pixels.</description>
+      <label>Input Tag Size</label>
+      <default>848</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>pointsAlongLength</name>
+      <longflag>pointsAlongLength</longflag>
+      <description>The number of points along the length of the probe in the visualisation model.</description>
+      <label>Points Along Length</label>
+      <default>100</default>
+      <constraints>
+        <minimum>2</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>pointsAroundCircumference</name>
+      <longflag>pointsAroundCircumference</longflag>
+      <description>The number of points around the circumference of the probe in the visualisation model.</description>
+      <label>Points Around Circumference</label>
+      <default>361</default>
+      <constraints>
+        <minimum>6</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+  </parameters>
+</executable>

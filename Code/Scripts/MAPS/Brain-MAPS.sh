@@ -410,7 +410,7 @@ function brain_delineation()
     fi 
     
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 5
-    kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
+    kmeans_output=`niftkKmeansClassifier ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz 3 ${init_1} ${init_2} ${init_3}`
     echo "kmeans=${kmeans_output}"
     
 #makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 4
@@ -874,6 +874,7 @@ use_kmeans=${24}
 init_9dof=${25}
 cd_mode=${26}
 blur_9dof=${27}
+reset_vox_offset=${28}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665
@@ -896,6 +897,21 @@ then
     subject_image=${reoriented_subject_image}
   fi 
 fi 
+
+# Reset the vox_offset in Midas image to 0.
+if [ "${reset_vox_offset}" == "yes" ]
+then
+  old_subject_image=${subject_image}
+  subject_image=${output_left_match_dir}/${output_study_id}-002-1_vox_offset.img
+  anchange ${old_subject_image} ${subject_image} -sex m
+  nifti_tool=`which nifti_tool`
+  if [ "${nifti_tool}" == "" ]
+  then
+    echo "nifti_tool not found"
+    exit
+  fi
+  nifti_tool -infiles ${subject_image%.img}.hdr -mod_hdr -mod_field vox_offset 0 -overwrite
+fi
 
 output_brain_image=${output_left_match_dir}/${output_study_id}-${output_areg_template_brain_series_number}-${output_left_echo_number}.img
 output_brain_region=${output_left_match_dir}/${output_study_id}-output-brain-region

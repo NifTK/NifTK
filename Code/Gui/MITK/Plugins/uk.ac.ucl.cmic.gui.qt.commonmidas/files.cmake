@@ -14,7 +14,6 @@
 
 set(SRC_CPP_FILES
   QmitkMIDASBaseSegmentationFunctionality.cxx
-  QmitkMIDASSegmentationViewWidget.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -22,13 +21,11 @@ set(INTERNAL_CPP_FILES
 )
 
 set(UI_FILES
-  src/QmitkMIDASSegmentationViewWidget.ui
 )
 
 set(MOC_H_FILES
   src/internal/MIDASActivator.h
   src/QmitkMIDASBaseSegmentationFunctionality.h
-  src/QmitkMIDASSegmentationViewWidget.h
 )
 
 set(CACHED_RESOURCE_FILES

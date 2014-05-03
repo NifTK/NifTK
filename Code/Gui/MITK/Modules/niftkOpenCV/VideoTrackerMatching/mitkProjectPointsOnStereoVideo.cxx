@@ -53,6 +53,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
 , m_EndFrame(0)
+, m_ProjectorScreenBuffer(0.0)
+, m_ClassifierScreenBuffer(100.0)
 {
 }
 
@@ -256,6 +258,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
       leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
     
+      bool cropUndistortedPointsToScreen = true;
+      double cropValue = std::numeric_limits<double>::infinity();
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( leftCameraWorldPoints,leftCameraWorldNormals,
           leftCameraPositionToFocalPointUnitVector,
@@ -265,7 +269,11 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           outputLeftCameraWorldPointsIn3D,
           outputLeftCameraWorldNormalsIn3D,
           output2DPointsLeft,
-          output2DPointsRight);
+          output2DPointsRight,
+          cropUndistortedPointsToScreen , 
+          0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
+          0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
+          cropValue);
       
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
@@ -276,8 +284,11 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           classifierOutputLeftCameraWorldPointsIn3D,
           classifierOutputLeftCameraWorldNormalsIn3D,
           classifierOutput2DPointsLeft,
-          classifierOutput2DPointsRight);
-
+          classifierOutput2DPointsRight,
+          cropUndistortedPointsToScreen , 
+          0.0 - m_ClassifierScreenBuffer, m_VideoWidth + m_ClassifierScreenBuffer, 
+          0.0 - m_ClassifierScreenBuffer, m_VideoHeight + m_ClassifierScreenBuffer,
+          cropValue);
 
       std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
       std::vector < std::pair < cv::Point2d , cv::Point2d > > classifierScreenPoints;
@@ -499,9 +510,9 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         bool left = true;
         this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
             ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
-        if ( minRatio < m_AllowablePointMatchingRatio ) 
+        if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf (minRatio) ) 
         {
-          MITK_WARN << "Ambiguous point match at left frame " << frameNumber << " discarding point from triangulation  errors"; 
+          MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
         }
         else 
         {
@@ -511,9 +522,9 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             unsigned int rightIndex;
             this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
               ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
-            if ( minRatio < m_AllowablePointMatchingRatio ) 
+            if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf(minRatio) ) 
             {
-              MITK_WARN << "Ambiguous point match at right frame " << frameNumber << " discarding point from triangulation errors"; 
+              MITK_WARN << "Ambiguous point match or infinite match Ratio at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
             }
             else
             {
@@ -769,18 +780,33 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   unsigned int* index = new unsigned int;
   double minRatio;
   FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
- 
+  std::string side;
+  if ( left ) 
+  {
+    side = " left ";
+  }
+  else
+  {
+    side = " right "; 
+  }
   if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
   {
-    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from re-projection errors";
+    MITK_WARN << "High timing error at " << side << " frame " << GSPoint.first << " discarding point from re-projection errors";
     return;
   }
 
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
-    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from re-projection errors"; 
+    MITK_WARN << "Ambiguous point match at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
     return;
   }
+
+  if ( boost::math::isinf(minRatio) ) 
+  {
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
+    return;
+  }
+
 
   cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first].second[*index].first;
 
@@ -841,20 +867,36 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 {
   double minRatio;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
-
+  std::string side;
+  if ( left ) 
+  {
+    side = " left ";
+  }
+  else
+  {
+    side = " right "; 
+  }
+ 
   if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
   {
-    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from projection errors";
+    MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.first << " discarding point from projection errors";
     return;
   }
 
 
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
-    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from projection errors"; 
+    MITK_WARN << "Ambiguous point match at " << side << "frame " << GSPoint.first << " discarding point from projection errors"; 
     return;
   }
   
+  if ( boost::math::isinf(minRatio) ) 
+  {
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from projection errors"; 
+    return;
+  }
+
+
   if ( left ) 
   {
     m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.second);
@@ -884,18 +926,24 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
     }
   }
   unsigned int myIndex;
-  mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex );
-  if ( index != NULL ) 
+  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex ).x))
   {
-    *index = myIndex;
-  }
-  if ( left ) 
-  {
-    return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+    if ( index != NULL ) 
+    {
+      *index = myIndex;
+    }
+    if ( left ) 
+    {
+      return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+    }
+    else
+    {
+      return m_ProjectedPoints[GSPoint.first].second[myIndex].second;
+    }
   }
   else
   {
-    return m_ProjectedPoints[GSPoint.first].second[myIndex].second;
+    return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
   }
 }
 

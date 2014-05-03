@@ -25,7 +25,6 @@
 
 #include "Interactions/mitkDnDDisplayInteractor.h"
 
-#include <mitkMIDASEnums.h>
 #include <niftkDnDDisplayEnums.h>
 
 class QGridLayout;
@@ -68,7 +67,7 @@ class SliceNavigationController;
  *
  * In contrast with the original MIDAS, in NiftyMIDAS the zooming is continuous, so
  * the rule above is extended to real numbers as well. If the image has anisotropic pixels then
- * the size of the longest side of the voxels is used for the calculation.
+ * the size of the longer side of the voxels is used for the calculation for each orientation.
  *
  * \sa QmitkStdMultiWidget
  * \sa niftkSingleViewerWidget
@@ -78,6 +77,8 @@ class niftkMultiWindowWidget : public QmitkStdMultiWidget
 {
 
   Q_OBJECT
+
+  friend class niftkSingleViewerWidget;
 
 public:
 
@@ -131,24 +132,49 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
-  void SetBackgroundColor(QColor color);
+  void SetBackgroundColour(QColor color);
 
   /// \brief Get the background color, applied to 2D and 3D windows, and currently we don't do gradients.
-  QColor GetBackgroundColor() const;
+  QColor GetBackgroundColour() const;
 
-  /// \brief If selected, this widget is "selected" meaning its selected render window (if any)
-  /// will have coloured border, otherwise it is not selected, and will not have coloured borders
-  /// even if one of its render window was selected.
-  void SetSelected(bool selected);
+  /// \brief Tells if the selected render window of this widget has the focus.
+  /// The focused render window receives the keyboard and mouse events
+  /// and has a coloured border.
+  bool IsFocused() const;
 
-  /// \brief Returns true if this widget is selected and false otherwise.
-  bool IsSelected() const;
+  /// \brief Sets the focus to the selected render window of this widget.
+  /// The focused render window receives the keyboard and mouse events
+  /// and has a coloured border.
+  void SetFocused();
 
-  /// \brief Returns the selected window, that is the one with the coloured border.
+  /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
+  bool IsLinkedNavigationEnabled() const;
+
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
+  void SetLinkedNavigationEnabled(bool linkedNavigationEnabled);
+
+  /// \brief Returns the selected render window.
+  /// The selected render window is one of the visible render windows. If this widget has the focus
+  /// then the selected render window is the focused render window. Otherwise, it is is the render
+  /// window that was focused last time, if it is currently visible. If no window is focused and the
+  /// last focused widget is not visible now then the selected window is the top-left window of the
+  /// current window layout.
+  /// The selected render window does not necessarily have a coloured border, only if it is focused.
+  /// This function always returns one of the four render windows, never 0.
   QmitkRenderWindow* GetSelectedRenderWindow() const;
 
-  /// \brief Selects the render window and puts put a coloured border round it.
+  /// \brief Sets the selected render window.
+  /// If this widget has the focus then the focuse is transferred to the given render window
+  /// and it gets the coloured border.
+  /// If the specified render window is not visible or it is not in this widget,
+  /// the function does not do anything.
   void SetSelectedRenderWindow(QmitkRenderWindow* renderWindow);
+
+  /// \brief Returns the index of the selected window.
+  int GetSelectedWindowIndex() const;
+
+  /// \brief Sets the selected render window by its index.
+  void SetSelectedWindowIndex(int selectedWindowIndex);
 
   /// \brief Returns the specifically selected render window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
@@ -162,20 +188,20 @@ public:
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  int GetMaxSlice(MIDASOrientation orientation) const;
+  int GetMaxSlice(int windowIndex) const;
 
   /// \brief Returns the maximum allowed time step.
   int GetMaxTimeStep() const;
 
   /// \brief Get the current slice index.
-  int GetSelectedSlice(MIDASOrientation orientation) const;
+  int GetSelectedSlice(int windowIndex) const;
 
   /// \brief Set the current slice index.
-  void SetSelectedSlice(MIDASOrientation orientation, int selectedSlice);
+  void SetSelectedSlice(int windowIndex, int selectedSlice);
 
   /// \brief Move n slices towards or opposite of the up direction.
   /// If delta is positive, the direction is the up direction.
-  void MoveAnteriorOrPosterior(MIDASOrientation orientation, int delta);
+  void MoveAnteriorOrPosterior(int windowIndex, int delta);
 
   /// \brief Get the current time step.
   int GetTimeStep() const;
@@ -217,6 +243,8 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
+  /// The vector contains the cursor positions in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are undefined.
   const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
   /// \brief Sets the positions of the cursor in the 2D render windows normalised with the render window size.
@@ -225,6 +253,8 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
+  /// The vector should contain the cursor positions in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are not used by this function.
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
@@ -237,9 +267,16 @@ public:
   void SetScaleFactor(int windowIndex, double scaleFactor);
 
   /// \brief Gets the scale factors of the 2D render windows.
+  ///
+  /// The vector contains the scale factors in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are undefined.
+  ///
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the scale factor of the render windows to the given values.
+  ///
+  /// The vector should contain the scale factors in the following order: axial, sagittal, coronal.
+  /// The values that correspond to a currently not visible window are not used by this function.
   void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).
@@ -251,11 +288,24 @@ public:
   /// \brief Sets the magnification of a render window to the given value.
   void SetMagnification(int windowIndex, double magnification);
 
-  /// \brief Makes the displayed 2D geometries fit the render windows.
-  void FitRenderWindows();
+  /// \brief Moves the displayed regions to the centre of the 2D render windows and scales them, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the maximal zooming is
+  /// applied, using which each region fits into their window, also considering whether the scale
+  /// factors are bound across the windows.
+  /// If a positive scale factor is given then the scale factor of each render window is set
+  /// to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The regions are moved to the middle of the render windows in each cases.
+  void FitRenderWindows(double scaleFactor = 0.0);
 
-  /// \brief Makes the displayed 2D geometry fit the given render window.
-  void FitRenderWindow(int windowIndex);
+  /// \brief Moves the displayed region to the centre of the 2D render window and scales it, optionally.
+  /// If no scale factor is given or the specified value is 0.0 then the region is scaled to
+  /// the maximum size that fits into the render window.
+  /// If a positive scale factor is given then the region is scaled to the specified value.
+  /// If the specified scale factor is -1.0 then no scaling is applied.
+  /// The region is moved to the middle of the render window in each cases.
+  /// The function c
+  void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
@@ -287,17 +337,27 @@ public:
   void SetScaleFactorBinding(bool scaleFactorBinding);
 
   /// \brief Blocks the update of the widget.
+  ///
   /// Returns true if the update was already blocked, otherwise false.
-  /// This render windows are updated and the "pending" signals are sent out
-  /// when the update is unblocked.
+  /// While the update is blocked, the state changes are recorded but the render windows are
+  /// not updated and no signals are sent out. The render windows are updated and the "pending"
+  /// signals are sent out when the update is unblocked.
+  /// The purpose of this function is to avoid unnecessary updates and signals when a serious of
+  /// operations needs to be performed on the viewer as a single atomic unit, e.g. changing
+  /// layout and setting positions.
+  /// After the required state of the viewer is set, the previous blocking state should be restored.
+  ///
+  /// Pattern of usage:
+  ///
+  ///     bool updateWasBlocked = multiWidget->BlockUpdate(true);
+  ///     ... set the required state ...
+  ///     multiWidget->BlockUpdate(updateWasBlocked);
+  ///
   bool BlockUpdate(bool blocked);
 
   bool BlockDisplayEvents(bool blocked);
 
 signals:
-
-  /// \brief Emitted when the selected render window has changed.
-  void SelectedRenderWindowChanged(int windowIndex);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -315,6 +375,11 @@ signals:
   void ScaleFactorBindingChanged();
 
 private:
+
+  /// \brief Updates the borders around the render windows.
+  /// If a render window gets the focus, a coloured border is drawn around it.
+  /// The border is removed when the render window loses the focus.
+  void UpdateBorders();
 
   /// \brief Updates the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
@@ -344,10 +409,10 @@ private:
   /// The parameter describes which coordinate of the selected position has changed.
   void OnSelectedPositionChanged(int orientation);
 
-  /// \brief Synchronises the cursor positions in the 2D render windows after the selected position changes.
-  /// The 'reference' is the selected render window, or the first visible render window
-  /// if no render window is selected.
-  void SynchroniseCursorPositions();
+  /// \brief Synchronises the cursor positions in the 2D render windows.
+  /// The reference is the given window, the cursor positions of the other visible 2D windows
+  /// are synchronised to that.
+  void SynchroniseCursorPositions(int windowIndex);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
@@ -374,19 +439,23 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(int orientation) const;
 
+  /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
+  void OnFocusChanged();
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
-  QColor m_BackgroundColor;
+  QColor m_BackgroundColour;
   QGridLayout* m_GridLayout;
   unsigned long m_AxialSliceTag;
   unsigned long m_SagittalSliceTag;
   unsigned long m_CoronalSliceTag;
-  bool m_IsSelected;
+  bool m_IsFocused;
+  bool m_LinkedNavigationEnabled;
   bool m_Enabled;
-  QmitkRenderWindow* m_SelectedRenderWindow;
+  int m_SelectedWindowIndex;
+  int m_FocusLosingWindowIndex;
   bool m_CursorVisibility;
   bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
-  int m_SelectedWindowIndex;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
@@ -448,10 +517,15 @@ private:
   /// eventually).
   bool m_BlockSncEvents;
 
+  bool m_BlockFocusEvents;
+
+  /// \brief Observer tag of the focus manager observer.
+  unsigned long m_FocusManagerObserverTag;
+
   /// \brief Blocks the update of this widget.
   bool m_BlockUpdate;
 
-  bool m_SelectedRenderWindowHasChanged;
+  bool m_FocusHasChanged;
   bool m_GeometryHasChanged;
   bool m_TimeStepHasChanged;
   std::vector<bool> m_SelectedSliceHasChanged;

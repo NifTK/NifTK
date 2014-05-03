@@ -53,8 +53,7 @@ Usage: $0 input_file output_dir
 Mandatory Arguments:
  
   input_file : is the input file containing paths to your images and regions. 
-                  image1, brain_region1, dummy, dummy, image2, brain_region2, dummy, dummy, ......
-                  (just use local_region will be skipped if not found - just specified some dummy name there if no local region)
+                  "image1  brain_region1  dummy  dummy  image2  brain_region2  dummy dummy ......"
   output_dir : is the output directory. 
   
 Optional arguements:  
@@ -73,8 +72,7 @@ Optional arguements:
                         9. Normalized Mutual Information
   -pptol [float]      : stopping criteria for the powell optimization. [0.01]
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI. 
-                          
-  
+  -reset_vox_offset [yes/no] : reset vox_offset or not [no].
 
 EOF
 exit 127
@@ -82,7 +80,7 @@ exit 127
 
 ndefargs=2
 dilation=10
-symmetric="sym_midway"
+symmetric="--sym_midway"
 scaling_using_skull="no"
 dof=4
 similarity=4
@@ -90,6 +88,7 @@ ajc="no"
 region="yes"
 pptol=0.01
 local_region_search="no"
+reset_vox_offset="no"
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -140,6 +139,10 @@ do
       local_region_search=$2
       shift 1
       ;; 
+    -reset_vox_offset)
+      reset_vox_offset=$2
+      shift 1
+      ;;
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
@@ -166,26 +169,45 @@ function iterate_through_input_file
     fi 
   
     local fixed_image=`echo ${each_line} | awk '{print $1}'`
-    local fixed_image_mask=`echo ${each_line} | awk '{print $2}'`
-    local moving_images_and_masks=`echo ${each_line} | awk '{ for (i=3; i<=NF; i+=1) { printf $i" " } } '`
     local image_basename=`basename ${fixed_image}`
     local study_number=`echo ${image_basename} | awk -F- '{print $1}'`
     local output_format="${study_number}_pairwise_%i_%i"
-    
-    if [ ${do_or_check} == 1 ] 
-    then 
-      echo ${script_dir}/ComputeSymmetricBrainBSI.sh \
-           ${output_dir}/${output_format} \
-           ${dilation} ${symmetric}  \
-           ${dof} ${scaling_using_skull} ${similarity} ${ajc} \
-           ${pptol} ${region} ${local_region_search} \
-           ${fixed_image} ${fixed_image_mask} ${moving_images_and_masks}  >> ${command_filename}
-    else
-      check_file_exists ${image} "no"
-      check_file_exists ${image%.img}.hdr "no"
-      check_file_exists ${region} "no"
-    fi 
-  done   
+
+    # Copy and set vox_offset to 0.
+    input_files=""
+    field_count=`echo ${each_line} | awk '{printf NF}'`
+    image_count=`echo "${field_count}/4" | bc`
+    for ((i=0; i<${image_count}; i++))
+    do
+      (( j=i\*4+1 ))
+      (( k=j+1 ))
+      (( l=j+2 ))
+      (( m=j+3 ))
+      input_image=`echo ${each_line} | awk -v j=${j} '{printf $j}'`
+      local_image=`basename ${input_image} .gz`
+      local_image=`basename ${local_image} .Z`
+      anchange ${input_image} ${output_dir}/${local_image} -sex m
+      if [ "${reset_vox_offset}" == "yes" ]
+      then
+        nifti_tool=`which nifti_tool`
+        if [ "${nifti_tool}" == "" ]
+        then
+          echo "nifti_tool not found"
+          exit
+        fi
+        nifti_tool -infiles ${output_dir}/${local_image%.img}.hdr -mod_hdr -mod_field vox_offset 0 -overwrite
+      fi
+      input_files="${input_files} ${output_dir}/${local_image} `echo ${each_line} | awk -v k=${k} -v l=${l} -v m=${m} '{printf $k" "$l" "$m}'`"
+    done
+
+    echo ${script_dir}/ComputeSymmetricBrainBSI.sh \
+         ${output_dir}/${output_format} \
+         ${dilation} ${symmetric}  \
+         ${dof} ${scaling_using_skull} ${similarity} ${ajc} \
+         ${pptol} ${region} ${local_region_search} \
+         ${input_files}  >> ${command_filename}
+
+  done
 }
 
 # Create output directory. 
@@ -194,11 +216,8 @@ mkdir -p ${output_dir}
 check_file_exists ${input_file} "no"
 dos_2_unix ${input_file}
 
-# We first simply scan through file, cos then we can stop early if there are missing files
-iterate_through_input_file ${input_file} 0
-
-# We then iterate through file, generating commands to a file.
-iterate_through_input_file ${input_file} 1
+# We iterate through file, generating commands to a file.
+iterate_through_input_file ${input_file}
 
 # Now run the file of commands.
 run_batch_job ${command_filename}

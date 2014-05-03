@@ -21,11 +21,13 @@
 #include <QGLContext>
 #include <QGLWidget>
 #include <QWaitCondition>
+#include <QMessageBox>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
 #include <boost/typeof/typeof.hpp>
 #include <mitkProperties.h>
+#include <mitkLogMacros.h>
 
 
 // note the trailing space
@@ -53,6 +55,10 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   try
   {
     m_Pimpl = new QmitkIGINVidiaDataSourceImpl;
+
+    bool ok = false;
+    ok = QObject::connect(m_Pimpl, SIGNAL(SignalFatalError(QString)), this, SLOT(ShowFatalErrorMessage(QString)), Qt::QueuedConnection);
+    assert(ok);
 
     // pre-create any number of datastorage nodes to avoid threading issues
     for (int i = 0; i < 4; ++i)
@@ -145,7 +151,14 @@ QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
   // we need to manage which thread is currently in charge of the capture context!
   this->StopCapturing();
 
-  delete m_Pimpl;
+  if (m_Pimpl)
+  {
+    bool ok = false;
+    ok = QObject::disconnect(m_Pimpl, SIGNAL(SignalFatalError(QString)), this, SLOT(ShowFatalErrorMessage(QString)));
+    assert(ok);
+
+    delete m_Pimpl;
+  }
 }
 
 
@@ -172,7 +185,7 @@ void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
 
   if (s)
   {
-    std::cerr << "WARNING: sdi data source does not support SaveInBackground(true)" << std::endl;
+    MITK_WARN << "WARNING: sdi data source does not support SaveInBackground(true)";
   }
 }
 
@@ -250,6 +263,7 @@ void QmitkIGINVidiaDataSource::GrabData()
       {
         // sdi bits died while we were enumerating sequence numbers.
         // not much we can do so lets just stop.
+        MITK_WARN << "SDI capture setup seems to have died while enumerating sequence numbers. Expect a few glitches.";
         break;
       }
 
@@ -371,6 +385,9 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
             haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
             haswrongsize |= imageInNode->GetDimension(2) != 1;
+            // check image type as well.
+            haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()   != subimg.depth;
+            haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != subimg.nChannels;
 
             if (haswrongsize)
             {
@@ -446,10 +463,16 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         m_MostRecentlyUpdatedTimeStamp = dataType->GetTimeStampInNanoSeconds();
       }
       else
+      {
         this->SetStatus("Failed");
+        MITK_WARN << "Looks like SDI capture setup dropped out.";
+      }
     }
     else
+    {
+      // this is not an error. there are simply stale IGINVidiaDataType in flight.
       this->SetStatus("...");
+    }
   }
   else
     this->SetStatus("...");
@@ -879,3 +902,14 @@ void QmitkIGINVidiaDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::ShowFatalErrorMessage(QString msg)
+{
+  QMessageBox msgBox;
+  msgBox.setText("SDI video capture failed.");
+  msgBox.setInformativeText(msg);
+  msgBox.setStandardButtons(QMessageBox::Ok);
+  msgBox.setDefaultButton(QMessageBox::Ok);
+  msgBox.exec();
+}

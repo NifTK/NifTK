@@ -141,6 +141,8 @@ protected:
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
+  void onVisibilityChanged(const mitk::DataNode* node);
+
 private:
 
   /// \brief Creates a node for storing the axial cut-off plane.

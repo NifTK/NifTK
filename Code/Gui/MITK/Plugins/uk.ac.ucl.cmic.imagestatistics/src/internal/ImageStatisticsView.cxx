@@ -313,6 +313,7 @@ void ImageStatisticsView::InitializeTable()
   headers << "mean";
   headers << "mean 60%";
   headers << "mean 70%";
+  headers << "median";
   headers << "std dev";
   headers << "min";
   headers << "max";
@@ -324,7 +325,7 @@ template <typename PixelType>
 void
 ImageStatisticsView
 ::AddTableRow(int row,
-    QString &value, PixelType &min, PixelType &max, double &mean,
+    QString &value, PixelType &min, PixelType &max, double &mean, double median,
     double &stdDev, unsigned long int &count, double &volume)
 {
   QTableWidgetItem *valueItem = new QTableWidgetItem(tr("%1").arg(value));
@@ -342,17 +343,20 @@ ImageStatisticsView
   QTableWidgetItem *mean70Item = new QTableWidgetItem(tr("%1").arg(mean * 0.7));
   m_Controls.m_Table->setItem(row, 4, mean70Item);
 
+  QTableWidgetItem *medianItem = new QTableWidgetItem(tr("%1").arg(median));
+  m_Controls.m_Table->setItem(row, 5, medianItem);
+
   QTableWidgetItem *stdDevItem = new QTableWidgetItem(tr("%1").arg(stdDev));
-  m_Controls.m_Table->setItem(row, 5, stdDevItem);
+  m_Controls.m_Table->setItem(row, 6, stdDevItem);
 
   QTableWidgetItem *minItem = new QTableWidgetItem(tr("%1").arg(min));
-  m_Controls.m_Table->setItem(row, 6, minItem);
+  m_Controls.m_Table->setItem(row, 7, minItem);
 
   QTableWidgetItem *maxItem = new QTableWidgetItem(tr("%1").arg(max));
-  m_Controls.m_Table->setItem(row, 7, maxItem);
+  m_Controls.m_Table->setItem(row, 8, maxItem);
 
   QTableWidgetItem *countItem = new QTableWidgetItem(tr("%1").arg(count));
-  m_Controls.m_Table->setItem(row, 8, countItem);
+  m_Controls.m_Table->setItem(row, 9, countItem);
 
 }
 
@@ -492,7 +496,8 @@ ImageStatisticsView
     double  &s0,
     double  &s1,
     double  &s2,
-    unsigned long int &counter
+    unsigned long int &counter,
+    TPixel1* imagePixelsCopy
     )
 {
   if (   (!invert && maskValue == (TPixel2)valueToCompareMaskAgainst)
@@ -500,6 +505,7 @@ ImageStatisticsView
       )
   {
     this->TestMinAndMax<TPixel1>(imageValue, min, max);
+    imagePixelsCopy[counter] = imageValue;
     this->AccumulateData<TPixel1>(imageValue, mean, s0, s1, s2, counter);
   }
 }
@@ -558,8 +564,19 @@ ImageStatisticsView
   this->GetVoxelVolume<TPixel, VImageDimension>(itkImage, volume);
   volume *= (double)counter;
 
+  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
+  TPixel* itkImagePixels = itkImagePixelContainer->GetImportPointer();
+  typename GreyImageType::SizeValueType imageSize = itkImagePixelContainer->Size();
+  TPixel* imagePixelsCopy = new TPixel[imageSize];
+  std::copy(itkImagePixels, itkImagePixels + imageSize, imagePixelsCopy);
+
+  std::nth_element(imagePixelsCopy, imagePixelsCopy + imageSize / 2, imagePixelsCopy + imageSize);
+  double median = imagePixelsCopy[imageSize / 2];
+
+  delete[] imagePixelsCopy;
+
   QString value = tr("All except %1").arg(m_BackgroundValue);
-  this->AddTableRow(0, value, min, max, mean, stdDev, counter, volume);
+  this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
 }
 
 template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
@@ -596,6 +613,9 @@ ImageStatisticsView
     m_Controls.m_Table->setRowCount(1);
   }
 
+  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
+  TPixel1* imagePixelsCopy = new TPixel1[itkImagePixelContainer->Size()];
+
   if (m_AssumeBinary)
   {
     invert = true;
@@ -614,9 +634,12 @@ ImageStatisticsView
       maskPixel = binaryIter.Get();
 
       this->AccumulateValue<TPixel1, TPixel2, int>
-        (invert, m_BackgroundValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter);
+        (invert, m_BackgroundValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
     }
     this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
+
+    std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+    double median = imagePixelsCopy[counter / 2];
 
     // Get voxel volume.
     double volume;
@@ -624,7 +647,7 @@ ImageStatisticsView
     volume *= (double)counter;
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
-    this->AddTableRow(0, value, min, max, mean, stdDev, counter, volume);
+    this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
   }
   else
   {
@@ -650,9 +673,12 @@ ImageStatisticsView
         maskPixel = binaryIter.Get();
 
         this->AccumulateValue<TPixel1, TPixel2, TPixel2>
-          (invert, labelValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter);
+          (invert, labelValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
       }
       this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
+
+      std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+      double median = imagePixelsCopy[counter / 2];
 
       // Get voxel volume.
       double volume;
@@ -660,7 +686,9 @@ ImageStatisticsView
       volume *= (double)counter;
 
       QString value = tr("%1").arg(labelValue);
-      this->AddTableRow(rowCounter++, value, min, max, mean, stdDev, counter, volume);
+      this->AddTableRow(rowCounter++, value, min, max, mean, median, stdDev, counter, volume);
     }
   }
+
+  delete[] imagePixelsCopy;
 }

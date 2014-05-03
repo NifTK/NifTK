@@ -17,14 +17,16 @@
 
 #include <niftkThumbnailExports.h>
 
-#include <QColor>
-#include <QmitkRenderWindow.h>
-#include <mitkDataStorage.h>
-#include <mitkDataNode.h>
 #include <mitkCuboid.h>
-#include <mitkDataStorageVisibilityTracker.h>
+#include <mitkDataNode.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataNodeStringPropertyFilter.h>
+#include <mitkDataStorage.h>
+#include <mitkDataStorageVisibilityTracker.h>
+
+#include <QColor>
+
+#include <QmitkRenderWindow.h>
 
 #include "mitkThumbnailInteractor.h"
 
@@ -33,17 +35,17 @@ class QmitkWheelEventEater;
 
 /**
  * \class QmitkThumbnailRenderWindow
- * \brief Subclass of QmitkRenderWindow to listen to the currently focused QmitkRenderWindow
+ * \brief Subclass of QmitkRenderWindow to track to another QmitkRenderWindow
  * and provide a zoomed-out view with an overlay of a bounding box to provide the
- * current size of the currently focused QmitkRenderWindow's view-port size.
+ * current size of the currently tracked QmitkRenderWindow's view-port size.
  * \ingroup uk.ac.ucl.cmic.thumbnail
  *
  * The client must
  * <pre>
  * 1. Create widget
  * 2. Provide a DataStorage
- * 3. Call "Activated" to register with the FocusManager when the widget is considered active (eg. on screen).
- * 4. Call "Deactivated" to de-register with the FocusManager when the widget is considered not-active (eg. off screen).
+ * 3. Call "Activated" to register with the data storage when the widget is considered active (eg. on screen).
+ * 4. Call "Deactivated" to de-register with the data storage when the widget is considered not-active (eg. off screen).
  * </pre>
  *
  * This class provides methods to set the bounding box colour, opacity, line thickness,
@@ -84,10 +86,10 @@ public:
   /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
-  /// \brief Connects the widget to the FocusManager, and registers listeners.
+  /// \brief Registers listeners.
   void Activated();
 
-  /// \brief Disconnects the widget from the FocusManager, and de-registers listeners.
+  /// \brief Deregisters listeners.
   void Deactivated();
 
   /// \brief Gets the bounding box color, default is red.
@@ -141,6 +143,10 @@ public:
   /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
   void NodeChangedProxy(const mitk::DataNode* node);
 
+  /// \brief Makes the thumbnail render window track the given renderer.
+  /// The renderer is supposed to come from the main display (aka. editor).
+  void TrackRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack);
+
 protected:
 
   /// \brief Called when a DataStorage Add event was emmitted and may be reimplemented by deriving classes.
@@ -150,9 +156,6 @@ protected:
   virtual void NodeChanged(const mitk::DataNode* node);
 
 private:
-
-  // Callback for when the focus changes, where we update the thumbnail view to the right window, then call OnWorldGeometryChanged(), UpdateBoundingBox() and OnVisibilityChanged().
-  void OnFocusChanged();
 
   // Callback for when the world geometry changes.
   void OnWorldGeometryChanged();
@@ -175,7 +178,7 @@ private:
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
 
-  // Updates the bounding box by taking the 4 corners of the focused render window, by Get3DPoint().
+  // Updates the bounding box by taking the 4 corners of the tracked render window, by Get3DPoint().
   void UpdateBoundingBox();
 
   // Updates the slice and time step on the SliceNavigationController.
@@ -189,7 +192,7 @@ private:
   // If add=true will add the bounding box to data storage if it isn't already,
   // and if false will remove it if it isn't already removed.
   // If data storage is NULL, will silently do nothing.
-  void AddBoundingBoxToDataStorage(const bool &add);
+  void AddBoundingBoxToDataStorage(bool add);
 
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
@@ -197,20 +200,17 @@ private:
   // Internal method, so that any time we need the mitk::DataStorage we go via this method, which checks assert(m_DataStorage).
   mitk::DataStorage::Pointer GetDataStorage();
 
-  // Used for the mitkFocusManager to register callbacks to track the currently focus window.
-  unsigned long m_FocusManagerObserverTag;
+  // Used for when the tracked window world geometry changes
+  unsigned long m_TrackedWorldGeometryTag;
 
-  // Used for when the focused window world geometry changes
-  unsigned long m_FocusedWindowWorldGeometryTag;
+  // Used for when the tracked window display geometry changes.
+  unsigned long m_TrackedDisplayGeometryTag;
 
-  // Used for when the focused window display geometry changes.
-  unsigned long m_FocusedWindowDisplayGeometryTag;
+  // Used for when the tracked window changes slice.
+  unsigned long m_TrackedSliceSelectorTag;
 
-  // Used for when the focused window changes slice.
-  unsigned long m_FocusedWindowSliceSelectorTag;
-
-  // Used for when the focused window changes time step.
-  unsigned long m_FocusedWindowTimeStepSelectorTag;
+  // Used for when the tracked window changes time step.
+  unsigned long m_TrackedTimeStepSelectorTag;
 
   // We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;

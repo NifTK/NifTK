@@ -36,6 +36,9 @@ public:
 
   virtual std::string GetValueAsString() const;
 
+  itkSetStringMacro(Name);
+  itkGetStringMacro(Name);
+
 protected:
 
   virtual ~NamedLookupTableProperty();
@@ -47,6 +50,9 @@ private:
 
   NamedLookupTableProperty& operator=(const NamedLookupTableProperty&); // Purposefully not implemented
   itk::LightObject::Pointer InternalClone() const;
+
+  virtual bool IsEqual(const BaseProperty& property) const;
+  virtual bool Assign(const BaseProperty& property);
 
   std::string m_Name;
 };

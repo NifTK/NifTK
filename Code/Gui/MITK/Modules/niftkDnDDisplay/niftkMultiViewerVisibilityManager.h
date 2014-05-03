@@ -23,7 +23,6 @@
 #include <mitkBaseProperty.h>
 #include <mitkProperties.h>
 #include <itkImage.h>
-#include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkRenderWindow;
 class niftkSingleViewerWidget;
@@ -49,35 +48,22 @@ public:
   /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterViewer(niftkSingleViewerWidget *viewer);
 
-  /// \brief Used to de-register all the viewers, which means actually removing them from m_DataNodes and m_Viewers.
-  void DeRegisterAllViewers();
-
   /// \brief De-registers a range of viewers, which means actually removing them from m_DataNodes and m_Viewers.
-  void DeRegisterViewers(std::size_t startViewerIndex, std::size_t endViewerIndex);
-
-  /// \brief Clears all windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
-  void ClearAllViewers();
+  /// Start index inclusive, end index exclusive.
+  void DeregisterViewers(std::size_t startIndex = 0, std::size_t endIndex = -1);
 
   /// \brief Used to clear a range of windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
-  void ClearViewers(std::size_t startWindowIndex, std::size_t endWindowIndex);
-
-  /// \brief Will query the DataStorage for all valid nodes, and for all currently registered windows, will set a renderer specific property equal to visibility.
-  void SetAllNodeVisibilityForAllViewers(bool visibility);
-
-  /// \brief For all currently registered windows, will make sure the node has a renderer specific visibility property equal to visibility.
-  void SetNodeVisibilityForAllViewers(mitk::DataNode* node, bool visibility);
-
-  /// \brief Will query the DataStorage for all valid nodes, and for the given window, will set a renderer specific property equal to visibility.
-  void SetAllNodeVisibilityForViewer(std::size_t viewerIndex, bool visibility);
-
-  /// \brief Sets the node to have a renderer specific visibility.
-  void SetNodeVisibilityForViewer(mitk::DataNode* node, std::size_t viewerIndex, bool visibility);
+  /// Start index inclusive, end index exclusive.
+  void ClearViewers(std::size_t startIndex = 0, std::size_t endIndex = -1);
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
   void NodeAddedProxy(const mitk::DataNode* node);
 
   /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and calls NodeRemoved afterwards.
   void NodeRemovedProxy(const mitk::DataNode* node);
+
+  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
+  void OnGlobalVisibilityChanged(mitk::DataNode* node);
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
   void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
@@ -115,43 +101,28 @@ public:
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
 
 signals:
 
 protected:
 
-  /// \brief Called when a DataStorage AddNodeEvent was emmitted and may be reimplemented by deriving classes.
+  /// \brief Called when a node is added, and we set rendering window specific visibility
+  /// to false for all registered windows, plus other default properties such as interpolation type.
   virtual void NodeAdded(const mitk::DataNode* node);
 
-  /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and may be reimplemented by deriving classes.
+  /// \brief Called when a node is added, and we set rendering window specific visibility
   virtual void NodeRemoved(const mitk::DataNode* node);
+
+  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
+  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool visibility=true);
 
   /// \brief For a given window (denoted by its windowIndex, or index number in m_Viewers), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromViewer(int windowIndex);
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
-  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);
-
 protected slots:
 
 private:
-
-  /// \brief Given a window, will return the corresponding list index, or -1 if not found.
-  int GetViewerIndexFromWindow(QmitkRenderWindow* window);
-
-  /// \brief Will remove all observers from the ObserverToVisibilityMap, called from UpdateObserverToVisibilityMap and the destructor.
-  void RemoveAllFromObserverToVisibilityMap();
-
-  /// \brief Will refresh the observers of all the visibility properties... called when NodeAdded or NodeRemoved.
-  void UpdateObserverToVisibilityMap();
-
-  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
-  void UpdateVisibilityProperty(const itk::EventObject&);
-
-  /// \brief Called when a node is added, and we set rendering window specific visibility
-  /// to false for all registered windows, plus other default properties such as interpolation type.
-  void SetInitialNodeProperties(mitk::DataNode* node);
 
   /// \brief Works out the correct window layout from the data, and from the preferences.
   WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);
@@ -178,17 +149,16 @@ private:
 
   // We maintain a set of data nodes present in each window.
   // So, it's a vector, as we have one set for each of the registered windows.
-  std::vector< std::set<mitk::DataNode*> > m_DataNodes;
+  std::vector< std::set<mitk::DataNode*> > m_DataNodesPerViewer;
 
   // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
   std::vector< niftkSingleViewerWidget* > m_Viewers;
 
   // We also observe all the global visibility properties for each registered node.
-  typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
-  ObserverToPropertyMap m_ObserverToVisibilityMap;
+  std::map<mitk::BaseProperty*, unsigned long> m_GlobalVisibilityObserverTags;
 
   // Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
-  bool m_InDataStorageChanged;
+  bool m_BlockDataStorageEvents;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;
@@ -205,9 +175,6 @@ private:
 
   // Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
-
-  // Filter to exclude data nodes.
-  mitk::DataNodeStringPropertyFilter::Pointer m_NodeFilter;
 
 };
 

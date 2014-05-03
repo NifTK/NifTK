@@ -27,6 +27,7 @@ namespace niftk
 
   NIFTKCOMMON_WINEXPORT std::string ConvertToString(int x);
   NIFTKCOMMON_WINEXPORT std::string ConvertToString(unsigned int x);
+  NIFTKCOMMON_WINEXPORT std::string ConvertToString(unsigned long long x);
   NIFTKCOMMON_WINEXPORT std::string ConvertToString(long int x);
   NIFTKCOMMON_WINEXPORT std::string ConvertToString(long unsigned int x);
   NIFTKCOMMON_WINEXPORT std::string ConvertToString(double x);

@@ -15,18 +15,17 @@ plugins is shown below, and these exact pages are available in each GUI as help 
 \li \subpage uk.ac.ucl.cmic.gui.qt.niftymidas NiftyMIDAS contains a subset of plugins, dedicated to image analysis.
 \li \subpage it.unito.cim.intensityprofile
 \li \subpage uk.ac.ucl.cmic.affinetransform
+\li \subpage uk.ac.ucl.cmic.dnddisplay
 \li \subpage uk.ac.ucl.cmic.igidatasources
 \li \subpage uk.ac.ucl.cmic.igioverlayeditor
 \li \subpage uk.ac.ucl.cmic.igipointreg
 \li \subpage uk.ac.ucl.cmic.igisurfacerecon
 \li \subpage uk.ac.ucl.cmic.igisurfacereg
-\li \subpage uk.ac.ucl.cmic.igitagtracker
 \li \subpage uk.ac.ucl.cmic.igitrackedimage
 \li \subpage uk.ac.ucl.cmic.igitrackedpointer
 \li \subpage uk.ac.ucl.cmic.igiundistort
 \li \subpage uk.ac.ucl.cmic.imagelookuptables
 \li \subpage uk.ac.ucl.cmic.imagestatistics
-\li \subpage uk.ac.ucl.cmic.midaseditor
 \li \subpage uk.ac.ucl.cmic.midasgeneralsegmentor
 \li \subpage uk.ac.ucl.cmic.midasmorphologicalsegmentor
 \li \subpage uk.ac.ucl.cmic.mitksegmentation

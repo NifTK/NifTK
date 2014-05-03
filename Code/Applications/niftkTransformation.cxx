@@ -670,14 +670,19 @@ int main(int argc, char** argv)
       else
         result = DoMain<3, float>(args);
       break;
-#ifdef NIFTK_TRANSFORMATION_DOUBLE
-    case itk::ImageIOBase::DOUBLE:
-      if (dims == 2)
-        result = DoMain<2, double>(args);
-      else
-        result = DoMain<3, double>(args);
-      break;
-#endif
+
+/* 
+ * DON'T DO THIS. It crashes some compilers on some machines.
+ * e.g. gcc44, gcc41 on comic1. We decided that we don't need this.
+ *
+ *    case itk::ImageIOBase::DOUBLE:
+ *      if (dims == 2)
+ *        result = DoMain<2, double>(args);
+ *      else
+ *        result = DoMain<3, double>(args);
+ *      break;
+ */
+
     default:
       std::cerr << "Unsupported pixel format" << std::endl;
       return EXIT_FAILURE;

@@ -1,0 +1,164 @@
+/**
+
+\page HowToDoUltrasoundCalibration  How To - Do Ultrasound Calibration
+
+\section HowToDoUltrasoundCalibrationContents Table of Contents
+
+\li \ref HowToDoUltrasoundCalibrationIntroduction
+\li \ref HowToDoUltrasoundCalibrationChoicePhantom
+\li \ref HowToDoUltrasoundCalibrationCollectingData
+\li \ref HowToDoUltrasoundCalibrationPostProcessingSortingData
+\li \ref HowToDoUltrasoundCalibrationTheCalibrationRoutine
+
+\section HowToDoUltrasoundCalibrationIntroduction Introduction
+
+While NifTK is not a toolkit dedicated specifically to ultrasound image calibration,
+there are a few programs that may be useful. The aim in ultrasound calibration
+is to calculate the 6DOF transformation matrix, and 2 scale factors that relate
+pixels in an ultrasound image to the coordinate system of the tracking markers
+attached on the probe. Most methods rely on collecting synchronised pairs of
+ultrasound images and tracking data. A survey of methods can be found
+<a href="http://www.sciencedirect.com/science/article/pii/S0301562904003862">here</a>.
+
+Key issues for success are:
+
+<ol>
+<li>Detecting image features (e.g. a single pin or cross-wire) reliably and accurately in many ultrasound images.
+<li>Collecting ultrasound images and tracking information, that are accurately synchronised in time.
+</ol>
+
+For the first point, there is no automatic feature detection in NifTK.
+The user must manually detect features by clicking on them. For the second issue,
+the user must be aware of the timings of each data feed, and optimise their
+experimental setup to reduce errors.
+
+\section HowToDoUltrasoundCalibrationChoicePhantom Choice of Calibration Phantom
+
+We have tried a single pin, single cross-wire, multiple cross-wire and the PLUS fCal-2.0 phantom.
+A single, stationary, cross-wire seems (to Matt) to be the most workable example. This method is known to be tedious,
+but if done correctly it can be as accurate as a more elaborate setup. For example, you could grab
+each frame of data, where a frame means a matching pair of ultrasound image and tracking matrix,
+making sure that every piece of hardware is clamped stationary, thereby minimising movement and timing errors.
+
+If you want to do automated N-Wire calibration,
+consider using the <a href="https://www.assembla.com/spaces/plus/wiki">PLUS toolkit</a>,
+as CMIC has a 3D printed PLUS fCal-2.0 phantom. For the remainder of this page, we assume that
+calibration is performed using a single pin or single cross-wire. Mathematically,
+these two methods are equivalent, as they both utilise a single invariant (stationary) point.
+This point must be stationary with respect to the tracking device.
+The potential advantage of a single cross-wire over a pin head is that it is easier to determine when
+the ultrasound beam is directly over the cross. If using a single pin, try pins with
+different sized heads, as you need to systematically pick the centre of the pin in the ultrasound image.
+
+\section HowToDoUltrasoundCalibrationCollectingData Collecting Data for Ultrasound Calibration.
+
+In NifTK:
+
+<ul>
+  <li> When using Tracking Devices such as Spectra, and Ultrasonix machines, record data using the IGI Data Sources plugin.
+  <li> When using visual tracking, record using the appropriate custom plugin. The principal is the same.
+</ul>
+
+Make sure:
+
+<ul>
+  <li>Cross-wire must be stationary with respect to the tracker. Glue/Clamp things if necessary.
+  <li>You are advised to move the ultrasound probe slowly. However 'slowly' is in relation to the
+      speed of data collection. You need to collect data that accurately represents the cross-wire,
+      and have an ultrasound image and tracking matrix that exactly capture that point, free of timing
+      or movement errors.
+  <li>Scan the single cross-wire from as many angles as possible, covering all degrees of freedom
+  <li>Don't forget the 'depth' degree of freedom. i.e. Up/Down relative to the cross-wire.
+      If the tracking markers must be above water, then the cross-wire can be imaged at
+      several depths by incrementally filling the water bath.
+</ul>
+
+If you clamp things stationary, you can save each individual image and tracking matrix manually.
+If you record data while moving freehand, you will need to us the next program niftkUltrasoundPinCalibrationSorter.
+
+\section HowToDoUltrasoundCalibrationPostProcessingSortingData Sorting Data
+
+Given:
+
+<ul>
+<li> A directory of tracking matrices, each one with a filename that is <timestamp>.txt
+<li> A directory of .png files, each one with a filename that is a <timestamp>.png
+<li> The natural (i.e. by name) sort order must be the same, which it will be if the timestamps are correctly formed. Timestamps should be 19 digits.
+</ul>
+
+Use the program
+\verbatim
+niftkUltrasoundPinCalibrationSorter --inputMatrixDirectory <dir1> --inputImageDirectory <dir2> --outputMatrixDirectory <dir3> --outputPointDirectory <dir4>
+\endverbatim
+to quickly scan through data. The controls are:
+<ul>
+<li>N - next image
+<li>P - previous image
+<li>left click - click on the ultrasound feature. You should click exactly once per frame, corresponding to the single pin or single cross-wire.
+</ul>
+For each click, a single tracking matrix, and corresponding cross-wire pixel location is saved. If you click multiple times
+on each ultrasound image, each subsequent click over-writes the previous click on that image. The program checks if the
+timing difference between the ultrasound image and tracking matrix is suitable. The default tolerance is 40 milliseconds,
+but this can be adjusted using the argument --timingTolerance. Also, if you have a lot of ultrasound data, where there
+is no tracking data, you can use the --skipForward flag which allows the program at each 'N' key
+stroke to jump forward until the next ultrasound image that has tracking data within the given timing tolerance.
+
+Use of this program results in well matched images and tracking matrices of the single cross-wire.
+It also means that you should be able to record data free-hand, without clamps.
+
+\section HowToDoUltrasoundCalibrationTheCalibrationRoutine The Calibration
+
+There is a C++ program in NifTK called niftkUltrasoundPinCalibration. This was tested, and checked, but never
+seemed to work properly. It was concluded that the Levenberg Marquardt algorithm was not converging properly.
+Therefore the calibration must be done in MATLAB. MATLAB proved to have the most reliable non-linear optimisation routine,
+but the maths is identical to the C++ program.
+
+You must:
+<ol>
+<li>Concatenate all tracking data into a single file e.g. matrices.txt
+<li>Concatenate all point data into a single file e.g. points.txt
+<li>The ordering of matrices in matrices.txt and points in points.txt must correspond.
+<li>These files should have at least 50 samples of data. i.e. matched 50 matrices, and 50 corresponding single points.
+<li>In MATLAB, addpath NifTK/Code/Matlab/UltrasoundPinCalibration
+<li>The calibration routine is: niftkUltrasoundPinCalibrationFromFile.m
+</ol>
+
+The MATLAB scripts reads a single file containing all the tracking matrices in order eg:
+\verbatim
+0.205221 0.245414 -0.947447 -1.43977
+0.580367 -0.810001 -0.0841022 2.30268
+-0.788073 -0.532607 -0.308659 167.379
+0 0 0 1
+0.211506 0.235885 -0.948485 4.94036
+0.563073 -0.822621 -0.0790214 1.9959
+-0.798883 -0.517352 -0.30681 169.94
+0 0 0 1
+etc
+\endverbatim
+and also all the points in order eg:
+\verbatim
+180 162
+253 166
+etc
+\endverbatim
+The parameters are:
+\verbatim
+>> help niftkUltrasoundPinCalibrationFromFile
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  Usage:
+    [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFile(initialGuess)
+  where:
+    initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
+                   where:
+                   tx, ty, tz = translation in millimetres
+                   rx, ry, rz = rotations in radians
+                   x,y,z      = location of invariant point in millimetres
+                   sx, sy     = scale factor (mm/pix)
+
+\endverbatim
+There are also MATLAB evaluation routines such as
+\verbatim
+>> niftkUltrasoundPinCalibrationEvaluation - leave one out cross validation, with accuracy assessment against a gold standard location.
+\endverbatim
+*/

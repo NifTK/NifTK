@@ -10,10 +10,10 @@
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
+      id="uk.ac.ucl.cmic.gui.qt.niftymidas.midasperspective"
       name="MIDAS Perspective"
-      class="QmitkNiftyViewMIDASPerspective"
-	  icon="resources/icon_ion.xpm">
+      class="QmitkCommonAppsMIDASPerspective"
+      icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
 

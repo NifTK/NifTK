@@ -17,6 +17,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include <mitkMathsUtils.h>
 
 namespace mitk {
 
@@ -62,20 +63,6 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
   }
 
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-bool IsCloseToZero(const double& value, const double& tolerance)
-{
-  if (fabs(value) < tolerance)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
 }
 
 
@@ -912,43 +899,6 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
   }
   return minimumValues;
 }  
-//-----------------------------------------------------------------------------
-std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < double, double > > inputValues, std::pair < unsigned int , unsigned int >  * indexes )
-{
-  std::pair < double , double > minimumValues;
-
-  if ( inputValues.size() > 0 ) 
-  {
-    minimumValues.first = inputValues[0].first;
-    minimumValues.second = inputValues[0].second;
-
-    if ( indexes != NULL )
-    {
-      indexes->first = 0;
-      indexes->second = 0;
-    }
-  }
-  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
-  {
-    if ( inputValues[i].first < minimumValues.first )
-    {
-      minimumValues.first = inputValues[i].first;
-      if ( indexes != NULL )
-      {
-        indexes->first = i;
-      }
-    }
-    if ( inputValues[i].second < minimumValues.second )
-    {
-      minimumValues.second = inputValues[i].second;
-      if ( indexes != NULL )
-      {
-        indexes->second = i;
-      }
-    }
-  }
-  return minimumValues;
-}
 
 //-----------------------------------------------------------------------------
 std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
@@ -1183,44 +1133,6 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
 
 
 //-----------------------------------------------------------------------------
-double RMS(const std::vector<double>& input)
-{
-  double mean = Mean(input);
-  return sqrt(mean);
-}
-
-
-//-----------------------------------------------------------------------------
-double Mean(const std::vector<double>& input)
-{
-  if (input.size() == 0)
-  {
-    return 0;
-  }
-  double sum = std::accumulate(input.begin(), input.end(), 0.0);
-  double mean = sum / input.size();
-  return mean;  
-}
-
-
-//-----------------------------------------------------------------------------
-double StdDev(const std::vector<double>& input)
-{
-  if (input.size() == 0)
-  {
-    return 0;
-  }
-  
-  double mean = mitk::Mean(input);
-  
-  std::vector<double> diff(input.size());
-  std::transform(input.begin(), input.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
-  double squared = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-  double stdev = std::sqrt(squared / ((double)(input.size()) - 1.0));
-  return stdev;
-}
-
-//-----------------------------------------------------------------------------
 cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
     const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index ) 
 {
@@ -1251,7 +1163,10 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
       *minRatio = 0.0;
     }
   }
-  
+  if (boost::math::isinf (sortedMatches[0].x))
+  {
+    *minRatio =  0.0;
+  }
   return  point - sortedMatches [0];
 }
 
@@ -1270,5 +1185,542 @@ bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1,
   return p1.first < p2.first;
 }
 
+//-----------------------------------------------------------------------------
+cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+    const std::vector<cv::Mat>& World2ToTracker2, double& Residual)
+{
+ 
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
+  {
+    MITK_ERROR << "Called HandeyeRotation with unequal matrix vectors";
+    Residual = -1.0;
+    return cv::Mat();
+  }
+  int numberOfViews = Tracker1ToWorld1.size();
+
+  cv::Mat A = cvCreateMat ( 3 * (numberOfViews - 1), 3, CV_64FC1 );
+  cv::Mat b = cvCreateMat ( 3 * (numberOfViews - 1), 1, CV_64FC1 );
+  
+  for ( int i = 0; i < numberOfViews - 1; i ++ )
+  {
+    cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
+    mat1 = Tracker1ToWorld1[i+1].inv() * Tracker1ToWorld1[i];
+    mat2 = World2ToTracker2[i+1] * World2ToTracker2[i].inv();
+
+    cv::Mat rotationMat1 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat rotationMat2 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat rotationVector1 = cvCreateMat(3,1,CV_64FC1);
+    cv::Mat rotationVector2 = cvCreateMat(3,1,CV_64FC1);
+    for ( int row = 0; row < 3; row ++ )
+    {
+      for ( int col = 0; col < 3; col ++ )
+      {
+        rotationMat1.at<double>(row,col) = mat1.at<double>(row,col);
+        rotationMat2.at<double>(row,col) = mat2.at<double>(row,col);
+      }
+    }
+    cv::Rodrigues (rotationMat1, rotationVector1 );
+    cv::Rodrigues (rotationMat2, rotationVector2 );
+
+    double norm1 = cv::norm(rotationVector1);
+    double norm2 = cv::norm(rotationVector2);
+
+    rotationVector1 *= 2*sin(norm1/2) / norm1;
+    rotationVector2 *= 2*sin(norm2/2) / norm2;
+
+    cv::Mat sum = rotationVector1 + rotationVector2;
+    cv::Mat diff = rotationVector2 - rotationVector1;
+
+    A.at<double>(i*3+0,0)=0.0;
+    A.at<double>(i*3+0,1)=-(sum.at<double>(2,0));
+    A.at<double>(i*3+0,2)=sum.at<double>(1,0);
+    A.at<double>(i*3+1,0)=sum.at<double>(2,0);
+    A.at<double>(i*3+1,1)=0.0;
+    A.at<double>(i*3+1,2)=-(sum.at<double>(0,0));
+    A.at<double>(i*3+2,0)=-(sum.at<double>(1,0));
+    A.at<double>(i*3+2,1)=sum.at<double>(0,0);
+    A.at<double>(i*3+2,2)=0.0;
+ 
+    b.at<double>(i*3+0,0)=diff.at<double>(0,0);
+    b.at<double>(i*3+1,0)=diff.at<double>(1,0);
+    b.at<double>(i*3+2,0)=diff.at<double>(2,0);
+  
+  }
+  
+  cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
+  cv::invert(A,PseudoInverse,CV_SVD);
+ 
+  cv::Mat pcgPrime = PseudoInverse * b;
+
+  cv::Mat Error = A * pcgPrime-b;
+ 
+  cv::Mat ErrorTransMult = cvCreateMat(Error.cols, Error.cols, CV_64FC1);
+ 
+  cv::mulTransposed (Error, ErrorTransMult, true);
+     
+  Residual = sqrt(ErrorTransMult.at<double>(0,0)/(numberOfViews-1));
+ 
+  cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
+  cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+      if ( row == col )
+      {
+        id3.at<double>(row,col) = 1.0;
+      }
+      else
+      {
+        id3.at<double>(row,col) = 0.0;
+      }
+    }
+  }
+      
+  cv::Mat pcg_crossproduct = cvCreateMat(3,3,CV_64FC1);
+  pcg_crossproduct.at<double>(0,0)=0.0;
+  pcg_crossproduct.at<double>(0,1)=-(pcg.at<double>(2,0));
+  pcg_crossproduct.at<double>(0,2)=(pcg.at<double>(1,0));
+  pcg_crossproduct.at<double>(1,0)=(pcg.at<double>(2,0));
+  pcg_crossproduct.at<double>(1,1)=0.0;
+  pcg_crossproduct.at<double>(1,2)=-(pcg.at<double>(0,0));
+  pcg_crossproduct.at<double>(2,0)=-(pcg.at<double>(1,0));
+  pcg_crossproduct.at<double>(2,1)=(pcg.at<double>(0,0));
+  pcg_crossproduct.at<double>(2,2)=0.0;
+ 
+  cv::Mat pcg_mulTransposed = cvCreateMat(pcg.rows, pcg.rows, CV_64FC1);
+  cv::mulTransposed (pcg, pcg_mulTransposed, false);
+  cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3
+    + 0.5 * ( pcg_mulTransposed + sqrt(4 - norm(pcg) * norm(pcg))*pcg_crossproduct);
+  return rcg;
+}
+//-----------------------------------------------------------------------------
+cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+     const std::vector<cv::Mat>& World2ToTracker2, double& Residual, const cv::Mat& rcg)
+{
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
+  {
+    MITK_ERROR << "Called HandeyeTranslation with unequal matrix vectors";
+    Residual = -1.0;
+    return cv::Mat();
+  }
+  int numberOfViews = Tracker1ToWorld1.size();
+
+  cv::Mat A = cvCreateMat ( 3 * (numberOfViews - 1), 3, CV_64FC1 );
+  cv::Mat b = cvCreateMat ( 3 * (numberOfViews - 1), 1, CV_64FC1 );
+
+  for ( int i = 0; i < numberOfViews - 1; i ++ )
+  {
+    cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat mat2 = cvCreateMat(4,4,CV_64FC1);
+    mat1 = Tracker1ToWorld1[i+1].inv() * Tracker1ToWorld1[i];
+    mat2 = World2ToTracker2[i+1] * World2ToTracker2[i].inv();
+
+    A.at<double>(i*3+0,0)=mat1.at<double>(0,0) - 1.0;
+    A.at<double>(i*3+0,1)=mat1.at<double>(0,1) - 0.0;
+    A.at<double>(i*3+0,2)=mat1.at<double>(0,2) - 0.0;
+    A.at<double>(i*3+1,0)=mat1.at<double>(1,0) - 0.0;
+    A.at<double>(i*3+1,1)=mat1.at<double>(1,1) - 1.0;
+    A.at<double>(i*3+1,2)=mat1.at<double>(1,2) - 0.0;
+    A.at<double>(i*3+2,0)=mat1.at<double>(2,0) - 0.0;
+    A.at<double>(i*3+2,1)=mat1.at<double>(2,1) - 0.0;
+    A.at<double>(i*3+2,2)=mat1.at<double>(2,2) - 1.0;
+
+    cv::Mat m1_t = cvCreateMat(3,1,CV_64FC1);
+    cv::Mat m2_t = cvCreateMat(3,1,CV_64FC1);
+    for ( int j = 0; j < 3; j ++ )
+    {
+      m1_t.at<double>(j,0) = mat1.at<double>(j,3);
+      m2_t.at<double>(j,0) = mat2.at<double>(j,3);
+    }
+    cv::Mat b_t = rcg * m2_t - m1_t;
+
+    b.at<double>(i*3+0,0)=b_t.at<double>(0,0);
+    b.at<double>(i*3+1,0)=b_t.at<double>(1,0);
+    b.at<double>(i*3+2,0)=b_t.at<double>(2,0);
+
+  }
+  cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
+  cv::invert(A,PseudoInverse,CV_SVD);
+  cv::Mat tcg = PseudoInverse * b;
+  
+  cv::Mat Error = A * tcg -b;
+  cv::Mat ErrorTransMult = cvCreateMat(Error.cols, Error.cols, CV_64FC1);
+  cv::mulTransposed (Error, ErrorTransMult, true);
+  Residual = sqrt(ErrorTransMult.at<double>(0,0)/(numberOfViews-1));
+  return tcg;
+}
+//-----------------------------------------------------------------------------
+cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+     const std::vector<cv::Mat>& World2ToTracker2, std::vector<double>& Residuals, 
+     cv::Mat * World2ToWorld1)
+{
+  Residuals.clear();
+  //init residuals with negative number to stop unit test passing
+  //  //if Load result and calibration both produce zero.
+  Residuals.push_back(-100.0);
+  Residuals.push_back(-100.0);
+
+  double RotationalResidual;
+  cv::Mat rcg = mitk::Tracker2ToTracker1Rotation ( Tracker1ToWorld1, World2ToTracker2, RotationalResidual);
+  double TranslationalResidual;
+  cv::Mat tcg = mitk::Tracker2ToTracker1Translation (Tracker1ToWorld1, World2ToTracker2, TranslationalResidual, rcg);
+
+  Residuals[0] = RotationalResidual;
+  Residuals[1] = TranslationalResidual;
+
+  cv::Mat tracker2ToTracker1 = cvCreateMat(4,4,CV_64FC1);
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+      tracker2ToTracker1.at<double>(row,col) = rcg.at<double>(row,col);
+    }
+  }
+  for ( int row = 0; row < 3; row ++ )
+  {
+    tracker2ToTracker1.at<double>(row,3) = tcg.at<double>(row,0);
+  }
+  for ( int col = 0; col < 3; col ++ )
+  {
+    tracker2ToTracker1.at<double>(3,col) = 0.0;
+  }
+  tracker2ToTracker1.at<double>(3,3)=1.0;
+
+  if ( World2ToWorld1 != NULL )
+  {
+    std::vector<cv::Mat> world2ToWorld1s;
+    world2ToWorld1s.clear();
+    for ( int i = 0; i < Tracker1ToWorld1.size() ; i ++ )
+    {
+      cv::Mat world2ToWorld1 = cvCreateMat(4,4,CV_64FC1);
+      cv::Mat tracker2ToWorld1 = cvCreateMat(4,4,CV_64FC1);
+
+      tracker2ToWorld1 =  Tracker1ToWorld1[i]*(tracker2ToTracker1);
+      world2ToWorld1 = tracker2ToWorld1 *(World2ToTracker2[i]);
+      world2ToWorld1s.push_back(world2ToWorld1);
+    }
+    *World2ToWorld1 = mitk::AverageMatrices (world2ToWorld1s);
+    //lets do a check To get Tracker2 into Tracker1 
+    //Tracker1InWorld1 = (Tracker2InWorld2 * world2ToWorld1) * tracker2toTracker1
+    for ( int i = 0 ; i < Tracker1ToWorld1.size() ; i++ )
+    {
+      if ( i == 0 ) 
+      {
+        MITK_INFO << "Tracker 1: " << i ;
+        MITK_INFO << Tracker1ToWorld1[i];
+        MITK_INFO << "Tracker 2 to World 1 " << i ;
+        MITK_INFO << (*World2ToWorld1) * World2ToTracker2[i].inv(); 
+        MITK_INFO << "Tracker 1 to world 1 "  << i ;
+        MITK_INFO <<  ((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv();
+      }
+      MITK_INFO << "Difference " << i ; 
+      MITK_INFO << (((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv())- Tracker1ToWorld1[i];
+    }
+  }
+  else 
+  {
+    MITK_INFO << "Grid to world NULL ";
+  }
+  return tracker2ToTracker1;
+} 
+
+//-----------------------------------------------------------------------------------------
+cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+{
+  cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
+  for ( int row = 0 ; row < 3 ; row++ )
+  {
+    for ( int col = 0 ; col < 3 ; col++ ) 
+    {
+      temp.at<double>(row,col) = 0.0;
+    }
+    temp_T.at<double>(row,0) = 0.0;
+  }
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
+  {
+    for ( int row = 0 ; row < 3 ; row++ )
+    {
+      for ( int col = 0 ; col < 3 ; col++ ) 
+      {
+        double whatItWas = temp.at<double>(row,col);
+        double whatToAdd = Matrices[i].at<double>(row,col);
+        temp.at<double>(row,col) = whatItWas +  whatToAdd;
+      }
+      temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
+    }
+    
+    //we write temp out, not because it's interesting but because it 
+    //seems to fix a bug in the averaging code, trac 2895
+    MITK_INFO << "temp " << temp;
+  }
+  
+  temp_T = temp_T / static_cast<double>(Matrices.size());
+  temp = temp / static_cast<double>(Matrices.size());
+
+
+  cv::Mat rtr = temp.t() * temp;
+
+  cv::Mat eigenvectors = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat eigenvalues = cvCreateMat(3,1,CV_64FC1);
+  cv::eigen(rtr , eigenvalues, eigenvectors);
+  cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
+  //write out the vectors and values, because it might be interesting, trac 2972
+  MITK_INFO << "eigenvalues " << eigenvalues;
+  MITK_INFO << "eigenvectors " << eigenvectors;
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      if ( row == col )
+      {
+        rootedEigenValues.at<double>(row,col) = sqrt(1.0/eigenvalues.at<double>(row,0));
+      }
+      else
+      {
+        rootedEigenValues.at<double>(row,col) = 0.0;
+      }
+    }
+  }
+  //write out the rooted eigenValues trac 2972
+  MITK_INFO << " rooted eigenvalues " << rootedEigenValues;
+
+  cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
+  cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
+  temp2 = temp * ( eigenvectors * rootedEigenValues * eigenvectors.t() );
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      returnMat.at<double>(row,col) = temp2.at<double>(row,col);
+    }
+    returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
+  }
+  returnMat.at<double>(3,0) = 0.0;
+  returnMat.at<double>(3,1) = 0.0;
+  returnMat.at<double>(3,2) = 0.0;
+  returnMat.at<double>(3,3)  = 1.0;
+  return returnMat;
+    
+} 
+
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
+{
+  std::vector<cv::Mat>  OutMatrices;
+  for ( unsigned int i = 0; i < Matrices.size(); i ++ )
+  {
+    if ( Matrices[i].type() == CV_64FC1 )
+    {
+      cv::Mat FlipMat = cvCreateMat(4,4,CV_64FC1);
+      FlipMat.at<double>(0,0) = Matrices[i].at<double>(0,0);
+      FlipMat.at<double>(0,1) = Matrices[i].at<double>(0,1);
+      FlipMat.at<double>(0,2) = Matrices[i].at<double>(0,2) * -1;
+      FlipMat.at<double>(0,3) = Matrices[i].at<double>(0,3);
+
+      FlipMat.at<double>(1,0) = Matrices[i].at<double>(1,0);
+      FlipMat.at<double>(1,1) = Matrices[i].at<double>(1,1);
+      FlipMat.at<double>(1,2) = Matrices[i].at<double>(1,2) * -1;
+      FlipMat.at<double>(1,3) = Matrices[i].at<double>(1,3);
+
+      FlipMat.at<double>(2,0) = Matrices[i].at<double>(2,0) * -1;
+      FlipMat.at<double>(2,1) = Matrices[i].at<double>(2,1) * -1;
+      FlipMat.at<double>(2,2) = Matrices[i].at<double>(2,2);
+      FlipMat.at<double>(2,3) = Matrices[i].at<double>(2,3) * -1;
+
+      FlipMat.at<double>(3,0) = Matrices[i].at<double>(3,0);
+      FlipMat.at<double>(3,1) = Matrices[i].at<double>(3,1);
+      FlipMat.at<double>(3,2) = Matrices[i].at<double>(3,2);
+      FlipMat.at<double>(3,3) = Matrices[i].at<double>(3,3);
+
+      OutMatrices.push_back(FlipMat);
+    }
+    else if ( Matrices[i].type() == CV_32FC1 )
+    {
+      cv::Mat FlipMat = cvCreateMat(4,4,CV_32FC1);
+      FlipMat.at<float>(0,0) = Matrices[i].at<float>(0,0);
+      FlipMat.at<float>(0,1) = Matrices[i].at<float>(0,1);
+      FlipMat.at<float>(0,2) = Matrices[i].at<float>(0,2) * -1;
+      FlipMat.at<float>(0,3) = Matrices[i].at<float>(0,3);
+
+      FlipMat.at<float>(1,0) = Matrices[i].at<float>(1,0);
+      FlipMat.at<float>(1,1) = Matrices[i].at<float>(1,1);
+      FlipMat.at<float>(1,2) = Matrices[i].at<float>(1,2) * -1;
+      FlipMat.at<float>(1,3) = Matrices[i].at<float>(1,3);
+
+      FlipMat.at<float>(2,0) = Matrices[i].at<float>(2,0) * -1;
+      FlipMat.at<float>(2,1) = Matrices[i].at<float>(2,1) * -1;
+      FlipMat.at<float>(2,2) = Matrices[i].at<float>(2,2);
+      FlipMat.at<float>(2,3) = Matrices[i].at<float>(2,3) * -1;
+
+      FlipMat.at<float>(3,0) = Matrices[i].at<float>(3,0);
+      FlipMat.at<float>(3,1) = Matrices[i].at<float>(3,1);
+      FlipMat.at<float>(3,2) = Matrices[i].at<float>(3,2);
+      FlipMat.at<float>(3,3) = Matrices[i].at<float>(3,3);
+
+      OutMatrices.push_back(FlipMat);
+    }
+  }
+  return OutMatrices;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
+{
+  int NumberOfViews = Matrices.size();
+
+  std::vector<int> used;
+  std::vector<int> index;
+  for ( int i = 0; i < NumberOfViews; i++ )
+  {
+    used.push_back(i);
+    index.push_back(0);
+  }
+
+  int counter = 0;
+  int startIndex = 0;
+  double distance = 1e-10;
+
+  while ( fabs(distance) > 0 )
+  {
+    used [startIndex] = 0;
+    index [counter] = startIndex;
+    counter++;
+    distance = 0.0;
+    int CurrentIndex=0;
+    for ( int i = 0; i < NumberOfViews; i ++ )
+    {
+      if ( ( startIndex != i ) && ( used[i] != 0 ))
+      {
+        double d = mitk::DistanceBetweenMatrices(Matrices[startIndex],Matrices[i]);
+        if ( d > distance )
+        {
+          distance = d;
+          CurrentIndex=i;
+        }
+      }
+    }
+    if ( counter < NumberOfViews )
+    {
+      index[counter] = CurrentIndex;
+    }
+    startIndex = CurrentIndex;
+  }
+  return index;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
+{
+  int NumberOfViews = Matrices.size();
+
+  std::vector<int> used;
+  std::vector<int> index;
+  for ( int i = 0; i < NumberOfViews; i++ )
+  {
+    used.push_back(i);
+    index.push_back(0);
+  }
+
+  int counter = 0;
+  int startIndex = 0;
+  double distance = 1e-10;
+
+  while ( fabs(distance) > 0.0 )
+  {
+    cv::Mat t1 = cvCreateMat(3,3,CV_64FC1);
+    cv::Mat t2 = cvCreateMat(3,3,CV_64FC1);
+   
+    for ( int row = 0; row < 3; row ++ )
+    {
+      for ( int col = 0; col < 3; col ++ )
+      {
+        t1.at<double>(row,col) = Matrices[startIndex].at<double>(row,col);
+      }
+    }
+    used [startIndex] = 0;
+    index [counter] = startIndex;
+    counter++;
+    distance = 0.0;
+    int CurrentIndex=0;
+    for ( int i = 0; i < NumberOfViews; i ++ )
+    {
+      if ( ( startIndex != i ) && ( used[i] != 0 ))
+      {
+        for ( int row = 0; row < 3; row ++ )
+        {
+          for ( int col = 0; col < 3; col ++ )
+          {
+            t2.at<double>(row,col) = Matrices[i].at<double>(row,col);
+          }
+        }
+        double d = AngleBetweenMatrices(t1,t2);
+        if ( d > distance )
+        {
+          distance = d;
+          CurrentIndex=i;
+        }
+      }
+    }
+    if ( counter < NumberOfViews )
+    {
+      index[counter] = CurrentIndex;
+    }
+    startIndex = CurrentIndex;
+  }
+  return index;
+}
+
+//-----------------------------------------------------------------------------
+double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
+{
+  //turn them into quaternions first
+  cv::Mat q1 = DirectionCosineToQuaternion(Mat1);
+  cv::Mat q2 = DirectionCosineToQuaternion(Mat2);
+ 
+  return 2 * acos (q1.at<double>(3,0) * q2.at<double>(3,0)
+      + q1.at<double>(0,0) * q2.at<double>(0,0)
+      + q1.at<double>(1,0) * q2.at<double>(1,0)
+      + q1.at<double>(2,0) * q2.at<double>(2,0));
+
+}
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
+{
+  cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
+  cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
+   
+  for ( int row = 0; row < 3; row ++ )
+  {
+    t1.at<double>(row,0) = Mat1.at<double>(row,3);
+    t2.at<double>(row,0) = Mat2.at<double>(row,3);
+  }
+  return cv::norm(t1-t2);
+}
+
+//-----------------------------------------------------------------------------
+cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
+{
+  cv::Mat q = cvCreateMat(4,1,CV_64FC1);
+  q.at<double>(0,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
+  dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
+  ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
+
+  q.at<double>(1,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
+  dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
+  ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
+
+  q.at<double>(2,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
+  dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) ) *
+  ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
+
+  q.at<double>(3,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
+  dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
+
+  return q;
+}
 
 } // end namespace

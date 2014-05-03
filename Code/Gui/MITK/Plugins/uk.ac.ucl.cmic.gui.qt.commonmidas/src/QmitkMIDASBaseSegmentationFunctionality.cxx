@@ -47,14 +47,13 @@ const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_
 
 //-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
-:
-  m_SelectedNode(NULL)
+: m_SelectedNode(NULL)
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
-, m_SegmentationView(NULL)
-, m_MainWindowCursorWasVisible(true)
-, m_OwnCursorWasVisible(true)
+, m_ActiveToolID(-1)
+, m_MainWindowCursorVisibleWithToolsOff(true)
+, m_OwnCursorIsVisibleWithToolsOff(true)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -85,12 +84,6 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
   {
     delete m_ToolSelector;
   }
-
-  if (m_SegmentationView != NULL)
-  {
-    delete m_SegmentationView;
-  }
-
 }
 
 
@@ -121,8 +114,6 @@ bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent
 void QmitkMIDASBaseSegmentationFunctionality::Activated()
 {
   QmitkBaseView::Activated();
-
-  m_SegmentationView->SetMainWindow(this->GetSelectedRenderWindow());
 
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
@@ -165,10 +156,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
   if (!m_ImageAndSegmentationSelector)
   {
 
-    // Connect the ToolManager to DataStorage straight away.
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert ( toolManager );
-    toolManager->SetDataStorage( *(this->GetDataStorage()) );
+    // Create an own tool manager and connect it to the data storage straight away.
+    mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
     toolManager->InitializeTools();
 
     mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
@@ -197,27 +186,14 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForToolWidget = new QWidget(parent);
     m_ToolSelector = new QmitkMIDASToolSelectorWidget(m_ContainerForToolWidget);
+    m_ToolSelector->SetToolManager(*toolManager.GetPointer());
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);
     m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
 
-    // Set up the Segmentation View
-    // Subclasses add it to their layouts, at the appropriate point.
-    m_ContainerForSegmentationViewWidget = new QWidget(parent);
-    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(this, m_ContainerForSegmentationViewWidget);
-    m_SegmentationView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_SegmentationView->SetDataStorage(this->GetDataStorage());
-
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
-
-    // Set up the ctkEventAdmin stuff.
-    m_Context = mitk::MIDASActivator::GetPluginContext();
-    m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
-    m_EventAdmin = m_Context->getService<ctkEventAdmin>(m_EventAdminRef);
-    m_EventAdmin->publishSignal(this, SIGNAL(InteractorRequest(ctkDictionary)),
-                              "org/mitk/gui/qt/INTERACTOR_REQUEST", Qt::QueuedConnection);
   }
 }
 
@@ -234,15 +210,19 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
   if (toolID != -1)
   {
-    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
+    bool mainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
+
+    if (m_ActiveToolID == -1)
+    {
+      m_MainWindowCursorVisibleWithToolsOff = mainWindowCursorWasVisible;
+    }
   }
   else
   {
-    this->SetMainWindowCursorVisible(m_MainWindowCursorWasVisible);
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorWasVisible);
+    this->SetMainWindowCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
   }
+
+  m_ActiveToolID = toolID;
 
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.

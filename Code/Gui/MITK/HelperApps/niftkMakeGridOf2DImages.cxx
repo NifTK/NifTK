@@ -66,6 +66,8 @@ int main(int argc, char** argv)
   cv::Mat firstImage;
   firstImage = cv::imread(files[0], CV_LOAD_IMAGE_COLOR);
 
+  std::cout << "First image has size cols=" << firstImage.cols << " x rows=" << firstImage.rows << std::endl;
+
   if (gridDimensions[0]*firstImage.cols != imageSize[0])
   {
     std::cerr << "ERROR: Incorrect image widths!" << std::endl;

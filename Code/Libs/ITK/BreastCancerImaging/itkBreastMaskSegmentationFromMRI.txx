@@ -16,6 +16,7 @@
 #include <itkHistogramMatchingImageFilter.h>
 #include <itkScalarConnectedComponentImageFilter.h>
 #include <itkRelabelComponentImageFilter.h>
+#include <itkSmoothingRecursiveGaussianImageFilter.h>
 
 namespace itk
 {
@@ -72,6 +73,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imChestSurfaceVoxels = 0;
   imSegmented = 0;
 
+  imSkinElevationMap = 0;
 };
 
 
@@ -106,13 +108,41 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
 
+  typename InternalImageType::RegionType region;
   typename InternalImageType::SizeType size;
 
-  size = imStructural->GetLargestPossibleRegion().GetSize();
+  region = imStructural->GetLargestPossibleRegion();
+  size   = region.GetSize();
 
   if ( ! flgRegGrowXcoord ) regGrowXcoord = size[ 0 ]/2;
   if ( ! flgRegGrowYcoord ) regGrowYcoord = size[ 1 ]/4;
   if ( ! flgRegGrowZcoord ) regGrowZcoord = size[ 2 ]/2;
+
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType  lateralSize;
+  
+  // Set the left region
+
+  lateralSize    = size;
+  lateralSize[0] = lateralSize[0]/2;
+
+  lateralStart = region.GetIndex();
+
+  m_LeftLateralRegion.SetIndex( lateralStart );
+  m_LeftLateralRegion.SetSize(  lateralSize );
+
+
+  // Set the right region
+
+  lateralSize    = size;
+  lateralSize[0] = lateralSize[0]/2;
+
+  lateralStart    = region.GetIndex();
+  lateralStart[0] += lateralSize[0];
+
+  m_RightLateralRegion.SetIndex( lateralStart );
+  m_RightLateralRegion.SetSize(  lateralSize );
+
 
   if ( ! imBIFs ) CreateBIFs();
 };
@@ -212,17 +242,18 @@ template <const unsigned int ImageDimension, class InputPixelType>
 typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::ScanLineMaxima( typename InternalImageType::Pointer inImage,
+                  typename InternalImageType::RegionType region,
                   unsigned int direction, bool flgForward )
 {
   InputPixelType maxVoxel;
 
-  typename InternalImageType::RegionType region;
   typename InternalImageType::SizeType size;
   typename InternalImageType::IndexType start;
 
   typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
 
   duplicator->SetInputImage( inImage );
+
   try
   {
     duplicator->Update();
@@ -236,7 +267,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename InternalImageType::Pointer outImage = duplicator->GetOutput();
   outImage->DisconnectPipeline();
  
-  region = outImage->GetLargestPossibleRegion();
   start  = region.GetIndex();
   size   = region.GetSize();
 
@@ -305,12 +335,33 @@ template <const unsigned int ImageDimension, class InputPixelType>
 typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::GreyScaleCloseImage( typename InternalImageType::Pointer inImage,
-                       unsigned int direction )
+                       typename InternalImageType::RegionType region,
+                       unsigned int direction,
+                       const std::string label )
 {
   typename InternalImageType::Pointer imScanLineMaxima[ 2 ];
 
-  imScanLineMaxima[0] = ScanLineMaxima( inImage, direction, true );
-  imScanLineMaxima[1] = ScanLineMaxima( inImage, direction, false );
+  imScanLineMaxima[0] = ScanLineMaxima( inImage, region, direction, true );
+  imScanLineMaxima[1] = ScanLineMaxima( inImage, region, direction, false );
+
+  if ( fileOutputClosedStructural.length() )
+  {
+    std::string fileStructuralClose;
+
+    fileStructuralClose = ModifySuffix( fileOutputClosedStructural, 
+                                        std::string( "_Forward_" ) + label );
+
+    WriteImageToFile( fileStructuralClose, 
+                      "forward scan line maximum", 
+                      imScanLineMaxima[0], flgLeft, flgRight );      
+
+    fileStructuralClose = ModifySuffix( fileOutputClosedStructural, 
+                                        std::string( "_Reverse_" ) + label );
+
+    WriteImageToFile( fileStructuralClose, 
+                      "reverse scan line maximum",
+                      imScanLineMaxima[1], flgLeft, flgRight );      
+  }
 
   // Compute the voxel-wise minimum intensities
             
@@ -339,29 +390,43 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::GreyScaleCloseImage( typename InternalImageType::Pointer inImage )
+::GreyScaleCloseImage( typename InternalImageType::Pointer inImage,
+                       typename InternalImageType::RegionType region,
+                       const char *strSide )
 {
   typename InternalImageType::Pointer inImageCloseInX;
   typename InternalImageType::Pointer inImageCloseInY;
   typename InternalImageType::Pointer inImageCloseInZ;
 
-  inImageCloseInX = GreyScaleCloseImage( inImage, 0 );
-  inImageCloseInY = GreyScaleCloseImage( inImage, 1 );
-  inImageCloseInZ = GreyScaleCloseImage( inImage, 2 );
+  inImageCloseInX = GreyScaleCloseImage( inImage, region, 0, std::string( strSide ) + "_InX_" );
+  inImageCloseInY = GreyScaleCloseImage( inImage, region, 1, std::string( strSide ) + "_InY_" );
+  inImageCloseInZ = GreyScaleCloseImage( inImage, region, 2, std::string( strSide ) + "_InZ_" );
 
-#if 0
-  std::string fileStructuralCloseInX( "inImageCloseInX.nii" );
-  WriteImageToFile( fileStructuralCloseInX, "structural image closed in X", 
-                    inImageCloseInX, flgLeft, flgRight );      
+  if ( fileOutputClosedStructural.length() )
+  {
+    std::string fileStructuralClose;
 
-  std::string fileStructuralCloseInY( "inImageCloseInY.nii" );
-  WriteImageToFile( fileStructuralCloseInY, "structural image closed in Y", 
-                    inImageCloseInY, flgLeft, flgRight );      
+    fileStructuralClose = ModifySuffix( fileOutputClosedStructural, 
+                                        std::string( "_InX_" ) + strSide );
 
-  std::string fileStructuralCloseInZ( "inImageCloseInZ.nii" );
-  WriteImageToFile( fileStructuralCloseInZ, "structural image closed in Z", 
-                    inImageCloseInZ, flgLeft, flgRight );      
-#endif
+    WriteImageToFile( fileStructuralClose, 
+                      "structural image closed in X", 
+                      inImageCloseInX, flgLeft, flgRight );      
+
+    fileStructuralClose = ModifySuffix( fileOutputClosedStructural, 
+                                        std::string( "_InY_" ) + strSide );
+
+    WriteImageToFile( fileStructuralClose, 
+                      "structural image closed in Y", 
+                      inImageCloseInY, flgLeft, flgRight );      
+
+    fileStructuralClose = ModifySuffix( fileOutputClosedStructural, 
+                                        std::string( "_InZ_" ) + strSide );
+
+    WriteImageToFile( fileStructuralClose, 
+                      "structural image closed in Z", 
+                      inImageCloseInZ, flgLeft, flgRight );      
+  }
 
   InputPixelType xVoxel, yVoxel, zVoxel;
             
@@ -438,9 +503,11 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::GreyScaleClosing( void )
 {
-  imStructural = GreyScaleCloseImage( imStructural );
+  imStructural = GreyScaleCloseImage( imStructural, m_LeftLateralRegion, "left" );
+  imStructural = GreyScaleCloseImage( imStructural, m_RightLateralRegion, "right" );
 
-  WriteImageToFile( fileOutputClosedStructural, "structural image closed", 
+  WriteImageToFile( fileOutputClosedStructural, 
+                    "structural image closed", 
                     imStructural, flgLeft, flgRight );      
 
 #if 0
@@ -534,7 +601,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   else
     imMax = imStructural;
 
-  imMax = GreyScaleCloseImage( imMax );
+  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion, "MaxLeft" );
+  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );
 
   std::string fileOutput( "imMax.nii" );
   WriteImageToFile( fileOutput, "max image", 
@@ -862,10 +930,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
       segIterator.Set( 1000 );
   }
 
-  // Write the background mask to a file?
-
-  WriteBinaryImageToUCharFile( fileOutputBackground, "background image", imSegmented, 
-			       flgLeft, flgRight );
 }
 
 
@@ -893,14 +957,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Start iterating over the left-hand side
 
-  lateralRegion = imSegmented->GetLargestPossibleRegion();
+  lateralRegion = m_LeftLateralRegion;
 
-  lateralStart = lateralRegion.GetIndex();
-
+  lateralStart = lateralRegion.GetIndex();  
   lateralSize = lateralRegion.GetSize();
-  lateralSize[0] = lateralSize[0]/2;
-
-  lateralRegion.SetSize( lateralSize );
 
   if ( flgVerbose )
     std::cout << "Iterating over left region: " << lateralRegion << std::endl;
@@ -986,16 +1046,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Then iterate over the right side
 
-  lateralRegion = imSegmented->GetLargestPossibleRegion();
+  lateralRegion = m_RightLateralRegion;
 
+  lateralStart = lateralRegion.GetIndex();  
   lateralSize = lateralRegion.GetSize();
-  lateralSize[0] = lateralSize[0]/2;
-
-  lateralStart = lateralRegion.GetIndex();
-  lateralStart[0] = lateralSize[0];
-
-  lateralRegion.SetIndex( lateralStart );
-  lateralRegion.SetSize( lateralSize );
 
   if ( flgVerbose )
     std::cout << "Iterating over right region: " << lateralRegion << std::endl;
@@ -1205,6 +1259,348 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     std::cout << "Right posterior breast location: " << idxRightPosterior << std::endl
 	      << "Left breast center: " << idxLeftBreastMidPoint << std::endl;
 
+}
+
+
+// --------------------------------------------------------------------------
+// Compute a 2D map of the height of the patient's anterior skin surface
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::ComputeElevationOfAnteriorSurface( void )
+{
+
+  typename InternalImageType::RegionType region3D;
+  typename InternalImageType::SizeType   size3D;
+  typename InternalImageType::IndexType  start3D;
+
+  typename AxialImageType::RegionType region2D;
+  typename AxialImageType::SizeType   size2D;
+  typename AxialImageType::IndexType  start2D;
+
+
+  region3D = imSegmented->GetLargestPossibleRegion();
+  start3D  = region3D.GetIndex();
+  size3D   = region3D.GetSize();
+
+  size2D[0] = size3D[0];
+  size2D[1] = size3D[2];
+  
+  start2D[0] = start3D[0];
+  start2D[1] = start3D[2];
+
+  region2D.SetIndex( start2D );
+  region2D.SetSize( size2D );
+
+  typename InternalImageType::PointType origin3D;
+  typename AxialImageType::PointType origin2D;
+
+  origin3D = imSegmented->GetOrigin();
+
+  origin2D[0] = origin3D[0];
+  origin2D[1] = origin3D[2];
+
+  typename InternalImageType::SpacingType spacing3D;
+  typename AxialImageType::SpacingType spacing2D;
+
+  spacing3D = imSegmented->GetSpacing();
+
+  spacing2D[0] = spacing3D[0];
+  spacing2D[1] = spacing3D[2];
+
+
+  imSkinElevationMap = AxialImageType::New();
+
+  imSkinElevationMap->SetRegions  ( region2D );
+  imSkinElevationMap->SetOrigin   ( origin2D );
+  imSkinElevationMap->SetSpacing  ( spacing2D );
+
+  imSkinElevationMap->Allocate();
+  imSkinElevationMap->FillBuffer( 0 );
+
+  LineIteratorType itSegLinear( imSegmented, region3D );
+
+  itSegLinear.SetDirection( 1 );
+
+  typedef itk::ImageRegionIterator< AxialImageType > AxialIteratorType;  
+    
+  AxialIteratorType itElevation( imSkinElevationMap, region2D );
+
+  bool flgFoundSurface;
+  typename InternalImageType::IndexType idx;
+        
+  for ( itSegLinear.GoToBegin(), itElevation.GoToBegin(); 
+	! itSegLinear.IsAtEnd(); 
+	itSegLinear.NextLine(), ++itElevation )
+  {
+    itSegLinear.GoToBeginOfLine();
+    flgFoundSurface = false;
+    
+    while ( ! itSegLinear.IsAtEndOfLine() )
+    {
+      if ( itSegLinear.Get() ) {
+        idx = itSegLinear.GetIndex();
+        flgFoundSurface = true;
+        break;
+      }
+      ++itSegLinear;
+    }
+    
+    if ( flgFoundSurface ) 
+    {
+      itElevation.Set( size3D[1] - 1 - idx[1] );
+    }
+  }
+  
+
+  // Smooth the elevation map
+
+  typedef itk::SmoothingRecursiveGaussianImageFilter< AxialImageType, AxialImageType > SmoothingFilterType;
+ 
+  typename SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
+
+  smoothing->SetInput( imSkinElevationMap );
+  smoothing->SetSigma( 3 );
+  smoothing->Update();
+
+  imSkinElevationMap = smoothing->GetOutput();
+  imSkinElevationMap->DisconnectPipeline();
+
+
+  // Scan from nipple x coordinates and eliminate arms - Left side
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  RealType posElevationTolerance = 5./spacing3D[1]; // 5mm
+  RealType negElevationTolerance = 3./spacing3D[1]; // 3mm
+
+  typedef itk::ImageLinearIteratorWithIndex< AxialImageType > AxialLineIteratorType;
+
+  typename AxialImageType::RegionType leftAxialRegion2D;
+  typename AxialImageType::SizeType   leftAxialSize2D   = size2D;
+  typename AxialImageType::IndexType  leftAxialStart2D  = start2D;
+
+  typename AxialImageType::IndexType  leftAxialCutoff  = start2D;
+
+  leftAxialStart2D[1] = idxNippleLeft[1];
+
+  leftAxialSize2D[0] = idxNippleLeft[0] - start2D[0];
+  leftAxialSize2D[1] = 1;
+
+  leftAxialRegion2D.SetIndex( leftAxialStart2D );
+  leftAxialRegion2D.SetSize(  leftAxialSize2D );
+  
+
+  AxialLineIteratorType itLeftNippleElevation( imSkinElevationMap, leftAxialRegion2D );
+
+  itLeftNippleElevation.SetDirection( 0 );
+
+  InputPixelType minElevation;
+  InputPixelType startElevation;
+   
+  for ( itLeftNippleElevation.GoToBegin(); 
+	! itLeftNippleElevation.IsAtEnd(); 
+	itLeftNippleElevation.NextLine() )
+  {
+    // Calculate the minimum elevation of the left side
+
+    itLeftNippleElevation.GoToReverseBeginOfLine();
+
+    startElevation = itLeftNippleElevation.Get();
+    minElevation = startElevation;
+
+    while ( ( ! itLeftNippleElevation.IsAtReverseEndOfLine() )
+            && ( ( minElevation > startElevation - posElevationTolerance )
+                 || ( itLeftNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
+    {
+      if ( itLeftNippleElevation.Get() < minElevation )
+      {
+        minElevation = itLeftNippleElevation.Get();
+        leftAxialCutoff = itLeftNippleElevation.GetIndex();
+      }
+      
+      --itLeftNippleElevation;
+    }
+  }
+
+
+  // Set the whole region to zero
+
+  leftAxialStart2D  = start2D;
+
+  leftAxialSize2D[0] = leftAxialCutoff[0] - start2D[0];
+  leftAxialSize2D[1] = size2D[1];
+
+  leftAxialRegion2D.SetIndex( leftAxialStart2D );
+  leftAxialRegion2D.SetSize(  leftAxialSize2D );
+  
+
+  AxialLineIteratorType itLeftLinearElevation( imSkinElevationMap, leftAxialRegion2D );
+
+  itLeftLinearElevation.SetDirection( 0 );
+
+  for ( itLeftLinearElevation.GoToBegin(); 
+	! itLeftLinearElevation.IsAtEnd(); 
+	itLeftLinearElevation.NextLine() )
+  {
+    itLeftLinearElevation.GoToReverseBeginOfLine();
+
+    while ( ! itLeftLinearElevation.IsAtReverseEndOfLine() )
+    {
+      itLeftLinearElevation.Set( 0 );
+      --itLeftLinearElevation;
+    }
+
+  }
+
+
+  // Scan from nipple x coordinates and eliminate arms - Right side
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typename AxialImageType::RegionType rightAxialRegion2D;
+  typename AxialImageType::SizeType   rightAxialSize2D   = size2D;
+  typename AxialImageType::IndexType  rightAxialStart2D  = start2D;
+  
+  typename AxialImageType::IndexType  rightAxialCutoff  = start2D;
+
+  rightAxialStart2D[0] = idxNippleRight[0];
+  rightAxialStart2D[1] = idxNippleRight[1];
+
+  rightAxialSize2D[0] = size2D[0] - idxNippleRight[0];
+  rightAxialSize2D[1] = 1;
+
+  rightAxialRegion2D.SetIndex( rightAxialStart2D );
+  rightAxialRegion2D.SetSize(  rightAxialSize2D );
+  
+
+  AxialLineIteratorType itRightNippleElevation( imSkinElevationMap, rightAxialRegion2D );
+
+  itRightNippleElevation.SetDirection( 0 );
+
+  for ( itRightNippleElevation.GoToBegin(); 
+	! itRightNippleElevation.IsAtEnd(); 
+	itRightNippleElevation.NextLine() )
+  {
+    // Calculate the minimum elevation of the right side
+
+    itRightNippleElevation.GoToBeginOfLine();
+
+    startElevation = itRightNippleElevation.Get();
+    minElevation = startElevation;
+
+    while ( ( ! itRightNippleElevation.IsAtEndOfLine() )
+            && ( ( minElevation > startElevation - posElevationTolerance )
+                 || ( itRightNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
+    {
+      if ( itRightNippleElevation.Get() < minElevation )
+      {
+        minElevation = itRightNippleElevation.Get();
+        rightAxialCutoff = itRightNippleElevation.GetIndex();
+      }
+      
+      ++itRightNippleElevation;
+    }
+  }
+
+  // Set the whole region to zero
+
+  rightAxialStart2D[0] = rightAxialCutoff[0];
+  rightAxialStart2D[1] = start2D[1];
+
+  rightAxialSize2D[0] = size2D[0] - rightAxialCutoff[0];
+  rightAxialSize2D[1] = size2D[1];
+
+  rightAxialRegion2D.SetIndex( rightAxialStart2D );
+  rightAxialRegion2D.SetSize(  rightAxialSize2D );
+  
+
+  AxialLineIteratorType itRightLinearElevation( imSkinElevationMap, rightAxialRegion2D );
+
+  itRightLinearElevation.SetDirection( 0 );
+
+  for ( itRightLinearElevation.GoToBegin(); 
+	! itRightLinearElevation.IsAtEnd(); 
+	itRightLinearElevation.NextLine() )
+  {
+    itRightLinearElevation.GoToBeginOfLine();
+
+    while ( ! itRightLinearElevation.IsAtEndOfLine() )
+    {
+      itRightLinearElevation.Set( 0 );
+      ++itRightLinearElevation;
+    }
+
+  }
+
+
+  // Write the image to a file
+
+  if ( fileOutputSkinElevationMap.length() )
+  {
+    typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutputSkinElevationMap );
+    writer->SetInput( imSkinElevationMap );
+
+    std::cout << "Writing elevation map to file: "
+              << fileOutputSkinElevationMap << std::endl;
+
+    writer->Update();
+  }
+
+
+  // Hence crop the patient mask
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  // Left side
+
+  typename InternalImageType::SizeType leftSize3D = size3D;
+
+  leftSize3D[0] = leftAxialCutoff[0] - start3D[0];
+
+  region3D.SetIndex( start3D );
+  region3D.SetSize(  leftSize3D );
+
+  IteratorType segIteratorLeft( imSegmented, region3D );
+        
+  for ( segIteratorLeft.GoToBegin(); 
+        ! segIteratorLeft.IsAtEnd(); 
+        ++segIteratorLeft )
+  {
+    segIteratorLeft.Set( 0 );
+  }
+
+
+  // Right side
+
+  typename InternalImageType::IndexType rightStart3D = start3D;
+  typename InternalImageType::SizeType  rightSize3D = size3D;
+
+  rightStart3D[0] = rightAxialCutoff[0];
+
+  rightSize3D[0] = size3D[0] - rightStart3D[0];
+
+  region3D.SetIndex( rightStart3D );
+  region3D.SetSize(  rightSize3D );
+
+  IteratorType segIteratorRight( imSegmented, region3D );
+        
+  for ( segIteratorRight.GoToBegin(); 
+        ! segIteratorRight.IsAtEnd(); 
+        ++segIteratorRight )
+  {
+    segIteratorRight.Set( 0 );
+  }
+
+
+  // Write the background mask to a file?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  WriteBinaryImageToUCharFile( fileOutputBackground, "background image", 
+                               imSegmented, flgLeft, flgRight );
 }
 
 

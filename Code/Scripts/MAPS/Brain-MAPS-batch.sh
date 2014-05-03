@@ -79,6 +79,7 @@ Optional arguements:
   -init_9dof        : use 9dof for the global reg initialisatino. 
   -cd_mode          : conditional dilation mode [2]. 
   -blur_9dof        : use bluring in 9dof [no].
+  -reset_vox_offset : reset vox_offset to 0 [no].
 
 EOF
 exit 127
@@ -105,6 +106,7 @@ kmeans=no
 init_9dof=no
 cd_mode=2
 blur_9dof=no
+reset_vox_offset=no
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -196,6 +198,10 @@ do
         blur_9dof=$2
         shift 1
       ;;
+     -reset_vox_offset)
+        reset_vox_offset=$2
+        shift 1
+      ;;
      -*)
         Usage
         exitprog "Error: option $1 not recognised" 1
@@ -243,7 +249,7 @@ function iterate_through_input_file
           ${watjo_brain_region} ${dilation_for_f3d} ${nreg} ${f3d_brain_prereg} \
           ${areg} ${cpp} ${f3d_energy} ${f3d_iterations} \
           ${confidence} ${vents_or_not} ${remove_dir} ${use_orientation} \
-          ${leaveoneout} ${kmeans} ${init_9dof} ${cd_mode} ${blur_9dof} >> ${command_filename}
+          ${leaveoneout} ${kmeans} ${init_9dof} ${cd_mode} ${blur_9dof} ${reset_vox_offset} >> ${command_filename}
     else
       check_file_exists ${image} "no"
       check_file_exists ${image%.img}.hdr "no"

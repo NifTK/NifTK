@@ -41,6 +41,12 @@
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
      <property name="showGrid">
       <bool>true</bool>
      </property>
@@ -76,7 +82,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>A new output node will be created for each input node enabled above. You can choose to update the ouput only when you click on the button below, or automatically whenever the input data changes.</string>
+      <string>A new output node will be created for each input node enabled above.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

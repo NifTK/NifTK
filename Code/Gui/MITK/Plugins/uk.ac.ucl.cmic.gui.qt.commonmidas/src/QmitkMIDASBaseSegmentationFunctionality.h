@@ -30,7 +30,7 @@
 #include <QmitkBaseView.h>
 #include <QmitkMIDASImageAndSegmentationSelectorWidget.h>
 #include <QmitkMIDASToolSelectorWidget.h>
-#include "QmitkMIDASSegmentationViewWidget.h"
+#include <mitkMIDASOrientationUtils.h>
 
 // Miscellaneous.
 #include <mitkToolManager.h>
@@ -200,7 +200,7 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingNodes();
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
-  virtual void EnableSegmentationWidgets(bool b) {};
+  virtual void EnableSegmentationWidgets(bool b) {}
 
   /// \brief Turns the tool selection box on/off
   virtual void SetEnableManualToolSelectionBox(bool enabled);
@@ -241,28 +241,25 @@ protected:
   /// \brief Common widget, enabling selection of a segmentation tool.
   QmitkMIDASToolSelectorWidget *m_ToolSelector;
 
-  /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
-  QmitkMIDASSegmentationViewWidget *m_SegmentationView;
-
   /// \brief Container for Selector Widget.
   QWidget *m_ContainerForSelectorWidget;
 
   /// \brief Container for Tool Widget.
   QWidget *m_ContainerForToolWidget;
 
-  /// \brief Container for Segmentation view widget.
-  QWidget *m_ContainerForSegmentationViewWidget;
-
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;
 
 private:
 
+  /// \brief The ID of the currently active tool or -1 if no tool is active.
+  int m_ActiveToolID;
+
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
-  bool m_MainWindowCursorWasVisible;
+  bool m_MainWindowCursorVisibleWithToolsOff;
 
   /// \brief Stores the visibility state of the cursor in the viewer of this plugin before activating a tool.
-  bool m_OwnCursorWasVisible;
+  bool m_OwnCursorIsVisibleWithToolsOff;
 
   /// \brief For Event Admin, we store a reference to the CTK plugin context
   ctkPluginContext* m_Context;

@@ -19,8 +19,9 @@ set(SRC_CPP_FILES
   QmitkBaseAppWorkbenchAdvisor.cxx
   QmitkBaseWorkbenchWindowAdvisor.cxx
   QmitkNiftyViewApplicationPreferencePage.cxx
-  QmitkNiftyViewIGIPerspective.cxx
-  QmitkNiftyViewMIDASPerspective.cxx
+  QmitkCommonAppsMinimalPerspective.cxx
+  QmitkCommonAppsIGIPerspective.cxx
+  QmitkCommonAppsMIDASPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -32,8 +33,9 @@ set(MOC_H_FILES
   src/QmitkBaseApplication.h
   src/QmitkBaseWorkbenchWindowAdvisor.h
   src/QmitkNiftyViewApplicationPreferencePage.h
-  src/QmitkNiftyViewIGIPerspective.h
-  src/QmitkNiftyViewMIDASPerspective.h
+  src/QmitkCommonAppsMinimalPerspective.h
+  src/QmitkCommonAppsIGIPerspective.h
+  src/QmitkCommonAppsMIDASPerspective.h
 )
 
 set(CACHED_RESOURCE_FILES

@@ -73,7 +73,9 @@ void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool
 void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
+  m_CancelButton->setEnabled(enabled);
   m_ResetButton->setEnabled(enabled);
+  m_RestartButton->setEnabled(enabled);
 }
 
 
@@ -86,7 +88,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
   m_RetainMarksCheckBox->setEnabled(enabled);
   m_SeePriorCheckBox->setEnabled(enabled);
   m_SeeNextCheckBox->setEnabled(enabled);
-  m_SeeImageCheckBox->setEnabled(enabled);
   m_CleanButton->setEnabled(enabled);
   m_WipeButton->setEnabled(enabled);
   m_WipePlusButton->setEnabled(enabled);

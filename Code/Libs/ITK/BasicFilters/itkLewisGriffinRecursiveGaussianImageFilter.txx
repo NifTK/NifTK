@@ -41,6 +41,8 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   m_Kernel = 0;
   m_KernelSize = 0;
+
+  m_Mask = 0;
 }
   
 template <typename TInputImage, typename TOutputImage>
@@ -48,7 +50,9 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::~LewisGriffinRecursiveGaussianImageFilter()
 {
   if (m_Kernel)
+  {
     delete m_Kernel;
+  }
 }
 
 
@@ -61,8 +65,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::SetInputImage( const TInputImage * input )
 {
   // ProcessObject is not const_correct so this const_cast is required
-  ProcessObject::SetNthInput(0, 
-                             const_cast< TInputImage * >(input) );
+  ProcessObject::SetNthInput(0, const_cast< TInputImage * >(input) );
 }
 
 
@@ -74,8 +77,7 @@ const TInputImage *
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::GetInputImage( void )
 {
-  return dynamic_cast<const TInputImage *>(
-    (ProcessObject::GetInput(0)));
+  return dynamic_cast<const TInputImage *>( (ProcessObject::GetInput(0)) );
 }
 
 
@@ -126,42 +128,77 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   RealType tmp, *srcOrg=src, *dstOrg=dst;
 
   // Do non-boundary
-  dst+=dk_2;
+  dst += dk_2;
 
-  for (j=0; j<(dx - ((int) m_KernelSize) + 1); j++) {
+  for ( j=0; 
+        j < (dx - ((int) m_KernelSize) + 1); 
+        j++ ) 
+  {
     tmp = 0;
-    for (k=0; k<((int) m_KernelSize); k++)
+
+    for ( k=0; 
+          k < ((int) m_KernelSize); 
+          k++)
+    {
       tmp += m_Kernel[k]* *(src + j+k);
+    }
+
     *(dst + j) = tmp;
   }
 
 
   // Do left boundary - cyclic
-  src=srcOrg, dst=dstOrg;
+  src = srcOrg;
+  dst = dstOrg;
 
-  for (j=0; j<dk_2; j++) {
+  for (j=0; 
+       j < dk_2; 
+       j++) 
+  {
     tmp=0;
-    for (k=-dk_2; k<dk_2+1; k++) {
+
+    for ( k =- dk_2; 
+          k < dk_2 + 1; 
+          k++) 
+    {
       os=j+k;
+
       if (os<0)
+      {
 	os +=dx;
+      }
+
       tmp += m_Kernel[k+dk_2]* *(src+os);
     }
+
     *(dst + j) = tmp;
   }
 
 
   // Do right boundary - cyclic
-  src=srcOrg, dst=dstOrg+dk_2;
+  src = srcOrg;
+  dst = dstOrg + dk_2;
 
-  for (j=dx - ((int) m_KernelSize) + 1; j<dx-dk_2; j++) {
+  for ( j = dx - ((int) m_KernelSize) + 1; 
+        j < dx - dk_2;
+        j++ ) 
+  {
     tmp=0;
-    for (k=0; k<((int) m_KernelSize); k++) {
+
+    for ( k=0; 
+          k < ((int) m_KernelSize); 
+          k++ ) 
+    {
       os=j+k;
-      if (os>=dx)
-	os -=dx;
+
+      if ( os >= dx )
+      {
+	os -= dx;
+      }
+
       tmp += m_Kernel[k]* *(src+os);
     }
+
     *(dst + j) = tmp;
   }
 
@@ -221,14 +258,14 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   // and avoid the current dimension
   splitAxis = outputPtr->GetImageDimension() - 1;
   while (requestedRegionSize[splitAxis] == 1 || splitAxis == (int)m_Direction)
-    {
+  {
     --splitAxis;
     if (splitAxis < 0)
-      { // cannot split
-      itkDebugMacro("  Cannot Split");
+    { // cannot split
+      niftkitkDebugMacro("  Cannot Split");
       return 1;
-      }
     }
+  }
 
   // determine the actual number of pieces that will be generated
   typename TOutputImage::SizeType::SizeValueType range = requestedRegionSize[splitAxis];
@@ -252,7 +289,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   splitRegion.SetIndex( splitIndex );
   splitRegion.SetSize( splitSize );
 
-  itkDebugMacro("  Split Piece: " << splitRegion );
+  niftkitkDebugMacro("  Split Piece: " << splitRegion );
 
   return maxThreadIdUsed + 1;
 }
@@ -346,10 +383,13 @@ void
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId)
 {
+  unsigned int i, j; 
+
   typedef typename TOutputImage::PixelType  OutputPixelType;
 
   typedef ImageLinearConstIteratorWithIndex< TInputImage >  InputConstIteratorType;
   typedef ImageLinearIteratorWithIndex< TOutputImage >      OutputIteratorType;
+  typedef ImageLinearConstIteratorWithIndex< MaskImageType >  MaskIteratorType;
 
   typedef ImageRegion< TInputImage::ImageDimension > RegionType;
     
@@ -360,11 +400,19 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   InputConstIteratorType  inputIterator(  inputImage,  region );
   OutputIteratorType      outputIterator( outputImage, region );
+  MaskIteratorType        *maskIterator = 0;
 
   inputIterator.SetDirection(  this->m_Direction );
   outputIterator.SetDirection( this->m_Direction );
 
-  
+  if ( m_Mask )
+  {
+    maskIterator = new MaskIteratorType( m_Mask, region );
+    maskIterator->SetDirection( this->m_Direction );
+    maskIterator->GoToBegin();
+  }
+
+
   const unsigned int ln = region.GetSize()[ this->m_Direction ];
 
   RealType *inps = 0;
@@ -372,6 +420,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   try 
   {
+    niftkitkDebugMacro( << "Allocating " << ln << " elements of inps" );
     inps = new RealType[ ln ];
   }
   catch( std::bad_alloc & ) 
@@ -382,6 +431,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   try 
   {
+    niftkitkDebugMacro( << "Allocating " << ln << " elements of outs" );
     outs = new RealType[ ln ];
   }
   catch( std::bad_alloc & ) 
@@ -404,24 +454,84 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   {
     while( !inputIterator.IsAtEnd() && !outputIterator.IsAtEnd() )
     {
-      unsigned int i=0;
+      i = 0;
       while( !inputIterator.IsAtEndOfLine() )
       {
-        inps[i++]      = inputIterator.Get();
+        if ( (! maskIterator) || maskIterator->Get() )
+        {
+#if 0
+          niftkitkDebugMacro( << i 
+                              << " Input: " << inputIterator.GetIndex() 
+                              << " Mask: "  << maskIterator->GetIndex() );
+#endif
+          inps[i++] = inputIterator.Get();
+        }
+
         ++inputIterator;
+        
+        if ( maskIterator )
+        {
+          ++(*maskIterator);
+        }
       }
       
-      this->FilterDataArray( outs, inps, (int) ln );
+      if ( i >= m_KernelSize )
+      {
+        this->FilterDataArray( outs, inps, (int) i );
+      }
+      else if ( m_Order == ZeroOrder )
+      {
+        for ( j=0; j<i; j++ )
+        {
+          outs[j] = inps[j];
+        }
+      }
+      else
+      {
+        for ( j=0; j<i; j++ )
+        {
+          outs[j] = 0;
+        }
+      }
+
+
+      if ( maskIterator )
+      {
+        maskIterator->GoToBeginOfLine();
+      }
       
-      unsigned int j=0; 
+      j = 0; 
       while( !outputIterator.IsAtEndOfLine() )
       {
-        outputIterator.Set( static_cast<OutputPixelType>( outs[j++] ) );
+        if ( (! maskIterator) || maskIterator->Get() )
+        {
+#if 0
+          niftkitkDebugMacro( << j 
+                              << " Output: " << outputIterator.GetIndex() 
+                              << " Mask: "   << maskIterator->GetIndex() );
+#endif
+          outputIterator.Set( static_cast<OutputPixelType>( outs[j++] ) );
+        }
+
         ++outputIterator;
+        
+        if ( maskIterator )
+        {
+          ++(*maskIterator);
+        }
       }
-      
+
       inputIterator.NextLine();
+      inputIterator.GoToBeginOfLine();
+
       outputIterator.NextLine();
+      outputIterator.GoToBeginOfLine();
+        
+      if ( maskIterator )
+      {
+        maskIterator->NextLine();
+        maskIterator->GoToBeginOfLine();
+      }
       
       // Although the method name is CompletedPixel(),
       // this is being called after each line is processed
@@ -438,12 +548,14 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
     // release locally allocated memory
     if ( outs ) 
     {
+      niftkitkDebugMacro( "Deallocating outps" );
       delete[] outs;
       outs = 0;
     }
     
     if ( inps ) 
     {
+      niftkitkDebugMacro( "Deallocating inps" );
       delete[] inps;
       inps = 0;
     }
@@ -458,14 +570,21 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   
   if ( outs ) 
   {
+    niftkitkDebugMacro( "Deallocating outps" );
     delete[] outs;
     outs = 0;
   }
   
   if ( inps ) 
   {
+    niftkitkDebugMacro( "Deallocating inps" );
     delete[] inps;
     inps = 0;
+  }
+
+  if ( maskIterator )
+  {
+    delete maskIterator;
   }
 }
 
@@ -506,7 +625,9 @@ typename LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>::Rea
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 ::GaussianSecondOrder(RealType x, RealType sigma)
 { 
-  return (exp(-(x * x) / (2 * sigma * sigma)) * (x * x - sigma * sigma) / (sqrt(2 * vnl_math::pi) * sigma * sigma * sigma * sigma * sigma));
+  return ( exp(-(x * x) / (2 * sigma * sigma)) 
+           * (x * x - sigma * sigma) / (sqrt(2 * vnl_math::pi) 
+                                        * sigma * sigma * sigma * sigma * sigma));
 }
 
 
@@ -525,6 +646,8 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   RealType end = (RealType) ((m_KernelSize - 1) / 2);
   RealType x;
 
+  niftkitkDebugMacro( << "Kernel size: " << m_KernelSize << " in pixels" );
+
   if (m_Kernel) delete m_Kernel;
   m_Kernel = new RealType[m_KernelSize];
 
@@ -536,6 +659,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
     for (unsigned int i=0; i<m_KernelSize; i++) {
       x = i - end;
       m_Kernel[i] = GaussianZeroOrder(x, sigma);
+      niftkitkDebugMacro( << i << " Zero Order: " << m_Kernel[i] );
     }
     
     break;
@@ -546,6 +670,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
     for (unsigned int i=0; i<m_KernelSize; i++) {
       x = i - end;
       m_Kernel[i] = GaussianFirstOrder(x, sigma);
+      niftkitkDebugMacro( << i << " First Order: " << m_Kernel[i] );
     }
     
     break;
@@ -556,6 +681,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
     for (unsigned int i=0; i<m_KernelSize; i++) {
       x = i - end;
       m_Kernel[i] = GaussianSecondOrder(x, sigma);
+      niftkitkDebugMacro( << i << " Second Order: " << m_Kernel[i] );
     }
     
     break;
@@ -575,6 +701,11 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 
   for (unsigned int i=0; i<m_KernelSize; i++)
     sum += m_Kernel[i];
+
+  if ( sum == 0. )
+  {
+    return;
+  }
   
   for (unsigned int i=0; i<m_KernelSize; i++)
   {

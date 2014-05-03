@@ -278,6 +278,15 @@ extern "C++" NIFTKOPENCV_EXPORT void ProjectAllPoints(
   CvMat& outputImagePoints
   );
 
+/**
+ * \brief Calculates the RMS projection error.
+ * \param projectedPoints [Nx2] list of 2D points, measured in pixels.
+ * \param goldStandardPoints [Nx2] list of 2D points, measured in pixels.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double CalculateRPE(
+    const CvMat& projectedPoints,
+    const CvMat& goldStandardPoints
+    );
 
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
@@ -423,7 +432,10 @@ extern "C++" NIFTKOPENCV_EXPORT void Project3DModelPositionsToStereo2D(
   const CvMat& rightToLeftRotationMatrix,
   const CvMat& rightToLeftTranslationVector,
   CvMat& output2DPointsLeft,
-  CvMat& output2DPointsRight
+  CvMat& output2DPointsRight,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
@@ -447,6 +459,10 @@ extern "C++" NIFTKOPENCV_EXPORT void Project3DModelPositionsToStereo2D(
  * \param outputLeftCameraWorldNormalsIn3D [nx3] newly created matrix, that the user must de-allocate, of 3D unit normals that were actually visible.
  * \param output2DPointsLeft [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in left camera
  * \param output2DPointsRight [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in right camera
+ * \param cropPointsToScreen optionally you can crop the output points to only use points that 
+ * fit with set limits. This is useful if it possible to pass very large valued input points
+ * as in this situation the underlying cv::undistortPoints will return the image principal point.
+ * With this parameter set the cropValue will be returned instead.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
   const CvMat& leftCameraWorldPointsIn3D,
@@ -461,7 +477,10 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToSt
   CvMat*& outputLeftCameraWorldPointsIn3D,
   CvMat*& outputLeftCameraWorldNormalsIn3D,
   CvMat*& output2DPointsLeft,
-  CvMat*& output2DPointsRight
+  CvMat*& output2DPointsRight,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
@@ -648,30 +667,6 @@ cv::Point3d InternalIterativeTriangulatePointUsingSVD(
   );
 
 /**
- * \brief Returns the angular distance between two rotation matrices
- */
-extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
-
-
-/**
- * \brief Converts a 3x3 rotation matrix to a quaternion
- */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
-
-
-/**
- * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
- */
-extern "C++" NIFTKOPENCV_EXPORT double ModifiedSignum(double value);
-
-
-/**
- * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
- */
-extern "C++" NIFTKOPENCV_EXPORT double SafeSQRT(double value);
-
-
-/**
  * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and 
  * put them in a vector of 4x4 cvMats
  */
@@ -728,32 +723,6 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadStereoTransformsFromPlainText ( const s
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadHandeyeFromPlainText ( const std::string& filename,
     cv::Mat* leftCameraToTracker);
-
-
-/**
- * \brief Flips the matrices in the vector from left handed coordinate 
- * system to right handed and vice versa
- */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> matrices);
-
-
-/**
- * \brief find the average of a vector of 4x4 matrices
- */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
-
-
- /**
- * \brief Sorts the matrices based on the translations , and returns the order
- */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> matrices);
- 
-
-/**
-  * \brief Sorts the matrices based on the rotations, and returns the order
-  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
-
 
  /**
   * \brief loads a result file into a residual vector and matrix

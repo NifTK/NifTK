@@ -111,6 +111,10 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
     assert(ok);
+    ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+    assert(ok);
+    ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -331,6 +335,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  // the active column has a fixed, minimal size. note that this line relies on the table having
+  // columns already! the ui file has them added.
+  m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
   bool    ok = false;
   ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
@@ -351,10 +358,29 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   assert(ok);
   ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
   assert(ok);
+  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+  assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 
   m_setupUiHasBeenCalled = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnFreezeTableHeaderClicked(int section)
+{
+  if (section == 0)
+  {
+    // we only ever freeze data sources. always.
+
+    for (int i = 0; i < m_TableWidget->rowCount(); ++i)
+    {
+      m_TableWidget->item(i, 0)->setCheckState(Qt::Unchecked);
+    }
+  }
 }
 
 
@@ -743,15 +769,19 @@ void QmitkIGIDataSourceManager::UpdateSourceView(const int& sourceIdentifier, bo
     m_TableWidget->insertRow(rowNumber);
   }
 
-  for (unsigned int i = 0; i < fields.size(); i++)
+  for (unsigned int i = 1; i < fields.size(); i++)
   {
     QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
     item->setTextAlignment(Qt::AlignCenter);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, i, item);
   }
-  m_TableWidget->item(rowNumber, 0)->setFlags(m_TableWidget->item(rowNumber, 0)->flags() | Qt::ItemIsUserCheckable);
-  m_TableWidget->item(rowNumber, 0)->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+
+  QTableWidgetItem* freezeitem = new QTableWidgetItem(" ");
+  freezeitem->setTextAlignment(Qt::AlignCenter);
+  freezeitem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+  freezeitem->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+  m_TableWidget->setItem(rowNumber, 0, freezeitem);
 
   if (instantiateRelatedSources)
   {
@@ -768,6 +798,44 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnTimestampEditFinished()
+{
+  igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
+
+  // try to parse as single number, a timestamp in nano seconds.
+  bool  ok = false;
+  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime   parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
+      ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
+    }
+  }
+
+
+  if (ok)
+  {
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
@@ -776,7 +844,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   if (m_PlayPushButton->isChecked())
   {
     int         sliderValue = m_PlaybackSlider->value();
-    igtlUint64  sliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) sliderValue / m_PlaybackSliderFactor));
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
 
     m_CurrentTime = sliderTime;
   }
@@ -786,7 +854,22 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz"));
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  // only update text if user is not editing
+  if (!m_TimeStampEdit->hasFocus())
+  {
+    // avoid flickering the text field. it makes copy-n-paste impossible
+    // during playback mode because it resets the selection every few milliseconds.
+    if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+    {
+      m_TimeStampEdit->setText(humanReadableTimeStamp);
+    }
+    if (m_TimeStampEdit->toolTip() != rawTimeStampString)
+    {
+      m_TimeStampEdit->setToolTip(rawTimeStampString);
+    }
+  }
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
@@ -821,16 +904,16 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
       frameRateItem->setTextAlignment(Qt::AlignCenter);
       frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+      m_TableWidget->setItem(rowNumber, 5, frameRateItem);
 
       // Update the lag number.
       QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
       lagItem->setTextAlignment(Qt::AlignCenter);
       lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 5, lagItem);
+      m_TableWidget->setItem(rowNumber, 6, lagItem);
 
       // Update the status icon.
-      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
       if (!shouldUpdate)
       {
         QPixmap pix(22, 22);
@@ -856,7 +939,9 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       }
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
-      tItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+
+      QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
+      activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
 
     emit UpdateGuiFinishedDataSources(idNow);
@@ -1212,11 +1297,11 @@ void QmitkIGIDataSourceManager::OnPlayStart()
           }
 
           m_PlaybackSliderBase = overallStartTime;
-          m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
           // if the time range is very short then dont upscale for the slider
-          m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
 
-          double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
           assert(sliderMax < std::numeric_limits<int>::max());
 
           m_PlaybackSlider->setMinimum(0);
