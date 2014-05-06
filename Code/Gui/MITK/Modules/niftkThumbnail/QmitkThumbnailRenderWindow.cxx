@@ -579,7 +579,7 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
     std::vector<mitk::BaseRenderer*> renderersToTrack;
     renderersToTrack.push_back(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
     m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-    m_VisibilityTracker->OnPropertyChanged(); // force update
+    m_VisibilityTracker->NotifyAll();
 
     // Get the box to update
     this->UpdateBoundingBox();

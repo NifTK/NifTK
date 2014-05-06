@@ -44,13 +44,13 @@ public:
   mitkNewMacro1Param(DataStorageVisibilityTracker, const mitk::DataStorage::Pointer);
 
   /// \brief The main Update method.
-  void OnPropertyChanged();
+  void OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer);
 
   /// \brief Sets the list of renderers to propagate visibility properties onto.
-  void SetRenderersToUpdate(std::vector<mitk::BaseRenderer*>& list);
+  void SetRenderersToUpdate(const std::vector<mitk::BaseRenderer*>& renderersToUpdate);
 
   /// \brief Sets the renderers we are tracking.
-  void SetRenderersToTrack(std::vector<mitk::BaseRenderer*>& list);
+  void SetRenderersToTrack(const std::vector<mitk::BaseRenderer*>& renderersToTrack);
 
   /// \brief Set the data storage, passing it onto the contained DataStoragePropertyListener.
   ///
@@ -58,7 +58,10 @@ public:
   void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
   /// \brief We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
-  void SetNodesToIgnore(const std::vector<mitk::DataNode*>& nodes);
+  void SetNodesToIgnore(const std::vector<mitk::DataNode*>& nodesToIgnore);
+
+  /// \brief Sends a signal with current the property value of all nodes  to the registered listeners.
+  void NotifyAll();
 
 protected:
 
@@ -69,7 +72,7 @@ protected:
   DataStorageVisibilityTracker(const DataStorageVisibilityTracker&); // Purposefully not implemented.
   DataStorageVisibilityTracker& operator=(const DataStorageVisibilityTracker&); // Purposefully not implemented.
 
-  bool IsExcluded(mitk::DataNode* node);
+  bool IsIgnored(mitk::DataNode* node);
 
 private:
 
@@ -77,7 +80,7 @@ private:
   mitk::DataStoragePropertyListener::Pointer m_Listener;
   std::vector<mitk::BaseRenderer*> m_RenderersToTrack;
   std::vector<mitk::BaseRenderer*> m_RenderersToUpdate;
-  std::vector<mitk::DataNode*> m_ExcludedNodeList;
+  std::vector<mitk::DataNode*> m_NodesToIgnore;
   mitk::DataStorage::Pointer m_DataStorage;
 };
 
