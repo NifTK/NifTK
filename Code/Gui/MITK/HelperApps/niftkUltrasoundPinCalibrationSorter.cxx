@@ -34,6 +34,12 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
+  if (outputMatrixDirectory == outputPointDirectory)
+  {
+    std::cerr << "ERROR: outputMatrixDirectory and outputPointDirectory must differ." << std::endl;
+    return returnStatus;
+  }
+
   try
   {
 
