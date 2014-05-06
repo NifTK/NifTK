@@ -218,7 +218,7 @@ void DataStoragePropertyListener::OnPropertyChanged(const itk::EventObject&)
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::OnPropertyChanged()
 {
-  if (!this->GetBlock())
+  if (!this->GetBlocked())
   {
     PropertyChanged.Send();
   }

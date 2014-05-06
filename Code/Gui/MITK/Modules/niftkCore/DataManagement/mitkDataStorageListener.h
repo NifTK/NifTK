@@ -56,9 +56,10 @@ public:
   /// \brief Clears all filters.
   void ClearFilters();
 
-  /// \brief Set/Get the block variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  itkGetMacro(Block, bool);
-  itkSetMacro(Block, bool);
+  /// \brief Gets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
+  itkGetMacro(Blocked, bool);
+  /// \brief Sets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
+  itkSetMacro(Blocked, bool);
 
 protected:
 
@@ -120,8 +121,8 @@ private:
   /// \brief We maintain a list of filters that can stop the derived methods being called.
   std::vector<mitk::DataNodeFilter*> m_Filters;
 
-  /// \brief Maintain a boolean to block calling derived class methods NodeAdded, NodeChanged, NodeRemoved, NodeDeleted etc.
-  bool m_Block;
+  /// \brief Maintain a boolean to blocked calling derived class methods NodeAdded, NodeChanged, NodeRemoved, NodeDeleted etc.
+  bool m_Blocked;
 };
 
 } // end namespace
