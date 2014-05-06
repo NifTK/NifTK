@@ -52,7 +52,7 @@ public:
   mitkNewMacro1Param(DataNodeAddedVisibilitySetter, const mitk::DataStorage::Pointer);
 
   /// \brief Sets the list of renderers to update.
-  void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
+  void SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers);
 
   /// \brief Clears all filters.
   void ClearRenderers();

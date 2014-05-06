@@ -50,13 +50,19 @@ public:
   void SetPropertyName(const std::string& name);
 
   /// \brief Sets the list of renderers to check.
-  void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
-
-  /// \brief Clears all filters.
-  void ClearRenderers();
+  void SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers);
 
   /// \brief GUI independent message callback.
-  Message<> PropertyChanged;
+  Message2<mitk::DataNode*, mitk::BaseRenderer*> PropertyChanged;
+
+  /// \brief Internal method to fire the property changed signal.
+  void OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer);
+
+  /// \brief Sends a signal with current the property value of the given node to the registered listeners.
+  void Notify(mitk::DataNode* node);
+
+  /// \brief Sends a signal with current the property value of all nodes to the registered listeners.
+  void NotifyAll();
 
 protected:
 
@@ -73,14 +79,11 @@ protected:
   /// \brief Called to un-register from the data storage.
   virtual void Deactivate();
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void OnPropertyChanged(const itk::EventObject&);
-
   /// \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
-  virtual void UpdateObserverToPropertyMap();
+  virtual void AddAllObservers();
 
   /// \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
-  virtual void RemoveAllFromObserverToPropertyMap();
+  virtual void RemoveAllObservers();
 
   /// \brief Triggers UpdateObserverToPropertyMap.
   ///
@@ -99,16 +102,15 @@ protected:
 
 private:
 
-  /// \brief Internal method to fire the property changed signal.
-  void OnPropertyChanged();
+  void AddObservers(mitk::DataNode* node);
+  void RemoveObservers(mitk::DataNode* node);
+
+  typedef std::map<mitk::DataNode*, std::vector<unsigned long> > NodeToObserverTags;
 
   /// \brief We observe all the properties with a given name for each registered node.
-  typedef std::pair < mitk::BaseProperty*, unsigned long > PropertyToObserver;
-  typedef std::pair < mitk::BaseProperty*, mitk::DataNode* > PropertyToNode;
-  typedef std::vector< PropertyToObserver > VectorPropertyToObserver;
-  typedef std::vector< PropertyToNode > VectorPropertyToNode;
-  VectorPropertyToObserver m_WatchedObservers;
-  VectorPropertyToNode m_WatchedNodes;
+  /// The first element of the vector is the "global" property, the rest are the renderer
+  /// specific properties in the same order as in m_Renderers.
+  NodeToObserverTags m_ObserverTagsPerNode;
 
   /// \brief The name of the property we are tracking.
   std::string m_PropertyName;

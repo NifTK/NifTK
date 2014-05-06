@@ -40,9 +40,9 @@ DataNodeAddedVisibilitySetter::~DataNodeAddedVisibilitySetter()
 
 
 //-----------------------------------------------------------------------------
-void DataNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+void DataNodeAddedVisibilitySetter::SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers)
 {
-  m_Renderers = list;
+  m_Renderers = renderers;
   this->Modified();
 }
 
@@ -60,6 +60,8 @@ void DataNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
 {
   if (m_Renderers.size() > 0)
   {
+    /// TODO
+//    node->SetBoolProperty("visible", m_Visibility);
     for (unsigned int i = 0; i < m_Renderers.size(); i++)
     {
       node->SetBoolProperty("visible", m_Visibility, m_Renderers[i]);

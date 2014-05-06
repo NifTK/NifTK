@@ -93,16 +93,16 @@ protected:
   virtual void NodeDeletedProxy(const mitk::DataNode* node);
 
   /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeAdded(mitk::DataNode* node) {};
+  virtual void NodeAdded(mitk::DataNode* node) {}
 
   /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeChanged(mitk::DataNode* node) {};
+  virtual void NodeChanged(mitk::DataNode* node) {}
 
   /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeRemoved(mitk::DataNode* node) {};
+  virtual void NodeRemoved(mitk::DataNode* node) {}
 
   /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeDeleted(mitk::DataNode* node) {};
+  virtual void NodeDeleted(mitk::DataNode* node) {}
 
 private:
 

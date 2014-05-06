@@ -15,8 +15,48 @@
 #include "mitkDataStoragePropertyListener.h"
 #include <itkCommand.h>
 
+#include <mitkBaseRenderer.h>
+
 namespace mitk
 {
+
+class VisibilityChangedCommand : public itk::Command
+{
+public:
+  mitkClassMacro(VisibilityChangedCommand, itk::Command);
+  mitkNewMacro3Param(VisibilityChangedCommand, DataStoragePropertyListener*, mitk::DataNode*, mitk::BaseRenderer*);
+
+  VisibilityChangedCommand(DataStoragePropertyListener* observer, mitk::DataNode* node, mitk::BaseRenderer* renderer)
+  : m_Observer(observer)
+  , m_Node(node)
+  , m_Renderer(renderer)
+  {
+  }
+
+  virtual ~VisibilityChangedCommand()
+  {
+  }
+
+  virtual void Execute(itk::Object* /*caller*/, const itk::EventObject& /*event*/)
+  {
+    this->Notify();
+  }
+
+  virtual void Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/)
+  {
+    this->Notify();
+  }
+
+  void Notify()
+  {
+    m_Observer->OnPropertyChanged(m_Node, m_Renderer);
+  }
+
+private:
+  DataStoragePropertyListener* m_Observer;
+  mitk::DataNode* m_Node;
+  mitk::BaseRenderer* m_Renderer;
+};
 
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::DataStoragePropertyListener()
@@ -44,14 +84,14 @@ DataStoragePropertyListener::~DataStoragePropertyListener()
 void DataStoragePropertyListener::Activate(const mitk::DataStorage::Pointer dataStorage)
 {
   mitk::DataStorageListener::Activate(dataStorage);
-  this->UpdateObserverToPropertyMap();
+  this->AddAllObservers();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Deactivate()
 {
-  this->RemoveAllFromObserverToPropertyMap();
+  this->RemoveAllObservers();
   mitk::DataStorageListener::Deactivate();
 }
 
@@ -59,90 +99,120 @@ void DataStoragePropertyListener::Deactivate()
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::SetPropertyName(const std::string& name)
 {
+  this->RemoveAllObservers();
+
   m_PropertyName = name;
-  this->Modified();
 
-  this->UpdateObserverToPropertyMap();
+  this->AddAllObservers();
+
+  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStoragePropertyListener::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+void DataStoragePropertyListener::SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers)
 {
-  m_Renderers = list;
+  this->RemoveAllObservers();
+
+  m_Renderers = renderers;
+
+  this->AddAllObservers();
+
   this->Modified();
-
-  this->UpdateObserverToPropertyMap();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStoragePropertyListener::ClearRenderers()
-{
-  m_Renderers.clear();
-  this->Modified();
-
-  this->UpdateObserverToPropertyMap();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NodeAdded(mitk::DataNode* node)
 {
-  this->UpdateObserverToPropertyMap();
+  this->AddObservers(node);
+  this->Notify(node);
+  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NodeRemoved(mitk::DataNode* node)
 {
-  this->UpdateObserverToPropertyMap();
+  this->RemoveObservers(node);
+  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NodeDeleted(mitk::DataNode* node)
 {
-  this->UpdateObserverToPropertyMap();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStoragePropertyListener::RemoveAllFromObserverToPropertyMap()
-{
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-
-  VectorPropertyToObserver::iterator observerIter = m_WatchedObservers.begin();
-  VectorPropertyToNode::iterator nodeIter = m_WatchedNodes.begin();
-  for(;
-      observerIter != m_WatchedObservers.end();
-      ++observerIter,
-      ++nodeIter
-      )
-  {
-    // This is bad, as we scan the whole data-storage for each object in our list.
-    // I really wanted to do: if (dataStorage->Exists((*nodeIter).second)
-    // but if you want to check for whether the node exists, and you pass an invalid pointer,
-    // then the Exists method does a std::vector::find, which create a SmartPointer and the Register
-    // function crashes, as it appears you cannot create a smart pointer to something that does not exist.
-    mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
-    {
-      if (it->Value() == (*nodeIter).second)
-      {
-        (*observerIter).first->RemoveObserver((*observerIter).second);
-      }
-    }
-  }
-  m_WatchedObservers.clear();
-  m_WatchedNodes.clear();
-
+  this->RemoveObservers(node);
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStoragePropertyListener::UpdateObserverToPropertyMap()
+void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
+{
+  if (!node)
+  {
+    return;
+  }
+
+  std::vector<unsigned long> observerTags(m_Renderers.size() + 1);
+
+  mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str());
+  if (property)
+  {
+    VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
+    observerTags[0] = property->AddObserver(itk::ModifiedEvent(), command);
+  }
+  else
+  {
+    observerTags[0] = 0;
+  }
+
+  for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+  {
+    property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+    if (property)
+    {
+      VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
+      observerTags[i + 1] = property->AddObserver(itk::ModifiedEvent(), command);
+    }
+    else
+    {
+      observerTags[i + 1] = 0;
+    }
+  }
+
+  m_ObserverTagsPerNode[node] = observerTags;
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::RemoveObservers(mitk::DataNode* node)
+{
+  std::vector<unsigned long>& observerTags = m_ObserverTagsPerNode[node];
+  if (!observerTags.empty())
+  {
+    mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
+    if (property)
+    {
+      property->RemoveObserver(observerTags[0]);
+    }
+    for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+    {
+      property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      if (property)
+      {
+        property->RemoveObserver(observerTags[i + 1]);
+      }
+    }
+
+    m_ObserverTagsPerNode.erase(node);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::AddAllObservers()
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   if (dataStorage.IsNull())
@@ -150,77 +220,101 @@ void DataStoragePropertyListener::UpdateObserverToPropertyMap()
     return;
   }
 
-  if (m_PropertyName.size() == 0)
+  mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    this->AddObservers(it->Value().GetPointer());
+  }
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::RemoveAllObservers()
+{
+  NodeToObserverTags::iterator nodeToObserverTagsIt = m_ObserverTagsPerNode.begin();
+  NodeToObserverTags::iterator nodeToObserverTagsEnd = m_ObserverTagsPerNode.end();
+
+  for ( ; nodeToObserverTagsIt != nodeToObserverTagsEnd; ++nodeToObserverTagsIt)
+  {
+    mitk::DataNode* node = nodeToObserverTagsIt->first;
+    std::vector<unsigned long>& observerTags = nodeToObserverTagsIt->second;
+    if (observerTags.empty())
+    {
+      continue;
+    }
+
+    mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
+    if (property)
+    {
+      property->RemoveObserver(observerTags[0]);
+    }
+    for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+    {
+      property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      if (property)
+      {
+        property->RemoveObserver(observerTags[i + 1]);
+      }
+    }
+  }
+
+  m_ObserverTagsPerNode.clear();
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer)
+{
+  if (!this->GetBlocked())
+  {
+    PropertyChanged.Send(node, renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStoragePropertyListener::Notify(mitk::DataNode* node)
+{
+  std::vector<unsigned long>& observerTags = m_ObserverTagsPerNode[node];
+  if (observerTags.empty())
   {
     return;
   }
 
-  this->RemoveAllFromObserverToPropertyMap();
-
-  mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
+  if (property && observerTags[0])
   {
-    if (it->Value().IsNull() || it->Value()->GetProperty(m_PropertyName.c_str()) == NULL)
+    VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(property->GetCommand(observerTags[0]));
+    observer->Notify();
+  }
+  for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+  {
+    property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+    if (property)
     {
-      continue;
+      VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(property->GetCommand(observerTags[i + 1]));
+      observer->Notify();
     }
-
-    bool isHelper = false;
-    it->Value()->GetBoolProperty("helper object", isHelper);
-
-    if (isHelper)
-    {
-      continue;
-    }
-
-    /* register listener for changes in property */
-    itk::ReceptorMemberCommand<DataStoragePropertyListener>::Pointer command
-      = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
-    command->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
-
-    mitk::BaseProperty::Pointer property = it->Value()->GetProperty(m_PropertyName.c_str());
-    unsigned long observerId = property->AddObserver(itk::ModifiedEvent(), command);
-    PropertyToObserver tag(property, observerId);
-    PropertyToNode node(property, it->Value());
-
-    m_WatchedObservers.push_back(tag);
-    m_WatchedNodes.push_back(node);
-
-    for (unsigned int i = 0; i < m_Renderers.size(); i++)
-    {
-      itk::ReceptorMemberCommand<DataStoragePropertyListener>::Pointer rendererSpecificCommand
-        = itk::ReceptorMemberCommand<DataStoragePropertyListener>::New();
-      rendererSpecificCommand->SetCallbackFunction(this, &DataStoragePropertyListener::OnPropertyChanged);
-
-      mitk::BaseProperty::Pointer rendererSpecificProperty = it->Value()->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-      unsigned long rendererSpecificObserverId = rendererSpecificProperty->AddObserver(itk::ModifiedEvent(), command);
-
-      PropertyToObserver rendererSpecificTag(rendererSpecificProperty, rendererSpecificObserverId);
-      m_WatchedObservers.push_back(rendererSpecificTag);
-
-      PropertyToNode rendererSpecificNode(rendererSpecificProperty, it->Value());
-      m_WatchedNodes.push_back(rendererSpecificNode);
-    }
-
-    this->OnPropertyChanged();
-    this->Modified();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStoragePropertyListener::OnPropertyChanged(const itk::EventObject&)
-{
-  this->OnPropertyChanged();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStoragePropertyListener::OnPropertyChanged()
+void DataStoragePropertyListener::NotifyAll()
 {
   if (!this->GetBlocked())
   {
-    PropertyChanged.Send();
+    NodeToObserverTags::iterator nodeToObserverTagsIt = m_ObserverTagsPerNode.begin();
+    NodeToObserverTags::iterator nodeToObserverTagsEnd = m_ObserverTagsPerNode.end();
+
+    for ( ; nodeToObserverTagsIt != nodeToObserverTagsEnd; ++nodeToObserverTagsIt)
+    {
+      this->Notify(nodeToObserverTagsIt->first);
+    }
   }
 }
 
