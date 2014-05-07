@@ -28,48 +28,48 @@
 namespace niftk
 { 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename , float trackerMarkerRadius ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename,
+    std::string leftHandeyeFilename , std::string rightHandeyeFilename, 
+    std::string centreHandeyeFilename, float trackerMarkerRadius ) 
 {
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
-  vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
-  vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-  transform->SetMatrix(handeye);
+  vtkSmartPointer<vtkMatrix4x4> lefthandeye = LoadMatrix4x4FromFile(leftHandeyeFilename, false);
+  vtkSmartPointer<vtkTransform> lefttransform = vtkSmartPointer<vtkTransform>::New();
+  lefttransform->SetMatrix(lefthandeye);
 
+  vtkSmartPointer<vtkPolyData> leftLensCowl = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkSmartPointer<vtkPolyData> lensCowl = vtkSmartPointer<vtkPolyData>::New();
-
-  vtkSmartPointer<vtkCylinderSource> lensCyl = vtkSmartPointer<vtkCylinderSource>::New();
-  lensCyl->SetRadius(5.0);
-  lensCyl->SetHeight(20.0);
-  lensCyl->SetCenter(0.0,0.0,0.0);
-  lensCyl->SetResolution(40);
-  lensCyl->CappingOff();
+  vtkSmartPointer<vtkCylinderSource> leftLensCyl = vtkSmartPointer<vtkCylinderSource>::New();
+  leftLensCyl->SetRadius(5.0);
+  leftLensCyl->SetHeight(20.0);
+  leftLensCyl->SetCenter(0.0,0.0,0.0);
+  leftLensCyl->SetResolution(40);
+  leftLensCyl->CappingOff();
   
-  lensCowl=lensCyl->GetOutput();
+  leftLensCowl=leftLensCyl->GetOutput();
 
   vtkSmartPointer<vtkTransform> tipTransform = vtkSmartPointer<vtkTransform>::New();
   tipTransform->RotateX(90.0);
   tipTransform->Translate(0,10,0);
 
-  TranslatePolyData(lensCowl,tipTransform);
-  TranslatePolyData(lensCowl,transform);
+  TranslatePolyData(leftLensCowl,tipTransform);
+  TranslatePolyData(leftLensCowl,lefttransform);
  
   vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions , trackerMarkerRadius );
 
   std::vector < float > lensOrigin; 
-  lensOrigin.push_back(handeye->GetElement(0,3));
-  lensOrigin.push_back(handeye->GetElement(1,3));
-  lensOrigin.push_back(handeye->GetElement(2,3));
+  lensOrigin.push_back(lefthandeye->GetElement(0,3));
+  lensOrigin.push_back(lefthandeye->GetElement(1,3));
+  lensOrigin.push_back(lefthandeye->GetElement(2,3));
 
   std::vector< std::vector < float > > axis; 
   axis.push_back(this->Centroid(positions));
   axis.push_back(lensOrigin);
 
-
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
   appenderer->AddInput(ireds);
-  appenderer->AddInput(lensCowl);
+  appenderer->AddInput(leftLensCowl);
   appenderer->AddInput(this->ConnectIREDs(axis));
 
   //get the lens position
