@@ -1355,7 +1355,7 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake")
 # 4. Include this optional file.
 include(NIFTKCPackOptions)
 
-# 5. Include CPack module once all variables are set. i.e. this must be last.
+# 5. Include CPack module once all variables are set.
 include(CPack)
 
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
