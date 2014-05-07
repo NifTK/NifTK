@@ -36,7 +36,7 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::str
 mitk::Surface::Pointer MakeLaparoscopePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscopePolaris(rigidBodyFilename, handeyeFilename);
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename, 7.5);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
   return surface;
