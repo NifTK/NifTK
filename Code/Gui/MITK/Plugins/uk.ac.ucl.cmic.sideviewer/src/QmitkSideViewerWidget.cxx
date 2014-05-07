@@ -83,7 +83,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
-  m_VisibilityTracker->SetRenderersToUpdate(renderers);
+  m_VisibilityTracker->SetManagedRenderers(renderers);
 
   m_Viewer->SetCursorGloballyVisible(false);
   m_Viewer->SetCursorVisible(true);
@@ -121,6 +121,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  m_VisibilityTracker->SetTrackedRenderer(0);
+  m_Viewer->SetEnabled(false);
+
   if (m_MainAxialWindow)
   {
     m_MainAxialSnc->Disconnect(m_Viewer->GetAxialWindow()->GetSliceNavigationController());
@@ -143,8 +146,6 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
-
-  m_Viewer->SetEnabled(false);
 
   // m_NodeAddedSetter deleted by smart pointer.
   // m_VisibilityTracker deleted by smart pointer.
@@ -169,22 +170,35 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
   if (mainWindow == m_MainAxialWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
     m_MainAxialWindow = 0;
     m_MainAxialSnc = 0;
   }
   else if (mainWindow == m_MainSagittalWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->Disconnect(m_MainSagittalSnc);
     m_MainSagittalWindow = 0;
     m_MainSagittalSnc = 0;
   }
   else if (mainWindow == m_MainCoronalWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
     m_MainCoronalWindow = 0;
     m_MainCoronalSnc = 0;
   }
+  else
+  {
+    /// We do not update the viewer. Skip here.
+    return;
+  }
+
+  m_Viewer->RequestUpdate();
 }
 
 
@@ -507,14 +521,10 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 
   if (!mainWindow)
   {
-    /// FIXME: this should remove the currently visible nodes from the viewer,
-    /// but this does not happen.
-    std::vector<mitk::BaseRenderer*> renderersToTrack;
-    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-    m_VisibilityTracker->NotifyAll();
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
 
     m_Geometry = 0;
-    m_Viewer->SetEnabled(false);
 
     m_MainAxialWindow = 0;
     m_MainSagittalWindow = 0;
@@ -540,18 +550,16 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     m_Viewer->FitToDisplay();
 
     std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
-    std::vector<mitk::BaseRenderer*> renderersToTrack;
-    renderersToTrack.push_back(mainAxialWindow->GetRenderer());
-    renderersToTrack.push_back(mainSagittalWindow->GetRenderer());
-    renderersToTrack.push_back(mainCoronalWindow->GetRenderer());
-
-    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
+    /// Note:
+    /// This could be any 2D main window. We assume that the same nodes are visible
+    /// in each 2D render window of any viewer.
+    m_VisibilityTracker->SetTrackedRenderer(mainAxialWindow->GetRenderer());
+    m_Viewer->SetEnabled(true);
     m_VisibilityTracker->SetNodesToIgnore(crossHairs);
     m_VisibilityTracker->NotifyAll();
   }
 
   m_Geometry = geometry;
-  m_Viewer->SetEnabled(geometry != 0);
 
   MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
 

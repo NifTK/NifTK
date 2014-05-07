@@ -33,6 +33,9 @@ namespace mitk
  * Modified events via the Observer pattern etc.
  *
  * Derived classes must implement OnPropertyChanged.
+ *
+ * The event listening can be restricted to a set of renderers. It is the resposibility of the user of this
+ * class to remove the renderer from the DataStoragePropertyListener objects when the renderer is deleted.
  */
 class NIFTKCORE_EXPORT DataStoragePropertyListener : public mitk::DataStorageListener
 {
@@ -55,7 +58,7 @@ public:
   /// \brief GUI independent message callback.
   Message2<mitk::DataNode*, mitk::BaseRenderer*> PropertyChanged;
 
-  /// \brief Internal method to fire the property changed signal.
+  /// \brief Called when the global or a renderer specific property of the node has changed or removed.
   void OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer);
 
   /// \brief Sends a signal with current the property value of the given node to the registered listeners.
@@ -105,12 +108,13 @@ private:
   void AddObservers(mitk::DataNode* node);
   void RemoveObservers(mitk::DataNode* node);
 
-  typedef std::map<mitk::DataNode*, std::vector<unsigned long> > NodeToObserverTags;
+  typedef std::map<mitk::DataNode*, std::vector<unsigned long> > NodePropertyObserverTags;
 
   /// \brief We observe all the properties with a given name for each registered node.
   /// The first element of the vector is the "global" property, the rest are the renderer
   /// specific properties in the same order as in m_Renderers.
-  NodeToObserverTags m_ObserverTagsPerNode;
+  /// The observers are notified when a property of a node is changed or removed.
+  NodePropertyObserverTags m_PropertyObserverTagsPerNode;
 
   /// \brief The name of the property we are tracking.
   std::string m_PropertyName;

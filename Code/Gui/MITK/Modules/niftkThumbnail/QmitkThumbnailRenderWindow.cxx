@@ -115,7 +115,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_NodeAddedSetter->SetVisibility(false);
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
-  m_VisibilityTracker->SetRenderersToUpdate(renderers);
+  m_VisibilityTracker->SetManagedRenderers(renderers);
   m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 }
 
@@ -576,9 +576,7 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
     this->UpdateSliceAndTimeStep();
 
     // Setup the visibility tracker.
-    std::vector<mitk::BaseRenderer*> renderersToTrack;
-    renderersToTrack.push_back(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
-    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
+    m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
     m_VisibilityTracker->NotifyAll();
 
     // Get the box to update

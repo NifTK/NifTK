@@ -155,17 +155,21 @@ void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
     return;
   }
 
-  std::vector<unsigned long> observerTags(m_Renderers.size() + 1);
+  /// Note:
+  /// We register the property observers to itk::AnyEvent that includes
+  /// itk::ModifiedEvent and itk::DeleteEvent as well.
+
+  std::vector<unsigned long> propertyObserverTags(m_Renderers.size() + 1);
 
   mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str());
   if (property)
   {
     VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
-    observerTags[0] = property->AddObserver(itk::ModifiedEvent(), command);
+    propertyObserverTags[0] = property->AddObserver(itk::AnyEvent(), command);
   }
   else
   {
-    observerTags[0] = 0;
+    propertyObserverTags[0] = 0;
   }
 
   for (std::size_t i = 0; i < m_Renderers.size(); ++i)
@@ -174,39 +178,40 @@ void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
     if (property)
     {
       VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
-      observerTags[i + 1] = property->AddObserver(itk::ModifiedEvent(), command);
+      propertyObserverTags[i + 1] = property->AddObserver(itk::AnyEvent(), command);
     }
     else
     {
-      observerTags[i + 1] = 0;
+      propertyObserverTags[i + 1] = 0;
     }
   }
 
-  m_ObserverTagsPerNode[node] = observerTags;
+  m_PropertyObserverTagsPerNode[node] = propertyObserverTags;
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::RemoveObservers(mitk::DataNode* node)
 {
-  std::vector<unsigned long>& observerTags = m_ObserverTagsPerNode[node];
-  if (!observerTags.empty())
+  std::vector<unsigned long>& propertyObserverTags = m_PropertyObserverTagsPerNode[node];
+  if (!propertyObserverTags.empty())
   {
     mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
     if (property)
     {
-      property->RemoveObserver(observerTags[0]);
+      property->RemoveObserver(propertyObserverTags[0]);
     }
+
     for (std::size_t i = 0; i < m_Renderers.size(); ++i)
     {
       property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
       if (property)
       {
-        property->RemoveObserver(observerTags[i + 1]);
+        property->RemoveObserver(propertyObserverTags[i + 1]);
       }
     }
 
-    m_ObserverTagsPerNode.erase(node);
+    m_PropertyObserverTagsPerNode.erase(node);
   }
 }
 
@@ -233,13 +238,13 @@ void DataStoragePropertyListener::AddAllObservers()
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::RemoveAllObservers()
 {
-  NodeToObserverTags::iterator nodeToObserverTagsIt = m_ObserverTagsPerNode.begin();
-  NodeToObserverTags::iterator nodeToObserverTagsEnd = m_ObserverTagsPerNode.end();
+  NodePropertyObserverTags::iterator propertyObserverTagsIt = m_PropertyObserverTagsPerNode.begin();
+  NodePropertyObserverTags::iterator nodeToObserverTagsEnd = m_PropertyObserverTagsPerNode.end();
 
-  for ( ; nodeToObserverTagsIt != nodeToObserverTagsEnd; ++nodeToObserverTagsIt)
+  for ( ; propertyObserverTagsIt != nodeToObserverTagsEnd; ++propertyObserverTagsIt)
   {
-    mitk::DataNode* node = nodeToObserverTagsIt->first;
-    std::vector<unsigned long>& observerTags = nodeToObserverTagsIt->second;
+    mitk::DataNode* node = propertyObserverTagsIt->first;
+    std::vector<unsigned long>& observerTags = propertyObserverTagsIt->second;
     if (observerTags.empty())
     {
       continue;
@@ -260,7 +265,7 @@ void DataStoragePropertyListener::RemoveAllObservers()
     }
   }
 
-  m_ObserverTagsPerNode.clear();
+  m_PropertyObserverTagsPerNode.clear();
 
   this->Modified();
 }
@@ -279,7 +284,7 @@ void DataStoragePropertyListener::OnPropertyChanged(mitk::DataNode* node, mitk::
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Notify(mitk::DataNode* node)
 {
-  std::vector<unsigned long>& observerTags = m_ObserverTagsPerNode[node];
+  std::vector<unsigned long>& observerTags = m_PropertyObserverTagsPerNode[node];
   if (observerTags.empty())
   {
     return;
@@ -308,8 +313,8 @@ void DataStoragePropertyListener::NotifyAll()
 {
   if (!this->GetBlocked())
   {
-    NodeToObserverTags::iterator nodeToObserverTagsIt = m_ObserverTagsPerNode.begin();
-    NodeToObserverTags::iterator nodeToObserverTagsEnd = m_ObserverTagsPerNode.end();
+    NodePropertyObserverTags::iterator nodeToObserverTagsIt = m_PropertyObserverTagsPerNode.begin();
+    NodePropertyObserverTags::iterator nodeToObserverTagsEnd = m_PropertyObserverTagsPerNode.end();
 
     for ( ; nodeToObserverTagsIt != nodeToObserverTagsEnd; ++nodeToObserverTagsIt)
     {
