@@ -39,7 +39,13 @@
       <default>calib.txt</default>
       <channel>output</channel>
     </file>
-
+    <directory>
+      <name>fullHandeyeInputDirectory</name>
+      <longflag>fullHandeye</longflag>
+      <description>Optionally read an exsiting calibration to create left, right and centre handeyes</description>
+      <label>fullHandeyeInputDirectory</label>
+    </directory>    
+   
   </parameters>
   
   <parameters>
