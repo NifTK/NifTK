@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkOpenCVMaths.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
 #include <niftkFileHelper.h>
@@ -2119,7 +2120,7 @@ void GenerateFullHandeyeMatrices (const std::string& directory)
   cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
   cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
 
-  mitk::LoadStereoCameraParametersFromDirectory (calibrationDirectory,
+  mitk::LoadStereoCameraParametersFromDirectory (directory,
     &leftCameraIntrinsic,&leftCameraDistortion,&rightCameraIntrinsic,
     &rightCameraDistortion,&rightToLeftRotationMatrix,
     &rightToLeftTranslationVector,&leftCameraToTracker);
@@ -2134,6 +2135,19 @@ void GenerateFullHandeyeMatrices (const std::string& directory)
     }
     rightToLeft.at<double>(i,3) = rightToLeftTranslationVector.at<double>(i,0);
   }
+
+  cv::Mat rightCameraToTracker = cv::Mat (4,4,CV_64FC1);
+  cv::Mat centreLineToTracker = cv::Mat (4,4,CV_64FC1);
+
+  rightCameraToTracker = leftCameraToTracker * rightToLeft;
+
+  std::vector<cv::Mat> toTrackers;
+  toTrackers.push_back(leftCameraToTracker);
+  toTrackers.push_back(rightCameraToTracker);
+
+  centreLineToTracker = mitk::AverageMatrices(toTrackers);
+
+
 
 
 
