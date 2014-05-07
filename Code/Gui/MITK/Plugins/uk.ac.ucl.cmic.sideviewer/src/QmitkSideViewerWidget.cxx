@@ -511,7 +511,7 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     /// but this does not happen.
     std::vector<mitk::BaseRenderer*> renderersToTrack;
     m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-    m_VisibilityTracker->OnPropertyChanged(); // force update
+    m_VisibilityTracker->NotifyAll();
 
     m_Geometry = 0;
     m_Viewer->SetEnabled(false);
@@ -547,7 +547,7 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 
     m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
     m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-    m_VisibilityTracker->OnPropertyChanged(); // force update
+    m_VisibilityTracker->NotifyAll();
   }
 
   m_Geometry = geometry;
