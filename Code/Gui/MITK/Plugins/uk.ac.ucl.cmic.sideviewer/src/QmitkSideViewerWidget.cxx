@@ -13,18 +13,57 @@
 =============================================================================*/
 
 #include "QmitkSideViewerWidget.h"
+
 #include "QmitkBaseView.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QSpacerItem>
-#include <mitkDataStorage.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkFocusManager.h>
-#include <mitkGeometry3D.h>
-#include <mitkSliceNavigationController.h>
-#include <mitkBaseRenderer.h>
+
+#include <berryIWorkbenchPage.h>
+
 #include <itkCommand.h>
 
+#include <mitkBaseRenderer.h>
+#include <mitkDataStorage.h>
+#include <mitkFocusManager.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkIRenderWindowPart.h>
+#include <mitkSliceNavigationController.h>
+
+#include <QHBoxLayout>
+#include <QSpacerItem>
+#include <QVBoxLayout>
+
+
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::OPENED | Events::CLOSED;
+  }
+
+  void PartOpened( berry::IWorkbenchPartReference::Pointer partRef )
+  {
+//    MITK_INFO << "*** PartOpened (" << partRef->GetPart(false)->GetPartName() << ")";
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+//      MITK_INFO << "*** PartOpened it's a render window part";
+    }
+  }
+
+  void PartClosed( berry::IWorkbenchPartReference::Pointer partRef )
+  {
+//    MITK_INFO << "*** PartClosed (" << partRef->GetPart(false)->GetPartName() << ")";
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+//      MITK_INFO << "*** PartClosed it's a render window part";
+    }
+  }
+};
 
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
@@ -47,6 +86,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_Geometry(0)
 {
   this->setupUi(parent);
+
+  m_EditorLifeCycleListener = new EditorLifeCycleListener;
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
@@ -121,6 +163,8 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
   m_VisibilityTracker->SetTrackedRenderer(0);
   m_Viewer->SetEnabled(false);
 
@@ -607,6 +651,65 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
   mainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
+{
+  berry::IWorkbenchPage::Pointer page = m_ContainingView->GetSite()->GetPage();
+
+  // Return the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderPart =
+      dynamic_cast<mitk::IRenderWindowPart*>(page->GetActiveEditor().GetPointer());
+
+  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
+  if (!renderPart)
+  {
+    // No suitable active editor found, check visible editors
+    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
+    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    {
+      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      if (page->IsPartVisible(part))
+      {
+        renderPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());
+        break;
+      }
+    }
+  }
+  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
+//  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << typeid(*renderPart).name();
+
+  return renderPart;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
+{
+  // Return the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderPart = this->GetSelectedEditor();
+
+  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << renderPart;
+//  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << typeid(*renderPart).name();
+  QmitkRenderWindow* mainWindow = 0;
+
+  if (renderPart)
+  {
+    if (id.isNull())
+    {
+      mainWindow = renderPart->GetActiveQmitkRenderWindow();
+    }
+    else
+    {
+      mainWindow = renderPart->GetQmitkRenderWindow(id);
+    }
+  }
+
+  return mainWindow;
 }
 
 
