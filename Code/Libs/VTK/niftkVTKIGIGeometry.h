@@ -32,7 +32,7 @@ public:
   * \param the rigid body filename to define the location of the tracking markers
   * \param the handeye calibration to define the tool origin
   */
-  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string leftHandeyeFilename, std::string rightHandeyeFilename, std::string centreHandeyeFilename ,  float trackerMarkerRadius = 3.0 );
+  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string leftHandeyeFilename, std::string rightHandeyeFilename, std::string centreHandeyeFilename ,  float trackerMarkerRadius = 3.0 , float LensAngle = -30.0, float BodyLength = 500.0 );
 
   /**
   * \brief For visualisation purposes, creates a representation of the pointer.

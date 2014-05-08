@@ -16,6 +16,7 @@
 
 #include <vtkCubeSource.h>
 #include <vtkSphereSource.h>
+#include <vtkPlane.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkAppendPolyData.h>
@@ -28,39 +29,83 @@
 namespace niftk
 { 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename,
-    std::string leftHandeyeFilename , std::string rightHandeyeFilename, 
-    std::string centreHandeyeFilename, float trackerMarkerRadius ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string RigidBodyFilename,
+    std::string LeftHandeyeFilename , std::string RightHandeyeFilename, 
+    std::string CentreHandeyeFilename, float TrackerMarkerRadius, float LensAngle, float BodyLength ) 
 {
-  std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
-  vtkSmartPointer<vtkMatrix4x4> lefthandeye = LoadMatrix4x4FromFile(leftHandeyeFilename, false);
+  std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(RigidBodyFilename);
+  vtkSmartPointer<vtkMatrix4x4> lefthandeye = LoadMatrix4x4FromFile(LeftHandeyeFilename, false);
   vtkSmartPointer<vtkTransform> lefttransform = vtkSmartPointer<vtkTransform>::New();
   lefttransform->SetMatrix(lefthandeye);
 
   vtkSmartPointer<vtkPolyData> leftLensCowl = vtkSmartPointer<vtkPolyData>::New();
 
   vtkSmartPointer<vtkCylinderSource> leftLensCyl = vtkSmartPointer<vtkCylinderSource>::New();
-  leftLensCyl->SetRadius(5.0);
-  leftLensCyl->SetHeight(20.0);
+  leftLensCyl->SetRadius(2.0);
+  leftLensCyl->SetHeight(BodyLength);
   leftLensCyl->SetCenter(0.0,0.0,0.0);
   leftLensCyl->SetResolution(40);
   leftLensCyl->CappingOff();
   
   leftLensCowl=leftLensCyl->GetOutput();
 
-  vtkSmartPointer<vtkTransform> tipTransform = vtkSmartPointer<vtkTransform>::New();
-  tipTransform->RotateX(90.0);
-  tipTransform->Translate(0,10,0);
+  vtkSmartPointer<vtkTransform> leftTipTransform = vtkSmartPointer<vtkTransform>::New();
+  leftTipTransform->RotateX(270 + (90 + LensAngle) );
+  leftTipTransform->Translate(0,BodyLength/2,0);
 
-  TranslatePolyData(leftLensCowl,tipTransform);
+  TranslatePolyData(leftLensCowl,leftTipTransform);
   TranslatePolyData(leftLensCowl,lefttransform);
  
-  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions , trackerMarkerRadius );
+  vtkSmartPointer<vtkMatrix4x4> righthandeye = LoadMatrix4x4FromFile(RightHandeyeFilename, false);
+  vtkSmartPointer<vtkTransform> righttransform = vtkSmartPointer<vtkTransform>::New();
+  righttransform->SetMatrix(righthandeye);
+
+  vtkSmartPointer<vtkPolyData> rightLensCowl = vtkSmartPointer<vtkPolyData>::New();
+
+  vtkSmartPointer<vtkCylinderSource> rightLensCyl = vtkSmartPointer<vtkCylinderSource>::New();
+  rightLensCyl->SetRadius(2.0);
+  rightLensCyl->SetHeight(BodyLength);
+  rightLensCyl->SetCenter(0.0,0.0,0.0);
+  rightLensCyl->SetResolution(40);
+  rightLensCyl->CappingOff();
+  
+  rightLensCowl=rightLensCyl->GetOutput();
+
+  vtkSmartPointer<vtkTransform> rightTipTransform = vtkSmartPointer<vtkTransform>::New();
+  rightTipTransform->RotateX(270 + (90 + LensAngle) );
+  rightTipTransform->Translate(0,BodyLength/2,0);
+  
+  TranslatePolyData(rightLensCowl,rightTipTransform);
+  TranslatePolyData(rightLensCowl,righttransform);
+ 
+  vtkSmartPointer<vtkMatrix4x4> centrehandeye = LoadMatrix4x4FromFile(CentreHandeyeFilename, false);
+  vtkSmartPointer<vtkTransform> centretransform = vtkSmartPointer<vtkTransform>::New();
+  centretransform->SetMatrix(centrehandeye);
+
+  vtkSmartPointer<vtkPolyData> centreLensCowl = vtkSmartPointer<vtkPolyData>::New();
+
+  vtkSmartPointer<vtkCylinderSource> centreLensCyl = vtkSmartPointer<vtkCylinderSource>::New();
+  centreLensCyl->SetRadius(5.0);
+  centreLensCyl->SetHeight(BodyLength);
+  centreLensCyl->SetCenter(0.0,0.0,0.0);
+  centreLensCyl->SetResolution(40);
+  centreLensCyl->CappingOff();
+  
+  centreLensCowl=centreLensCyl->GetOutput();
+
+  vtkSmartPointer<vtkTransform> centreTipTransform = vtkSmartPointer<vtkTransform>::New();
+  centreTipTransform->RotateX(270 + (90 + LensAngle) );
+  centreTipTransform->Translate(0,BodyLength/2,0);
+
+  TranslatePolyData(centreLensCowl,centreTipTransform);
+  TranslatePolyData(centreLensCowl,centretransform);
+ 
+  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions , TrackerMarkerRadius );
 
   std::vector < float > lensOrigin; 
-  lensOrigin.push_back(lefthandeye->GetElement(0,3));
-  lensOrigin.push_back(lefthandeye->GetElement(1,3));
-  lensOrigin.push_back(lefthandeye->GetElement(2,3));
+  lensOrigin.push_back(centrehandeye->GetElement(0,3));
+  lensOrigin.push_back(centrehandeye->GetElement(1,3));
+  lensOrigin.push_back(centrehandeye->GetElement(2,3));
 
   std::vector< std::vector < float > > axis; 
   axis.push_back(this->Centroid(positions));
@@ -70,8 +115,17 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
 
   appenderer->AddInput(ireds);
   appenderer->AddInput(leftLensCowl);
+  appenderer->AddInput(rightLensCowl);
+  appenderer->AddInput(centreLensCowl);
   appenderer->AddInput(this->ConnectIREDs(axis));
 
+  vtkSmartPointer<vtkPlane> lensClippingPlane = vtkSmartPointer<vtkPlane>::New();
+  lensClippingPlane->SetOrigin(lensOrigin[0],lensOrigin[1],lensOrigin[2]);
+  float *normal = new float [4];
+  normal [0] = 0.0 ; normal [1] = 0.0 ; normal [2] = 1.0 ; normal [3] = 0.0;
+  float  *movedNormal = new float [4];
+  centrehandeye->MultiplyPoint(normal, movedNormal);
+  lensClippingPlane->SetNormal(movedNormal[0],movedNormal[1],movedNormal[2]);
   //get the lens position
   return appenderer->GetOutput();
 }

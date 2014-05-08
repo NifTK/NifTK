@@ -22,26 +22,18 @@
 #include <niftkVTKIGIGeometry.h>
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+mitk::Surface::Pointer MakeLaparoscope ( std::string RigidBodyFilename, 
+    std::string LeftHandeyeFilename, 
+    std::string RightHandeyeFilename, 
+    std::string CentreHandeyeFilename,
+    float TrackerMarkerRadius )
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename, handeyeFilename, handeyeFilename);
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(RigidBodyFilename, LeftHandeyeFilename, RightHandeyeFilename, CentreHandeyeFilename, TrackerMarkerRadius);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
   return surface;
 }
-
-
-//-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscopePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
-{
-  niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename, handeyeFilename, handeyeFilename, 7.5);
-  mitk::Surface::Pointer surface = mitk::Surface::New();
-  surface->SetVtkPolyData(laparoscope);
-  return surface;
-}
-
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 

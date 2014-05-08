@@ -24,14 +24,7 @@
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKIGI_EXPORT mitk::Surface::Pointer MakeLaparoscope(std::string rigidBodyFilename, std::string handeyeFilename );
-
-/**
- * \brief For visualisation purposes, creates a representation of the laparoscope.
- * \param the rigid body filename to define the location of the tracking markers
- * \param the handeye calibration to define the tool origin
- */
-NIFTKIGI_EXPORT mitk::Surface::Pointer MakeLaparoscopePolaris(std::string rigidBodyFilename, std::string handeyeFilename );
+NIFTKIGI_EXPORT mitk::Surface::Pointer MakeLaparoscope(std::string rigidBodyFilename, std::string LeftHandeyeFilename, std::string RightHandeyeFilename, std::string CentreHandeyeFilename, float TrackerMarkerRadius = 3.0 );
 
 /**
  * \brief For visualisation purposes, creates a representation of the pointer.

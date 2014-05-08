@@ -59,11 +59,25 @@ int main(int argc, char** argv)
   }
   if ( geometry == "laparoscope" )
   {
-    surface = MakeLaparoscope (rigidBodyFile, handeye);
+    if ( ( leftHandeye.length() != 0 ) && ( rightHandeye.length() != 0 ) && ( centreHandeye.length() != 0 ) )
+    {
+      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye);
+    }
+    else
+    {
+      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye);
+    }
   }
   if ( geometry == "laparoscopePolaris" )
   {
-    surface = MakeLaparoscopePolaris (rigidBodyFile, handeye);
+    if ( ( leftHandeye.length() != 0 ) && ( rightHandeye.length() != 0 ) && ( centreHandeye.length() != 0 ) )
+    {
+      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye, 7.5);
+    }
+    else
+    {
+      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye);
+    }
   }
   if ( geometry == "pointer" )
   {
@@ -104,11 +118,11 @@ int main(int argc, char** argv)
   if ( surface.IsNull() ) 
   {
     MITK_ERROR << "Failed to make specified geometry, available options are: ";
-    MITK_INFO << " backwall frontwall leftwall rightwall ceiling floor";
-    MITK_INFO << " laparoscope laparoscopePolaris pointer";
-    MITK_INFO << " reference referencePolaris";
-    MITK_INFO << " XAxis YAxis ZAxis laplensAxes";
-    MITK_INFO << " optotrak transRectalUSProbe";
+    MITK_ERROR << " backwall frontwall leftwall rightwall ceiling floor";
+    MITK_ERROR << " laparoscope laparoscopePolaris pointer";
+    MITK_ERROR << " reference referencePolaris";
+    MITK_ERROR << " XAxis YAxis ZAxis laplensAxes";
+    MITK_ERROR << " optotrak transRectalUSProbe";
     exit (EXIT_FAILURE);
   }
 

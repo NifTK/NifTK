@@ -22,8 +22,26 @@
     <file>
       <name>handeye</name>
       <longflag>handeye</longflag>
-      <description>The handeye calibration matrix</description>
-      <label>The handeye calibration matrix</label>
+      <description>The handeye calibration matrix, for mono scope</description>
+      <label>The handeye calibration matrix, for mono scope</label>
+    </file>    
+    <file>
+      <name>leftHandeye</name>
+      <longflag>leftHandeye</longflag>
+      <description>The left handeye calibration matrix, for stereo scope</description>
+      <label>The left handeye calibration matrix, for stereo scope</label>
+    </file>    
+     <file>
+      <name>rightHandeye</name>
+      <longflag>rightHandeye</longflag>
+      <description>The right handeye calibration matrix, for stereo scope</description>
+      <label>The right handeye calibration matrix, for stereo scope</label>
+    </file>    
+      <file>
+      <name>centreHandeye</name>
+      <longflag>centreHandeye</longflag>
+      <description>The centre handeye calibration matrix, for stereo scope</description>
+      <label>The centre handeye calibration matrix, for stereo scope</label>
     </file>    
     <file>
       <name>output</name>
