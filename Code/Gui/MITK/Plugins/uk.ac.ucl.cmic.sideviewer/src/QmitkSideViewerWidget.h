@@ -16,20 +16,27 @@
 #define QmitkSideViewerWidget_h
 
 #include "ui_QmitkSideViewerWidget.h"
+
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
-#include <QWidget>
-#include <QString>
-#include <mitkMIDASEnums.h>
+
+#include <berryIPartListener.h>
+
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
 #include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkMIDASEnums.h>
+
+#include <QString>
+#include <QWidget>
 
 namespace mitk
 {
-class DataStorage;
 class BaseRenderer;
+class DataStorage;
+class IRenderWindowPart;
 }
 
+class EditorLifeCycleListener;
 class QmitkBaseView;
 class QmitkRenderWindow;
 
@@ -136,6 +143,11 @@ private:
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
+  mitk::IRenderWindowPart* GetSelectedEditor();
+
+  /// \brief Gets the main window that is the last active render window of the main display.
+  QmitkRenderWindow* GetMainWindow(const QString& id = QString());
+
   /// \brief Works out the orientation of the currently focused window.
   MIDASOrientation GetMainWindowOrientation();
 
@@ -183,6 +195,8 @@ private:
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
   mitk::TimeGeometry* m_Geometry;
+
+  berry::IPartListener::Pointer m_EditorLifeCycleListener;
 };
 
 #endif

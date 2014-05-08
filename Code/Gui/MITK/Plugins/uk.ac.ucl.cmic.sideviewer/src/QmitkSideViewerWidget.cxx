@@ -13,18 +13,57 @@
 =============================================================================*/
 
 #include "QmitkSideViewerWidget.h"
+
 #include "QmitkBaseView.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QSpacerItem>
-#include <mitkDataStorage.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkFocusManager.h>
-#include <mitkGeometry3D.h>
-#include <mitkSliceNavigationController.h>
-#include <mitkBaseRenderer.h>
+
+#include <berryIWorkbenchPage.h>
+
 #include <itkCommand.h>
 
+#include <mitkBaseRenderer.h>
+#include <mitkDataStorage.h>
+#include <mitkFocusManager.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkIRenderWindowPart.h>
+#include <mitkSliceNavigationController.h>
+
+#include <QHBoxLayout>
+#include <QSpacerItem>
+#include <QVBoxLayout>
+
+
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::OPENED | Events::CLOSED;
+  }
+
+  void PartOpened( berry::IWorkbenchPartReference::Pointer partRef )
+  {
+//    MITK_INFO << "*** PartOpened (" << partRef->GetPart(false)->GetPartName() << ")";
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+//      MITK_INFO << "*** PartOpened it's a render window part";
+    }
+  }
+
+  void PartClosed( berry::IWorkbenchPartReference::Pointer partRef )
+  {
+//    MITK_INFO << "*** PartClosed (" << partRef->GetPart(false)->GetPartName() << ")";
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+//      MITK_INFO << "*** PartClosed it's a render window part";
+    }
+  }
+};
 
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
@@ -48,6 +87,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 {
   this->setupUi(parent);
 
+  m_EditorLifeCycleListener = new EditorLifeCycleListener;
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
 
@@ -70,7 +112,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_ControlsWidget->setEnabled(false);
 
-  std::vector<mitk::BaseRenderer*> renderers;
+  std::vector<const mitk::BaseRenderer*> renderers;
   renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
@@ -83,7 +125,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
-  m_VisibilityTracker->SetRenderersToUpdate(renderers);
+  m_VisibilityTracker->SetManagedRenderers(renderers);
 
   m_Viewer->SetCursorGloballyVisible(false);
   m_Viewer->SetCursorVisible(true);
@@ -121,6 +163,11 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
+  m_VisibilityTracker->SetTrackedRenderer(0);
+  m_Viewer->SetEnabled(false);
+
   if (m_MainAxialWindow)
   {
     m_MainAxialSnc->Disconnect(m_Viewer->GetAxialWindow()->GetSliceNavigationController());
@@ -143,8 +190,6 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
-
-  m_Viewer->SetEnabled(false);
 
   // m_NodeAddedSetter deleted by smart pointer.
   // m_VisibilityTracker deleted by smart pointer.
@@ -169,22 +214,35 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
   if (mainWindow == m_MainAxialWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
     m_MainAxialWindow = 0;
     m_MainAxialSnc = 0;
   }
   else if (mainWindow == m_MainSagittalWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->Disconnect(m_MainSagittalSnc);
     m_MainSagittalWindow = 0;
     m_MainSagittalSnc = 0;
   }
   else if (mainWindow == m_MainCoronalWindow)
   {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
     m_MainCoronalWindow = 0;
     m_MainCoronalSnc = 0;
   }
+  else
+  {
+    /// We do not update the viewer. Skip here.
+    return;
+  }
+
+  m_Viewer->RequestUpdate();
 }
 
 
@@ -507,14 +565,10 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 
   if (!mainWindow)
   {
-    /// FIXME: this should remove the currently visible nodes from the viewer,
-    /// but this does not happen.
-    std::vector<mitk::BaseRenderer*> renderersToTrack;
-    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-    m_VisibilityTracker->NotifyAll();
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
 
     m_Geometry = 0;
-    m_Viewer->SetEnabled(false);
 
     m_MainAxialWindow = 0;
     m_MainSagittalWindow = 0;
@@ -540,18 +594,16 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     m_Viewer->FitToDisplay();
 
     std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
-    std::vector<mitk::BaseRenderer*> renderersToTrack;
-    renderersToTrack.push_back(mainAxialWindow->GetRenderer());
-    renderersToTrack.push_back(mainSagittalWindow->GetRenderer());
-    renderersToTrack.push_back(mainCoronalWindow->GetRenderer());
-
-    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
+    /// Note:
+    /// This could be any 2D main window. We assume that the same nodes are visible
+    /// in each 2D render window of any viewer.
+    m_VisibilityTracker->SetTrackedRenderer(mainAxialWindow->GetRenderer());
+    m_Viewer->SetEnabled(true);
     m_VisibilityTracker->SetNodesToIgnore(crossHairs);
     m_VisibilityTracker->NotifyAll();
   }
 
   m_Geometry = geometry;
-  m_Viewer->SetEnabled(geometry != 0);
 
   MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
 
@@ -599,6 +651,65 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
   mainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
+{
+  berry::IWorkbenchPage::Pointer page = m_ContainingView->GetSite()->GetPage();
+
+  // Return the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderPart =
+      dynamic_cast<mitk::IRenderWindowPart*>(page->GetActiveEditor().GetPointer());
+
+  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
+  if (!renderPart)
+  {
+    // No suitable active editor found, check visible editors
+    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
+    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    {
+      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      if (page->IsPartVisible(part))
+      {
+        renderPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());
+        break;
+      }
+    }
+  }
+  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
+//  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << typeid(*renderPart).name();
+
+  return renderPart;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
+{
+  // Return the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderPart = this->GetSelectedEditor();
+
+  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << renderPart;
+//  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << typeid(*renderPart).name();
+  QmitkRenderWindow* mainWindow = 0;
+
+  if (renderPart)
+  {
+    if (id.isNull())
+    {
+      mainWindow = renderPart->GetActiveQmitkRenderWindow();
+    }
+    else
+    {
+      mainWindow = renderPart->GetQmitkRenderWindow(id);
+    }
+  }
+
+  return mainWindow;
 }
 
 
