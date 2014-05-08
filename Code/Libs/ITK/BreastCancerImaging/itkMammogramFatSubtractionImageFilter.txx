@@ -551,8 +551,32 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   parameters = optimiser->GetCurrentPosition();
 
-  std::cout << "Final parameters: " << parameters 
+  std::cout << "Final parameters: " << std::endl
+            << "   breast edge width (mm):         " << parameters[0] << std::endl
+            << "   breast thickness (intensity):   " << parameters[1] << std::endl
+            << "   edge profile (2=elliptical):    " << parameters[2] << std::endl
+            << "   plate tilt in 'x':              " << parameters[3] << std::endl
+            << "   plate tilt in 'y':              " << parameters[4] << std::endl
+            << "   width of the skin (mm):         " << parameters[5] << std::endl
+            << "   height of the skin (intensity): " << parameters[6] << std::endl
             << ", Cost: " << optimiser->GetCurrentCost() << std::endl;
+
+
+  // Save the intensity vs edge distance data and the fit to a text files
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  std::cout << "fileOutputIntensityVsEdgeDist: " << m_fileOutputIntensityVsEdgeDist << std::endl;
+  std::cout << "fileOutputFit: " << m_fileOutputFit << std::endl;
+
+  if ( m_fileOutputIntensityVsEdgeDist.length() )
+  {
+    metric->WriteIntensityVsEdgeDistToFile( m_fileOutputIntensityVsEdgeDist );
+  }
+
+  if ( m_fileOutputFit.length() )
+  {
+    metric->WriteFitToFile( m_fileOutputFit, parameters );
+  }
 
 
   // Get the fat image

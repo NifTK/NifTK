@@ -130,8 +130,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
   if (!m_GeneralControls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(9, 9, 9, 0);
-    m_Layout->setSpacing(6);
+    m_Layout->setContentsMargins(6, 6, 6, 0);
+    m_Layout->setSpacing(3);
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
@@ -139,16 +139,15 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
+    m_GeneralControls->setContentsMargins(0, 0, 0, 0);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
-    m_Layout->addWidget(new QWidget(parent), 2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 0);
-    m_Layout->setRowStretch(2, 1);
-    m_Layout->setRowStretch(3, 0);
+    m_Layout->setRowStretch(1, 1);
+    m_Layout->setRowStretch(2, 0);
 
     m_GeneralControls->SetThresholdingCheckboxEnabled(false);
     m_GeneralControls->SetThresholdingWidgetsEnabled(false);
@@ -1266,12 +1265,20 @@ bool MIDASGeneralSegmentorView::SelectViewMode()
 {
   if (!this->HasInitialisedWorkingData())
   {
-    return false;
+    QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
+    foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
+    {
+      selectedNode->SetVisibility(!selectedNode->IsVisible(0));
+    }
+    this->RequestRenderWindowUpdate();
+
+    return true;
   }
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   bool segmentationNodeIsVisible = workingNodes[0]->IsVisible(0);
-  this->OnSeeImageCheckBoxToggled(!segmentationNodeIsVisible);
+  workingNodes[0]->SetVisibility(!segmentationNodeIsVisible);
+  this->RequestRenderWindowUpdate();
 
   return true;
 }
@@ -1390,19 +1397,26 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[2]->GetData());
-  assert(contourSet);
 
-  if (sliceNumber >= 0 && axisNumber >= 0)
+  // TODO
+  // This assertion fails sometimes if both the morphological and irregular (this) volume editor is
+  // switched on and you are using the paintbrush tool of the morpho editor.
+//  assert(contourSet);
+
+  if (contourSet)
   {
-    Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
-
-    if (contourSet->GetSize() > 0)
+    if (sliceNumber >= 0 && axisNumber >= 0)
     {
-      workingNodes[2]->Modified();
+      Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
-      if (updateRendering)
+      if (contourSet->GetSize() > 0)
       {
-        this->RequestRenderWindowUpdate();
+        workingNodes[2]->Modified();
+
+        if (updateRendering)
+        {
+          this->RequestRenderWindowUpdate();
+        }
       }
     }
   }
@@ -1525,35 +1539,6 @@ void MIDASGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
     this->UpdatePriorAndNext();
   }
   workingNodes[5]->SetVisibility(checked);
-  this->RequestRenderWindowUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSeeImageCheckBoxToggled(bool checked)
-{
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-
-  workingNodes[0]->SetVisibility(!checked); // segmentation image
-  workingNodes[1]->SetVisibility(!checked); // seeds
-  workingNodes[2]->SetVisibility(!checked); // orange contours from current segmentation
-  workingNodes[3]->SetVisibility(!checked); // draw tool contours
-  workingNodes[4]->SetVisibility(!checked && m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
-  workingNodes[5]->SetVisibility(!checked && m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
-  workingNodes[6]->SetVisibility(!checked && m_GeneralControls->m_ThresholdingCheckBox->isChecked()); // region growing
-
-  // Also need to check if feedback contour from poly line is off/on.
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  mitk::MIDASPolyTool* polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
-  assert(polyTool);
-
-  polyTool->SetFeedbackContourVisible(!checked && toolManager->GetActiveTool() == polyTool);
-
   this->RequestRenderWindowUpdate();
 }
 

@@ -113,6 +113,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
     assert(ok);
+    ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -357,6 +359,8 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
   assert(ok);
   ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
   assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
@@ -794,6 +798,44 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnTimestampEditFinished()
+{
+  igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
+
+  // try to parse as single number, a timestamp in nano seconds.
+  bool  ok = false;
+  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime   parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
+      ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
+    }
+  }
+
+
+  if (ok)
+  {
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
@@ -802,7 +844,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   if (m_PlayPushButton->isChecked())
   {
     int         sliderValue = m_PlaybackSlider->value();
-    igtlUint64  sliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) sliderValue / m_PlaybackSliderFactor));
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
 
     m_CurrentTime = sliderTime;
   }
@@ -812,7 +854,22 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz"));
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  // only update text if user is not editing
+  if (!m_TimeStampEdit->hasFocus())
+  {
+    // avoid flickering the text field. it makes copy-n-paste impossible
+    // during playback mode because it resets the selection every few milliseconds.
+    if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+    {
+      m_TimeStampEdit->setText(humanReadableTimeStamp);
+    }
+    if (m_TimeStampEdit->toolTip() != rawTimeStampString)
+    {
+      m_TimeStampEdit->setToolTip(rawTimeStampString);
+    }
+  }
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
@@ -1240,11 +1297,11 @@ void QmitkIGIDataSourceManager::OnPlayStart()
           }
 
           m_PlaybackSliderBase = overallStartTime;
-          m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
           // if the time range is very short then dont upscale for the slider
-          m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
 
-          double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
           assert(sliderMax < std::numeric_limits<int>::max());
 
           m_PlaybackSlider->setMinimum(0);

@@ -469,7 +469,7 @@ vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& sil
   vtkMatrix4x4 *result = vtkMatrix4x4::New();
   result->Identity();
 
-  if(fileName.size() > 0)
+  if (fileName.size() > 0)
   {
     ifstream myfile(fileName.c_str());
     if (myfile.is_open())

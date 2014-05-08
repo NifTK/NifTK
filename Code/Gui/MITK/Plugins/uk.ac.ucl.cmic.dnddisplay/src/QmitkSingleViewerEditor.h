@@ -150,7 +150,7 @@ public:
   /**
    * \see mitk::ILinkedRenderWindowPart::EnableLinkedNavigation().
    */
-  void EnableLinkedNavigation(bool enable);
+  void EnableLinkedNavigation(bool linkedNavigationEnabled);
 
   /**
    * \see mitk::ILinkedRenderWindowPart::IsLinkedNavigationEnabled().

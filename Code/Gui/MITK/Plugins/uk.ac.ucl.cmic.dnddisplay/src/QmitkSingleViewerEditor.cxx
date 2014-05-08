@@ -89,7 +89,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(false);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(false);
       }
     }
   }
@@ -105,7 +105,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(false);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(false);
       }
     }
   }
@@ -121,7 +121,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetSingleViewer() == d->m_SingleViewer)
       {
-        d->m_SingleViewer->EnableLinkedNavigation(true);
+        d->m_SingleViewer->SetLinkedNavigationEnabled(true);
       }
     }
   }
@@ -335,7 +335,6 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 //    d->m_SingleViewer->SetDefaultMultiWindowLayout(multiWindowLayout);
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
-    d->m_VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
@@ -397,7 +396,7 @@ void QmitkSingleViewerEditor::SetFocus()
 {
   if (d->m_SingleViewer != 0)
   {
-    d->m_SingleViewer->SetFocus();
+    d->m_SingleViewer->SetFocused();
   }
 }
 
@@ -611,9 +610,9 @@ bool QmitkSingleViewerEditor::IsSlicingPlanesEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::EnableLinkedNavigation(bool enable)
+void QmitkSingleViewerEditor::EnableLinkedNavigation(bool linkedNavigationEnabled)
 {
-  d->m_SingleViewer->EnableLinkedNavigation(enable);
+  d->m_SingleViewer->SetLinkedNavigationEnabled(linkedNavigationEnabled);
 }
 
 
@@ -768,10 +767,6 @@ void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
     bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
     d->m_SingleViewer->SetWindowLayout(windowLayout);
     d->m_SingleViewer->blockSignals(signalsWereBlocked);
-
-    // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
-    // (or indeed anything that's listening to the FocusManager).
-//    this->UpdateFocusManagerToSelectedViewer();
   }
 }
 

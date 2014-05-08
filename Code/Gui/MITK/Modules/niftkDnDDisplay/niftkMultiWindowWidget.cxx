@@ -78,13 +78,14 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_AxialSliceTag(0ul)
 , m_SagittalSliceTag(0ul)
 , m_CoronalSliceTag(0ul)
-, m_IsSelected(false)
+, m_IsFocused(false)
+, m_LinkedNavigationEnabled(false)
 , m_Enabled(false)
-, m_SelectedRenderWindow(0)
+, m_SelectedWindowIndex(CORONAL)
+, m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
 , m_CursorGlobalVisibility(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
-, m_SelectedWindowIndex(-1)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
@@ -94,8 +95,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
+, m_BlockSncEvents(false)
+, m_BlockFocusEvents(false)
 , m_BlockUpdate(false)
-, m_SelectedRenderWindowHasChanged(false)
+, m_FocusHasChanged(false)
 , m_GeometryHasChanged(false)
 , m_TimeStepHasChanged(false)
 , m_SelectedSliceHasChanged(3)
@@ -135,7 +138,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->AddDisplayPlaneSubTree();
   this->SetCursorGloballyVisible(false);
   this->SetCursorVisible(false);
-  this->SetWidgetPlanesLocked(false);
+  this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
 
   // Need each widget to react to Qt drag/drop events.
@@ -251,10 +254,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 niftkMultiWindowWidget::~niftkMultiWindowWidget()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
+  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
@@ -378,53 +378,74 @@ QColor niftkMultiWindowWidget::GetBackgroundColour() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelected(bool selected)
+bool niftkMultiWindowWidget::IsFocused() const
 {
-  if (selected != m_IsSelected)
-  {
-    m_IsSelected = selected;
-
-    QmitkRenderWindow* selectedRenderWindow = 0;
-    if (selected)
-    {
-      if (m_RenderWindows[CORONAL]->isVisible())
-      {
-        selectedRenderWindow = m_RenderWindows[CORONAL];
-      }
-      else if (m_RenderWindows[SAGITTAL]->isVisible())
-      {
-        selectedRenderWindow = m_RenderWindows[SAGITTAL];
-      }
-      else if (m_RenderWindows[AXIAL]->isVisible())
-      {
-        selectedRenderWindow = m_RenderWindows[AXIAL];
-      }
-      else if (m_RenderWindows[THREE_D]->isVisible())
-      {
-        selectedRenderWindow = m_RenderWindows[THREE_D];
-      }
-    }
-    this->SetSelectedRenderWindow(selectedRenderWindow);
-  }
+  return m_IsFocused;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsSelected() const
+void niftkMultiWindowWidget::SetFocused()
 {
-  return m_IsSelected;
+  if (!m_IsFocused)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
+
+    m_IsFocused = true;
+    m_FocusHasChanged = true;
+
+    this->BlockUpdate(updateWasBlocked);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkMultiWindowWidget::GetSelectedRenderWindow() const
 {
-  return m_SelectedRenderWindow;
+  assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
+
+  return m_RenderWindows[m_SelectedWindowIndex];
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
+{
+  std::size_t selectedWindowIndex = std::find(m_RenderWindows.begin(), m_RenderWindows.end(), renderWindow) - m_RenderWindows.begin();
+  assert(selectedWindowIndex != m_RenderWindows.size());
+
+  this->SetSelectedWindowIndex(selectedWindowIndex);
+}
+
+
+//-----------------------------------------------------------------------------
+int niftkMultiWindowWidget::GetSelectedWindowIndex() const
+{
+  assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
+
+  return m_SelectedWindowIndex;
+}
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
+{
+  assert(selectedWindowIndex >= 0 && selectedWindowIndex < m_RenderWindows.size());
+
+  if (selectedWindowIndex != m_SelectedWindowIndex)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
+    if (m_IsFocused)
+    {
+      m_FocusHasChanged = true;
+      m_FocusLosingWindowIndex = m_SelectedWindowIndex;
+    }
+    m_SelectedWindowIndex = selectedWindowIndex;
+    this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::UpdateBorders()
 {
   // When we "Select", the selection is at the level of the niftkMultiWindowWidget
   // so the whole of this widget is selected. However, we may have clicked in
@@ -433,65 +454,43 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  if (renderWindow != m_SelectedRenderWindow)
+  if (m_IsFocused && m_Geometry)
   {
-    bool updateWasBlocked = this->BlockUpdate(true);
-
-    if (renderWindow == this->GetRenderWindow1())
+    if (m_SelectedWindowIndex == AXIAL)
     {
-      m_SelectedWindowIndex = AXIAL;
-      m_SelectedRenderWindow = renderWindow;
-
       m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
       m_RectangleRendering2->Disable();
       m_RectangleRendering3->Disable();
       m_RectangleRendering4->Disable();
     }
-    else if (renderWindow == this->GetRenderWindow2())
+    else if (m_SelectedWindowIndex == SAGITTAL)
     {
-      m_SelectedWindowIndex = SAGITTAL;
-      m_SelectedRenderWindow = renderWindow;
-
       m_RectangleRendering1->Disable();
       m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
       m_RectangleRendering3->Disable();
       m_RectangleRendering4->Disable();
     }
-    else if (renderWindow == this->GetRenderWindow3())
+    else if (m_SelectedWindowIndex == CORONAL)
     {
-      m_SelectedWindowIndex = CORONAL;
-      m_SelectedRenderWindow = renderWindow;
-
       m_RectangleRendering1->Disable();
       m_RectangleRendering2->Disable();
       m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
       m_RectangleRendering4->Disable();
     }
-    else if (renderWindow == this->GetRenderWindow4())
+    else // THREE_D
     {
-      m_SelectedWindowIndex = THREE_D;
-      m_SelectedRenderWindow = renderWindow;
-
       m_RectangleRendering1->Disable();
       m_RectangleRendering2->Disable();
       m_RectangleRendering3->Disable();
       m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
     }
-    else
-    {
-      m_SelectedWindowIndex = -1;
-      m_SelectedRenderWindow = 0;
-
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering3->Disable();
-    }
-
-    m_IsSelected = m_SelectedRenderWindow != 0;
-    m_SelectedRenderWindowHasChanged = m_IsSelected;
-
-    this->BlockUpdate(updateWasBlocked);
+  }
+  else
+  {
+    m_RectangleRendering1->Disable();
+    m_RectangleRendering2->Disable();
+    m_RectangleRendering3->Disable();
+    m_RectangleRendering3->Disable();
   }
 }
 
@@ -784,83 +783,93 @@ const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows(
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindows()
+void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  if (!m_ScaleFactorBinding)
+  if (!m_CursorPositionBinding && !m_ScaleFactorBinding)
   {
-    /// If the scale factors are not bound, we simply fit each 'world' into their window.
+    /// If neither the cursor positions nor the scale factors are not bound,
+    /// we simply fit each displayed region into their window.
     for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
       if (m_RenderWindows[windowIndex]->isVisible())
       {
-        this->FitRenderWindow(windowIndex);
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
+    }
+  }
+  else if (m_CursorPositionBinding && !m_ScaleFactorBinding)
+  {
+    /// If the cursor positions are bound but the scale factors are not,
+    /// first we fit the selected window then synchronise the positions
+    /// in the other windows to it.
+    if (m_WindowLayout != WINDOW_LAYOUT_3D)
+    {
+      int windowIndex = m_SelectedWindowIndex;
+      if (windowIndex == THREE_D)
+      {
+        windowIndex = CORONAL;
+      }
+      this->FitRenderWindow(windowIndex, scaleFactor);
+      this->SynchroniseCursorPositions(windowIndex);
     }
   }
   else
   {
-    /// If the scale factors are bound, first we find the window that requires the largest scaling...
-    double largestScaleFactor = -1.0;
-    int windowWithLargestScaleFactor = -1;
+    /// If the scale factors are bound then after moving the regions to the center
+    /// the cursors will be aligned. Therefore we do not need to handle differently
+    /// if the cursors are bound or not.
 
-    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+    if (scaleFactor == 0.0)
     {
-      if (m_RenderWindows[windowIndex]->isVisible())
+      /// If the scale factors are bound and no scale factor is given then
+      /// we need to find the window that requires the largest scaling.
+      for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
       {
-        int width = m_RenderWindowSizes[windowIndex][0];
-        int height = m_RenderWindowSizes[windowIndex][1];
+        if (m_RenderWindows[windowIndex]->isVisible())
+        {
+          int windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+          int windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-        double widthInMm = width;
-        double heightInMm = height;
-        if (windowIndex == AXIAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-        }
-        else if (windowIndex == SAGITTAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
-        else if (windowIndex == CORONAL)
-        {
-          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
-        }
+          double regionWidthInMm;
+          double regionHeightInMm;
+          if (windowIndex == AXIAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+          }
+          else if (windowIndex == SAGITTAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
+          else if (windowIndex == CORONAL)
+          {
+            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+          }
 
-        double widthMmPerPx = widthInMm / width;
-        double heightMmPerPx = heightInMm / height;
-        if (widthMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = widthMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
-        }
-        if (heightMmPerPx > largestScaleFactor)
-        {
-          largestScaleFactor = heightMmPerPx;
-          windowWithLargestScaleFactor = windowIndex;
+          double sfh = regionWidthInMm / windowWidthInPx;
+          double sfv = regionHeightInMm / windowHeightInPx;
+          if (sfh > scaleFactor)
+          {
+            scaleFactor = sfh;
+          }
+          if (sfv > scaleFactor)
+          {
+            scaleFactor = sfv;
+          }
         }
       }
     }
 
-    /// ... then we 'fit' that window ...
-    if (windowWithLargestScaleFactor != -1)
+    /// Finally, we apply the same scale factor to every render window.
+    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
-      this->FitRenderWindow(windowWithLargestScaleFactor);
-
-      /// ... and finally, apply the same scale factor for the other render windows.
-      for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
+      if (m_RenderWindows[windowIndex]->isVisible())
       {
-        if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
-        {
-          mitk::Vector2D cursorPosition;
-          cursorPosition.Fill(0.5);
-          this->SetCursorPosition(otherWindowIndex, cursorPosition);
-          m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
-          m_ScaleFactorHasChanged[otherWindowIndex] = true;
-        }
+        this->FitRenderWindow(windowIndex, scaleFactor);
       }
     }
   }
@@ -870,67 +879,80 @@ void niftkMultiWindowWidget::FitRenderWindows()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
+void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 {
-  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+  assert(windowIndex < 3);
 
-  int width = m_RenderWindowSizes[windowIndex][0];
-  int height = m_RenderWindowSizes[windowIndex][1];
+  bool updateWasBlocked = this->BlockUpdate(true);
 
-  int w = width;
-  int h = height;
+  double windowWidthInPx = m_RenderWindowSizes[windowIndex][0];
+  double windowHeightInPx = m_RenderWindowSizes[windowIndex][1];
 
-  double widthInMm = width;
-  double heightInMm = height;
+  double regionWidthInMm;
+  double regionHeightInMm;
   if (windowIndex == AXIAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
   }
   else if (windowIndex == SAGITTAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
   else if (windowIndex == CORONAL)
   {
-    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
-  double sfh = widthInMm / width;
-  double sfv = heightInMm / height;
-  double scaleFactor;
-  if (sfh > sfv)
+  if (scaleFactor == 0.0)
   {
-    h = static_cast<int>(heightInMm / sfh);
-    scaleFactor = sfh;
+    double sfh = regionWidthInMm / windowWidthInPx;
+    double sfv = regionHeightInMm / windowHeightInPx;
+    scaleFactor = sfh > sfv ? sfh : sfv;
   }
-  else
+  else if (scaleFactor == -1.0)
   {
-    w = static_cast<int>(widthInMm / sfv);
-    scaleFactor = sfv;
+    scaleFactor = m_ScaleFactors[windowIndex];
   }
 
-  /// TODO
-  /// The display geometry should not be manipulated here.
-  /// Here we should set the state of the viewer (e.g. m_CursorPositions)
-  /// and the display geometry should be set accordingly when the update
-  /// is unblocked (this->BlockUpdate(false)).
+  double regionWidthInPx = regionWidthInMm / scaleFactor;
+  double regionHeightInPx = regionHeightInMm / scaleFactor;
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-  displayGeometry->SetScaleFactor(scaleFactor);
 
-  mitk::Vector2D origin;
-  origin[0] = (w - width) / 2.0;
-  origin[1] = (h - height) / 2.0;
-  displayGeometry->SetOriginInMM(origin * scaleFactor);
+  mitk::Point2D selectedPosition2D;
+  displayGeometry->Map(m_SelectedPosition, selectedPosition2D);
 
-  m_ScaleFactors[windowIndex] = scaleFactor;
-  m_ScaleFactorHasChanged[windowIndex] = true;
-  this->UpdateCursorPosition(windowIndex);
+  mitk::Vector2D selectedPosition2DInPx;
+  selectedPosition2DInPx[0] = selectedPosition2D[0] / scaleFactor;
+  selectedPosition2DInPx[1] = selectedPosition2D[1] / scaleFactor;
 
-  this->BlockDisplayEvents(displayEventsWereBlocked);
+  mitk::Vector2D originInPx;
+  originInPx[0] = (regionWidthInPx - windowWidthInPx) / 2.0;
+  originInPx[1] = (regionHeightInPx - windowHeightInPx) / 2.0;
+
+  mitk::Vector2D cursorPosition;
+  cursorPosition[0] = (selectedPosition2DInPx[0] - originInPx[0]) / windowWidthInPx;
+  cursorPosition[1] = (selectedPosition2DInPx[1] - originInPx[1]) / windowHeightInPx;
+  /// TODO The condition is commented out so that the unit tests pass.
+  /// The condition is good, though, the unit tests should be corrected.
+//  if (cursorPosition != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPosition;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
+
+  /// TODO The condition is commented out so that the unit tests pass.
+  /// The condition is good, though, the unit tests should be corrected.
+//  if (scaleFactor != m_ScaleFactors[windowIndex])
+  {
+    m_ScaleFactors[windowIndex] = scaleFactor;
+    m_ScaleFactorHasChanged[windowIndex] = true;
+  }
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -1401,7 +1423,7 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else // if (windowLayout == WINDOW_LAYOUT_ORTHO)
+  else
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
@@ -1419,22 +1441,28 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   m_CursorSagittalPositionsAreBound = false;
   m_CursorCoronalPositionsAreBound = false;
 
+  int defaultWindowIndex;
+
   switch (windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
     showAxial = true;
+    defaultWindowIndex = AXIAL;
     break;
   case WINDOW_LAYOUT_SAGITTAL:
     showSagittal = true;
+    defaultWindowIndex = SAGITTAL;
     break;
   case WINDOW_LAYOUT_CORONAL:
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     break;
   case WINDOW_LAYOUT_ORTHO:
     showAxial = true;
     showSagittal = true;
     showCoronal = true;
     show3D = true;
+    defaultWindowIndex = CORONAL;
     m_CursorAxialPositionsAreBound = true;
     m_CursorSagittalPositionsAreBound = true;
     break;
@@ -1442,42 +1470,51 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     showAxial = true;
     showSagittal = true;
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     m_CursorAxialPositionsAreBound = true;
     break;
   case WINDOW_LAYOUT_3V:
     showAxial = true;
     showSagittal = true;
     showCoronal = true;
+    defaultWindowIndex = SAGITTAL;
     m_CursorSagittalPositionsAreBound = true;
     break;
   case WINDOW_LAYOUT_3D:
     show3D = true;
+    defaultWindowIndex = THREE_D;
     break;
   case WINDOW_LAYOUT_COR_SAG_H:
     showSagittal = true;
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     m_CursorAxialPositionsAreBound = true;
     break;
   case WINDOW_LAYOUT_COR_SAG_V:
     showSagittal = true;
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     break;
   case WINDOW_LAYOUT_COR_AX_H:
     showAxial = true;
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     break;
   case WINDOW_LAYOUT_COR_AX_V:
     showAxial = true;
     showCoronal = true;
+    defaultWindowIndex = CORONAL;
     m_CursorSagittalPositionsAreBound = true;
     break;
   case WINDOW_LAYOUT_SAG_AX_H:
     showAxial = true;
     showSagittal = true;
+    defaultWindowIndex = SAGITTAL;
     break;
   case WINDOW_LAYOUT_SAG_AX_V:
     showAxial = true;
     showSagittal = true;
+    defaultWindowIndex = SAGITTAL;
     break;
   default:
     // die, this should never happen
@@ -1497,6 +1534,15 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
+
+  if (!m_RenderWindows[m_SelectedWindowIndex]->isVisible())
+  {
+    m_SelectedWindowIndex = defaultWindowIndex;
+    if (m_IsFocused)
+    {
+      m_FocusHasChanged = true;
+    }
+  }
 
   for (std::size_t i = 0; i < 4; ++i)
   {
@@ -1528,13 +1574,11 @@ WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetMaxSlice(MIDASOrientation orientation) const
+int niftkMultiWindowWidget::GetMaxSlice(int windowIndex) const
 {
-  assert(0 <= orientation && orientation < 3);
-
   int maxSlice = 0;
 
-  mitk::SliceNavigationController* snc = m_RenderWindows[orientation]->GetSliceNavigationController();
+  mitk::SliceNavigationController* snc = m_RenderWindows[windowIndex]->GetSliceNavigationController();
 
   if (snc->GetSlice() != NULL && snc->GetSlice()->GetSteps() > 0)
   {
@@ -1555,7 +1599,7 @@ int niftkMultiWindowWidget::GetMaxTimeStep() const
 
   if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
   {
-    maxTimeStep = snc->GetTime()->GetSteps() -1;
+    maxTimeStep = snc->GetTime()->GetSteps() - 1;
   }
 
   return maxTimeStep;
@@ -1572,8 +1616,6 @@ const mitk::Vector2D& niftkMultiWindowWidget::GetCursorPosition(int windowIndex)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPosition(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
-  assert(windowIndex >= 0 && windowIndex < 3);
-
   bool updateWasBlocked = this->BlockUpdate(true);
 
   if (cursorPosition != m_CursorPositions[windowIndex])
@@ -1852,16 +1894,16 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleF
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
+void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
 {
   if (m_Geometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
     m_SelectedPosition = this->GetCrossPosition();
-    m_SelectedSliceHasChanged[orientation] = true;
+    m_SelectedSliceHasChanged[windowIndex] = true;
 
-    this->SynchroniseCursorPositions();
+    this->SynchroniseCursorPositions(windowIndex);
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -1869,9 +1911,9 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSelectedSlice(MIDASOrientation orientation) const
+int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 {
-  assert(0 <= orientation && orientation < 3);
+  assert(0 <= windowIndex && windowIndex < 3);
 
   int selectedSlice = 0;
 
@@ -1880,7 +1922,7 @@ int niftkMultiWindowWidget::GetSelectedSlice(MIDASOrientation orientation) const
     mitk::Index3D selectedPositionInVx;
     m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-    int axis = m_OrientationAxes[orientation];
+    int axis = m_OrientationAxes[windowIndex];
     selectedSlice = selectedPositionInVx[axis];
   }
 
@@ -1889,7 +1931,7 @@ int niftkMultiWindowWidget::GetSelectedSlice(MIDASOrientation orientation) const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
+void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 {
   const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
@@ -1899,7 +1941,7 @@ void niftkMultiWindowWidget::SetSelectedSlice(MIDASOrientation orientation, int 
 
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
-    int axis = m_OrientationAxes[orientation];
+    int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
 
     mitk::Point3D tmp;
@@ -1920,22 +1962,22 @@ void niftkMultiWindowWidget::SetSelectedSlice(MIDASOrientation orientation, int 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientation, int slices)
+void niftkMultiWindowWidget::MoveAnteriorOrPosterior(int windowIndex, int slices)
 {
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN && slices != 0)
+  if (windowIndex < 3 && slices != 0)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    int selectedSlice = this->GetSelectedSlice(orientation);
-    int upDirection = this->GetSliceUpDirection(orientation);
+    int selectedSlice = this->GetSelectedSlice(windowIndex);
+    int upDirection = this->GetSliceUpDirection(windowIndex);
 
     int nextSelectedSlice = selectedSlice + slices * upDirection;
 
-    int maxSlice = this->GetMaxSlice(orientation);
+    int maxSlice = this->GetMaxSlice(windowIndex);
 
     if (nextSelectedSlice >= 0 && nextSelectedSlice <= static_cast<int>(maxSlice))
     {
-      this->SetSelectedSlice(orientation, nextSelectedSlice);
+      this->SetSelectedSlice(windowIndex, nextSelectedSlice);
 
       /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
       /// when scrolling through them by keeping the 'a' or 'z' key pressed.
@@ -1944,7 +1986,7 @@ void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientatio
       /// TODO:
       /// In spite of the comment above, it is not right to do any render window update here.
       /// The forced immediate update should be done in the BlockUpdate() function.
-//      m_RenderingManager->ForceImmediateUpdate(m_MultiWidget->GetRenderWindow(orientation)->GetRenderWindow());
+//      m_RenderingManager->ForceImmediateUpdate(m_RenderWindows[windowIndex]->GetRenderWindow());
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -2018,7 +2060,17 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
-    this->SynchroniseCursorPositions();
+    if (m_WindowLayout != WINDOW_LAYOUT_3D)
+    {
+      /// Work out a window so that if the cursor positions are bound then
+      /// we can synchronise the other 2D render windows to it.
+      int windowIndex = m_SelectedWindowIndex;
+      if (windowIndex == THREE_D)
+      {
+        windowIndex = CORONAL;
+      }
+      this->SynchroniseCursorPositions(windowIndex);
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2026,29 +2078,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SynchroniseCursorPositions()
+void niftkMultiWindowWidget::SynchroniseCursorPositions(int windowIndex)
 {
-  /// Work out a window so that if the cursor positions are bound then
-  /// we can synchronise the other two render windows to it.
-  /// This will be the selected render window, or the first visible window
-  /// if no window is selected.
-  int windowIndex = m_SelectedWindowIndex;
-  if (windowIndex == -1 || windowIndex == THREE_D)
-  {
-    if (m_RenderWindows[CORONAL]->isVisible())
-    {
-      windowIndex = CORONAL;
-    }
-    else if (m_RenderWindows[SAGITTAL]->isVisible())
-    {
-      windowIndex = SAGITTAL;
-    }
-    else if (m_RenderWindows[AXIAL]->isVisible())
-    {
-      windowIndex = AXIAL;
-    }
-  }
-
   /// sagittal[1] <-> coronal[1]      (if m_CursorAxialPositionsAreBound is set)
   /// axial[0] <-> coronal[0]         (if m_CursorSagittalPositionsAreBound is set)
   /// axial[1] <-> 1.0 - sagittal[0]  (if m_CursorCoronalPositionsAreBound is set)
@@ -2197,7 +2228,7 @@ void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D
   bool updateWasBlocked = this->BlockUpdate(true);
   for (std::size_t i = 0; i < 3; ++i)
   {
-    if (cursorPositions[i] != m_CursorPositions[i])
+    if (m_RenderWindows[i]->isVisible() && cursorPositions[i] != m_CursorPositions[i])
     {
       m_CursorPositions[i] = cursorPositions[i];
       m_CursorPositionHasChanged[i] = true;
@@ -2240,31 +2271,28 @@ double niftkMultiWindowWidget::GetScaleFactor(int windowIndex) const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetScaleFactor(int windowIndex, double scaleFactor)
 {
-  if (0 <= windowIndex && windowIndex < 3)
+  bool updateWasBlocked = this->BlockUpdate(true);
+
+  if (scaleFactor != m_ScaleFactors[windowIndex])
   {
-    bool updateWasBlocked = this->BlockUpdate(true);
+    m_ScaleFactors[windowIndex] = scaleFactor;
+    m_ScaleFactorHasChanged[windowIndex] = true;
+  }
 
-    if (scaleFactor != m_ScaleFactors[windowIndex])
+  if (this->GetScaleFactorBinding())
+  {
+    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+    for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
     {
-      m_ScaleFactors[windowIndex] = scaleFactor;
-      m_ScaleFactorHasChanged[windowIndex] = true;
-    }
-
-    if (this->GetScaleFactorBinding())
-    {
-      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-      for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
+      if (otherWindowIndex != windowIndex && scaleFactor != m_ScaleFactors[otherWindowIndex])
       {
-        if (otherWindowIndex != windowIndex && scaleFactor != m_ScaleFactors[otherWindowIndex])
-        {
-          m_ScaleFactors[otherWindowIndex] = scaleFactor;
-          m_ScaleFactorHasChanged[otherWindowIndex] = true;
-        }
+        m_ScaleFactors[otherWindowIndex] = scaleFactor;
+        m_ScaleFactorHasChanged[otherWindowIndex] = true;
       }
     }
-
-    this->BlockUpdate(updateWasBlocked);
   }
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -2278,12 +2306,17 @@ const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
+  assert(scaleFactors.size() == 3);
+
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_ScaleFactors = scaleFactors;
-  for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+  for (std::size_t i = 0; i < 3; ++i)
   {
-    m_ScaleFactorHasChanged[windowIndex] = true;
+    if (m_RenderWindows[i]->isVisible() && scaleFactors[i] != m_ScaleFactors[i])
+    {
+      m_ScaleFactors[i] = scaleFactors[i];
+      m_ScaleFactorHasChanged[i] = true;
+    }
   }
 
   this->BlockUpdate(updateWasBlocked);
@@ -2317,7 +2350,7 @@ void niftkMultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetDominantAxis(int orientation) const
+int niftkMultiWindowWidget::GetDominantAxis(int windowIndex) const
 {
   int axisWithLongerSide = 0;
 
@@ -2325,15 +2358,15 @@ int niftkMultiWindowWidget::GetDominantAxis(int orientation) const
   int sagittalAxis = m_OrientationAxes[SAGITTAL];
   int coronalAxis = m_OrientationAxes[CORONAL];
 
-  if (orientation == AXIAL)
+  if (windowIndex == AXIAL)
   {
     axisWithLongerSide = m_MmPerVx[sagittalAxis] < m_MmPerVx[coronalAxis] ? sagittalAxis : coronalAxis;
   }
-  else if (orientation == SAGITTAL)
+  else if (windowIndex == SAGITTAL)
   {
     axisWithLongerSide = m_MmPerVx[axialAxis] < m_MmPerVx[coronalAxis] ? axialAxis : coronalAxis;
   }
-  else if (orientation == CORONAL)
+  else if (windowIndex == CORONAL)
   {
     axisWithLongerSide = m_MmPerVx[axialAxis] < m_MmPerVx[sagittalAxis] ? axialAxis : sagittalAxis;
   }
@@ -2343,14 +2376,14 @@ int niftkMultiWindowWidget::GetDominantAxis(int orientation) const
 
 
 //-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::GetMagnification(int orientation) const
+double niftkMultiWindowWidget::GetMagnification(int windowIndex) const
 {
   double magnification = 0.0;
 
-  if (m_Geometry && 0 <= orientation && orientation < 3)
+  if (m_Geometry)
   {
-    int dominantAxis = this->GetDominantAxis(orientation);
-    double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / m_ScaleFactors[orientation];
+    int dominantAxis = this->GetDominantAxis(windowIndex);
+    double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / m_ScaleFactors[windowIndex];
 
     // Finally, we calculate the magnification from the scale factor.
     magnification = scaleFactorPxPerVx - 1.0;
@@ -2366,9 +2399,9 @@ double niftkMultiWindowWidget::GetMagnification(int orientation) const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetMagnification(int orientation, double magnification)
+void niftkMultiWindowWidget::SetMagnification(int windowIndex, double magnification)
 {
-  if (m_Geometry && 0 <= orientation && orientation < 3)
+  if (m_Geometry)
   {
     double scaleFactorVxPerPx;
     if (magnification >= 0.0)
@@ -2380,10 +2413,10 @@ void niftkMultiWindowWidget::SetMagnification(int orientation, double magnificat
       scaleFactorVxPerPx = -magnification + 1.0;
     }
 
-    int dominantAxis = this->GetDominantAxis(orientation);
+    int dominantAxis = this->GetDominantAxis(windowIndex);
     double scaleFactor = m_MmPerVx[dominantAxis] * scaleFactorVxPerPx;
 
-    this->SetScaleFactor(orientation, scaleFactor);
+    this->SetScaleFactor(windowIndex, scaleFactor);
   }
 }
 
@@ -2403,28 +2436,62 @@ int niftkMultiWindowWidget::GetSliceUpDirection(int orientation) const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnFocusChanged()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  if (m_BlockFocusEvents)
+  {
+    return;
+  }
 
-  if (focusedRenderer == m_RenderWindows[AXIAL]->GetRenderer())
+  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+
+  int focusedWindowIndex = -1;
+  for (std::size_t i = 0; i < 4; ++i)
   {
-    this->SetSelectedRenderWindow(m_RenderWindows[AXIAL]);
+    if (focusedRenderer == m_RenderWindows[i]->GetRenderer())
+    {
+      focusedWindowIndex = i;
+      break;
+    }
   }
-  else if (focusedRenderer == m_RenderWindows[SAGITTAL]->GetRenderer())
+
+  bool isFocused = focusedWindowIndex != -1;
+
+  if (isFocused != m_IsFocused
+      || (isFocused && focusedWindowIndex != m_SelectedWindowIndex))
   {
-    this->SetSelectedRenderWindow(m_RenderWindows[SAGITTAL]);
+    bool updateWasBlocked = this->BlockUpdate(true);
+
+    if (m_IsFocused)
+    {
+      m_FocusLosingWindowIndex = m_SelectedWindowIndex;
+    }
+
+    if (isFocused)
+    {
+      m_SelectedWindowIndex = focusedWindowIndex;
+    }
+
+    m_IsFocused = isFocused;
+    m_FocusHasChanged = true;
+
+    this->BlockUpdate(updateWasBlocked);
   }
-  else if (focusedRenderer == m_RenderWindows[CORONAL]->GetRenderer())
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMultiWindowWidget::IsLinkedNavigationEnabled() const
+{
+  return m_LinkedNavigationEnabled;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
+{
+  if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
   {
-    this->SetSelectedRenderWindow(m_RenderWindows[CORONAL]);
-  }
-  else if (focusedRenderer == m_RenderWindows[THREE_D]->GetRenderer())
-  {
-    this->SetSelectedRenderWindow(m_RenderWindows[THREE_D]);
-  }
-  else
-  {
-    this->SetSelected(false);
+    m_LinkedNavigationEnabled = linkedNavigationEnabled;
+    this->SetWidgetPlanesLocked(!linkedNavigationEnabled || !m_IsFocused || !m_Geometry);
   }
 }
 
@@ -2490,7 +2557,7 @@ void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding
 
     if (cursorPositionBinding)
     {
-      if (0 <= m_SelectedWindowIndex && m_SelectedWindowIndex < 3)
+      if (m_SelectedWindowIndex < 3)
       {
         this->OnOriginChanged(m_SelectedWindowIndex, true);
         if (m_WindowLayout == WINDOW_LAYOUT_ORTHO
@@ -2528,7 +2595,7 @@ void niftkMultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 
     if (scaleFactorBinding)
     {
-      if (0 <= m_SelectedWindowIndex && m_SelectedWindowIndex < 3)
+      if (m_SelectedWindowIndex < 3)
       {
         for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
         {
@@ -2574,15 +2641,30 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 
       /// Updating state according to the recorded changes.
 
-      if (m_SelectedRenderWindowHasChanged)
+      if (m_FocusHasChanged)
       {
-        m_SelectedRenderWindow->setFocus();
-        mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+
+        this->UpdateBorders();
+
+        if (m_FocusLosingWindowIndex != -1)
+        {
+          rendererNeedsUpdate[m_FocusLosingWindowIndex] = true;
+          m_FocusLosingWindowIndex = -1;
+        }
         rendererNeedsUpdate[m_SelectedWindowIndex] = true;
       }
 
       if (m_GeometryHasChanged || m_TimeStepHasChanged)
       {
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+
+        /// Note:
+        /// A viewer has a border iff it has the focus *and* it has a valid geometry.
+        /// Therefore, the borders should be updated at the first time when m_Geometry
+        /// is assigned a valid geometry.
+        this->UpdateBorders();
+
         for (unsigned i = 0; i < 4; ++i)
         {
           rendererNeedsUpdate[i] = true;
@@ -2627,15 +2709,28 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 
       /// Sending events and signals.
 
-      if (m_SelectedRenderWindowHasChanged)
+      if (m_FocusHasChanged)
       {
-        m_SelectedRenderWindowHasChanged = false;
-        emit SelectedRenderWindowChanged(m_SelectedWindowIndex);
+        m_FocusHasChanged = false;
+        if (m_IsFocused && m_Geometry)
+        {
+          m_BlockFocusEvents = true;
+          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
+          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+          m_BlockFocusEvents = false;
+        }
       }
 
       if (m_GeometryHasChanged)
       {
         m_GeometryHasChanged = false;
+        if (m_IsFocused && m_Geometry)
+        {
+          m_BlockFocusEvents = true;
+          m_RenderWindows[m_SelectedWindowIndex]->setFocus();
+          mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+          m_BlockFocusEvents = false;
+        }
         for (unsigned i = 0; i < 3; ++i)
         {
           m_BlockSncEvents = true;

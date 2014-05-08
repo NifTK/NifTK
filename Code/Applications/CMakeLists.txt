@@ -124,7 +124,10 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
-      niftkMakeLapUSProbeModel
+      #niftkMakeLapUSProbeBasicModel
+      niftkMakeLapUSProbeARUCOModel
+      niftkMakeLapUSProbeAprilTagsModel
+      niftkMakeLapUSProbeAprilTagsVisualisation
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )
@@ -404,7 +407,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
     target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
     install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   endforeach()
-  
+
 endif()
 
 ##############################################################

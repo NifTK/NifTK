@@ -1,7 +1,7 @@
 Contributing Groups.
 --------------------
 
-This project is a collaboration between the following groups:
+This project is has been produced by the following groups:
 
 UCL Centre For Medical Image Computing:
 http://cmic.cs.ucl.ac.uk

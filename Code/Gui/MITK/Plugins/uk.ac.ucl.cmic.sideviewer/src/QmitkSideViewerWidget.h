@@ -30,7 +30,7 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkSideViewerView;
+class QmitkBaseView;
 class QmitkRenderWindow;
 
 /**
@@ -59,12 +59,12 @@ public:
   /**
    * Constructs a QmitkSideViewerWidget object.
    *
-   * \param functionality Sets the containing functionality for callback purposes.
+   * \param view Sets the containing view for callback purposes.
    *
    *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
    *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
    */
-  QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent = 0);
+  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent = 0);
   virtual ~QmitkSideViewerWidget();
 
   /**
@@ -123,6 +123,9 @@ protected slots:
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
   void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
 
+  /// \brief Called when the window layout of the viewer has changed through interaction.
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+
 protected:
 
 private:
@@ -146,7 +149,7 @@ private slots:
 
 private:
 
-  QmitkSideViewerView* m_ContainingFunctionality;
+  QmitkBaseView* m_ContainingView;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.

@@ -76,16 +76,22 @@ public:
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
   static mitk::Vector2D GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
 
+  /// \brief Gets the position of the centre of the displayed region, relative to the render window.
+  mitk::Vector2D GetCentrePosition(int windowIndex);
+
+  /// \brief Gets the position of the centre of the displayed regions, relative to their render windows.
+  std::vector<mitk::Vector2D> GetCentrePositions();
+
   /// \brief Determines if two world positions are equal with the tolerance of half spacing.
   /// Converting the positions to voxel space should result equal coordinates.
   bool Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2);
 
   /// \brief Determines if two cursor positions are equal with the given tolerance.
-  static bool Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001);
+  static bool Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.01);
 
   /// \brief Determines if two vectors of cursor positions are equal with the given tolerance.
   /// The function assumes that the vectors contain three elements.
-  static bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001);
+  bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.01);
 
   /// \brief Gives a random position from the image volume, in mm coordinates.
   mitk::Point3D GetRandomWorldPosition() const;

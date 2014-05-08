@@ -80,9 +80,8 @@ public:
       int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
-  /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically,
-  /// and we don't create or own the niftkMultiViewerVisibilityManager, so the remaining thing to
-  /// do is to disconnect from the mitk::FocusManager.
+  /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
+  /// Note that we don't create or own the niftkMultiViewerVisibilityManager.
   virtual ~niftkMultiViewerWidget();
 
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
@@ -178,12 +177,6 @@ public:
   /// \brief Shows or hides the cursor.
   virtual bool ToggleCursorVisibility();
 
-  /// \brief Sets whether the interaction is enabled, and a single viewer.
-  void SetSegmentationModeEnabled(bool enabled);
-
-  /// \brief Gets the flag indicating whether this viewer is currently in segmentation mode, which means a single viewer.
-  bool IsSegmentationModeEnabled() const;
-
   /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
   void SetThumbnailMode(bool enabled);
 
@@ -192,9 +185,6 @@ public:
 
   /// \brief Returns the orientation from the window layout, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
   MIDASOrientation GetOrientation() const;
-
-  // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
-  void OnFocusChanged();
 
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   niftkSingleViewerWidget* GetSelectedViewer() const;
@@ -227,20 +217,20 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
-   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
-   */
-  virtual void EnableLinkedNavigation(bool enabled);
-
-  /**
    * \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
    */
   virtual bool IsLinkedNavigationEnabled() const;
 
   /**
-   * \brief To be called from the editor, to set the focus to the currently selected
-   * viewer, or the first viewer.
+   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
    */
-  virtual void SetFocus();
+  virtual void EnableLinkedNavigation(bool enabled);
+
+  /// \brief Tells if the selected viewer is focused.
+  bool IsFocused();
+
+  /// \brief Sets the focus to the selected viewer.
+  void SetFocused();
 
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
@@ -301,7 +291,10 @@ protected slots:
   void OnDropAccumulateChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief Called when one of the viewers receives the focus.
+  void OnFocusChanged();
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
@@ -354,26 +347,17 @@ private:
   /// \brief Gets the index, given a row [0, m_MaxRows - 1] and column [0, m_MaxCols - 1] number.
   int GetViewerIndexFromRowAndColumn(int row, int column) const;
 
-  /// \brief Will look at the default window layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  WindowLayout GetDefaultWindowLayoutForSegmentation() const;
-
   /// \brief Main method to change the number of viewers.
   void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
-  // Called from the QRadioButtons to set the layout.
+  /// \brief Called from the QRadioButtons to set the layout.
   void SetWindowLayout(WindowLayout windowLayout);
-
-  /// \brief If a particular viewer is selected, we need to iterate through all viewers, and make the rest unselected.
-  void SetSelectedViewerByIndex(int index);
 
   /// \brief Creates a new viewer.
   niftkSingleViewerWidget* CreateViewer();
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
-
-  /// \brief Updates focus manager to auto-focus on the 'currently selected' viewer.
-  void UpdateFocusManagerToSelectedViewer();
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry(bool isBoundNow);
@@ -405,26 +389,24 @@ private:
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.
-  unsigned long m_FocusManagerObserverTag;
   int m_SelectedViewerIndex;
   int m_DefaultViewerRows;
   int m_DefaultViewerColumns;
   int m_ViewerRowsInNonThumbnailMode;
   int m_ViewerColumnsInNonThumbnailMode;
-  int m_ViewerRowsBeforeSegmentationMode;
-  int m_ViewerColumnsBeforeSegmentationMode;
   bool m_Show3DWindowIn2x2WindowLayout;
   bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;
-  bool m_SegmentationModeEnabled;
-  bool m_LinkedNavigation;
+  bool m_LinkedNavigationEnabled;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
   niftkMultiViewerControls* m_ControlPanel;
+
+  unsigned long m_FocusManagerObserverTag;
 };
 
 #endif

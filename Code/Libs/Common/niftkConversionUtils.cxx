@@ -32,6 +32,11 @@ std::string ConvertToString(unsigned int x)
   return boost::lexical_cast<std::string>(x);
 }
 
+std::string ConvertToString(unsigned long long x)
+{
+  return boost::lexical_cast<std::string>(x);
+}
+
 std::string ConvertToString(long int x)
 {
   return boost::lexical_cast<std::string>(x);

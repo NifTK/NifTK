@@ -250,7 +250,7 @@ void QmitkMultiViewerEditor::SetFocus()
 {
   if (d->m_MultiViewer != 0)
   {
-    d->m_MultiViewer->SetFocus();
+    d->m_MultiViewer->SetFocused();
   }
 }
 

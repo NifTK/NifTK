@@ -67,6 +67,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "ocdf",  "filename", "Write the histogram minus the fit as a CDF."},
   {OPT_STRING, "omax", "filename", "Output the maximum image."},
   {OPT_STRING, "obgnd", "filename", "Output the background mask."},
+  {OPT_STRING, "oelevation", "filename", "Output the skin elevation map."},
   {OPT_STRING, "ochpts", "filename", "Output the chest surface points image."},
   {OPT_STRING, "opec", "filename", "Output the pectoral mask."},
   {OPT_STRING, "opecsurf", "filename", "Output the pectoral surface mask."},
@@ -133,6 +134,7 @@ enum {
   O_OUTPUT_CDF,
   O_OUTPUT_IMAGE_MAX,
   O_OUTPUT_BACKGROUND,
+  O_OUTPUT_ELEVATION,
   O_OUTPUT_CHEST_POINTS,
   O_OUTPUT_PECTORAL_MASK,
   O_OUTPUT_PEC_SURFACE_MASK,
@@ -201,6 +203,7 @@ int main( int argc, char *argv[] )
   std::string fileOutputFreqLessBgndCDF;
   std::string fileOutputMaxImage;
   std::string fileOutputBackground;
+  std::string fileOutputSkinElevationMap;
   std::string fileOutputPectoralSurfaceMask;
   std::string fileOutputChestPoints;
   std::string fileOutputPectoral;
@@ -286,6 +289,7 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_CDF,           fileOutputFreqLessBgndCDF );
   CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX,     fileOutputMaxImage );
   CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,    fileOutputBackground );
+  CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,     fileOutputSkinElevationMap );
   CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,  fileOutputChestPoints );
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK, fileOutputPectoral );
   CommandLineOptions.GetArgument( O_OUTPUT_PEC_SURFACE_MASK,    fileOutputPectoralSurfaceMask );
@@ -368,6 +372,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetOutputCDF( fileOutputFreqLessBgndCDF );
   breastMaskSegmentor->SetOutputImageMax( fileOutputMaxImage );
   breastMaskSegmentor->SetOutputBackground( fileOutputBackground );
+  breastMaskSegmentor->SetOutputSkinElevationMap( fileOutputSkinElevationMap );
   breastMaskSegmentor->SetOutputChestPoints( fileOutputChestPoints );
   breastMaskSegmentor->SetOutputPectoralMask( fileOutputPectoral );
   breastMaskSegmentor->SetOutputPecSurfaceMask( fileOutputPectoralSurfaceMask );

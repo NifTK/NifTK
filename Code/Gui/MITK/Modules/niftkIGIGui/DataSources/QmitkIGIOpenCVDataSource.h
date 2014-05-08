@@ -43,7 +43,7 @@ public:
   /**
    * \see mitk::IGIDataSource::GetSaveInBackground()
    */
-  virtual bool GetSaveInBackground() const { return true; }
+  virtual bool GetSaveInBackground() const { return false; }
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact

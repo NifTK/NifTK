@@ -156,10 +156,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
   if (!m_ImageAndSegmentationSelector)
   {
 
-    // Connect the ToolManager to DataStorage straight away.
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert ( toolManager );
-    toolManager->SetDataStorage( *(this->GetDataStorage()) );
+    // Create an own tool manager and connect it to the data storage straight away.
+    mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
     toolManager->InitializeTools();
 
     mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
@@ -188,6 +186,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForToolWidget = new QWidget(parent);
     m_ToolSelector = new QmitkMIDASToolSelectorWidget(m_ContainerForToolWidget);
+    m_ToolSelector->SetToolManager(*toolManager.GetPointer());
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
     m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);

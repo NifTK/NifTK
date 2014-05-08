@@ -41,7 +41,9 @@ set(CPP_FILES
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
   VideoTrackerMatching/mitkTrackingMatrixTimeStamps.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
+  VideoTrackerMatching/mitkTwoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
+  VideoTrackerMatching/mitkTwoTrackerAnalysis.cxx
   UltrasoundCalibration/itkUltrasoundCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx

@@ -137,18 +137,25 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="maximumSize">
             <size>
-             <width>60</width>
+             <width>52</width>
              <height>16777215</height>
             </size>
            </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+           </property>
+           <item>
+            <property name="text">
+             <string>2H</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2V</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>

@@ -41,6 +41,7 @@ public:
   mitk::DataNode* GetRightNode() const;
   mitk::CoordinateAxesData* GetCameraTransform() const;
   mitk::DataNode* GetCameraNode() const;
+  void SetCameraNode(mitk::DataNode* node);
 
   void SetDataStorage(const mitk::DataStorage* dataStorage);
   void UpdateNodeNameComboBox();

@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkSideViewerWidget.h"
-#include "QmitkSideViewerView.h"
+#include "QmitkBaseView.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
@@ -27,8 +27,8 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality, QWidget* parent)
-: m_ContainingFunctionality(functionality)
+QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
+: m_ContainingView(view)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_MainWindow(0)
@@ -50,11 +50,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality,
 
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
-  m_Viewer->SetSelected(false);
-
-  m_MultiWindowComboBox->addItem("2H");
-  m_MultiWindowComboBox->addItem("2V");
-  m_MultiWindowComboBox->addItem("2x2");
 
   m_CoronalWindowRadioButton->setChecked(true);
 
@@ -103,6 +98,8 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkSideViewerView* functionality,
   this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
   this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
+  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+
   this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
   this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
@@ -140,7 +137,7 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
   }
 
-  // Register focus observer.
+  // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager)
   {
@@ -309,7 +306,7 @@ void QmitkSideViewerWidget::ChangeLayout()
     {
       nextLayoutRadioButton = m_SagittalWindowRadioButton;
     }
-    if (nextLayout == WINDOW_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
+    else if (nextLayout == WINDOW_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
     {
       nextLayoutRadioButton = m_CoronalWindowRadioButton;
     }
@@ -317,6 +314,58 @@ void QmitkSideViewerWidget::ChangeLayout()
     if (nextLayoutRadioButton)
     {
       nextLayoutRadioButton->setChecked(true);
+    }
+
+    WindowLayout defaultMultiWindowLayout = WINDOW_LAYOUT_UNKNOWN;
+    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      if (m_MultiWindowComboBox->currentIndex() == 0)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_SAG_H;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 1)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_SAG_V;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 2)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
+      }
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      if (m_MultiWindowComboBox->currentIndex() == 0)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_AX_H;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 1)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_AX_V;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 2)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
+      }
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      if (m_MultiWindowComboBox->currentIndex() == 0)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_SAG_AX_H;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 1)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_SAG_AX_V;
+      }
+      else if (m_MultiWindowComboBox->currentIndex() == 2)
+      {
+        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
+      }
+    }
+
+    if (defaultMultiWindowLayout != WINDOW_LAYOUT_UNKNOWN)
+    {
+      m_Viewer->SetDefaultMultiWindowLayout(defaultMultiWindowLayout);
     }
   }
 
@@ -368,25 +417,45 @@ void QmitkSideViewerWidget::OnFocusChanged()
   {
     m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
 
-    int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
-    int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
+    MIDASOrientation orientation = m_Viewer->GetOrientation();
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
+      int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
 
-    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
-    m_SliceSpinBox->setMaximum(maxSlice);
-    m_SliceSpinBox->setValue(selectedSlice);
-    m_SliceSpinBox->blockSignals(wasBlocked);
+      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+      m_SliceSpinBox->setMaximum(maxSlice);
+      m_SliceSpinBox->setValue(selectedSlice);
+      m_SliceSpinBox->setEnabled(true);
+      m_SliceSpinBox->blockSignals(wasBlocked);
 
-    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
-    m_Magnification = magnification;
+      double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
+      m_Magnification = magnification;
 
-    wasBlocked = m_MagnificationSpinBox->blockSignals(true);
-    m_MagnificationSpinBox->setValue(magnification);
-    m_MagnificationSpinBox->blockSignals(wasBlocked);
+      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+      m_MagnificationSpinBox->setValue(magnification);
+      m_MagnificationSpinBox->setEnabled(true);
+      m_MagnificationSpinBox->blockSignals(wasBlocked);
+    }
+    else
+    {
+      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+      m_SliceSpinBox->setValue(0);
+      m_SliceSpinBox->setEnabled(false);
+      m_SliceSpinBox->blockSignals(wasBlocked);
+
+      m_Magnification = 0;
+
+      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+      m_MagnificationSpinBox->setValue(0.0);
+      m_MagnificationSpinBox->setEnabled(false);
+      m_MagnificationSpinBox->blockSignals(wasBlocked);
+    }
 
     return;
   }
 
-  this->SetMainWindow(m_ContainingFunctionality->GetSelectedRenderWindow());
+  this->SetMainWindow(m_ContainingView->GetSelectedRenderWindow());
 }
 
 
@@ -399,9 +468,9 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
-  QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
-  QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
+  QmitkRenderWindow* mainAxialWindow = m_ContainingView->GetRenderWindow("axial");
+  QmitkRenderWindow* mainSagittalWindow = m_ContainingView->GetRenderWindow("sagittal");
+  QmitkRenderWindow* mainCoronalWindow = m_ContainingView->GetRenderWindow("coronal");
 
   if (mainWindow != mainAxialWindow
       && mainWindow != mainSagittalWindow
@@ -442,7 +511,7 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     /// but this does not happen.
     std::vector<mitk::BaseRenderer*> renderersToTrack;
     m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
-    m_VisibilityTracker->OnPropertyChanged(); // force update
+    m_VisibilityTracker->NotifyAll();
 
     m_Geometry = 0;
     m_Viewer->SetEnabled(false);
@@ -478,7 +547,7 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
 
     m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
     m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-    m_VisibilityTracker->OnPropertyChanged(); // force update
+    m_VisibilityTracker->NotifyAll();
   }
 
   m_Geometry = geometry;
@@ -589,6 +658,65 @@ void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDAS
   m_MagnificationSpinBox->blockSignals(wasBlocked);
 
   m_Magnification = magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout windowLayout)
+{
+  bool axialWindowRadioButtonWasBlocked = m_AxialWindowRadioButton->blockSignals(true);
+  bool sagittalWindowRadioButtonWasBlocked = m_SagittalWindowRadioButton->blockSignals(true);
+  bool coronalWindowRadioButtonWasBlocked = m_CoronalWindowRadioButton->blockSignals(true);
+  bool multiWindowRadioButtonWasBlocked = m_MultiWindowRadioButton->blockSignals(true);
+  bool multiWindowComboBoxWasBlocked = m_MultiWindowComboBox->blockSignals(true);
+
+  if (windowLayout == WINDOW_LAYOUT_AXIAL)
+  {
+    m_AxialWindowRadioButton->setChecked(true);
+  }
+  else if (windowLayout == WINDOW_LAYOUT_SAGITTAL)
+  {
+    m_SagittalWindowRadioButton->setChecked(true);
+  }
+  else if (windowLayout == WINDOW_LAYOUT_CORONAL)
+  {
+    m_CoronalWindowRadioButton->setChecked(true);
+  }
+  else if (::IsMultiWindowLayout(windowLayout))
+  {
+    m_MultiWindowRadioButton->setChecked(true);
+    if (windowLayout == WINDOW_LAYOUT_COR_AX_H
+        || windowLayout == WINDOW_LAYOUT_COR_SAG_H
+        || windowLayout == WINDOW_LAYOUT_SAG_AX_H)
+    {
+      m_MultiWindowComboBox->setCurrentIndex(0);
+    }
+    else if (windowLayout == WINDOW_LAYOUT_COR_AX_V
+        || windowLayout == WINDOW_LAYOUT_COR_SAG_V
+        || windowLayout == WINDOW_LAYOUT_SAG_AX_V)
+    {
+      m_MultiWindowComboBox->setCurrentIndex(1);
+    }
+    else if (windowLayout == WINDOW_LAYOUT_ORTHO)
+    {
+      m_MultiWindowComboBox->setCurrentIndex(2);
+    }
+  }
+  else
+  {
+    m_AxialWindowRadioButton->setChecked(false);
+    m_SagittalWindowRadioButton->setChecked(false);
+    m_CoronalWindowRadioButton->setChecked(false);
+    m_MultiWindowRadioButton->setChecked(false);
+  }
+
+  m_AxialWindowRadioButton->blockSignals(axialWindowRadioButtonWasBlocked);
+  m_SagittalWindowRadioButton->blockSignals(sagittalWindowRadioButtonWasBlocked);
+  m_CoronalWindowRadioButton->blockSignals(coronalWindowRadioButtonWasBlocked);
+  m_MultiWindowRadioButton->blockSignals(multiWindowRadioButtonWasBlocked);
+  m_MultiWindowComboBox->blockSignals(multiWindowComboBoxWasBlocked);
+
+  m_WindowLayout = windowLayout;
 }
 
 
