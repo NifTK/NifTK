@@ -77,10 +77,12 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
-      "<h1>About %1</h1>"
-      "<h3>%2</h3>"
-      "<p>%3.</p>"
-      ).arg(applicationName).arg(versionNumber).arg(copyrightText);
+      "<p>"
+      "<h1>About %1 - %2</h1>"
+      "(git hash %3, at %4, from <a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NifTK.git;a=summary\">here</a>)"
+      "</p>"
+      "<p>%5 Please go to the installation folder for a full license description for this product and dependencies.</p>"
+      ).arg(applicationName).arg(versionNumber).arg(niftkVersion).arg(niftkDateTime).arg(copyrightText);
 
   // Short introduction.
   QString introduction = QObject::tr(
@@ -172,10 +174,10 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 
   #ifdef BUILD_IGI
     QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
-    QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
+    //QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
-      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=blob;f=LICENSE.txt;h=fb2101472180c339b380ab8efbf213fb762a3ab1;hb=refs/heads/development\">Not finalised yet</a></td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
-      ).arg(niftyLinkVersion.left(10)).arg(niftyLinkLocation);
+      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td>Not finalised yet</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
+      ).arg(niftyLinkVersion.left(10));//.arg(niftyLinkLocation);
 
     QString arucoVersion(NIFTK_VERSION_ARUCO);
     QString arucoLocation(NIFTK_LOCATION_ARUCO);
@@ -219,23 +221,19 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "</table></p>"
       );
 
-  QString licenses = QObject::tr(
-      "<p>"
-      "The licenses can be found online and are additionally included in the installation folder. This version of %1 was built with our git hash <a href=\"https://cmicdev.cs.ucl.ac.uk/trac/browser/niftk\">%2</a>, from %3."
-      "</p>"
-      ).arg(applicationName).arg(niftkVersion).arg(niftkDateTime);
-
   // Over time, insert more platforms that we have tested on,
   // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).
   QString testingDetails = QObject::tr(
       "<p>"
       "%1 has been compiled and tested on the following platforms:"
       "<ul>"
+      "<li>Mac OSX 10.9 (Mavericks)</li>"
       "<li>Mac OSX 10.8 (Mountain Lion)</li>"
-      "<li>Ubuntu 11.04 (Natty)</li>"
+      "<li>Ubuntu 12.04</li>"
+      "<li>Ubuntu 11.04</li>"
       "<li>Linux Mint 14</li>"
       "<li>Scientific Linux 6.1</li>"
-      "<li>Debian 6.0.5</li>"
+      "<li>Debian 7.0.4</li>"
       "<li>Windows 7</li>"
       "<li>Windows 8</li>"
       "</ul>"
@@ -279,7 +277,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(openCVText)
 #endif
       .append(versionsEnd)
-      .append(licenses)
       .append(testingDetails)
       ;
 
