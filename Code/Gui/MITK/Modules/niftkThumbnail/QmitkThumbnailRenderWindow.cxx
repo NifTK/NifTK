@@ -81,7 +81,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
 
-  std::vector<mitk::BaseRenderer*> renderers;
+  std::vector<const mitk::BaseRenderer*> renderers;
   renderers.push_back(m_Renderer);
 
   std::vector<mitk::DataNode*> nodesToIgnore;
@@ -584,6 +584,10 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
 
     // Request a single update at the end of the method.
     mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  }
+  else
+  {
+    m_VisibilityTracker->SetTrackedRenderer(0);
   }
 }
 

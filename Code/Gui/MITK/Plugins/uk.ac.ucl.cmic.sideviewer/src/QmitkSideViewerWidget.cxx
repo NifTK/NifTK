@@ -112,7 +112,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_ControlsWidget->setEnabled(false);
 
-  std::vector<mitk::BaseRenderer*> renderers;
+  std::vector<const mitk::BaseRenderer*> renderers;
   renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());

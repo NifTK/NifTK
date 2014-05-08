@@ -25,6 +25,8 @@
 namespace mitk
 {
 
+class VisibilityChangedCommand;
+
 /**
  * \class DataStoragePropertyListener
  * \brief Base class for objects that Listen to data storage for a specific property such as "visibility".
@@ -43,23 +45,16 @@ class NIFTKCORE_EXPORT DataStoragePropertyListener : public mitk::DataStorageLis
 public:
 
   mitkClassMacro(DataStoragePropertyListener, mitk::DataStorageListener);
-  itkNewMacro(DataStoragePropertyListener);
-  mitkNewMacro1Param(DataStoragePropertyListener, const mitk::DataStorage::Pointer);
-
-  /// \brief Get the property name.
-  itkGetMacro(PropertyName, std::string);
-
-  /// \brief Set the property name, which triggers an update UpdateObserverToPropertyMap.
-  void SetPropertyName(const std::string& name);
+  mitkNewMacro1Param(DataStoragePropertyListener, const std::string&);
 
   /// \brief Sets the list of renderers to check.
-  void SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers);
+  void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
 
   /// \brief GUI independent message callback.
-  Message2<mitk::DataNode*, mitk::BaseRenderer*> PropertyChanged;
+  Message2<mitk::DataNode*, const mitk::BaseRenderer*> PropertyChanged;
 
   /// \brief Called when the global or a renderer specific property of the node has changed or removed.
-  void OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer);
+  void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
   /// \brief Sends a signal with current the property value of the given node to the registered listeners.
   void Notify(mitk::DataNode* node);
@@ -69,8 +64,7 @@ public:
 
 protected:
 
-  DataStoragePropertyListener();
-  DataStoragePropertyListener(const mitk::DataStorage::Pointer);
+  DataStoragePropertyListener(const std::string& propertyName);
   virtual ~DataStoragePropertyListener();
 
   DataStoragePropertyListener(const DataStoragePropertyListener&); // Purposefully not implemented.
@@ -82,31 +76,41 @@ protected:
   /// \brief Called to un-register from the data storage.
   virtual void Deactivate();
 
-  /// \brief Will refresh the observers of the named property, and sub-classes should call this at the appropriate time.
-  virtual void AddAllObservers();
-
-  /// \brief Will remove all observers from the m_ObserverToPropertyMap, and sub-classes should call this at the appropriate time.
-  virtual void RemoveAllObservers();
-
-  /// \brief Triggers UpdateObserverToPropertyMap.
-  ///
+  /// \brief Called when a node is added to the data storage.
+  /// Adds the observers for the node then notifies them.
   /// \see DataStoragePropertyListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
 
-  /// \brief Triggers UpdateObserverToPropertyMap.
-  ///
-  /// \see DataStoragePropertyListener::NodeAdded
+  /// \brief Called when a node is removed from the data storage.
+  /// Notifies the observers for the node then removes them.
+  /// \see DataStoragePropertyListener::NodeRemoved
   virtual void NodeRemoved(mitk::DataNode* node);
 
-  /// \brief Triggers UpdateObserverToPropertyMap.
-  //
-  /// \see DataStoragePropertyListener::NodeAdded
+  /// \brief Called when a node is deleted.
+  /// Notifies the observers for the node then removes them.
+  /// \see DataStoragePropertyListener::NodeDeleted
   virtual void NodeDeleted(mitk::DataNode* node);
 
 private:
 
+  /// \brief Add the property observers.
   void AddObservers(mitk::DataNode* node);
+
+  /// \brief Removes the property observers.
   void RemoveObservers(mitk::DataNode* node);
+
+  /// \brief Add the property observers for all node in the data storage.
+  /// One observer is added for the global property and one for each renderer.
+  virtual void AddAllObservers();
+
+  /// \brief Removes the property observers from all node in the data storage.
+  virtual void RemoveAllObservers();
+
+  /// \brief The name of the property we are tracking.
+  std::string m_PropertyName;
+
+  /// \brief We store an optional list of renderers for watching renderer specific changes.
+  std::vector<const mitk::BaseRenderer*> m_Renderers;
 
   typedef std::map<mitk::DataNode*, std::vector<unsigned long> > NodePropertyObserverTags;
 
@@ -115,16 +119,6 @@ private:
   /// specific properties in the same order as in m_Renderers.
   /// The observers are notified when a property of a node is changed or removed.
   NodePropertyObserverTags m_PropertyObserverTagsPerNode;
-
-  /// \brief The name of the property we are tracking.
-  std::string m_PropertyName;
-
-  /// \brief We store an optional list of renderers for watching renderer specific changes.
-  std::vector<mitk::BaseRenderer*> m_Renderers;
-
-  /// \brief Set this so that each time this class recalculates the list of properties to
-  /// track, we also set each property to modified. Default false.
-  bool m_AutoFire;
 
 };
 

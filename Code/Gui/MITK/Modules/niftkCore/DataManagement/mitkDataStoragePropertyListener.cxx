@@ -24,13 +24,15 @@ class VisibilityChangedCommand : public itk::Command
 {
 public:
   mitkClassMacro(VisibilityChangedCommand, itk::Command);
-  mitkNewMacro3Param(VisibilityChangedCommand, DataStoragePropertyListener*, mitk::DataNode*, mitk::BaseRenderer*);
+  mitkNewMacro3Param(VisibilityChangedCommand, DataStoragePropertyListener*, mitk::DataNode*, const mitk::BaseRenderer*);
 
-  VisibilityChangedCommand(DataStoragePropertyListener* observer, mitk::DataNode* node, mitk::BaseRenderer* renderer)
+  VisibilityChangedCommand(DataStoragePropertyListener* observer, mitk::DataNode* node, const mitk::BaseRenderer* renderer)
   : m_Observer(observer)
   , m_Node(node)
   , m_Renderer(renderer)
   {
+    assert(observer);
+    assert(node);
   }
 
   virtual ~VisibilityChangedCommand()
@@ -55,20 +57,13 @@ public:
 private:
   DataStoragePropertyListener* m_Observer;
   mitk::DataNode* m_Node;
-  mitk::BaseRenderer* m_Renderer;
+  const mitk::BaseRenderer* m_Renderer;
 };
 
-//-----------------------------------------------------------------------------
-DataStoragePropertyListener::DataStoragePropertyListener()
-: m_PropertyName("")
-{
-}
-
 
 //-----------------------------------------------------------------------------
-DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage::Pointer dataStorage)
-: mitk::DataStorageListener(dataStorage)
-, m_PropertyName("")
+DataStoragePropertyListener::DataStoragePropertyListener(const std::string& propertyName)
+: m_PropertyName(propertyName)
 {
 }
 
@@ -76,14 +71,13 @@ DataStoragePropertyListener::DataStoragePropertyListener(const mitk::DataStorage
 //-----------------------------------------------------------------------------
 DataStoragePropertyListener::~DataStoragePropertyListener()
 {
-  this->Deactivate();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Activate(const mitk::DataStorage::Pointer dataStorage)
 {
-  mitk::DataStorageListener::Activate(dataStorage);
+  Superclass::Activate(dataStorage);
   this->AddAllObservers();
 }
 
@@ -97,28 +91,13 @@ void DataStoragePropertyListener::Deactivate()
 
 
 //-----------------------------------------------------------------------------
-void DataStoragePropertyListener::SetPropertyName(const std::string& name)
-{
-  this->RemoveAllObservers();
-
-  m_PropertyName = name;
-
-  this->AddAllObservers();
-
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStoragePropertyListener::SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers)
+void DataStoragePropertyListener::SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers)
 {
   this->RemoveAllObservers();
 
   m_Renderers = renderers;
 
   this->AddAllObservers();
-
-  this->Modified();
 }
 
 
@@ -127,23 +106,22 @@ void DataStoragePropertyListener::NodeAdded(mitk::DataNode* node)
 {
   this->AddObservers(node);
   this->Notify(node);
-  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NodeRemoved(mitk::DataNode* node)
 {
+  this->Notify(node);
   this->RemoveObservers(node);
-  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NodeDeleted(mitk::DataNode* node)
 {
+  this->Notify(node);
   this->RemoveObservers(node);
-  this->Modified();
 }
 
 
@@ -161,11 +139,11 @@ void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
 
   std::vector<unsigned long> propertyObserverTags(m_Renderers.size() + 1);
 
-  mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str());
-  if (property)
+  mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str());
+  if (globalProperty)
   {
     VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
-    propertyObserverTags[0] = property->AddObserver(itk::AnyEvent(), command);
+    propertyObserverTags[0] = globalProperty->AddObserver(itk::AnyEvent(), command);
   }
   else
   {
@@ -174,11 +152,14 @@ void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
 
   for (std::size_t i = 0; i < m_Renderers.size(); ++i)
   {
-    property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-    if (property)
+    /// Note:
+    /// GetProperty() returns the global property if there is no renderer specific property.
+    /// Therefore, we need to check if the property is really renderer specific.
+    mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+    if (rendererSpecificProperty && rendererSpecificProperty != globalProperty)
     {
-      VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, 0);
-      propertyObserverTags[i + 1] = property->AddObserver(itk::AnyEvent(), command);
+      VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node, m_Renderers[i]);
+      propertyObserverTags[i + 1] = rendererSpecificProperty->AddObserver(itk::AnyEvent(), command);
     }
     else
     {
@@ -193,21 +174,27 @@ void DataStoragePropertyListener::AddObservers(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::RemoveObservers(mitk::DataNode* node)
 {
-  std::vector<unsigned long>& propertyObserverTags = m_PropertyObserverTagsPerNode[node];
-  if (!propertyObserverTags.empty())
+  NodePropertyObserverTags::iterator propertyObserverTagsPerNodeIt = m_PropertyObserverTagsPerNode.find(node);
+  if (propertyObserverTagsPerNodeIt != m_PropertyObserverTagsPerNode.end())
   {
-    mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
-    if (property)
+    std::vector<unsigned long>& propertyObserverTags = propertyObserverTagsPerNodeIt->second;
+    mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str(), 0);
+    if (globalProperty)
     {
-      property->RemoveObserver(propertyObserverTags[0]);
+      globalProperty->RemoveObserver(propertyObserverTags[0]);
+      propertyObserverTags[0] = 0;
     }
 
     for (std::size_t i = 0; i < m_Renderers.size(); ++i)
     {
-      property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-      if (property)
+      /// Note:
+      /// GetProperty() returns the global property if there is no renderer specific property.
+      /// Therefore, we need to check if the property is really renderer specific.
+      mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      if (rendererSpecificProperty && rendererSpecificProperty != globalProperty)
       {
-        property->RemoveObserver(propertyObserverTags[i + 1]);
+        rendererSpecificProperty->RemoveObserver(propertyObserverTags[i + 1]);
+        propertyObserverTags[i + 1] = 0;
       }
     }
 
@@ -230,8 +217,6 @@ void DataStoragePropertyListener::AddAllObservers()
   {
     this->AddObservers(it->Value().GetPointer());
   }
-
-  this->Modified();
 }
 
 
@@ -244,37 +229,39 @@ void DataStoragePropertyListener::RemoveAllObservers()
   for ( ; propertyObserverTagsIt != nodeToObserverTagsEnd; ++propertyObserverTagsIt)
   {
     mitk::DataNode* node = propertyObserverTagsIt->first;
-    std::vector<unsigned long>& observerTags = propertyObserverTagsIt->second;
-    if (observerTags.empty())
+    std::vector<unsigned long>& propertyObserverTags = propertyObserverTagsIt->second;
+    if (propertyObserverTags.empty())
     {
       continue;
     }
 
-    mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
-    if (property)
+    mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str(), 0);
+    if (globalProperty)
     {
-      property->RemoveObserver(observerTags[0]);
+      globalProperty->RemoveObserver(propertyObserverTags[0]);
     }
+
     for (std::size_t i = 0; i < m_Renderers.size(); ++i)
     {
-      property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-      if (property)
+      /// Note:
+      /// GetProperty() returns the global property if there is no renderer specific property.
+      /// Therefore, we need to check if the property is really renderer specific.
+      mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      if (rendererSpecificProperty && rendererSpecificProperty != globalProperty)
       {
-        property->RemoveObserver(observerTags[i + 1]);
+        rendererSpecificProperty->RemoveObserver(propertyObserverTags[i + 1]);
       }
     }
   }
 
   m_PropertyObserverTagsPerNode.clear();
-
-  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStoragePropertyListener::OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer)
+void DataStoragePropertyListener::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-  if (!this->GetBlocked())
+  if (!this->IsBlocked())
   {
     PropertyChanged.Send(node, renderer);
   }
@@ -284,25 +271,39 @@ void DataStoragePropertyListener::OnPropertyChanged(mitk::DataNode* node, mitk::
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::Notify(mitk::DataNode* node)
 {
-  std::vector<unsigned long>& observerTags = m_PropertyObserverTagsPerNode[node];
-  if (observerTags.empty())
+  NodePropertyObserverTags::iterator propertyObserverTagsPerNodeIt = m_PropertyObserverTagsPerNode.find(node);
+  if (propertyObserverTagsPerNodeIt != m_PropertyObserverTagsPerNode.end())
   {
-    return;
-  }
+    std::vector<unsigned long>& propertyObserverTags = propertyObserverTagsPerNodeIt->second;
 
-  mitk::BaseProperty* property = node->GetProperty(m_PropertyName.c_str(), 0);
-  if (property && observerTags[0])
-  {
-    VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(property->GetCommand(observerTags[0]));
-    observer->Notify();
-  }
-  for (std::size_t i = 0; i < m_Renderers.size(); ++i)
-  {
-    property = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-    if (property)
+    mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str(), 0);
+    if (globalProperty && propertyObserverTags[0])
     {
-      VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(property->GetCommand(observerTags[i + 1]));
-      observer->Notify();
+      VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(globalProperty->GetCommand(propertyObserverTags[0]));
+      /// Note:
+      /// We need to do a null check here because the observer tag is not cleared when a property is removed.
+      if (observer)
+      {
+        observer->Notify();
+      }
+    }
+
+    for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+    {
+      /// Note:
+      /// GetProperty() returns the global property if there is no renderer specific property.
+      /// Therefore, we need to check if the property is really renderer specific.
+      mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+      if (rendererSpecificProperty && rendererSpecificProperty != globalProperty && propertyObserverTags[i + 1])
+      {
+        VisibilityChangedCommand* observer = dynamic_cast<VisibilityChangedCommand*>(rendererSpecificProperty->GetCommand(propertyObserverTags[i + 1]));
+        /// Note:
+        /// We need to do a null check here because the observer tag is not cleared when a property is removed.
+        if (observer)
+        {
+          observer->Notify();
+        }
+      }
     }
   }
 }
@@ -311,7 +312,7 @@ void DataStoragePropertyListener::Notify(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataStoragePropertyListener::NotifyAll()
 {
-  if (!this->GetBlocked())
+  if (!this->IsBlocked())
   {
     NodePropertyObserverTags::iterator nodeToObserverTagsIt = m_PropertyObserverTagsPerNode.begin();
     NodePropertyObserverTags::iterator nodeToObserverTagsEnd = m_PropertyObserverTagsPerNode.end();

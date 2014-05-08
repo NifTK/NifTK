@@ -33,12 +33,12 @@ namespace mitk
  * and if any one of the filters blocks, then the methods NodeAdded, NodeUpdated,
  * NodeRemoved and NodeDeleted are not called.
  */
-class NIFTKCORE_EXPORT DataStorageListener : public itk::Object
+class NIFTKCORE_EXPORT DataStorageListener : public itk::LightObject
 {
 
 public:
 
-  mitkClassMacro(DataStorageListener, itk::Object);
+  mitkClassMacro(DataStorageListener, itk::LightObject);
   itkNewMacro(DataStorageListener);
   mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer);
 
@@ -57,9 +57,10 @@ public:
   void ClearFilters();
 
   /// \brief Gets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  itkGetMacro(Blocked, bool);
+  bool IsBlocked() const;
+
   /// \brief Sets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  itkSetMacro(Blocked, bool);
+  void SetBlocked(bool blocked);
 
 protected:
 
@@ -92,17 +93,21 @@ protected:
   /// and subclasses should override the NodeDeleted event.
   virtual void NodeDeletedProxy(const mitk::DataNode* node);
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeAdded(mitk::DataNode* node) {}
+  /// \brief Called when the given node is added to the data storage.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void NodeAdded(mitk::DataNode* node);
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeChanged(mitk::DataNode* node) {}
+  /// \brief Called when the given node has been changed.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void NodeChanged(mitk::DataNode* node);
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeRemoved(mitk::DataNode* node) {}
+  /// \brief Called when the given node is removed from the data storage.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void NodeRemoved(mitk::DataNode* node);
 
-  /// \brief In this class, we do nothing, as subclasses should re-define this.
-  virtual void NodeDeleted(mitk::DataNode* node) {}
+  /// \brief Called when the given node is deleted.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void NodeDeleted(mitk::DataNode* node);
 
 private:
 

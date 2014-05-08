@@ -51,15 +51,17 @@ public:
   itkNewMacro(DataNodeAddedVisibilitySetter);
   mitkNewMacro1Param(DataNodeAddedVisibilitySetter, const mitk::DataStorage::Pointer);
 
+  /// \brief Gets the visibility.
+  bool GetVisibility() const;
+
+  /// \brief Sets the visibility.
+  void SetVisibility(bool visibility);
+
   /// \brief Sets the list of renderers to update.
-  void SetRenderers(const std::vector<mitk::BaseRenderer*>& renderers);
+  void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
 
-  /// \brief Clears all filters.
+  /// \brief Clears the list of renderers to update.
   void ClearRenderers();
-
-  /// \brief Set/Get the Visibility, which defaults to false.
-  itkSetMacro(Visibility, bool);
-  itkGetMacro(Visibility, bool);
 
 protected:
 
@@ -76,7 +78,7 @@ protected:
 private:
 
   bool m_Visibility;
-  std::vector<mitk::BaseRenderer*> m_Renderers;
+  std::vector<const mitk::BaseRenderer*> m_Renderers;
 };
 
 } // end namespace

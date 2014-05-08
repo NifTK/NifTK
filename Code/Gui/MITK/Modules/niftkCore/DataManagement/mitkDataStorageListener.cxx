@@ -54,7 +54,6 @@ void DataStorageListener::SetDataStorage(const mitk::DataStorage::Pointer dataSt
 void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer filter)
 {
   m_Filters.push_back(filter);
-  this->Modified();
 }
 
 
@@ -62,7 +61,20 @@ void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer filter)
 void DataStorageListener::ClearFilters()
 {
   m_Filters.clear();
-  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool DataStorageListener::IsBlocked() const
+{
+  return m_Blocked;
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::SetBlocked(bool blocked)
+{
+  m_Blocked = blocked;
 }
 
 
@@ -109,8 +121,6 @@ void DataStorageListener::Activate(const mitk::DataStorage::Pointer dataStorage)
     m_DataStorage->DeleteNodeEvent.AddListener(
         mitk::MessageDelegate1<DataStorageListener, const mitk::DataNode*>
       ( this, &DataStorageListener::NodeDeletedProxy ) );
-
-    this->Modified();
   }
 }
 
@@ -137,8 +147,6 @@ void DataStorageListener::Deactivate()
     ( this, &DataStorageListener::NodeDeletedProxy ));
 
     m_DataStorage = NULL;
-
-    this->Modified();
   }
 }
 
@@ -204,6 +212,30 @@ void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
     }
     m_InDataStorageChanged = false;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::NodeAdded(mitk::DataNode* /*node*/)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::NodeChanged(mitk::DataNode* /*node*/)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::NodeRemoved(mitk::DataNode* /*node*/)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageListener::NodeDeleted(mitk::DataNode* /*node*/)
+{
 }
 
 } // end namespace

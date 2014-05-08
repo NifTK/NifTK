@@ -36,14 +36,13 @@ class BaseRenderer;
  * them to a single render window, and also the MIDAS Segmentation Viewer widget which tracks
  * visibility properties, and applies them to another viewer.
  */
-class NIFTKCORE_EXPORT DataStorageVisibilityTracker : public itk::Object
+class NIFTKCORE_EXPORT DataStorageVisibilityTracker : public itk::LightObject
 {
 
 public:
 
-  mitkClassMacro(DataStorageVisibilityTracker, itk::Object);
+  mitkClassMacro(DataStorageVisibilityTracker, itk::LightObject);
   itkNewMacro(DataStorageVisibilityTracker);
-  mitkNewMacro1Param(DataStorageVisibilityTracker, const mitk::DataStorage::Pointer);
 
   /// \brief Set the data storage, passing it onto the contained DataStoragePropertyListener.
   ///
@@ -51,19 +50,21 @@ public:
   void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Sets the renderer we are tracking.
-  void SetTrackedRenderer(mitk::BaseRenderer* trackedRenderer);
+  void SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer);
 
   /// \brief Sets the list of renderers to propagate visibility properties onto.
-  void SetManagedRenderers(const std::vector<mitk::BaseRenderer*>& managedRenderers);
+  void SetManagedRenderers(const std::vector<const mitk::BaseRenderer*>& managedRenderers);
 
-  /// \brief We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
+  /// \brief Sets the list of nodes that whose visibility should not be tracked.
+  /// We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
   void SetNodesToIgnore(const std::vector<mitk::DataNode*>& nodesToIgnore);
 
+  /// \brief Tells if a node is ignored, i.e its visibility is not tracked.
   bool IsIgnored(mitk::DataNode* node);
 
   /// \brief Called when the property value has changed globally or for the given renderer.
   /// If the global property has changed, renderer is NULL.
-  void OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer);
+  void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
   /// \brief Sends a signal with current the property value of all nodes  to the registered listeners.
   void NotifyAll();
@@ -71,7 +72,6 @@ public:
 protected:
 
   DataStorageVisibilityTracker();
-  DataStorageVisibilityTracker(const mitk::DataStorage::Pointer);
   virtual ~DataStorageVisibilityTracker();
 
   DataStorageVisibilityTracker(const DataStorageVisibilityTracker&); // Purposefully not implemented.
@@ -79,11 +79,9 @@ protected:
 
 private:
 
-  void Init(const mitk::DataStorage::Pointer dataStorage);
-
   mitk::DataStorage::Pointer m_DataStorage;
-  mitk::BaseRenderer* m_TrackedRenderer;
-  std::vector<mitk::BaseRenderer*> m_ManagedRenderers;
+  const mitk::BaseRenderer* m_TrackedRenderer;
+  std::vector<const mitk::BaseRenderer*> m_ManagedRenderers;
   std::vector<mitk::DataNode*> m_NodesToIgnore;
 
   mitk::DataStoragePropertyListener::Pointer m_Listener;
