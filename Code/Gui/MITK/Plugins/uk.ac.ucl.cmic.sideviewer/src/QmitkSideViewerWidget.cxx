@@ -127,7 +127,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
 
-  m_Viewer->SetCursorGloballyVisible(false);
   m_Viewer->SetCursorVisible(true);
   m_Viewer->SetRememberSettingsPerWindowLayout(false);
   m_Viewer->SetDisplayInteractionsEnabled(true);

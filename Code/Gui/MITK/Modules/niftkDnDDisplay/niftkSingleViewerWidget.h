@@ -123,17 +123,11 @@ public:
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
   MIDASOrientation GetOrientation() const;
 
-  /// \brief Turn the 2D cursors on/off locally.
-  void SetCursorVisible(bool visible);
-
   /// \brief Get the flag controlling 2D cursors on/off.
   bool IsCursorVisible() const;
 
-  /// \brief Turn the 2D cursors on/off globally.
-  void SetCursorGloballyVisible(bool visible);
-
-  /// \brief Get the flag controlling 2D cursors on/off.
-  bool IsCursorGloballyVisible() const;
+  /// \brief Turn the 2D cursors on/off.
+  void SetCursorVisible(bool visible);
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;

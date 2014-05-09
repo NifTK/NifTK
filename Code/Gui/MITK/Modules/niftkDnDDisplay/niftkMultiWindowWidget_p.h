@@ -109,12 +109,6 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Get the flag controlling 2D cursors global visibility.
-  bool IsCursorGloballyVisible() const;
-
-  /// \brief Turn the 2D cursors visible/invisible globally, controlled by a user preference.
-  void SetCursorGloballyVisible(bool visible);
-
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 

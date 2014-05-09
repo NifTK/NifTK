@@ -136,7 +136,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
-  this->SetCursorGloballyVisible(false);
+  m_PlaneNode1->SetVisibility(false);
+  m_PlaneNode2->SetVisibility(false);
+  m_PlaneNode3->SetVisibility(false);
   this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
@@ -631,27 +633,6 @@ void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
-{
-  return m_CursorGlobalVisibility;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorGloballyVisible(bool visible)
-{
-  // Here, "globally" means the plane nodes created within this widget will be available in ALL other render windows.
-  m_CursorGlobalVisibility = visible;
-  m_PlaneNode1->SetVisibility(visible);
-  m_PlaneNode1->Modified();
-  m_PlaneNode2->SetVisibility(visible);
-  m_PlaneNode2->Modified();
-  m_PlaneNode3->SetVisibility(visible);
-  m_PlaneNode3->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 {
   return m_DirectionAnnotations[AXIAL]->GetVisibility()
@@ -663,10 +644,9 @@ bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 {
-  for (int i = 0; i < 3; ++i)
-  {
-    m_DirectionAnnotations[i]->SetVisibility(visible);
-  }
+  m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
+  m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
+  m_DirectionAnnotations[CORONAL]->SetVisibility(visible);
   this->RequestUpdate();
 }
 

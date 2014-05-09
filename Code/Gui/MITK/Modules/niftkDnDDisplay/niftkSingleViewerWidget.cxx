@@ -253,13 +253,6 @@ bool niftkSingleViewerWidget::IsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorVisible(bool visible)
-{
-  m_MultiWidget->SetCursorVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::IsCursorVisible() const
 {
   return m_MultiWidget->IsCursorVisible();
@@ -267,16 +260,9 @@ bool niftkSingleViewerWidget::IsCursorVisible() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorGloballyVisible(bool visible)
+void niftkSingleViewerWidget::SetCursorVisible(bool visible)
 {
-  m_MultiWidget->SetCursorGloballyVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsCursorGloballyVisible() const
-{
-  return m_MultiWidget->IsCursorGloballyVisible();
+  m_MultiWidget->SetCursorVisible(visible);
 }
 
 
