@@ -83,7 +83,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
 , m_MIDASToolNodeNameFilter(0)
-, m_Geometry(0)
+, m_TimeGeometry(0)
 {
   this->setupUi(parent);
 
@@ -242,13 +242,6 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
   }
 
   m_Viewer->RequestUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::SetEnabled(bool enabled)
-{
-  m_ControlsWidget->setEnabled(enabled);
 }
 
 
@@ -510,12 +503,12 @@ void QmitkSideViewerWidget::OnFocusChanged()
     return;
   }
 
-  this->SetMainWindow(m_ContainingView->GetSelectedRenderWindow());
+  this->OnMainWindowChanged(m_ContainingView->GetSelectedRenderWindow());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
+void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
 {
   if (mainWindow == m_MainWindow)
   {
@@ -565,7 +558,7 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     m_VisibilityTracker->SetTrackedRenderer(0);
     m_Viewer->SetEnabled(false);
 
-    m_Geometry = 0;
+    m_TimeGeometry = 0;
 
     m_MainAxialWindow = 0;
     m_MainSagittalWindow = 0;
@@ -583,11 +576,11 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     return;
   }
 
-  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
 
-  if (geometry && geometry != m_Geometry)
+  if (timeGeometry && timeGeometry != m_TimeGeometry)
   {
-    m_Viewer->SetGeometry(geometry);
+    m_Viewer->SetGeometry(timeGeometry);
     m_Viewer->FitToDisplay();
 
     std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
@@ -600,9 +593,25 @@ void QmitkSideViewerWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
     m_VisibilityTracker->NotifyAll();
   }
 
-  m_Geometry = geometry;
+  m_TimeGeometry = timeGeometry;
 
-  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
+  MIDASOrientation mainWindowOrientation;
+  if (mainWindow == mainAxialWindow)
+  {
+    mainWindowOrientation = MIDAS_ORIENTATION_AXIAL;
+  }
+  else if (mainWindow == mainSagittalWindow)
+  {
+    mainWindowOrientation = MIDAS_ORIENTATION_SAGITTAL;
+  }
+  else if (mainWindow == mainCoronalWindow)
+  {
+    mainWindowOrientation = MIDAS_ORIENTATION_CORONAL;
+  }
+  else
+  {
+    mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+  }
 
   if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -707,39 +716,6 @@ QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
   }
 
   return mainWindow;
-}
-
-
-//-----------------------------------------------------------------------------
-MIDASOrientation QmitkSideViewerWidget::GetWindowOrientation(mitk::BaseRenderer* renderer)
-{
-  MIDASOrientation windowOrientation;
-
-  mitk::SliceNavigationController::ViewDirection viewDirection = renderer->GetSliceNavigationController()->GetViewDirection();
-  switch (viewDirection)
-  {
-  case mitk::SliceNavigationController::Axial:
-    windowOrientation = MIDAS_ORIENTATION_AXIAL;
-    break;
-  case mitk::SliceNavigationController::Sagittal:
-    windowOrientation = MIDAS_ORIENTATION_SAGITTAL;
-    break;
-  case mitk::SliceNavigationController::Frontal:
-    windowOrientation = MIDAS_ORIENTATION_CORONAL;
-    break;
-  default:
-    windowOrientation = MIDAS_ORIENTATION_UNKNOWN;
-    break;
-  }
-
-  return windowOrientation;
-}
-
-
-//-----------------------------------------------------------------------------
-MIDASOrientation QmitkSideViewerWidget::GetMainWindowOrientation()
-{
-  return m_MainWindowOrientation;
 }
 
 

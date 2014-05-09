@@ -63,15 +63,16 @@ class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget :
 
 public:
 
-  /**
-   * Constructs a QmitkSideViewerWidget object.
-   *
-   * \param view Sets the containing view for callback purposes.
-   *
-   *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
-   *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
-   */
+  /// \brief Constructs a QmitkSideViewerWidget object.
+  ///
+  /// \param view Sets the containing view for callback purposes.
+  ///
+  ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
+  ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
+  ///
   QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent = 0);
+
+  /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
 
   /**
@@ -79,18 +80,6 @@ public:
    * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
    */
   void SetDataStorage(mitk::DataStorage* storage);
-
-  /**
-   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the niftkSingleViewerWidget.
-   * \param enabled if true will enable all widgets, and if false will disable them.
-   */
-  void SetEnabled(bool enabled);
-
-  /// \brief Sets the selected render window of the main display.
-  /// This view then might need to change its window layout so that it shows the image
-  /// of a different orientation.
-  /// \param mainWindow The selected render window of the main display.
-  void SetMainWindow(QmitkRenderWindow* mainWindow);
 
 protected slots:
 
@@ -124,26 +113,24 @@ protected slots:
   /// \brief Called when the window layout of the viewer has changed through interaction.
   void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
 
-protected:
-
 private:
-
-  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
-  void ChangeLayout();
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
+
+  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
+  void ChangeLayout();
 
   mitk::IRenderWindowPart* GetSelectedEditor();
 
   /// \brief Gets the main window that is the last active render window of the main display.
   QmitkRenderWindow* GetMainWindow(const QString& id = QString());
 
-  /// \brief Works out the orientation of the currently focused window.
-  MIDASOrientation GetMainWindowOrientation();
-
-  /// \brief Works out the orientation of a renderer.
-  MIDASOrientation GetWindowOrientation(mitk::BaseRenderer* renderer);
+  /// \brief Sets the selected render window of the main display.
+  /// This view then might need to change its window layout so that it shows the image
+  /// of a different orientation.
+  /// \param mainWindow The selected render window of the main display.
+  void OnMainWindowChanged(QmitkRenderWindow* mainWindow);
 
 private slots:
 
@@ -152,20 +139,34 @@ private slots:
 
 private:
 
+  /// \brief The view that contains this widget.
   QmitkBaseView* m_ContainingView;
+
+  /// \brief The identifier of the focus change listener.
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;
 
+  /// \brief Stores the currently selected window of the visible editor, if any.
   QmitkRenderWindow* m_MainWindow;
 
+  /// \brief The axial window of the selected editor.
   QmitkRenderWindow* m_MainAxialWindow;
+
+  /// \brief The sagittal window of the selected editor.
   QmitkRenderWindow* m_MainSagittalWindow;
+
+  /// \brief The coronal window of the selected editor.
   QmitkRenderWindow* m_MainCoronalWindow;
 
+  /// \brief The slice navigation controller of the axial window of the selected editor.
   mitk::SliceNavigationController* m_MainAxialSnc;
+
+  /// \brief The slice navigation controller of the sagittal window of the selected editor.
   mitk::SliceNavigationController* m_MainSagittalSnc;
+
+  /// \brief The slice navigation controller of the coronal window of the selected editor.
   mitk::SliceNavigationController* m_MainCoronalSnc;
 
   /// \brief Renderer of the currently focused window of the main display.
@@ -174,20 +175,29 @@ private:
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
+  /// \brief Filter that tells which nodes should not be handled.
+  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+
+  /// \brief The current magnification in the selected window of the viewer in this widget.
+  /// It is used to increase or decrease the magnification value to the closest integers
+  /// when using the magnification spin box.
   double m_Magnification;
 
-  /// \brief The orientation of the currently focused window of the main display.
+  /// \brief The orientation of the selected window of the main display.
   MIDASOrientation m_MainWindowOrientation;
 
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each orientation of the main window.
   QMap<MIDASOrientation, WindowLayout> m_SingleWindowLayouts;
 
-  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+  /// \brief The world geometry of the selected window of the selected editor.
+  /// Any time when the selected main window changes, the world geometry of this viewer
+  /// needs to be set to that of the main window.
+  mitk::TimeGeometry* m_TimeGeometry;
 
-  mitk::TimeGeometry* m_Geometry;
-
+  /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
   berry::IPartListener::Pointer m_EditorLifeCycleListener;
+
 };
 
 #endif
