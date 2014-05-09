@@ -957,7 +957,7 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
+void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   if (timeGeometry != NULL)
   {

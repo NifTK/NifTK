@@ -123,7 +123,7 @@ public:
 
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetTimeGeometry(mitk::TimeGeometry* timeGeometry);
+  void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Switches the window layout, i.e. the set and the arrangement of the render windows.
   void SetWindowLayout(WindowLayout windowLayout);
@@ -469,7 +469,7 @@ private:
 
   int m_OrientationAxes[3];
   mitk::Geometry3D* m_Geometry;
-  mitk::TimeGeometry* m_TimeGeometry;
+  const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes

@@ -656,7 +656,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-    mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
 
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
@@ -1671,7 +1671,7 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
 
   if (bound)
   {
-    mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
 
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {

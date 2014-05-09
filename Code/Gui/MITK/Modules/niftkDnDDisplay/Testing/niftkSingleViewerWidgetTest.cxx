@@ -119,7 +119,7 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   d->CursorPositionBindingChanged = SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool));
   d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool));
   d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout));
-  d->GeometryChanged = SIGNAL(GeometryChanged(niftkSingleViewerWidget*, mitk::TimeGeometry*));
+  d->GeometryChanged = SIGNAL(GeometryChanged(niftkSingleViewerWidget*, const mitk::TimeGeometry*));
   d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool));
 }
 
@@ -2475,7 +2475,7 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationC
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  mitk::TimeGeometry* timeGeometry = d->Viewer->GetGeometry();
+  const mitk::TimeGeometry* timeGeometry = d->Viewer->GetGeometry();
   mitk::Geometry3D* worldGeometry = timeGeometry->GetGeometryForTimeStep(0);
 
   mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();
