@@ -92,15 +92,6 @@ public:
   /// \param mainWindow The selected render window of the main display.
   void SetMainWindow(QmitkRenderWindow* mainWindow);
 
-signals:
-
-  /**
-   * \brief At the moment we support single axial, coronal, or sagittal render windows, or combinations of
-   * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
-   * and emit this signal when the displayed layout of this window changes.
-   */
-  void LayoutChanged(WindowLayout);
-
 protected slots:
 
   /// \brief Called when the axial window layout radio button is toggled.

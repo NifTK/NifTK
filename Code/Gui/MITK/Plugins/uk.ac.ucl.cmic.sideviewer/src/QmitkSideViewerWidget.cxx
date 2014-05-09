@@ -447,8 +447,6 @@ void QmitkSideViewerWidget::ChangeLayout()
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
     m_MagnificationSpinBox->blockSignals(wasBlocked);
-
-    emit LayoutChanged(m_WindowLayout);
   }
 }
 
