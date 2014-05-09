@@ -33,9 +33,9 @@ namespace niftk
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string RigidBodyFilename,
     std::string LeftHandeyeFilename , std::string RightHandeyeFilename, 
-    std::string CentreHandeyeFilename, float TrackerMarkerRadius, float LensAngle, float BodyLength ) 
+    std::string CentreHandeyeFilename, bool AddCrossHairs , float TrackerMarkerRadius, float LensAngle, float BodyLength ) 
 {
-  float channelBodyLength = BodyLength/2;
+  float channelBodyLength = BodyLength/4.0;
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(RigidBodyFilename);
   vtkSmartPointer<vtkMatrix4x4> lefthandeye = LoadMatrix4x4FromFile(LeftHandeyeFilename, false);
   vtkSmartPointer<vtkTransform> lefttransform = vtkSmartPointer<vtkTransform>::New();
@@ -114,13 +114,11 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   axis.push_back(this->Centroid(positions));
   axis.push_back(lensOrigin);
 
-  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  vtkSmartPointer<vtkAppendPolyData> LapAppenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
-  appenderer->AddInput(ireds);
-  appenderer->AddInput(leftLensCowl);
-  appenderer->AddInput(rightLensCowl);
-  appenderer->AddInput(centreLensCowl);
-  appenderer->AddInput(this->ConnectIREDs(axis));
+  LapAppenderer->AddInput(leftLensCowl);
+  LapAppenderer->AddInput(rightLensCowl);
+  LapAppenderer->AddInput(centreLensCowl);
 
   vtkSmartPointer<vtkPlane> lensClippingPlane = vtkSmartPointer<vtkPlane>::New();
   vtkSmartPointer<vtkPlaneCollection> planeCollection = vtkSmartPointer<vtkPlaneCollection>::New();
@@ -137,11 +135,79 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   clipper->SetClippingPlanes(planeCollection);
   clipper->SetGenerateOutline(1);
   clipper->SetGenerateFaces(1);
-  clipper->SetInput(appenderer->GetOutput());
+  clipper->SetInput(LapAppenderer->GetOutput());
 
   
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  appenderer->AddInput(clipper->GetOutput());
+  appenderer->AddInput(ireds);
+  appenderer->AddInput(this->ConnectIREDs(axis));
+  if ( AddCrossHairs ) 
+  {
+    vtkSmartPointer<vtkArcSource> leftTopArc = vtkSmartPointer<vtkArcSource>::New();
+    vtkSmartPointer<vtkArcSource> leftBottomArc = vtkSmartPointer<vtkArcSource>::New();
+    vtkSmartPointer<vtkArcSource> rightTopArc = vtkSmartPointer<vtkArcSource>::New();
+    vtkSmartPointer<vtkArcSource> rightBottomArc = vtkSmartPointer<vtkArcSource>::New();
+    
+    vtkSmartPointer<vtkLineSource> leftX = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> leftY = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> rightX = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> rightY = vtkSmartPointer<vtkLineSource>::New();
+
+    leftTopArc->SetPoint1(0.0, 25, 75);
+    leftTopArc->SetPoint2(-25, 0.0, 75);
+    leftBottomArc->SetPoint1(0.0, -25, 75);
+    leftBottomArc->SetPoint2(25, 0.0, 75);
+   
+    leftTopArc->SetResolution(50);
+    leftBottomArc->SetResolution(50);
+    rightTopArc->SetResolution(50);
+    rightBottomArc->SetResolution(50);
+    rightTopArc->SetPoint1(0.0, 25, 75);
+    rightTopArc->SetPoint2(25, 0.0, 75);
+    rightBottomArc->SetPoint1(0.0, -25, 75);
+    rightBottomArc->SetPoint2(-25, 0.0, 75);
+
+    leftTopArc->SetCenter (0.0, 0.0 , 75);
+    leftBottomArc->SetCenter (0.0, 0.0 , 75);
+    rightTopArc->SetCenter (0.0, 0.0 , 75);
+    rightBottomArc->SetCenter (0.0, 0.0 , 75);
+
+    leftX->SetPoint1(-25.0,0.0,75);
+    leftX->SetPoint2(25.0,0.0,75);
+    leftY->SetPoint1(0.0,-25.0,75);
+    leftY->SetPoint2(0.0,25.0,75);
+
+    rightX->SetPoint1(-25.0,0.0,75);
+    rightX->SetPoint2(25.0,0.0,75);
+    rightY->SetPoint1(0.0,-25.0,75);
+    rightY->SetPoint2(0.0,25.0,75);
+
+    vtkSmartPointer<vtkAppendPolyData> leftCrossApp = vtkSmartPointer<vtkAppendPolyData>::New();
+    vtkSmartPointer<vtkAppendPolyData> rightCrossApp = vtkSmartPointer<vtkAppendPolyData>::New();
+    vtkSmartPointer<vtkPolyData> leftCross = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPolyData> rightCross = vtkSmartPointer<vtkPolyData>::New();
+    
+    leftCrossApp->AddInput(leftTopArc->GetOutput());
+    leftCrossApp->AddInput(leftBottomArc->GetOutput());
+    leftCrossApp->AddInput(leftX->GetOutput());
+    leftCrossApp->AddInput(leftY->GetOutput());
+     
+    rightCrossApp->AddInput(rightTopArc->GetOutput());
+    rightCrossApp->AddInput(rightBottomArc->GetOutput());
+    rightCrossApp->AddInput(rightX->GetOutput());
+    rightCrossApp->AddInput(rightY->GetOutput());
+
+    leftCross=leftCrossApp->GetOutput();
+    rightCross=rightCrossApp->GetOutput();
+    TranslatePolyData(leftCross,lefttransform);
+    TranslatePolyData(rightCross,righttransform);
+    appenderer->AddInput(leftCross);
+    appenderer->AddInput(rightCross);
+    
+  }
   //get the lens position
-  return clipper->GetOutput();
+  return appenderer->GetOutput();
 }
 
 //-----------------------------------------------------------------------------

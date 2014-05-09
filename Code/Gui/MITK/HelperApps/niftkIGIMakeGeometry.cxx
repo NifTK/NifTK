@@ -61,22 +61,22 @@ int main(int argc, char** argv)
   {
     if ( ( leftHandeye.length() != 0 ) && ( rightHandeye.length() != 0 ) && ( centreHandeye.length() != 0 ) )
     {
-      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye);
+      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye, !NoCrossHairs);
     }
     else
     {
-      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye);
+      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye, !NoCrossHairs);
     }
   }
   if ( geometry == "laparoscopePolaris" )
   {
     if ( ( leftHandeye.length() != 0 ) && ( rightHandeye.length() != 0 ) && ( centreHandeye.length() != 0 ) )
     {
-      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye, 7.5);
+      surface = MakeLaparoscope (rigidBodyFile, leftHandeye, rightHandeye, centreHandeye, !NoCrossHairs, 7.5);
     }
     else
     {
-      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye);
+      surface = MakeLaparoscope (rigidBodyFile, handeye, handeye, handeye, !NoCrossHairs, 7.5);
     }
   }
   if ( geometry == "pointer" )

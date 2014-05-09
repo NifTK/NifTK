@@ -26,10 +26,11 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string RigidBodyFilename,
     std::string LeftHandeyeFilename, 
     std::string RightHandeyeFilename, 
     std::string CentreHandeyeFilename,
+    bool AddCrossHairs,
     float TrackerMarkerRadius )
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(RigidBodyFilename, LeftHandeyeFilename, RightHandeyeFilename, CentreHandeyeFilename, TrackerMarkerRadius);
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(RigidBodyFilename, LeftHandeyeFilename, RightHandeyeFilename, CentreHandeyeFilename, AddCrossHairs, TrackerMarkerRadius);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
   return surface;

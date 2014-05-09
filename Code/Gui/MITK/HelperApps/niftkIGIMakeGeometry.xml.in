@@ -73,6 +73,15 @@
       <default>0</default>
     </boolean>
     
+    <boolean>
+      <name>NoCrossHairs</name>
+      <longflag>NoCrossHairs</longflag>
+      <description>Don't draw cross hairs</description>
+      <label>Don't Draw cross hairs</label>
+      <default>0</default>
+    </boolean>
+    
+
   </parameters>
   
 </executable>
