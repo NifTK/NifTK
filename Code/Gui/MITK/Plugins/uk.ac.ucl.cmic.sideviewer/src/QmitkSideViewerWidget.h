@@ -118,19 +118,27 @@ private:
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
-  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
-  void ChangeLayout();
+  /// \brief Works out a multi window orientation for the given orientation of the main window.
+  WindowLayout GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation);
 
+  /// \brief Gets the currently visible editor.
+  /// Returns 0 if no editor is opened.
   mitk::IRenderWindowPart* GetSelectedEditor();
 
   /// \brief Gets the main window that is the last active render window of the main display.
   QmitkRenderWindow* GetMainWindow(const QString& id = QString());
+
+  /// \brief Updates the slice and magnification spin boxes according to the selected window.
+  void OnViewerWindowChanged();
 
   /// \brief Sets the selected render window of the main display.
   /// This view then might need to change its window layout so that it shows the image
   /// of a different orientation.
   /// \param mainWindow The selected render window of the main display.
   void OnMainWindowChanged(QmitkRenderWindow* mainWindow);
+
+  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
+  void OnMainWindowOrientationChanged(MIDASOrientation orientation);
 
 private slots:
 

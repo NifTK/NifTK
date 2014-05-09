@@ -44,23 +44,19 @@ class EditorLifeCycleListener : public berry::IPartListener
 
   void PartOpened( berry::IWorkbenchPartReference::Pointer partRef )
   {
-//    MITK_INFO << "*** PartOpened (" << partRef->GetPart(false)->GetPartName() << ")";
     berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
 
     if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
     {
-//      MITK_INFO << "*** PartOpened it's a render window part";
     }
   }
 
   void PartClosed( berry::IWorkbenchPartReference::Pointer partRef )
   {
-//    MITK_INFO << "*** PartClosed (" << partRef->GetPart(false)->GetPartName() << ")";
     berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
 
     if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
     {
-//      MITK_INFO << "*** PartClosed it's a render window part";
     }
   }
 };
@@ -98,8 +94,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_SingleWindowLayouts[MIDAS_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
   m_SingleWindowLayouts[MIDAS_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
   m_SingleWindowLayouts[MIDAS_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
-
-  this->ChangeLayout();
 
   m_MagnificationSpinBox->setDecimals(2);
   m_MagnificationSpinBox->setSingleStep(1.0);
@@ -155,6 +149,13 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
     onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  }
+
+  mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
+  if (selectedEditor)
+  {
+    QmitkRenderWindow* selectedMainWindow = selectedEditor->GetActiveQmitkRenderWindow();
+    this->OnMainWindowChanged(selectedMainWindow);
   }
 }
 
@@ -251,7 +252,7 @@ void QmitkSideViewerWidget::OnAxialWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_AXIAL;
-    this->ChangeLayout();
+    m_Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -262,7 +263,7 @@ void QmitkSideViewerWidget::OnSagittalWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_SAGITTAL;
-    this->ChangeLayout();
+    m_Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -273,7 +274,7 @@ void QmitkSideViewerWidget::OnCoronalWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_CORONAL;
-    this->ChangeLayout();
+    m_Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -283,7 +284,7 @@ void QmitkSideViewerWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->ChangeLayout();
+    this->OnMultiWindowComboBoxIndexChanged();
   }
 }
 
@@ -291,155 +292,128 @@ void QmitkSideViewerWidget::OnMultiWindowRadioButtonToggled(bool checked)
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
 {
-  m_MultiWindowRadioButton->setChecked(true);
-  this->ChangeLayout();
+  if (!m_MultiWindowRadioButton->isChecked())
+  {
+    m_MultiWindowRadioButton->setChecked(true);
+  }
+
+  WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
+
+  // 2H
+  if (m_MultiWindowComboBox->currentIndex() == 0)
+  {
+    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_SAG_H;
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_AX_H;
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      windowLayout = WINDOW_LAYOUT_SAG_AX_H;
+    }
+  }
+  // 2V
+  else if (m_MultiWindowComboBox->currentIndex() == 1)
+  {
+    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_SAG_V;
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_AX_V;
+    }
+    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      windowLayout = WINDOW_LAYOUT_SAG_AX_V;
+    }
+  }
+
+  m_Viewer->SetWindowLayout(windowLayout);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::ChangeLayout()
+WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation)
 {
-  WindowLayout nextLayout = WINDOW_LAYOUT_UNKNOWN;
+  WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
+
+  // 2H
+  if (m_MultiWindowComboBox->currentIndex() == 0)
+  {
+    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_SAG_H;
+    }
+    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_AX_H;
+    }
+    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      windowLayout = WINDOW_LAYOUT_SAG_AX_H;
+    }
+  }
+  // 2V
+  else if (m_MultiWindowComboBox->currentIndex() == 1)
+  {
+    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_SAG_V;
+    }
+    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    {
+      windowLayout = WINDOW_LAYOUT_COR_AX_V;
+    }
+    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    {
+      windowLayout = WINDOW_LAYOUT_SAG_AX_V;
+    }
+  }
+
+  return windowLayout;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation mainWindowOrientation)
+{
+  if (mainWindowOrientation == MIDAS_ORIENTATION_UNKNOWN)
+  {
+    return;
+  }
+
+  WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
 
-  if (m_MultiWindowRadioButton->isChecked())
+  WindowLayout defaultMultiWindowLayout = this->GetMultiWindowLayoutForOrientation(mainWindowOrientation);
+
+  if (!m_MultiWindowRadioButton->isChecked())
   {
-    // 2H
-    if (m_MultiWindowComboBox->currentIndex() == 0)
-    {
-      if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-      {
-        nextLayout = WINDOW_LAYOUT_COR_SAG_H;
-      }
-      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-      {
-        nextLayout = WINDOW_LAYOUT_COR_AX_H;
-      }
-      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-      {
-        nextLayout = WINDOW_LAYOUT_SAG_AX_H;
-      }
-    }
-    // 2V
-    else if (m_MultiWindowComboBox->currentIndex() == 1)
-    {
-      if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-      {
-        nextLayout = WINDOW_LAYOUT_COR_SAG_V;
-      }
-      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-      {
-        nextLayout = WINDOW_LAYOUT_COR_AX_V;
-      }
-      else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-      {
-        nextLayout = WINDOW_LAYOUT_SAG_AX_V;
-      }
-    }
-    // 2x2
-    else if (m_MultiWindowComboBox->currentIndex() == 2)
-    {
-      nextLayout = WINDOW_LAYOUT_ORTHO;
-    }
-  }
-  else if (m_MainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    nextLayout = m_SingleWindowLayouts[m_MainWindowOrientation];
-
-    QRadioButton* nextLayoutRadioButton = 0;
-    if (nextLayout == WINDOW_LAYOUT_AXIAL && !m_AxialWindowRadioButton->isChecked())
-    {
-      nextLayoutRadioButton = m_AxialWindowRadioButton;
-    }
-    else if (nextLayout == WINDOW_LAYOUT_SAGITTAL && !m_SagittalWindowRadioButton->isChecked())
-    {
-      nextLayoutRadioButton = m_SagittalWindowRadioButton;
-    }
-    else if (nextLayout == WINDOW_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
-    {
-      nextLayoutRadioButton = m_CoronalWindowRadioButton;
-    }
-
-    if (nextLayoutRadioButton)
-    {
-      nextLayoutRadioButton->setChecked(true);
-    }
-
-    WindowLayout defaultMultiWindowLayout = WINDOW_LAYOUT_UNKNOWN;
-    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      if (m_MultiWindowComboBox->currentIndex() == 0)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_SAG_H;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 1)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_SAG_V;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 2)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
-      }
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      if (m_MultiWindowComboBox->currentIndex() == 0)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_AX_H;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 1)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_COR_AX_V;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 2)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
-      }
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      if (m_MultiWindowComboBox->currentIndex() == 0)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_SAG_AX_H;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 1)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_SAG_AX_V;
-      }
-      else if (m_MultiWindowComboBox->currentIndex() == 2)
-      {
-        defaultMultiWindowLayout = WINDOW_LAYOUT_ORTHO;
-      }
-    }
+    windowLayout = m_SingleWindowLayouts[mainWindowOrientation];
 
     if (defaultMultiWindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       m_Viewer->SetDefaultMultiWindowLayout(defaultMultiWindowLayout);
     }
-  }
 
-  if (!m_MultiWindowRadioButton->isChecked())
-  {
     m_ControlsWidget->setEnabled(true);
     m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_AXIAL);
     m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_SAGITTAL);
     m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_CORONAL);
   }
+  else
+  {
+    windowLayout = defaultMultiWindowLayout;
+  }
 
   m_LayoutWidget->blockSignals(wasBlocked);
 
-  if (nextLayout != WINDOW_LAYOUT_UNKNOWN && nextLayout != m_WindowLayout)
-  {
-    m_WindowLayout = nextLayout;
-    m_Viewer->SetWindowLayout(m_WindowLayout);
-
-    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
-
-    bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
-    m_MagnificationSpinBox->setValue(magnification);
-    m_MagnificationSpinBox->blockSignals(wasBlocked);
-  }
+  m_Viewer->SetWindowLayout(windowLayout);
 }
 
 
@@ -448,62 +422,68 @@ void QmitkSideViewerWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-  QmitkRenderWindow* focusedRenderWindow = 0;
 
   const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewer->GetRenderWindows();
   for (int i = 0; i < viewerRenderWindows.size(); ++i)
   {
+    // If the newly focused window is in this widget, nothing to update. Stop early.
     if (focusedRenderer == viewerRenderWindows[i]->GetRenderer())
     {
-      focusedRenderWindow = viewerRenderWindows[i];
-      break;
+      this->OnViewerWindowChanged();
+      return;
     }
   }
 
-  // If the newly focused window is in this widget, nothing to update. Stop early.
-  if (focusedRenderWindow)
+  mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
+  if (selectedEditor)
   {
-    m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
-
-    MIDASOrientation orientation = m_Viewer->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    QmitkRenderWindow* selectedMainWindow = selectedEditor->GetActiveQmitkRenderWindow();
+    if (focusedRenderer == selectedMainWindow->GetRenderer())
     {
-      int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
-      int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
-
-      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
-      m_SliceSpinBox->setMaximum(maxSlice);
-      m_SliceSpinBox->setValue(selectedSlice);
-      m_SliceSpinBox->setEnabled(true);
-      m_SliceSpinBox->blockSignals(wasBlocked);
-
-      double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
-      m_Magnification = magnification;
-
-      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
-      m_MagnificationSpinBox->setValue(magnification);
-      m_MagnificationSpinBox->setEnabled(true);
-      m_MagnificationSpinBox->blockSignals(wasBlocked);
+      this->OnMainWindowChanged(selectedMainWindow);
     }
-    else
-    {
-      bool wasBlocked = m_SliceSpinBox->blockSignals(true);
-      m_SliceSpinBox->setValue(0);
-      m_SliceSpinBox->setEnabled(false);
-      m_SliceSpinBox->blockSignals(wasBlocked);
-
-      m_Magnification = 0;
-
-      wasBlocked = m_MagnificationSpinBox->blockSignals(true);
-      m_MagnificationSpinBox->setValue(0.0);
-      m_MagnificationSpinBox->setEnabled(false);
-      m_MagnificationSpinBox->blockSignals(wasBlocked);
-    }
-
-    return;
   }
+}
 
-  this->OnMainWindowChanged(m_ContainingView->GetSelectedRenderWindow());
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::OnViewerWindowChanged()
+{
+  MIDASOrientation orientation = m_Viewer->GetOrientation();
+
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
+    int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
+
+    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+    m_SliceSpinBox->setMaximum(maxSlice);
+    m_SliceSpinBox->setValue(selectedSlice);
+    m_SliceSpinBox->setEnabled(true);
+    m_SliceSpinBox->blockSignals(wasBlocked);
+
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
+    m_Magnification = magnification;
+
+    wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+    m_MagnificationSpinBox->setValue(magnification);
+    m_MagnificationSpinBox->setEnabled(true);
+    m_MagnificationSpinBox->blockSignals(wasBlocked);
+  }
+  else
+  {
+    bool wasBlocked = m_SliceSpinBox->blockSignals(true);
+    m_SliceSpinBox->setValue(0);
+    m_SliceSpinBox->setEnabled(false);
+    m_SliceSpinBox->blockSignals(wasBlocked);
+
+    m_Magnification = 0;
+
+    wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+    m_MagnificationSpinBox->setValue(0.0);
+    m_MagnificationSpinBox->setEnabled(false);
+    m_MagnificationSpinBox->blockSignals(wasBlocked);
+  }
 }
 
 
@@ -569,7 +549,6 @@ void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
     m_MainCoronalSnc = 0;
 
     m_MainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
-    this->ChangeLayout();
 
     m_Viewer->RequestUpdate();
 
@@ -613,10 +592,10 @@ void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
     mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
   }
 
-  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (mainWindowOrientation != m_MainWindowOrientation)
   {
     m_MainWindowOrientation = mainWindowOrientation;
-    this->ChangeLayout();
+    this->OnMainWindowOrientationChanged(mainWindowOrientation);
   }
 
   mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
@@ -669,7 +648,6 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
   mitk::IRenderWindowPart* renderPart =
       dynamic_cast<mitk::IRenderWindowPart*>(page->GetActiveEditor().GetPointer());
 
-  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
   if (!renderPart)
   {
     // No suitable active editor found, check visible editors
@@ -686,8 +664,6 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
       }
     }
   }
-  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << renderPart;
-//  MITK_INFO << "QmitkSideViewerWidget::GetSelectedEditor() " << typeid(*renderPart).name();
 
   return renderPart;
 }
@@ -699,8 +675,6 @@ QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
   // Return the active editor if it implements mitk::IRenderWindowPart
   mitk::IRenderWindowPart* renderPart = this->GetSelectedEditor();
 
-  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << renderPart;
-//  MITK_INFO << "QmitkSideViewerWidget::GetMainWindow() " << typeid(*renderPart).name();
   QmitkRenderWindow* mainWindow = 0;
 
   if (renderPart)
@@ -801,6 +775,11 @@ void QmitkSideViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget*, Wind
   m_MultiWindowComboBox->blockSignals(multiWindowComboBoxWasBlocked);
 
   m_WindowLayout = windowLayout;
+
+  /// Note:
+  /// The selected window has not necessarily been changed, but it is not costly
+  /// to refresh the GUI buttons every time.
+  this->OnViewerWindowChanged();
 }
 
 
