@@ -109,12 +109,6 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Get the flag controlling 2D cursors global visibility.
-  bool IsCursorGloballyVisible() const;
-
-  /// \brief Turn the 2D cursors visible/invisible globally, controlled by a user preference.
-  void SetCursorGloballyVisible(bool visible);
-
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 
@@ -123,7 +117,7 @@ public:
 
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetTimeGeometry(mitk::TimeGeometry* timeGeometry);
+  void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Switches the window layout, i.e. the set and the arrangement of the render windows.
   void SetWindowLayout(WindowLayout windowLayout);
@@ -469,7 +463,7 @@ private:
 
   int m_OrientationAxes[3];
   mitk::Geometry3D* m_Geometry;
-  mitk::TimeGeometry* m_TimeGeometry;
+  const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes

@@ -123,17 +123,11 @@ public:
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
   MIDASOrientation GetOrientation() const;
 
-  /// \brief Turn the 2D cursors on/off locally.
-  void SetCursorVisible(bool visible);
-
   /// \brief Get the flag controlling 2D cursors on/off.
   bool IsCursorVisible() const;
 
-  /// \brief Turn the 2D cursors on/off globally.
-  void SetCursorGloballyVisible(bool visible);
-
-  /// \brief Get the flag controlling 2D cursors on/off.
-  bool IsCursorGloballyVisible() const;
+  /// \brief Turn the 2D cursors on/off.
+  void SetCursorVisible(bool visible);
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;
@@ -186,14 +180,14 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
-  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
-  void SetGeometry(mitk::TimeGeometry::Pointer timeGeometry);
+  /// \brief Gets the world geometry.
+  const mitk::TimeGeometry* GetGeometry();
 
-  /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
-  mitk::TimeGeometry::Pointer GetGeometry();
+  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
+  void SetGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(mitk::TimeGeometry::Pointer geometry);
+  void SetBoundGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
   /// this viewer will be bound to other viewers in the same multi viewer widget.
@@ -374,7 +368,7 @@ signals:
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
+  void GeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* geometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
@@ -439,8 +433,8 @@ private:
   niftkMultiWindowWidget* m_MultiWidget;
 
   bool m_IsBoundGeometryActive;
-  mitk::TimeGeometry::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::TimeGeometry::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::TimeGeometry::ConstPointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::TimeGeometry::ConstPointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.

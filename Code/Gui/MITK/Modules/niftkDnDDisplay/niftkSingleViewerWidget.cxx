@@ -253,13 +253,6 @@ bool niftkSingleViewerWidget::IsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorVisible(bool visible)
-{
-  m_MultiWidget->SetCursorVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::IsCursorVisible() const
 {
   return m_MultiWidget->IsCursorVisible();
@@ -267,16 +260,9 @@ bool niftkSingleViewerWidget::IsCursorVisible() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorGloballyVisible(bool visible)
+void niftkSingleViewerWidget::SetCursorVisible(bool visible)
 {
-  m_MultiWidget->SetCursorGloballyVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsCursorGloballyVisible() const
-{
-  return m_MultiWidget->IsCursorGloballyVisible();
+  m_MultiWidget->SetCursorVisible(visible);
 }
 
 
@@ -489,7 +475,7 @@ void niftkSingleViewerWidget::ResetLastPositions()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
+void niftkSingleViewerWidget::SetGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
   m_Geometry = timeGeometry;
@@ -523,7 +509,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
+const mitk::TimeGeometry* niftkSingleViewerWidget::GetGeometry()
 {
   assert(m_Geometry);
   return m_Geometry;
@@ -531,7 +517,7 @@ mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeGeometry)
+void niftkSingleViewerWidget::SetBoundGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
   m_BoundGeometry = timeGeometry;
@@ -578,7 +564,7 @@ void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
     return;
   }
 
-  mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  const mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
   m_MultiWidget->SetTimeGeometry(timeGeometry);
 
   m_IsBoundGeometryActive = isBoundGeometryActive;
@@ -749,7 +735,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
-    mitk::TimeGeometry* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+    const mitk::TimeGeometry* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
 
     // If for whatever reason, we have no geometry... bail out.
     if (!geometry)
