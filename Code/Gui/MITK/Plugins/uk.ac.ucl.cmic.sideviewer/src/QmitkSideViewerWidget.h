@@ -19,8 +19,6 @@
 
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
-#include <berryIPartListener.h>
-
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
 #include <mitkMIDASDataNodeNameStringFilter.h>
@@ -36,7 +34,6 @@ class DataStorage;
 class IRenderWindowPart;
 }
 
-class EditorLifeCycleListener;
 class QmitkBaseView;
 class QmitkRenderWindow;
 
@@ -80,6 +77,9 @@ public:
    * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
    */
   void SetDataStorage(mitk::DataStorage* storage);
+
+  /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
+  void SetGeometry(const itk::EventObject& geometrySendEvent);
 
 protected slots:
 
@@ -136,6 +136,9 @@ private:
   /// of a different orientation.
   /// \param mainWindow The selected render window of the main display.
   void OnMainWindowChanged(QmitkRenderWindow* mainWindow);
+
+  /// \brief Called when the geometry of the main window changes.
+  void OnMainWindowGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
   void OnMainWindowOrientationChanged(MIDASOrientation orientation);
@@ -202,9 +205,6 @@ private:
   /// Any time when the selected main window changes, the world geometry of this viewer
   /// needs to be set to that of the main window.
   mitk::TimeGeometry* m_TimeGeometry;
-
-  /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
-  berry::IPartListener::Pointer m_EditorLifeCycleListener;
 
 };
 

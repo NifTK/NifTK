@@ -33,34 +33,6 @@
 #include <QVBoxLayout>
 
 
-class EditorLifeCycleListener : public berry::IPartListener
-{
-  berryObjectMacro(EditorLifeCycleListener)
-
-  Events::Types GetPartEventTypes() const
-  {
-    return Events::OPENED | Events::CLOSED;
-  }
-
-  void PartOpened( berry::IWorkbenchPartReference::Pointer partRef )
-  {
-    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
-
-    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
-    {
-    }
-  }
-
-  void PartClosed( berry::IWorkbenchPartReference::Pointer partRef )
-  {
-    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
-
-    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
-    {
-    }
-  }
-};
-
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
 : m_ContainingView(view)
@@ -82,9 +54,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
-
-  m_EditorLifeCycleListener = new EditorLifeCycleListener;
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 
   m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
@@ -163,13 +132,16 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
-
   m_VisibilityTracker->SetTrackedRenderer(0);
   m_Viewer->SetEnabled(false);
 
+  /// Note:
+  /// To avoid updating the world geometry three times, we connect the geometry send event
+  /// only to the axial window and assume that the three 2D renderer windows have the same
+  /// world geometry.
   if (m_MainAxialWindow)
   {
+    m_MainAxialSnc->Disconnect(this);
     m_MainAxialSnc->Disconnect(m_Viewer->GetAxialWindow()->GetSliceNavigationController());
     m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
   }
@@ -379,13 +351,24 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
 
 
 //-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::OnMainWindowGeometryChanged(const mitk::TimeGeometry* timeGeometry)
+{
+  m_Viewer->SetGeometry(timeGeometry);
+
+  std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
+  /// Note:
+  /// This could be any 2D main window. We assume that the same nodes are visible
+  /// in each 2D render window of any viewer.
+  m_VisibilityTracker->SetTrackedRenderer(m_MainAxialWindow->GetRenderer());
+  m_Viewer->SetEnabled(true);
+  m_VisibilityTracker->SetNodesToIgnore(crossHairs);
+  m_VisibilityTracker->NotifyAll();
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation mainWindowOrientation)
 {
-  if (mainWindowOrientation == MIDAS_ORIENTATION_UNKNOWN)
-  {
-    return;
-  }
-
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
@@ -490,11 +473,6 @@ void QmitkSideViewerWidget::OnViewerWindowChanged()
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
 {
-  if (mainWindow == m_MainWindow)
-  {
-    return;
-  }
-
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
   QmitkRenderWindow* mainAxialWindow = m_ContainingView->GetRenderWindow("axial");
   QmitkRenderWindow* mainSagittalWindow = m_ContainingView->GetRenderWindow("sagittal");
@@ -517,8 +495,13 @@ void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
   mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
+  /// Note:
+  /// To avoid updating the world geometry three times, we connect the geometry send event
+  /// only to the axial window and assume that the three 2D renderer windows have the same
+  /// world geometry.
   if (m_MainAxialWindow)
   {
+    m_MainAxialSnc->Disconnect(this);
     m_MainAxialSnc->Disconnect(axialSnc);
     axialSnc->Disconnect(m_MainAxialSnc);
   }
@@ -555,24 +538,13 @@ void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
     return;
   }
 
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+  m_MainAxialWindow = mainAxialWindow;
+  m_MainSagittalWindow = mainSagittalWindow;
+  m_MainCoronalWindow = mainCoronalWindow;
 
-  if (timeGeometry && timeGeometry != m_TimeGeometry)
-  {
-    m_Viewer->SetGeometry(timeGeometry);
-    m_Viewer->FitToDisplay();
-
-    std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
-    /// Note:
-    /// This could be any 2D main window. We assume that the same nodes are visible
-    /// in each 2D render window of any viewer.
-    m_VisibilityTracker->SetTrackedRenderer(mainAxialWindow->GetRenderer());
-    m_Viewer->SetEnabled(true);
-    m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-    m_VisibilityTracker->NotifyAll();
-  }
-
-  m_TimeGeometry = timeGeometry;
+  m_MainAxialSnc = mainAxialWindow->GetSliceNavigationController();
+  m_MainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
+  m_MainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
 
   MIDASOrientation mainWindowOrientation;
   if (mainWindow == mainAxialWindow)
@@ -592,48 +564,59 @@ void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
     mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
   }
 
-  if (mainWindowOrientation != m_MainWindowOrientation)
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+
+  /// Note:
+  /// The SetWindowLayout function does not change the layout if the viewer does not have
+  /// a valid geometry. Therefore, if the viewer is initialised with a geometry for the
+  /// first time, we need to set the window layout again, according to the main window
+  /// orientation.
+  bool geometryFirstInitialised = false;
+  if (timeGeometry != m_TimeGeometry)
+  {
+    if (!m_TimeGeometry)
+    {
+      geometryFirstInitialised = true;
+    }
+    m_TimeGeometry = timeGeometry;
+    this->OnMainWindowGeometryChanged(timeGeometry);
+  }
+
+  if (mainWindowOrientation != m_MainWindowOrientation || geometryFirstInitialised)
   {
     m_MainWindowOrientation = mainWindowOrientation;
     this->OnMainWindowOrientationChanged(mainWindowOrientation);
   }
 
-  mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
-  mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
-  mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
-
-  if (mainAxialWindow)
+  /// Note:
+  /// To avoid updating the world geometry three times, we connect the geometry send event
+  /// only to the axial window and assume that the three 2D renderer windows have the same
+  /// world geometry.
+  if (m_MainAxialWindow)
   {
-    mainAxialSnc->ConnectGeometryEvents(axialSnc);
-    axialSnc->ConnectGeometryEvents(mainAxialSnc);
-    this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    m_MainAxialSnc->ConnectGeometrySendEvent(this);
+    m_MainAxialSnc->ConnectGeometryEvents(axialSnc);
+    axialSnc->ConnectGeometryEvents(m_MainAxialSnc);
+    this->connect(m_MainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
   if (mainSagittalWindow)
   {
-    mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
-    sagittalSnc->ConnectGeometryEvents(mainSagittalSnc);
-    this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    m_MainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
+    sagittalSnc->ConnectGeometryEvents(m_MainSagittalSnc);
+    this->connect(m_MainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
   if (mainCoronalWindow)
   {
-    mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
-    coronalSnc->ConnectGeometryEvents(mainCoronalSnc);
-    this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    m_MainCoronalSnc->ConnectGeometryEvents(coronalSnc);
+    coronalSnc->ConnectGeometryEvents(m_MainCoronalSnc);
+    this->connect(m_MainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
-
-  m_MainAxialWindow = mainAxialWindow;
-  m_MainSagittalWindow = mainSagittalWindow;
-  m_MainCoronalWindow = mainCoronalWindow;
-
-  m_MainAxialSnc = mainAxialSnc;
-  m_MainSagittalSnc = mainSagittalSnc;
-  m_MainCoronalSnc = mainCoronalSnc;
 
   /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
   /// Therefore, we resend the main window position here.
-  mainAxialWindow->GetSliceNavigationController()->SendSlice();
-  mainSagittalWindow->GetSliceNavigationController()->SendSlice();
-  mainCoronalWindow->GetSliceNavigationController()->SendSlice();
+  m_MainAxialWindow->GetSliceNavigationController()->SendSlice();
+  m_MainSagittalWindow->GetSliceNavigationController()->SendSlice();
+  m_MainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
 }
@@ -812,4 +795,16 @@ void QmitkSideViewerWidget::OnMagnificationSpinBoxValueChanged(double magnificat
     m_Viewer->SetMagnification(m_Viewer->GetOrientation(), magnification);
     m_Magnification = magnification;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::SetGeometry(const itk::EventObject& geometrySendEvent)
+{
+  const mitk::SliceNavigationController::GeometrySendEvent* sendEvent =
+      dynamic_cast<const mitk::SliceNavigationController::GeometrySendEvent *>(&geometrySendEvent);
+
+  assert(sendEvent);
+
+  this->OnMainWindowGeometryChanged(sendEvent->GetTimeGeometry());
 }
