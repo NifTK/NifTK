@@ -16,8 +16,6 @@
 # CGAL
 #-----------------------------------------------------------------------------
 
-set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8.tar.gz")
-
 if(BUILD_MESHING)
 
   set(proj CGAL)
