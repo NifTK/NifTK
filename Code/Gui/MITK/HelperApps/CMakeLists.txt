@@ -64,19 +64,40 @@ if(BUILD_IGI)
   endif()
 endif()
 
-  ########################################################
-  # st: Not very nice, the following are dependencies of
-  # niftkIGI but don't get pulled into the include path 
-  # properly, so I've done them one by one 
-  ##########################################################
- 
-include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
-include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+########################################################
+# st: Not very nice, the following are dependencies of
+# niftkIGI but don't get pulled into the include path 
+# properly, so I've done them one by one 
+##########################################################
 include (${MITK_DIR}/MITKConfig.cmake)
+include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+include (${MITK_DIR}/modulesConf/mbilogConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkCoreConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkTestingHelperConfig.cmake)
+include (${CppUnit_DIR}/CppUnitConfig.cmake)
 include (${tinyxml_DIR}/tinyxmlConfig.cmake)
 
-list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${MitkExt_INCLUDE_DIRS} ${CppMicroServices_INCLUDE_DIRS} ${tinyxml_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
-list(APPEND HELPER_APP_LINK_DIRECTORIES     ${MITK_LIBRARY_DIRS} )
+list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  
+  ${MITK_INCLUDE_DIRS} 
+  ${MitkCore_INCLUDE_DIRS} 
+  ${MitkExt_INCLUDE_DIRS} 
+  ${MitkTestingHelper_INCLUDE_DIRS} 
+  ${CppMicroServices_INCLUDE_DIRS} 
+  ${CppUnit_INCLUDE_DIRS}
+  ${mbilog_INCLUDE_DIRS} 
+  ${tinyxml_INCLUDE_DIRS}   
+  ${${PROJECT_NAME}_MODULES_CONF_DIR}
+)
+
+list(APPEND HELPER_APP_LINK_DIRECTORIES     
+)
+
+list(APPEND HELPER_APP_LIBRARIES
+  niftkcommon 
+  niftkOpenCV 
+  niftkIGIGui
+)
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
 list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
@@ -110,7 +131,6 @@ if(SlicerExecutionModel_FOUND)
       niftkHandeyeCalibrationFromDirectory
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
-      niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
