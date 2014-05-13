@@ -129,6 +129,12 @@ private slots:
   /// \brief Creates a viewer and and loads an image.
   void testViewer();
 
+  /// \brief Tests if the geometry is correctly initialised.
+  void testGetTimeGeometry();
+
+  /// \brief Tests if the viewer correctly initialises the renderer geometries.
+  void testSetTimeGeometry();
+
   /// \brief Tests if the selected orientation is correct after the image is loaded.
   void testGetOrientation();
 

@@ -543,6 +543,187 @@ void niftkSingleViewerWidgetTestClass::testViewer()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
+  const mitk::Geometry3D* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
+
+  const mitk::TimeGeometry* viewerTimeGeometry = d->Viewer->GetTimeGeometry();
+  const mitk::Geometry3D* viewerGeometry = viewerTimeGeometry->GetGeometryForTimePoint(0);
+
+  QVERIFY(imageTimeGeometry == viewerTimeGeometry);
+  QVERIFY(imageGeometry == viewerGeometry);
+
+  mitk::Point3D imageOrigin = imageGeometry->GetOrigin();
+  mitk::Point3D imageCentre = imageGeometry->GetCenter();
+
+  mitk::BaseRenderer* axialRenderer = d->AxialWindow->GetRenderer();
+  mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
+  mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
+
+  const mitk::TimeGeometry* axialTimeGeometry = axialRenderer->GetTimeWorldGeometry();
+  const mitk::TimeGeometry* sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry();
+  const mitk::TimeGeometry* coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry();
+
+  const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
+  const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  const mitk::Geometry3D* coronalGeometry = coronalRenderer->GetWorldGeometry();
+
+  mitk::Point3D axialOrigin = axialGeometry->GetOrigin();
+  mitk::Point3D axialCentre = axialGeometry->GetCenter();
+  mitk::Point3D sagittalOrigin = sagittalGeometry->GetOrigin();
+  mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
+  mitk::Point3D coronalOrigin = coronalGeometry->GetOrigin();
+  mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
+
+  MITK_INFO << "world spacings: " << d->WorldSpacings;
+  MITK_INFO << "world extents: " << d->WorldExtents;
+  MITK_INFO << "image origin: " << imageOrigin;
+  MITK_INFO << "image centre: " << imageCentre;
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+
+  /// Note:
+  /// According to the MITK documentation, the origin of an image geometry is
+  /// always the middle of its bottom-left-back voxel, and the mm coordinates
+  /// increase from left to right (sagittal), bottom to top (axial), and front
+  /// to back (coronal).
+  mitk::Point3D bottomLeftBackCorner;
+  bottomLeftBackCorner[0] = imageOrigin[0] - d->WorldSpacings[0] / 2.0;
+  bottomLeftBackCorner[1] = imageOrigin[1] + d->WorldSpacings[1] / 2.0;
+  bottomLeftBackCorner[2] = imageOrigin[2] - d->WorldSpacings[2] / 2.0;
+
+  {
+    const mitk::AffineTransform3D* affineTransform = imageGeometry->GetIndexToWorldTransform();
+    itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
+    for (unsigned int i = 0; i < 3; i++)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        normalisedAffineTransformMatrix[i][j] = affineTransformMatrix[i][j];
+      }
+    }
+    normalisedAffineTransformMatrix.normalize_columns();
+    for (unsigned int i = 0; i < 3; i++)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        affineTransformMatrix[i][j] = normalisedAffineTransformMatrix[i][j];
+      }
+    }
+
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
+
+    int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
+    int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
+    int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1],inverseTransformMatrix[1][1],inverseTransformMatrix[2][1]);
+    int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
+    int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2],inverseTransformMatrix[1][2],inverseTransformMatrix[2][2]);
+    int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
+
+//    int permutedBoundingBox[3];
+    int permutedAxes[3];
+    int flippedAxes[3];
+//    double permutedSpacing[3];
+
+    permutedAxes[0] = dominantAxisRL;
+    permutedAxes[1] = dominantAxisAP;
+    permutedAxes[2] = dominantAxisSI;
+
+    flippedAxes[0] = signRL;
+    flippedAxes[1] = signAP;
+    flippedAxes[2] = signSI;
+
+//    permutedBoundingBox[0] = static_cast<int>(imageGeometry->GetExtent(dominantAxisRL));
+//    permutedBoundingBox[1] = static_cast<int>(imageGeometry->GetExtent(dominantAxisAP));
+//    permutedBoundingBox[2] = static_cast<int>(imageGeometry->GetExtent(dominantAxisSI));
+
+//    permutedSpacing[0] = imageGeometry->GetSpacing()[permutedAxes[0]];
+//    permutedSpacing[1] = imageGeometry->GetSpacing()[permutedAxes[1]];
+//    permutedSpacing[2] = imageGeometry->GetSpacing()[permutedAxes[2]];
+
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
+    permutedMatrix.set_identity();
+
+    // permutedMatrix(column) = inverseTransformMatrix(row) * flippedAxes
+    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * flippedAxes[0];
+    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * flippedAxes[0];
+    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * flippedAxes[0];
+    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * flippedAxes[1];
+    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * flippedAxes[1];
+    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * flippedAxes[1];
+    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * flippedAxes[2];
+    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * flippedAxes[2];
+    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * flippedAxes[2];
+
+//    int m_OrientationAxes[3];
+//    m_OrientationAxes[0] = dominantAxisSI;
+//    m_OrientationAxes[1] = dominantAxisRL;
+//    m_OrientationAxes[2] = dominantAxisAP;
+
+    mitk::Point3D originInVx;
+    for (int i = 0; i < 3; ++i)
+    {
+      if (flippedAxes[i] >= 0)
+      {
+        originInVx[permutedAxes[i]] = 0;
+      }
+      else
+      {
+        originInVx[permutedAxes[i]] = imageGeometry->GetExtent(permutedAxes[i]) - 1;
+      }
+    }
+
+    mitk::Point3D originInMm;
+    imageGeometry->IndexToWorld(originInVx, originInMm);
+
+
+  }
+//  MITK_INFO << "bottom left back corner: " << bottomLeftBackCorner;
+//  mitk::Point3D expectedAxialOrigin = bottomLeftBackCorner;
+////  expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
+//  expectedAxialOrigin[2] -= (d->WorldExtents[2] - 1) * d->WorldSpacings[2];
+//  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
+//  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin));
+
+//  mitk::Point3D expectedSagittalOrigin = bottomLeftBackCorner;
+//  expectedSagittalOrigin[0] += d->WorldSpacings[0] / 2.0;
+//  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
+//  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin));
+
+  mitk::Point3D expectedCoronalOrigin = bottomLeftBackCorner;
+  expectedCoronalOrigin[1] += d->WorldSpacings[1] / 2.0;
+  MITK_INFO << "expected sagittal origin: " << expectedCoronalOrigin;
+  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin));
+
+//  mitk::Point3D expectedAxialCentre = imageCentre;
+//  expectedAxialCentre[2] += d->WorldSpacings[2] / 2.0;
+//  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre));
+
+//  mitk::Point3D expectedSagittalCentre = imageCentre;
+//  expectedSagittalCentre[0] += d->WorldSpacings[0] / 2.0;
+//  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre));
+
+  mitk::Point3D expectedCoronalCentre = imageCentre;
+  expectedCoronalCentre[1] += d->WorldSpacings[1] / 2.0;
+  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre));
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
+{
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testGetOrientation()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
