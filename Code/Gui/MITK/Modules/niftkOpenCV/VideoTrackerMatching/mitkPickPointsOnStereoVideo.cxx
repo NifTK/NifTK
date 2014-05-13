@@ -425,6 +425,12 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           }
         }
 
+        //do some interative stuff
+        while ( key != 'n' )
+        {
+          cvSetMouseCallback("My Window",CallBackFunc, NULL);
+          key = cvWaitKey(20);
+        }
       }
       framenumber ++;
     }
@@ -440,7 +446,26 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   m_ProjectOK = true;
 
 }
-
+//-----------------------------------------------------------------------------
+void CallBackFunc(int event, int x, int y, int flags, void* userdata)
+{
+  if  ( event == cv::EVENT_LBUTTONDOWN )
+  {
+    std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+  }
+  else if  ( event == cv::EVENT_RBUTTONDOWN )
+  {
+    std::cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+  }
+  else if  ( event == cv::EVENT_MBUTTONDOWN )
+  {
+    std::cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+  }
+  else if ( event == cv::EVENT_MOUSEMOVE )
+  {
+    std::cout << "Mouse move over the window - position (" << x << ", " << y << ")" << std::endl;
+  }
+}
 //-----------------------------------------------------------------------------
 void PickPointsOnStereoVideo::SetLeftGoldStandardPoints (
     std::vector < std::pair < unsigned int , cv::Point2d > > points )

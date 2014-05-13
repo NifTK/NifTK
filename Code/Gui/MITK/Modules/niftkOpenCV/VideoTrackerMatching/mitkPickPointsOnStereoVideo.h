@@ -26,6 +26,7 @@
 
 namespace mitk {
 
+void CallBackFunc (  int, int , int, int, void* );
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 
@@ -229,6 +230,7 @@ private:
    * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
    */
   void CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  
 
   /* \brief 
    * calculates the x,y, and z error between the passed point and the nearest point in 
