@@ -31,9 +31,9 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_DataStorage(NULL)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
-, m_IsBoundGeometryActive(false)
-, m_Geometry(NULL)
-, m_BoundGeometry(NULL)
+, m_IsBoundTimeGeometryActive(false)
+, m_TimeGeometry(NULL)
+, m_BoundTimeGeometry(NULL)
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
@@ -475,13 +475,21 @@ void niftkSingleViewerWidget::ResetLastPositions()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetGeometry(const mitk::TimeGeometry* timeGeometry)
+const mitk::TimeGeometry* niftkSingleViewerWidget::GetTimeGeometry() const
+{
+  assert(m_TimeGeometry);
+  return m_TimeGeometry;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
-  m_Geometry = timeGeometry;
+  m_TimeGeometry = timeGeometry;
   m_GeometryInitialised = false;
 
-  if (!m_IsBoundGeometryActive)
+  if (!m_IsBoundTimeGeometryActive)
   {
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
@@ -509,21 +517,13 @@ void niftkSingleViewerWidget::SetGeometry(const mitk::TimeGeometry* timeGeometry
 
 
 //-----------------------------------------------------------------------------
-const mitk::TimeGeometry* niftkSingleViewerWidget::GetGeometry()
-{
-  assert(m_Geometry);
-  return m_Geometry;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometry(const mitk::TimeGeometry* timeGeometry)
+void niftkSingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
-  m_BoundGeometry = timeGeometry;
+  m_BoundTimeGeometry = timeGeometry;
   m_GeometryInitialised = false;
 
-  if (m_IsBoundGeometryActive)
+  if (m_IsBoundTimeGeometryActive)
   {
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
@@ -549,25 +549,25 @@ void niftkSingleViewerWidget::SetBoundGeometry(const mitk::TimeGeometry* timeGeo
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsBoundGeometryActive()
+bool niftkSingleViewerWidget::IsBoundTimeGeometryActive()
 {
-  return m_IsBoundGeometryActive;
+  return m_IsBoundTimeGeometryActive;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
+void niftkSingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometryActive)
 {
-  if (isBoundGeometryActive == m_IsBoundGeometryActive)
+  if (isBoundTimeGeometryActive == m_IsBoundTimeGeometryActive)
   {
     // No change, nothing to do.
     return;
   }
 
-  const mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  const mitk::TimeGeometry* timeGeometry = isBoundTimeGeometryActive ? m_BoundTimeGeometry : m_TimeGeometry;
   m_MultiWidget->SetTimeGeometry(timeGeometry);
 
-  m_IsBoundGeometryActive = isBoundGeometryActive;
+  m_IsBoundTimeGeometryActive = isBoundTimeGeometryActive;
   //  m_WindowLayout = WINDOW_LAYOUT_UNKNOWN;
 }
 
@@ -735,10 +735,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
-    const mitk::TimeGeometry* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+    const mitk::TimeGeometry* timeGeometry = m_IsBoundTimeGeometryActive ? m_BoundTimeGeometry : m_TimeGeometry;
 
     // If for whatever reason, we have no geometry... bail out.
-    if (!geometry)
+    if (!timeGeometry)
     {
       return;
     }
@@ -769,7 +769,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     {
       m_GeometryInitialised = true;
       m_MultiWidget->SetTimeStep(0);
-      m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
+      m_MultiWidget->SetSelectedPosition(timeGeometry->GetCenterInWorld());
     }
 
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,

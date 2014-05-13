@@ -55,7 +55,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 {
   this->setupUi(parent);
 
-  m_Viewer->SetBoundGeometryActive(false);
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
 
   m_CoronalWindowRadioButton->setChecked(true);
@@ -353,7 +352,7 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowGeometryChanged(const mitk::TimeGeometry* timeGeometry)
 {
-  m_Viewer->SetGeometry(timeGeometry);
+  m_Viewer->SetTimeGeometry(timeGeometry);
 
   std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
   /// Note:

@@ -42,6 +42,12 @@ public:
   mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
   mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
 
+  /// \brief Gets the time geometry of the viewer.
+  itkGetConstMacro(TimeGeometry, const mitk::TimeGeometry*);
+
+  /// \brief Sets the time geometry of the viewer.
+  itkSetObjectMacro(TimeGeometry, mitk::TimeGeometry);
+
   /// \brief Gets the orientation of the viewer.
   itkGetConstMacro(Orientation, MIDASOrientation);
 
@@ -135,7 +141,8 @@ public:
   bool operator==(const niftkSingleViewerWidgetState& otherState) const
   {
     return
-        this->GetOrientation() == otherState.GetOrientation()
+        this->GetTimeGeometry() == otherState.GetTimeGeometry()
+        && this->GetOrientation() == otherState.GetOrientation()
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
@@ -153,6 +160,10 @@ public:
 
   void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
   {
+    if (this->GetTimeGeometry() != otherState->GetTimeGeometry())
+    {
+      os << indent << "Time geometry: " << this->GetTimeGeometry() << " ; " << otherState->GetTimeGeometry() << std::endl;
+    }
     if (this->GetOrientation() != otherState->GetOrientation())
     {
       os << indent << "Orientation: " << this->GetOrientation() << " ; " << otherState->GetOrientation() << std::endl;
@@ -279,6 +290,7 @@ protected:
   niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
   : itk::Object()
   , m_Viewer(viewer)
+  , m_TimeGeometry(viewer->GetTimeGeometry())
   , m_Orientation(viewer->GetOrientation())
   , m_WindowLayout(viewer->GetWindowLayout())
   , m_SelectedRenderWindow(viewer->GetSelectedRenderWindow())
@@ -295,6 +307,7 @@ protected:
   niftkSingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
   , m_Viewer(otherState->m_Viewer)
+  , m_TimeGeometry(otherState->GetTimeGeometry())
   , m_Orientation(otherState->GetOrientation())
   , m_WindowLayout(otherState->GetWindowLayout())
   , m_SelectedRenderWindow(otherState->GetSelectedRenderWindow())
@@ -315,6 +328,7 @@ protected:
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
   {
+    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
     os << indent << "window layout: " << m_WindowLayout << std::endl;
     if (m_SelectedRenderWindow)
@@ -337,6 +351,9 @@ private:
 
   /// \brief The viewer.
   const niftkSingleViewerWidget* m_Viewer;
+
+  /// \brief The time geometry of the viewer.
+  const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief The orientation of the viewer.
   MIDASOrientation m_Orientation;

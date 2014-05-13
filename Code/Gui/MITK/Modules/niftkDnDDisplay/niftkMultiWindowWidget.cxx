@@ -997,23 +997,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
     mitk::AffineTransform3D::Pointer affineTransform = m_Geometry->GetIndexToWorldTransform();
     itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        normalisedAffineTransformMatrix[i][j] = affineTransformMatrix[i][j];
-      }
-    }
-    normalisedAffineTransformMatrix.normalize_columns();
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        affineTransformMatrix[i][j] = normalisedAffineTransformMatrix[i][j];
-      }
-    }
-
+    affineTransformMatrix.GetVnlMatrix().normalize_columns();
     mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
     int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);

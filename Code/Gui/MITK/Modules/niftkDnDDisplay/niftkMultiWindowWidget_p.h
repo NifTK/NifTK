@@ -462,8 +462,15 @@ private:
   std::vector<double> m_ScaleFactors;
 
   int m_OrientationAxes[3];
-  mitk::Geometry3D* m_Geometry;
+
+  /// \brief The time geometry that this viewer was initialised with.
+  /// The viewer construct three new time geometries from this, one for each renderer.
   const mitk::TimeGeometry* m_TimeGeometry;
+
+  /// \brief The 3D geometry for the first time step.
+  /// The viewer assumes that the dimensions are equal at each time step.
+  /// This is not the geometry at the selected time step.
+  mitk::Geometry3D* m_Geometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes
