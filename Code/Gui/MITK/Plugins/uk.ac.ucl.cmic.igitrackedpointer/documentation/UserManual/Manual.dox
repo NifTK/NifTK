@@ -5,15 +5,36 @@
 
 \section TrackedPointerIntro Introduction
 
-Do an introduction here.
+The Tracked Pointer View plugin is used to obtain points coordinates (e.g. landmarks) in the tracker's coordinate system.
 
 \section TrackedPointerUsage Usage
 
-Put all usage information here.
+<ul>
+<li></li>
+\image html usage_1.png "Figure 1. The input from the plugin."
+
+<li> <b>pointer</b> Choose a pointer model.</li>
+
+<li> <b>pointer to world</b> Choose the transformation from model to world. </li>
+
+<li> <b>grab</b> Press this button will save the coordinates to a file.</li>
+
+</ul>
+
 
 \section TrackedPointerPreferences Preferences
 
-Put all information on user configurable preferences here.
+From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Pointer" in the "Filter" list (Figure 2).
+
+\image html preferences.png "Figure 2. Set the plugin preferences."
+
+<ul>
+
+<li> <b>calibration matrix file name</b> Calibration matrix (4x4) from pointer to tracker.</li>
+
+<li> <b>number of samples to average</b> The default number is 1.</li>
+
+</ul>
 
 \section TrackedPointerReferences References
 
