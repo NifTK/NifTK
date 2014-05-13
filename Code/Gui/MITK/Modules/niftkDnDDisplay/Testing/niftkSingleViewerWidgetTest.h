@@ -82,9 +82,10 @@ public:
   /// \brief Gets the position of the centre of the displayed regions, relative to their render windows.
   std::vector<mitk::Vector2D> GetCentrePositions();
 
-  /// \brief Determines if two world positions are equal with the tolerance of half spacing.
+  /// \brief Determines if two world positions are equal with the certain tolerance.
+  /// By default, or if negative value is specified, the tolerance is half voxel for each coordinate.
   /// Converting the positions to voxel space should result equal coordinates.
-  bool Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2);
+  bool Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2, double tolerance = -1.0);
 
   /// \brief Determines if two cursor positions are equal with the given tolerance.
   static bool Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.01);
