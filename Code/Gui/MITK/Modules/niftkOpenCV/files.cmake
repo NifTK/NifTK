@@ -25,6 +25,7 @@ set(CPP_FILES
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
   VideoProcessing/mitkSplitVideo.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
+  VideoTrackerMatching/mitkPickPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
