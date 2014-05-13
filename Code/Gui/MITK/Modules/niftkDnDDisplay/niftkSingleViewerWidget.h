@@ -181,7 +181,7 @@ public:
   void RequestUpdate();
 
   /// \brief Gets the world geometry.
-  const mitk::TimeGeometry* GetTimeGeometry();
+  const mitk::TimeGeometry* GetTimeGeometry() const;
 
   /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);

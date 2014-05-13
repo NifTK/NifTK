@@ -475,7 +475,7 @@ void niftkSingleViewerWidget::ResetLastPositions()
 
 
 //-----------------------------------------------------------------------------
-const mitk::TimeGeometry* niftkSingleViewerWidget::GetTimeGeometry()
+const mitk::TimeGeometry* niftkSingleViewerWidget::GetTimeGeometry() const
 {
   assert(m_TimeGeometry);
   return m_TimeGeometry;
