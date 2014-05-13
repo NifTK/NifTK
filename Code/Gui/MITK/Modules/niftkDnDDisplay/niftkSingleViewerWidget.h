@@ -181,20 +181,20 @@ public:
   void RequestUpdate();
 
   /// \brief Gets the world geometry.
-  const mitk::TimeGeometry* GetGeometry();
+  const mitk::TimeGeometry* GetTimeGeometry();
 
   /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
-  void SetGeometry(const mitk::TimeGeometry* timeGeometry);
+  void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(const mitk::TimeGeometry* timeGeometry);
+  void SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
   /// this viewer will be bound to other viewers in the same multi viewer widget.
-  void SetBoundGeometryActive(bool isBound);
+  void SetBoundTimeGeometryActive(bool isBound);
 
   /// \brief Returns true if the geometry of the viewer is bound to other viewers, otherwise false.
-  bool IsBoundGeometryActive();
+  bool IsBoundTimeGeometryActive();
 
   /// \brief Gets the index of the selected slice for a given orientation.
   int GetSelectedSlice(MIDASOrientation orientation) const;
@@ -404,7 +404,7 @@ private:
 
   inline int Index(int index) const
   {
-    return (index << 1) + m_IsBoundGeometryActive;
+    return (index << 1) + m_IsBoundTimeGeometryActive;
   }
 
   /// \brief Resets the last few remembered selected and cursor positions.
@@ -432,9 +432,9 @@ private:
   QGridLayout* m_GridLayout;
   niftkMultiWindowWidget* m_MultiWidget;
 
-  bool m_IsBoundGeometryActive;
-  mitk::TimeGeometry::ConstPointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::TimeGeometry::ConstPointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
+  bool m_IsBoundTimeGeometryActive;
+  mitk::TimeGeometry::ConstPointer m_TimeGeometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::TimeGeometry::ConstPointer m_BoundTimeGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.

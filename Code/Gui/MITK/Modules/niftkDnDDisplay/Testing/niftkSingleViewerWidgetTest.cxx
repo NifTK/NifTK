@@ -1158,7 +1158,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
-  mitk::Point3D centreWorldPosition = d->Viewer->GetGeometry()->GetCenterInWorld();
+  mitk::Point3D centreWorldPosition = d->Viewer->GetTimeGeometry()->GetCenterInWorld();
 
   mitk::Vector2D centreDisplayPosition;
   centreDisplayPosition.Fill(0.5);
@@ -2475,7 +2475,7 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationC
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  const mitk::TimeGeometry* timeGeometry = d->Viewer->GetGeometry();
+  const mitk::TimeGeometry* timeGeometry = d->Viewer->GetTimeGeometry();
   mitk::Geometry3D* worldGeometry = timeGeometry->GetGeometryForTimeStep(0);
 
   mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();

@@ -656,14 +656,14 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-    const mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
 
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer)
       {
         bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetBoundGeometry(geometry);
+        otherViewer->SetBoundTimeGeometry(timeGeometry);
         otherViewer->blockSignals(signalsWereBlocked);
       }
     }
@@ -1185,14 +1185,14 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* geometry)
+void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* timeGeometry)
 {
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
       bool signalsWereBlocked = viewer->blockSignals(true);
-      viewer->SetBoundGeometry(geometry);
+      viewer->SetBoundTimeGeometry(timeGeometry);
       viewer->blockSignals(signalsWereBlocked);
     }
   }
@@ -1671,13 +1671,13 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
 
   if (bound)
   {
-    const mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
 
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
       bool signalsWereBlocked = viewer->blockSignals(true);
-      viewer->SetBoundGeometry(geometry);
-      viewer->SetBoundGeometryActive(true);
+      viewer->SetBoundTimeGeometry(timeGeometry);
+      viewer->SetBoundTimeGeometryActive(true);
       viewer->blockSignals(signalsWereBlocked);
     }
   }
@@ -1686,7 +1686,7 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
       bool signalsWereBlocked = viewer->blockSignals(true);
-      viewer->SetBoundGeometryActive(false);
+      viewer->SetBoundTimeGeometryActive(false);
       viewer->blockSignals(signalsWereBlocked);
     }
   }
