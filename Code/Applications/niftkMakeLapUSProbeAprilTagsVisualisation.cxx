@@ -85,8 +85,8 @@ int main(int argc, char** argv)
   sphereForGlyph->SetRadius(0.25);
 
   vtkSmartPointer<vtkGlyph3D> glyph = vtkGlyph3D::New();
-  glyph->SetSource(sphereForGlyph->GetOutput());
-  glyph->SetInput(modelForTrackingReader->GetOutput());
+  glyph->SetSourceData(sphereForGlyph->GetOutput());
+  glyph->SetInputData(modelForTrackingReader->GetOutput());
   glyph->SetScaleModeToDataScalingOff();
   //glyph->SetScaleFactor(0.01);
   //glyph->SetScaleModeToScaleByScalar();

@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkPolyDataWriter::New();
   polyWriter->SetFileName(outputTrackingModel.c_str());
-  polyWriter->SetInput(polyData);
+  polyWriter->SetInputData(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 
@@ -222,15 +222,15 @@ int main(int argc, char** argv)
     transform->RotateX(90);
 
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(cylinderSource->GetOutput());
+    transformFilter->SetInputData(cylinderSource->GetOutput());
     transformFilter->SetTransform(transform);
 
     vtkSmartPointer<vtkAppendPolyData> appender = vtkAppendPolyData::New();
-    appender->AddInput(sphereSource->GetOutput());
-    appender->AddInput(transformFilter->GetOutput());
+    appender->AddInputData(sphereSource->GetOutput());
+    appender->AddInputData(transformFilter->GetOutput());
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
-    writer->SetInput(appender->GetOutput());
+    writer->SetInputData(appender->GetOutput());
     writer->SetFileName(outputVisualisationModel.c_str());
     writer->Update();
 
