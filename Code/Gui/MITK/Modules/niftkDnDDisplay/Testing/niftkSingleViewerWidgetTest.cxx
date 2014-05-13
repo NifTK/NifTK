@@ -373,7 +373,11 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
   mitk::IOUtil::LoadFiles(files, *(d->DataStorage.GetPointer()));
   mitk::DataStorage::SetOfObjects::ConstPointer allImages = d->DataStorage->GetAll();
-  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Test image loaded.");
+
+  /// Note:
+  /// If the file is a DICOM file then all the DICOM images from the same directory
+  /// will be opened. Therefore, we check if number of loaded images is positive.
+  MITK_TEST_CONDITION_REQUIRED(allImages->size() > 0, ".. Test image loaded.");
 
   d->ImageNode = (*allImages)[0];
 
