@@ -352,16 +352,24 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowGeometryChanged(const mitk::TimeGeometry* timeGeometry)
 {
-  m_Viewer->SetTimeGeometry(timeGeometry);
+  if (timeGeometry)
+  {
+    m_Viewer->SetTimeGeometry(timeGeometry);
 
-  std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
-  /// Note:
-  /// This could be any 2D main window. We assume that the same nodes are visible
-  /// in each 2D render window of any viewer.
-  m_VisibilityTracker->SetTrackedRenderer(m_MainAxialWindow->GetRenderer());
-  m_Viewer->SetEnabled(true);
-  m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-  m_VisibilityTracker->NotifyAll();
+    std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
+    /// Note:
+    /// This could be any 2D main window. We assume that the same nodes are visible
+    /// in each 2D render window of any viewer.
+    m_VisibilityTracker->SetTrackedRenderer(m_MainAxialWindow->GetRenderer());
+    m_Viewer->SetEnabled(true);
+    m_VisibilityTracker->SetNodesToIgnore(crossHairs);
+    m_VisibilityTracker->NotifyAll();
+  }
+  else
+  {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Viewer->SetEnabled(false);
+  }
 }
 
 
