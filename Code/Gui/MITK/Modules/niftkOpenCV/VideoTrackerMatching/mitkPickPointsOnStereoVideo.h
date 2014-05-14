@@ -60,7 +60,7 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Project(mitk::VideoTrackerMatching::Pointer matcher, std::vector<double> * perturbation = NULL);
+  void  Project(mitk::VideoTrackerMatching::Pointer matcher);
   
   /**
    * \brief

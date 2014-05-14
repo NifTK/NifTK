@@ -162,8 +162,7 @@ void PickPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string prefix 
 }
 
 //-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
-    std::vector<double>* perturbation)
+void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
   if ( ! m_InitOK )
   {
@@ -172,14 +171,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   }
     
   m_ProjectOK = false;
-  m_ProjectedPoints.clear();
-  m_PointsInLeftLensCS.clear();
-  m_ClassifierProjectedPoints.clear();
-  if ( m_WorldPoints.size() == 0 ) 
-  {
-    MITK_WARN << "Called project with nothing to project";
-    return;
-  }
 
   if ( m_Visualise ) 
   {
@@ -188,18 +179,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   }
   int framenumber = 0 ;
   int key = 0;
-  bool drawProjection = true;
   IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
   IplImage *smallcorrectedimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
-      if ( m_Visualise || m_SaveVideo ) 
-      {
-        cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-        MITK_INFO << "Skipping frame " << framenumber;
-      }
+      cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+      MITK_INFO << "Skipping frame " << framenumber;
       framenumber ++;
     }
     else
@@ -209,258 +196,49 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       //worldtotracker * trackertocamera
       //in general the tracker matrices are trackertoworld
       long long timingError;
-      cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
-      
-      m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
-      std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > pointsInLeftLensCS = std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > ( timingError , WorldToLeftCamera * m_WorldPoints); 
-      
-      std::pair < long long , std::vector < cv::Point3d > >  classifierPointsInLeftLensCS = std::pair < long long , std::vector < cv::Point3d > > ( timingError , WorldToLeftCamera * m_ClassifierWorldPoints); 
-      m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
+      cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
 
-      //project onto screen
-      CvMat* outputLeftCameraWorldPointsIn3D = NULL;
-      CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
-      CvMat* output2DPointsLeft = NULL ;
-      CvMat* output2DPointsRight = NULL;
+      cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+      MITK_INFO << framenumber << " " << timingError;
       
-      cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
-      cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
-      
-      CvMat* classifierOutputLeftCameraWorldPointsIn3D = NULL;
-      CvMat* classifierOutputLeftCameraWorldNormalsIn3D = NULL ;
-      CvMat* classifierOutput2DPointsLeft = NULL ;
-      CvMat* classifierOutput2DPointsRight = NULL;
-      
-      cv::Mat classifierLeftCameraWorldPoints = cv::Mat (classifierPointsInLeftLensCS.second.size(),3,CV_64FC1);
-      cv::Mat classifierLeftCameraWorldNormals = cv::Mat (classifierPointsInLeftLensCS.second.size(),3,CV_64FC1);
-      
-      for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
+      IplImage image(videoImage);
+      cvResize (&image, smallimage,CV_INTER_LINEAR);
+      if ( framenumber %2 == 0 ) 
       {
-        leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS.second[i].first.x;
-        leftCameraWorldPoints.at<double>(i,1) = pointsInLeftLensCS.second[i].first.y;
-        leftCameraWorldPoints.at<double>(i,2) = pointsInLeftLensCS.second[i].first.z;
-        leftCameraWorldNormals.at<double>(i,0) = 0.0;
-        leftCameraWorldNormals.at<double>(i,1) = 0.0;
-        leftCameraWorldNormals.at<double>(i,2) = -1.0;
+        cvShowImage("Left Channel" , smallimage);
       }
-      for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.second.size() ; i ++ ) 
+      else
       {
-        classifierLeftCameraWorldPoints.at<double>(i,0) = classifierPointsInLeftLensCS.second[i].x;
-        classifierLeftCameraWorldPoints.at<double>(i,1) = classifierPointsInLeftLensCS.second[i].y;
-        classifierLeftCameraWorldPoints.at<double>(i,2) = classifierPointsInLeftLensCS.second[i].z;
-        classifierLeftCameraWorldNormals.at<double>(i,0) = 0.0;
-        classifierLeftCameraWorldNormals.at<double>(i,1) = 0.0;
-        classifierLeftCameraWorldNormals.at<double>(i,2) = -1.0;
+        cvShowImage("Right Channel" , smallimage);
       }
-     
-      cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
-      leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
-      leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
-      leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
-    
-      bool cropUndistortedPointsToScreen = true;
-      double cropValue = std::numeric_limits<double>::infinity();
-      mitk::ProjectVisible3DWorldPointsToStereo2D
-        ( leftCameraWorldPoints,leftCameraWorldNormals,
-          leftCameraPositionToFocalPointUnitVector,
-          *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
-          *m_RightIntrinsicMatrix,*m_RightDistortionVector,
-          *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
-          outputLeftCameraWorldPointsIn3D,
-          outputLeftCameraWorldNormalsIn3D,
-          output2DPointsLeft,
-          output2DPointsRight,
-          cropUndistortedPointsToScreen , 
-          0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
-          0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
-          cropValue);
-      
-      mitk::ProjectVisible3DWorldPointsToStereo2D
-        ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
-          leftCameraPositionToFocalPointUnitVector,
-          *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
-          *m_RightIntrinsicMatrix,*m_RightDistortionVector,
-          *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
-          classifierOutputLeftCameraWorldPointsIn3D,
-          classifierOutputLeftCameraWorldNormalsIn3D,
-          classifierOutput2DPointsLeft,
-          classifierOutput2DPointsRight,
-          cropUndistortedPointsToScreen , 
-          0.0 - m_ClassifierScreenBuffer, m_VideoWidth + m_ClassifierScreenBuffer, 
-          0.0 - m_ClassifierScreenBuffer, m_VideoHeight + m_ClassifierScreenBuffer,
-          cropValue);
+      key = cvWaitKey (20);
 
-      std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
-      std::vector < std::pair < cv::Point2d , cv::Point2d > > classifierScreenPoints;
-      
-      for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
+      std::vector <cv::Point2d> pickedPoints;
+      while ( key != 'n' )
       {
-        std::pair < cv::Point2d , cv::Point2d > pointPair;
-        pointPair.first = cv::Point2d(CV_MAT_ELEM(*output2DPointsLeft,double,i,0),CV_MAT_ELEM(*output2DPointsLeft,double,i,1));
-        pointPair.second = cv::Point2d(CV_MAT_ELEM(*output2DPointsRight,double,i,0),CV_MAT_ELEM(*output2DPointsRight,double,i,1));
-        screenPoints.push_back(pointPair);
-      }
-      m_ProjectedPoints.push_back(std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > ( timingError, screenPoints));
-      
-      for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.second.size() ; i ++ ) 
-      {
-        std::pair < cv::Point2d , cv::Point2d > pointPair;
-        pointPair.first = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,1));
-        pointPair.second = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,1));
-        classifierScreenPoints.push_back(pointPair);
-      }
-      m_ClassifierProjectedPoints.push_back(std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > ( timingError, classifierScreenPoints));
-      
-      //de-allocate the matrices    
-      cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
-      cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
-      cvReleaseMat(&output2DPointsLeft);
-      cvReleaseMat(&output2DPointsRight);
-      cvReleaseMat(&classifierOutputLeftCameraWorldPointsIn3D);
-      cvReleaseMat(&classifierOutputLeftCameraWorldNormalsIn3D);
-      cvReleaseMat(&classifierOutput2DPointsLeft);
-      cvReleaseMat(&classifierOutput2DPointsRight);
-
-      if ( m_Visualise || m_SaveVideo ) 
-      {
-        cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-        MITK_INFO << framenumber << " " << m_WorldPoints[0].first << " " << pointsInLeftLensCS.second[0].first << " => " << screenPoints[0].first << screenPoints[0].second;
-        if ( drawProjection )
+        cvSetMouseCallback("Left Channel",CallBackFunc, &pickedPoints);
+        key = cvWaitKey(20);
+        if ( pickedPoints.size() > 0 )
         {
-          if ( ! m_DrawLines ) 
+          for ( int i = 0 ; i < pickedPoints.size() ; i ++ ) 
           {
-            if ( framenumber % 2 == 0 ) 
-            {
-              for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
-              {
-                cv::circle(videoImage, screenPoints[i].first,10, pointsInLeftLensCS.second[i].second, 3, 8, 0 );
-              }
-            }
-            else
-            {
-              for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
-              {
-                cv::circle(videoImage, screenPoints[i].second,10, pointsInLeftLensCS.second[i].second, 3, 8, 0 );
-              } 
-            }
+            cv::circle(videoImage, pickedPoints[i],10,cv::Scalar(255,255,255),8,3);
           }
-          else 
-          {
-            if ( framenumber % 2 == 0 ) 
-            {
-              unsigned int i;
-              for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
-              {
-                cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, pointsInLeftLensCS.second[i].second );
-              }
-              cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, pointsInLeftLensCS.second[i].second );
-            }
-            else
-            {
-              unsigned int i;
-              for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
-              {
-                cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, pointsInLeftLensCS.second[i].second );
-              } 
-              cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, pointsInLeftLensCS.second[i].second );
-            }
-          }
-          if ( m_DrawAxes && drawProjection )
-          {
-            if ( framenumber % 2 == 0 )
-            {
-              cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[1].first,cvScalar(255,0,0));
-              cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[2].first,cvScalar(0,255,0));
-              cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[3].first,cvScalar(0,0,255));         
-            }
-            else
-            {
-              cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[1].second,cvScalar(255,0,0));
-              cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[2].second,cvScalar(0,255,0));
-              cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[3].second,cvScalar(0,0,255));         
-            }
-          }
-        }
-        if ( m_SaveVideo )
-        {
-          if ( m_LeftWriter != NULL ) 
-          {
-            if ( framenumber%2 == 0 ) 
-            {
-              IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_LeftWriter,smallcorrectedimage);
-            }
-          }
-          if ( m_RightWriter != NULL ) 
-          {
-            if ( framenumber%2 != 0 ) 
-            {
-              IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_RightWriter,smallcorrectedimage);
-            }
-          }
-        }
-        if ( m_Visualise ) 
-        {
+            
           IplImage image(videoImage);
           cvResize (&image, smallimage,CV_INTER_LINEAR);
-          if ( framenumber %2 == 0 ) 
-          {
-            cvShowImage("Left Channel" , smallimage);
-          }
-          else
-          {
-            cvShowImage("Right Channel" , smallimage);
-          }
-          key = cvWaitKey (20);
-          if ( key == 's' )
-          {
-            m_Visualise = false;
-          }
-          if ( key == 't' )
-          {
-            drawProjection = ! drawProjection;
-          }
+          cvShowImage("Left Channel" , smallimage);
         }
-
-        std::vector <cv::Point2d> pickedPoints;
-        while ( key != 'n' )
-        {
-          cvSetMouseCallback("Left Channel",CallBackFunc, &pickedPoints);
-          key = cvWaitKey(20);
-          if ( pickedPoints.size() > 0 )
-          {
-            for ( int i = 0 ; i < pickedPoints.size() ; i ++ ) 
-            {
-              cv::circle(videoImage, pickedPoints[i],10,cv::Scalar(255,255,255),8,3);
-            }
-            
-            IplImage image(videoImage);
-            cvResize (&image, smallimage,CV_INTER_LINEAR);
-            cvShowImage("Left Channel" , smallimage);
-          }
-        }
-        std::string outPrefix = "outItGoes";
-        std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
-        pointOut << pickedPoints;
-        pointOut.close();
-        exit(1);
       }
-      framenumber ++;
+      std::string outPrefix = "outItGoes";
+      std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
+      pointOut << pickedPoints;
+      pointOut.close();
+      exit(1);
     }
-  }
-  if ( m_LeftWriter != NULL )
-  {
-    cvReleaseVideoWriter(&m_LeftWriter);
-  }
-  if ( m_RightWriter != NULL )
-  {
-    cvReleaseVideoWriter(&m_RightWriter);
+    framenumber ++;
   }
   m_ProjectOK = true;
-
 }
 //-----------------------------------------------------------------------------
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
