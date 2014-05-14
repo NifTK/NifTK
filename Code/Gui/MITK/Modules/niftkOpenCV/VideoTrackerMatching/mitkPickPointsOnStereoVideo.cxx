@@ -179,8 +179,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   }
   int framenumber = 0 ;
   int key = 0;
-  IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
-  IplImage *smallcorrectedimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
@@ -191,10 +189,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     }
     else
     {
-
-      //put the world points into the coordinates of the left hand camera.
-      //worldtotracker * trackertocamera
-      //in general the tracker matrices are trackertoworld
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
 
@@ -202,14 +196,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       MITK_INFO << framenumber << " " << timingError;
       
       IplImage image(videoImage);
-      cvResize (&image, smallimage,CV_INTER_LINEAR);
       if ( framenumber %2 == 0 ) 
       {
-        cvShowImage("Left Channel" , smallimage);
+        cvShowImage("Left Channel" , &image);
       }
       else
       {
-        cvShowImage("Right Channel" , smallimage);
+        cvShowImage("Right Channel" , &image);
       }
       key = cvWaitKey (20);
 
@@ -226,8 +219,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           }
             
           IplImage image(videoImage);
-          cvResize (&image, smallimage,CV_INTER_LINEAR);
-          cvShowImage("Left Channel" , smallimage);
+          cvShowImage("Left Channel" , &image);
         }
       }
       std::string outPrefix = "outItGoes";
