@@ -419,10 +419,12 @@ void QmitkSideViewerWidget::OnFocusChanged()
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
   {
-    QmitkRenderWindow* selectedMainWindow = selectedEditor->GetActiveQmitkRenderWindow();
-    if (focusedRenderer == selectedMainWindow->GetRenderer())
+    foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
     {
-      this->OnMainWindowChanged(selectedMainWindow);
+      if (focusedRenderer == mainWindow->GetRenderer())
+      {
+        this->OnMainWindowChanged(mainWindow);
+      }
     }
   }
 }
@@ -648,30 +650,6 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
   }
 
   return renderPart;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
-{
-  // Return the active editor if it implements mitk::IRenderWindowPart
-  mitk::IRenderWindowPart* renderPart = this->GetSelectedEditor();
-
-  QmitkRenderWindow* mainWindow = 0;
-
-  if (renderPart)
-  {
-    if (id.isNull())
-    {
-      mainWindow = renderPart->GetActiveQmitkRenderWindow();
-    }
-    else
-    {
-      mainWindow = renderPart->GetQmitkRenderWindow(id);
-    }
-  }
-
-  return mainWindow;
 }
 
 

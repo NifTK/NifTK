@@ -76,6 +76,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
@@ -107,6 +108,13 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, st
   Q_UNUSED(renderWindow);
   emit NodesDropped(this, nodes);
   m_MultiWidget->SetFocused();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
+{
+  emit WindowLayoutChanged(this, windowLayout);
 }
 
 
@@ -968,7 +976,6 @@ bool niftkSingleViewerWidget::MovePosterior()
 bool niftkSingleViewerWidget::SwitchToAxial()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_AXIAL);
   return true;
 }
 
@@ -977,7 +984,6 @@ bool niftkSingleViewerWidget::SwitchToAxial()
 bool niftkSingleViewerWidget::SwitchToSagittal()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_SAGITTAL);
   return true;
 }
 
@@ -986,7 +992,6 @@ bool niftkSingleViewerWidget::SwitchToSagittal()
 bool niftkSingleViewerWidget::SwitchToCoronal()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_CORONAL);
   return true;
 }
 
@@ -995,7 +1000,6 @@ bool niftkSingleViewerWidget::SwitchToCoronal()
 bool niftkSingleViewerWidget::SwitchTo3D()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_3D);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_3D);
   return true;
 }
 
@@ -1060,8 +1064,6 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     this->SetWindowLayout(nextWindowLayout);
 
     m_MultiWidget->BlockUpdate(updateWasBlocked);
-
-    emit WindowLayoutChanged(this, nextWindowLayout);
   }
 
   return true;
