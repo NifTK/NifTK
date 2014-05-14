@@ -1,157 +1,82 @@
 #! /usr/bin/env python
 
-import nipype.interfaces.utility as util     # utility
-import nipype.pipeline.engine as pe          # pypeline engine
-import nipype.interfaces.niftyseg as niftyseg
-import nipype.interfaces.niftyreg as niftyreg
+import nipype.interfaces.utility        as niu     # utility
+import nipype.pipeline.engine           as pe          # pypeline engine
+import nipype.interfaces.niftyseg       as niftyseg
+import nipype.interfaces.niftyreg       as niftyreg
+import nipype.interfaces.fsl            as fsl
+import nipype.interfaces.susceptibility as susceptibility
 
-def create_niftyseg_gif_propagation_pipeline(name="niftyseg_gif_propagation"):
-    """
+from groupwise_registration_workflow    import *
+from susceptibility_correction_workflow import *
 
-    Creates a pipeline that uses seg_GIF label propagation to propagate 
-    segmentation towards a target image
-    
-    Example
-    -------
+'''
+This file provides the creation of the whole workflow necessary for 
+processing diffusion MRI images.
+'''
 
-    >>> gif = create_niftyseg_gif_propagation_pipeline("niftyseg_gif")
-    >>> gif.inputs.inputnode.input_image = 'T1.nii'
-    >>> gif.run()                  # doctest: +SKIP
-
-    Inputs::
-
-        inputnode.input_image
-
-    Outputs::
-
-
-    """
-
-    inputnode = pe.Node(interface = util.IdentityInterface(fields=["dwi",
-                                                                   "bvecs",
-                                                                   "bvals"]),
-                        name="inputnode")
-
-    bet = pe.Node(interface=fsl.BET(), name="bet")
-    bet.inputs.mask = True
-
-    fsl2mrtrix = pe.Node(interface=mrtrix.FSL2MRTrix(),name='fsl2mrtrix')
-    fsl2mrtrix.inputs.invert_y = True
-
-    dwi2tensor = pe.Node(interface=mrtrix.DWI2Tensor(),name='dwi2tensor')
-
-    tensor2vector = pe.Node(interface=mrtrix.Tensor2Vector(),
-                            name='tensor2vector')
-    tensor2adc = pe.Node(interface=mrtrix.Tensor2ApparentDiffusion(),
-                         name='tensor2adc')
-    tensor2fa = pe.Node(interface=mrtrix.Tensor2FractionalAnisotropy(),
-                        name='tensor2fa')
-
-    erode_mask_firstpass = pe.Node(interface=mrtrix.Erode(),
-                                   name='erode_mask_firstpass')
-    erode_mask_secondpass = pe.Node(interface=mrtrix.Erode(),
-                                    name='erode_mask_secondpass')
-
-    threshold_b0 = pe.Node(interface=mrtrix.Threshold(),name='threshold_b0')
-
-    threshold_FA = pe.Node(interface=mrtrix.Threshold(),name='threshold_FA')
-    threshold_FA.inputs.absolute_threshold_value = 0.7
-
-    threshold_wmmask = pe.Node(interface=mrtrix.Threshold(),
-                               name='threshold_wmmask')
-    threshold_wmmask.inputs.absolute_threshold_value = 0.4
-
-    MRmultiply = pe.Node(interface=mrtrix.MRMultiply(),name='MRmultiply')
-    MRmult_merge = pe.Node(interface=util.Merge(2), name='MRmultiply_merge')
-
-    median3d = pe.Node(interface=mrtrix.MedianFilter3D(),name='median3D')
-
-    MRconvert = pe.Node(interface=mrtrix.MRConvert(),name='MRconvert')
-    MRconvert.inputs.extract_at_axis = 3
-    MRconvert.inputs.extract_at_coordinate = [0]
-
-    csdeconv = pe.Node(interface=mrtrix.ConstrainedSphericalDeconvolution(),
-                       name='csdeconv')
-
-    gen_WM_mask = pe.Node(interface=mrtrix.GenerateWhiteMatterMask(),
-                          name='gen_WM_mask')
-
-    estimateresponse = pe.Node(interface=mrtrix.EstimateResponseForSH(),
-                               name='estimateresponse')
-
-    if tractography_type == 'probabilistic':
-        CSDstreamtrack = pe.Node(interface=mrtrix.ProbabilisticSphericallyDeconvolutedStreamlineTrack(),
-                                 name='CSDstreamtrack')
-    else:
-        CSDstreamtrack = pe.Node(interface=mrtrix.SphericallyDeconvolutedStreamlineTrack(),
-                                 name='CSDstreamtrack')
-    CSDstreamtrack.inputs.desired_number_of_tracks = 15000
-
-    tracks2prob = pe.Node(interface=mrtrix.Tracks2Prob(),name='tracks2prob')
-    tracks2prob.inputs.colour = True
-    tck2trk = pe.Node(interface=mrtrix.MRTrix2TrackVis(),name='tck2trk')
+def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
 
-    workflow.connect([(inputnode, fsl2mrtrix, [("bvecs", "bvec_file"),
-                                                    ("bvals", "bval_file")])])
-    workflow.connect([(inputnode, dwi2tensor,[("dwi","in_file")])])
-    workflow.connect([(fsl2mrtrix, dwi2tensor,[("encoding_file","encoding_file")])])
+    # We need to create an input node for the workflow
+    input_node = pe.Node(
+        niu.IdentityInterface(
+            fields=['in_dwi_4d_file',
+                    'in_bvec_file',
+                    'in_bval_file',
+                    'in_fm_magnitude_file',
+                    'in_fm_phase_file',
+                    'in_T1_file']),
+        name='inputnode')
+    
+    #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
+    split_dwis = pe.Node(interface = fsl.Split(), name = 'split_dwis')
+    
+    #Node using niu.Select() to select only the B0 files
+    select_B0s = pe.Node(interface = niu.Select(), name = 'select_B0s')
+    #select_B0s.inputs.index=?
+    select_DWIs = pe.Node(interface = niu.Select(), name = 'select_DWIs')
+    #select_DWIs.inputs.index=?
+    groupwise_B0_coregistration = create_linear_coregistration_workflow('groupwise_B0_coregistration')
+    
+    susceptibility_correction = create_susceptibility_correction_workflow('susceptibility_correction')
 
-    workflow.connect([(dwi2tensor, tensor2vector,[['tensor','in_file']]),
-                           (dwi2tensor, tensor2adc,[['tensor','in_file']]),
-                           (dwi2tensor, tensor2fa,[['tensor','in_file']]),
-                          ])
+    dwi_to_B0_registration = pe.Node(niftyreg.RegAladin(), name = 'dwi_to_B0_registration', iterfield=['flo_file'])
+    
+    #do the node for the gradient reorientation
+    gradient_reorientation = pe.Node()
+    
+    #do the join node for composing a linear transformation and a deformation field
+    transformation_composition = pe.Node(niftyreg.RegTransform(), name = 'transformation_composition', iterfield=['in_comp_transformation_file1'])
+    
+    #do the node for resampling
+    resampling = pe.Node(niftyreg.RegResample(), name = 'resampling', iterfield=['trans_file', 'flo_file'])
 
-    workflow.connect([(inputnode, MRconvert,[("dwi","in_file")])])
-    workflow.connect([(MRconvert, threshold_b0,[("converted","in_file")])])
-    workflow.connect([(threshold_b0, median3d,[("out_file","in_file")])])
-    workflow.connect([(median3d, erode_mask_firstpass,[("out_file","in_file")])])
-    workflow.connect([(erode_mask_firstpass, erode_mask_secondpass,[("out_file","in_file")])])
+    #do the node for merging all the files into one
+    merge_dwis = pe.Node(interface = niu.Select(), name = 'merge_dwis')
+    
+    workflow.connect([input_node, split_dwis,                  ['in_dwi_4d_file', 'in_file']))
+    workflow.connect([split_dwis, select_B0s,                  ['out_files',      'inlist']))
+    workflow.connect([select_B0s, groupwise_B0_coregistration, ['out',            'inputnode.in_files']))
 
-    workflow.connect([(tensor2fa, MRmult_merge,[("FA","in1")])])
-    workflow.connect([(erode_mask_secondpass, MRmult_merge,[("out_file","in2")])])
-    workflow.connect([(MRmult_merge, MRmultiply,[("out","in_files")])])
-    workflow.connect([(MRmultiply, threshold_FA,[("out_file","in_file")])])
-    workflow.connect([(threshold_FA, estimateresponse,[("out_file","mask_image")])])
+    workflow.connect([groupwise_B0_coregistration, susceptibility_correction, ['outputnode.mean_image','inputnode.in_B0_file']))
+    workflow.connect([inputnode, susceptibility_correction,                   ['in_T1_file', 'inputnode.in_T1_file']))
 
-    workflow.connect([(inputnode, bet,[("dwi","in_file")])])
-    workflow.connect([(inputnode, gen_WM_mask,[("dwi","in_file")])])
-    workflow.connect([(bet, gen_WM_mask,[("mask_file","binary_mask")])])
-    workflow.connect([(fsl2mrtrix, gen_WM_mask,[("encoding_file","encoding_file")])])
+    workflow.connect([groupwise_B0_coregistration, dwi_to_B0_registration,    ['outputnode.mean_image','ref_file']))
+    workflow.connect([select_DWIs, dwi_to_B0_registration,     ['out','flo_file']))
 
-    workflow.connect([(inputnode, estimateresponse,[("dwi","in_file")])])
-    workflow.connect([(fsl2mrtrix, estimateresponse,[("encoding_file","encoding_file")])])
+    workflow.connect([groupwise_B0_coregistration, transformation_composition, ['out_transformation',   'in_comp_transformation_file1']))
+    workflow.connect([dwi_to_B0_registration,      transformation_composition, ['out_transformation',   'in_comp_transformation_file1']))
+    workflow.connect([susceptibility_correction,   transformation_composition, ['out_deformation_field','in_comp_transformation_file2']))
+    
+    workflow.connect([groupwise_B0_coregistration, resampling, ['mean_image',              'ref_file']))
+    workflow.connect([split_dwis, resampling,                  ['out_files',               'flo_file']))
+    workflow.connect([transformation_composition, resampling,  ['out_comp_transformation', 'trans_file']))
 
-    workflow.connect([(inputnode, csdeconv,[("dwi","in_file")])])
-    workflow.connect([(gen_WM_mask, csdeconv,[("WMprobabilitymap","mask_image")])])
-    workflow.connect([(estimateresponse, csdeconv,[("response","response_file")])])
-    workflow.connect([(fsl2mrtrix, csdeconv,[("encoding_file","encoding_file")])])
+    workflow.connect([resampling, merge_dwis,                  ['res_file', 'in_file']))
 
-    workflow.connect([(gen_WM_mask, threshold_wmmask,[("WMprobabilitymap","in_file")])])
-    workflow.connect([(threshold_wmmask, CSDstreamtrack,[("out_file","seed_file")])])
-    workflow.connect([(csdeconv, CSDstreamtrack,[("spherical_harmonics_image","in_file")])])
-
-    if tractography_type == 'probabilistic':
-        workflow.connect([(CSDstreamtrack, tracks2prob,[("tracked","in_file")])])
-        workflow.connect([(inputnode, tracks2prob,[("dwi","template_file")])])
-
-    workflow.connect([(CSDstreamtrack, tck2trk,[("tracked","in_file")])])
-    workflow.connect([(inputnode, tck2trk,[("dwi","image_file")])])
-
-    output_fields = ["fa", "tracts_trk", "csdeconv", "tracts_tck"]
-    if tractography_type == 'probabilistic':
-        output_fields.append("tdi")
-    outputnode = pe.Node(interface = util.IdentityInterface(fields=output_fields),
-                                        name="outputnode")
-
-    workflow.connect([(CSDstreamtrack, outputnode, [("tracked", "tracts_tck")]),
-                      (csdeconv, outputnode, [("spherical_harmonics_image", "csdeconv")]),
-                      (tensor2fa, outputnode, [("FA", "fa")]),
-                      (tck2trk, outputnode, [("out_file", "tracts_trk")])
-                      ])
-    if tractography_type == 'probabilistic':
-        workflow.connect([(tracks2prob, outputnode, [("tract_image", "tdi")])])
-
-    return workflow
+    workflow.connect([merge_dwis, tensor_fitting,              ['out_file',     'in_dwi_file']))
+    workflow.connect([inputnode,  tensor_fitting,              ['in_bvec_file', 'in_bvec_file']))
+    workflow.connect([inputnode,  tensor_fitting,              ['in_bval_file', 'in_bvec_file']))
