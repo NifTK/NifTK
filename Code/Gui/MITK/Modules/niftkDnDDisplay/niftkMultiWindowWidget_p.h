@@ -73,7 +73,7 @@ class SliceNavigationController;
  * \sa niftkSingleViewerWidget
  * \sa niftkMultiViewerWidget
  */
-class niftkMultiWindowWidget : public QmitkStdMultiWidget
+class niftkMultiWindowWidget : private QmitkStdMultiWidget
 {
 
   Q_OBJECT
