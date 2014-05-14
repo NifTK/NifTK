@@ -425,14 +425,26 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           }
         }
 
-        //do some interative stuff
-        std::string outPrefix = "outItGoes";
-        std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
+        std::vector <cv::Point2d> pickedPoints;
         while ( key != 'n' )
         {
-          cvSetMouseCallback("Left Channel",CallBackFunc, &pointOut);
+          cvSetMouseCallback("Left Channel",CallBackFunc, &pickedPoints);
           key = cvWaitKey(20);
+          if ( pickedPoints.size() > 0 )
+          {
+            for ( int i = 0 ; i < pickedPoints.size() ; i ++ ) 
+            {
+              cv::circle(videoImage, pickedPoints[i],10,cv::Scalar(255,255,255),8,3);
+            }
+            
+            IplImage image(videoImage);
+            cvResize (&image, smallimage,CV_INTER_LINEAR);
+            cvShowImage("Left Channel" , smallimage);
+          }
         }
+        std::string outPrefix = "outItGoes";
+        std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
+        pointOut << pickedPoints;
         pointOut.close();
         exit(1);
       }
@@ -453,10 +465,11 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 //-----------------------------------------------------------------------------
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
-  std::ofstream* out = static_cast<std::ofstream*>(userdata);
+  std::vector<cv::Point2d>* out = static_cast<std::vector<cv::Point2d>*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    *out << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+    std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+    out->push_back (cv::Point2d(x,y));
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {
