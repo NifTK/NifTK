@@ -47,15 +47,10 @@ int main(int argc, char** argv)
   try
   {
     mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
-    projector->SetVisualise(Visualise);
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
     
-    if ( outputVideo.length() != 0 ) 
-    {
-      projector->SetSaveVideo(true, outputVideo);
-    }
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);

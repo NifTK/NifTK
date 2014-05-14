@@ -93,8 +93,6 @@ public:
      std::vector < unsigned int>  frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
      std::vector <double> * perturbation = NULL);
 
-  void SetVisualise( bool) ;
-  void SetSaveVideo( bool state, std::string prefix = "" );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
@@ -159,7 +157,6 @@ protected:
   PickPointsOnStereoVideo& operator=(const PickPointsOnStereoVideo&); // Purposefully not implemented.
 
 private:
-  bool                          m_Visualise; //if true the project function attempts to open a couple of windows to show projection in real time
   bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
@@ -220,8 +217,6 @@ private:
   std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
   CvCapture*                    m_Capture;
-  CvVideoWriter*                m_LeftWriter;
-  CvVideoWriter*                m_RightWriter;
 
   double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
   

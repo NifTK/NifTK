@@ -26,9 +26,8 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 PickPointsOnStereoVideo::PickPointsOnStereoVideo()
-: m_Visualise(false)
-, m_SaveVideo(false)
-, m_VideoIn("")
+: 
+m_VideoIn("")
 , m_VideoOut("")
 , m_Directory("")
 , m_TrackerIndex(0)
@@ -47,8 +46,6 @@ PickPointsOnStereoVideo::PickPointsOnStereoVideo()
 , m_VideoWidth(1920)
 , m_VideoHeight(540)
 , m_Capture(NULL)
-, m_LeftWriter(NULL)
-, m_RightWriter(NULL)
 , m_AllowablePointMatchingRatio (1.0) 
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
@@ -99,66 +96,34 @@ void PickPointsOnStereoVideo::Initialise(std::string directory,
   }
   ProjectAxes(); 
   
-  if ( m_Visualise || m_SaveVideo ) 
+  if ( m_Capture == NULL ) 
   {
-    if ( m_Capture == NULL ) 
+    std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
+    if ( videoFiles.size() == 0 ) 
     {
-      std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-      if ( videoFiles.size() == 0 ) 
-      {
-        MITK_ERROR << "Failed to find any video files";
-        m_InitOK = false;
-        return;
-      }
-      if ( videoFiles.size() > 1 ) 
-      {
-        MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-      }
-      m_VideoIn = videoFiles[0];
-   
-      m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-    }
-  
-    if ( ! m_Capture )
-    {
-      MITK_ERROR << "Failed to open " << m_VideoIn;
-      m_InitOK=false;
+      MITK_ERROR << "Failed to find any video files";
+      m_InitOK = false;
       return;
     }
+    if ( videoFiles.size() > 1 ) 
+    {
+      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
+    }
+    m_VideoIn = videoFiles[0];
+   
+    m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
+  }
+  
+  if ( ! m_Capture )
+  {
+    MITK_ERROR << "Failed to open " << m_VideoIn;
+    m_InitOK=false;
+    return;
   }
 
   m_InitOK = true;
   return;
 
-}
-
-//-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::SetVisualise ( bool visualise )
-{
-  if ( m_InitOK ) 
-  {
-    MITK_WARN << "Changing visualisation state after initialisation, will need to re-initialise";
-  }
-  m_Visualise = visualise;
-  m_InitOK = false;
-  return;
-}
-//-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string prefix )
-{
-  if ( m_InitOK ) 
-  {
-    MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
-  }
-  m_SaveVideo = savevideo;
-  if ( savevideo )
-  {
-    cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
-    m_LeftWriter =cvCreateVideoWriter(std::string(prefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
-    m_RightWriter =cvCreateVideoWriter(std::string(prefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
-  }
-  m_InitOK = false;
-  return;
 }
 
 //-----------------------------------------------------------------------------
@@ -172,11 +137,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     
   m_ProjectOK = false;
 
-  if ( m_Visualise ) 
-  {
-    cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
-  }
+  cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
+  cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
   int framenumber = 0 ;
   int key = 0;
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
