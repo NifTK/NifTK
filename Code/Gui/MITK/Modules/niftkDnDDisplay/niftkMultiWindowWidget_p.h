@@ -353,6 +353,9 @@ public:
 
 signals:
 
+  /// \brief Emitted when the window layout has changed.
+  void WindowLayoutChanged(WindowLayout windowLayout);
+
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
@@ -528,6 +531,7 @@ private:
 
   bool m_FocusHasChanged;
   bool m_GeometryHasChanged;
+  bool m_WindowLayoutHasChanged;
   bool m_TimeStepHasChanged;
   std::vector<bool> m_SelectedSliceHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;

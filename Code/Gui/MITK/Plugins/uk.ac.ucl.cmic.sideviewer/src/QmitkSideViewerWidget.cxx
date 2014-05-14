@@ -224,8 +224,6 @@ void QmitkSideViewerWidget::OnAxialWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_AXIAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
-    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -237,8 +235,6 @@ void QmitkSideViewerWidget::OnSagittalWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_SAGITTAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
-    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -250,8 +246,6 @@ void QmitkSideViewerWidget::OnCoronalWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_CORONAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
-    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -309,9 +303,7 @@ void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
     }
   }
 
-  /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
   m_Viewer->SetWindowLayout(windowLayout);
-  this->OnWindowLayoutChanged(m_Viewer, windowLayout);
 }
 
 
@@ -404,8 +396,6 @@ void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation main
   m_LayoutWidget->blockSignals(wasBlocked);
 
   m_Viewer->SetWindowLayout(windowLayout);
-  /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
-  this->OnWindowLayoutChanged(m_Viewer, windowLayout);
 }
 
 

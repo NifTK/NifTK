@@ -385,6 +385,9 @@ protected:
 
 protected slots:
 
+  /// \brief Called when the window layout has changed.
+  virtual void OnWindowLayoutChanged(WindowLayout windowLayout);
+
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 

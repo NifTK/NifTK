@@ -100,6 +100,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_BlockUpdate(false)
 , m_FocusHasChanged(false)
 , m_GeometryHasChanged(false)
+, m_WindowLayoutHasChanged(false)
 , m_TimeStepHasChanged(false)
 , m_SelectedSliceHasChanged(3)
 , m_CursorPositionHasChanged(3)
@@ -1311,6 +1312,14 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
+/// The viewer is not correctly initialised if this check is enabled.
+//  if (windowLayout == m_WindowLayout)
+//  {
+//    return;
+//  }
+
+  bool updateWasBlocked = this->BlockUpdate(true);
+
   bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
   if (m_GridLayout != NULL)
@@ -1495,6 +1504,7 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   m_ScaleFactorBinding = ::IsMultiWindowLayout(windowLayout);
 
   m_WindowLayout = windowLayout;
+  m_WindowLayoutHasChanged = true;
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
@@ -1527,6 +1537,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   }
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -2735,6 +2747,12 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       if (selectedPositionHasChanged)
       {
         emit SelectedPositionChanged(m_SelectedPosition);
+      }
+
+      if (m_WindowLayoutHasChanged)
+      {
+        m_WindowLayoutHasChanged = false;
+        emit WindowLayoutChanged(m_WindowLayout);
       }
 
       for (unsigned i = 0; i < 3; ++i)
