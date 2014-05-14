@@ -162,13 +162,13 @@ public:
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  /// \brief Sets the visible flag for all the nodes, and all the renderers.
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
-  /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
+  /// \brief Returns the minimum allowed magnification.
   double GetMinMagnification() const;
 
-  /// \brief Returns the maximum allowed magnification, which is passed in as constructor arg, and held constant.
+  /// \brief Returns the maximum allowed magnification.
   double GetMaxMagnification() const;
 
   /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.

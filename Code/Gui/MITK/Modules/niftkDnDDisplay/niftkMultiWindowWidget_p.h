@@ -302,7 +302,7 @@ public:
   void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
@@ -451,7 +451,6 @@ private:
   int m_SelectedWindowIndex;
   int m_FocusLosingWindowIndex;
   bool m_CursorVisibility;
-  bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;

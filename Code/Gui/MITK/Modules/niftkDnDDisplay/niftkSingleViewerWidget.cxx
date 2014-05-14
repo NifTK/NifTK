@@ -355,9 +355,9 @@ void niftkSingleViewerWidget::FitToDisplay(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkSingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
-  m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
+  m_MultiWidget->SetVisibility(nodes, visible);
 }
 
 
