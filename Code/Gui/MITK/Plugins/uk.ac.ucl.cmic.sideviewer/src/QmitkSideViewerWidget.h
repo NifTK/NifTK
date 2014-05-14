@@ -125,9 +125,6 @@ private:
   /// Returns 0 if no editor is opened.
   mitk::IRenderWindowPart* GetSelectedEditor();
 
-  /// \brief Gets the main window that is the last active render window of the main display.
-  QmitkRenderWindow* GetMainWindow(const QString& id = QString());
-
   /// \brief Updates the slice and magnification spin boxes according to the selected window.
   void OnViewerWindowChanged();
 

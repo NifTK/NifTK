@@ -224,6 +224,8 @@ void QmitkSideViewerWidget::OnAxialWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_AXIAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
+    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -235,6 +237,8 @@ void QmitkSideViewerWidget::OnSagittalWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_SAGITTAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
+    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -246,6 +250,8 @@ void QmitkSideViewerWidget::OnCoronalWindowRadioButtonToggled(bool checked)
   {
     m_SingleWindowLayouts[m_MainWindowOrientation] = WINDOW_LAYOUT_CORONAL;
     m_Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+    /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
+    this->OnWindowLayoutChanged(m_Viewer, WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -303,7 +309,9 @@ void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
     }
   }
 
+  /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
   m_Viewer->SetWindowLayout(windowLayout);
+  this->OnWindowLayoutChanged(m_Viewer, windowLayout);
 }
 
 
@@ -396,6 +404,8 @@ void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation main
   m_LayoutWidget->blockSignals(wasBlocked);
 
   m_Viewer->SetWindowLayout(windowLayout);
+  /// TODO The SetWindowLayout call should emit a signal but it does not at the moment.
+  this->OnWindowLayoutChanged(m_Viewer, windowLayout);
 }
 
 
@@ -419,10 +429,12 @@ void QmitkSideViewerWidget::OnFocusChanged()
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
   {
-    QmitkRenderWindow* selectedMainWindow = selectedEditor->GetActiveQmitkRenderWindow();
-    if (focusedRenderer == selectedMainWindow->GetRenderer())
+    foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
     {
-      this->OnMainWindowChanged(selectedMainWindow);
+      if (focusedRenderer == mainWindow->GetRenderer())
+      {
+        this->OnMainWindowChanged(mainWindow);
+      }
     }
   }
 }
@@ -648,30 +660,6 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
   }
 
   return renderPart;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkSideViewerWidget::GetMainWindow(const QString& id)
-{
-  // Return the active editor if it implements mitk::IRenderWindowPart
-  mitk::IRenderWindowPart* renderPart = this->GetSelectedEditor();
-
-  QmitkRenderWindow* mainWindow = 0;
-
-  if (renderPart)
-  {
-    if (id.isNull())
-    {
-      mainWindow = renderPart->GetActiveQmitkRenderWindow();
-    }
-    else
-    {
-      mainWindow = renderPart->GetQmitkRenderWindow(id);
-    }
-  }
-
-  return mainWindow;
 }
 
 
