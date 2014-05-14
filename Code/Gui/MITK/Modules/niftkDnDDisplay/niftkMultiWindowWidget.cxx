@@ -84,7 +84,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_CursorGlobalVisibility(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_CursorPositions(3)
@@ -705,6 +704,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
         show3DPlanes = true;
       }
     }
+
     this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
@@ -734,9 +734,9 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
-  for (unsigned int i = 0; i < nodes.size(); i++)
+  for (std::size_t i = 0; i < nodes.size(); ++i)
   {
     this->SetVisibility(mitkWidget1, nodes[i], visible);
     this->SetVisibility(mitkWidget2, nodes[i], visible);

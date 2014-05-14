@@ -119,7 +119,8 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *
       nodes.push_back(it->Value());
     }
   }
-  m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
+
+  m_Viewers[viewerIndex]->SetVisibility(nodes, false);
 }
 
 
@@ -189,7 +190,7 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
   {
     std::vector<mitk::DataNode*> nodes;
     nodes.push_back(node);
-    m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
+    m_Viewers[viewerIndex]->SetVisibility(nodes, false);
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
@@ -292,7 +293,7 @@ void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(mitk::DataNode
       {
         std::vector<mitk::DataNode*> nodes;
         nodes.push_back(node);
-        m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, globalVisibility);
+        m_Viewers[viewerIndex]->SetVisibility(nodes, globalVisibility);
 
 //        if (!globalVisibility)
 //        {
@@ -342,7 +343,7 @@ void niftkMultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
     nodes.push_back(*iter);
   }
 
-  viewer->SetRendererSpecificVisibility(nodes, false);
+  viewer->SetVisibility(nodes, false);
   m_DataNodesPerViewer[viewerIndex].clear();
 }
 
@@ -382,7 +383,7 @@ void niftkMultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::D
     }
   }
 
-  viewer->SetRendererSpecificVisibility(nodes, initialVisibility);
+  viewer->SetVisibility(nodes, initialVisibility);
 }
 
 
