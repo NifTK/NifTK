@@ -221,28 +221,28 @@ const std::vector<QmitkRenderWindow*>& niftkSingleViewerWidget::GetRenderWindows
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetAxialWindow() const
 {
-  return m_MultiWidget->GetRenderWindow1();
+  return m_MultiWidget->GetRenderWindows()[0];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetSagittalWindow() const
 {
-  return m_MultiWidget->GetRenderWindow2();
+  return m_MultiWidget->GetRenderWindows()[1];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetCoronalWindow() const
 {
-  return m_MultiWidget->GetRenderWindow3();
+  return m_MultiWidget->GetRenderWindows()[2];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::Get3DWindow() const
 {
-  return m_MultiWidget->GetRenderWindow4();
+  return m_MultiWidget->GetRenderWindows()[3];
 }
 
 

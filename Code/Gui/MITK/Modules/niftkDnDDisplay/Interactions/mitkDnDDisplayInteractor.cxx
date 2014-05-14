@@ -31,9 +31,10 @@ mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWi
 , m_MultiWindowWidget(multiWindowWidget)
 , m_Renderers(3)
 {
-  m_Renderers[0] = m_MultiWindowWidget->GetRenderWindow1()->GetRenderer();
-  m_Renderers[1] = m_MultiWindowWidget->GetRenderWindow2()->GetRenderer();
-  m_Renderers[2] = m_MultiWindowWidget->GetRenderWindow3()->GetRenderer();
+  const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWindowWidget->GetRenderWindows();
+  m_Renderers[0] = renderWindows[0]->GetRenderer();
+  m_Renderers[1] = renderWindows[1]->GetRenderer();
+  m_Renderers[2] = renderWindows[2]->GetRenderer();
 }
 
 
@@ -68,18 +69,14 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRenderer* renderer)
 {
   QmitkRenderWindow* renderWindow = 0;
-  if (renderer == m_Renderers[0])
+
+  std::size_t i = std::find(m_Renderers.begin(), m_Renderers.end(), renderer) - m_Renderers.begin();
+
+  if (i < 3)
   {
-    renderWindow = m_MultiWindowWidget->GetRenderWindow1();
+    renderWindow = m_MultiWindowWidget->GetRenderWindows()[i];
   }
-  else if (renderer == m_Renderers[1])
-  {
-    renderWindow = m_MultiWindowWidget->GetRenderWindow2();
-  }
-  else if (renderer == m_Renderers[2])
-  {
-    renderWindow = m_MultiWindowWidget->GetRenderWindow3();
-  }
+
   return renderWindow;
 }
 
