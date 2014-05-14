@@ -25,8 +25,11 @@
 #include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
-
+/**
+ * \brief the call back function for mouse events events during point picking
+ */
 void CallBackFunc (  int, int , int, int, void* );
+
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 

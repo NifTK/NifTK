@@ -426,11 +426,15 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         }
 
         //do some interative stuff
+        std::string outPrefix = "outItGoes";
+        std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
         while ( key != 'n' )
         {
-          cvSetMouseCallback("My Window",CallBackFunc, NULL);
+          cvSetMouseCallback("Left Channel",CallBackFunc, &pointOut);
           key = cvWaitKey(20);
         }
+        pointOut.close();
+        exit(1);
       }
       framenumber ++;
     }
@@ -449,9 +453,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 //-----------------------------------------------------------------------------
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
+  std::ofstream* out = static_cast<std::ofstream*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+    *out << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {
