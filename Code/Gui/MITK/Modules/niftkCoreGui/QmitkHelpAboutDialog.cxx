@@ -176,7 +176,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
     //QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
-      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td>Not finalised yet</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
+      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td>Private NiftyLink License</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
       ).arg(niftyLinkVersion.left(10));//.arg(niftyLinkLocation);
 
     QString arucoVersion(NIFTK_VERSION_ARUCO);
