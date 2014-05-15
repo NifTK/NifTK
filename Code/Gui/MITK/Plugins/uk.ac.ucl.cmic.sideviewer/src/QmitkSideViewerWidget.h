@@ -134,9 +134,6 @@ private:
   /// \param mainWindow The selected render window of the main display.
   void OnMainWindowChanged(QmitkRenderWindow* mainWindow);
 
-  /// \brief Called when the geometry of the main window changes.
-  void OnMainWindowGeometryChanged(const mitk::TimeGeometry* timeGeometry);
-
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
   void OnMainWindowOrientationChanged(MIDASOrientation orientation);
 
@@ -167,6 +164,9 @@ private:
 
   /// \brief The coronal window of the selected editor.
   QmitkRenderWindow* m_MainCoronalWindow;
+
+  /// \brief The slice navigation controller of the currently selected window  of the selected editor.
+  mitk::SliceNavigationController* m_MainWindowSnc;
 
   /// \brief The slice navigation controller of the axial window of the selected editor.
   mitk::SliceNavigationController* m_MainAxialSnc;
@@ -201,7 +201,7 @@ private:
   /// \brief The world geometry of the selected window of the selected editor.
   /// Any time when the selected main window changes, the world geometry of this viewer
   /// needs to be set to that of the main window.
-  mitk::TimeGeometry* m_TimeGeometry;
+  const mitk::TimeGeometry* m_TimeGeometry;
 
 };
 
