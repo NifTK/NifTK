@@ -159,9 +159,33 @@ void TrackedPointerView::OnStartGrabPoints()
 
 
 //-----------------------------------------------------------------------------
+void TrackedPointerView::UpdateDisplayedPoints()
+{
+  mitk::PointSet::Pointer pointSet = m_TrackedPointerManager->RetrievePointSet();
+  mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet();
+  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+  mitk::PointSet::PointsIterator pIt;
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType point;
+
+  m_Controls->m_PointsTextBox->clear();
+
+  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+  {
+    pointID = pIt->Index();
+    point = pIt->Value();
+
+    m_Controls->m_PointsTextBox->appendPlainText(tr("%1:[%2, %3, %4]").arg(pointID).arg(point[0]).arg(point[1]).arg(point[2]));
+  }
+  m_Controls->m_PointsTextBox->appendPlainText(tr("size:%1").arg(pointSet->GetSize()));
+}
+
+
+//-----------------------------------------------------------------------------
 void TrackedPointerView::OnClearPoints()
 {
   m_TrackedPointerManager->OnClearPoints();
+  this->UpdateDisplayedPoints();
 }
 
 
@@ -209,7 +233,6 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
         m_TipCoordinate[2] /= divisor;
 
         m_TrackedPointerManager->OnGrabPoint(m_TipCoordinate);
-
         m_Controls->m_GrabPointsButton->setText("grab");
       }
     }
@@ -220,4 +243,5 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
       this->SetViewToCoordinate(tipCoordinate);
     }
   }
+  this->UpdateDisplayedPoints();
 }
