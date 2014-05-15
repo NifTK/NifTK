@@ -208,8 +208,13 @@ public:
 
   /// \brief Sets the selected position in the world coordinate system (mm).
   ///
-  /// This function does not necessarily move the image on the display, but
-  /// puts the cursor (aka. crosshair) to the selected world position.
+  /// The selected position will be at the centre of the voxel that contains
+  /// the given coordinate.
+  ///
+  /// This function will not move the displayed region in the selected render
+  /// window. If multiple windows are shown and the cursor position is bound
+  /// across them then the region will be moved in the other windows so that
+  /// cursors are aligned.
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
