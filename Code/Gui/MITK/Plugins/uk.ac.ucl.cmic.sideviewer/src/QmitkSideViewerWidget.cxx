@@ -255,7 +255,8 @@ void QmitkSideViewerWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->OnMultiWindowComboBoxIndexChanged();
+    WindowLayout windowLayout = this->GetMultiWindowLayoutForOrientation(m_MainWindowOrientation);
+    m_Viewer->SetWindowLayout(windowLayout);
   }
 }
 
@@ -265,44 +266,12 @@ void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
 {
   if (!m_MultiWindowRadioButton->isChecked())
   {
+    bool wasBlocked = m_MultiWindowRadioButton->blockSignals(true);
     m_MultiWindowRadioButton->setChecked(true);
+    m_MultiWindowRadioButton->blockSignals(wasBlocked);
   }
 
-  WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
-
-  // 2H
-  if (m_MultiWindowComboBox->currentIndex() == 0)
-  {
-    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      windowLayout = WINDOW_LAYOUT_COR_SAG_H;
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      windowLayout = WINDOW_LAYOUT_COR_AX_H;
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      windowLayout = WINDOW_LAYOUT_SAG_AX_H;
-    }
-  }
-  // 2V
-  else if (m_MultiWindowComboBox->currentIndex() == 1)
-  {
-    if (m_MainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      windowLayout = WINDOW_LAYOUT_COR_SAG_V;
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      windowLayout = WINDOW_LAYOUT_COR_AX_V;
-    }
-    else if (m_MainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      windowLayout = WINDOW_LAYOUT_SAG_AX_V;
-    }
-  }
-
+  WindowLayout windowLayout = this->GetMultiWindowLayoutForOrientation(m_MainWindowOrientation);
   m_Viewer->SetWindowLayout(windowLayout);
 }
 
