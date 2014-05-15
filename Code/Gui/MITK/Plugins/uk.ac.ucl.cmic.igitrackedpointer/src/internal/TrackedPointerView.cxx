@@ -31,6 +31,9 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedPointerManager.h>
 #include <mitkFileIOUtils.h>
+#include <QMessageBox>
+#include <QCoreApplication>
+#include <QObject>
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -149,6 +152,16 @@ void TrackedPointerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnStartGrabPoints()
 {
+  mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
+  if (probeToWorldTransform.IsNull())
+  {
+    QString message("Please select a pointer to world transformation!");
+    QMessageBox::warning(NULL, tr("%1").arg(QCoreApplication::applicationName()),
+                               tr("%1").arg(message),
+                               QMessageBox::Ok);
+    return;
+  }
+
   m_RemainingPointsCounter = m_NumberOfPointsToAverageOver;
   m_TipCoordinate[0] = 0;
   m_TipCoordinate[1] = 0;
@@ -198,7 +211,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
-  if (m_TipToProbeTransform != NULL
+  if (   m_TipToProbeTransform != NULL
       && probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)
   {
