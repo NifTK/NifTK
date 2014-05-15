@@ -143,4 +143,4 @@ License : Doc/Licenses/NiftyRec.txt (BSD 3 clause license)
 Library : NiftyLink
 Website : http://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html
 Purpose : Messaging Library to talk to client applications
-License : Doc/Licenses/NiftyLink.txt (BSD 3 clause license)
+License : Private NiftyLink license - not for distribution outside of CMIC.
