@@ -89,6 +89,10 @@ void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
 {
   mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
 
+  mitk::UndoStackItem::IncCurrObjectEventId();
+  mitk::UndoStackItem::IncCurrGroupEventId();
+  mitk::UndoStackItem::ExecuteIncrement();
+
   mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
   doOp->AppendPoint(point);
 
@@ -104,6 +108,10 @@ void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
 void TrackedPointerManager::OnClearPoints()
 {
   mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
+
+  mitk::UndoStackItem::IncCurrObjectEventId();
+  mitk::UndoStackItem::IncCurrGroupEventId();
+  mitk::UndoStackItem::ExecuteIncrement();
 
   mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, NULL);
   mitk::PointSetUpdate* undoOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
