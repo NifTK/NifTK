@@ -1307,6 +1307,22 @@ void QmitkIGIDataSourceManager::OnPlayStart()
           m_PlaybackSlider->setMinimum(0);
           m_PlaybackSlider->setMaximum((int) sliderMax);
 
+          // set slider step values, so user can click or mouse-wheel the slider to advance time.
+          // on windows-qt, single-step corresponds to a single mouse-wheel event.
+          // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
+          // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
+          igtlUint64  tenthASecondInNanoseconds = 100000000;
+          igtlUint64  tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+          tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
+          assert(tenthASecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
+          // on windows-qt, a page-step is when clicking on the slider track.
+          igtlUint64  oneSecondInNanoseconds = 1000000000;
+          igtlUint64  oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+          oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
+          assert(oneSecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setPageStep((int) oneSecondStep);
+
           // pop open the controls
           m_ToolManagerPlaybackGroupBox->setCollapsed(false);
           // can stop playback with stop button (in addition to unchecking the playbutton)
