@@ -120,13 +120,15 @@ static vtkSmartPointer<TVTKMesh> _EliminateUnreferencedVertices(vtkSmartPointer<
   sort(refdVertices.begin(), refdVertices.end());
   refdVertices.erase(unique(refdVertices.begin(), refdVertices.end()), refdVertices.end());  
 
-  vertexMap.insert(vertexMap.end(), -1, sp_mesh->GetNumberOfPoints());
+  vertexMap.insert(vertexMap.end(), sp_mesh->GetNumberOfPoints(), -1);
   sp_outMesh->SetPoints(vtkSmartPointer<vtkPoints>::New());
   for (vector<int>::const_iterator ic_v = refdVertices.begin(); ic_v < refdVertices.end(); ic_v++) {
+    assert(*ic_v >= 0 && *ic_v < sp_mesh->GetNumberOfPoints());
     sp_outMesh->GetPoints()->InsertNextPoint(sp_mesh->GetPoint(*ic_v));
     vertexMap[*ic_v] = int(ic_v - refdVertices.begin());
   }
 
+  sp_outMesh->Allocate();
   for (int c = 0; c < sp_mesh->GetNumberOfCells(); c++) {
     vtkIdType vtkElNodeInds[8];
 
