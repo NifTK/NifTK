@@ -12,8 +12,6 @@
 #
 #============================================================================*/
 
-cmake_minimum_required(VERSION 2.6)
-
 set(MEDIT_LIBS
   vtkGraphics
   vtkIO
@@ -26,6 +24,11 @@ else(VTK_FOUND)
   message(FATAL_ERROR
     "This program requires the VTK library, and will not be compiled.")
 endif(VTK_FOUND)
+
+find_package(ITK)
+if(ITK_FOUND)
+  include("${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake")
+endif(ITK_FOUND)
 
 if(CGAL_FOUND)
  include(${CGAL_USE_FILE})
@@ -54,11 +57,13 @@ if (WIN32)
     )
 
   target_link_libraries(niftkMeshingLib
-    CGAL-vc90-mt-gd
-    CGAL_ImageIO-vc90-mt-gd
     niftkITK
     niftkVTK
     niftkcommon
+    ${CGAL_LIBRARIES}
+    ${CGAL_3RD_PARTY_LIBRARIES}
+    ${ITK_LIBRARIES}
+    ${VTK_LIBRARIES}
     )
 
 else (WIN32)
@@ -78,12 +83,13 @@ else (WIN32)
     niftkMeshMerger.cxx
     )
   target_link_libraries(niftkMeshingLib
-    CGAL
-    CGAL_ImageIO
-    vtkHybrid
+    ${CGAL_LIBRARIES}
+    ${CGAL_3RD_PARTY_LIBRARIES}
     niftkITK
     niftkVTK
     niftkcommon
+    ${ITK_LIBRARIES}
+    ${VTK_LIBRARIES}
     )
 endif (WIN32)
 
