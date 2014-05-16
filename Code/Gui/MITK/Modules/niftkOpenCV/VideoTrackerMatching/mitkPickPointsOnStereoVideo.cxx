@@ -162,20 +162,25 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       key = cvWaitKey (20);
 
       std::vector <cv::Point2d> pickedPoints;
+      unsigned int lastPointCount = pickedPoints.size();
       while ( key != 'n' )
       {
+        //might need an explicit copy here
+        cv::Mat AnnotatedVideoImage = videoImage.clone();
         cvSetMouseCallback("Left Channel",CallBackFunc, &pickedPoints);
         key = cvWaitKey(20);
-        if ( pickedPoints.size() > 0 )
+        if ( pickedPoints.size() != lastPointCount )
         {
           for ( int i = 0 ; i < pickedPoints.size() ; i ++ ) 
           {
-            cv::circle(videoImage, pickedPoints[i],10,cv::Scalar(255,255,255),8,3);
+            cv::circle(AnnotatedVideoImage, pickedPoints[i],10,cv::Scalar(255,255,255),8,3);
           }
             
-          IplImage image(videoImage);
+          IplImage image(AnnotatedVideoImage);
           cvShowImage("Left Channel" , &image);
+          lastPointCount = pickedPoints.size();
         }
+        
       }
       std::string outPrefix = "outItGoes";
       std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
@@ -193,24 +198,21 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
   std::vector<cv::Point2d>* out = static_cast<std::vector<cv::Point2d>*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+    MITK_INFO << "Picked point " << out->size();
     out->push_back (cv::Point2d(x,y));
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {
-    std::cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
-  }
-  else if  ( event == cv::EVENT_MBUTTONDOWN )
-  {
-    std::cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
-  }
-  else if ( event == cv::EVENT_MOUSEMOVE )
-  {
-    std::cout << "Mouse move over the window - position (" << x << ", " << y << ")" << std::endl;
+    if ( out->size() > 0 ) 
+    { 
+      out->pop_back();
+      MITK_INFO << "Removed point" << out->size();
+    }
   }
 }
 
 
+//-----------------------------------------------------------------------------
 std::vector < std::vector <cv::Point3d> > PickPointsOnStereoVideo::GetPointsInLeftLensCS()
 {
   std::vector < std::vector < cv::Point3d > > returnPoints;
