@@ -872,7 +872,7 @@ endif(MITK_FOUND)
 
 if (BUILD_MESHING)
   set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL")
-  find_package(CGAL)
+  find_package(CGAL QUIET COMPONENTS Core ImageIO)
   link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
 
