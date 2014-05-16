@@ -30,6 +30,12 @@ if(BUILD_MESHING)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CGAL ${NIFTK_LOCATION_CGAL})
 
+    if(UNIX)
+      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS} -fPIC")
+    else()
+      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS}")
+    endif(UNIX)
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
@@ -49,6 +55,7 @@ if(BUILD_MESHING)
         -DCGAL_CFG_NO_STL:BOOL=OFF
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DCMAKE_CXX_FLAGS:STRING=${CGAL_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
       )
     set(CGAL_DIR "${proj_INSTALL}/lib/CGAL")
