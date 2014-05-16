@@ -20,6 +20,8 @@
 \li \ref LicenseFLANN
 \li \ref LicensePCL
 \li \ref LicenseRTK
+\li \ref LicenseOpenIGTLink
+\li \ref LicenseQsLog
 
 \section LicenseNifTK The @NIFTK_PLATFORM@ License
 
@@ -96,5 +98,13 @@
 \section LicenseRTK The RTK License
 
 \include LICENSE_RTK.txt
+
+\section LicenseOpenIGTLink The OpenIGTLink License
+
+\include LICENSE_OpenIGTLink.txt
+
+\section LicenseQsLog The QsLog License
+
+\include LICENSE_QsLog.txt
 
 */
