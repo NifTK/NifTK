@@ -5,7 +5,9 @@
 
 \section DataSourcesViewIntro Introduction
 
-Do an introduction here.
+The Data Sources View is where data from devices such as trackers and ultrasound machines
+enters into the system. The Data Sources View is the input conduit, whereas the
+Data Manager is the repository where it finally ends up.
 
 \section DataSourcesViewUsage Usage
 
