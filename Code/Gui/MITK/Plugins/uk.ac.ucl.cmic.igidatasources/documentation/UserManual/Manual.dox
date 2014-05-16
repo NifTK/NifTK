@@ -9,17 +9,57 @@ The Data Sources View is where data from devices such as trackers and ultrasound
 enters into the system. The Data Sources View is the input conduit, whereas the
 Data Manager is the repository where it finally ends up.
 
-\section DataSourcesViewUsage Usage
-
-Put all usage information here.
-
 \section DataSourcesViewPreferences Preferences
 
-Put all information on user configurable preferences here.
+First you should set your preferences. Please refer to Figure 1.
+
+\image html DataSourcesPrefs.jpg "Figure 1: The preferences page."
+
+The items on the preferences page perform the following:
+
+\li error, warning, OK: colours to tell the user when the data is not being received. (warning is basically unused).
+\li refresh rate in frames per second: Each data source collects data at whatever speed it prefers. This refresh rate controls the rate at which data is copied from the data source into Data Manager, and then the screen updated.
+\li clear data rate: Each data source collects data in private buffers. This controls a clock pulse which instructs each data source to clear data.
+\li timing tolerance: enables you to set a threshold whereby data is deemed to be late.
+\li output directory prefix: Set this output directory for recording data.
+
+The next four options are not widely used.
+
+\li save data each screen update: Some data sources run at a fixed frame rate, eg. video at 30fps. You may want to only save data at the speed the screen is refreshing at, (controlled by the preference above).
+\li save data as it is received: The default. This is a radio button, mutually exclusive with "save data each screen update".
+\li save in background: Used to indicate a preference to try and save in background threads, but most imaging sources will probably ignore this. Not widely used.
+\li ignore timing, pick latest data: For working round wierd clock synching issues.
+
+The two most important options are "refresh rate" and "output directory prefix". Set them before using the plugin.
+
+\section DataSourcesViewUsage Usage
+
+The Data Sources View is designed to enable creating/destroying of any number of data sources, for
+specific types built into the application. The options are Trackers via OpenIGTLink, Image sources
+via OpenIGTLink, video from an NVidia SDI pipeline, video from inbuilt or USB webcams.
+
+The interactions are:
+
+\li Create a data source by selecting it in the drop down box at the top, and hitting the "+" button.
+\li Destroy a data source by selecting the data source in the table and hitting the "-" button.
+\li Record data by clicking the round circle. Select the base directory first in the view preferences. All data is stored in a timestamped folder, which should not be editted.
+\li Stop recording data by clicking the green square.
+
+The data sources are managed in a table. There is a coloured icon in the "Status" column, indicating whether data is being received.
+The timing tolerance and colours are set in the view preferences.
+
+The "console" is for the Data Sources View to inform the user as to whether it was successfully creating or destrying things.
+
+If a data source is double clicked, the data source can instantiate its own GUI. 
+Each type of data source can have a different GUI. So a tracker might display matrices, and
+an ultrasound source might display an image. The GUI is created in the "output" box.
+So, only 1 GUI is available at any time, and they are created dynamically by the data source.
+
+\image html DataSourcesView.png "Figure 2: An example view, with one tracker running, tracking 2 objects."
 
 \section DataSourcesViewReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+NifTK-IGI paper is submitted... watch this space.
 
 */
 
