@@ -12,17 +12,18 @@
 
 =============================================================================*/
 
-#include <cassert>
-#include <sstream>
-#include <fstream>
-#include <algorithm>
-#include <typeinfo>
+#include "niftkMeditMeshParser.h"
+
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkTriangle.h>
 #include <vtkTetra.h>
 
-#include "niftkMeditMeshParser.h"
+#include <cassert>
+#include <sstream>
+#include <fstream>
+#include <algorithm>
+#include <typeinfo>
 
 using namespace std;
 using namespace niftk;
@@ -105,6 +106,41 @@ static inline int _FindLabelIndex(const int label, const vector<int> &labels)
   return ic_label == labels.end()? -1 : ic_label - labels.begin();
 }
 
+template <class TVTKMesh>
+static vtkSmartPointer<TVTKMesh> _EliminateUnreferencedVertices(vtkSmartPointer<TVTKMesh> sp_mesh) {
+  vtkSmartPointer<TVTKMesh> sp_outMesh = vtkSmartPointer<TVTKMesh>::New();
+  vector<int> refdVertices, vertexMap;
+
+  refdVertices.reserve(4*sp_mesh->GetNumberOfCells());
+  for (int c = 0; c < sp_mesh->GetNumberOfCells(); c++) {
+    for (int v = 0; v < sp_mesh->GetCell(c)->GetNumberOfPoints(); v++) {
+      refdVertices.push_back(int(sp_mesh->GetCell(c)->GetPointId(v)));
+    }
+  }
+  sort(refdVertices.begin(), refdVertices.end());
+  refdVertices.erase(unique(refdVertices.begin(), refdVertices.end()), refdVertices.end());  
+
+  vertexMap.insert(vertexMap.end(), -1, sp_mesh->GetNumberOfPoints());
+  sp_outMesh->SetPoints(vtkSmartPointer<vtkPoints>::New());
+  for (vector<int>::const_iterator ic_v = refdVertices.begin(); ic_v < refdVertices.end(); ic_v++) {
+    sp_outMesh->GetPoints()->InsertNextPoint(sp_mesh->GetPoint(*ic_v));
+    vertexMap[*ic_v] = int(ic_v - refdVertices.begin());
+  }
+
+  for (int c = 0; c < sp_mesh->GetNumberOfCells(); c++) {
+    vtkIdType vtkElNodeInds[8];
+
+    assert(sp_mesh->GetCell(c)->GetNumberOfPoints() <= 8);
+    for (int v = 0; v < sp_mesh->GetCell(c)->GetNumberOfPoints(); v++) {
+      assert(vertexMap[int(sp_mesh->GetCell(c)->GetPointId(v))] >= 0);
+      vtkElNodeInds[v] = vertexMap[int(sp_mesh->GetCell(c)->GetPointId(v))];
+    }
+    sp_outMesh->InsertNextCell(sp_mesh->GetCell(c)->GetCellType(), sp_mesh->GetCell(c)->GetNumberOfPoints(), vtkElNodeInds);
+  }
+
+  return sp_outMesh;
+}
+
 template <class t_vtkCellType>
 vtkSmartPointer<vtkMultiBlockDataSet> MeditMeshParser::_ReadAsVTKMesh(void) const throw (niftk::IOException) {
   vtkSmartPointer<vtkPoints> p_points;
@@ -164,6 +200,12 @@ vtkSmartPointer<vtkMultiBlockDataSet> MeditMeshParser::_ReadAsVTKMesh(void) cons
       errorOSS << "Could not parse " << _ConvertCellTypeToString<t_vtkCellType>() << " information in " << m_InputFileName;
       
       throw niftk::IOException(errorOSS.str());
+    }
+
+    for (vector<int>::const_iterator ic_l = labels.begin(); ic_l < labels.end(); ic_l++) {
+      vtkSmartPointer<vtkUnstructuredGrid> sp_mesh = dynamic_cast<vtkUnstructuredGrid*>(p_meshes->GetBlock(_FindLabelIndex(*ic_l, labels)));
+
+      p_meshes->SetBlock(_FindLabelIndex(*ic_l, labels), _EliminateUnreferencedVertices(sp_mesh));
     }
   } /* if vertex parsing ok */
 
