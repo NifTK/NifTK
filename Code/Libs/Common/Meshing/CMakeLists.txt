@@ -12,25 +12,6 @@
 #
 #============================================================================*/
 
-set(MEDIT_LIBS
-  vtkGraphics
-  vtkIO
-  vtkCommon
-)
-
-if(VTK_FOUND)
-  include(${VTK_USE_FILE})
-else(VTK_FOUND)
-  message(FATAL_ERROR
-    "This program requires the VTK library, and will not be compiled.")
-endif(VTK_FOUND)
-
-find_package(ITK)
-if(ITK_FOUND)
-  include("${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake")
-  include(${ITK_USE_FILE})
-endif(ITK_FOUND)
-
 if(CGAL_FOUND)
  include(${CGAL_USE_FILE})
 else(CGAL_FOUND)
