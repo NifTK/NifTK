@@ -1279,8 +1279,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
         if (renderer->GetMapperID() == 1)
         {
           // Now geometry is established, set to middle slice.
-          int sliceNumber = sliceNavigationController->GetSlice()->GetSteps() / 2;
-          sliceNavigationController->GetSlice()->SetPos(sliceNumber);
+          int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
+          if ((slices % 2 == 0) && isFlipped)
+          {
+            middleSlicePos -= 1;
+          }
+          sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
         // Now geometry is established, get the display geometry to fit the picture to the window.
