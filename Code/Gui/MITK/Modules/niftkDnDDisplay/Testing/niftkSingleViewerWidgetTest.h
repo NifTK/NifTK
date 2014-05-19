@@ -66,6 +66,16 @@ public:
   /// In interactive mode the windows are not closed when the test is finished.
   void SetInteractiveMode(bool interactiveMode);
 
+  /// \brief Calculates the world origin from a 3D geometry.
+  /// The world origin is the centre of the bottom-left-back voxel for image geometries
+  /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
+  static mitk::Point3D GetWorldOrigin(const mitk::Geometry3D* geometry);
+
+  /// \brief Calculates the world origin from a 3D geometry.
+  /// The world origin is the centre of the bottom-left-back voxel for image geometries
+  /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
+  static mitk::Point3D GetBottomLeftBackCorner(const mitk::Geometry3D* geometry);
+
   /// \brief Converts a cursor position in a render window to a point on the screen.
   /// The cursor position is a relative position within the render window normalised to the render window size.
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
@@ -76,11 +86,21 @@ public:
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
   static mitk::Vector2D GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
 
+  mitk::Point3D GetWorldPositionAtDisplayPosition(int orientation, const mitk::Vector2D& displayPosition);
+
+  mitk::Vector2D GetDisplayPositionAtWorldPosition(int orientation, const mitk::Point3D& worldPosition);
+
   /// \brief Gets the position of the centre of the displayed region, relative to the render window.
   mitk::Vector2D GetCentrePosition(int windowIndex);
 
   /// \brief Gets the position of the centre of the displayed regions, relative to their render windows.
   std::vector<mitk::Vector2D> GetCentrePositions();
+
+  /// \brief Gets one coordinate of the centre of the voxel that contains the given coordinate along the axis.
+  double GetVoxelCentreCoordinate(int axis, double coordinate);
+
+  /// \brief Gets the position of the centre of the voxel that contains the given position.
+  mitk::Point3D GetVoxelCentrePosition(const mitk::Point3D& position);
 
   /// \brief Determines if two world positions are equal with the certain tolerance.
   /// By default, or if negative value is specified, the tolerance is half voxel for each coordinate.

@@ -776,8 +776,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     if (!m_GeometryInitialised)
     {
       m_GeometryInitialised = true;
-      m_MultiWidget->SetTimeStep(0);
-      m_MultiWidget->SetSelectedPosition(timeGeometry->GetCenterInWorld());
     }
 
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,

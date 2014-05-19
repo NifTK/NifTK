@@ -1279,8 +1279,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
         if (renderer->GetMapperID() == 1)
         {
           // Now geometry is established, set to middle slice.
-          int sliceNumber = (int)((sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
-          sliceNavigationController->GetSlice()->SetPos(sliceNumber);
+          int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
+          if ((slices % 2 == 0) && isFlipped)
+          {
+            middleSlicePos -= 1;
+          }
+          sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
         // Now geometry is established, get the display geometry to fit the picture to the window.
@@ -1292,6 +1296,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
     m_TimeStepHasChanged = true;
     m_GeometryHasChanged = true;
+    m_SelectedPosition = this->GetCrossPosition();
     for (int i = 0; i < 3; ++i)
     {
       m_SelectedSliceHasChanged[i] = true;
@@ -1876,10 +1881,12 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    m_SelectedPosition = this->GetCrossPosition();
-    m_SelectedSliceHasChanged[windowIndex] = true;
-
-    this->SynchroniseCursorPositions(windowIndex);
+    mitk::Point3D selectedPosition = this->GetCrossPosition();
+    if (selectedPosition != m_SelectedPosition)
+    {
+      m_SelectedPosition = selectedPosition;
+      m_SelectedSliceHasChanged[windowIndex] = true;
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2035,6 +2042,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
+
+    m_SelectedPosition = this->GetCrossPosition();
 
     if (m_WindowLayout != WINDOW_LAYOUT_3D)
     {
@@ -2229,9 +2238,14 @@ void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
   mitk::Point2D point2DInPx;
   displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
 
-  m_CursorPositions[windowIndex][0] = point2DInPx[0] / displaySize[0];
-  m_CursorPositions[windowIndex][1] = point2DInPx[1] / displaySize[1];
-  m_CursorPositionHasChanged[windowIndex] = true;
+  mitk::Vector2D cursorPositions;
+  cursorPositions[0] = point2DInPx[0] / displaySize[0];
+  cursorPositions[1] = point2DInPx[1] / displaySize[1];
+  if (cursorPositions != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPositions;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
 
   this->BlockUpdate(updateWasBlocked);
 }
