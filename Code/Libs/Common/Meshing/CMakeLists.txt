@@ -28,6 +28,7 @@ endif(VTK_FOUND)
 find_package(ITK)
 if(ITK_FOUND)
   include("${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake")
+  include(${ITK_USE_FILE})
 endif(ITK_FOUND)
 
 if(CGAL_FOUND)
