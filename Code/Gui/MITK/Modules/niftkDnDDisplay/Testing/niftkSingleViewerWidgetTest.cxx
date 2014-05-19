@@ -748,83 +748,52 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   QVERIFY(imageTimeGeometry == viewerTimeGeometry);
   QVERIFY(imageGeometry == viewerGeometry);
 
-  mitk::Point3D imageOrigin = imageGeometry->GetOrigin();
-  mitk::Point3D imageCentre = imageGeometry->GetCenter();
-
   mitk::BaseRenderer* axialRenderer = d->AxialWindow->GetRenderer();
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
-
-  const mitk::TimeGeometry* axialTimeGeometry = axialRenderer->GetTimeWorldGeometry();
-  const mitk::TimeGeometry* sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry();
-  const mitk::TimeGeometry* coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry();
 
   const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
   const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
   const mitk::Geometry3D* coronalGeometry = coronalRenderer->GetWorldGeometry();
 
   mitk::Point3D axialOrigin = axialGeometry->GetOrigin();
-  mitk::Point3D axialCentre = axialGeometry->GetCenter();
   mitk::Point3D sagittalOrigin = sagittalGeometry->GetOrigin();
-  mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalOrigin = coronalGeometry->GetOrigin();
+  mitk::Point3D axialCentre = axialGeometry->GetCenter();
+  mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
+  mitk::Point3D axialBottomLeftBackCorner = Self::GetBottomLeftBackCorner(axialGeometry);
+  mitk::Point3D sagittalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(sagittalGeometry);
+  mitk::Point3D coronalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(coronalGeometry);
 
-//  MITK_INFO << "world extents: " << d->WorldExtents;
-//  MITK_INFO << "world spacings: " << d->WorldSpacings;
-//  MITK_INFO << "world axis flipped: " << "[" << d->WorldAxisFlipped[0] << ", " << d->WorldAxisFlipped[1] << ", " << d->WorldAxisFlipped[2] << "]";
-//  MITK_INFO << "image origin: " << imageOrigin;
-//  MITK_INFO << "image centre: " << imageCentre;
-//  MITK_INFO << "axial origin: " << axialOrigin;
-//  MITK_INFO << "axial centre: " << axialCentre;
-//  MITK_INFO << "sagittal origin: " << sagittalOrigin;
-//  MITK_INFO << "sagittal centre: " << sagittalCentre;
-//  MITK_INFO << "coronal origin: " << coronalOrigin;
-//  MITK_INFO << "coronal centre: " << coronalCentre;
-
-  /// This is how the MultiWindowWidget calculates the origin.
-
-  const mitk::AffineTransform3D* affineTransform = imageGeometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
-  affineTransformMatrix.GetVnlMatrix().normalize_columns();
-  mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
-
-  int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0], inverseTransformMatrix[1][0], inverseTransformMatrix[2][0]);
-  int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
-  int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1], inverseTransformMatrix[1][1], inverseTransformMatrix[2][1]);
-  int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
-  int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2], inverseTransformMatrix[1][2], inverseTransformMatrix[2][2]);
-  int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
-
-  int permutedAxes[3] = {dominantAxisRL, dominantAxisAP, dominantAxisSI};
-  int flippedAxes[3] = {signRL, signAP, signSI};
-
-  mitk::Point3D originInVx;
-  for (int i = 0; i < 3; ++i)
-  {
-    originInVx[permutedAxes[i]] = flippedAxes[i] > 0 ? 0 : imageGeometry->GetExtent(permutedAxes[i]) - 1;
-  }
-
-  mitk::Point3D originInMm;
-  imageGeometry->IndexToWorld(originInVx, originInMm);
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
+  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
+  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
   /// Note:
   /// According to the MITK documentation, the origin of a world geometry is
-  /// always at of its bottom-left-back voxel, and the mm coordinates
-  /// increase from left to right (sagittal), from bottom to top (axial), and
+  /// always at the bottom-left-back voxel, and the mm coordinates increase
+  /// from left to right (sagittal), from bottom to top (axial), and
   /// from back to front (coronal).
 
-  mitk::Point3D bottomLeftBackCorner;
-  bottomLeftBackCorner[0] = originInMm[0] - d->WorldSpacings[0] / 2.0;
-  bottomLeftBackCorner[1] = originInMm[1] - d->WorldSpacings[1] / 2.0;
-  bottomLeftBackCorner[2] = originInMm[2] - d->WorldSpacings[2] / 2.0;
+  mitk::Point3D worldBottomLeftBackCorner = d->WorldOrigin;
+  worldBottomLeftBackCorner[0] -= d->WorldSpacings[0] / 2.0;
+  worldBottomLeftBackCorner[1] -= d->WorldSpacings[1] / 2.0;
+  worldBottomLeftBackCorner[2] -= d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D centre = bottomLeftBackCorner;
-  centre[0] += d->WorldExtents[0] * d->WorldSpacings[0] / 2.0;
-  centre[1] += d->WorldExtents[1] * d->WorldSpacings[1] / 2.0;
-  centre[2] += d->WorldExtents[2] * d->WorldSpacings[2] / 2.0;
+  mitk::Point3D worldCentre = worldBottomLeftBackCorner;
+  worldCentre[0] += d->WorldExtents[0] * d->WorldSpacings[0] / 2.0;
+  worldCentre[1] += d->WorldExtents[1] * d->WorldSpacings[1] / 2.0;
+  worldCentre[2] += d->WorldExtents[2] * d->WorldSpacings[2] / 2.0;
 
-//  MITK_INFO << "bottom left back corner: " << bottomLeftBackCorner;
+  MITK_INFO << "world bottom left back corner: " << worldBottomLeftBackCorner;
+  MITK_INFO << "world centre: " << worldCentre;
 
   /// -------------------------------------------------------------------------
   /// The viewer is now initialised with the world geometry from an image
@@ -835,31 +804,31 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
 
   /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
 
-  mitk::Point3D expectedAxialOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
   expectedAxialOrigin[2] += d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D expectedSagittalOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
   expectedSagittalOrigin[0] += d->WorldSpacings[0] / 2.0;
 
-  mitk::Point3D expectedCoronalOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
   expectedCoronalOrigin[1] += d->WorldSpacings[1] / 2.0;
 
-  mitk::Point3D expectedAxialCentre = centre;
+  mitk::Point3D expectedAxialCentre = worldCentre;
   expectedAxialCentre[2] += d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D expectedSagittalCentre = centre;
+  mitk::Point3D expectedSagittalCentre = worldCentre;
   expectedSagittalCentre[0] += d->WorldSpacings[0] / 2.0;
 
-  mitk::Point3D expectedCoronalCentre = centre;
+  mitk::Point3D expectedCoronalCentre = worldCentre;
   expectedCoronalCentre[1] += d->WorldSpacings[1] / 2.0;
 
-//  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
-//  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
-//  MITK_INFO << "expected coronal origin: " << expectedCoronalOrigin;
-//  MITK_INFO << "expected axial centre: " << expectedAxialCentre;
-//  MITK_INFO << "expected sagittal centre: " << expectedSagittalCentre;
-//  MITK_INFO << "expected coronal centre: " << expectedCoronalCentre;
+  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
+  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
+  MITK_INFO << "expected coronal origin: " << expectedCoronalOrigin;
+  MITK_INFO << "expected axial centre: " << expectedAxialCentre;
+  MITK_INFO << "expected sagittal centre: " << expectedSagittalCentre;
+  MITK_INFO << "expected coronal centre: " << expectedCoronalCentre;
 
   QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
@@ -867,6 +836,9 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 }
 
 
@@ -884,16 +856,6 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(imageTimeGeometry == viewerTimeGeometry);
   QVERIFY(imageGeometry == viewerGeometry);
 
-  mitk::Point3D imageOrigin = imageGeometry->GetOrigin();
-  mitk::Point3D imageCentre = imageGeometry->GetCenter();
-
-//  MITK_INFO << "world extents: " << d->WorldExtents;
-//  MITK_INFO << "world spacings: " << d->WorldSpacings;
-//  MITK_INFO << "world axes flipped: " << "[" << d->WorldAxisFlipped[0] << ", " << d->WorldAxisFlipped[1] << ", " << d->WorldAxisFlipped[2] << "]";
-
-//  MITK_INFO << "image origin: " << imageOrigin;
-//  MITK_INFO << "image centre: " << imageCentre;
-
   mitk::BaseRenderer* axialRenderer = d->AxialWindow->GetRenderer();
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
@@ -902,17 +864,17 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry()->Clone();
   const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry()->Clone();
 
-//  MITK_INFO << "axial time geometry: " << axialTimeGeometry;
-//  MITK_INFO << "sagittal time geometry: " << sagittalTimeGeometry;
-//  MITK_INFO << "coronal time geometry: " << coronalTimeGeometry;
+  MITK_INFO << "axial time geometry: " << axialTimeGeometry;
+  MITK_INFO << "sagittal time geometry: " << sagittalTimeGeometry;
+  MITK_INFO << "coronal time geometry: " << coronalTimeGeometry;
 
   const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
   const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
   const mitk::Geometry3D* coronalGeometry = coronalRenderer->GetWorldGeometry();
 
-//  MITK_INFO << "axial geometry: " << axialGeometry;
-//  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
-//  MITK_INFO << "coronal geometry: " << coronalGeometry;
+  MITK_INFO << "axial geometry: " << axialGeometry;
+  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
+  MITK_INFO << "coronal geometry: " << coronalGeometry;
 
   mitk::Point3D axialOrigin = axialGeometry->GetOrigin();
   mitk::Point3D sagittalOrigin = sagittalGeometry->GetOrigin();
@@ -920,44 +882,21 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::Point3D axialCentre = axialGeometry->GetCenter();
   mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
+  mitk::Point3D axialBottomLeftBackCorner = Self::GetBottomLeftBackCorner(axialGeometry);
+  mitk::Point3D sagittalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(sagittalGeometry);
+  mitk::Point3D coronalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(coronalGeometry);
 
-//  MITK_INFO << "When initialised with an image geometry: ";
+  MITK_INFO << "Viewer initialised with an image geometry: ";
 
-//  MITK_INFO << "axial origin: " << axialOrigin;
-//  MITK_INFO << "sagittal origin: " << sagittalOrigin;
-//  MITK_INFO << "coronal origin: " << coronalOrigin;
-//  MITK_INFO << "axial centre: " << axialCentre;
-//  MITK_INFO << "sagittal centre: " << sagittalCentre;
-//  MITK_INFO << "coronal centre: " << coronalCentre;
-
-  /// This is how the MultiWindowWidget calculates the origin.
-
-  const mitk::AffineTransform3D* affineTransform = imageGeometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
-  affineTransformMatrix.GetVnlMatrix().normalize_columns();
-  mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
-
-  int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0], inverseTransformMatrix[1][0], inverseTransformMatrix[2][0]);
-  int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
-  int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1], inverseTransformMatrix[1][1], inverseTransformMatrix[2][1]);
-  int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
-  int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2], inverseTransformMatrix[1][2], inverseTransformMatrix[2][2]);
-  int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
-
-  int permutedAxes[3] = {dominantAxisRL, dominantAxisAP, dominantAxisSI};
-  int flippedAxes[3] = {signRL, signAP, signSI};
-
-  mitk::Point3D originInVx;
-  for (int i = 0; i < 3; ++i)
-  {
-    originInVx[permutedAxes[i]] = flippedAxes[i] > 0 ? 0 : imageGeometry->GetExtent(permutedAxes[i]) - 1;
-  }
-
-  mitk::Point3D originInMm;
-  imageGeometry->IndexToWorld(originInVx, originInMm);
-
-//  MITK_INFO << "origin in vx: " << originInVx;
-//  MITK_INFO << "origin in mm: " << originInMm;
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
+  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
+  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
   /// Note:
   /// According to the MITK documentation, the origin of a world geometry is
@@ -965,83 +904,87 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   /// increase from left to right (sagittal), from bottom to top (axial), and
   /// from back to front (coronal).
 
-  mitk::Point3D bottomLeftBackCorner;
-  bottomLeftBackCorner[0] = originInMm[0] - d->WorldSpacings[0] / 2.0;
-  bottomLeftBackCorner[1] = originInMm[1] - d->WorldSpacings[1] / 2.0;
-  bottomLeftBackCorner[2] = originInMm[2] - d->WorldSpacings[2] / 2.0;
+  mitk::Point3D worldBottomLeftBackCorner = d->WorldOrigin;
+  worldBottomLeftBackCorner[0] -= d->WorldSpacings[0] / 2.0;
+  worldBottomLeftBackCorner[1] -= d->WorldSpacings[1] / 2.0;
+  worldBottomLeftBackCorner[2] -= d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D centre = bottomLeftBackCorner;
-  centre[0] += d->WorldExtents[0] * d->WorldSpacings[0] / 2.0;
-  centre[1] += d->WorldExtents[1] * d->WorldSpacings[1] / 2.0;
-  centre[2] += d->WorldExtents[2] * d->WorldSpacings[2] / 2.0;
+  mitk::Point3D worldCentre = worldBottomLeftBackCorner;
+  worldCentre[0] += d->WorldExtents[0] * d->WorldSpacings[0] / 2.0;
+  worldCentre[1] += d->WorldExtents[1] * d->WorldSpacings[1] / 2.0;
+  worldCentre[2] += d->WorldExtents[2] * d->WorldSpacings[2] / 2.0;
 
-//  MITK_INFO << "bottom left back corner: " << bottomLeftBackCorner;
+  MITK_INFO << "world bottom left back corner: " << worldBottomLeftBackCorner;
+  MITK_INFO << "world centre: " << worldCentre;
 
   /// Note:
-  /// The renderer geometries are half voxel shifted along the renderer axis.
+  /// The renderer geometries are shifted with half voxel along the renderer axis by design.
 
   /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
 
-  mitk::Point3D expectedAxialOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
   expectedAxialOrigin[2] += d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D expectedSagittalOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
   expectedSagittalOrigin[0] += d->WorldSpacings[0] / 2.0;
 
-  mitk::Point3D expectedCoronalOrigin = bottomLeftBackCorner;
+  mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
   expectedCoronalOrigin[1] += d->WorldSpacings[1] / 2.0;
 
-  mitk::Point3D expectedAxialCentre = centre;
+  mitk::Point3D expectedAxialCentre = worldCentre;
   expectedAxialCentre[2] += d->WorldSpacings[2] / 2.0;
 
-  mitk::Point3D expectedSagittalCentre = centre;
+  mitk::Point3D expectedSagittalCentre = worldCentre;
   expectedSagittalCentre[0] += d->WorldSpacings[0] / 2.0;
 
-  mitk::Point3D expectedCoronalCentre = centre;
+  mitk::Point3D expectedCoronalCentre = worldCentre;
   expectedCoronalCentre[1] += d->WorldSpacings[1] / 2.0;
 
-//  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
-//  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
-//  MITK_INFO << "expected coronal origin: " << expectedCoronalOrigin;
-//  MITK_INFO << "expected axial centre: " << expectedAxialCentre;
-//  MITK_INFO << "expected sagittal centre: " << expectedSagittalCentre;
-//  MITK_INFO << "expected coronal centre: " << expectedCoronalCentre;
+  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
+  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
+  MITK_INFO << "expected coronal origin: " << expectedCoronalOrigin;
+  MITK_INFO << "expected axial centre: " << expectedAxialCentre;
+  MITK_INFO << "expected sagittal centre: " << expectedSagittalCentre;
+  MITK_INFO << "expected coronal centre: " << expectedCoronalCentre;
 
   /// -------------------------------------------------------------------------
-  /// Initialising the viewer with the world geometry from an axial renderer
+  /// Viewer initialised with the world geometry of an axial renderer
   /// -------------------------------------------------------------------------
 
-  /// TODO These tests are disabled for the moment. The bug should be resolved
-  /// under ticket #3444.
+  MITK_INFO << "Viewer initialised with the world geometry of an axial renderer.";
 
-//  MITK_INFO << "Initialising viewer with world geometry from an axial renderer.";
-
-//  d->StateTester->Clear();
+  d->StateTester->Clear();
 
 //  d->Viewer->SetTimeGeometry(axialTimeGeometry);
 
-//  axialGeometry = axialRenderer->GetWorldGeometry();
-//  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
-//  coronalGeometry = coronalRenderer->GetWorldGeometry();
+  axialGeometry = axialRenderer->GetWorldGeometry();
+  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  coronalGeometry = coronalRenderer->GetWorldGeometry();
 
-////  MITK_INFO << "axial geometry: " << axialGeometry;
-////  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
-////  MITK_INFO << "coronal geometry: " << coronalGeometry;
+  MITK_INFO << "axial geometry: " << axialGeometry;
+  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
+  MITK_INFO << "coronal geometry: " << coronalGeometry;
 
-//  axialOrigin = axialGeometry->GetOrigin();
-//  sagittalOrigin = sagittalGeometry->GetOrigin();
-//  coronalOrigin = coronalGeometry->GetOrigin();
-//  axialCentre = axialGeometry->GetCenter();
-//  sagittalCentre = sagittalGeometry->GetCenter();
-//  coronalCentre = coronalGeometry->GetCenter();
+  axialOrigin = axialGeometry->GetOrigin();
+  sagittalOrigin = sagittalGeometry->GetOrigin();
+  coronalOrigin = coronalGeometry->GetOrigin();
+  axialCentre = axialGeometry->GetCenter();
+  sagittalCentre = sagittalGeometry->GetCenter();
+  coronalCentre = coronalGeometry->GetCenter();
+  axialBottomLeftBackCorner = Self::GetBottomLeftBackCorner(axialGeometry);
+  sagittalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(sagittalGeometry);
+  coronalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(coronalGeometry);
 
-////  MITK_INFO << "axial origin: " << axialOrigin;
-////  MITK_INFO << "sagittal origin: " << sagittalOrigin;
-////  MITK_INFO << "coronal origin: " << coronalOrigin;
-////  MITK_INFO << "axial centre: " << axialCentre;
-////  MITK_INFO << "sagittal centre: " << sagittalCentre;
-////  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
+  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
+  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
 //  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
 //  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
@@ -1049,77 +992,95 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 //  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
 //  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
 //  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+//  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+//  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+//  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 
   /// -------------------------------------------------------------------------
   /// Initialising the viewer with the world geometry from a sagittal renderer
   /// -------------------------------------------------------------------------
 
-//  MITK_INFO << "Initialising viewer with world geometry from a sagittal renderer.";
+  MITK_INFO << "Viewer initialised with the world geometry of a sagittal renderer.";
 
-//  d->StateTester->Clear();
+  d->StateTester->Clear();
 
-//  d->Viewer->SetTimeGeometry(sagittalTimeGeometry);
+  d->Viewer->SetTimeGeometry(sagittalTimeGeometry);
 
-//  axialGeometry = axialRenderer->GetWorldGeometry();
-//  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
-//  coronalGeometry = coronalRenderer->GetWorldGeometry();
+  axialGeometry = axialRenderer->GetWorldGeometry();
+  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  coronalGeometry = coronalRenderer->GetWorldGeometry();
 
-////  MITK_INFO << "axial geometry: " << axialGeometry;
-////  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
-////  MITK_INFO << "coronal geometry: " << coronalGeometry;
+  MITK_INFO << "axial geometry: " << axialGeometry;
+  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
+  MITK_INFO << "coronal geometry: " << coronalGeometry;
 
-//  axialOrigin = axialGeometry->GetOrigin();
-//  sagittalOrigin = sagittalGeometry->GetOrigin();
-//  coronalOrigin = coronalGeometry->GetOrigin();
-//  axialCentre = axialGeometry->GetCenter();
-//  sagittalCentre = sagittalGeometry->GetCenter();
-//  coronalCentre = coronalGeometry->GetCenter();
+  axialOrigin = axialGeometry->GetOrigin();
+  sagittalOrigin = sagittalGeometry->GetOrigin();
+  coronalOrigin = coronalGeometry->GetOrigin();
+  axialCentre = axialGeometry->GetCenter();
+  sagittalCentre = sagittalGeometry->GetCenter();
+  coronalCentre = coronalGeometry->GetCenter();
+  axialBottomLeftBackCorner = Self::GetBottomLeftBackCorner(axialGeometry);
+  sagittalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(sagittalGeometry);
+  coronalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(coronalGeometry);
 
-////  MITK_INFO << "axial origin: " << axialOrigin;
-////  MITK_INFO << "sagittal origin: " << sagittalOrigin;
-////  MITK_INFO << "coronal origin: " << coronalOrigin;
-////  MITK_INFO << "axial centre: " << axialCentre;
-////  MITK_INFO << "sagittal centre: " << sagittalCentre;
-////  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
+  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
+  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
-//  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
-//  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
-//  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
-//  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
-//  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
-//  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
+  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
+  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
+  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
+  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
+  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 
   /// -------------------------------------------------------------------------
   /// Initialising the viewer with a world geometry from a coronal renderer
   /// -------------------------------------------------------------------------
 
-//  MITK_INFO << "Initialising viewer with a world geometry from a coronal renderer.";
+  MITK_INFO << "Viewer initialised with the world geometry of a coronal renderer.";
 
-//  d->StateTester->Clear();
+  d->StateTester->Clear();
 
 //  d->Viewer->SetTimeGeometry(coronalTimeGeometry);
 
-//  axialGeometry = axialRenderer->GetWorldGeometry();
-//  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
-//  coronalGeometry = coronalRenderer->GetWorldGeometry();
+  axialGeometry = axialRenderer->GetWorldGeometry();
+  sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  coronalGeometry = coronalRenderer->GetWorldGeometry();
 
-////  MITK_INFO << "axial geometry: " << axialGeometry;
-////  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
-////  MITK_INFO << "coronal geometry: " << coronalGeometry;
+  MITK_INFO << "axial geometry: " << axialGeometry;
+  MITK_INFO << "sagittal geometry: " << sagittalGeometry;
+  MITK_INFO << "coronal geometry: " << coronalGeometry;
 
-//  axialOrigin = axialGeometry->GetOrigin();
-//  sagittalOrigin = sagittalGeometry->GetOrigin();
-//  coronalOrigin = coronalGeometry->GetOrigin();
-//  axialCentre = axialGeometry->GetCenter();
-//  sagittalCentre = sagittalGeometry->GetCenter();
-//  coronalCentre = coronalGeometry->GetCenter();
+  axialOrigin = axialGeometry->GetOrigin();
+  sagittalOrigin = sagittalGeometry->GetOrigin();
+  coronalOrigin = coronalGeometry->GetOrigin();
+  axialCentre = axialGeometry->GetCenter();
+  sagittalCentre = sagittalGeometry->GetCenter();
+  coronalCentre = coronalGeometry->GetCenter();
+  axialBottomLeftBackCorner = Self::GetBottomLeftBackCorner(axialGeometry);
+  sagittalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(sagittalGeometry);
+  coronalBottomLeftBackCorner = Self::GetBottomLeftBackCorner(coronalGeometry);
 
-////  MITK_INFO << "axial origin: " << axialOrigin;
-////  MITK_INFO << "sagittal origin: " << sagittalOrigin;
-////  MITK_INFO << "coronal origin: " << coronalOrigin;
-////  MITK_INFO << "axial centre: " << axialCentre;
-////  MITK_INFO << "sagittal centre: " << sagittalCentre;
-////  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial origin: " << axialOrigin;
+  MITK_INFO << "sagittal origin: " << sagittalOrigin;
+  MITK_INFO << "coronal origin: " << coronalOrigin;
+  MITK_INFO << "axial centre: " << axialCentre;
+  MITK_INFO << "sagittal centre: " << sagittalCentre;
+  MITK_INFO << "coronal centre: " << coronalCentre;
+  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
+  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
+  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
 //  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
 //  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
@@ -1127,6 +1088,9 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 //  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
 //  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
 //  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+//  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+//  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+//  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 }
 
 
