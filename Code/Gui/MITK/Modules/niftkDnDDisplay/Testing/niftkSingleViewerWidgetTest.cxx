@@ -956,7 +956,7 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 
   d->StateTester->Clear();
 
-//  d->Viewer->SetTimeGeometry(axialTimeGeometry);
+  d->Viewer->SetTimeGeometry(axialTimeGeometry);
 
   axialGeometry = axialRenderer->GetWorldGeometry();
   sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -986,15 +986,15 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
   MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
-//  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
-//  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
-//  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
-//  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
-//  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
-//  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-//  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-//  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-//  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
+  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
+  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
+  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
+  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
+  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 
   /// -------------------------------------------------------------------------
   /// Initialising the viewer with the world geometry from a sagittal renderer
@@ -1052,7 +1052,7 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 
   d->StateTester->Clear();
 
-//  d->Viewer->SetTimeGeometry(coronalTimeGeometry);
+  d->Viewer->SetTimeGeometry(coronalTimeGeometry);
 
   axialGeometry = axialRenderer->GetWorldGeometry();
   sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -1082,15 +1082,15 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
   MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
-//  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
-//  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
-//  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
-//  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
-//  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
-//  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-//  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-//  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-//  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(axialOrigin, expectedAxialOrigin, 0.001));
+  QVERIFY(Self::Equals(sagittalOrigin, expectedSagittalOrigin, 0.001));
+  QVERIFY(Self::Equals(coronalOrigin, expectedCoronalOrigin, 0.001));
+  QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
+  QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
+  QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
 }
 
 
