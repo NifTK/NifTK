@@ -12,8 +12,6 @@
 #
 #============================================================================*/
 
-add_subdirectory(Common)
-
 find_package(ITK)
 if(ITK_FOUND)
   include("${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake")
@@ -32,3 +30,6 @@ endif(VTK_FOUND)
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   add_subdirectory(NVAPI)
 endif()
+
+# Meshing requires ITK, VTK: DO NOT MOVE BEFORE FIND_PACKAGE(ITK), ...
+add_subdirectory(Common)
