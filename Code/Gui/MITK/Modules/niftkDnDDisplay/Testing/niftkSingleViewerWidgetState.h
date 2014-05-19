@@ -269,19 +269,27 @@ public:
       }
     }
 
-    /// TODO
-    /// This check is disabled for the moment.
-//    if (m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL)
-//            != m_Viewer->GetAxialWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
-//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL)
-//            != m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
-//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL)
-//            != m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->GetSlice()->GetPos())
-//    {
-//      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
-//      MITK_INFO << Self::ConstPointer(this);
-//      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
-//    }
+    /// Note:
+    /// The axial and the coronal slice position is always flipped and the coronal never is.
+    /// See how the geometry is calculated for each slice navigation controller in the multi
+    /// window widget.
+    int axialSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
+    int sagittalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
+    int coronalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
+    mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
+    mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
+    mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
+    if (axialSliceIndex != axialSnc->GetSlice()->GetSteps() - 1 - axialSnc->GetSlice()->GetPos()
+        || sagittalSliceIndex != sagittalSnc->GetSlice()->GetPos()
+        || coronalSliceIndex != coronalSnc->GetSlice()->GetSteps() - 1 - coronalSnc->GetSlice()->GetPos())
+    {
+      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
+      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; axial slice number: " << axialSnc->GetSlice()->GetSteps() << " ; axial SNC position: " << axialSnc->GetSlice()->GetPos();
+      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; sagittal slice number: " << sagittalSnc->GetSlice()->GetSteps() << " ; sagittal SNC position: " << sagittalSnc->GetSlice()->GetPos();
+      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; coronal slice number: " << coronalSnc->GetSlice()->GetSteps() << " ; coronal SNC position: " << coronalSnc->GetSlice()->GetPos();
+      MITK_INFO << Self::ConstPointer(this);
+      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
+    }
   }
 
 protected:
