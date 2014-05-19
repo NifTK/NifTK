@@ -92,7 +92,7 @@ static bool _WriteMesh(vtkSmartPointer<vtkUnstructuredGrid> sp_grid, const std::
   return true;
 }
 
-std::string _LabelListToString(const std::vector<int> &labels)
+static std::string _LabelListToString(const std::vector<int> &labels)
 {
   std::ostringstream oss;
 
