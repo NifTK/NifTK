@@ -151,21 +151,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       cv::Mat rightVideoImage = cvQueryFrame ( m_Capture ) ;
       MITK_INFO << framenumber << " " << timingError;
       
-     /* IplImage image(videoImage);
-      if ( framenumber %2 == 0 ) 
-      {
-        cvShowImage("Left Channel" , &image);
-      }
-      else
-      {
-        cvShowImage("Right Channel" , &image);
-      }*/
       key = cvWaitKey (20);
 
       std::vector <cv::Point2d> leftPickedPoints;
       unsigned int leftLastPointCount = leftPickedPoints.size() + 1;
       std::vector <cv::Point2d> rightPickedPoints;
       unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
+      //if ( framenumber %2 == 0 ) 
       while ( key != 'n' )
       {
         //might need an explicit copy here
@@ -196,21 +188,25 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           cvShowImage("Right Channel" , &rimage);
           rightLastPointCount = rightPickedPoints.size();
         }
-
-        if ( key == 's' )
-        {
-          MITK_INFO << "Skipping Point " << leftPickedPoints.size();
-          leftPickedPoints.push_back(cv::Point2d(-1,-1));
-          rightPickedPoints.push_back(cv::Point2d(-1,-1));
-        }
       }
-      std::string outPrefix = "leftOutItGoes";
-      std::ofstream pointOut (std::string (outPrefix + "_frame000.points").c_str());
-      pointOut << leftPickedPoints;
+      unsigned long long timeStamp;
+      trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
+      std::string outName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
+      std::ofstream pointOut (outName.c_str());
+      pointOut << "# " << framenumber << std::endl;
+      for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
+      {
+        pointOut << leftPickedPoints[i] << std::endl;
+      }
       pointOut.close();
-      outPrefix = "rightOutItGoes";
-      std::ofstream rightPointOut (std::string (outPrefix + "_frame000.points").c_str());
-      rightPointOut << rightPickedPoints;
+      trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
+      outName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
+      std::ofstream rightPointOut (outName.c_str());
+      rightPointOut << "# " << framenumber+1 << std::endl;
+      for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
+      {
+        rightPointOut << rightPickedPoints[i] << std::endl;
+      }
       rightPointOut.close();
 
       exit(1);
@@ -235,6 +231,11 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
       out->pop_back();
       MITK_INFO << "Removed point" << out->size();
     }
+  }
+  else if  ( event == cv::EVENT_MBUTTONDOWN )
+  {
+    MITK_INFO << "Skipping Point " << out->size();
+    out->push_back(cv::Point2d(-1,-1));
   }
 }
 
