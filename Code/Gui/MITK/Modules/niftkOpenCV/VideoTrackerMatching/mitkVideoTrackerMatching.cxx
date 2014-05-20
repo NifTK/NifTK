@@ -198,6 +198,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
           if ( m_HaltOnFrameSkip ) 
           {
             MITK_ERROR << "Halt on frame skip true, so halting, check data";
+            exit(1);
           }
 
         }
