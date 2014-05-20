@@ -30,6 +30,7 @@ namespace mitk
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 , m_FlipMatrices(false)
+, m_HaltOnFrameSkip(true)
 {}
 
 
@@ -138,9 +139,9 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
 
   std::string line;
   unsigned int frameNumber; 
-  unsigned int SequenceNumber;
+  unsigned int sequenceNumber;
   unsigned int channel;
-  unsigned long long TimeStamp;
+  unsigned long long timeStamp;
   unsigned int linenumber = 0;
   cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
 
@@ -156,10 +157,12 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> frameNumber >> SequenceNumber >> channel >> TimeStamp;
+      bool parseSuccess = linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
        if ( parseSuccess )
       {
         m_FrameNumbers.push_back(frameNumber);
+        m_VideoTimeStamps.m_TimeStamps.push_back(timeStamp);
+        
         for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
         {
           long long timingError;
@@ -167,12 +170,12 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
           if ( m_VideoLeadsTracking[i] )
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp + m_VideoLag[i], &timingError);
+                timeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp - m_VideoLag[i], &timingError);
+                timeStamp - m_VideoLag[i], &timingError);
           }
           
           m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
@@ -192,6 +195,11 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         if ( frameNumber != linenumber++ )
         {
           MITK_WARN << "Skipped frame detected at line " << linenumber ;
+          if ( m_HaltOnFrameSkip ) 
+          {
+            MITK_ERROR << "Halt on frame skip true, so halting, check data";
+          }
+
         }
       }
       else
@@ -365,6 +373,17 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 }
 
+//---------------------------------------------------------------------------
+cv::Mat VideoTrackerMatching::GetVideoFrame ( unsigned int FrameNumber , unsigned long long * TimeStamp )
+{
+  //a dummy holder for the return matrix, This should be implemented properly
+  cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  if ( TimeStamp != NULL )
+  {
+    *TimeStamp = m_VideoTimeStamps.m_TimeStamps[FrameNumber];
+  }
+  return returnMat;
+}
 
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation, int ReferenceIndex )
