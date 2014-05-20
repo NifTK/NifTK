@@ -46,6 +46,7 @@ m_VideoIn("")
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
 , m_EndFrame(0)
+, m_Frequency(50)
 {
 }
 
@@ -149,69 +150,73 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
       cv::Mat leftVideoImage = cvQueryFrame ( m_Capture ) ;
       cv::Mat rightVideoImage = cvQueryFrame ( m_Capture ) ;
-      MITK_INFO << framenumber << " " << timingError;
-      
-      key = cvWaitKey (20);
+      if ( std::abs(timingError) <  m_AllowableTimingError )
+      {
+        key = cvWaitKey (20);
 
-      std::vector <cv::Point2d> leftPickedPoints;
-      unsigned int leftLastPointCount = leftPickedPoints.size() + 1;
-      std::vector <cv::Point2d> rightPickedPoints;
-      unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
-      //if ( framenumber %2 == 0 ) 
-      while ( key != 'n' )
-      {
-        //might need an explicit copy here
-        cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
-        cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
-        key = cvWaitKey(20);
-        if ( leftPickedPoints.size() != leftLastPointCount )
+        std::vector <cv::Point2d> leftPickedPoints;
+        unsigned int leftLastPointCount = leftPickedPoints.size() + 1;
+        std::vector <cv::Point2d> rightPickedPoints;
+        unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
+        if ( framenumber %m_Frequency == 0 ) 
         {
-          for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
+          while ( key != 'n' )
           {
-            cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+            cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+            cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
+            key = cvWaitKey(20);
+            if ( leftPickedPoints.size() != leftLastPointCount )
+            {
+              for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
+              {
+                cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+              }
+                
+              IplImage image(leftAnnotatedVideoImage);
+              cvShowImage("Left Channel" , &image);
+              leftLastPointCount = leftPickedPoints.size();
+            }
+            cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+            cvSetMouseCallback("Right Channel",CallBackFunc, &rightPickedPoints);
+            if ( rightPickedPoints.size() != rightLastPointCount )
+            {
+              for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
+              {
+                cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+              }
+                
+              IplImage rimage(rightAnnotatedVideoImage);
+              cvShowImage("Right Channel" , &rimage);
+              rightLastPointCount = rightPickedPoints.size();
+            }
           }
-            
-          IplImage image(leftAnnotatedVideoImage);
-          cvShowImage("Left Channel" , &image);
-          leftLastPointCount = leftPickedPoints.size();
-        }
-        cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
-        cvSetMouseCallback("Right Channel",CallBackFunc, &rightPickedPoints);
-        if ( rightPickedPoints.size() != rightLastPointCount )
-        {
-          for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
+          unsigned long long timeStamp;
+          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
+          std::string outName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
+          std::ofstream pointOut (outName.c_str());
+          pointOut << "# " << framenumber << std::endl;
+          for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
           {
-            cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+            pointOut << leftPickedPoints[i] << std::endl;
           }
-            
-          IplImage rimage(rightAnnotatedVideoImage);
-          cvShowImage("Right Channel" , &rimage);
-          rightLastPointCount = rightPickedPoints.size();
-        }
+          pointOut.close();
+          trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
+          outName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
+          std::ofstream rightPointOut (outName.c_str());
+          rightPointOut << "# " << framenumber+1 << std::endl;
+          for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
+          {
+            rightPointOut << rightPickedPoints[i] << std::endl;
+          }
+          rightPointOut.close();
+        } 
       }
-      unsigned long long timeStamp;
-      trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-      std::string outName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
-      std::ofstream pointOut (outName.c_str());
-      pointOut << "# " << framenumber << std::endl;
-      for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
+      else
       {
-        pointOut << leftPickedPoints[i] << std::endl;
+        MITK_INFO << "Skipping frame " << framenumber << " high timing error " << timingError;
       }
-      pointOut.close();
-      trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-      outName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
-      std::ofstream rightPointOut (outName.c_str());
-      rightPointOut << "# " << framenumber+1 << std::endl;
-      for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
-      {
-        rightPointOut << rightPickedPoints[i] << std::endl;
-      }
-      rightPointOut.close();
-
-      exit(1);
+      framenumber += 2;
     }
-    framenumber += 2;
   }
   m_ProjectOK = true;
 }

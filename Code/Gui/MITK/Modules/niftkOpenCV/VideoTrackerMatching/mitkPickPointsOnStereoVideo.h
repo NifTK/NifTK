@@ -99,6 +99,7 @@ private:
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
+  unsigned int                  m_Frequency; // the sample rate (process every m_Frequency frame)
 
 
   //the camera calibration parameters
