@@ -133,6 +133,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
   int framenumber = 0 ;
   int key = 0;
+  cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
+  cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
+     
+  cv::Mat blankMat = cvCreateMat(10,100,CV_32FC3);
+  IplImage blankImage(blankMat);
+  cvShowImage("Left Channel" , &blankImage);
+  cvShowImage("Right Channel" , &blankImage);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
@@ -167,10 +174,11 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
           bool overWriteLeft = true;
           bool overWriteRight = true;
+          key = 0;
           if ( boost::filesystem::exists (leftOutName) )
           {
             MITK_INFO << leftOutName << " exists, overwrite (y/n)";
-            while ( key != 'n' || key != 'y' )
+            while ( ! ( key == 'n' || key == 'y' ) )
             {
               key = cvWaitKey(20);
             }
@@ -182,11 +190,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             {
               overWriteLeft = true;
             }
+            cvDestroyWindow("Control");
           }
+          key = 0;
           if ( boost::filesystem::exists (rightOutName) )
           {
             MITK_INFO << rightOutName << " exists, overwrite (y/n)";
-            while ( key != 'n' || key != 'y' )
+            while ( ! ( key == 'n' || key == 'y' ) )
             {
               key = cvWaitKey(20);
             }
@@ -199,43 +209,47 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               overWriteRight = true;
             }
           }
-
-          cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
-          cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
-          while ( key != 'n' )
+         
+          key = 0;
+          if ( overWriteLeft  ||  overWriteRight  )
           {
-
-            cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
-            cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
-            key = cvWaitKey(20);
-            if ( leftPickedPoints.size() != leftLastPointCount )
+            while ( key != 'n' )
             {
-              for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
+              key = cvWaitKey(20);
+              if ( overWriteLeft )
               {
-                cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
-              }
+                cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+                cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
+                if ( leftPickedPoints.size() != leftLastPointCount )
+                {
+                  for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
+                  {
+                    cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+                  }
                 
-              IplImage image(leftAnnotatedVideoImage);
-              cvShowImage("Left Channel" , &image);
-              leftLastPointCount = leftPickedPoints.size();
-            }
-            cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
-            cvSetMouseCallback("Right Channel",CallBackFunc, &rightPickedPoints);
-            if ( rightPickedPoints.size() != rightLastPointCount )
-            {
-              for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
+                  IplImage image(leftAnnotatedVideoImage);
+                  cvShowImage("Left Channel" , &image);
+                  leftLastPointCount = leftPickedPoints.size();
+                }
+              }
+              if ( overWriteRight )
               {
-                cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
-              }
+                cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+                cvSetMouseCallback("Right Channel",CallBackFunc, &rightPickedPoints);
+                if ( rightPickedPoints.size() != rightLastPointCount )
+                {
+                  for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
+                  {
+                    cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+                  }
                 
-              IplImage rimage(rightAnnotatedVideoImage);
-              cvShowImage("Right Channel" , &rimage);
-              rightLastPointCount = rightPickedPoints.size();
+                  IplImage rimage(rightAnnotatedVideoImage);
+                  cvShowImage("Right Channel" , &rimage);
+                  rightLastPointCount = rightPickedPoints.size();
+                }
+              }
             }
           }
-          cvDestroyWindow("Left Channel");
-          cvDestroyWindow("Right Channel");
-
           if ( leftPickedPoints.size() != 0 ) 
           {
             std::ofstream leftPointOut (leftOutName.c_str());
@@ -256,6 +270,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             rightPointOut.close();
           }
+          cvShowImage("Left Channel" , &blankImage);
+          cvShowImage("Right Channel" , &blankImage);
         } 
       }
       else
