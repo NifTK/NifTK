@@ -131,8 +131,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     
   m_ProjectOK = false;
 
-  cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
-  cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
   int framenumber = 0 ;
   int key = 0;
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
@@ -160,8 +158,53 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
         if ( framenumber %m_Frequency == 0 ) 
         {
+          MITK_INFO << "Picking points on frame pair " << framenumber << ", " << framenumber+1;
+          
+          unsigned long long timeStamp;
+          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
+          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
+          trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
+          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
+          bool overWriteLeft = true;
+          bool overWriteRight = true;
+          if ( boost::filesystem::exists (leftOutName) )
+          {
+            MITK_INFO << leftOutName << " exists, overwrite (y/n)";
+            while ( key != 'n' || key != 'y' )
+            {
+              key = cvWaitKey(20);
+            }
+            if ( key == 'n' ) 
+            {
+              overWriteLeft = false;
+            }
+            else
+            {
+              overWriteLeft = true;
+            }
+          }
+          if ( boost::filesystem::exists (rightOutName) )
+          {
+            MITK_INFO << rightOutName << " exists, overwrite (y/n)";
+            while ( key != 'n' || key != 'y' )
+            {
+              key = cvWaitKey(20);
+            }
+            if ( key == 'n' ) 
+            {
+              overWriteRight = false;
+            }
+            else
+            {
+              overWriteRight = true;
+            }
+          }
+
+          cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
+          cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
           while ( key != 'n' )
           {
+
             cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
             cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
             key = cvWaitKey(20);
@@ -190,25 +233,29 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               rightLastPointCount = rightPickedPoints.size();
             }
           }
-          unsigned long long timeStamp;
-          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-          std::string outName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
-          std::ofstream pointOut (outName.c_str());
-          pointOut << "# " << framenumber << std::endl;
-          for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
+          cvDestroyWindow("Left Channel");
+          cvDestroyWindow("Right Channel");
+
+          if ( leftPickedPoints.size() != 0 ) 
           {
-            pointOut << leftPickedPoints[i] << std::endl;
+            std::ofstream leftPointOut (leftOutName.c_str());
+            leftPointOut << "# " << framenumber << std::endl;
+            for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
+            {
+              leftPointOut << leftPickedPoints[i] << std::endl;
+            }
+            leftPointOut.close();
           }
-          pointOut.close();
-          trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          outName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
-          std::ofstream rightPointOut (outName.c_str());
-          rightPointOut << "# " << framenumber+1 << std::endl;
-          for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
+          if ( rightPickedPoints.size() != 0 ) 
           {
-            rightPointOut << rightPickedPoints[i] << std::endl;
+            std::ofstream rightPointOut (rightOutName.c_str());
+            rightPointOut << "# " << framenumber+1 << std::endl;
+            for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
+            {
+              rightPointOut << rightPickedPoints[i] << std::endl;
+            }
+            rightPointOut.close();
           }
-          rightPointOut.close();
         } 
       }
       else
