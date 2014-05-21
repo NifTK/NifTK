@@ -12,7 +12,7 @@ import inspect
 
 #from groupwise_registration_workflow    import *
 from registration    import *
-#from susceptibility_correction_workflow import *
+from susceptibility_correction import *
 
 '''
 This file provides the creation of the whole workflow necessary for 
@@ -20,8 +20,8 @@ processing diffusion MRI images.
 '''
 
 def get_B0s_from_bvals_bvecs(bvals, bvecs):
-    import dipy
-    gtab = dipy.core.gradients.gradient_table(bvals, bvecs)
+    import dipy.core.gradients as gradients
+    gtab = gradients.gradient_table(bvals, bvecs)
     masklist = list(gtab.b0s_mask)
     ret_val = []
     for i in range(len(masklist)):
@@ -30,8 +30,8 @@ def get_B0s_from_bvals_bvecs(bvals, bvecs):
     return ret_val
 
 def get_DWIs_from_bvals_bvecs(bvals, bvecs):
-    import dipy
-    gtab = dipy.core.gradients.gradient_table(bvals, bvecs)
+    import dipy.core.gradients as gradients
+    gtab = gradients.gradient_table(bvals, bvecs)
     masklist = list(gtab.b0s_mask)
     ret_val = []
     for i in range(len(masklist)):
@@ -40,8 +40,8 @@ def get_DWIs_from_bvals_bvecs(bvals, bvecs):
     return ret_val
 
 def reorder_list_from_bval_bvecs(B0s, DWIs, bvals, bvecs):
-    import dipy
-    gtab = dipy.core.gradients.gradient_table(bvals, bvecs)
+    import dipy.core.gradients as gradients
+    gtab = gradients.gradient_table(bvals, bvecs)
     masklist = list(gtab.b0s_mask)
     B0s_indices  = []
     DWIs_indices = []
@@ -52,10 +52,14 @@ def reorder_list_from_bval_bvecs(B0s, DWIs, bvals, bvecs):
             DWIs_indices.append(i)
     total_list_length = len(B0s) + len(DWIs)
     ret_val = [''] * total_list_length
+    i = 0
     for index in B0s_indices:
-        ret_val[index] = B0s[index]
+        ret_val[index] = B0s[i]
+        i = i+1
+    i = 0
     for index in DWIs_indices:
-        ret_val[index] = DWIs[index]
+        ret_val[index] = DWIs[i]
+        i = i+1
     return ret_val
 
 def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
@@ -75,8 +79,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
         name='inputnode')
     
     #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
-    split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis')
-    
+    split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis')    
 
     #Node using niu.Select() to select only the B0 files
     function_find_B0s = niu.Function(input_names=['bvals', 'bvecs'], output_names=['out'])
@@ -95,13 +98,11 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
 
     groupwise_B0_coregistration = create_linear_coregistration_workflow('groupwise_B0_coregistration')
     
-    #susceptibility_correction = create_susceptibility_correction_workflow('susceptibility_correction')
-    susceptibility_correction = pe.Node( niu.IdentityInterface( fields=['out_deformation_field', 
-                                                                        'inputnode.in_B0_file',
-                                                                        'inputnode.in_T1_file']),
-                                         name='susceptibility_correction')
+    susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction')
+    susceptibility_correction.inputs.input_node.etd = 2.46
+    susceptibility_correction.inputs.input_node.rot = 34.56
+    susceptibility_correction.inputs.input_node.ped = '-y'
     
-
     dwi_to_B0_registration = pe.MapNode(niftyreg.RegAladin(), name = 'dwi_to_B0_registration', iterfield=['flo_file'])
 
     #Node using niu.Merge() to put back together the list of B0s and DWIs
@@ -118,10 +119,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
     resampling = pe.MapNode(niftyreg.RegResample(), name = 'resampling', iterfield=['trans_file', 'flo_file'])
 
     merge_dwis = pe.Node(interface = fsl.Merge(), name = 'merge_dwis')
-    
+    merge_dwis.inputs.dimension = 't'
+
+    T1_mask = pe.Node(interface=fsl.BET(), name='T1_mask')
 
     tensor_fitting = pe.Node(interface=fsl.DTIFit(),name='tensor_fitting')
-
+    
     outputnode = pe.Node( interface=niu.IdentityInterface(fields=["tensor"]),
                           name="outputnode" )
 
@@ -140,35 +143,41 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
 
     workflow.connect(select_B0s,       'out', select_first_B0, 'inlist')
 
-    workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'inputnode.in_files')
-    workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'inputnode.ref_file')
+    workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'input_node.in_files')
+    workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'input_node.ref_file')
     
-    workflow.connect(groupwise_B0_coregistration, 'outputnode.average_image', susceptibility_correction, 'inputnode.in_B0_file')
-    workflow.connect(input_node,                  'in_T1_file',               susceptibility_correction, 'inputnode.in_T1_file')
+    workflow.connect(input_node,                  'in_fm_magnitude_file',      susceptibility_correction, 'input_node.mag_image')
+    workflow.connect(input_node,                  'in_fm_phase_file',          susceptibility_correction, 'input_node.phase_image')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.average_b0')
+#    workflow.connect(input_node,                  'in_T1_file',                susceptibility_correction, 'input_node.in_T1_file')
 
-    workflow.connect(groupwise_B0_coregistration, 'outputnode.average_image', dwi_to_B0_registration, 'ref_file')
-    workflow.connect(select_DWIs,                 'out',                      dwi_to_B0_registration, 'flo_file')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', dwi_to_B0_registration, 'ref_file')
+    workflow.connect(select_DWIs,                 'out',                       dwi_to_B0_registration, 'flo_file')
 
-    workflow.connect(groupwise_B0_coregistration, 'outputnode.aff_files', reorder_transformations, 'B0s')
-    workflow.connect(dwi_to_B0_registration,      'aff_file',             reorder_transformations, 'DWIs')
-    workflow.connect(input_node,                  'in_bval_file',         reorder_transformations, 'bvals')
-    workflow.connect(input_node,                  'in_bvec_file',         reorder_transformations, 'bvecs')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.aff_files', reorder_transformations, 'B0s')
+    workflow.connect(dwi_to_B0_registration,      'aff_file',              reorder_transformations, 'DWIs')
+    workflow.connect(input_node,                  'in_bval_file',          reorder_transformations, 'bvals')
+    workflow.connect(input_node,                  'in_bvec_file',          reorder_transformations, 'bvecs')
 
-    workflow.connect(susceptibility_correction, 'out_deformation_field', transformation_composition, 'comp_input')
+    workflow.connect(susceptibility_correction, 'output_node.out_field', transformation_composition, 'comp_input')
     workflow.connect(reorder_transformations,   'out',                   transformation_composition, 'comp_input2')
 
-    workflow.connect(groupwise_B0_coregistration, 'outputnode.average_image', resampling, 'ref_file')
-    workflow.connect(split_dwis,                  'out_files',                resampling, 'flo_file')
-    workflow.connect(transformation_composition,  'out_file',                 resampling, 'trans_file')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', resampling, 'ref_file')
+    workflow.connect(split_dwis,                  'out_files',                 resampling, 'flo_file')
+    workflow.connect(transformation_composition,  'out_file',                  resampling, 'trans_file')
     
-    workflow.connect(resampling, 'res_file', merge_dwis, 'in_files')
+    workflow.connect(resampling, 'res_file',   merge_dwis, 'in_files')
     
-    workflow.connect(merge_dwis, 'merged_file',     tensor_fitting, 'dwi')
-    workflow.connect(input_node,  'in_bvec_file', tensor_fitting, 'bvecs')
-    workflow.connect(input_node,  'in_bval_file', tensor_fitting, 'bvals')
+    workflow.connect(input_node, 'in_T1_file', T1_mask, 'in_file')
 
+    workflow.connect(merge_dwis, 'merged_file',  tensor_fitting, 'dwi')
+    workflow.connect(input_node, 'in_bvec_file', tensor_fitting, 'bvecs')
+    workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bvals')
+    workflow.connect(T1_mask,    'out_file',     tensor_fitting, 'mask')
+    
     workflow.connect(tensor_fitting, 'tensor', outputnode, 'tensor')
-
+    workflow.connect(tensor_fitting, 'tensor', outputnode, 'tensor')
+    
     return workflow
     
 
