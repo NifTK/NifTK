@@ -74,7 +74,7 @@ public:
   /// \brief Calculates the world origin from a 3D geometry.
   /// The world origin is the centre of the bottom-left-back voxel for image geometries
   /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
-  static mitk::Point3D GetBottomLeftBackCorner(const mitk::Geometry3D* geometry);
+  static mitk::Point3D GetWorldBottomLeftBackCorner(const mitk::Geometry3D* geometry);
 
   /// \brief Converts a cursor position in a render window to a point on the screen.
   /// The cursor position is a relative position within the render window normalised to the render window size.

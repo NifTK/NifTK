@@ -279,16 +279,30 @@ public:
     mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
     mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
     mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-    if (axialSliceIndex != axialSnc->GetSlice()->GetSteps() - 1 - axialSnc->GetSlice()->GetPos()
-        || sagittalSliceIndex != sagittalSnc->GetSlice()->GetPos()
-        || coronalSliceIndex != coronalSnc->GetSlice()->GetSteps() - 1 - coronalSnc->GetSlice()->GetPos())
+    int expectedAxialSliceIndex = axialSnc->GetSlice()->GetSteps() - 1 - axialSnc->GetSlice()->GetPos();
+    int expectedSagittalSliceIndex = sagittalSnc->GetSlice()->GetPos();
+    int expectedCoronalSliceIndex = coronalSnc->GetSlice()->GetSteps() - 1 - coronalSnc->GetSlice()->GetPos();
+
+    /// TODO
+    /// This is incorrect and should not be needed.
+    if (!m_TimeGeometry->GetGeometryForTimeStep(0)->GetImageGeometry())
     {
-      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
-      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; axial slice number: " << axialSnc->GetSlice()->GetSteps() << " ; axial SNC position: " << axialSnc->GetSlice()->GetPos();
-      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; sagittal slice number: " << sagittalSnc->GetSlice()->GetSteps() << " ; sagittal SNC position: " << sagittalSnc->GetSlice()->GetPos();
-      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; coronal slice number: " << coronalSnc->GetSlice()->GetSteps() << " ; coronal SNC position: " << coronalSnc->GetSlice()->GetPos();
+      expectedSagittalSliceIndex = sagittalSnc->GetSlice()->GetSteps() + 1 - sagittalSnc->GetSlice()->GetPos();
+    }
+
+    if (axialSliceIndex != expectedAxialSliceIndex
+        || sagittalSliceIndex != expectedSagittalSliceIndex
+        || coronalSliceIndex != expectedCoronalSliceIndex)
+    {
+      MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
+      MITK_INFO << "Axial slice index: " << axialSliceIndex << " Expected axial slice index: " << expectedAxialSliceIndex
+                << " ; axial slice number: " << axialSnc->GetSlice()->GetSteps() << " ; axial SNC position: " << axialSnc->GetSlice()->GetPos();
+      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " Expected sagittal slice index: " << expectedSagittalSliceIndex
+                << " ; sagittal slice number: " << sagittalSnc->GetSlice()->GetSteps() << " ; sagittal SNC position: " << sagittalSnc->GetSlice()->GetPos();
+      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " Expected coronal slice index: " << expectedCoronalSliceIndex
+                << " ; coronal slice number: " << coronalSnc->GetSlice()->GetSteps() << " ; coronal SNC position: " << coronalSnc->GetSlice()->GetPos();
       MITK_INFO << Self::ConstPointer(this);
-//      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
+      QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
     }
   }
 
@@ -336,7 +350,7 @@ protected:
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
   {
-    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
+//    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
     os << indent << "window layout: " << m_WindowLayout << std::endl;
     if (m_SelectedRenderWindow)

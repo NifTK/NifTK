@@ -91,8 +91,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
-, m_Geometry(NULL)
 , m_TimeGeometry(NULL)
+, m_Geometry(NULL)
 , m_BlockDisplayEvents(false)
 , m_BlockSncEvents(false)
 , m_BlockFocusEvents(false)
@@ -946,8 +946,8 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
-    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
     m_TimeGeometry = timeGeometry;
+    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
 
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
@@ -1088,30 +1088,32 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     mitk::Point3D originInMm;
     m_Geometry->IndexToWorld(originInVx, originInMm);
 
+    mitk::Point3D worldBottomLeftBackCorner = originInMm;
+
 //    MITK_INFO << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm;
 
-    if (!m_Geometry->GetImageGeometry())
+    if (m_Geometry->GetImageGeometry())
     {
-      if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
-      {
-        originInMm[0] += 0.5 * permutedSpacing[0];
-        originInMm[1] -= 0.5 * permutedSpacing[1];
-      }
-      else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
-      {
-        originInMm[1] += 0.5 * permutedSpacing[1];
-        originInMm[2] += 0.5 * permutedSpacing[2];
-      }
-      else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
-      {
-        originInMm[0] += 0.5 * permutedSpacing[0];
-        originInMm[2] += 0.5 * permutedSpacing[2];
-      }
-      else
-      {
-        assert(false);
-      }
+      worldBottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
+      worldBottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
+      worldBottomLeftBackCorner[2] -= 0.5 * permutedSpacing[2];
     }
+    else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
+    {
+      /// TODO Why is this needed?
+      worldBottomLeftBackCorner[1] -= permutedSpacing[1];
+    }
+    else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
+    {
+    }
+    else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
+    {
+    }
+    else
+    {
+      assert(false);
+    }
+//    MITK_INFO << "Matt, bottom left corner: " << worldBottomLeftBackCorner;
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
@@ -1147,9 +1149,9 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          originOfSlice[0] = originInMm[0];
-          originOfSlice[1] = originInMm[1] - 0.5 * permutedSpacing[1];
-          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
+          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
@@ -1167,9 +1169,9 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          originOfSlice[0] = originInMm[0] - 0.5 * permutedSpacing[0];
-          originOfSlice[1] = originInMm[1];
-          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
+          originOfSlice[0] = worldBottomLeftBackCorner[0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1187,9 +1189,10 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
           isFlipped = true;
-          originOfSlice[0] = originInMm[0] + permutedBoundingBox[0] * permutedSpacing[0] * permutedMatrix[0][1] - 0.5 * permutedSpacing[0];
-          originOfSlice[1] = originInMm[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1] - 0.5 * permutedSpacing[1];
-          originOfSlice[2] = originInMm[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][1];
+          originOfSlice[0] = worldBottomLeftBackCorner[0];
+          /// TODO Why is the y axis of flipped for the axial renderer?
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1919,26 +1922,16 @@ void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice
   const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
   {
-    mitk::Index3D selectedPositionInVx;
     mitk::Point3D selectedPosition = m_SelectedPosition;
 
+    mitk::Point3D selectedPositionInVx;
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
 
-    mitk::Point3D tmp;
-    tmp[0] = selectedPositionInVx[0];
-    tmp[1] = selectedPositionInVx[1];
-    tmp[2] = selectedPositionInVx[2];
+    geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
-    geometry->IndexToWorld(tmp, selectedPosition);
-
-    // Does not work, as it relies on the StateMachine event broadcasting mechanism,
-    // and if the widget is not listening, then it goes unnoticed.
-    //this->MoveCrossToPosition(selectedPosition);
-
-    // This however, directly forces the SNC to the right place.
     this->SetSelectedPosition(selectedPosition);
   }
 }
