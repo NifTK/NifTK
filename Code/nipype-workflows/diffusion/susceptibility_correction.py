@@ -22,14 +22,16 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility'):
     gen_fm = pe.Node(interface=GenFm(), name='gen_fm')
     
     # Rigid registration of magnitude image to averageb0
-
+    
     # Resample deformation field into averageB0 space
     
     output_node = pe.Node(niu.IdentityInterface(
                 fields=['out_fm', 'out_field']),
                             name='output_node')
     
-    pipeline = pe.Workflow('workflow')
+    pipeline = pe.Workflow(name=name)
+    pipeline.base_output_dir=name
+
     pipeline.connect(input_node, 'phase_image', pm_scale, 'in_pm')
     pipeline.connect(input_node, 'mag_image', bet, 'in_file')
     
