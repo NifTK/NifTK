@@ -31,7 +31,7 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", r
     output_node = pe.Node(
         niu.IdentityInterface(
             fields=['average_image', 'aff_files']),
-                        name='output_node', joinfield='aff_files', joinsource='lin_reg')
+                        name='output_node')
 
     pipeline = pe.Workflow(name=name)
     pipeline.base_output_dir=name

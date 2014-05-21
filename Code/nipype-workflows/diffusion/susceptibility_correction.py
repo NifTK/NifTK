@@ -7,7 +7,7 @@ import nipype.interfaces.utility as niu
 
 def create_fieldmap_susceptibility_workflow(name='susceptibility'):
     input_node =  pe.Node(niu.IdentityInterface(
-                fields=['phase_image', 'mag_image', 'etd', 'ped', 'rot']),
+                fields=['average_b0','phase_image', 'mag_image', 'etd', 'ped', 'rot']),
                             name='input_node')
     
     # Begin by scaling the phase image
@@ -20,6 +20,10 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility'):
     pm_unwrap = pe.Node(interface=PhaseUnwrap(), name= 'phase_unwrap')
     
     gen_fm = pe.Node(interface=GenFm(), name='gen_fm')
+    
+    # Rigid registration of magnitude image to averageb0
+
+    # Resample deformation field into averageB0 space
     
     output_node = pe.Node(niu.IdentityInterface(
                 fields=['out_fm', 'out_field']),
