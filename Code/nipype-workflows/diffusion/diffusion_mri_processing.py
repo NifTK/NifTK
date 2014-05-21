@@ -122,10 +122,13 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
     merge_dwis.inputs.dimension = 't'
 
     T1_mask = pe.Node(interface=fsl.BET(), name='T1_mask')
+    T1_mask.inputs.mask = True
+
+    T1_mask_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_mask_resampling')
 
     tensor_fitting = pe.Node(interface=fsl.DTIFit(),name='tensor_fitting')
     
-    outputnode = pe.Node( interface=niu.IdentityInterface(fields=["tensor"]),
+    outputnode = pe.Node( interface=niu.IdentityInterface(fields=['tensor', 'FA', 'MD', 'MO', 'S0', 'L1', 'L2', 'L3', 'V1', 'V2', 'V3']),
                           name="outputnode" )
 
     workflow.connect(input_node, 'in_dwi_4d_file', split_dwis, 'in_file')
@@ -170,13 +173,25 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
     
     workflow.connect(input_node, 'in_T1_file', T1_mask, 'in_file')
 
-    workflow.connect(merge_dwis, 'merged_file',  tensor_fitting, 'dwi')
-    workflow.connect(input_node, 'in_bvec_file', tensor_fitting, 'bvecs')
-    workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bvals')
-    workflow.connect(T1_mask,    'out_file',     tensor_fitting, 'mask')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_mask_resampling, 'ref_file')
+    workflow.connect(T1_mask,                     'mask_file',                 T1_mask_resampling, 'flo_file')
+
+    workflow.connect(merge_dwis, 'merged_file',      tensor_fitting, 'dwi')
+    workflow.connect(input_node, 'in_bvec_file',     tensor_fitting, 'bvecs')
+    workflow.connect(input_node, 'in_bval_file',     tensor_fitting, 'bvals')
+    workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask')
     
     workflow.connect(tensor_fitting, 'tensor', outputnode, 'tensor')
-    workflow.connect(tensor_fitting, 'tensor', outputnode, 'tensor')
+    workflow.connect(tensor_fitting, 'FA',     outputnode, 'FA')
+    workflow.connect(tensor_fitting, 'MD',     outputnode, 'MD')
+    workflow.connect(tensor_fitting, 'MO',     outputnode, 'MO')
+    workflow.connect(tensor_fitting, 'S0',     outputnode, 'S0')
+    workflow.connect(tensor_fitting, 'L1',     outputnode, 'L1')
+    workflow.connect(tensor_fitting, 'L2',     outputnode, 'L2')
+    workflow.connect(tensor_fitting, 'L3',     outputnode, 'L3')
+    workflow.connect(tensor_fitting, 'V1',     outputnode, 'V1')
+    workflow.connect(tensor_fitting, 'V2',     outputnode, 'V2')
+    workflow.connect(tensor_fitting, 'V3',     outputnode, 'V3')
     
     return workflow
     
