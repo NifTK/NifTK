@@ -1297,8 +1297,8 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
-    m_TimeStepHasChanged = true;
     m_GeometryHasChanged = true;
+    m_TimeStepHasChanged = true;
     m_SelectedPosition = this->GetCrossPosition();
     for (int i = 0; i < 3; ++i)
     {
@@ -1905,11 +1905,18 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 
   if (m_Geometry != NULL)
   {
-    mitk::Index3D selectedPositionInVx;
+    int axis = m_OrientationAxes[windowIndex];
+
+    mitk::Point3D selectedPositionInVx;
     m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-    int axis = m_OrientationAxes[windowIndex];
-    selectedSlice = selectedPositionInVx[axis];
+    if (!m_Geometry->GetImageGeometry())
+    {
+      selectedPositionInVx[axis] -= 0.5;
+    }
+
+    /// Round it to the closest integer.
+    selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
   }
 
   return selectedSlice;
@@ -1919,18 +1926,22 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 {
-  const mitk::Geometry3D* geometry = m_Geometry;
-  if (geometry != NULL)
+  if (m_Geometry != NULL)
   {
     mitk::Point3D selectedPosition = m_SelectedPosition;
 
     mitk::Point3D selectedPositionInVx;
-    geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
 
-    geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
+    if (!m_Geometry->GetImageGeometry())
+    {
+      selectedPositionInVx[axis] += 0.5;
+    }
+
+    m_Geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
     this->SetSelectedPosition(selectedPosition);
   }
