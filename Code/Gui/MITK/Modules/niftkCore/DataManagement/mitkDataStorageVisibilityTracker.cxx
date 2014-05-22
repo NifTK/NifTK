@@ -19,59 +19,22 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::Init(const mitk::DataStorage::Pointer dataStorage)
-{
-  m_Listener = mitk::DataStoragePropertyListener::New();
-  m_Listener->SetPropertyName("visible");
-  m_Listener->SetDataStorage(dataStorage);
-
-  m_RenderersToTrack.clear();
-  m_RenderersToUpdate.clear();
-  m_NodesToIgnore.clear();
-
-  m_Listener->PropertyChanged += mitk::MessageDelegate2<DataStorageVisibilityTracker, mitk::DataNode*, mitk::BaseRenderer*>(this, &DataStorageVisibilityTracker::OnPropertyChanged);
-}
-
-
-//-----------------------------------------------------------------------------
 DataStorageVisibilityTracker::DataStorageVisibilityTracker()
-: m_Listener(NULL)
-, m_DataStorage(NULL)
+: m_DataStorage(0)
+, m_TrackedRenderer(0)
 {
-  this->Init(NULL);
-}
+  m_Listener = mitk::DataStoragePropertyListener::New("visible");
 
-
-//-----------------------------------------------------------------------------
-DataStorageVisibilityTracker::DataStorageVisibilityTracker(const mitk::DataStorage::Pointer dataStorage)
-: m_Listener(NULL)
-, m_DataStorage(NULL)
-{
- this->Init(dataStorage);
+  m_Listener->PropertyChanged += mitk::MessageDelegate2<DataStorageVisibilityTracker, mitk::DataNode*, const mitk::BaseRenderer*>(this, &DataStorageVisibilityTracker::OnPropertyChanged);
 }
 
 
 //-----------------------------------------------------------------------------
 DataStorageVisibilityTracker::~DataStorageVisibilityTracker()
 {
-  m_Listener->PropertyChanged += mitk::MessageDelegate2<DataStorageVisibilityTracker, mitk::DataNode*, mitk::BaseRenderer*>(this, &DataStorageVisibilityTracker::OnPropertyChanged);
-}
+  this->SetTrackedRenderer(0);
 
-
-//-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::SetRenderersToUpdate(const std::vector<mitk::BaseRenderer*>& renderersToUpdate)
-{
-  m_RenderersToUpdate = renderersToUpdate;
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::SetRenderersToTrack(const std::vector<mitk::BaseRenderer*>& renderersToTrack)
-{
-  m_RenderersToTrack = renderersToTrack;
-  m_Listener->SetRenderers(renderersToTrack);
-  this->Modified();
+  m_Listener->PropertyChanged -= mitk::MessageDelegate2<DataStorageVisibilityTracker, mitk::DataNode*, const mitk::BaseRenderer*>(this, &DataStorageVisibilityTracker::OnPropertyChanged);
 }
 
 
@@ -80,7 +43,77 @@ void DataStorageVisibilityTracker::SetDataStorage(const mitk::DataStorage::Point
 {
   m_DataStorage = dataStorage;
   m_Listener->SetDataStorage(dataStorage);
-  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer)
+{
+  if (trackedRenderer != m_TrackedRenderer)
+  {
+    if (m_TrackedRenderer)
+    {
+      /// Disable visibility of all nodes in the managed render windows.
+
+      assert(m_DataStorage.IsNotNull());
+
+      // block the calls, so we can update stuff, without repeated callback loops.
+      bool wasBlocked = m_Listener->IsBlocked();
+      m_Listener->SetBlocked(true);
+
+      mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+      for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+      {
+        mitk::DataNode::Pointer node = it->Value();
+
+        if (this->IsIgnored(node))
+        {
+          continue;
+        }
+
+        mitk::BoolProperty* globalProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", 0));
+        for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
+        {
+          /// Note:
+          /// GetProperty() returns the global property if there is no renderer specific one.
+          /// If there is no renderer specific property then we create one and set to false.
+          /// Otherwise, we set it to false, unless it alread was.
+          mitk::BoolProperty* rendererSpecificProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", m_ManagedRenderers[i]));
+          if (rendererSpecificProperty == globalProperty)
+          {
+            node->SetBoolProperty("visibility", false, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
+          }
+          else if (rendererSpecificProperty && rendererSpecificProperty->GetValue())
+          {
+            rendererSpecificProperty->SetValue(false);
+          }
+        }
+      }
+
+      m_Listener->SetBlocked(wasBlocked);
+    }
+
+    m_TrackedRenderer = trackedRenderer;
+
+    if (trackedRenderer)
+    {
+      std::vector<const mitk::BaseRenderer*> renderersToTrack(1);
+      renderersToTrack[0] = trackedRenderer;
+      m_Listener->SetRenderers(renderersToTrack);
+    }
+    else
+    {
+      std::vector<const mitk::BaseRenderer*> renderersToTrack(0);
+      m_Listener->SetRenderers(renderersToTrack);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageVisibilityTracker::SetManagedRenderers(const std::vector<const mitk::BaseRenderer*>& managedRenderers)
+{
+  m_ManagedRenderers = managedRenderers;
 }
 
 
@@ -94,43 +127,29 @@ void DataStorageVisibilityTracker::SetNodesToIgnore(const std::vector<mitk::Data
 //-----------------------------------------------------------------------------
 bool DataStorageVisibilityTracker::IsIgnored(mitk::DataNode* node)
 {
-  bool isExcluded = false;
-
-  std::vector<mitk::DataNode*>::iterator iter;
-  for (iter = m_NodesToIgnore.begin(); iter != m_NodesToIgnore.end(); iter++)
-  {
-    if (*iter == node)
-    {
-      isExcluded = true;
-      break;
-    }
-  }
-  return isExcluded;
+  return std::find(m_NodesToIgnore.begin(), m_NodesToIgnore.end(), node) != m_NodesToIgnore.end();
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::NotifyAll()
+void DataStorageVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-  m_Listener->NotifyAll();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, mitk::BaseRenderer* renderer)
-{
-  if (m_DataStorage.IsNull() || m_RenderersToTrack.empty() || m_RenderersToUpdate.empty())
-  {
-    return;
-  }
-
-  if (this->IsIgnored(node))
+  /// We do not have anything to do if:
+  ///   - the data storage has not been initialised
+  ///   - there is no tracked or managed renderer
+  ///   - the node is added to the ignore list
+  ///   - a renderer specific visibility has changed for a different renderer than which we track.
+  if (m_DataStorage.IsNull()
+      || !m_TrackedRenderer
+      || m_ManagedRenderers.empty()
+      || this->IsIgnored(node)
+      || (renderer && renderer != m_TrackedRenderer))
   {
     return;
   }
 
   // block the calls, so we can update stuff, without repeated callback loops.
-  bool wasBlocked = m_Listener->GetBlocked();
+  bool wasBlocked = m_Listener->IsBlocked();
   m_Listener->SetBlocked(true);
 
   // Intention : This object should display all the data nodes visible in the focused window, and none others.
@@ -140,31 +159,39 @@ void DataStorageVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, mitk:
   bool globalVisible = false;
   bool foundGlobalVisible = node->GetBoolProperty("visible", globalVisible);
 
-  for (std::size_t i = 0; i < m_RenderersToTrack.size(); ++i)
+  bool trackedWindowVisible = false;
+  /// TODO
+  /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+  bool foundTrackedWindowVisible = node->GetBoolProperty("visible", trackedWindowVisible, const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+
+  // We default to ON.
+  bool finalVisibility = true;
+
+  // The logic.
+  if ((foundTrackedWindowVisible && !trackedWindowVisible)
+      || (foundGlobalVisible && !globalVisible)
+      )
   {
-    bool trackedWindowVisible = false;
-    bool foundTrackedWindowVisible = node->GetBoolProperty("visible", trackedWindowVisible, m_RenderersToTrack[i]);
+    finalVisibility = false;
+  }
 
-    // We default to ON.
-    bool finalVisibility = true;
-
-    // The logic.
-    if ((foundTrackedWindowVisible && !trackedWindowVisible)
-        || (foundGlobalVisible && !globalVisible)
-        )
-    {
-      finalVisibility = false;
-    }
-
-    // Set the final visibility flag
-    for (std::size_t j = 0; j < m_RenderersToUpdate.size(); ++j)
-    {
-      node->SetBoolProperty("visible", finalVisibility, m_RenderersToUpdate[j]);
-    }
+  // Set the final visibility flag
+  for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
+  {
+    /// TODO
+    /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+    node->SetBoolProperty("visible", finalVisibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
   }
 
   // don't forget to unblock.
   m_Listener->SetBlocked(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataStorageVisibilityTracker::NotifyAll()
+{
+  m_Listener->NotifyAll();
 }
 
 } // end namespace

@@ -222,14 +222,14 @@ set(NIFTK_VERSION_Boost "86799" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_VERSION_RTK "c88ec7cf4d" CACHE STRING "Version of RTK" FORCE)
+set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
 set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "ff2ae722d4" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "93a1201d59" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "df8f8b756c" CACHE STRING "Version of NiftyLink" FORCE)
+set(NIFTK_VERSION_NIFTYLINK "6db5cef309" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -249,7 +249,7 @@ set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_$
 set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
 set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
 set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
-set(NIFTK_LOCATION_RTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/SimonRit-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
+set(NIFTK_LOCATION_RTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/VTK-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
 set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
@@ -847,6 +847,13 @@ if(BUILD_IGI)
   if(OpenCV_FOUND)
     message("Found OpenCV")
   endif(OpenCV_FOUND)
+
+  # Here we do a find, just so we can read the license file
+  find_package(NiftyLink REQUIRED)
+  if(NiftyLink_FOUND)
+    include(${NiftyLink_USE_FILE})
+  endif()
+
 endif(BUILD_IGI)
 
 
@@ -1144,7 +1151,6 @@ include_directories(
 
 configure_file(${CMAKE_SOURCE_DIR}/INSTALLATION.txt ${CMAKE_BINARY_DIR}/INSTALLATION.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_BINARY_DIR}/LICENSE.txt @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_BINARY_DIR}/Doxygen/LICENSE.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/README.txt ${CMAKE_BINARY_DIR}/README.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CONTRIBUTORS.txt ${CMAKE_BINARY_DIR}/CONTRIBUTORS.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.sh.in ${CMAKE_BINARY_DIR}/SetupDependencies.sh @ONLY )
@@ -1167,7 +1173,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICE
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyLink.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyLink.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySeg.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySim.txt)
@@ -1176,6 +1181,11 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICEN
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt ${CMAKE_BINARY_DIR}/LICENSE_EIGEN.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt ${CMAKE_BINARY_DIR}/LICENSE_FLANN.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
+if(BUILD_IGI)
+  configure_file(${NiftyLink_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt @ONLY)
+  configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
+  configure_file(${NiftyLink_QSLOG_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt @ONLY)
+endif()
 
 #############################################################################################
 # These represent the libraries that the apps, libraries and unit tests actually link against
@@ -1199,7 +1209,6 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt DESTINATION ${NIF
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
@@ -1208,6 +1217,11 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt DESTINATION ${NI
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+if(BUILD_IGI)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+endif()
 install(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/INSTALLATION.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)

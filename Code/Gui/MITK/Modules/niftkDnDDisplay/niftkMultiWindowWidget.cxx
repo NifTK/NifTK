@@ -84,7 +84,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_CursorGlobalVisibility(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_CursorPositions(3)
@@ -100,6 +99,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_BlockUpdate(false)
 , m_FocusHasChanged(false)
 , m_GeometryHasChanged(false)
+, m_WindowLayoutHasChanged(false)
 , m_TimeStepHasChanged(false)
 , m_SelectedSliceHasChanged(3)
 , m_CursorPositionHasChanged(3)
@@ -136,7 +136,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
-  this->SetCursorGloballyVisible(false);
+  m_PlaneNode1->SetVisibility(false);
+  m_PlaneNode2->SetVisibility(false);
+  m_PlaneNode3->SetVisibility(false);
   this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
@@ -631,27 +633,6 @@ void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
-{
-  return m_CursorGlobalVisibility;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorGloballyVisible(bool visible)
-{
-  // Here, "globally" means the plane nodes created within this widget will be available in ALL other render windows.
-  m_CursorGlobalVisibility = visible;
-  m_PlaneNode1->SetVisibility(visible);
-  m_PlaneNode1->Modified();
-  m_PlaneNode2->SetVisibility(visible);
-  m_PlaneNode2->Modified();
-  m_PlaneNode3->SetVisibility(visible);
-  m_PlaneNode3->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 {
   return m_DirectionAnnotations[AXIAL]->GetVisibility()
@@ -663,10 +644,9 @@ bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 {
-  for (int i = 0; i < 3; ++i)
-  {
-    m_DirectionAnnotations[i]->SetVisibility(visible);
-  }
+  m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
+  m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
+  m_DirectionAnnotations[CORONAL]->SetVisibility(visible);
   this->RequestUpdate();
 }
 
@@ -724,6 +704,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
         show3DPlanes = true;
       }
     }
+
     this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
@@ -753,9 +734,9 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
-  for (unsigned int i = 0; i < nodes.size(); i++)
+  for (std::size_t i = 0; i < nodes.size(); ++i)
   {
     this->SetVisibility(mitkWidget1, nodes[i], visible);
     this->SetVisibility(mitkWidget2, nodes[i], visible);
@@ -957,7 +938,7 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
+void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   if (timeGeometry != NULL)
   {
@@ -1314,8 +1295,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
         if (renderer->GetMapperID() == 1)
         {
           // Now geometry is established, set to middle slice.
-          int sliceNumber = (int)((sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
-          sliceNavigationController->GetSlice()->SetPos(sliceNumber);
+          int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
+          if ((slices % 2 == 0) && isFlipped)
+          {
+            middleSlicePos -= 1;
+          }
+          sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
         // Now geometry is established, get the display geometry to fit the picture to the window.
@@ -1327,6 +1312,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
     m_TimeStepHasChanged = true;
     m_GeometryHasChanged = true;
+    m_SelectedPosition = this->GetCrossPosition();
     for (int i = 0; i < 3; ++i)
     {
       m_SelectedSliceHasChanged[i] = true;
@@ -1347,6 +1333,14 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
+/// The viewer is not correctly initialised if this check is enabled.
+//  if (windowLayout == m_WindowLayout)
+//  {
+//    return;
+//  }
+
+  bool updateWasBlocked = this->BlockUpdate(true);
+
   bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
   if (m_GridLayout != NULL)
@@ -1531,6 +1525,7 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   m_ScaleFactorBinding = ::IsMultiWindowLayout(windowLayout);
 
   m_WindowLayout = windowLayout;
+  m_WindowLayoutHasChanged = true;
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
@@ -1563,6 +1558,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   }
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -1900,10 +1897,12 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    m_SelectedPosition = this->GetCrossPosition();
-    m_SelectedSliceHasChanged[windowIndex] = true;
-
-    this->SynchroniseCursorPositions(windowIndex);
+    mitk::Point3D selectedPosition = this->GetCrossPosition();
+    if (selectedPosition != m_SelectedPosition)
+    {
+      m_SelectedPosition = selectedPosition;
+      m_SelectedSliceHasChanged[windowIndex] = true;
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2059,6 +2058,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
+
+    m_SelectedPosition = this->GetCrossPosition();
 
     if (m_WindowLayout != WINDOW_LAYOUT_3D)
     {
@@ -2253,9 +2254,14 @@ void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
   mitk::Point2D point2DInPx;
   displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
 
-  m_CursorPositions[windowIndex][0] = point2DInPx[0] / displaySize[0];
-  m_CursorPositions[windowIndex][1] = point2DInPx[1] / displaySize[1];
-  m_CursorPositionHasChanged[windowIndex] = true;
+  mitk::Vector2D cursorPositions;
+  cursorPositions[0] = point2DInPx[0] / displaySize[0];
+  cursorPositions[1] = point2DInPx[1] / displaySize[1];
+  if (cursorPositions != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPositions;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
 
   this->BlockUpdate(updateWasBlocked);
 }
@@ -2771,6 +2777,12 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       if (selectedPositionHasChanged)
       {
         emit SelectedPositionChanged(m_SelectedPosition);
+      }
+
+      if (m_WindowLayoutHasChanged)
+      {
+        m_WindowLayoutHasChanged = false;
+        emit WindowLayoutChanged(m_WindowLayout);
       }
 
       for (unsigned i = 0; i < 3; ++i)

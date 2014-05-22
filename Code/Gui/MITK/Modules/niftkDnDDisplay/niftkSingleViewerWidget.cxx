@@ -31,9 +31,9 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_DataStorage(NULL)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
-, m_IsBoundGeometryActive(false)
-, m_Geometry(NULL)
-, m_BoundGeometry(NULL)
+, m_IsBoundTimeGeometryActive(false)
+, m_TimeGeometry(NULL)
+, m_BoundTimeGeometry(NULL)
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
@@ -76,6 +76,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
@@ -107,6 +108,13 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, st
   Q_UNUSED(renderWindow);
   emit NodesDropped(this, nodes);
   m_MultiWidget->SetFocused();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
+{
+  emit WindowLayoutChanged(this, windowLayout);
 }
 
 
@@ -213,28 +221,28 @@ const std::vector<QmitkRenderWindow*>& niftkSingleViewerWidget::GetRenderWindows
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetAxialWindow() const
 {
-  return m_MultiWidget->GetRenderWindow1();
+  return m_MultiWidget->GetRenderWindows()[0];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetSagittalWindow() const
 {
-  return m_MultiWidget->GetRenderWindow2();
+  return m_MultiWidget->GetRenderWindows()[1];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::GetCoronalWindow() const
 {
-  return m_MultiWidget->GetRenderWindow3();
+  return m_MultiWidget->GetRenderWindows()[2];
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* niftkSingleViewerWidget::Get3DWindow() const
 {
-  return m_MultiWidget->GetRenderWindow4();
+  return m_MultiWidget->GetRenderWindows()[3];
 }
 
 
@@ -253,13 +261,6 @@ bool niftkSingleViewerWidget::IsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorVisible(bool visible)
-{
-  m_MultiWidget->SetCursorVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::IsCursorVisible() const
 {
   return m_MultiWidget->IsCursorVisible();
@@ -267,16 +268,9 @@ bool niftkSingleViewerWidget::IsCursorVisible() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorGloballyVisible(bool visible)
+void niftkSingleViewerWidget::SetCursorVisible(bool visible)
 {
-  m_MultiWidget->SetCursorGloballyVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsCursorGloballyVisible() const
-{
-  return m_MultiWidget->IsCursorGloballyVisible();
+  m_MultiWidget->SetCursorVisible(visible);
 }
 
 
@@ -361,9 +355,9 @@ void niftkSingleViewerWidget::FitToDisplay(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkSingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
-  m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
+  m_MultiWidget->SetVisibility(nodes, visible);
 }
 
 
@@ -489,13 +483,21 @@ void niftkSingleViewerWidget::ResetLastPositions()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
+const mitk::TimeGeometry* niftkSingleViewerWidget::GetTimeGeometry() const
+{
+  assert(m_TimeGeometry);
+  return m_TimeGeometry;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
-  m_Geometry = timeGeometry;
+  m_TimeGeometry = timeGeometry;
   m_GeometryInitialised = false;
 
-  if (!m_IsBoundGeometryActive)
+  if (!m_IsBoundTimeGeometryActive)
   {
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
@@ -523,21 +525,13 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
-{
-  assert(m_Geometry);
-  return m_Geometry;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeGeometry)
+void niftkSingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
-  m_BoundGeometry = timeGeometry;
+  m_BoundTimeGeometry = timeGeometry;
   m_GeometryInitialised = false;
 
-  if (m_IsBoundGeometryActive)
+  if (m_IsBoundTimeGeometryActive)
   {
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
@@ -563,25 +557,25 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeG
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsBoundGeometryActive()
+bool niftkSingleViewerWidget::IsBoundTimeGeometryActive()
 {
-  return m_IsBoundGeometryActive;
+  return m_IsBoundTimeGeometryActive;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
+void niftkSingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometryActive)
 {
-  if (isBoundGeometryActive == m_IsBoundGeometryActive)
+  if (isBoundTimeGeometryActive == m_IsBoundTimeGeometryActive)
   {
     // No change, nothing to do.
     return;
   }
 
-  mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  const mitk::TimeGeometry* timeGeometry = isBoundTimeGeometryActive ? m_BoundTimeGeometry : m_TimeGeometry;
   m_MultiWidget->SetTimeGeometry(timeGeometry);
 
-  m_IsBoundGeometryActive = isBoundGeometryActive;
+  m_IsBoundTimeGeometryActive = isBoundTimeGeometryActive;
   //  m_WindowLayout = WINDOW_LAYOUT_UNKNOWN;
 }
 
@@ -749,10 +743,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
-    mitk::TimeGeometry* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+    const mitk::TimeGeometry* timeGeometry = m_IsBoundTimeGeometryActive ? m_BoundTimeGeometry : m_TimeGeometry;
 
     // If for whatever reason, we have no geometry... bail out.
-    if (!geometry)
+    if (!timeGeometry)
     {
       return;
     }
@@ -782,8 +776,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     if (!m_GeometryInitialised)
     {
       m_GeometryInitialised = true;
-      m_MultiWidget->SetTimeStep(0);
-      m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
     }
 
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
@@ -982,7 +974,6 @@ bool niftkSingleViewerWidget::MovePosterior()
 bool niftkSingleViewerWidget::SwitchToAxial()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_AXIAL);
   return true;
 }
 
@@ -991,7 +982,6 @@ bool niftkSingleViewerWidget::SwitchToAxial()
 bool niftkSingleViewerWidget::SwitchToSagittal()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_SAGITTAL);
   return true;
 }
 
@@ -1000,7 +990,6 @@ bool niftkSingleViewerWidget::SwitchToSagittal()
 bool niftkSingleViewerWidget::SwitchToCoronal()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_CORONAL);
   return true;
 }
 
@@ -1009,7 +998,6 @@ bool niftkSingleViewerWidget::SwitchToCoronal()
 bool niftkSingleViewerWidget::SwitchTo3D()
 {
   this->SetWindowLayout(WINDOW_LAYOUT_3D);
-  emit WindowLayoutChanged(this, WINDOW_LAYOUT_3D);
   return true;
 }
 
@@ -1074,8 +1062,6 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     this->SetWindowLayout(nextWindowLayout);
 
     m_MultiWidget->BlockUpdate(updateWasBlocked);
-
-    emit WindowLayoutChanged(this, nextWindowLayout);
   }
 
   return true;
