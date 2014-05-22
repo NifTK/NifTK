@@ -443,7 +443,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
   return appenderer->GetOutput();
 }
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width, bool Polaris)
 {
   vtkSmartPointer<vtkCylinderSource> topBar1 = vtkSmartPointer<vtkCylinderSource>::New();
   vtkSmartPointer<vtkCylinderSource> topBar2 = vtkSmartPointer<vtkCylinderSource>::New();
@@ -487,9 +487,16 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
   vtkSmartPointer<vtkTransform> neckTransform = vtkSmartPointer<vtkTransform>::New();
   vtkSmartPointer<vtkTransform> eyeTransform = vtkSmartPointer<vtkTransform>::New();
 
-  topBar1Transform->Translate(0,300,0);
-  topBar2Transform->Translate(0,-300,0);
-  neckTransform->RotateZ(90);
+  topBar1Transform->Translate(0, (width/2 + 50),0);
+  topBar2Transform->Translate(0,-(width/2 + 50),0);
+  if ( Polaris )
+  {
+    neckTransform->RotateZ(-90);
+  }
+  else
+  {
+    neckTransform->RotateZ(90);
+  }
   neckTransform->Translate(0,150,0);
   eyeTransform->RotateX(90);
   

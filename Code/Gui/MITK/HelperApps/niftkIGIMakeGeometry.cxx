@@ -111,6 +111,10 @@ int main(int argc, char** argv)
   {
     surface = MakeOptotrak ();
   }
+  if ( geometry == "polaris" )
+  {
+    surface = MakePolaris ();
+  }
   if ( geometry == "transRectalUSProbe" )
   {
     surface = MakeTransrectalUSProbe (handeye);
@@ -126,7 +130,7 @@ int main(int argc, char** argv)
     MITK_ERROR << " laparoscope laparoscopePolaris pointer";
     MITK_ERROR << " reference referencePolaris";
     MITK_ERROR << " XAxis YAxis ZAxis laplensAxes";
-    MITK_ERROR << " optotrak transRectalUSProbe monitor";
+    MITK_ERROR << " optotrak polaris transRectalUSProbe monitor";
     exit (EXIT_FAILURE);
   }
 

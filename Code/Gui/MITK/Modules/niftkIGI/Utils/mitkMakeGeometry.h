@@ -91,6 +91,13 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeLapLensAxes();
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeOptotrak( const float & width = 500);
 
 /**
+ * \brief for visualisation purposes, make a representation of an NDI Polaris
+ * camera unit
+ * \param the width of the camera unit
+ */
+NIFTKIGI_EXPORT mitk::Surface::Pointer MakePolaris( const float & width = 300);
+
+/**
  * \brief For visualisation purposes, creates a representation of a transrectal ultrasound probe
  * \param the handeye calibration to define the tool origin
  */

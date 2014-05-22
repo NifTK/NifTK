@@ -127,7 +127,6 @@ mitk::Surface::Pointer MakeLapLensAxes()
   return surface;
 }
 
-
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeOptotrak( const float & width )
 {
@@ -138,6 +137,15 @@ mitk::Surface::Pointer MakeOptotrak( const float & width )
   return surface;
 }
 
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakePolaris( const float & width )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> polaris = maker.MakeOptotrak(width, true);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(polaris);
+  return surface;
+}
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )

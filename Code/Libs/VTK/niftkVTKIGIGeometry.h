@@ -94,8 +94,9 @@ public:
    * \brief for visualisation purposes, make a representation of an Optotrak Certus 
    * camera unit
    * \param the width of the camera unit
+   * \param set to true to turn the neck over so it looks (a bit) more like a polaris
    */
-  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width = 500);
+  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width = 500, bool Polaris = false);
 
   /**
   * \brief For visualisation purposes, creates a representation of a transrectal ultrasound probe
