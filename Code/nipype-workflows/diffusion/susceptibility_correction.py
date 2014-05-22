@@ -39,6 +39,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility'):
     pipeline.connect(pm_scale, 'out_pm', pm_unwrap, 'in_fm')
     pipeline.connect(input_node, 'mag_image', pm_unwrap, 'in_mag' )
     
+    pipeline.connect(input_node, 'averageB0', gen_fm, 'in_epi')
     pipeline.connect(input_node, 'etd', gen_fm, 'in_etd')
     pipeline.connect(input_node, 'rot', gen_fm, 'in_rot')
     pipeline.connect(input_node, 'ped', gen_fm, 'in_ped')
