@@ -13,6 +13,8 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
 #include <niftkFileHelper.h>
@@ -2107,6 +2109,53 @@ void LoadHandeyeFromPlainText (const std::string& filename,
   
 }
 
+//-----------------------------------------------------------------------------
+void GenerateFullHandeyeMatrices (const std::string& directory)
+{
+  cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
+  cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
+  cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
+
+  mitk::LoadStereoCameraParametersFromDirectory (directory,
+    &leftCameraIntrinsic,&leftCameraDistortion,&rightCameraIntrinsic,
+    &rightCameraDistortion,&rightToLeftRotationMatrix,
+    &rightToLeftTranslationVector,&leftCameraToTracker);
+  
+  cv::Mat rightToLeft = cv::Mat (4,4,CV_64FC1);
+
+  for ( int i = 0 ; i < 3 ; i ++ ) 
+  {
+    for ( int j = 0 ; j < 3 ; j ++ )
+    {
+      rightToLeft.at<double>(i,j) = rightToLeftRotationMatrix.at<double>(i,j);
+    }
+    rightToLeft.at<double>(i,3) = rightToLeftTranslationVector.at<double>(i,0);
+    rightToLeft.at<double>(3,i) = 0.0;
+  }
+  rightToLeft.at<double>(3,3) = 1.0;
+
+  cv::Mat rightCameraToTracker = cv::Mat (4,4,CV_64FC1);
+  cv::Mat centreLineToTracker = cv::Mat (4,4,CV_64FC1);
+
+  MITK_INFO << "right to left " << rightToLeft;
+  MITK_INFO << "left to right" << rightToLeft.inv();
+  rightCameraToTracker = leftCameraToTracker * rightToLeft.inv();
+
+  std::vector<cv::Mat> toTrackers;
+  toTrackers.push_back(leftCameraToTracker);
+  toTrackers.push_back(rightCameraToTracker);
+
+  centreLineToTracker = mitk::AverageMatrices(toTrackers);
+  mitk::SaveTrackerMatrix (directory + "calib.left.handeye.4x4",leftCameraToTracker);
+  mitk::SaveTrackerMatrix (directory + "calib.right.handeye.4x4",rightCameraToTracker);
+  mitk::SaveTrackerMatrix (directory + "calib.centre.handeye.4x4",centreLineToTracker);
+
+}
 
 //-----------------------------------------------------------------------------
 void LoadStereoCameraParametersFromDirectory (const std::string& directory,
