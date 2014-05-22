@@ -148,3 +148,13 @@ mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )
   surface->SetVtkPolyData(probe);
   return surface;
 }
+
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeMonitor( )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> monitor = maker.MakeMonitor();
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(monitor);
+  return surface;
+}

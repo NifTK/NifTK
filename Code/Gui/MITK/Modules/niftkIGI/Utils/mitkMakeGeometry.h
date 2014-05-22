@@ -96,4 +96,9 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeOptotrak( const float & width = 500);
  */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename );
 
+/**
+ * \brief For visualisation purposes, creates a representation of a monitor
+ * \param the handeye calibration to define the tool origin
+ */
+NIFTKIGI_EXPORT mitk::Surface::Pointer MakeMonitor();
 #endif

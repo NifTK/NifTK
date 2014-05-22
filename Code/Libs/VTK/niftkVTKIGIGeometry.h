@@ -103,6 +103,12 @@ public:
   */
   vtkSmartPointer<vtkPolyData> MakeTransrectalUSProbe(std::string handeyeFilename );
 
+  /**
+  * \brief For visualisation purposes, creates a representation of a monitor
+  * \param 
+  */
+  vtkSmartPointer<vtkPolyData> MakeMonitor();
+
 private:
   /** 
    * \brief get the IRED positions from a rigid body definition file

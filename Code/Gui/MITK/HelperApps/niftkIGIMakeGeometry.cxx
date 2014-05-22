@@ -115,6 +115,10 @@ int main(int argc, char** argv)
   {
     surface = MakeTransrectalUSProbe (handeye);
   }
+  if ( geometry == "monitor" )
+  {
+    surface = MakeMonitor ();
+  }
   if ( surface.IsNull() ) 
   {
     MITK_ERROR << "Failed to make specified geometry, available options are: ";
@@ -122,7 +126,7 @@ int main(int argc, char** argv)
     MITK_ERROR << " laparoscope laparoscopePolaris pointer";
     MITK_ERROR << " reference referencePolaris";
     MITK_ERROR << " XAxis YAxis ZAxis laplensAxes";
-    MITK_ERROR << " optotrak transRectalUSProbe";
+    MITK_ERROR << " optotrak transRectalUSProbe monitor";
     exit (EXIT_FAILURE);
   }
 

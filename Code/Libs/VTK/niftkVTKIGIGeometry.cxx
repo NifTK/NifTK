@@ -567,6 +567,40 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string 
 
 }
 //-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeMonitor()
+{
+  vtkSmartPointer<vtkCubeSource> stick = vtkSmartPointer<vtkCubeSource>::New();
+  vtkSmartPointer<vtkCylinderSource> base = vtkSmartPointer<vtkCylinderSource>::New();
+
+  vtkSmartPointer<vtkCubeSource> screen =  vtkSmartPointer<vtkCubeSource>::New();
+
+  stick->SetXLength(100);
+  stick->SetYLength(340);
+  stick->SetZLength(20);
+  stick->SetCenter(0,-160,-15); 
+  
+  base->SetRadius(160);
+  base->SetHeight(20.0);
+  base->SetCenter(0.0,-340,-15);
+  base->SetResolution(40);
+  base->CappingOn();
+
+  screen->SetXLength(640);
+  screen->SetYLength(480);
+  screen->SetZLength(10);
+  screen->SetCenter(0,0,-5.0); 
+
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  appenderer->AddInput(stick->GetOutput());
+  appenderer->AddInput(base->GetOutput());
+  appenderer->AddInput(screen->GetOutput());
+
+  return appenderer->GetOutput();
+
+}
+
+//-----------------------------------------------------------------------------
 std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
 {
   std::vector < std::vector <float > > returnVector;
