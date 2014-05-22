@@ -15,9 +15,10 @@ dg.inputs.base_directory = '/Users/isimpson/Software/nipype/test_data/'
 dg.inputs.sort_filelist = False
 dg.inputs.template = 'vol*.nii.gz' 
 
+linear_hash = {'nac_flag' : False}
 
 pipeline = pe.Workflow('workflow')
-r = reg.create_linear_coregistration_workflow('rigid_workflow', rig_only = True)
+r = reg.create_linear_coregistration_workflow('rigid_workflow', rig_only = True, linear_options_hash = linear_hash)
 
 # If we don't have a reference image file defined, make one by averaging the input images
 if not isdefined(ref_file):
@@ -33,6 +34,7 @@ pipeline.connect(dg, 'data', r, 'input_node.in_files')
 ds = pe.Node(interface=nio.DataSink(parameterization=True), name='sink')
 
 ds.inputs.base_directory = output_dir
+
 
 # If we want a second round of affine registrations
 if second_round == True:

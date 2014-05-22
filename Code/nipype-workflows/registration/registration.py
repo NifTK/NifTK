@@ -3,6 +3,7 @@
 import nipype.interfaces.utility as niu     # utility
 import nipype.pipeline.engine as pe          # pypeline engine
 import nipype.interfaces.niftyreg as niftyreg
+from nipype.interfaces.base import isdefined
 
 '''This file provides some common registration routines useful for a variety of pipelines. Including linear
 and non-linear image co-registration '''
@@ -10,7 +11,7 @@ and non-linear image co-registration '''
 # Do a single iteration of an average b0 image from rigid registration and averaging
 # Options include rig_only 
 # TODO:Aladin options hash?
-def create_linear_coregistration_workflow(name="linear_registration_niftyreg", rig_only=False):
+def create_linear_coregistration_workflow(name="linear_registration_niftyreg", rig_only=False, demean=True, linear_options_hash = None):
     # We need to create an input node for the workflow    
     input_node = pe.Node(niu.IdentityInterface(
             fields=['in_files', 'ref_file']),
@@ -18,7 +19,7 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", r
     
     # Rigidly register each of the images to the average
     # flo_file can take a list of files
-    lin_reg = pe.MapNode(interface=niftyreg.RegAladin(), name="lin_reg", iterfield=['flo_file'])
+    lin_reg = pe.MapNode(interface=niftyreg.RegAladin(options_hash=linear_options_hash), name="lin_reg", iterfield=['flo_file'])
         
     # Select whether to do rigid registration only
     lin_reg.inputs.rig_only_flag = rig_only
@@ -56,6 +57,54 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", r
                       ])
     return pipeline
 
+# Creates an atlas image by iterative registration. An initial reference image can be provided
+def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_nr = 1, initial_ref = None, linear_options_hash=None):
+    pipeline = pe.Workflow(name=name)
+    input_node = pe.Node(niu.IdentityInterface(
+            fields=['in_files', 'ref_file']),
+                        name='input_node')
+    
+    output_node = pe.Node(
+        niu.IdentityInterface(
+            fields=['average_image', 'aff_files']),
+                        name='output_node')
+                        
+    lin_workflows = []
+    for i in range(itr_rigid):
+        w = None
+        if i < (itr_rigid - 1):
+            w = create_linear_coregistration_workflow('lin_rigid'+str(i), rig_only=True, linear_options_hash=linear_options_hash)
+        else:
+            w = create_linear_coregistration_workflow('lin_rigid'+str(i), rig_only=True, demean=False, linear_options_hash=linear_options_hash)
+        # Connect up the input data to the workflows
+        pipeline.connect(input_node, 'in_files', w, 'input_node.in_files')
+        lin_workflows.append(w)
+        
+    for i in range(itr_affine):
+        w = None
+        if i < (itr_affine - 1):
+            w = create_linear_coregistration_workflow('lin_affine'+str(i), rig_only=False, linear_options_hash=linear_options_hash)
+        else:
+            w = create_linear_coregistration_workflow('lin_affine'+str(i), rig_only=False, demean=False, linear_options_hash=linear_options_hash)
+        # Connect up the input data to the workflows
+        pipeline.connect(input_node, 'in_files', w, 'input_node.in_files')
+        lin_workflows.append(w)
+       
+    # Set the reference image if we have one, else make a node to generate
+    # it and connect it up
+    if isdefined(initial_ref):
+        lin_workflows[0].inputs.input_node.ref_file = initial_ref
+    else:
+        ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims_initial")
+        pipeline.connect(input_node, 'data', ave_ims, 'in_files')
+        pipeline.connect(ave_ims, 'out_file', lin_workflows[0], 'input_node.ref_file')
+    
+    for i in range(1,len(lin_workflows)):
+        pipeline.connect(lin_workflows[i-1], 'output_node.average_image', lin_workflows[i], 'input_node.ref_file' )
+            
+    pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.average_image', output_node, 'average_image')
+    pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.aff_files', output_node, 'aff_files')
+    return pipeline
 
 def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyreg"):
     pipeline = pe.Workflow(name=name)
