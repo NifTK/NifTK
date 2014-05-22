@@ -19,6 +19,9 @@
 
 #include <QTest>
 
+#include <itkSpatialOrientationAdapter.h>
+#include <itkMatrix.h>
+
 #include <mitkGlobalInteraction.h>
 
 static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
@@ -271,20 +274,11 @@ public:
 
     /// Note:
     /// Here we check the relation between the selected slice indices and the
-    /// positions of the slice navigation controllers. The slice indices always
+    /// positions of the slice navigation controllers. The SNC positions always
     /// go from bottom to top, from left to right and from back to front. The
-    /// positions of slice navigation controllers are in the same range, but
-    /// their direction might be flipped depending on the input geometry.
-    /// For the sake of simplicity, we accept both the 'straight' and 'flipped'
-    /// values.
-    ///
-    /// Important:
-    /// The slice navigation controller position should never be used to get
-    /// the slice index. If you have a reference to the viewer, you can use
-    /// the Get/SetSelectedSlice functions. If you do not, you can use the
-    /// WorldToIndex / IndexToWorld functions of the world geometry of
-    /// either the input image geometry, the geometry of the viewer (see
-    /// GetTimeGeometry() or the world geometry of any render window.
+    /// slice indexes are in the same range, but their direction might be flipped
+    /// depending on the input geometry.
+    /// The 'flipped' property of the axes is stored in m_WorldFlippedAxes.
 
     int axialSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
     int sagittalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
@@ -306,18 +300,21 @@ public:
     int sagittalSncPos = sagittalSnc->GetSlice()->GetPos();
     int coronalSncPos = coronalSnc->GetSlice()->GetPos();
 
-    int axialSncFlippedPos = axialMaxSliceIndex - axialSncPos;
-    int sagittalSncFlippedPos = sagittalMaxSliceIndex - sagittalSncPos;
-    int coronalSncFlippedPos = coronalMaxSliceIndex - coronalSncPos;
+    int expectedAxialSliceIndex = m_WorldFlippedAxes[2] > 0 ? axialSncPos : axialMaxSliceIndex - axialSncPos;
+    int expectedSagittalSliceIndex = m_WorldFlippedAxes[0] > 0 ? sagittalSncPos : sagittalMaxSliceIndex - sagittalSncPos;
+    int expectedCoronalSliceIndex = m_WorldFlippedAxes[1] > 0 ? coronalSncPos : coronalMaxSliceIndex - coronalSncPos;
 
-    if ((axialSliceIndex != axialSncPos && axialSliceIndex != axialSncFlippedPos)
-        || (sagittalSliceIndex != sagittalSncPos && sagittalSliceIndex != sagittalSncFlippedPos)
-        || (coronalSliceIndex != coronalSncPos && coronalSliceIndex != coronalSncFlippedPos))
+    if (axialSliceIndex != expectedAxialSliceIndex
+        || sagittalSliceIndex != expectedSagittalSliceIndex
+        || coronalSliceIndex != expectedCoronalSliceIndex)
     {
       MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
-      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos << " ; max index: " << axialMaxSliceIndex;
-      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos << " ; max index: " << sagittalMaxSliceIndex;
-      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos << " ; max index: " << coronalMaxSliceIndex;
+      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos
+                << " ; max index: " << axialMaxSliceIndex << " ; flipped: " << m_WorldFlippedAxes[2];
+      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos
+                << " ; max index: " << sagittalMaxSliceIndex << " ; flipped: " << m_WorldFlippedAxes[0];
+      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos
+                << " ; max index: " << coronalMaxSliceIndex << " ; flipped: " << m_WorldFlippedAxes[1];
       MITK_INFO << Self::ConstPointer(this);
       QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
     }
@@ -340,6 +337,21 @@ protected:
   , m_CursorPositionBinding(viewer->GetCursorPositionBinding())
   , m_ScaleFactorBinding(viewer->GetScaleFactorBinding())
   {
+    const mitk::AffineTransform3D* affineTransform = m_TimeGeometry->GetGeometryForTimeStep(0)->GetIndexToWorldTransform();
+    itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+    affineTransformMatrix.GetVnlMatrix().normalize_columns();
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
+
+    int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0], inverseTransformMatrix[1][0], inverseTransformMatrix[2][0]);
+    int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
+    int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1], inverseTransformMatrix[1][1], inverseTransformMatrix[2][1]);
+    int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
+    int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2], inverseTransformMatrix[1][2], inverseTransformMatrix[2][2]);
+    int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
+
+    m_WorldFlippedAxes[0] = signRL;
+    m_WorldFlippedAxes[1] = signAP;
+    m_WorldFlippedAxes[2] = signSI;
   }
 
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
@@ -421,6 +433,8 @@ private:
   /// \brief The scale factor binding property of the viewer.
   bool m_ScaleFactorBinding;
 
+  /// \brief Tells if the world axis is flipped or not.
+  mitk::Vector3D m_WorldFlippedAxes;
 };
 
 #endif
