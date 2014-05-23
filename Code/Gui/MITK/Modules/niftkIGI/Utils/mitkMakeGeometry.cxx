@@ -22,26 +22,19 @@
 #include <niftkVTKIGIGeometry.h>
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+mitk::Surface::Pointer MakeLaparoscope ( std::string RigidBodyFilename, 
+    std::string LeftHandeyeFilename, 
+    std::string RightHandeyeFilename, 
+    std::string CentreHandeyeFilename,
+    bool AddCrossHairs,
+    float TrackerMarkerRadius )
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename);
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(RigidBodyFilename, LeftHandeyeFilename, RightHandeyeFilename, CentreHandeyeFilename, AddCrossHairs, TrackerMarkerRadius);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
   return surface;
 }
-
-
-//-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscopePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
-{
-  niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscopePolaris(rigidBodyFilename, handeyeFilename);
-  mitk::Surface::Pointer surface = mitk::Surface::New();
-  surface->SetVtkPolyData(laparoscope);
-  return surface;
-}
-
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
@@ -134,7 +127,6 @@ mitk::Surface::Pointer MakeLapLensAxes()
   return surface;
 }
 
-
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeOptotrak( const float & width )
 {
@@ -145,6 +137,15 @@ mitk::Surface::Pointer MakeOptotrak( const float & width )
   return surface;
 }
 
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakePolaris( const float & width )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> polaris = maker.MakeOptotrak(width, true);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(polaris);
+  return surface;
+}
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )
@@ -153,5 +154,15 @@ mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )
   vtkSmartPointer<vtkPolyData> probe = maker.MakeTransrectalUSProbe(handeyeFilename);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(probe);
+  return surface;
+}
+
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeMonitor( )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> monitor = maker.MakeMonitor();
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(monitor);
   return surface;
 }

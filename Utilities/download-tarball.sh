@@ -233,7 +233,7 @@ then
   download_from_github PointCloudLibrary $project $version
 elif [ $project = RTK ]
 then
-  download_from_github SimonRit $project $version
+  download_from_github NifTK $project $version
 elif [ $project = qRestAPI ]
 then
   download_from_github commontk $project $version

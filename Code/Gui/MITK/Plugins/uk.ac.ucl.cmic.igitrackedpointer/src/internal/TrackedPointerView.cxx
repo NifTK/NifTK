@@ -31,6 +31,9 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedPointerManager.h>
 #include <mitkFileIOUtils.h>
+#include <QMessageBox>
+#include <QCoreApplication>
+#include <QObject>
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -149,6 +152,16 @@ void TrackedPointerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnStartGrabPoints()
 {
+  mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
+  if (probeToWorldTransform.IsNull())
+  {
+    QString message("Please select a pointer to world transformation!");
+    QMessageBox::warning(NULL, tr("%1").arg(QCoreApplication::applicationName()),
+                               tr("%1").arg(message),
+                               QMessageBox::Ok);
+    return;
+  }
+
   m_RemainingPointsCounter = m_NumberOfPointsToAverageOver;
   m_TipCoordinate[0] = 0;
   m_TipCoordinate[1] = 0;
@@ -159,9 +172,33 @@ void TrackedPointerView::OnStartGrabPoints()
 
 
 //-----------------------------------------------------------------------------
+void TrackedPointerView::UpdateDisplayedPoints()
+{
+  mitk::PointSet::Pointer pointSet = m_TrackedPointerManager->RetrievePointSet();
+  mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet();
+  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+  mitk::PointSet::PointsIterator pIt;
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType point;
+
+  m_Controls->m_PointsTextBox->clear();
+
+  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+  {
+    pointID = pIt->Index();
+    point = pIt->Value();
+
+    m_Controls->m_PointsTextBox->appendPlainText(tr("%1:[%2, %3, %4]").arg(pointID).arg(point[0]).arg(point[1]).arg(point[2]));
+  }
+  m_Controls->m_PointsTextBox->appendPlainText(tr("size:%1").arg(pointSet->GetSize()));
+}
+
+
+//-----------------------------------------------------------------------------
 void TrackedPointerView::OnClearPoints()
 {
   m_TrackedPointerManager->OnClearPoints();
+  this->UpdateDisplayedPoints();
 }
 
 
@@ -174,7 +211,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
-  if (m_TipToProbeTransform != NULL
+  if (   m_TipToProbeTransform != NULL
       && probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)
   {
@@ -209,7 +246,6 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
         m_TipCoordinate[2] /= divisor;
 
         m_TrackedPointerManager->OnGrabPoint(m_TipCoordinate);
-
         m_Controls->m_GrabPointsButton->setText("grab");
       }
     }
@@ -220,4 +256,5 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
       this->SetViewToCoordinate(tipCoordinate);
     }
   }
+  this->UpdateDisplayedPoints();
 }

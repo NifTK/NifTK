@@ -42,6 +42,12 @@ public:
   mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
   mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
 
+  /// \brief Gets the time geometry of the viewer.
+  itkGetConstMacro(TimeGeometry, const mitk::TimeGeometry*);
+
+  /// \brief Sets the time geometry of the viewer.
+  itkSetObjectMacro(TimeGeometry, mitk::TimeGeometry);
+
   /// \brief Gets the orientation of the viewer.
   itkGetConstMacro(Orientation, MIDASOrientation);
 
@@ -135,7 +141,8 @@ public:
   bool operator==(const niftkSingleViewerWidgetState& otherState) const
   {
     return
-        this->GetOrientation() == otherState.GetOrientation()
+        this->GetTimeGeometry() == otherState.GetTimeGeometry()
+        && this->GetOrientation() == otherState.GetOrientation()
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
@@ -153,6 +160,10 @@ public:
 
   void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
   {
+    if (this->GetTimeGeometry() != otherState->GetTimeGeometry())
+    {
+      os << indent << "Time geometry: " << this->GetTimeGeometry() << " ; " << otherState->GetTimeGeometry() << std::endl;
+    }
     if (this->GetOrientation() != otherState->GetOrientation())
     {
       os << indent << "Orientation: " << this->GetOrientation() << " ; " << otherState->GetOrientation() << std::endl;
@@ -258,19 +269,52 @@ public:
       }
     }
 
-    /// TODO
-    /// This check is disabled for the moment.
-//    if (m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL)
-//            != m_Viewer->GetAxialWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
-//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL)
-//            != m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
-//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL)
-//            != m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->GetSlice()->GetPos())
-//    {
-//      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
-//      MITK_INFO << Self::ConstPointer(this);
-//      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
-//    }
+    /// Note:
+    /// Here we check the relation between the selected slice indices and the
+    /// positions of the slice navigation controllers. The SNC positions always
+    /// go from bottom to top, from left to right and from back to front. The
+    /// slice indexes are in the same range, but their direction might be flipped
+    /// depending on the input geometry.
+    /// The 'flipped' property of the axes is stored in m_WorldFlippedAxes.
+
+    int axialSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
+    int sagittalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
+    int coronalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
+
+    int axialMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_AXIAL);
+    int sagittalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_SAGITTAL);
+    int coronalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_CORONAL);
+
+    mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
+    mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
+    mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
+
+    QVERIFY(axialMaxSliceIndex == axialSnc->GetSlice()->GetSteps() - 1);
+    QVERIFY(sagittalMaxSliceIndex == sagittalSnc->GetSlice()->GetSteps() - 1);
+    QVERIFY(coronalMaxSliceIndex == coronalSnc->GetSlice()->GetSteps() - 1);
+
+    int axialSncPos = axialSnc->GetSlice()->GetPos();
+    int sagittalSncPos = sagittalSnc->GetSlice()->GetPos();
+    int coronalSncPos = coronalSnc->GetSlice()->GetPos();
+
+    int expectedAxialSliceIndex = m_UpDirections[2] > 0 ? axialSncPos : axialMaxSliceIndex - axialSncPos;
+    int expectedSagittalSliceIndex = m_UpDirections[0] > 0 ? sagittalSncPos : sagittalMaxSliceIndex - sagittalSncPos;
+    int expectedCoronalSliceIndex = m_UpDirections[1] > 0 ? coronalSncPos : coronalMaxSliceIndex - coronalSncPos;
+
+    if (axialSliceIndex != expectedAxialSliceIndex
+        || sagittalSliceIndex != expectedSagittalSliceIndex
+        || coronalSliceIndex != expectedCoronalSliceIndex)
+    {
+      MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
+      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos
+                << " ; max index: " << axialMaxSliceIndex << " ; flipped: " << m_UpDirections[2];
+      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos
+                << " ; max index: " << sagittalMaxSliceIndex << " ; flipped: " << m_UpDirections[0];
+      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos
+                << " ; max index: " << coronalMaxSliceIndex << " ; flipped: " << m_UpDirections[1];
+      MITK_INFO << Self::ConstPointer(this);
+      QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
+    }
   }
 
 protected:
@@ -279,6 +323,7 @@ protected:
   niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
   : itk::Object()
   , m_Viewer(viewer)
+  , m_TimeGeometry(viewer->GetTimeGeometry())
   , m_Orientation(viewer->GetOrientation())
   , m_WindowLayout(viewer->GetWindowLayout())
   , m_SelectedRenderWindow(viewer->GetSelectedRenderWindow())
@@ -289,12 +334,16 @@ protected:
   , m_CursorPositionBinding(viewer->GetCursorPositionBinding())
   , m_ScaleFactorBinding(viewer->GetScaleFactorBinding())
   {
+    m_UpDirections[0] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_SAGITTAL);
+    m_UpDirections[1] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_CORONAL);
+    m_UpDirections[2] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_AXIAL);
   }
 
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
   niftkSingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
   , m_Viewer(otherState->m_Viewer)
+  , m_TimeGeometry(otherState->GetTimeGeometry())
   , m_Orientation(otherState->GetOrientation())
   , m_WindowLayout(otherState->GetWindowLayout())
   , m_SelectedRenderWindow(otherState->GetSelectedRenderWindow())
@@ -304,6 +353,7 @@ protected:
   , m_ScaleFactors(otherState->GetScaleFactors())
   , m_CursorPositionBinding(otherState->GetCursorPositionBinding())
   , m_ScaleFactorBinding(otherState->GetScaleFactorBinding())
+  , m_UpDirections(otherState->m_UpDirections)
   {
   }
 
@@ -315,6 +365,7 @@ protected:
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
   {
+//    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
     os << indent << "window layout: " << m_WindowLayout << std::endl;
     if (m_SelectedRenderWindow)
@@ -337,6 +388,9 @@ private:
 
   /// \brief The viewer.
   const niftkSingleViewerWidget* m_Viewer;
+
+  /// \brief The time geometry of the viewer.
+  const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief The orientation of the viewer.
   MIDASOrientation m_Orientation;
@@ -365,6 +419,8 @@ private:
   /// \brief The scale factor binding property of the viewer.
   bool m_ScaleFactorBinding;
 
+  /// \brief Tells if the world axis is flipped or not.
+  mitk::Vector3D m_UpDirections;
 };
 
 #endif

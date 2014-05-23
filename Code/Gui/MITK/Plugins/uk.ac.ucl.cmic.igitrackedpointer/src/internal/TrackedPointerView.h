@@ -97,6 +97,11 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
+   * \brief UpdateDisplayedPoints will repopulate the displayed list of points.
+   */
+  void UpdateDisplayedPoints();
+
+  /**
    * \brief All the controls for the main view part.
    */
   Ui::TrackedPointerView *m_Controls;
