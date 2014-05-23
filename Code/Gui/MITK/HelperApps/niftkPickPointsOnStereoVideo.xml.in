@@ -42,6 +42,22 @@
       <label>The maximum timing error in millisecond</label>
       <default>20</default>
     </integer>
+
+    <integer>
+      <name>frequency</name>
+      <longflag>frequency</longflag>
+      <description>Pick points in every nth frame pair</description>
+      <label>Pick points in every nth frame pair</label>
+      <default>25</default>
+    </integer>
+
+    <boolean>
+      <name>orderedPoints</name>
+      <longflag>orderedPoints</longflag>
+      <description>Pick ordered points (where you know the point ID)</description>
+      <label>Pick ordered points (where yoy know the point ID</label>
+      <default>0</default>
+    </boolean>
  
   </parameters>
   

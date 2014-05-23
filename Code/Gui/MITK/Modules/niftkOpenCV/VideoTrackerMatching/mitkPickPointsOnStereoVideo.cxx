@@ -44,6 +44,7 @@ m_VideoIn("")
 , m_VideoHeight(540)
 , m_Capture(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
+, m_OrderedPoints(false)
 , m_StartFrame(0)
 , m_EndFrame(0)
 , m_Frequency(50)
@@ -165,7 +166,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
         if ( framenumber %m_Frequency == 0 ) 
         {
-          MITK_INFO << "Picking points on frame pair " << framenumber << ", " << framenumber+1;
+          if ( m_OrderedPoints )
+          {
+            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick unordered, n for next frame, q to quit";
+          }
+          else 
+          {
+            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick ordered, n for next frame, q to quit";
+          }
           
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
@@ -213,13 +221,25 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
-            while ( key != 'n' )
+            while ( key != 'n' && key != 'q' )
             {
               key = cvWaitKey(20);
+              if ( key == 't' )
+              {
+                m_OrderedPoints = ! m_OrderedPoints;
+                if ( m_OrderedPoints ) 
+                {
+                  MITK_INFO << "Switched to ordered points mode";
+                }
+                else
+                {
+                  MITK_INFO << "Switched to un ordered points mode";
+                }
+              }
               if ( overWriteLeft )
               {
                 cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
-                cvSetMouseCallback("Left Channel",CallBackFunc, &leftPickedPoints);
+                cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, &leftPickedPoints);
                 if ( leftPickedPoints.size() != leftLastPointCount )
                 {
                   for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
@@ -235,7 +255,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               if ( overWriteRight )
               {
                 cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
-                cvSetMouseCallback("Right Channel",CallBackFunc, &rightPickedPoints);
+                cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, &rightPickedPoints);
                 if ( rightPickedPoints.size() != rightLastPointCount )
                 {
                   for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
@@ -254,6 +274,15 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           {
             std::ofstream leftPointOut (leftOutName.c_str());
             leftPointOut << "# " << framenumber << std::endl;
+            if ( m_OrderedPoints ) 
+            {
+              leftPointOut << "# Ordered" << std::endl;
+            }
+            else
+            {
+              leftPointOut << "# UnOrdered" << std::endl;
+            }
+
             for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
             {
               leftPointOut << leftPickedPoints[i] << std::endl;
@@ -264,6 +293,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           {
             std::ofstream rightPointOut (rightOutName.c_str());
             rightPointOut << "# " << framenumber+1 << std::endl;
+            if ( m_OrderedPoints ) 
+            {
+              rightPointOut << "# Ordered" << std::endl;
+            }
+            else
+            {
+              rightPointOut << "# UnOrdered" << std::endl;
+            }
             for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
             {
               rightPointOut << rightPickedPoints[i] << std::endl;
@@ -284,7 +321,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   m_ProjectOK = true;
 }
 //-----------------------------------------------------------------------------
-void CallBackFunc(int event, int x, int y, int flags, void* userdata)
+void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
   std::vector<cv::Point2d>* out = static_cast<std::vector<cv::Point2d>*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
@@ -307,21 +344,5 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
   }
 }
 
-
-//-----------------------------------------------------------------------------
-std::vector < std::vector <cv::Point3d> > PickPointsOnStereoVideo::GetPointsInLeftLensCS()
-{
-  std::vector < std::vector < cv::Point3d > > returnPoints;
-  for ( unsigned int i = 0 ; i < m_PointsInLeftLensCS.size() ; i ++ ) 
-  {
-    std::vector < cv::Point3d > thesePoints;
-    for ( unsigned int j = 0 ; j < m_PointsInLeftLensCS[i].second.size() ; j ++ ) 
-    {
-      thesePoints.push_back ( m_PointsInLeftLensCS[i].second[j].first );
-    }
-    returnPoints.push_back(thesePoints);
-  }
-  return returnPoints;
-}
 
 } // end namespace

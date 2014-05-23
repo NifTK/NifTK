@@ -28,7 +28,7 @@ namespace mitk {
 /**
  * \brief the call back function for mouse events events during point picking
  */
-void CallBackFunc (  int, int , int, int, void* );
+void PointPickingCallBackFunc (  int, int , int, int, void* );
 
 /**
  * \class Pick points in stereo video
@@ -73,8 +73,9 @@ public:
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
+  itkSetMacro ( OrderedPoints, bool);
+  itkSetMacro ( Frequency, unsigned int);
 
-  std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -96,6 +97,7 @@ private:
  
   bool                          m_InitOK;
   bool                          m_ProjectOK;
+  bool                          m_OrderedPoints; //picked points can be ordered or unordered
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
@@ -114,9 +116,6 @@ private:
   //the dimensions of the video screen in pixels
   double   m_VideoWidth;
   double   m_VideoHeight;
-
-  std::vector < std::pair < long long , std::vector < std::pair <cv::Point3d, cv::Scalar> > > >    
-                                m_PointsInLeftLensCS; // the points in left lens coordinates.
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
