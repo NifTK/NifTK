@@ -19,6 +19,8 @@
 
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
+#include <berryIPartListener.h>
+
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
 #include <mitkMIDASDataNodeNameStringFilter.h>
@@ -202,6 +204,9 @@ private:
   /// Any time when the selected main window changes, the world geometry of this viewer
   /// needs to be set to that of the main window.
   const mitk::TimeGeometry* m_TimeGeometry;
+
+  /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
+  berry::IPartListener::Pointer m_EditorLifeCycleListener;
 
 };
 

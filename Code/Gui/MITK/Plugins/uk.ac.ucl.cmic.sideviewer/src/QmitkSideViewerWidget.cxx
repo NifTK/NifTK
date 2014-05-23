@@ -33,6 +33,35 @@
 #include <QVBoxLayout>
 
 
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::VISIBLE | Events::CLOSED;
+  }
+
+  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+    }
+  }
+
+  void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+    }
+  }
+};
+
+
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
 : m_ContainingView(view)
@@ -55,6 +84,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
+
+  m_EditorLifeCycleListener = new EditorLifeCycleListener;
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
 
@@ -132,6 +164,8 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
   m_VisibilityTracker->SetTrackedRenderer(0);
   m_Viewer->SetEnabled(false);
 
