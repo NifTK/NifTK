@@ -255,6 +255,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 //-----------------------------------------------------------------------------
 niftkMultiWindowWidget::~niftkMultiWindowWidget()
 {
+  this->SetEnabled(false);
+
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   focusManager->RemoveObserver(m_FocusManagerObserverTag);
 
