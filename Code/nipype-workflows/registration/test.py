@@ -15,11 +15,13 @@ dg.inputs.base_directory = '/Users/isimpson/Software/nipype/test_data/'
 dg.inputs.sort_filelist = False
 dg.inputs.template = 'vol*.nii.gz' 
 
-linear_hash = {'nac_flag' : False}
+# Add options here
+linear_hash = {}
 
 pipeline = pe.Workflow('workflow')
-r = reg.create_linear_coregistration_workflow('rigid_workflow', rig_only = True, linear_options_hash = linear_hash)
-
+#r = reg.create_linear_coregistration_workflow('rigid_workflow', linear_options_hash = linear_hash)
+# As we're passing an initial reference image, initial_ref=True
+r = reg.create_atlas('atlas_creation', linear_options_hash = linear_hash, initial_ref=True)
 # If we don't have a reference image file defined, make one by averaging the input images
 if not isdefined(ref_file):
     ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims")
@@ -38,7 +40,7 @@ ds.inputs.base_directory = output_dir
 
 # If we want a second round of affine registrations
 if second_round == True:
-    r2 = reg.create_linear_coregistration_workflow('affine_workflow', rig_only= False)
+    r2 = reg.create_linear_coregistration_workflow('affine_workflow')
     pipeline.connect(r, 'output_node.average_image', r2, 'input_node.ref_file')
     pipeline.connect(dg, 'data', r2, 'input_node.in_files')
     # Connect up the outputs to the sink
