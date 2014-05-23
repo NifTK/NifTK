@@ -24,6 +24,8 @@
 #include <berryISelectionProvider.h>
 #include <berryISelectionListener.h>
 #include "ui_ThumbnailViewControls.h"
+
+
 /**
  * \class ThumbnailView
  * \brief Provides a thumbnail view of the currently focused QmitkRenderWindow.
@@ -84,6 +86,9 @@ private:
 
   /// \brief Tells if the plugin should track only windows of editors, not views.
   bool m_TrackOnlyMainWindows;
+
+  /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
+  berry::IPartListener::Pointer m_EditorLifeCycleListener;
 
 };
 

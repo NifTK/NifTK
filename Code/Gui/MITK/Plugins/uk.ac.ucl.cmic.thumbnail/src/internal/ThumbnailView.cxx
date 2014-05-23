@@ -26,18 +26,52 @@
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
+
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::VISIBLE | Events::CLOSED;
+  }
+
+  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+    }
+  }
+
+  void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+    }
+  }
+};
+
+
 //-----------------------------------------------------------------------------
 ThumbnailView::ThumbnailView()
 : m_FocusManagerObserverTag(-1)
 , m_Controls(NULL)
 , m_TrackOnlyMainWindows(true)
 {
+  m_EditorLifeCycleListener = new EditorLifeCycleListener;
+  this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 }
 
 
 //-----------------------------------------------------------------------------
 ThumbnailView::~ThumbnailView()
 {
+  this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
   m_Controls->m_RenderWindow->Deactivated();
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
