@@ -143,9 +143,12 @@ public:
   /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
   void NodeChangedProxy(const mitk::DataNode* node);
 
+  /// \brief Returns the currently tracked
+  mitk::BaseRenderer::ConstPointer GetTrackedRenderer() const;
+
   /// \brief Makes the thumbnail render window track the given renderer.
   /// The renderer is supposed to come from the main display (aka. editor).
-  void TrackRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack);
+  void SetTrackedRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack);
 
 protected:
 
@@ -248,7 +251,6 @@ private:
   // To track visibility changes.
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
 
-  // This
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;

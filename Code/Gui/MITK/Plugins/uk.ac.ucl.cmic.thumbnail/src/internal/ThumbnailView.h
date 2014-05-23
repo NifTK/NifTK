@@ -61,6 +61,13 @@ public:
   /// \brief This is not an exclusive functionality, as it just listens to input and updates itself, and can happily live alongside other functionalities.
   virtual bool IsExclusiveFunctionality() const { return false; }
 
+  /// \brief Returns the renderer being tracked if there is one, otherwise NULL.
+  const mitk::BaseRenderer* GetTrackedRenderer() const;
+
+  /// \brief Instructs the contained thumbnail viewer widget to track the given renderer.
+  /// Supposed to be called when the focus changes or a new editor becomes visible.
+  void SetTrackedRenderer(const mitk::BaseRenderer* renderer);
+
 protected:
 
   /// \brief Called by framework, this method creates all the controls for this view
@@ -77,6 +84,10 @@ private:
 
   /// \brief Retrieve's the pref values from preference service, and store locally.
   void RetrievePreferenceValues();
+
+  /// \brief Gets the currently visible editor.
+  /// Returns 0 if no editor is opened.
+  mitk::IRenderWindowPart* GetSelectedEditor();
 
   // Used for the mitkFocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
