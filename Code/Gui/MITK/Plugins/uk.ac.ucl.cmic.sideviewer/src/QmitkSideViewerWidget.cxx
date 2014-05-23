@@ -216,7 +216,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+  m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
 
   m_VisibilityTracker->SetTrackedRenderer(0);
   m_Viewer->SetEnabled(false);
