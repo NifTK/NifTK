@@ -1294,8 +1294,22 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
-        // Now geometry is established, get the display geometry to fit the picture to the window.
         renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
+
+        /// Note:
+        /// The renderers are listening to the GeometrySendEvents of their slice navigation
+        /// controller, and they update their world geometry to the one of their SNC whenever
+        /// it changes. However, the SNC signals are blocked when the update of this viewer is
+        /// blocked, and the SNC GeometrySendEvents are sent out only when BlockUpdate(false)
+        /// is called for this widget. The renderers would update their world geometry right
+        /// after this. However, the focus change signals are sent out *before* the SNC signals.
+        /// As a result, if somebody is listening to the focus change signals, will find the
+        /// old world geometry in the renderer. Therefore, here we manually set the new geometry
+        /// to the renderers, even if they would get it later.
+        /// Note also that the SNCs' Update function clones the input world geometry, therefore
+        /// here we should not use the reference to 'createdTimeGeometry' but have to get
+        /// it from the SNC.
+        renderer->SetWorldTimeGeometry(sliceNavigationController->GetCreatedWorldGeometry());
       }
     }
 
