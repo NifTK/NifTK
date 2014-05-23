@@ -71,6 +71,9 @@ public:
   /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
   static mitk::Point3D GetWorldOrigin(const mitk::Geometry3D* geometry);
 
+  /// \brief Calculates the up direction of the world axes from a 3D geometry.
+  static mitk::Vector3D GetWorldUpDirections(const mitk::Geometry3D* geometry);
+
   /// \brief Calculates the world origin from a 3D geometry.
   /// The world origin is the centre of the bottom-left-back voxel for image geometries
   /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
@@ -149,6 +152,9 @@ private slots:
 
   /// \brief Creates a viewer and and loads an image.
   void testViewer();
+
+  /// \brief Tests the SetSelectedSlice function.
+  void testSetSelectedSlice2();
 
   /// \brief Tests if the geometry is correctly initialised.
   void testGetTimeGeometry();
