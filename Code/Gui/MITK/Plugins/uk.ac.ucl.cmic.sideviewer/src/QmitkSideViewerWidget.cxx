@@ -33,6 +33,63 @@
 #include <QVBoxLayout>
 
 
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+public:
+
+  EditorLifeCycleListener(QmitkSideViewerWidget* sideViewerWidget)
+  : m_SideViewerWidget(sideViewerWidget)
+  {
+  }
+
+private:
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::VISIBLE;
+  }
+
+  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+      mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+
+      bool found = false;
+      /// Note:
+      /// We need to look for the focused window among every window of the editor.
+      /// The MITK Display has not got the concept of 'selected' window and always
+      /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
+      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      {
+        if (focusedRenderer == mainWindow->GetRenderer())
+        {
+          m_SideViewerWidget->OnMainWindowChanged(renderWindowPart, mainWindow);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+      {
+        QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+        if (mainWindow && mainWindow->isVisible())
+        {
+          m_SideViewerWidget->OnMainWindowChanged(renderWindowPart, mainWindow);
+        }
+      }
+    }
+  }
+
+  QmitkSideViewerWidget* m_SideViewerWidget;
+
+};
+
+
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
 : m_ContainingView(view)
@@ -55,6 +112,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
+
+  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
 
@@ -123,8 +183,32 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
   {
-    QmitkRenderWindow* selectedMainWindow = selectedEditor->GetActiveQmitkRenderWindow();
-    this->OnMainWindowChanged(selectedMainWindow);
+    bool found = false;
+
+    mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+    /// Note:
+    /// We need to look for the focused window among every window of the editor.
+    /// The MITK Display has not got the concept of 'selected' window and always
+    /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
+    foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
+    {
+      if (focusedRenderer == mainWindow->GetRenderer())
+      {
+        this->OnMainWindowChanged(selectedEditor, mainWindow);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+    {
+      QmitkRenderWindow* mainWindow = selectedEditor->GetActiveQmitkRenderWindow();
+      if (mainWindow && mainWindow->isVisible())
+      {
+        this->OnMainWindowChanged(selectedEditor, mainWindow);
+      }
+    }
   }
 }
 
@@ -132,6 +216,8 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
   m_VisibilityTracker->SetTrackedRenderer(0);
   m_Viewer->SetEnabled(false);
 
@@ -382,7 +468,8 @@ void QmitkSideViewerWidget::OnFocusChanged()
     {
       if (focusedRenderer == mainWindow->GetRenderer())
       {
-        this->OnMainWindowChanged(mainWindow);
+        this->OnMainWindowChanged(selectedEditor, mainWindow);
+        break;
       }
     }
   }
@@ -431,12 +518,12 @@ void QmitkSideViewerWidget::OnViewerWindowChanged()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnMainWindowChanged(QmitkRenderWindow* mainWindow)
+void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindowPart, QmitkRenderWindow* mainWindow)
 {
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow* mainAxialWindow = m_ContainingView->GetRenderWindow("axial");
-  QmitkRenderWindow* mainSagittalWindow = m_ContainingView->GetRenderWindow("sagittal");
-  QmitkRenderWindow* mainCoronalWindow = m_ContainingView->GetRenderWindow("coronal");
+  QmitkRenderWindow* mainAxialWindow = renderWindowPart->GetQmitkRenderWindow("axial");
+  QmitkRenderWindow* mainSagittalWindow = renderWindowPart->GetQmitkRenderWindow("sagittal");
+  QmitkRenderWindow* mainCoronalWindow = renderWindowPart->GetQmitkRenderWindow("coronal");
 
   if (mainWindow != mainAxialWindow
       && mainWindow != mainSagittalWindow
@@ -607,11 +694,11 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
 {
   berry::IWorkbenchPage::Pointer page = m_ContainingView->GetSite()->GetPage();
 
-  // Return the active editor if it implements mitk::IRenderWindowPart
-  mitk::IRenderWindowPart* renderPart =
+  // Returns the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderWindowPart =
       dynamic_cast<mitk::IRenderWindowPart*>(page->GetActiveEditor().GetPointer());
 
-  if (!renderPart)
+  if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
     std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
@@ -622,13 +709,13 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
       berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
       if (page->IsPartVisible(part))
       {
-        renderPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());
+        renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());
         break;
       }
     }
   }
 
-  return renderPart;
+  return renderWindowPart;
 }
 
 
