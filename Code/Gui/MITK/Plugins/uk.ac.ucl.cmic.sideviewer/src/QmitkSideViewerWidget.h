@@ -83,6 +83,13 @@ public:
   /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
   void SetGeometry(const itk::EventObject& geometrySendEvent);
 
+  /// \brief Sets the selected render window of the main display.
+  /// This view then might need to change its window layout so that it shows the image
+  /// of a different orientation.
+  /// \param renderWindowPart The render window part (aka. editor or display) that contins the window
+  /// \param mainWindow The selected render window of the main display.
+  void OnMainWindowChanged(mitk::IRenderWindowPart* renderWindowPart, QmitkRenderWindow* mainWindow);
+
 protected slots:
 
   /// \brief Called when the axial window layout radio button is toggled.
@@ -129,12 +136,6 @@ private:
 
   /// \brief Updates the slice and magnification spin boxes according to the selected window.
   void OnViewerWindowChanged();
-
-  /// \brief Sets the selected render window of the main display.
-  /// This view then might need to change its window layout so that it shows the image
-  /// of a different orientation.
-  /// \param mainWindow The selected render window of the main display.
-  void OnMainWindowChanged(QmitkRenderWindow* mainWindow);
 
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
   void OnMainWindowOrientationChanged(MIDASOrientation orientation);
