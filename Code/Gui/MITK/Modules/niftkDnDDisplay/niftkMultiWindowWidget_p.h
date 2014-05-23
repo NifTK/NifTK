@@ -470,6 +470,12 @@ private:
 
   int m_OrientationAxes[3];
 
+  /// \brief The up direction of the world axes.
+  /// The values are in world coordinate order, i.e. sagittal, coronal and axial.
+  /// +1 means 'up' what is towards the top, right or front.
+  /// -1 means 'down' what is towards the bottom, left or back.
+  int m_UpDirections[3];
+
   /// \brief The time geometry that this viewer was initialised with.
   /// The viewer construct three new time geometries from this, one for each renderer.
   const mitk::TimeGeometry* m_TimeGeometry;
