@@ -45,6 +45,7 @@ m_VideoIn("")
 , m_Capture(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_OrderedPoints(false)
+, m_AskOverWrite(false)
 , m_StartFrame(0)
 , m_EndFrame(0)
 , m_Frequency(50)
@@ -185,36 +186,53 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           key = 0;
           if ( boost::filesystem::exists (leftOutName) )
           {
-            MITK_INFO << leftOutName << " exists, overwrite (y/n)";
-            while ( ! ( key == 'n' || key == 'y' ) )
+            if ( m_AskOverWrite )
             {
-              key = cvWaitKey(20);
-            }
-            if ( key == 'n' ) 
-            {
-              overWriteLeft = false;
+              MITK_INFO << leftOutName << " exists, overwrite (y/n)";
+              key = 0;
+              while ( ! ( key == 'n' || key == 'y' ) )
+              {
+                key = cvWaitKey(20);
+              }
+              if ( key == 'n' ) 
+              {
+                overWriteLeft = false;
+              }
+              else
+              {
+                overWriteLeft = true;
+              }
             }
             else
             {
-              overWriteLeft = true;
+              MITK_INFO << leftOutName << " exists, skipping.";
+              overWriteLeft = false;
             }
-            cvDestroyWindow("Control");
           }
+
           key = 0;
           if ( boost::filesystem::exists (rightOutName) )
           {
-            MITK_INFO << rightOutName << " exists, overwrite (y/n)";
-            while ( ! ( key == 'n' || key == 'y' ) )
+            if ( m_AskOverWrite ) 
             {
-              key = cvWaitKey(20);
+              MITK_INFO << rightOutName << " exists, overwrite (y/n)";
+              while ( ! ( key == 'n' || key == 'y' ) )
+              {
+                key = cvWaitKey(20);
+              }
+              if ( key == 'n' ) 
+              {
+                overWriteRight = false;
+              }
+              else
+              {
+                overWriteRight = true;
+              }
             }
-            if ( key == 'n' ) 
+            else 
             {
+              MITK_INFO << rightOutName << " exists, skipping.";
               overWriteRight = false;
-            }
-            else
-            {
-              overWriteRight = true;
             }
           }
          

@@ -58,7 +58,16 @@
       <label>Pick ordered points (where yoy know the point ID</label>
       <default>0</default>
     </boolean>
+   
+    <boolean>
+      <name>queryOverWrite</name>
+      <longflag>queryOverWrite</longflag>
+      <description>If output file exists, ask if you want to overwrite it</description>
+      <label>If output file exists, ask if you want to overwrite it</label>
+      <default>0</default>
+    </boolean>
  
+
   </parameters>
   
   <parameters>
