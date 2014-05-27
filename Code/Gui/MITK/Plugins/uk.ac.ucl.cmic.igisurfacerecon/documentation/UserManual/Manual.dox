@@ -9,11 +9,23 @@ Do an introduction here.
 
 \section SurfaceReconUsage Usage
 
+\image html surfacerecon-screenshot-4.png "Surface Reconstruction plugin"
 Put all usage information here.
+
+
+\image html surfacerecon-screenshot-3.png "Surface Reconstruction plugin - with calibration data attached"
+
+If your images already have calibration data attached (e.g. coming from the <b>Distortion Correction</b>
+plugin) then you can skip loading the intrinsic files. The combobox for the two channels will
+turn green in that case. You still need the <b>Left-right transformation</b>!
 
 \section SurfaceReconPreferences Preferences
 
-Put all information on user configurable preferences here.
+\image html surfacereconprefs-screenshot.png "Surface Reconstruction Preferences"
+
+The preference page simply allows you to set default values for some of the controls on
+the plugin. Even if you set these here, you can still change them when you use the plugin
+to something else.
 
 \section SurfaceReconReferences References
 
