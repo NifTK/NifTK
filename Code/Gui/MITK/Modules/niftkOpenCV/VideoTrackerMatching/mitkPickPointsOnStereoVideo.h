@@ -74,6 +74,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
   itkSetMacro ( OrderedPoints, bool);
+  itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( Frequency, unsigned int);
 
   itkGetMacro ( InitOK, bool);
@@ -98,6 +99,7 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_OrderedPoints; //picked points can be ordered or unordered
+  bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
