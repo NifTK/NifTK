@@ -5,19 +5,63 @@
 
 \section SurfaceReconIntro Introduction
 
-Do an introduction here.
+This plugin computes the correspondence between the two images of a stereo-pair to recover
+the 3D position of the surface in view.
+
+After determining which pixels in the left image correspond to which pixels in the right, it will
+use geometry to triangulate a point in space.
 
 \section SurfaceReconUsage Usage
 
-Put all usage information here.
+\image html surfacerecon-screenshot-4.png "Surface Reconstruction plugin"
+
+\subsection SurfaceReconUsageExample Example
+
+-# Load a stereo pair, or add a suitable <b>Data Source</b>.
+-# Choose the corresponding left and right channel in the plugin GUI
+-# <b>Camera position</b> uses an external tracking mechanism to position the reconstruction result
+   in the correct place in your world coordinate system.
+-# You need the corresponding <b>Left</b> and <b>Right intrinsic</b> camera parameters, determined via
+   camera calibration.
+-# Critical is also the <b>Left-right transform</b>ation of your stereoscopic rig. It needs to be very
+   accurate to get meaningful results (this will probably involve lots of trial-and-error on your part
+   to get a good calibration).
+-# Choose a name for your <b>Output node</b>.
+-# If you do lots of reconstructions in a row, <b>Automatically count up</b> will append a number to
+   name. Otherwise, a new reconstruction will overwrite whatever is in your output node.
+-# Output type is either a <b>disparity image</b> or a <b>point cloud</b>. Disparity image is mostly
+   useful for debugging.
+-# The generated point cloud will be relative to the <b>Camera position</b> chosen at the top. You may
+   want to <b>Bake camera-to-world transformation</b> so that the point cloud is relative to world and
+   not implicitly depending on a tracker matrix.
+-# <b>Max triangulation error</b> will reject corresponding left-right pixel-pairs that, given your
+   supplied camera calibration, don't triangulate well into 3D space.
+-# <b>Depth range</b> does simple outlier filtering. Suitable values strongly depend on your camera
+   and working range.
+-# Click the <b>DO IT NOW</b> button and wait a few seconds or minutes, depending on your hardware.
+
+<b>Beware:</b> stereo reconstruction, as implemented here, is highly sensitive to working range. For a
+typical stereo laparoscope with a 4 to 5 mm baseline, you need to observe your surface from around 7 cm
+distance.
+
+\image html surfacerecon-screenshot-3.png "Surface Reconstruction plugin - with calibration data attached"
+
+If your images already have calibration data attached (e.g. coming from the <b>Distortion Correction</b>
+plugin) then you can skip loading the intrinsic files. The combobox for the two channels will
+turn green in that case. You still need the <b>Left-right transformation</b>!
 
 \section SurfaceReconPreferences Preferences
 
-Put all information on user configurable preferences here.
+\image html surfacereconprefs-screenshot.png "Surface Reconstruction Preferences"
+
+The preference page simply allows you to set default values for some of the controls on
+the plugin. Even if you set these here, you can still change them to something else when
+you use the plugin.
 
 \section SurfaceReconReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+-# http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#stereocalibrate
+-# http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_34
 
 */
 
