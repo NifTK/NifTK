@@ -1179,13 +1179,6 @@ bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
 }
 
 //-----------------------------------------------------------------------------
-bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1, 
-    const std::pair < unsigned int , cv::Point2d> & p2 )
-{
-  return p1.first < p2.first;
-}
-
-//-----------------------------------------------------------------------------
 cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
     const std::vector<cv::Mat>& World2ToTracker2, double& Residual)
 {
