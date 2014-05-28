@@ -13,7 +13,7 @@ use geometry to triangulate a point in space.
 
 \section SurfaceReconUsage Usage
 
-\image html surfacerecon-screenshot-4.png "Surface Reconstruction plugin"
+\image html surfacerecon-screenshot-4.PNG "Surface Reconstruction plugin"
 
 \subsection SurfaceReconUsageExample Example
 
@@ -44,7 +44,7 @@ use geometry to triangulate a point in space.
 typical stereo laparoscope with a 4 to 5 mm baseline, you need to observe your surface from around 7 cm
 distance.
 
-\image html surfacerecon-screenshot-3.png "Surface Reconstruction plugin - with calibration data attached"
+\image html surfacerecon-screenshot-3.PNG "Surface Reconstruction plugin - with calibration data attached"
 
 If your images already have calibration data attached (e.g. coming from the <b>Distortion Correction</b>
 plugin) then you can skip loading the intrinsic files. The combobox for the two channels will
