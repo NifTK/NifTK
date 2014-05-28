@@ -36,6 +36,7 @@ class NIFTKOPENCV_EXPORT GoldStandardPoint
   public:
     GoldStandardPoint();
     GoldStandardPoint(unsigned int , int, cv::Point2d);
+    GoldStandardPoint(std::istream& is);
     unsigned int m_FrameNumber;
     int m_Index;
     cv::Point2d  m_Point;

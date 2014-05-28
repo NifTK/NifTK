@@ -1188,6 +1188,52 @@ GoldStandardPoint::GoldStandardPoint(unsigned int framenumber, int index, cv::Po
 {}
 
 //-----------------------------------------------------------------------------
+GoldStandardPoint::GoldStandardPoint( std::istream &is)
+: m_FrameNumber(0)
+, m_Index (-1)
+, m_Point (cv::Point2d( std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()))
+{
+  std::string line;
+  if ( std::getline(is,line) )
+  {
+    std::stringstream linestream(line);
+    bool parseSuccess;
+    double parse[4];
+    parseSuccess = linestream >> parse[0] >> parse[1] >> parse[2] >> parse[3];
+    if ( parseSuccess )
+    {
+      m_FrameNumber = static_cast<unsigned int> (parse[0]);
+      m_Index = static_cast<int>(parse[1]);
+      m_Point.x = parse[2];
+      m_Point.x = parse[3];
+      return;
+    }
+    else
+    {
+      std::stringstream linestream2(line);
+      parseSuccess = linestream2 >> parse[0] >> parse[1] >> parse[2];
+      if ( parseSuccess )
+      {
+        m_FrameNumber = static_cast<unsigned int> (parse[0]);
+        m_Point.x = parse[1];
+        m_Point.y = parse[2];
+        m_Index = -1;
+      }
+      else
+      {
+        MITK_WARN << "Error reading gold standard point";
+      }
+    } 
+  }
+  else
+  {
+    MITK_WARN << "Error reading gold standard point";
+  }
+
+}
+
+
+//-----------------------------------------------------------------------------
 std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
 {
   std::string line;
