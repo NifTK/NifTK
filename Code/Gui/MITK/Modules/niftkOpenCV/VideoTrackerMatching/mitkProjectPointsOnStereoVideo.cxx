@@ -508,8 +508,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         unsigned int index;
         double minRatio;
         bool left = true;
-        mitk::GoldStandardPoint gsp (frameNumber, -1 , leftPoints[i]); 
-        this->FindNearestScreenPoint ( gsp , left, &minRatio, &index );
+        this->FindNearestScreenPoint ( mitk::GoldStandardPoint(frameNumber, -1, leftPoints[i]) , left, &minRatio, &index );
         if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf (minRatio) ) 
         {
           MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
@@ -911,6 +910,21 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( GoldStandardPoint GS
 //-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoint GSPoint, bool left , double* minRatio, unsigned int* index)
 {
+  if ( GSPoint.m_Index != -1 )
+  {
+    if ( index != NULL ) 
+    {
+      *index = GSPoint.m_Index;
+    }
+    if ( left )
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[GSPoint.m_Index].first;
+    }
+    else
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[GSPoint.m_Index].second;
+    }
+  }
   assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].second.size() ==
     m_ProjectedPoints[GSPoint.m_FrameNumber].second.size() );
   std::vector < cv::Point2d > pointVector;
