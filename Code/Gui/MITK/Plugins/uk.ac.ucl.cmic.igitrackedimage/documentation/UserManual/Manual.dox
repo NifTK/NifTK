@@ -5,9 +5,10 @@
 
 \section TrackedImageIntro Introduction
 
-The Tracked Image View plugin transforms an image plane so that it can be aligned with a moving tracker in a virtual scene. Figure 1 shows a rendering scene of a virtual ultrasound image plane aligned with a ultrasound probe.
+The Tracked Image View plugin is to visualise a tracked image plane in a tracking coordinate system. Figure 1 shows an ultrasound probe scanning a liver phantom. The ultrasound probe has trackballs attached, which are tracked by a NDI Polaris optical tracking system. Figure 2 shows a virtual ultrasound image plane overlays on the model of the liver phantom, both in the Polaris coordinate system.
 
-\image html us_tracedimage_screenshot.png "Figure 1. A virtual ultrasound image aligned with a moving ultrasound probe (which has tag tracker attached)."
+\image html us-imaging-in-world.png "Figure 1. An ultrasound probe scanning a liver phantom. The probe is tracked by a NDI Polaris optical tracking system."
+\image html us_tracedimage_screenshot.png "Figure 2. A virtual ultrasound image plane overlays on the model of the liver phantom."
 
 \section TrackedImageUsage Usage
 
@@ -16,14 +17,13 @@ The Tracked Image View plugin transforms an image plane so that it can be aligne
 <ul>
 <li> <b>Input from the plugin</b> </li>
 
-\image html usage_1.png "Figure 2. The input from the plugin."
+\image html usage_1.png "Figure 3. The input from the plugin."
 
 <ul>
-<li> <b>image</b> Choose an image node to be rendered on the image plane. 
-The image node is a data source tracked by the tracker.
+<li> <b>image</b> An image source tracked by the tracker.
 </li>
 
-<li> <b>image to world</b> Choose the transformation from model to world. </li>
+<li> <b>image to world</b> The tracker provides the transformation of the image source in the tracking system. </li>
 
 <li> <b>do update</b> This check box allows the scene update in real-time when it is checked.</li>
 
@@ -33,17 +33,17 @@ The image node is a data source tracked by the tracker.
 <ul>
 <li> <b>Input from the Preferences</b> </li>
 
-From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Image" in the "Filter" list (Figure 3).
+From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Image" in the "Filter" list (Figure 4).
 
-\image html preferences_1.png "Figure 3. Set the plugin preferences."
+\image html preferences_1.png "Figure 4. Set the plugin preferences."
 
 <ul>
 
-<li> <b>calibration matrix file name</b> Calibration matrix (4x4) from image plane to tracker.</li>
+<li> <b>calibration matrix file name</b> A calibration matrix (.4x4) which determines the transform from the image plane to the tracker.</li>
 
-<li> <b>scaling in x direction</b> The scale factor obtained at the calibration stage.</li>
+<li> <b>scaling in x direction</b> The x direction (of image plane) scale factor obtained at the calibration stage.</li>
 
-<li> <b>scaling in y direction</b> The scale factor obtained at the calibration stage.</li>
+<li> <b>scaling in y direction</b> The y direction (of image plane) scale factor obtained at the calibration stage.</li>
 
 </ul>
 </ul>
@@ -54,17 +54,17 @@ From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Im
 <ul>
 <li> <b>Input from the Preferences</b> </li>
 
-Open "Tracked Image" page in "Preferences" GUI (Figure 3).
+Open "Tracked Image" page in "Preferences" GUI (Figure 4).
 
 <ul>
-<li> <b>Show clone image button</b> This check box allows user to clone the orientated image plane to files whenever press the "Clone" button in the "Tracked Image" plugin.</li>
+<li> <b>Show clone image button</b> This check box allows user to clone the tracked image plane to files whenever press the "Clone" button in the "Tracked Image" plugin.</li>
 </ul>
 </ul>
 
 <ul>
 <li> <b>Input from the plugin</b> </li>
 
-\image html usage_2.png "Figure 4. The option of clone image ."
+\image html usage_2.png "Figure 5. The option of clone image ."
 
 <ul>
 <li> <b>Clone to folder</b> Indicate where to save the cloned images.</li>
