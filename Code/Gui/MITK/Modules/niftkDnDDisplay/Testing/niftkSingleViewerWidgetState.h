@@ -305,15 +305,15 @@ public:
         || sagittalSliceIndex != expectedSagittalSliceIndex
         || coronalSliceIndex != expectedCoronalSliceIndex)
     {
-      MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
-      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos
-                << " ; max index: " << axialMaxSliceIndex << " ; flipped: " << m_UpDirections[2];
-      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos
-                << " ; max index: " << sagittalMaxSliceIndex << " ; flipped: " << m_UpDirections[0];
-      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos
-                << " ; max index: " << coronalMaxSliceIndex << " ; flipped: " << m_UpDirections[1];
-      MITK_INFO << Self::ConstPointer(this);
-      QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
+//      MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
+//      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos
+//                << " ; max index: " << axialMaxSliceIndex << " ; flipped: " << m_UpDirections[2];
+//      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos
+//                << " ; max index: " << sagittalMaxSliceIndex << " ; flipped: " << m_UpDirections[0];
+//      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos
+//                << " ; max index: " << coronalMaxSliceIndex << " ; flipped: " << m_UpDirections[1];
+//      MITK_INFO << Self::ConstPointer(this);
+//      QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
     }
   }
 
