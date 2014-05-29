@@ -16,8 +16,8 @@
 #define QmitkCommonAppsApplicationPlugin_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
-#include <ctkPluginActivator.h>
 #include <ctkServiceTracker.h>
+#include <berryAbstractUICTKPlugin.h>
 #include <berryIPreferencesService.h>
 #include <mitkIDataStorageService.h>
 #include <QmitkLookupTableProviderService.h>
@@ -35,7 +35,7 @@ namespace mitk {
  * \brief Abstract class that implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  */
-class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public ctkPluginActivator
+class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public berry::AbstractUICTKPlugin
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -48,8 +48,8 @@ public:
   static QmitkCommonAppsApplicationPlugin* GetDefault();
   ctkPluginContext* GetPluginContext() const;
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
+  virtual void start(ctkPluginContext* context);
+  virtual void stop(ctkPluginContext* context);
 
 protected:
 

@@ -39,15 +39,13 @@ QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
-  berry::AbstractUICTKPlugin::start(context);
-  this->SetPluginContext(context);
+  QmitkCommonAppsApplicationPlugin::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->RegisterDataStorageListener();
   this->SetFileOpenTriggersReinit(false);
 }
 
