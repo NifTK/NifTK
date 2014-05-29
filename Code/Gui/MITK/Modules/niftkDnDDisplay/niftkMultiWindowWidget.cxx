@@ -1078,42 +1078,38 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 //      MITK_INFO << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
 //    }
 
-    mitk::Point3D originInVx;
-    for (int i = 0; i < 3; ++i)
-    {
-      if (m_UpDirections[i] >= 0)
-      {
-        originInVx[permutedAxes[i]] = 0;
-      }
-      else
-      {
-        originInVx[permutedAxes[i]] = m_Geometry->GetExtent(permutedAxes[i]) - 1;
-      }
-    }
-
-    mitk::Point3D originInMm;
-    m_Geometry->IndexToWorld(originInVx, originInMm);
-
-    mitk::Point3D worldBottomLeftBackCorner = originInMm;
-
-//    MITK_INFO << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm;
+    mitk::Point3D worldBottomLeftBackCorner = m_Geometry->GetOrigin();
 
     if (m_Geometry->GetImageGeometry())
     {
-      worldBottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
-      worldBottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
-      worldBottomLeftBackCorner[2] -= 0.5 * permutedSpacing[2];
+      m_GeometryType = ImageGeometry;
+      for (int i = 0; i < 3; ++i)
+      {
+        if (m_UpDirections[i] > 0)
+        {
+          worldBottomLeftBackCorner[i] -= 0.5 * permutedSpacing[i];
+        }
+        else
+        {
+          worldBottomLeftBackCorner[i] -= permutedBoundingBox[i] * permutedSpacing[i] * permutedMatrix[i][i] - 0.5 * permutedSpacing[i];
+        }
+      }
     }
     else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
     {
-      /// TODO Why is this needed?
-      worldBottomLeftBackCorner[1] -= permutedSpacing[1];
+      m_GeometryType = AxialGeometry;
+      worldBottomLeftBackCorner[1] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+      worldBottomLeftBackCorner[2] -= permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
     }
     else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
     {
+      m_GeometryType = SagittalGeometry;
+      worldBottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
     }
     else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
     {
+      m_GeometryType = CoronalGeometry;
+      worldBottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
     }
     else
     {
@@ -1158,6 +1154,10 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1];
           originOfSlice[2] = worldBottomLeftBackCorner[2];
+          if (m_GeometryType == SagittalGeometry)
+          {
+            originOfSlice[0] += 0.5 * permutedSpacing[0];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
@@ -1178,6 +1178,10 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           originOfSlice[0] = worldBottomLeftBackCorner[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1];
           originOfSlice[2] = worldBottomLeftBackCorner[2];
+          if (m_GeometryType == CoronalGeometry)
+          {
+//            originOfSlice[1] += 0.5 * permutedSpacing[1];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1194,20 +1198,23 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           height = permutedBoundingBox[1];
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
-          isFlipped = true;
+          isFlipped = false;
           originOfSlice[0] = worldBottomLeftBackCorner[0];
-          /// TODO Why is the y axis of flipped for the axial renderer?
           originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[2];
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
+          if (m_GeometryType == AxialGeometry)
+          {
+            originOfSlice[2] -= 0.5 * permutedSpacing[2];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
           bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
           bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
-          normal[0] = permutedMatrix[0][2];
-          normal[1] = permutedMatrix[1][2];
-          normal[2] = permutedMatrix[2][2];
+          normal[0] = -1.0 * permutedMatrix[0][2];
+          normal[1] = -1.0 * permutedMatrix[1][2];
+          normal[2] = -1.0 * permutedMatrix[2][2];
           break;
         }
 
@@ -1930,11 +1937,6 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
     mitk::Point3D selectedPositionInVx;
     m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-    if (!m_Geometry->GetImageGeometry())
-    {
-      selectedPositionInVx[axis] -= 0.5;
-    }
-
     /// Round it to the closest integer.
     selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
   }
@@ -1955,11 +1957,6 @@ void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
-
-    if (!m_Geometry->GetImageGeometry())
-    {
-      selectedPositionInVx[axis] += 0.5;
-    }
 
     m_Geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
