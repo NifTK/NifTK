@@ -1,5 +1,5 @@
 /**
-  \defgroup uk_ac_ucl_cmic_igidatasources uk.ac.ucl.cmic.igidatasources Plugin
+  \defgroup uk_ac_ucl_cmic_igidatasources uk.ac.ucl.cmic.igidatasources
   \ingroup CMICPlugins
 
   \brief Plugin to provide data input from a variety of image guided interventional devices. 

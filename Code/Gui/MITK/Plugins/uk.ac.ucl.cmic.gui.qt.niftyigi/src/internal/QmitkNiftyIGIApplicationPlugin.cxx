@@ -32,7 +32,7 @@ QmitkNiftyIGIApplicationPlugin::~QmitkNiftyIGIApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyIGIApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyigi/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftyigi.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyigi/bundle/uk_ac_ucl_cmic_gui_qt_niftyigi_intro.html");
 }
 
 
