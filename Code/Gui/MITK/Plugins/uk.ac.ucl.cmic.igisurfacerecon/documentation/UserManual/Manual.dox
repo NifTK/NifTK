@@ -15,6 +15,9 @@ use geometry to triangulate a point in space.
 
 \image html surfacerecon-screenshot-4.PNG "Surface Reconstruction plugin"
 
+<b>Before you start:</b> this plugin expects undistorted images as input! It will not undistort by itself,
+you'll need to use the <b>Distortion Correction</b> plugin or some external means.
+
 \subsection SurfaceReconUsageExample Example
 
 -# Load a stereo pair, or add a suitable <b>Data Source</b>.
