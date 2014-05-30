@@ -79,7 +79,12 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
-  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0);
+  /// \brief Constructs a niftkSingleViewerWidget object.
+  /// \param parent The parent object.
+  /// \param renderingManager The rendering manager.
+  /// \param The name of the viewer.
+  ///        The name is used to construct the name of the renderers and must therefore be unique.
+  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
   virtual ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.

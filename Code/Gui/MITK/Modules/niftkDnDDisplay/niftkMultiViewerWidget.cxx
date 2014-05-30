@@ -230,11 +230,11 @@ niftkMultiViewerWidget::~niftkMultiViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
+niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& name)
 {
-  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(this, m_RenderingManager);
+  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(this, m_RenderingManager, name);
   viewer->SetDataStorage(m_DataStorage);
-  viewer->setObjectName(tr("niftkSingleViewerWidget"));
+  viewer->setObjectName(name);
   viewer->setVisible(false);
 
   viewer->SetBackgroundColour(m_BackgroundColour);
@@ -558,7 +558,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     int additionalViewers = requiredNumberOfViewers - m_Viewers.size();
     for (int i = 0; i < additionalViewers; i++)
     {
-      niftkSingleViewerWidget* viewer = this->CreateViewer();
+      niftkSingleViewerWidget* viewer = this->CreateViewer(QString("DnD-Viewer-%1").arg(currentNumberOfViewers + i));
       viewer->hide();
 
       m_Viewers.push_back(viewer);

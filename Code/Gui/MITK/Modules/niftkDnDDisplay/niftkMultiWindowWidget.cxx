@@ -71,8 +71,10 @@ private:
 niftkMultiWindowWidget::niftkMultiWindowWidget(
     QWidget* parent,
     Qt::WindowFlags flags,
-    mitk::RenderingManager* renderingManager)
-: QmitkStdMultiWidget(parent, flags, renderingManager)
+    mitk::RenderingManager* renderingManager,
+    mitk::BaseRenderer::RenderingMode::Type renderingMode,
+    const QString& name)
+: QmitkStdMultiWidget(parent, flags, renderingManager, renderingMode, name)
 , m_RenderWindows(4)
 , m_GridLayout(NULL)
 , m_AxialSliceTag(0ul)

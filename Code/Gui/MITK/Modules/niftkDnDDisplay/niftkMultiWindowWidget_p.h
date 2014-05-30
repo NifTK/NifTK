@@ -84,8 +84,10 @@ public:
 
   /// \brief Constructor.
   niftkMultiWindowWidget(QWidget* parent = 0,
-                           Qt::WindowFlags f = 0,
-                           mitk::RenderingManager* renderingManager = 0);
+                         Qt::WindowFlags f = 0,
+                         mitk::RenderingManager* renderingManager = 0,
+                         mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard,
+                         const QString& name = "DnD-Viewer");
 
   /// \brief Destructor.
   virtual ~niftkMultiWindowWidget();
@@ -445,6 +447,11 @@ private:
   void OnFocusChanged();
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
+
+  /// \brief The name of the viewer.
+  /// The name is used to construct the name of the renderer and therefore it must be unique.
+  std::string m_Name;
+
   QColor m_BackgroundColour;
   QGridLayout* m_GridLayout;
   unsigned long m_AxialSliceTag;
