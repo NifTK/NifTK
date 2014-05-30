@@ -1,5 +1,5 @@
 /**
-\page uk.ac.ucl.cmic.igisurfacerecon The Surface Reconstruction View
+\page uk_ac_ucl_cmic_igisurfacerecon The Surface Reconstruction View
 
 \image html icon.png "The Icon for Surface Reconstruction"
 
@@ -14,6 +14,9 @@ use geometry to triangulate a point in space.
 \section SurfaceReconUsage Usage
 
 \image html surfacerecon-screenshot-4.PNG "Surface Reconstruction plugin"
+
+<b>Before you start:</b> this plugin expects undistorted images as input! It will not undistort by itself,
+you'll need to use the <b>Distortion Correction</b> plugin or some external means.
 
 \subsection SurfaceReconUsageExample Example
 

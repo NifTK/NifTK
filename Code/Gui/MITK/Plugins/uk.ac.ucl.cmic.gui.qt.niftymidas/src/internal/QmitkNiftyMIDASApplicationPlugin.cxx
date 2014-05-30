@@ -32,22 +32,20 @@ QmitkNiftyMIDASApplicationPlugin::~QmitkNiftyMIDASApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftymidas.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftymidas/bundle/uk_ac_ucl_cmic_gui_qt_niftymidas_intro.html");
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
-  berry::AbstractUICTKPlugin::start(context);
-  this->SetPluginContext(context);
+  QmitkCommonAppsApplicationPlugin::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->RegisterDataStorageListener();
   this->SetFileOpenTriggersReinit(false);
 }
 
