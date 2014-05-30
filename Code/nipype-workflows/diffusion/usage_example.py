@@ -2,7 +2,7 @@
 
 import diffusion_mri_processing as dmri
 
-basedir = '/Users/nicolastoussaint/data/nipype/'
+basedir = '/Users/nicolastoussaint/data/nipype/diffusion/'
 
 dwis  = basedir + 'dwi-1.nii.gz'
 bvals = basedir + 'dwi-1.bval'
@@ -12,7 +12,7 @@ fmmag = basedir + 'dwi-1-fieldmap-magnitude.nii.gz'
 fmph  = basedir + 'dwi-1-fieldmap-phase.nii.gz'
 
 r = dmri.create_diffusion_mri_processing_workflow('dmri-workflow')
-r.base_dir = base_dir
+r.base_dir = basedir
 
 r.inputs.inputnode.in_dwi_4d_file = dwis
 r.inputs.inputnode.in_bvec_file = bvecs
