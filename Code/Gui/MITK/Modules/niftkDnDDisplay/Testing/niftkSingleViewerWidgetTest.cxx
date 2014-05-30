@@ -177,7 +177,7 @@ void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -210,7 +210,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geome
 mitk::Point3D niftkSingleViewerWidgetTestClass::GetBottomLeftBackCorner(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -755,9 +755,9 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
 
-  const mitk::TimeGeometry* axialTimeGeometry = axialRenderer->GetTimeWorldGeometry();
-  const mitk::TimeGeometry* sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry();
-  const mitk::TimeGeometry* coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry();
+  const mitk::TimeGeometry* axialTimeGeometry = axialRenderer->GetWorldTimeGeometry();
+  const mitk::TimeGeometry* sagittalTimeGeometry = sagittalRenderer->GetWorldTimeGeometry();
+  const mitk::TimeGeometry* coronalTimeGeometry = coronalRenderer->GetWorldTimeGeometry();
 
   const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
   const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -785,7 +785,7 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   /// This is how the MultiWindowWidget calculates the origin.
 
   const mitk::AffineTransform3D* affineTransform = imageGeometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -898,9 +898,9 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
 
-  const mitk::TimeGeometry::Pointer axialTimeGeometry = axialRenderer->GetTimeWorldGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer axialTimeGeometry = axialRenderer->GetWorldTimeGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetWorldTimeGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetWorldTimeGeometry()->Clone();
 
 //  MITK_INFO << "axial time geometry: " << axialTimeGeometry;
 //  MITK_INFO << "sagittal time geometry: " << sagittalTimeGeometry;
@@ -933,7 +933,7 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   /// This is how the MultiWindowWidget calculates the origin.
 
   const mitk::AffineTransform3D* affineTransform = imageGeometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
