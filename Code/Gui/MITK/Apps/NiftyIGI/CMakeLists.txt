@@ -16,13 +16,14 @@ project(NiftyIGI)
 set(MY_APP_NAME NiftyIGI)
 
 set(_exclude_plugins
+  org.mitk.gui.qt.segmentation
   uk.ac.ucl.cmic.breastsegmentation
   uk.ac.ucl.cmic.gui.qt.niftyview
   uk.ac.ucl.cmic.gui.qt.niftymidas
   uk.ac.ucl.cmic.dnddisplay
   uk.ac.ucl.cmic.midasgeneralsegmentor
   uk.ac.ucl.cmic.midasmorphologicalsegmentor
-  uk.ac.ucl.cmic.sideview
+  uk.ac.ucl.cmic.sideviewer
   uk.ac.ucl.cmic.niftyseg
   uk.ac.ucl.cmic.thumbnail
   it.unito.cim.intensityprofile
