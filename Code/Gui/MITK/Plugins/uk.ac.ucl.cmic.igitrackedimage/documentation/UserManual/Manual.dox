@@ -5,9 +5,10 @@
 
 \section TrackedImageIntro Introduction
 
-The Tracked Image View plugin is to visualise a tracked image plane in a tracking coordinate system. Figure 1 shows an ultrasound probe scanning a liver phantom. The ultrasound probe has trackballs attached, which are tracked by a NDI Polaris optical tracking system. Figure 2 shows a virtual ultrasound image plane overlays on the model of the liver phantom, both in the Polaris coordinate system.
+The Tracked Image View plugin is to move a 2D image plane in a 3D space. Figure 1 shows an ultrasound probe scanning a liver phantom. The ultrasound probe has trackballs (i.e. tracking sensor) attached, which are tracked by a NDI Polaris optical tracking system. Figure 2 shows a virtual ultrasound image plane overlays on the model of the liver phantom, both in the Polaris coordinate system.
 
 \image html us-imaging-in-world.png "Figure 1. An ultrasound probe scanning a liver phantom. The probe is tracked by a NDI Polaris optical tracking system."
+
 \image html us_tracedimage_screenshot.png "Figure 2. A virtual ultrasound image plane overlays on the model of the liver phantom."
 
 \section TrackedImageUsage Usage
@@ -20,10 +21,10 @@ The Tracked Image View plugin is to visualise a tracked image plane in a trackin
 \image html usage_1.png "Figure 3. The input from the plugin."
 
 <ul>
-<li> <b>image</b> An image source tracked by the tracker.
+<li> <b>image</b> An image source tracked by the tracking sensor. As the example shown in Figure 1 and 2, it is the ultrasound image.
 </li>
 
-<li> <b>image to world</b> The tracker provides the transformation of the image source in the tracking system. </li>
+<li> <b>image to world</b> The tracking sensor provides the transformation of the image source in the tracking system. </li>
 
 <li> <b>do update</b> This check box allows the scene update in real-time when it is checked.</li>
 
@@ -39,7 +40,7 @@ From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Im
 
 <ul>
 
-<li> <b>calibration matrix file name</b> A calibration matrix (.4x4) which determines the transform from the image plane to the tracker.</li>
+<li> <b>calibration matrix file name</b> A calibration matrix (.4x4) which determines the transform from the image plane to the tracking sensor.</li>
 
 <li> <b>scaling in x direction</b> The x direction (of image plane) scale factor obtained at the calibration stage.</li>
 
@@ -70,11 +71,6 @@ Open "Tracked Image" page in "Preferences" GUI (Figure 4).
 <li> <b>Clone to folder</b> Indicate where to save the cloned images.</li>
 </ul> 
 </ul> 
-
-Put all information on user configurable preferences here.
-
-\section TrackedImageReferences References
-
 
 */
 
