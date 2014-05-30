@@ -5,19 +5,72 @@
 
 \section TrackedImageIntro Introduction
 
-Do an introduction here.
+The Tracked Image View plugin is to move a 2D image plane in a 3D space. Figure 1 shows an ultrasound probe scanning a liver phantom. The ultrasound probe has trackballs (i.e. tracking sensor) attached, which are tracked by a NDI Polaris optical tracking system. Figure 2 shows a virtual ultrasound image plane overlays on the model of the liver phantom, both in the Polaris coordinate system.
+
+\image html us-imaging-in-world.png "Figure 1. An ultrasound probe scanning a liver phantom. The probe is tracked by a NDI Polaris optical tracking system."
+
+\image html us_tracedimage_screenshot.png "Figure 2. A virtual ultrasound image plane overlays on the model of the liver phantom."
 
 \section TrackedImageUsage Usage
 
-Put all usage information here.
+\subsection TrackedImageMadatoryInput Mandatory Input 
 
-\section TrackedImagePreferences Preferences
+<ul>
+<li> <b>Input from the plugin</b> </li>
 
-Put all information on user configurable preferences here.
+\image html usage_1.png "Figure 3. The input from the plugin."
 
-\section TrackedImageReferences References
+<ul>
+<li> <b>image</b> An image source tracked by the tracking sensor. As the example shown in Figure 1 and 2, it is the ultrasound image.
+</li>
 
-Put lots of useful references here, including html links, and DOI references.
+<li> <b>image to world</b> The tracking sensor provides the transformation of the image source in the tracking system. </li>
+
+<li> <b>do update</b> This check box allows the scene update in real-time when it is checked.</li>
+
+</ul>
+</ul>
+
+<ul>
+<li> <b>Input from the Preferences</b> </li>
+
+From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Image" in the "Filter" list (Figure 4).
+
+\image html preferences_1.png "Figure 4. Set the plugin preferences."
+
+<ul>
+
+<li> <b>calibration matrix file name</b> A calibration matrix (.4x4) which determines the transform from the image plane to the tracking sensor.</li>
+
+<li> <b>scaling in x direction</b> The x direction (of image plane) scale factor obtained at the calibration stage.</li>
+
+<li> <b>scaling in y direction</b> The y direction (of image plane) scale factor obtained at the calibration stage.</li>
+
+</ul>
+</ul>
+
+\subsection TrackedImageOptionalInput Optional Input 
+
+
+<ul>
+<li> <b>Input from the Preferences</b> </li>
+
+Open "Tracked Image" page in "Preferences" GUI (Figure 4).
+
+<ul>
+<li> <b>Show clone image button</b> This check box allows user to clone the tracked image plane to files whenever press the "Clone" button in the "Tracked Image" plugin.</li>
+</ul>
+</ul>
+
+<ul>
+<li> <b>Input from the plugin</b> </li>
+
+\image html usage_2.png "Figure 5. The option of clone image ."
+
+<ul>
+<li> <b>Clone to folder</b> Indicate where to save the cloned images.</li>
+</ul> 
+</ul> 
 
 */
 
