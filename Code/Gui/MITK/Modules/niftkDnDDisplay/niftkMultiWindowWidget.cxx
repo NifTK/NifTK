@@ -1099,17 +1099,14 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     {
       m_GeometryType = AxialGeometry;
       worldBottomLeftBackCorner[1] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-      worldBottomLeftBackCorner[2] -= permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
     }
     else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
     {
       m_GeometryType = SagittalGeometry;
-      worldBottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
     }
     else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
     {
       m_GeometryType = CoronalGeometry;
-      worldBottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
     }
     else
     {
@@ -1154,10 +1151,6 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1];
           originOfSlice[2] = worldBottomLeftBackCorner[2];
-          if (m_GeometryType == SagittalGeometry)
-          {
-            originOfSlice[0] += 0.5 * permutedSpacing[0];
-          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
@@ -1178,10 +1171,6 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           originOfSlice[0] = worldBottomLeftBackCorner[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1];
           originOfSlice[2] = worldBottomLeftBackCorner[2];
-          if (m_GeometryType == CoronalGeometry)
-          {
-//            originOfSlice[1] += 0.5 * permutedSpacing[1];
-          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1198,23 +1187,20 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           height = permutedBoundingBox[1];
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
-          isFlipped = false;
+          isFlipped = true;
           originOfSlice[0] = worldBottomLeftBackCorner[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
           originOfSlice[2] = worldBottomLeftBackCorner[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
-          if (m_GeometryType == AxialGeometry)
-          {
-            originOfSlice[2] -= 0.5 * permutedSpacing[2];
-          }
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
           bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
           bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
-          normal[0] = -1.0 * permutedMatrix[0][2];
-          normal[1] = -1.0 * permutedMatrix[1][2];
-          normal[2] = -1.0 * permutedMatrix[2][2];
+          normal[0] = permutedMatrix[0][2];
+          normal[1] = permutedMatrix[1][2];
+          normal[2] = permutedMatrix[2][2];
           break;
         }
 
