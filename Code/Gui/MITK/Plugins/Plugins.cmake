@@ -74,7 +74,6 @@ if(BUILD_MIDAS)
     Plugins/uk.ac.ucl.cmic.sideviewer:ON
     Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
     Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
-    Plugins/uk.ac.ucl.cmic.mitksegmentation:ON
     Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
     Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   )
