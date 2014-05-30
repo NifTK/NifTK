@@ -124,6 +124,7 @@ if(SlicerExecutionModel_FOUND)
       niftkLaparoscopeTrackingAccuracy
       niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
+      niftkPickPointsOnStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkUltrasoundPinCalibration

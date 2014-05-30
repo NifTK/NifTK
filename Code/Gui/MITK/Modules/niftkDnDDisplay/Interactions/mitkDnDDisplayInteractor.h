@@ -27,6 +27,8 @@ class QmitkRenderWindow;
 namespace mitk
 {
 
+class FocusManager;
+
 /**
  *\class DnDDisplayInteractor
  *@brief Observer that manages the interaction with the display.
@@ -86,6 +88,9 @@ private:
   niftkMultiWindowWidget* m_MultiWindowWidget;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
+
+  mitk::FocusManager* m_FocusManager;
+
 };
 
 }

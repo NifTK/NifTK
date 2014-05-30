@@ -696,6 +696,11 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (co
   cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
   cv::Mat* leftCameraToTracker);
 
+/**
+ * \brief reads the handeye and r2l transforms and writes out a set of left, centre and 
+ * right hand eye matrices, useful for generating geometry for the scope
+ */
+extern "C++" NIFTKOPENCV_EXPORT void GenerateFullHandeyeMatrices (const std::string& directory);
 
 /**
  * \brief Load camera intrinsics from a plain text file and return results as

@@ -73,7 +73,7 @@ class SliceNavigationController;
  * \sa niftkSingleViewerWidget
  * \sa niftkMultiViewerWidget
  */
-class niftkMultiWindowWidget : public QmitkStdMultiWidget
+class niftkMultiWindowWidget : private QmitkStdMultiWidget
 {
 
   Q_OBJECT
@@ -208,8 +208,13 @@ public:
 
   /// \brief Sets the selected position in the world coordinate system (mm).
   ///
-  /// This function does not necessarily move the image on the display, but
-  /// puts the cursor (aka. crosshair) to the selected world position.
+  /// The selected position will be at the centre of the voxel that contains
+  /// the given coordinate.
+  ///
+  /// This function will not move the displayed region in the selected render
+  /// window. If multiple windows are shown and the cursor position is bound
+  /// across them then the region will be moved in the other windows so that
+  /// cursors are aligned.
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
@@ -302,7 +307,7 @@ public:
   void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
@@ -352,6 +357,9 @@ public:
   bool BlockDisplayEvents(bool blocked);
 
 signals:
+
+  /// \brief Emitted when the window layout has changed.
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -448,7 +456,6 @@ private:
   int m_SelectedWindowIndex;
   int m_FocusLosingWindowIndex;
   bool m_CursorVisibility;
-  bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
@@ -462,8 +469,21 @@ private:
   std::vector<double> m_ScaleFactors;
 
   int m_OrientationAxes[3];
-  mitk::Geometry3D* m_Geometry;
+
+  /// \brief The up direction of the world axes.
+  /// The values are in world coordinate order, i.e. sagittal, coronal and axial.
+  /// +1 means 'up' what is towards the top, right or front.
+  /// -1 means 'down' what is towards the bottom, left or back.
+  int m_UpDirections[3];
+
+  /// \brief The time geometry that this viewer was initialised with.
+  /// The viewer construct three new time geometries from this, one for each renderer.
   const mitk::TimeGeometry* m_TimeGeometry;
+
+  /// \brief The 3D geometry for the first time step.
+  /// The viewer assumes that the dimensions are equal at each time step.
+  /// This is not the geometry at the selected time step.
+  mitk::Geometry3D* m_Geometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes
@@ -521,6 +541,7 @@ private:
 
   bool m_FocusHasChanged;
   bool m_GeometryHasChanged;
+  bool m_WindowLayoutHasChanged;
   bool m_TimeStepHasChanged;
   std::vector<bool> m_SelectedSliceHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;

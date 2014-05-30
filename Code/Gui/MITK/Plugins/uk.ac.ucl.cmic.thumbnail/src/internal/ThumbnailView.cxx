@@ -26,6 +26,87 @@
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
+
+class EditorLifeCycleListener : public berry::IPartListener
+{
+  berryObjectMacro(EditorLifeCycleListener)
+
+  public:
+
+    EditorLifeCycleListener(ThumbnailView* thumbnailView)
+    : m_ThumbnailView(thumbnailView)
+    {
+    }
+
+  private:
+
+  Events::Types GetPartEventTypes() const
+  {
+    return Events::VISIBLE | Events::CLOSED;
+  }
+
+  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+      mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+
+      bool found = false;
+      /// Note:
+      /// We need to look for the focused window among every window of the editor.
+      /// The MITK Display has not got the concept of 'selected' window and always
+      /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
+      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      {
+        if (focusedRenderer == mainWindow->GetRenderer())
+        {
+          m_ThumbnailView->SetTrackedRenderer(focusedRenderer);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+      {
+        QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+        if (mainWindow && mainWindow->isVisible())
+        {
+          m_ThumbnailView->SetTrackedRenderer(mainWindow->GetRenderer());
+        }
+      }
+    }
+  }
+
+  void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+
+    if (mitk::IRenderWindowPart* renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part))
+    {
+      const mitk::BaseRenderer* trackedRenderer = m_ThumbnailView->GetTrackedRenderer();
+
+      /// Note:
+      /// We need to look for the tracked window among every window of the editor.
+      /// The MITK Display has not got the concept of 'selected' window and always
+      /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
+      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      {
+        if (mainWindow->GetRenderer() == trackedRenderer)
+        {
+          m_ThumbnailView->SetTrackedRenderer(0);
+          return;
+        }
+      }
+    }
+  }
+
+  ThumbnailView* m_ThumbnailView;
+
+};
+
+
 //-----------------------------------------------------------------------------
 ThumbnailView::ThumbnailView()
 : m_FocusManagerObserverTag(-1)
@@ -38,6 +119,8 @@ ThumbnailView::ThumbnailView()
 //-----------------------------------------------------------------------------
 ThumbnailView::~ThumbnailView()
 {
+  this->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
+
   m_Controls->m_RenderWindow->Deactivated();
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -88,7 +171,39 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_RenderWindow->Activated();
     m_Controls->m_RenderWindow->SetDisplayInteractionsEnabled(true);
 
-    this->OnFocusChanged();
+    m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
+    this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
+    mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
+    if (selectedEditor)
+    {
+      bool found = false;
+
+      mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+      /// Note:
+      /// We need to look for the focused window among every window of the editor.
+      /// The MITK Display has not got the concept of 'selected' window and always
+      /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
+      foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
+      {
+        if (focusedRenderer == mainWindow->GetRenderer())
+        {
+          this->SetTrackedRenderer(focusedRenderer);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+      {
+        QmitkRenderWindow* mainWindow = selectedEditor->GetActiveQmitkRenderWindow();
+        if (mainWindow && mainWindow->isVisible())
+        {
+          this->SetTrackedRenderer(mainWindow->GetRenderer());
+        }
+      }
+    }
   }
 }
 
@@ -161,7 +276,7 @@ void ThumbnailView::RetrievePreferenceValues()
         QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
         if (mainWindow && mainWindow->GetRenderer()->GetMapperID() == mitk::BaseRenderer::Standard2D)
         {
-          m_Controls->m_RenderWindow->TrackRenderer(mainWindow->GetRenderer());
+          m_Controls->m_RenderWindow->SetTrackedRenderer(mainWindow->GetRenderer());
         }
       }
     }
@@ -175,7 +290,7 @@ void ThumbnailView::RetrievePreferenceValues()
             && focusedRenderer.IsNotNull()
             && focusedRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
         {
-          m_Controls->m_RenderWindow->TrackRenderer(focusedRenderer);
+          m_Controls->m_RenderWindow->SetTrackedRenderer(focusedRenderer);
         }
       }
     }
@@ -216,5 +331,49 @@ void ThumbnailView::OnFocusChanged()
     }
   }
 
-  m_Controls->m_RenderWindow->TrackRenderer(focusedRenderer);
+  this->SetTrackedRenderer(focusedRenderer);
+}
+
+
+//-----------------------------------------------------------------------------
+const mitk::BaseRenderer* ThumbnailView::GetTrackedRenderer() const
+{
+  return m_Controls->m_RenderWindow->GetTrackedRenderer();
+}
+
+
+//-----------------------------------------------------------------------------
+void ThumbnailView::SetTrackedRenderer(const mitk::BaseRenderer* renderer)
+{
+  m_Controls->m_RenderWindow->SetTrackedRenderer(renderer);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::IRenderWindowPart* ThumbnailView::GetSelectedEditor()
+{
+  berry::IWorkbenchPage::Pointer page = this->GetSite()->GetPage();
+
+  // Returns the active editor if it implements mitk::IRenderWindowPart
+  mitk::IRenderWindowPart* renderWindowPart =
+      dynamic_cast<mitk::IRenderWindowPart*>(page->GetActiveEditor().GetPointer());
+
+  if (!renderWindowPart)
+  {
+    // No suitable active editor found, check visible editors
+    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
+    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
+    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    {
+      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      if (page->IsPartVisible(part))
+      {
+        renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());
+        break;
+      }
+    }
+  }
+
+  return renderWindowPart;
 }

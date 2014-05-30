@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <limits>
 #include <mitkHandeyeCalibrate.h>
+#include <mitkCameraCalibrationFacade.h>
 #include <niftkHandeyeCalibrationCLP.h>
 
 int main(int argc, char** argv)
@@ -26,9 +27,31 @@ int main(int argc, char** argv)
   if ( trackingInputDirectory.length() == 0 ||
     ! ( ( extrinsicInputDirectory.length() == 0 ) != ( extrinsicInputFile.length() == 0 )) )
   {
-    std::cout << trackingInputDirectory.length() << " " << extrinsicInputDirectory.length() << " " << extrinsicInputFile.length() << std::endl;
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
+    if ( fullHandeyeInputDirectory.length() == 0 )
+    {
+      std::cout << trackingInputDirectory.length() << " " << extrinsicInputDirectory.length() << " " << extrinsicInputFile.length() << std::endl;
+      commandLine.getOutput()->usage(commandLine);
+      return returnStatus;
+    }
+    else
+    {
+      try 
+      {
+        mitk::GenerateFullHandeyeMatrices(fullHandeyeInputDirectory);
+        returnStatus = EXIT_SUCCESS;
+      }
+      catch (std::exception& e)
+      {
+        MITK_ERROR << "Caught std::exception:" << e.what();
+        returnStatus = -1;
+      }
+      catch (...)
+      {
+        MITK_ERROR << "Caught unknown exception:";
+        returnStatus = -2;
+      }
+      return returnStatus;
+    } 
   }
  
   bool FlipExtrin = FlipExtrinsics;
@@ -51,7 +74,10 @@ int main(int argc, char** argv)
       ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,
         extrinsicInputDirectory);
     }
-
+    if ( fullHandeyeInputDirectory.length() != 0 )
+    {
+      mitk::GenerateFullHandeyeMatrices(fullHandeyeInputDirectory);
+    } 
     returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)
