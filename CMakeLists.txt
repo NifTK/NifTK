@@ -138,9 +138,9 @@ foreach(NIFTK_APP ${NIFTK_APPS})
       set(BUILD_IGI ON)
     endif()
 
-    if (${app_name} STREQUAL "NiftyMIDAS")
-      set(BUILD_MIDAS ON)
-    endif()
+#    if (${app_name} STREQUAL "NiftyMIDAS")
+#      set(BUILD_MIDAS ON)
+#    endif()
 
   endif()
 
