@@ -62,7 +62,7 @@ def reorder_list_from_bval_bvecs(B0s, DWIs, bvals, bvecs):
         i = i+1
     return ret_val
 
-def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
+def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', correct_susceptibility = True):
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
@@ -149,11 +149,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
     workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'input_node.in_files')
     workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'input_node.ref_file')
     
-    workflow.connect(input_node,                  'in_fm_magnitude_file',      susceptibility_correction, 'input_node.mag_image')
-    workflow.connect(input_node,                  'in_fm_phase_file',          susceptibility_correction, 'input_node.phase_image')
-    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.average_b0')
-#    workflow.connect(input_node,                  'in_T1_file',                susceptibility_correction, 'input_node.in_T1_file')
-
+    if correct_susceptibility == True:
+        workflow.connect(input_node,                  'in_fm_magnitude_file',      susceptibility_correction, 'input_node.mag_image')
+        workflow.connect(input_node,                  'in_fm_phase_file',          susceptibility_correction, 'input_node.phase_image')
+        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.average_b0')
+        #    workflow.connect(input_node,                  'in_T1_file',                susceptibility_correction, 'input_node.in_T1_file')
+    
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', dwi_to_B0_registration, 'ref_file')
     workflow.connect(select_DWIs,                 'out',                       dwi_to_B0_registration, 'flo_file')
 
@@ -161,14 +162,19 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing'):
     workflow.connect(dwi_to_B0_registration,      'aff_file',              reorder_transformations, 'DWIs')
     workflow.connect(input_node,                  'in_bval_file',          reorder_transformations, 'bvals')
     workflow.connect(input_node,                  'in_bvec_file',          reorder_transformations, 'bvecs')
-
-    workflow.connect(susceptibility_correction, 'output_node.out_field', transformation_composition, 'comp_input')
-    workflow.connect(reorder_transformations,   'out',                   transformation_composition, 'comp_input2')
+    
+    if correct_susceptibility == True:
+        workflow.connect(susceptibility_correction, 'output_node.out_field', transformation_composition, 'comp_input')
+        workflow.connect(reorder_transformations,   'out',                   transformation_composition, 'comp_input2')
 
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', resampling, 'ref_file')
     workflow.connect(split_dwis,                  'out_files',                 resampling, 'flo_file')
-    workflow.connect(transformation_composition,  'out_file',                  resampling, 'trans_file')
     
+    if correct_susceptibility ==True:
+        workflow.connect(transformation_composition,  'out_file',                  resampling, 'trans_file')
+    else:
+        workflow.connect(reorder_transformations,     'out',                       resampling, 'trans_file')
+
     workflow.connect(resampling, 'res_file',   merge_dwis, 'in_files')
     
     workflow.connect(input_node, 'in_T1_file', T1_mask, 'in_file')
