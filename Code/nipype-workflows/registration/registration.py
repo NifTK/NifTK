@@ -156,7 +156,7 @@ def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_nl = 
     # it and connect it up
     if initial_ref == False:
         ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims_initial")
-        pipeline.connect(input_node, 'data', ave_ims, 'in_files')
+        pipeline.connect(input_node, 'in_files', ave_ims, 'in_files')
         pipeline.connect(ave_ims, 'out_file', lin_workflows[0], 'input_node.ref_file')
     else:
         pipeline.connect(input_node, 'ref_file', lin_workflows[0], 'input_node.ref_file')
