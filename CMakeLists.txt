@@ -883,7 +883,13 @@ endif(MITK_FOUND)
 ######################################################################
 
 if (BUILD_MESHING)
-  set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL")
+  # on windows, you have to build cgal yourself because it has dependencies
+  # on other libraries that cannot be built with the superbuild.
+  # so in case, do not overwrite the carefully user-configured CGAL_DIR with
+  # our superbuild path.
+  if (NOT CGAL_DIR)
+    set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL" CACHE PATH "")
+  endif()
   find_package(CGAL)
   link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
