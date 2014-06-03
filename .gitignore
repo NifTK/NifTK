@@ -18,3 +18,5 @@
 /CMakeLists.txt.user*
 # Mac Finder:
 .DS_Store
+# Python Compiled files
+.pyc
