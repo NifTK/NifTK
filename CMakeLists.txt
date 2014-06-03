@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
