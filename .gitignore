@@ -19,4 +19,4 @@
 # Mac Finder:
 .DS_Store
 # Python Compiled files
-.pyc
+*.pyc
