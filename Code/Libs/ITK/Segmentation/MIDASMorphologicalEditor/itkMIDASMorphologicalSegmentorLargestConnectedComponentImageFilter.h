@@ -58,9 +58,12 @@ namespace itk {
 	  itkSetMacro(OutputForegroundValue, OutputImagePixelType);
 	  itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
 
-	  /** Set/Get the capcity. */
+    /** Set/Get the capacity. */
     itkSetMacro(Capacity, unsigned int);
     itkGetConstMacro(Capacity, unsigned int);
+
+    /// \brief The number of connected components discovered by the filter.
+    itkGetConstMacro(NumberOfConnectedComponents, unsigned int);
 
 	protected:
     MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter(void);
@@ -87,6 +90,7 @@ namespace itk {
     InputImagePixelType            m_InputBackgroundValue;
     unsigned int                   m_Capacity;
     std::vector<unsigned long int> m_NumberOfLabelledPixelsPerThread;
+    unsigned int                   m_NumberOfConnectedComponents;
 	};
 
 #ifndef ITK_MANUAL_INSTANTIATION
