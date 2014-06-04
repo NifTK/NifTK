@@ -195,6 +195,7 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_DrawAxes;
+  bool                          m_RightGoldStandardFrameNumbersAreOdd; //set true if right gold standard frame numbers are left gold standard frame numbers +1 
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end

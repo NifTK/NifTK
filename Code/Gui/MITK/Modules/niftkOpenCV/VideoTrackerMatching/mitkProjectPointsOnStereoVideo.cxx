@@ -456,6 +456,28 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
    m_RightGoldStandardPoints = points;
+   //check whether frame numbers are odd or not
+   m_RightGoldStandardFrameNumbersAreOdd = false;
+   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
+   {
+     if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+     {
+       if ( m_RightGoldStandardFrameNumbersAreOdd ) 
+       {
+         MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+         exit(1);
+       }
+     }
+     else
+     {
+       if ( ( i > 0 ) && ( ! m_RightGoldStandardFrameNumbersAreOdd ) ) 
+       {
+         MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+         exit(1);
+       }
+       m_RightGoldStandardFrameNumbersAreOdd = true;
+     }
+   }
 }
 
 //-----------------------------------------------------------------------------
