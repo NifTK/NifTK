@@ -160,6 +160,7 @@ private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
+  std::string                   m_VideoOutPrefix; //where to write out any video
   std::vector< std::pair < cv::Point3d, cv::Scalar > >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
