@@ -228,6 +228,7 @@ int main(int argc, char** argv)
       }
       fin.close();
       projector->SetLeftGoldStandardPoints(leftGS);
+
     }
     if ( rightGoldStandard.length() != 0 ) 
     {
@@ -236,10 +237,14 @@ int main(int argc, char** argv)
       while ( fin )
       {
         mitk::GoldStandardPoint point(fin);
-        rightGS.push_back(point);
+        if ( fin ) 
+        {
+          rightGS.push_back(point);
+        }
       }
       fin.close();
       projector->SetRightGoldStandardPoints(rightGS);
+
     }
 
     if ( outputErrors.length() != 0 ) 
