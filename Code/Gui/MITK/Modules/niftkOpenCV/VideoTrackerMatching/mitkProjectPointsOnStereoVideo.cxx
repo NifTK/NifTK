@@ -507,23 +507,23 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   while ( leftGSIndex < m_LeftGoldStandardPoints.size() && rightGSIndex < m_RightGoldStandardPoints.size() )
   {
     unsigned int frameNumber = m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber;
-    std::vector < cv::Point2d > leftPoints;
-    std::vector < cv::Point2d > rightPoints;
+    std::vector < mitk::GoldStandardPoint > leftPoints;
+    std::vector < mitk::GoldStandardPoint > rightPoints;
     std::vector < std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > > > matchedPairs;
     
     while ( m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber == frameNumber && leftGSIndex < m_LeftGoldStandardPoints.size() ) 
     {
-      leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex].m_Point );
+      leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex] );
       leftGSIndex ++;
     }
-    while ( m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber < frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    while (  m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber < ( frameNumber + m_RightGSFrameOffset ) && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
       rightGSIndex ++;
     }
 
-    while ( m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber == frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    while ( m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber == ( frameNumber + m_RightGSFrameOffset )  && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
-      rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex].m_Point );
+      rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex] );
       rightGSIndex ++;
     }
 //check timing error here
@@ -534,7 +534,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         unsigned int index;
         double minRatio;
         bool left = true;
-        this->FindNearestScreenPoint ( mitk::GoldStandardPoint(frameNumber, -1, leftPoints[i]) , left, &minRatio, &index );
+        this->FindNearestScreenPoint (  leftPoints[i] , left, &minRatio, &index );
         if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf (minRatio) ) 
         {
           MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
@@ -545,8 +545,8 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
           for ( unsigned int j = 0 ; j < rightPoints.size() ; j ++ ) 
           {
             unsigned int rightIndex;
-            this->FindNearestScreenPoint ( mitk::GoldStandardPoint  
-              ( frameNumber,-1, rightPoints[j] ) , left, &minRatio, &rightIndex );
+            this->FindNearestScreenPoint (   
+              rightPoints[j] , left, &minRatio, &rightIndex );
             if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf(minRatio) ) 
             {
               MITK_WARN << "Ambiguous point match or infinite match Ratio at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
@@ -556,7 +556,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
               if ( rightIndex == index ) 
               {
                 matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i], rightPoints[j] )));
+                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
               }
             }
           }
