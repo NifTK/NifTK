@@ -919,6 +919,10 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoi
     {
       *index = GSPoint.m_Index;
     }
+    if ( minRatio != NULL ) 
+    {
+      *minRatio = m_AllowablePointMatchingRatio + 1.0;
+    }
     if ( left )
     {
       return m_ProjectedPoints[GSPoint.m_FrameNumber].second[GSPoint.m_Index].first;
@@ -1208,7 +1212,7 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
       m_FrameNumber = static_cast<unsigned int> (parse[0]);
       m_Index = static_cast<int>(parse[1]);
       m_Point.x = parse[2];
-      m_Point.x = parse[3];
+      m_Point.y = parse[3];
       return;
     }
     else
