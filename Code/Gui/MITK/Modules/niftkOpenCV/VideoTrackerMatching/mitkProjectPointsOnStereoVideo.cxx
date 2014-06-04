@@ -1276,6 +1276,13 @@ std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
 //-----------------------------------------------------------------------------
 bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
 {
-  return GSP1.m_FrameNumber < GSP2.m_FrameNumber;
+  if ( GSP1.m_FrameNumber == GSP2.m_FrameNumber )
+  {
+    return GSP1.m_Index < GSP2.m_Index;
+  }
+  else
+  {
+    return GSP1.m_FrameNumber < GSP2.m_FrameNumber;
+  }
 }
 } // end namespace
