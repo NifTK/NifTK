@@ -31,6 +31,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoIn("")
 , m_VideoOut("")
 , m_Directory("")
+, m_VideoOutPrefix("")
 , m_TrackerIndex(0)
 , m_ReferenceIndex(-1)
 , m_DrawLines(false)
@@ -125,6 +126,12 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
       m_InitOK=false;
       return;
     }
+    if ( m_SaveVideo )
+    {
+      cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+    }
   }
 
   m_InitOK = true;
@@ -151,12 +158,8 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string pref
     MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
   }
   m_SaveVideo = savevideo;
-  if ( savevideo )
-  {
-    cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
-    m_LeftWriter =cvCreateVideoWriter(std::string(prefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
-    m_RightWriter =cvCreateVideoWriter(std::string(prefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
-  }
+  m_VideoOutPrefix = prefix;
+
   m_InitOK = false;
   return;
 }

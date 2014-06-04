@@ -468,6 +468,9 @@ private:
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
 
+  typedef enum { ImageGeometry, AxialGeometry, SagittalGeometry, CoronalGeometry } GeometryType;
+  GeometryType m_GeometryType;
+
   int m_OrientationAxes[3];
 
   /// \brief The up direction of the world axes.

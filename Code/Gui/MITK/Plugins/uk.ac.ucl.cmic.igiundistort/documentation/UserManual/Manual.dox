@@ -1,22 +1,50 @@
 /**
-\page uk.ac.ucl.cmic.igiundistort The Distortion Correction View
+\page uk_ac_ucl_cmic_igiundistort The Distortion Correction View
 
 \image html UndistortIcon.png "The Icon for Distortion Correction View"
 
 \section DistortionCorrectionIntro Introduction
 
-Do an introduction here.
+The Distortion Correction plugin uses camera calibration data to correct
+for inevitable lens distortion in, for example, laparoscopic images.
 
 \section DistortionCorrectionUsage Usage
 
-Put all usage information here.
+Before you start you need an up-to-date calibration for your camera.
+The plugin itself does not perform calibration. But NifTK ships with a number
+of command line programs that will help you there.
+
+\image html undistort-screenshot.png "Distortion Correction plugin screenshot"
+
+\subsection DistortionCorrectionUsageExample Example
+
+-# Add a 2D image or image source (e.g. the OpenCV webcam data source,
+   "local frame grabber" in the <b>Data Sources</b> plugin).
+-# The image node will now appear in the Distortion Correction table.
+-# Double-click on the (empty) <b>Parameters</b> cell for your image.
+-# A file chooser will open: select a text file that contains camera parameters
+   in the following form:<pre>
+fx 0  cx
+0  fy cy
+0  0  1
+r1 r2 t1 t2
+</pre>
+-# Click the <b>DO IT NOW</b> button to process your image and create the output node.
+
+The plugin will attach the calibration data to the original and output image.
+This allows other plugins, like the <b>Surface Reconstruction</b> plugin, to reuse them.
 
 \section DistortionCorrectionPreferences Preferences
 
-Put all information on user configurable preferences here.
+\image html undistortprefs-screenshot.png "Preferences for Distortion Correction"
+
+You can configure the default path for where to open the file chooser, when
+double clicking the Parameter cell. This is useful if you are working with a recording,
+for example, and want to use the same calibration for many different sessions.
 
 \section DistortionCorrectionReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+-# http://en.wikipedia.org/wiki/Distortion_(optics)
+-# http://docs.opencv.org/modules/imgproc/doc/geometric_transformations.html#undistort
 
 */
