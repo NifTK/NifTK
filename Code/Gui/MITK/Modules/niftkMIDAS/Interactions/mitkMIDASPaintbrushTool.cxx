@@ -484,7 +484,7 @@ bool mitk::MIDASPaintbrushTool::OnRightMouseReleased(Action* action, const State
   return true;
 }
 
-void mitk::MIDASPaintbrushTool::SetRegion(unsigned int imageNumber, bool valid, std::vector<int>& boundingBox)
+void mitk::MIDASPaintbrushTool::SetRegion(unsigned int imageNumber, bool valid, const std::vector<int>& boundingBox)
 {
   mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(imageNumber) );
   assert(workingNode);
@@ -501,18 +501,17 @@ void mitk::MIDASPaintbrushTool::SetRegion(unsigned int imageNumber, bool valid, 
   else
   {
     // Put some fake volume in there. Doesn't matter what the volume is, as it is marked as Invalid anyway.
-    prop->SetSize(1,1,1);
+    prop->SetSize(1, 1, 1);
     prop->SetValid(false);
   }
 }
 
 void mitk::MIDASPaintbrushTool::SetInvalidRegion(unsigned int imageNumber)
 {
-  std::vector<int> dummy;
-  this->SetRegion(imageNumber, false, dummy);
+  this->SetRegion(imageNumber, false);
 }
 
-void mitk::MIDASPaintbrushTool::SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox)
+void mitk::MIDASPaintbrushTool::SetValidRegion(unsigned int imageNumber, const std::vector<int>& boundingBox)
 {
   this->SetRegion(imageNumber, true, boundingBox);
 }

@@ -37,7 +37,7 @@ public:
   ///
   /// \param editingFlags array of 4 booleans to say which images are being editted.
   /// \param editingRegion pass in an array of 6 integers containing size[0-2], and index[3-5] for the region being edited.
-  virtual void Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion) = 0;
+  virtual void Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion) = 0;
 };
 
 #endif

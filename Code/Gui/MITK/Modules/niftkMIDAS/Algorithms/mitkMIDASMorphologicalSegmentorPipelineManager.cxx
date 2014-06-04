@@ -419,10 +419,8 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
       && dilSubtr.IsNotNull()
       )
   {
-    std::vector<int> region;
-    region.resize(6);
-
-    std::vector< bool > editingFlags;
+    std::vector<int> region(6);
+    std::vector<bool> editingFlags;
 
     std::vector<mitk::Image*> workingImages;
     workingImages.push_back(erodeAdd);
@@ -588,9 +586,9 @@ MIDASMorphologicalSegmentorPipelineManager
     itk::Image<TPixel, VImageDimension>* itkImage,
     MorphologicalSegmentorPipelineParams& params,
     std::vector< mitk::Image* >& workingData,
-    std::vector< bool>& editingFlags,
+    const std::vector<bool>& editingFlags,
     bool isRestarting,
-    std::vector<int>& editingRegion,
+    const std::vector<int>& editingRegion,
     mitk::Image::Pointer& output
     )
 {

@@ -161,9 +161,9 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage,
       MorphologicalSegmentorPipelineParams& params,
       std::vector<mitk::Image*>& workingData,
-      std::vector<bool>& editingFlags,
+      const std::vector<bool>& editingFlags,
       bool isRestarting,
-      std::vector<int>& editingRegion,
+      const std::vector<int>& editingRegion,
       mitk::Image::Pointer& outputImage
       );
 

@@ -17,11 +17,12 @@
 namespace mitk
 {
 
-
 //-----------------------------------------------------------------------------
 ITKRegionParametersDataNodeProperty::ITKRegionParametersDataNodeProperty()
+: m_Parameters(6)
+, m_IsValid(false)
 {
-  this->Identity();
+  std::fill(m_Parameters.begin(), m_Parameters.end(), 0);
 }
 
 
@@ -43,37 +44,41 @@ ITKRegionParametersDataNodeProperty::~ITKRegionParametersDataNodeProperty()
 //-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::Identity()
 {
+  std::fill(m_Parameters.begin(), m_Parameters.end(), 0);
   m_IsValid = false;
-  m_Parameters.resize(6);
-  m_Parameters[0] = 0;
-  m_Parameters[1] = 0;
-  m_Parameters[2] = 0;
-  m_Parameters[3] = 0;
-  m_Parameters[4] = 0;
-  m_Parameters[5] = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void ITKRegionParametersDataNodeProperty::SetIndex(int x, int y, int z)
+{
+  if (x != m_Parameters[0] || y != m_Parameters[1] || z != m_Parameters[2])
+  {
+    m_Parameters[0] = x;
+    m_Parameters[1] = y;
+    m_Parameters[2] = z;
+    this->Modified();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::SetSize(int x, int y, int z)
 {
-  m_Parameters[0] = x;
-  m_Parameters[1] = y;
-  m_Parameters[2] = z;
+  if (x != m_Parameters[3] || y != m_Parameters[4] || z != m_Parameters[5])
+  {
+    m_Parameters[3] = x;
+    m_Parameters[4] = y;
+    m_Parameters[5] = z;
+    this->Modified();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::HasVolume() const
 {
-  if (m_Parameters[0] > 0 && m_Parameters[1] > 0 && m_Parameters[2] > 0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return m_Parameters[3] > 0 && m_Parameters[4] > 0 && m_Parameters[5] > 0;
 }
 
 
@@ -105,6 +110,8 @@ const ITKRegionParametersDataNodeProperty::ParametersType& ITKRegionParametersDa
 //-----------------------------------------------------------------------------
 void ITKRegionParametersDataNodeProperty::SetITKRegionParameters(const ParametersType& parameters)
 {
+  assert(parameters.size() == 6);
+
   if (m_Parameters != parameters)
   {
     m_Parameters = parameters;
@@ -117,14 +124,9 @@ void ITKRegionParametersDataNodeProperty::SetITKRegionParameters(const Parameter
 std::string ITKRegionParametersDataNodeProperty::GetValueAsString() const
 {
   std::stringstream myStr;
-  myStr <<   "Valid=" << m_IsValid \
-        << ", Size=[" << m_Parameters[0] \
-        << ", " << m_Parameters[1] \
-        << ", " << m_Parameters[2] \
-        << "], Index=[" << m_Parameters[3] \
-        << ", " << m_Parameters[4] \
-        << ", " << m_Parameters[5] \
-        << "]" ;
+  myStr << "Valid = " << m_IsValid << ", "
+        << "Index = [" << m_Parameters[0] << ", " << m_Parameters[1] << ", " << m_Parameters[2] << "], "
+        << "Size = [" << m_Parameters[3] << ", " << m_Parameters[4] << ", " << m_Parameters[5] << "]" ;
   return myStr.str();
 }
 
@@ -134,24 +136,28 @@ bool ITKRegionParametersDataNodeProperty::IsEqual(const BaseProperty& property) 
 {
   const Self *other = dynamic_cast<const Self*>(&property);
 
-  if(other==NULL) return false;
+  if (other == NULL)
+  {
+    return false;
+  }
 
   ParametersType otherParameters = other->GetITKRegionParameters();
-  if (otherParameters.size() != m_Parameters.size()) return false;
 
-  return (m_Parameters == otherParameters && m_IsValid == other->IsValid());
+  return m_Parameters == otherParameters && m_IsValid == other->IsValid();
 }
 
 
 //-----------------------------------------------------------------------------
 bool ITKRegionParametersDataNodeProperty::Assign(const BaseProperty& property)
 {
-  const Self *other = dynamic_cast<const Self*>(&property);
+  const Self* other = dynamic_cast<const Self*>(&property);
 
-  if(other==NULL) return false;
+  if (other == NULL)
+  {
+    return false;
+  }
 
-  ParametersType otherParameters = other->GetITKRegionParameters();
-  m_Parameters = otherParameters;
+  m_Parameters = other->GetITKRegionParameters();
   m_IsValid = other->IsValid();
 
   return true;
