@@ -275,7 +275,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion)
+::Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion)
 {
   if (m_Stage == 0)
   {
@@ -407,7 +407,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::GetOutput(std::vector<bool>& editingFlags)
+::GetOutput(const std::vector<bool>& editingFlags)
 {
   typename SegmentationImageType::Pointer result;
 

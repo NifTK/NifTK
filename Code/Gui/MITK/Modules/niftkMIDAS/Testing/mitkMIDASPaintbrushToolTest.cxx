@@ -60,7 +60,7 @@ public:
   void SetupNode(const mitk::DataNode::Pointer node, std::string name)
   {
     mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
-    prop->SetSize(1,1,1);
+    prop->SetSize(1, 1, 1);
     prop->SetValid(false);
 
     node->SetName(name);

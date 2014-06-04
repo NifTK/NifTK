@@ -74,13 +74,13 @@ public:
   ///
   /// \param editingFlags array of 4 booleans to say which images are being editted.
   /// \param editingRegion a vector of 6 integers containing the size[0-2], and index[3-5] of the affected region.
-  void Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion);
+  void Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion);
 
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
   ///
   /// The parameters editingImageBeingEdited and additionsImageBeingEdited should be the same as when Update was called.
   /// \param editingFlags array of 4 booleans to say which images are being editted.
-  typename SegmentationImageType::Pointer GetOutput(std::vector<bool>& editingFlags);
+  typename SegmentationImageType::Pointer GetOutput(const std::vector<bool>& editingFlags);
 
   int                                                          m_Stage;
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;

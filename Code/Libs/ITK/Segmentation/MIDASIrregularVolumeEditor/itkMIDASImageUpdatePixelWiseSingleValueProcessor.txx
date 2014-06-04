@@ -104,13 +104,13 @@ MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
     }
   }
 
-  std::vector<int> region;
-  region.push_back(minIndex[0]);
-  region.push_back(minIndex[1]);
-  region.push_back(minIndex[2]);
-  region.push_back(maxIndex[0] - minIndex[0] + 1);
-  region.push_back(maxIndex[1] - minIndex[1] + 1);
-  region.push_back(maxIndex[2] - minIndex[2] + 1);
+  std::vector<int> region(6);
+  region[0] = minIndex[0];
+  region[1] = minIndex[1];
+  region[2] = minIndex[2];
+  region[3] = maxIndex[0] - minIndex[0] + 1;
+  region[4] = maxIndex[1] - minIndex[1] + 1;
+  region[5] = maxIndex[2] - minIndex[2] + 1;
   
   return region;
 }

@@ -163,10 +163,10 @@ private:
   void SetInvalidRegion(unsigned int imageNumber);
 
   /// \brief Sets a valid region property, taken from the bounding box of edited voxels, indicating that we are editing the given image number.
-  void SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox);
+  void SetValidRegion(unsigned int imageNumber, const std::vector<int>& boundingBox);
 
   /// \brief Method that actually sets the region property on a working image.
-  void SetRegion(unsigned int imageNumber, bool valid, std::vector<int>& boundingBox);
+  void SetRegion(unsigned int imageNumber, bool valid, const std::vector<int>& boundingBox = std::vector<int>());
 
   /// \brief Does the main functionality when the mouse moves.
   bool DoMouseMoved(Action* action,
