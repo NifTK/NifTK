@@ -616,7 +616,6 @@ MIDASMorphologicalSegmentorPipelineManager
   key << typeid(TPixel).name() << VImageDimension;
 
   MorphologicalSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-  MorphologicalSegmentorPipelineInterface* myPipeline = NULL;
 
   std::map<std::string, MorphologicalSegmentorPipelineInterface*>::iterator iter;
   iter = m_TypeToPipelineMap.find(key.str());
@@ -624,13 +623,11 @@ MIDASMorphologicalSegmentorPipelineManager
   if (iter == m_TypeToPipelineMap.end())
   {
     pipeline = new MorphologicalSegmentorPipeline<TPixel, VImageDimension>();
-    myPipeline = pipeline;
-    m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
+    m_TypeToPipelineMap[key.str()] = pipeline;
   }
   else
   {
-    myPipeline = iter->second;
-    pipeline = static_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
+    pipeline = dynamic_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
   }
 
   // Set most of the parameters on the pipeline.
