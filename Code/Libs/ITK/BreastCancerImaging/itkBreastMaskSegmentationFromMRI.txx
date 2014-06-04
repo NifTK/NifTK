@@ -17,6 +17,7 @@
 #include <itkScalarConnectedComponentImageFilter.h>
 #include <itkRelabelComponentImageFilter.h>
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
+#include <itkImageDuplicator.h>
 
 namespace itk
 {
@@ -192,8 +193,19 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothTheInputImages( void )
 {
+
+  typedef itk::ImageDuplicator< InternalImageType > DuplicatorType;
+
   if ( ! flgSmooth ) 
+  {
+    // If no smoothing is to be performed, then the input of the speed function will also not be smoothed!
+    DuplicatorType::Pointer duplicator = DuplicatorType::New();
+    duplicator->SetInputImage(imStructural);
+    duplicator->Update();
+    imSpeedFuncInputImage = duplicator->GetOutput();
+    imSpeedFuncInputImage->DisconnectPipeline();
     return;
+  }
 
 
   typename SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
@@ -211,7 +223,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imTmp->DisconnectPipeline();
     
   imStructural = imTmp;
-    
+
+  // Keep a copy of the smoothed structural image for the region growing of the pectoral muscle 
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  duplicator->SetInputImage(imStructural);
+  duplicator->Update();
+  imSpeedFuncInputImage = duplicator->GetOutput();
+  imSpeedFuncInputImage->DisconnectPipeline();
+
   WriteImageToFile( fileOutputSmoothedStructural, "smoothed structural image", 
 		    imStructural, flgLeft, flgRight );
   
@@ -599,16 +618,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 #endif
   }
   else
-    imMax = imStructural;
+    imMax=imStructural;
 
-  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion, "MaxLeft" );
-  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );
-
-  std::string fileOutput( "imMax.nii" );
-  WriteImageToFile( fileOutput, "max image", 
-                    imMax, flgLeft, flgRight );      
+  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion,  "MaxLeft" );
+  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );     
   
-
   // Smooth the image to increase separation of the background
 
 #if 0
@@ -1764,8 +1778,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename GradientFilterType::Pointer gradientMagnitude = GradientFilterType::New();
     
   gradientMagnitude->SetSigma( 1 );
-  gradientMagnitude->SetInput( imStructural );
-
+  gradientMagnitude->SetInput( imSpeedFuncInputImage );
   gradientMagnitude->Update();
 
   WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
