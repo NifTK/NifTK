@@ -38,6 +38,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
+, m_RightGSFrameOffset(0)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
 , m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
@@ -457,12 +458,12 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
 {
    m_RightGoldStandardPoints = points;
    //check whether frame numbers are odd or not
-   m_RightGoldStandardFrameNumbersAreOdd = false;
+   m_RightGSFrameOffset = 0;
    for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
    {
      if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
      {
-       if ( m_RightGoldStandardFrameNumbersAreOdd ) 
+       if ( m_RightGSFrameOffset != 0 ) 
        {
          MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
          exit(1);
@@ -470,12 +471,12 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
      }
      else
      {
-       if ( ( i > 0 ) && ( ! m_RightGoldStandardFrameNumbersAreOdd ) ) 
+       if ( ( i > 0 ) && ( m_RightGSFrameOffset == 0 ) ) 
        {
          MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
          exit(1);
        }
-       m_RightGoldStandardFrameNumbersAreOdd = true;
+       m_RightGSFrameOffset = 1;
      }
    }
 }
