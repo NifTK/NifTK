@@ -159,10 +159,16 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   cv::Mat ritemp = cv::Mat(m_IntrinsicMatrixRight);
   cv::Mat rdtemp = cv::Mat(m_DistortionCoefficientsRight);
 
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.left.intrinsic.txt",
-     &litemp, &ldtemp);
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.right.intrinsic.txt",
-     &ritemp, &rdtemp);
+  std::string leftIntrinsicName("calib.left.intrinsic.txt");         
+  boost::filesystem::path leftIntrinsicNameFull (directory);
+  leftIntrinsicNameFull /= leftIntrinsicName;
+
+  std::string rightIntrinsicName("calib.right.intrinsic.txt");         
+  boost::filesystem::path rightIntrinsicNameFull (directory);
+  rightIntrinsicNameFull /= rightIntrinsicName;
+
+  mitk::LoadCameraIntrinsicsFromPlainText(leftIntrinsicNameFull.string(), &litemp, &ldtemp);
+  mitk::LoadCameraIntrinsicsFromPlainText(rightIntrinsicNameFull.string(), &ritemp, &rdtemp);
   *m_IntrinsicMatrixLeft = CvMat(litemp);
   *m_DistortionCoefficientsLeft = CvMat(ldtemp);
   *m_IntrinsicMatrixRight = CvMat(ritemp);
