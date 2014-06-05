@@ -199,11 +199,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   if ( ! flgSmooth ) 
   {
     // If no smoothing is to be performed, then the input of the speed function will also not be smoothed!
-    DuplicatorType::Pointer duplicator = DuplicatorType::New();
+    typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
     duplicator->SetInputImage(imStructural);
     duplicator->Update();
+
     imSpeedFuncInputImage = duplicator->GetOutput();
     imSpeedFuncInputImage->DisconnectPipeline();
+
     return;
   }
 
@@ -225,9 +228,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imStructural = imTmp;
 
   // Keep a copy of the smoothed structural image for the region growing of the pectoral muscle 
-  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
   duplicator->SetInputImage(imStructural);
   duplicator->Update();
+
   imSpeedFuncInputImage = duplicator->GetOutput();
   imSpeedFuncInputImage->DisconnectPipeline();
 
