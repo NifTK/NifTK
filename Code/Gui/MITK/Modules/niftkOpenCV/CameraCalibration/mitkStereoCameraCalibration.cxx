@@ -31,8 +31,8 @@ namespace mitk {
 StereoCameraCalibration::StereoCameraCalibration()
 : m_IntrinsicMatrixLeft(cvCreateMat(3,3,CV_64FC1))
 , m_IntrinsicMatrixRight(cvCreateMat(3,3,CV_64FC1))
-, m_DistortionCoefficientsLeft(cvCreateMat(4,1,CV_64FC1))
-, m_DistortionCoefficientsRight(cvCreateMat(4,1,CV_64FC1))
+, m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
+, m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
 , m_OptimiseIntrinsics(true)
 {
 
