@@ -509,7 +509,7 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
       m_RightGSFramesAreEven = false;
     }
   }
-  if ( m_LeftGSFramesAreEven && m_RightGSFramesAreEven )
+  if ( m_LeftGSFramesAreEven == m_RightGSFramesAreEven )
   {
     m_RightGSFrameOffset = 0 ;
   }
