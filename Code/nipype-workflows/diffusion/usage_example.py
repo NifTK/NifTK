@@ -11,7 +11,7 @@ T1    = basedir + 'dwi-1-mprage.nii.gz'
 fmmag = basedir + 'dwi-1-fieldmap-magnitude.nii.gz'
 fmph  = basedir + 'dwi-1-fieldmap-phase.nii.gz'
 
-r = dmri.create_diffusion_mri_processing_workflow('dmri-workflow')
+r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow')
 r.base_dir = basedir
 
 r.inputs.inputnode.in_dwi_4d_file = dwis
@@ -21,7 +21,7 @@ r.inputs.inputnode.in_fm_magnitude_file = fmmag
 r.inputs.inputnode.in_fm_phase_file = fmph
 r.inputs.inputnode.in_T1_file = T1
 
-r.write_graph(graph2use = 'orig')
+r.write_graph(graph2use = 'exec')
 
 qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 

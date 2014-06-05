@@ -6,7 +6,6 @@ import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.fsl            as fsl
 import nipype.interfaces.susceptibility as susceptibility
-import dipy.core.gradients              as gradients
 
 import inspect
 
@@ -79,7 +78,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
         name='inputnode')
     
     #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
-    split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis')    
+    split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis')
+    
+    # Node using fslsplit to split the two fieldmap magnitude images    
+    split_fm_mag = pe.Node(interface = fsl.Split(dimension="t"), name='split_fm_mag')
+    select_first_fm_mag = pe.Node(interface = niu.Select(), name = 'select_first_fm_mag')
+    select_first_fm_mag.inputs.index = 0
 
     #Node using niu.Select() to select only the B0 files
     function_find_B0s = niu.Function(input_names=['bvals', 'bvecs'], output_names=['out'])
@@ -150,7 +154,10 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'input_node.ref_file')
     
     if correct_susceptibility == True:
-        workflow.connect(input_node,                  'in_fm_magnitude_file',      susceptibility_correction, 'input_node.mag_image')
+        # Need to insert an fslsplit
+        workflow.connect(input_node, 'in_fm_magnitude_file', split_fm_mag, 'in_file')
+        workflow.connect(split_fm_mag, 'out_files', select_first_fm_mag, 'inlist')
+        workflow.connect(select_first_fm_mag,                  'out',      susceptibility_correction, 'input_node.mag_image')
         workflow.connect(input_node,                  'in_fm_phase_file',          susceptibility_correction, 'input_node.phase_image')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.average_b0')
         #    workflow.connect(input_node,                  'in_T1_file',                susceptibility_correction, 'input_node.in_T1_file')
