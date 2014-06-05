@@ -80,14 +80,19 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
                      (input_node, lin_reg,[('ref_file', 'ref_file')]),
                      (input_node, lin_reg,[('rmask_file','rmask_file')])])
     
+    # If we have initial affine transforms, we need to connect them in
     if initial_affines == True:
         pipeline.connect(input_node, 'in_aff_files', lin_reg,'in_aff_file')
     
-
+    if demean == True:   
+        pipeline.connect(input_node, 'ref_file', ave_ims, 'demean1_ref_file')
+    else:
+        pipeline.connect(input_node, 'ref_file', ave_ims, 'avg_tran_ref_file')
+    
+    # Either way we do the averaging, we need to connect the files in
     # Join the outputs from lin_reg (as conveniently outputted from the RegAladin wrapper) 
-    # and pass to ave_ims   
-    pipeline.connect([(lin_reg, ave_ims, [('avg_output', 'demean_files')]),
-                      (input_node, ave_ims, [('ref_file','demean1_ref_file')])])
+    # and pass to ave_ims
+    pipeline.connect(lin_reg, 'avg_output',ave_ims, 'demean_files')
                     
     # Connect up the output node
     pipeline.connect([(lin_reg, output_node,[('aff_file', 'aff_files')]),
@@ -97,7 +102,7 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
 
 # Creates an atlas image by iterative registration. An initial reference image can be provided, otherwise one will be made. 
 #
-def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_nl = 1, initial_ref = True, linear_options_hash=None, nonlinear_options_hash=None):
+def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_lin = 1, initial_ref = True, linear_options_hash=None, nonlinear_options_hash=None):
     pipeline = pe.Workflow(name=name)
     input_node = pe.Node(niu.IdentityInterface(
             fields=['in_files', 'ref_file']),

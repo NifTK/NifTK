@@ -4,6 +4,7 @@ import nipype.interfaces.utility        as niu     # utility
 import nipype.pipeline.engine           as pe          # pypeline engine
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
+import nipype.interfaces.niftyfit       as niftyfit
 import nipype.interfaces.fsl            as fsl
 import nipype.interfaces.susceptibility as susceptibility
 
@@ -91,8 +92,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     find_B0s = pe.Node(interface = function_find_B0s, name = 'find_B0s')
     select_B0s = pe.Node(interface = niu.Select(), name = 'select_B0s')
 
-    select_first_B0 = pe.Node(interface = niu.Select(), name = 'select_first_B0')
-    select_first_B0.inputs.index = 0
+    #select_first_B0 = pe.Node(interface = niu.Select(), name = 'select_first_B0')
+    #select_first_B0.inputs.index = 0
 
     #Node using niu.Select() to select only the DWIs files
     function_find_DWIs = niu.Function(input_names=['bvals', 'bvecs'], output_names=['out'])
@@ -100,7 +101,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     find_DWIs   = pe.Node(interface = function_find_DWIs, name = 'find_DWIs')
     select_DWIs = pe.Node(interface = niu.Select(), name = 'select_DWIs')
 
-    groupwise_B0_coregistration = create_linear_coregistration_workflow('groupwise_B0_coregistration')
+    groupwise_B0_coregistration = create_atlas('groupwise_B0_coregistration', initial_ref=False, itr_rigid = 2, itr_affine = 0, itr_non_lin=0)
     
     susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction')
     susceptibility_correction.inputs.input_node.etd = 2.46
@@ -130,9 +131,9 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
 
     T1_mask_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_mask_resampling')
 
-    tensor_fitting = pe.Node(interface=fsl.DTIFit(),name='tensor_fitting')
+    tensor_fitting = pe.Node(interface=niftyfit.FitDwi(),name='tensor_fitting')
     
-    outputnode = pe.Node( interface=niu.IdentityInterface(fields=['tensor', 'FA', 'MD', 'MO', 'S0', 'L1', 'L2', 'L3', 'V1', 'V2', 'V3']),
+    outputnode = pe.Node( interface=niu.IdentityInterface(fields=['tensor', 'FA', 'MD', 'COL_FA', 'V1', 'predicted_image','residual_image','parameter_uncertainty_image']),
                           name="outputnode" )
 
     workflow.connect(input_node, 'in_dwi_4d_file', split_dwis, 'in_file')
@@ -148,10 +149,10 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
     workflow.connect(find_DWIs,  'out',       select_DWIs, 'index')
 
-    workflow.connect(select_B0s,       'out', select_first_B0, 'inlist')
+    #workflow.connect(select_B0s,       'out', select_first_B0, 'inlist')
 
     workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'input_node.in_files')
-    workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'input_node.ref_file')
+    #workflow.connect(select_first_B0,  'out', groupwise_B0_coregistration, 'input_node.ref_file')
     
     if correct_susceptibility == True:
         # Need to insert an fslsplit
@@ -189,22 +190,20 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_mask_resampling, 'ref_file')
     workflow.connect(T1_mask,                     'mask_file',                 T1_mask_resampling, 'flo_file')
 
-    workflow.connect(merge_dwis, 'merged_file',      tensor_fitting, 'dwi')
-    workflow.connect(input_node, 'in_bvec_file',     tensor_fitting, 'bvecs')
-    workflow.connect(input_node, 'in_bval_file',     tensor_fitting, 'bvals')
-    workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask')
+    workflow.connect(merge_dwis, 'merged_file',      tensor_fitting, 'source_file')
+    workflow.connect(input_node, 'in_bvec_file',     tensor_fitting, 'bvec_file')
+    workflow.connect(input_node, 'in_bval_file',     tensor_fitting, 'bval_file')
+    workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask_file')
     
-    workflow.connect(tensor_fitting, 'tensor', outputnode, 'tensor')
-    workflow.connect(tensor_fitting, 'FA',     outputnode, 'FA')
-    workflow.connect(tensor_fitting, 'MD',     outputnode, 'MD')
-    workflow.connect(tensor_fitting, 'MO',     outputnode, 'MO')
-    workflow.connect(tensor_fitting, 'S0',     outputnode, 'S0')
-    workflow.connect(tensor_fitting, 'L1',     outputnode, 'L1')
-    workflow.connect(tensor_fitting, 'L2',     outputnode, 'L2')
-    workflow.connect(tensor_fitting, 'L3',     outputnode, 'L3')
-    workflow.connect(tensor_fitting, 'V1',     outputnode, 'V1')
-    workflow.connect(tensor_fitting, 'V2',     outputnode, 'V2')
-    workflow.connect(tensor_fitting, 'V3',     outputnode, 'V3')
+    workflow.connect(tensor_fitting, 'tenmap_file', outputnode, 'tensor')
+    workflow.connect(tensor_fitting, 'famap_file',     outputnode, 'FA')
+    workflow.connect(tensor_fitting, 'mdmap_file',     outputnode, 'MD')
+    workflow.connect(tensor_fitting, 'rgbmap_file',     outputnode, 'COL_FA')
+    workflow.connect(tensor_fitting, 'v1map_file',     outputnode, 'V1')
+    workflow.connect(tensor_fitting, 'syn_file',     outputnode, 'predicted_image')
+    workflow.connect(tensor_fitting, 'res_file', outputnode, 'residual_image')
+    workflow.connect(tensor_fitting, 'error_file', outputnode, 'parameter_uncertainty_image')
+
     
     return workflow
     

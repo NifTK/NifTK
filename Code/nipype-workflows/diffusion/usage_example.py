@@ -1,8 +1,13 @@
 #! /usr/bin/env python
 
 import diffusion_mri_processing as dmri
+import argparse
+parser = argparse.ArgumentParser(description='Diffusion usage example')
+parser.add_argument('-b','--basedir', help='Base directory that contains the diffusion data in the required format',
+                    required=True)
+args = parser.parse_args()
 
-basedir = '/Users/nicolastoussaint/data/nipype/diffusion/'
+basedir = args.basedir
 
 dwis  = basedir + 'dwi-1.nii.gz'
 bvals = basedir + 'dwi-1.bval'
@@ -25,8 +30,8 @@ r.write_graph(graph2use = 'exec')
 
 qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 
-r.run()
+#r.run()
 #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
 #r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
-#r.run(plugin='MultiProc', plugin_args={'n_procs': 5})
+r.run(plugin='MultiProc', plugin_args={'n_procs': 3})
 
