@@ -17,7 +17,6 @@
 #include <itkScalarConnectedComponentImageFilter.h>
 #include <itkRelabelComponentImageFilter.h>
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
-#include <itkImageDuplicator.h>
 
 namespace itk
 {
@@ -193,9 +192,6 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothTheInputImages( void )
 {
-
-  typedef itk::ImageDuplicator< InternalImageType > DuplicatorType;
-
   if ( ! flgSmooth ) 
   {
     // If no smoothing is to be performed, then the input of the speed function will also not be smoothed!
