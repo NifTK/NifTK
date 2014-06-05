@@ -20,85 +20,87 @@
 namespace itk
 {
 
-  /**
-   * \class MIDASMaskByRegionImageFilter
-   * \brief Class, developed for MIDAS migration, that outputs an image the same size as the input,
-   * but you can specify a region, and that region is kept, and anything outside that region, set
-   * to a single background value. Used for Axial Cutoff.
-   *
-   * Within the region, the spec is:
-   * <pre>
-   * Input 0  | Input 1 | Input 2 | Output
-   *       0  |       0 |       0 |      0
-   *       0  |       0 |       1 |      0
-   *       0  |       1 |       0 |      1
-   *       0  |       1 |       1 |      0
-   *       1  |       0 |       0 |      1
-   *       1  |       0 |       1 |      0
-   *       1  |       1 |       0 |      1
-   *       1  |       1 |       1 |      0
-   * </pre>
-   * and input 1 has been called the "additions" image, as if the pixel is on, it has the effect of
-   * adding to the segmentation. The second image is called the "subtractions" image, and is used for
-   * connection breaker, so if the subtractions image pixel is on, the output must be off.
-   *
-   * \ingroup midas_morph_editor
-   */
-  template <class TInputImage, class TOutputImage>
-  class ITK_EXPORT MIDASMaskByRegionImageFilter : public ImageToImageFilter<TInputImage, TOutputImage>
-  {
+/**
+ * \class MIDASMaskByRegionImageFilter
+ * \brief Class, developed for MIDAS migration, that outputs an image the same size as the input,
+ * but you can specify a region, and that region is kept, and anything outside that region, set
+ * to a single background value. Used for Axial Cutoff.
+ *
+ * Within the region, the spec is:
+ * <pre>
+ * Input 0  | Input 1 | Input 2 | Output
+ *       0  |       0 |       0 |      0
+ *       0  |       0 |       1 |      0
+ *       0  |       1 |       0 |      1
+ *       0  |       1 |       1 |      0
+ *       1  |       0 |       0 |      1
+ *       1  |       0 |       1 |      0
+ *       1  |       1 |       0 |      1
+ *       1  |       1 |       1 |      0
+ * </pre>
+ * and input 1 has been called the "additions" image, as if the pixel is on, it has the effect of
+ * adding to the segmentation. The second image is called the "subtractions" image, and is used for
+ * connection breaker, so if the subtractions image pixel is on, the output must be off.
+ *
+ * \ingroup midas_morph_editor
+ */
+template <class TInputImage, class TOutputImage>
+class ITK_EXPORT MIDASMaskByRegionImageFilter : public ImageToImageFilter<TInputImage, TOutputImage>
+{
 
-    public:
+public:
 
-      /** Standard class typedefs */
-      typedef MIDASMaskByRegionImageFilter                          Self;
-      typedef ImageToImageFilter<TInputImage, TOutputImage>         SuperClass;
-      typedef SmartPointer<Self>                                    Pointer;
-      typedef SmartPointer<const Self>                              ConstPointer;
+  /** Standard class typedefs */
+  typedef MIDASMaskByRegionImageFilter                          Self;
+  typedef ImageToImageFilter<TInputImage, TOutputImage>         SuperClass;
+  typedef SmartPointer<Self>                                    Pointer;
+  typedef SmartPointer<const Self>                              ConstPointer;
 
-      /** Method for creation through the object factory */
-      itkNewMacro(Self);
+  /** Method for creation through the object factory */
+  itkNewMacro(Self);
 
-      /** Run-time type information (and related methods) */
-      itkTypeMacro(MIDASMaskByRegionImageFilter, ImageToImageFilter);
+  /** Run-time type information (and related methods) */
+  itkTypeMacro(MIDASMaskByRegionImageFilter, ImageToImageFilter);
 
-      /** Standard Typedefs. */
-      typedef typename TInputImage::IndexType                       IndexType;
-      typedef typename TInputImage::SizeType                        SizeType;
-      typedef typename TInputImage::RegionType                      RegionType;
-      typedef typename TInputImage::PixelType                       InputPixelType;
-      typedef typename TOutputImage::PixelType                      OutputPixelType;
+  /** Standard Typedefs. */
+  typedef typename TInputImage::IndexType                       IndexType;
+  typedef typename TInputImage::SizeType                        SizeType;
+  typedef typename TInputImage::RegionType                      RegionType;
+  typedef typename TInputImage::PixelType                       InputPixelType;
+  typedef typename TOutputImage::PixelType                      OutputPixelType;
 
-      /** Set/Get methods to set the region to keep. */
-      void SetRegion(RegionType region) { m_Region = region; m_UserSetRegion = true; this->Modified(); }
-      RegionType GetRegion() const { return m_Region; }
+  /// \brief Gets the region to keep.
+  RegionType GetRegion() const;
 
-      /** Set/Get methods to set the output background value. Default 0. */
-      itkSetMacro(OutputBackgroundValue, OutputPixelType);
-      itkGetConstMacro(OutputBackgroundValue, OutputPixelType);
+  /// \brief Sets the region to keep.
+  void SetRegion(RegionType region);
 
-      /** Set/Get methods to set the flag controlling whether we actually use the region or not. Defaults false. */
-      itkSetMacro(UserSetRegion, bool);
-      itkGetConstMacro(UserSetRegion, bool);
+  /** Set/Get methods to set the output background value. Default 0. */
+  itkSetMacro(OutputBackgroundValue, OutputPixelType);
+  itkGetConstMacro(OutputBackgroundValue, OutputPixelType);
 
-    protected:
+  /** Set/Get methods to set the flag controlling whether we actually use the region or not. Defaults false. */
+  itkSetMacro(UserSetRegion, bool);
+  itkGetConstMacro(UserSetRegion, bool);
 
-      MIDASMaskByRegionImageFilter();
-      virtual ~MIDASMaskByRegionImageFilter() {};
-      void PrintSelf(std::ostream& os, Indent indent) const;
+protected:
 
-      virtual void BeforeThreadedGenerateData();
-      virtual void ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber);
+  MIDASMaskByRegionImageFilter();
+  virtual ~MIDASMaskByRegionImageFilter();
+  void PrintSelf(std::ostream& os, Indent indent) const;
 
-    private:
-      MIDASMaskByRegionImageFilter(const Self&); //purposely not implemented
-      void operator=(const Self&); //purposely not implemented
+  virtual void BeforeThreadedGenerateData();
+  virtual void ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber);
 
-      bool m_UserSetRegion;
-      RegionType m_Region;
-      OutputPixelType m_OutputBackgroundValue;
+private:
+  MIDASMaskByRegionImageFilter(const Self&); //purposely not implemented
+  void operator=(const Self&); //purposely not implemented
 
-  }; // end class
+  bool m_UserSetRegion;
+  RegionType m_Region;
+  OutputPixelType m_OutputBackgroundValue;
+
+}; // end class
 
 } // end namespace
 
