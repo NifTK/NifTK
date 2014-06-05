@@ -678,7 +678,10 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   } 
   for ( unsigned int i = 0 ; i < classifiedPoints.size() ; i ++ ) 
   {
-    MITK_INFO << "Point " << i << " triangulated mean " << mitk::GetCentroid (classifiedPoints[i],true);
+    cv::Point3d centroid;
+    cv::Point3d stdDev;
+    centroid = mitk::GetCentroid (classifiedPoints[i],true, & stdDev);
+    MITK_INFO << "Point " << i << " triangulated mean " << centroid << " SD " << stdDev;
   }
 
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
