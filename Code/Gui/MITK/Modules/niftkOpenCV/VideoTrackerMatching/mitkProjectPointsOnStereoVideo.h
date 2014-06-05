@@ -195,6 +195,8 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_DrawAxes;
+  bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
+  bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start

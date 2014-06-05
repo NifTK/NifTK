@@ -38,6 +38,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
+, m_LeftGSFramesAreEven(true)
+, m_RightGSFramesAreEven(true)
 , m_RightGSFrameOffset(0)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
@@ -449,36 +451,72 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
-   m_LeftGoldStandardPoints = points;
+  m_LeftGoldStandardPoints = points;
+  for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
+  {
+    if ( m_LeftGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    {
+      if ( ! m_LeftGSFramesAreEven ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        exit(1);
+      }
+    }
+    else
+    {
+      if ( ( i > 0 ) && ( m_LeftGSFramesAreEven ) ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        exit(1);
+      }
+      m_LeftGSFramesAreEven = false;
+    }
+  }
+  if ( m_LeftGSFramesAreEven == m_RightGSFramesAreEven )
+  {
+    m_RightGSFrameOffset = 0 ;
+  }
+  else 
+  {
+    m_RightGSFrameOffset = 1 ;
+  }
+
 }
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
-   m_RightGoldStandardPoints = points;
-   //check whether frame numbers are odd or not
-   m_RightGSFrameOffset = 0;
-   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
-   {
-     if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
-     {
-       if ( m_RightGSFrameOffset != 0 ) 
-       {
-         MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
-         exit(1);
-       }
-     }
-     else
-     {
-       if ( ( i > 0 ) && ( m_RightGSFrameOffset == 0 ) ) 
-       {
-         MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
-         exit(1);
-       }
-       m_RightGSFrameOffset = 1;
-     }
-   }
+  m_RightGoldStandardPoints = points;
+   
+  for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
+  {
+    if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    {
+      if ( ! m_RightGSFramesAreEven ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        exit(1);
+      }
+    }
+    else
+    {
+      if ( ( i > 0 ) && ( m_RightGSFramesAreEven ) ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        exit(1);
+      }
+      m_RightGSFramesAreEven = false;
+    }
+  }
+  if ( m_LeftGSFramesAreEven && m_RightGSFramesAreEven )
+  {
+    m_RightGSFrameOffset = 0 ;
+  }
+  else 
+  {
+    m_RightGSFrameOffset = 1 ;
+  }
 }
 
 //-----------------------------------------------------------------------------
