@@ -188,7 +188,6 @@ private:
 
   /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
   /// as a key, and the object containing the whole pipeline.
-  typedef std::pair<std::string, MorphologicalSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
   std::map<std::string, MorphologicalSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
   /// \brief This class needs a DataStorage to work.

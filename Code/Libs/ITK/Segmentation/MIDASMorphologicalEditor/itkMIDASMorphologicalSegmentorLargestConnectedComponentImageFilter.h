@@ -59,8 +59,11 @@ namespace itk {
 	  itkGetConstMacro(OutputForegroundValue, OutputImagePixelType);
 
     /** Set/Get the capacity. */
-    itkSetMacro(Capacity, unsigned int);
     itkGetConstMacro(Capacity, unsigned int);
+    void SetCapacity(unsigned capacity)
+    {
+      m_Capacity = capacity;
+    }
 
     /// \brief The number of connected components discovered by the filter.
     itkGetConstMacro(NumberOfConnectedComponents, unsigned int);
