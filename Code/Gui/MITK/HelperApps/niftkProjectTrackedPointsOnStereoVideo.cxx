@@ -217,30 +217,34 @@ int main(int argc, char** argv)
     if ( leftGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(leftGoldStandard.c_str());
-      unsigned int frameNumber;
-      double x1;
-      double y1;
-      std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
-      while ( fin >> frameNumber >> x1 >> y1 )
+      std::vector < mitk::GoldStandardPoint > leftGS;
+      while ( fin  )
       {
-        leftGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
+        mitk::GoldStandardPoint point(fin);
+        if ( fin )
+        {
+          leftGS.push_back( point );
+        }
       }
       fin.close();
       projector->SetLeftGoldStandardPoints(leftGS);
+
     }
     if ( rightGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(rightGoldStandard.c_str());
-      unsigned int frameNumber;
-      double x1;
-      double y1;
-      std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
-      while ( fin >> frameNumber >> x1 >> y1 )
+      std::vector < mitk::GoldStandardPoint > rightGS;
+      while ( fin )
       {
-        rightGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
+        mitk::GoldStandardPoint point(fin);
+        if ( fin ) 
+        {
+          rightGS.push_back(point);
+        }
       }
       fin.close();
       projector->SetRightGoldStandardPoints(rightGS);
+
     }
 
     if ( outputErrors.length() != 0 ) 

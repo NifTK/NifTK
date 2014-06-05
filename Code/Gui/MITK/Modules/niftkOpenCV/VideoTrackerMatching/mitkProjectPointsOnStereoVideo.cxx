@@ -38,6 +38,9 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
+, m_LeftGSFramesAreEven(true)
+, m_RightGSFramesAreEven(true)
+, m_RightGSFrameOffset(0)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
 , m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
@@ -446,16 +449,74 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
-    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+    std::vector < mitk::GoldStandardPoint > points )
 {
-   m_LeftGoldStandardPoints = points;
+  m_LeftGoldStandardPoints = points;
+  for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
+  {
+    if ( m_LeftGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    {
+      if ( ! m_LeftGSFramesAreEven ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        exit(1);
+      }
+    }
+    else
+    {
+      if ( ( i > 0 ) && ( m_LeftGSFramesAreEven ) ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        exit(1);
+      }
+      m_LeftGSFramesAreEven = false;
+    }
+  }
+  if ( m_LeftGSFramesAreEven == m_RightGSFramesAreEven )
+  {
+    m_RightGSFrameOffset = 0 ;
+  }
+  else 
+  {
+    m_RightGSFrameOffset = 1 ;
+  }
+
 }
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
-    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+    std::vector < mitk::GoldStandardPoint > points )
 {
-   m_RightGoldStandardPoints = points;
+  m_RightGoldStandardPoints = points;
+   
+  for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
+  {
+    if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    {
+      if ( ! m_RightGSFramesAreEven ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        exit(1);
+      }
+    }
+    else
+    {
+      if ( ( i > 0 ) && ( m_RightGSFramesAreEven ) ) 
+      {
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        exit(1);
+      }
+      m_RightGSFramesAreEven = false;
+    }
+  }
+  if ( m_LeftGSFramesAreEven == m_RightGSFramesAreEven )
+  {
+    m_RightGSFrameOffset = 0 ;
+  }
+  else 
+  {
+    m_RightGSFrameOffset = 1 ;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -468,8 +529,8 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
     return;
   }
 
-  std::sort ( m_LeftGoldStandardPoints.begin(), m_LeftGoldStandardPoints.end(), mitk::CompareGSPointPair);
-  std::sort ( m_RightGoldStandardPoints.begin(), m_RightGoldStandardPoints.end() , mitk::CompareGSPointPair );
+  std::sort ( m_LeftGoldStandardPoints.begin(), m_LeftGoldStandardPoints.end());
+  std::sort ( m_RightGoldStandardPoints.begin(), m_RightGoldStandardPoints.end());
   
   unsigned int leftGSIndex = 0;
   unsigned int rightGSIndex = 0;
@@ -483,24 +544,24 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 
   while ( leftGSIndex < m_LeftGoldStandardPoints.size() && rightGSIndex < m_RightGoldStandardPoints.size() )
   {
-    unsigned int frameNumber = m_LeftGoldStandardPoints[leftGSIndex].first;
-    std::vector < cv::Point2d > leftPoints;
-    std::vector < cv::Point2d > rightPoints;
+    unsigned int frameNumber = m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber;
+    std::vector < mitk::GoldStandardPoint > leftPoints;
+    std::vector < mitk::GoldStandardPoint > rightPoints;
     std::vector < std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > > > matchedPairs;
     
-    while ( m_LeftGoldStandardPoints[leftGSIndex].first == frameNumber && leftGSIndex < m_LeftGoldStandardPoints.size() ) 
+    while ( m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber == frameNumber && leftGSIndex < m_LeftGoldStandardPoints.size() ) 
     {
-      leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex].second );
+      leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex] );
       leftGSIndex ++;
     }
-    while ( m_RightGoldStandardPoints[rightGSIndex].first < frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    while (  m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber < ( frameNumber + m_RightGSFrameOffset ) && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
       rightGSIndex ++;
     }
 
-    while ( m_RightGoldStandardPoints[rightGSIndex].first == frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    while ( m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber == ( frameNumber + m_RightGSFrameOffset )  && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
-      rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex].second );
+      rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex] );
       rightGSIndex ++;
     }
 //check timing error here
@@ -511,8 +572,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         unsigned int index;
         double minRatio;
         bool left = true;
-        this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
-            ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
+        this->FindNearestScreenPoint (  leftPoints[i] , left, &minRatio, &index );
         if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf (minRatio) ) 
         {
           MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
@@ -523,8 +583,8 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
           for ( unsigned int j = 0 ; j < rightPoints.size() ; j ++ ) 
           {
             unsigned int rightIndex;
-            this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
-              ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
+            this->FindNearestScreenPoint (   
+              rightPoints[j] , left, &minRatio, &rightIndex );
             if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf(minRatio) ) 
             {
               MITK_WARN << "Ambiguous point match or infinite match Ratio at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
@@ -534,7 +594,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
               if ( rightIndex == index ) 
               {
                 matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i], rightPoints[j] )));
+                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
               }
             }
           }
@@ -618,7 +678,10 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   } 
   for ( unsigned int i = 0 ; i < classifiedPoints.size() ; i ++ ) 
   {
-    MITK_INFO << "Point " << i << " triangulated mean " << mitk::GetCentroid (classifiedPoints[i],true);
+    cv::Point3d centroid;
+    cv::Point3d stdDev;
+    centroid = mitk::GetCentroid (classifiedPoints[i],true, & stdDev);
+    MITK_INFO << "Point " << i << " triangulated mean " << centroid << " SD " << stdDev;
   }
 
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
@@ -778,7 +841,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint GSPoint, bool left )
 {
   unsigned int* index = new unsigned int;
   double minRatio;
@@ -792,26 +855,26 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   {
     side = " right "; 
   }
-  if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
+  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].first) > m_AllowableTimingError ) 
   {
-    MITK_WARN << "High timing error at " << side << " frame " << GSPoint.first << " discarding point from re-projection errors";
+    MITK_WARN << "High timing error at " << side << " frame " << GSPoint.m_FrameNumber << " discarding point from re-projection errors";
     return;
   }
 
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
-    MITK_WARN << "Ambiguous point match at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
+    MITK_WARN << "Ambiguous point match at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from re-projection errors"; 
     return;
   }
 
   if ( boost::math::isinf(minRatio) ) 
   {
-    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from re-projection errors"; 
     return;
   }
 
 
-  cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first].second[*index].first;
+  cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.m_FrameNumber].second[*index].first;
 
   if ( ! left )
   {
@@ -833,7 +896,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   if ( left ) 
   {
     cv::Point2d undistortedPoint;
-    mitk::UndistortPoint (GSPoint.second, *m_LeftIntrinsicMatrix, 
+    mitk::UndistortPoint (GSPoint.m_Point, *m_LeftIntrinsicMatrix, 
         *m_LeftDistortionVector, undistortedPoint,
         cropUndistortedPointsToScreen , 
         0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
@@ -842,7 +905,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   else
   {
     cv::Point2d undistortedPoint;
-    mitk::UndistortPoint (GSPoint.second, *m_RightIntrinsicMatrix, 
+    mitk::UndistortPoint (GSPoint.m_Point, *m_RightIntrinsicMatrix, 
         *m_RightDistortionVector, undistortedPoint,
         cropUndistortedPointsToScreen , 
         0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
@@ -866,7 +929,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+void ProjectPointsOnStereoVideo::CalculateProjectionError ( GoldStandardPoint GSPoint, bool left )
 {
   double minRatio;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
@@ -880,56 +943,75 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
     side = " right "; 
   }
  
-  if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
+  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].first) > m_AllowableTimingError ) 
   {
-    MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.first << " discarding point from projection errors";
+    MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.m_FrameNumber << " discarding point from projection errors";
     return;
   }
 
 
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
-    MITK_WARN << "Ambiguous point match at " << side << "frame " << GSPoint.first << " discarding point from projection errors"; 
+    MITK_WARN << "Ambiguous point match at " << side << "frame " << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
     return;
   }
   
   if ( boost::math::isinf(minRatio) ) 
   {
-    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from projection errors"; 
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
     return;
   }
 
 
   if ( left ) 
   {
-    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.second);
+    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
   }
   else
   {
-    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.second);
+    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
   }
 
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
+cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoint GSPoint, bool left , double* minRatio, unsigned int* index)
 {
-  assert ( m_ClassifierProjectedPoints[GSPoint.first].second.size() ==
-    m_ProjectedPoints[GSPoint.first].second.size() );
-  std::vector < cv::Point2d > pointVector;
-  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.first].second.size() ; i ++ )
+  if ( GSPoint.m_Index != -1 )
   {
+    if ( index != NULL ) 
+    {
+      *index = GSPoint.m_Index;
+    }
+    if ( minRatio != NULL ) 
+    {
+      *minRatio = m_AllowablePointMatchingRatio + 1.0;
+    }
     if ( left )
     {
-      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.first].second[i].first );
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[GSPoint.m_Index].first;
     }
     else
     {
-      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.first].second[i].second );
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[GSPoint.m_Index].second;
+    }
+  }
+  assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].second.size() ==
+    m_ProjectedPoints[GSPoint.m_FrameNumber].second.size() );
+  std::vector < cv::Point2d > pointVector;
+  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].second.size() ; i ++ )
+  {
+    if ( left )
+    {
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].second[i].first );
+    }
+    else
+    {
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].second[i].second );
     }
   }
   unsigned int myIndex;
-  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex ).x))
+  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.m_Point , pointVector ,minRatio, &myIndex ).x))
   {
     if ( index != NULL ) 
     {
@@ -937,11 +1019,11 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
     }
     if ( left ) 
     {
-      return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[myIndex].first;
     }
     else
     {
-      return m_ProjectedPoints[GSPoint.first].second[myIndex].second;
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].second[myIndex].second;
     }
   }
   else
@@ -1162,5 +1244,109 @@ void ProjectPointsOnStereoVideo::ClearWorldPoints()
   m_ProjectOK = false;
 }
 
+//-----------------------------------------------------------------------------
+GoldStandardPoint::GoldStandardPoint()
+: m_FrameNumber(0)
+, m_Index (-1)
+, m_Point (cv::Point2d( std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()))
+{}
 
+//-----------------------------------------------------------------------------
+GoldStandardPoint::GoldStandardPoint(unsigned int framenumber, int index, cv::Point2d point)
+: m_FrameNumber(framenumber)
+, m_Index (index)
+, m_Point (point)
+{}
+
+//-----------------------------------------------------------------------------
+GoldStandardPoint::GoldStandardPoint( std::istream &is)
+: m_FrameNumber(0)
+, m_Index (-1)
+, m_Point (cv::Point2d( std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()))
+{
+  std::string line;
+  if ( std::getline(is,line) )
+  {
+    std::stringstream linestream(line);
+    bool parseSuccess;
+    double parse[4];
+    parseSuccess = linestream >> parse[0] >> parse[1] >> parse[2] >> parse[3];
+    if ( parseSuccess )
+    {
+      m_FrameNumber = static_cast<unsigned int> (parse[0]);
+      m_Index = static_cast<int>(parse[1]);
+      m_Point.x = parse[2];
+      m_Point.y = parse[3];
+      return;
+    }
+    else
+    {
+      std::stringstream linestream2(line);
+      parseSuccess = linestream2 >> parse[0] >> parse[1] >> parse[2];
+      if ( parseSuccess )
+      {
+        m_FrameNumber = static_cast<unsigned int> (parse[0]);
+        m_Point.x = parse[1];
+        m_Point.y = parse[2];
+        m_Index = -1;
+      }
+      else
+      {
+        MITK_WARN << "Error reading gold standard point";
+      }
+    } 
+  }
+  else
+  {
+    MITK_WARN << "Error reading gold standard point";
+  }
+
+}
+
+
+//-----------------------------------------------------------------------------
+std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
+{
+  std::string line;
+  if ( std::getline(is,line) )
+  {
+    std::stringstream linestream(line);
+    bool parseSuccess;
+    parseSuccess = linestream >> GSP.m_FrameNumber >> GSP.m_Index >> GSP.m_Point.x >> GSP.m_Point.y;
+    if ( parseSuccess )
+    {
+      return is;
+    }
+    else
+    {
+      std::stringstream linestream2(line);
+      parseSuccess = linestream2 >> GSP.m_FrameNumber >> GSP.m_Point.x >> GSP.m_Point.y;
+      if ( parseSuccess )
+      {
+        GSP.m_Index = -1;
+      }
+      else
+      {
+        MITK_WARN << "Error reading gold standard point";
+      }
+    } 
+  }
+  else
+  {
+    MITK_WARN << "Error reading gold standard point";
+  }
+  return is;
+}
+//-----------------------------------------------------------------------------
+bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
+{
+  if ( GSP1.m_FrameNumber == GSP2.m_FrameNumber )
+  {
+    return GSP1.m_Index < GSP2.m_Index;
+  }
+  else
+  {
+    return GSP1.m_FrameNumber < GSP2.m_FrameNumber;
+  }
+}
 } // end namespace
