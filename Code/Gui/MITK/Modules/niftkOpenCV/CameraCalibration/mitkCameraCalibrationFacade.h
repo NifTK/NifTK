@@ -150,13 +150,15 @@ extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
  * \param flags A bit-wise OR, of zero, CV_CALIB_USE_INTRINSIC_GUESS, CV_CALIB_FIX_PRINCIPAL_POINT, CV_CALIB_FIX_ASPECT_RATIO,
  * CV_CALIB_FIX_FOCAL_LENGTH, CV_CALIB_FIXK1, CV_CALIB_FIXK2, CV_CALIB_FIXK3 and CV_CALIB_ZERO_TANGENT_DIST.
  */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicParameters(
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
   const CvSize& imageSize,
   CvMat& outputIntrinsicMatrix,
   CvMat& outputDistortionCoefficients,
+  CvMat* outputRotationVectors,
+  CvMat* outputTranslationVectors,
   const int& flags=0
   );
 
@@ -170,46 +172,7 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicParameters(
  * \param outputIntrinsicMatrix \see CalibrateSingleCameraIntrinsicParameters
  * \param outputDistortionCoefficients \see CalibrateSingleCameraIntrinsicParameters
  */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicUsing3Passes(
-  const CvMat& objectPoints,
-  const CvMat& imagePoints,
-  const CvMat& pointCounts,
-  const CvSize& imageSize,
-  CvMat& outputIntrinsicMatrix,
-  CvMat& outputDistortionCoefficients
-  );
-
-
-/**
- * \brief Calibrate a single cameras extrinsic parameters.
- * \param objectPoints [Nx3] list of 3D points for 1 image view of a chess board.
- * \param imagePoints [Nx2] list of 2D image points for 1 image view of a chess board.
- * \param intrinsicMatrix [3x3] matrix of pre-initialised intrinsic parameters.
- * \param distortionCoefficients [4x1] matrix of [k1, k2, p1, p2, k3], pre-initialised.
- * \param outputRotationMatrix [3x3] rotation matrix - see OpenCV docs - for this function its a 3x3 not a 1x3.
- * \param outputTranslationVector [1x3] translation vector.
- */
-extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsicParameters(
-  const CvMat& objectPoints,
-  const CvMat& imagePoints,
-  const CvMat& intrinsicMatrix,
-  const CvMat& distortionCoefficients,
-  CvMat& outputRotationMatrix,
-  CvMat& outputTranslationVector
-  );
-
-
-/**
- * \brief Calibrate a single camera for both intrinsic and extrinsic parameters, using number of views = M, and number of corners per view = N.
- * \param objectPoints [(MxN)x3] list of 3D points generated as output from ExtractChessBoardPoints, for all M views.
- * \param imagePoints [(MxN)x2] list of 2D image points generated as output from ExtractChessBoardPoints for all M views.
- * \param pointCounts [Mx1] array containing the number of points that matched, which should all be equal for all M views, and contain the number N.
- * \param outputIntrinsicMatrix [3x3] matrix.
- * \param outputDistortionCoefficients [4x1] matrix of [k1, k2, p1, p2, k3].
- * \param outputRotationMatrix an [Mx3] matrix of rotation vectors, see also cvRodrigues2 to convert from a rotation vector to a rotation matrix.
- * \param outputTranslationVector an [Mx3] matrix of translation vectors.
- */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraUsingMultiplePasses(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
