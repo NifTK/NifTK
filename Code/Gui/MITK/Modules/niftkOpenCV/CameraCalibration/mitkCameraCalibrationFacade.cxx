@@ -399,22 +399,9 @@ double CalibrateSingleCameraUsingMultiplePasses(
       &outputRotationVectors, &outputTranslationVectors
       );
 
-  double reprojectionError4 = cvCalibrateCamera2(
-                            &objectPoints,
-                            &imagePoints,
-                            &pointCounts,
-                            imageSize,
-                            &outputIntrinsicMatrix,
-                            &outputDistortionCoefficients,
-                            &outputRotationVectors,
-                            &outputTranslationVectors,
-                            CV_CALIB_USE_INTRINSIC_GUESS // This assumes you have called
-                                                         // CalibrateSingleCameraUsing3Passes
-                            );
+  std::cout << "3 pass single camera calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3  << std::endl;
 
-  std::cout << "4 pass single camera calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3 << ", " << reprojectionError4 << std::endl;
-
-  return reprojectionError4;
+  return reprojectionError3;
 }
 
 
