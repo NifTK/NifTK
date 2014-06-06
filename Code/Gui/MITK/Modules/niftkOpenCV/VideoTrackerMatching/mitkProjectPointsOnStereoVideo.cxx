@@ -132,8 +132,10 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     if ( m_SaveVideo )
     {
       cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
-      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+      double fps = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FPS);
+      double halfFPS = fps/2.0;
+      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
   }
 
@@ -330,7 +332,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       if ( m_Visualise || m_SaveVideo ) 
       {
         cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-        MITK_INFO << framenumber << " " << m_WorldPoints[0].first << " " << pointsInLeftLensCS.second[0].first << " => " << screenPoints[0].first << screenPoints[0].second;
+        for ( unsigned thing = 0 ; thing < m_WorldPoints.size() ; thing ++ )
+        MITK_INFO << framenumber << " " << m_WorldPoints[thing].first << " " << pointsInLeftLensCS.second[thing].first << " => " << screenPoints[thing].first << screenPoints[thing].second;
         if ( drawProjection )
         {
           if ( ! m_DrawLines ) 
