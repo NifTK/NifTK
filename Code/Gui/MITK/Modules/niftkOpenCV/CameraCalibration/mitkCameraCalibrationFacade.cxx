@@ -14,6 +14,7 @@
 
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
@@ -406,6 +407,22 @@ double CalibrateSingleCameraUsingMultiplePasses(
 
 
 //-----------------------------------------------------------------------------
+std::vector<double> CalibrateSingleCameraExtrinsics(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  CvMat& outputRotationVectors,
+  CvMat& outputTranslationVectors
+  )
+{
+  std::vector<double> reprojectionErrors;
+  return reprojectionErrors;
+}
+
+
+//-----------------------------------------------------------------------------
 void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
     const CvMat& rotationVectors,
     const CvMat& translationVectors,
@@ -647,6 +664,34 @@ double CalibrateStereoCameraParameters(
 
     std::cout << "Initial mono calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
   }
+  else
+  {
+    // Intrinsics are fixed, so JUST do extrinsics.
+    std::vector<double> leftRPEs = CalibrateSingleCameraExtrinsics(
+          objectPointsLeft,
+          imagePointsLeft,
+          pointCountsLeft,
+          outputIntrinsicMatrixLeft,
+          outputDistortionCoefficientsLeft,
+          outputRotationVectorsLeft,
+          outputTranslationVectorsLeft
+          );
+    double meanRPELeft = mitk::Mean(leftRPEs);
+
+    std::vector<double> rightRPEs = CalibrateSingleCameraExtrinsics(
+          objectPointsRight,
+          imagePointsRight,
+          pointCountsRight,
+          outputIntrinsicMatrixRight,
+          outputDistortionCoefficientsRight,
+          outputRotationVectorsRight,
+          outputTranslationVectorsRight
+          );
+    double meanRPERight = mitk::Mean(rightRPEs);
+
+    std::cout << "Mono left and right calibrations give re-projection errors of left=" << meanRPELeft << ", right=" << meanRPERight << std::endl;
+  }
+
   int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
   if ( fixedIntrinsics ) 
   {

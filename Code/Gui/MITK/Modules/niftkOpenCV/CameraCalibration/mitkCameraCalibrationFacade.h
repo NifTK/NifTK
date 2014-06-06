@@ -185,6 +185,20 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraUsingMultiplePasses(
 
 
 /**
+ * \brief Calculates JUST the extrinsic parameters for a whole bunch of calibrations.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector<double> CalibrateSingleCameraExtrinsics(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  CvMat& outputRotationVectors,
+  CvMat& outputTranslationVectors
+  );
+
+
+/**
  * \brief The above method CalibrateSingleCameraParameters outputs a whole load of rotation and translation vectors,
  * so this utility method reconstructs a single extrinsic parameter matrix, for a given viewNumber.
  * \param rotationVectors [Mx3] matrix of rotation vectors, where M is the number of views of the chess board.
