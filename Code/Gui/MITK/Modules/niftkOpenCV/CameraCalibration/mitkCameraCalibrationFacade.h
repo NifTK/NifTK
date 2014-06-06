@@ -187,12 +187,13 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraUsingMultiplePasses(
 /**
  * \brief Calculates JUST the extrinsic parameters for a whole bunch of calibrations.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<double> CalibrateSingleCameraExtrinsics(
+extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsics(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
   const CvMat& intrinsicMatrix,
   const CvMat& distortionCoefficients,
+  const bool& useExtrinsicGuess,
   CvMat& outputRotationVectors,
   CvMat& outputTranslationVectors
   );

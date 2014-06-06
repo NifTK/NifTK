@@ -397,7 +397,8 @@ double CalibrateSingleCameraUsingMultiplePasses(
 
   double reprojectionError3 = CalibrateSingleCameraParameters(
       objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
-      &outputRotationVectors, &outputTranslationVectors
+      &outputRotationVectors, &outputTranslationVectors,
+      CV_CALIB_USE_INTRINSIC_GUESS
       );
 
   std::cout << "3 pass single camera calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3  << std::endl;
@@ -407,18 +408,72 @@ double CalibrateSingleCameraUsingMultiplePasses(
 
 
 //-----------------------------------------------------------------------------
-std::vector<double> CalibrateSingleCameraExtrinsics(
+void CalibrateSingleCameraExtrinsics(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
   const CvMat& intrinsicMatrix,
   const CvMat& distortionCoefficients,
+  const bool& useExtrinsicGuess,
   CvMat& outputRotationVectors,
   CvMat& outputTranslationVectors
   )
 {
-  std::vector<double> reprojectionErrors;
-  return reprojectionErrors;
+  for (unsigned int i = 0; i < pointCounts.rows; i++)
+  {
+    unsigned int numberOfPoints = CV_MAT_ELEM(pointCounts, int, i, 0);
+    unsigned int offset = i*numberOfPoints;
+
+    CvMat *tmpRotationVector = cvCreateMat(1, 3, CV_64FC1);
+    CvMat *tmpTranslationVector = cvCreateMat(1, 3, CV_64FC1);
+    CvMat* tmpObjectPoints = cvCreateMat(numberOfPoints, 3, CV_64FC1);
+    CvMat* tmpImagePoints  = cvCreateMat(numberOfPoints, 2, CV_64FC1);
+
+    for (unsigned int j = 0; j < numberOfPoints; j++)
+    {
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 0) = CV_MAT_ELEM(objectPoints, double, offset + j, 0);
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 1) = CV_MAT_ELEM(objectPoints, double, offset + j, 1);
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 2) = CV_MAT_ELEM(objectPoints, double, offset + j, 2);
+      CV_MAT_ELEM(*tmpImagePoints, double, j, 0) = CV_MAT_ELEM(imagePoints, double, offset + j, 0);
+      CV_MAT_ELEM(*tmpImagePoints, double, j, 1) = CV_MAT_ELEM(imagePoints, double, offset + j, 1);
+    }
+
+    if (useExtrinsicGuess)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        CV_MAT_ELEM(*tmpRotationVector, double, 0, j) = CV_MAT_ELEM(outputRotationVectors, double, i, j);
+        CV_MAT_ELEM(*tmpTranslationVector, double, 0, j) = CV_MAT_ELEM(outputTranslationVectors, double, i, j);
+      }
+    }
+
+    int useGuess = 0;
+    if (useExtrinsicGuess)
+    {
+      useGuess = 1;
+    }
+
+    cvFindExtrinsicCameraParams2(
+      tmpObjectPoints,
+      tmpImagePoints,
+      &intrinsicMatrix,
+      &distortionCoefficients,
+      tmpRotationVector,
+      tmpTranslationVector,
+      useGuess
+    );
+
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      CV_MAT_ELEM(outputRotationVectors, double, i, j) = CV_MAT_ELEM(*tmpRotationVector, double, 0, j);
+      CV_MAT_ELEM(outputTranslationVectors, double, i, j) = CV_MAT_ELEM(*tmpTranslationVector, double, 0, j);
+    }
+
+    cvReleaseMat(&tmpRotationVector);
+    cvReleaseMat(&tmpTranslationVector);
+    cvReleaseMat(&tmpObjectPoints);
+    cvReleaseMat(&tmpImagePoints);
+  }
 }
 
 
@@ -667,29 +722,30 @@ double CalibrateStereoCameraParameters(
   else
   {
     // Intrinsics are fixed, so JUST do extrinsics.
-    std::vector<double> leftRPEs = CalibrateSingleCameraExtrinsics(
-          objectPointsLeft,
-          imagePointsLeft,
-          pointCountsLeft,
-          outputIntrinsicMatrixLeft,
-          outputDistortionCoefficientsLeft,
-          outputRotationVectorsLeft,
-          outputTranslationVectorsLeft
-          );
-    double meanRPELeft = mitk::Mean(leftRPEs);
 
-    std::vector<double> rightRPEs = CalibrateSingleCameraExtrinsics(
-          objectPointsRight,
-          imagePointsRight,
-          pointCountsRight,
-          outputIntrinsicMatrixRight,
-          outputDistortionCoefficientsRight,
-          outputRotationVectorsRight,
-          outputTranslationVectorsRight
-          );
-    double meanRPERight = mitk::Mean(rightRPEs);
+    CalibrateSingleCameraExtrinsics(
+      objectPointsLeft,
+      imagePointsLeft,
+      pointCountsLeft,
+      outputIntrinsicMatrixLeft,
+      outputDistortionCoefficientsLeft,
+      false,
+      outputRotationVectorsLeft,
+      outputTranslationVectorsLeft
+    );
 
-    std::cout << "Mono left and right calibrations give re-projection errors of left=" << meanRPELeft << ", right=" << meanRPERight << std::endl;
+    CalibrateSingleCameraExtrinsics(
+      objectPointsRight,
+      imagePointsRight,
+      pointCountsRight,
+      outputIntrinsicMatrixRight,
+      outputDistortionCoefficientsRight,
+      false,
+      outputRotationVectorsRight,
+      outputTranslationVectorsRight
+    );
+
+    std::cout << "Calibrated just the extrinsics" << std::endl;
   }
 
   int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
