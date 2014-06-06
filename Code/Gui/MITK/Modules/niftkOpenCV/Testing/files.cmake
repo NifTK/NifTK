@@ -16,6 +16,7 @@
 set(MODULE_TESTS
   ImageConversionTest.cxx
   mitkCameraCalibrationFacadeTest.cxx
+  UndistortionTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
@@ -29,4 +30,5 @@ set(MODULE_CUSTOM_TESTS
   mitkUltrasoundPinCalibrationRegressionTest.cxx
   mitkPivotCalibrationRegressionTest.cxx
   mitkIdealStereoCalibrationTest.cxx
+  mitkUndistortionLoopTest.cxx
 )

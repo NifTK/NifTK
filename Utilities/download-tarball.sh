@@ -29,6 +29,7 @@ options are -r for the git and -sr for the subversion projects.
 Supported projects:
 
     MITK
+    EpiNav-MITK
     commontk/CTK
     NifTK/CTK
     apriltags
@@ -44,6 +45,7 @@ Supported projects:
     NifTKData
     IGSTK
     NifTK
+    RTK
 "
   exit 1
 }
@@ -107,6 +109,7 @@ function download_from_github() {
     git clone --bare git://github.com/$organisation/$project $directory/.git
     cd $directory
     git config --local --bool core.bare false
+    mkdir -p .git/logs/refs
     cd ..
     rm $tarball 2> /dev/null
     tar cvfz $tarball $directory
@@ -133,6 +136,7 @@ function download_from_cmicdev() {
     git clone --bare git://cmicdev.cs.ucl.ac.uk/$project $directory/.git
     cd $directory
     git config --local --bool core.bare false
+    mkdir -p .git/logs/refs
     cd ..
   else
     git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
@@ -189,6 +193,7 @@ function download_from_sourceforge_git() {
     git clone --bare git://git.code.sf.net/p/$project_lowercase/code $directory/.git
     cd $directory
     git config --local --bool core.bare false
+    mkdir -p .git/logs/refs
     cd ..
     rm $tarball 2> /dev/null
     tar cvfz $tarball $directory
@@ -211,6 +216,9 @@ function download_from_sourceforge_git() {
 if [[ $project = MITK || $project = OpenIGTLink || $project = apriltags ]]
 then
   download_from_github NifTK $project $version
+elif [[ $project = "EpiNav-MITK" ]]
+then
+  download_from_cmicdev $project $version
 elif [ $project = commontk/CTK ]
 then
   download_from_github commontk CTK $version
@@ -223,6 +231,9 @@ then
 elif [ $project = pcl ]
 then
   download_from_github PointCloudLibrary $project $version
+elif [ $project = RTK ]
+then
+  download_from_github NifTK $project $version
 elif [ $project = qRestAPI ]
 then
   download_from_github commontk $project $version
@@ -263,6 +274,7 @@ then
     cd $directory
     git clone --bare git://igstk.org/IGSTK.git .git
     git config --local --bool core.bare false
+    mkdir -p .git/logs/refs
   else
     git clone git://igstk.org/IGSTK.git $directory
     cd $directory

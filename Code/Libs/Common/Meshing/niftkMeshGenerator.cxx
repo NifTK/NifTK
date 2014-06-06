@@ -12,12 +12,11 @@
 
 =============================================================================*/
 
-#include <cstdlib>
-#include <algorithm>
-#include <cassert>
-#include <sstream>
-#include <set>
-#include <boost/filesystem.hpp>
+#include <niftkFileHelper.h>
+#include "niftkMeshGenerator.h"
+#include "niftkMeditMeshParser.h"
+#include "niftkCGALMesherBackEnd.h"
+
 #include <itkNearestNeighborInterpolateImageFunction.h>
 #include <itkImage.h>
 #include <itkPoint.h>
@@ -27,10 +26,13 @@
 #include <vtkCell.h>
 #include <itkINRImageIO.h>
 
-#include <niftkFileHelper.h>
-#include "niftkMeshGenerator.h"
-#include "niftkMeditMeshParser.h"
-#include "niftkCGALMesherBackEnd.h"
+#include <boost/filesystem.hpp>
+
+#include <cstdlib>
+#include <algorithm>
+#include <cassert>
+#include <sstream>
+#include <set>
 
 using namespace niftk;
 using namespace std;
@@ -60,7 +62,7 @@ void MeshGenerator::_ComputeMeshLabels() {
     sp_interpolator = __Interpolator::New();
     sp_interpolator->SetInputImage(sp_reader->GetOutput());
   } catch (itk::ExceptionObject &r_ex) {
-    std::cerr << __FILE__ << ":" << __LINE__ << ": Unexpected ITK error:\n" << r_ex.what();
+    cerr << __FILE__ << ":" << __LINE__ << ": Unexpected ITK error:\n" << r_ex.what();
 
     abort();
   }
@@ -73,12 +75,12 @@ void MeshGenerator::_ComputeMeshLabels() {
 
     r_labelCounters.reserve(r_mesh.GetNumberOfCells()/4);
     for (cInd = 0; cInd < r_mesh.GetNumberOfCells(); cInd++) {
-      float centroid[3];
+      double centroid[3];
       vtkCell &r_cell = *r_mesh.GetCell((vtkIdType)cInd);
       int pInd, labelVal;
       __Point itkPoint;
 
-      std::copy(r_mesh.GetPoint(r_cell.GetPointId(0)), r_mesh.GetPoint(r_cell.GetPointId(0)) + 3, centroid);
+      copy(r_mesh.GetPoint(r_cell.GetPointId(0)), r_mesh.GetPoint(r_cell.GetPointId(0)) + 3, centroid);
       for (pInd = 1; pInd < r_cell.GetNumberOfPoints(); pInd++) {
         *centroid += *r_mesh.GetPoint(r_cell.GetPointId(pInd));
         centroid[1] += r_mesh.GetPoint(r_cell.GetPointId(pInd))[1];
@@ -88,7 +90,7 @@ void MeshGenerator::_ComputeMeshLabels() {
       centroid[1] /= r_cell.GetNumberOfPoints();
       centroid[2] /= r_cell.GetNumberOfPoints();
 
-      std::copy(centroid, centroid + 3, itkPoint.GetDataPointer());
+      copy(centroid, centroid + 3, itkPoint.GetDataPointer());
       labelVal = sp_interpolator->Evaluate(itkPoint);
       for (i_labelCounter = r_labelCounters.begin(); i_labelCounter < r_labelCounters.end() && i_labelCounter->first != labelVal; i_labelCounter++);
       if (i_labelCounter < r_labelCounters.end()) {
@@ -122,9 +124,9 @@ void MeshGenerator::Update() throw (niftk::IOException) {
 	  sp_writer->SetInput(sp_reader->GetOutput());
 	  sp_writer->Update();
 
-	  std::copy(sp_reader->GetOutput()->GetOrigin().Begin(), sp_reader->GetOutput()->GetOrigin().End(), imgOrigin);
+	  copy(sp_reader->GetOutput()->GetOrigin().Begin(), sp_reader->GetOutput()->GetOrigin().End(), imgOrigin);
   } catch (itk::ExceptionObject &r_ex) {
-	  std::ostringstream oss;
+	  ostringstream oss;
 
 	  oss << __FILE__ << ":" << __LINE__ << "Error converting input image: " << r_ex;
 

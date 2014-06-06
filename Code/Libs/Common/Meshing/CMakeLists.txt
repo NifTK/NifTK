@@ -12,20 +12,8 @@
 #
 #============================================================================*/
 
-cmake_minimum_required(VERSION 2.6)
-
-set(MEDIT_LIBS
-  vtkGraphics
-  vtkIO
-  vtkCommon
-)
-
-if(VTK_FOUND)
-  include(${VTK_USE_FILE})
-else(VTK_FOUND)
-  message(FATAL_ERROR
-    "This program requires the VTK library, and will not be compiled.")
-endif(VTK_FOUND)
+set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
+include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 
 if(CGAL_FOUND)
  include(${CGAL_USE_FILE})
@@ -54,36 +42,39 @@ if (WIN32)
     )
 
   target_link_libraries(niftkMeshingLib
-    CGAL-vc90-mt-gd
-    CGAL_ImageIO-vc90-mt-gd
     niftkITK
     niftkVTK
     niftkcommon
+    ${CGAL_LIBRARIES}
+    ${CGAL_3RD_PARTY_LIBRARIES}
+    ${ITK_LIBRARIES}
+    ${VTK_LIBRARIES}
     )
 
 else (WIN32)
   add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o
+    OUTPUT ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
     COMMAND ${CMAKE_CXX_COMPILER}
-    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/CGALMesherBackEnd.cxx
+    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
     ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../Exceptions -I${CGAL_INCLUDE_DIRS}
     ARGS `echo ${NIFTK_CGAL_CXX_FLAGS}`
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/CGALMesherBackEnd.cxx
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
     )
 
   add_library(niftkMeshingLib
-    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
     niftkMeditMeshParser.cxx
     niftkMeshGenerator.cxx
     niftkMeshMerger.cxx
     )
   target_link_libraries(niftkMeshingLib
-    CGAL
-    CGAL_ImageIO
-    vtkHybrid
+    ${CGAL_LIBRARIES}
+    ${CGAL_3RD_PARTY_LIBRARIES}
     niftkITK
     niftkVTK
     niftkcommon
+    ${ITK_LIBRARIES}
+    ${VTK_LIBRARIES}
     )
 endif (WIN32)
 

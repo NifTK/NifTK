@@ -20,11 +20,28 @@
 
 namespace mitk {
 
+ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::s_Inst = 0;
+
+//-----------------------------------------------------------------------------
+ImageLookupTablesViewActivator::ImageLookupTablesViewActivator()
+: m_Context(NULL)
+{
+  s_Inst = this;
+}
+
+
+//-----------------------------------------------------------------------------
+ImageLookupTablesViewActivator::~ImageLookupTablesViewActivator()
+{
+}
+
+
 //-----------------------------------------------------------------------------
 void ImageLookupTablesViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesView, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkImageLookupTablesPreferencePage, context);
+  m_Context = context;
 }
 
 
@@ -32,6 +49,36 @@ void ImageLookupTablesViewActivator::start(ctkPluginContext* context)
 void ImageLookupTablesViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
+}
+
+
+//-----------------------------------------------------------------------------
+ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::GetDefault()
+{
+  return s_Inst;
+}
+
+
+//-----------------------------------------------------------------------------
+ctkPluginContext* ImageLookupTablesViewActivator::GetPluginContext() const
+{
+  return m_Context;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableProviderService* ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService()
+{
+  ctkPluginContext* context = ImageLookupTablesViewActivator::GetDefault()->GetPluginContext();
+
+  ctkServiceReference serviceRef = context->getServiceReference<QmitkLookupTableProviderService>();
+  QmitkLookupTableProviderService* lutService =context->getService<QmitkLookupTableProviderService>(serviceRef);
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  return lutService;
 }
 
 } // end namespace

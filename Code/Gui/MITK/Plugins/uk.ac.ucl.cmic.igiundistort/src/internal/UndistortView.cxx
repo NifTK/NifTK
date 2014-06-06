@@ -28,14 +28,20 @@
 #include <Undistortion.h>
 #include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
 #include <mitkCameraIntrinsicsProperty.h>
+#include <mitkLogMacros.h>
 
 
-const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
+const char* UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
 
 
 //-----------------------------------------------------------------------------
 UndistortView::UndistortView()
+  : m_IGIUpdateSubscriptionID(-1)
+  , m_IGIRecordingStartedSubscriptionID(-1)
 {
   bool ok = false;
   ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
@@ -46,6 +52,10 @@ UndistortView::UndistortView()
 //-----------------------------------------------------------------------------
 UndistortView::~UndistortView()
 {
+  // this disconnection logic here assumes that CreateQtPartControl() is called unconditionally
+  // before our instance is destroyed.
+  // this has always been the case for me.
+
   bool  ok = false;
   ok = disconnect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
   assert(ok);
@@ -54,6 +64,21 @@ UndistortView::~UndistortView()
   ok = disconnect(this, SIGNAL(SignalDeferredNodeTableUpdate()), this, SLOT(OnDeferredNodeTableUpdate()));
   assert(ok);
 
+  // ctk event bus de-registration
+  {
+    ctkServiceReference ref = mitk::uk_ac_ucl_cmic_igiundistort_Activator::getContext()->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = mitk::uk_ac_ucl_cmic_igiundistort_Activator::getContext()->getService<ctkEventAdmin>(ref);
+      if (eventAdmin)
+      {
+        eventAdmin->unsubscribeSlot(m_IGIUpdateSubscriptionID);
+        eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
+      }
+    }
+  }
+
+  // data-storage notifications (i.e. new nodes arriving etc).
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
@@ -187,7 +212,7 @@ void UndistortView::UpdateNodeTable()
 
       QTableWidgetItem* nodenameitem = new QTableWidgetItem;
       nodenameitem->setText(s);
-      nodenameitem->setCheckState(Qt::Unchecked);
+      nodenameitem->setCheckState(Qt::Checked);
       nodenameitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       m_NodeTable->setItem(j, 0, nodenameitem);
 
@@ -216,6 +241,91 @@ void UndistortView::UpdateNodeTable()
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::WriteCurrentConfig(const QString& directory) const
+{
+  // igi data sources bits will create a unique directory for each recording session.
+  // so in theory we should never overwrite an existing info file (because none exists in that location).
+  QFile   infoFile(directory + QDir::separator() + VIEW_ID + ".txt");
+  bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
+  if (opened)
+  {
+    QTextStream   info(&infoFile);
+    info.setCodec("UTF-8");
+    info << "START: " << QDateTime::currentDateTime().toString() << "\n";
+
+    for (int i = 0; i < m_NodeTable->rowCount(); ++i)
+    {
+      QTableWidgetItem* nameitem        = m_NodeTable->item(i, 0);
+      QTableWidgetItem* calibparamitem  = m_NodeTable->item(i, 1);
+      QTableWidgetItem* outputitem      = m_NodeTable->item(i, 2);
+
+      info << "inputnode=";
+      if (nameitem != 0)
+      {
+        info << "\"" << nameitem->text() << "\"";
+        info << ", checked=" << ((nameitem->checkState() == Qt::Checked) ? "yes" : "no");
+      }
+      else
+      {
+        info << "null";
+      }
+      info << ", calibparamitem=" << ((calibparamitem != 0) ? ("\"" + calibparamitem->text() + "\"") : "null");
+      info << ", outputitem=" << ((outputitem != 0) ? ("\"" + outputitem->text() + "\"") : "null");
+
+      if (nameitem != 0)
+      {
+        std::string   nodename = nameitem->text().toStdString();
+        if (!nodename.empty())
+        {
+          mitk::DataNode::Pointer   inputNode = GetDataStorage()->GetNamedNode(nodename);
+          if (inputNode.IsNotNull())
+          {
+            mitk::Image::Pointer    inputImage = dynamic_cast<mitk::Image*>(inputNode->GetData());
+            if (inputImage.IsNotNull())
+            {
+              mitk::CameraIntrinsicsProperty::Pointer calibprop = dynamic_cast<mitk::CameraIntrinsicsProperty*>(inputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName).GetPointer());
+              info << ", calib=";
+              if (calibprop.IsNotNull())
+              {
+                mitk::CameraIntrinsics::Pointer   calib = calibprop->GetValue();
+                if (calib.IsNotNull())
+                {
+                  info << "[fx=" << calib->GetFocalLengthX()
+                       << ",fy=" << calib->GetFocalLengthY()
+                       << ",cx=" << calib->GetPrincipalPointX()
+                       << ",cy=" << calib->GetPrincipalPointY()
+                       << ",dist=";
+                  cv::Mat   dist = calib->GetDistorsionCoeffs();
+                  for (int m = 0; m < dist.rows; ++m)
+                  {
+                    for (int n = 0; n < dist.cols; ++n)
+                    {
+                      info << dist.at<double>(m, n) << ' ';
+                    }
+                  }
+                  info << ']';
+                }
+                else
+                {
+                  info << "null";
+                }
+              }
+              else
+              {
+                info << "null";
+              }
+            }
+          }
+        }
+      }
+
+      info << "\n";
+    }
+  } // if file opened
 }
 
 
@@ -266,11 +376,20 @@ void UndistortView::OnGoButtonClick()
           if (inputImage.IsNotNull())
           {
             bool    hascalib = false;
+            bool    nonemptycalibitem = false;
             if (calibparamitem != 0)
+            {
+              nonemptycalibitem = !calibparamitem->text().trimmed().isEmpty();
+            }
+
+            if (nonemptycalibitem)
             {
               try
               {
                 std::string   filename = calibparamitem->text().toStdString();
+                // we checked above that the cell has a non-empty non-whitespace string.
+                assert(!filename.empty());
+
                 // cache the parsed calib data, to avoid repeatedly (every frame!) reading the same stuff.
                 std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>::iterator fc = m_ParamFileCache.find(filename);
                 if (fc != m_ParamFileCache.end())
@@ -352,21 +471,16 @@ void UndistortView::OnGoButtonClick()
 
               m_BackgroundQueue.push_back(wi);
             }
-            else
-            {
-              nameitem->setCheckState(Qt::Unchecked);
-              std::cerr << "Undistortion: skipping node " << nodename << " without calib data" << std::endl;
-            }
           }
         }
         else
         {
-          std::cerr << "Undistortion: skipping unknown node with name: " << nodename << std::endl;
+          MITK_WARN << "Undistortion: skipping unknown node with name: " << nodename;
         }
       }
       else
       {
-        std::cerr << "Undistortion: skipping node with empty name." << std::endl;
+        MITK_INFO << "Undistortion: skipping node with empty name.";
       }
     }
   }
@@ -423,7 +537,9 @@ void UndistortView::OnBackgroundProcessFinished()
     if (nodeIsNew)
     {
       mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_InputNodeName);
-      if (inputNode.IsNotNull())
+      // workaround for bug in mitk.
+      // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/3269
+      if (false)//if (inputNode.IsNotNull())
       {
         storage->Add(outputNode, inputNode);
       }
@@ -498,6 +614,28 @@ void UndistortView::OnDeferredNodeTableUpdate()
 
 
 //-----------------------------------------------------------------------------
+void UndistortView::OnRecordingStarted(const ctkEvent& event)
+{
+  QString   directory = event.getProperty("directory").toString();
+  if (!directory.isEmpty())
+  {
+    try
+    {
+      WriteCurrentConfig(directory);
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Caught exception while writing info file! Ignoring it and aborting info file.";
+    }
+  }
+  else
+  {
+    MITK_WARN << "Received igi-recording-started event without directory information! Ignoring it.";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void UndistortView::CreateQtPartControl(QWidget* parent)
 {
   setupUi(parent);
@@ -526,7 +664,10 @@ void UndistortView::CreateQtPartControl(QWidget* parent)
     ctkEventAdmin* eventAdmin = mitk::uk_ac_ucl_cmic_igiundistort_Activator::getContext()->getService<ctkEventAdmin>(ref);
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    m_IGIUpdateSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
+    m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
   }
 
   mitk::DataStorage::Pointer storage = GetDataStorage();

@@ -51,7 +51,11 @@ public:
    */
   virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
-  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& extension);
+  /**
+   * Scans the directory for individual files that match a timestamp pattern.
+   * @param suffix for example ".jpg" or "-ultrasoundImage.nii".
+   */
+  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& suffix);
 
 signals:
 

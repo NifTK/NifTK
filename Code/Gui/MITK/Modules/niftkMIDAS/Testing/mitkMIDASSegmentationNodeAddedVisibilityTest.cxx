@@ -118,7 +118,7 @@ public:
 
     mitk::RenderWindow::Pointer renderWindow = mitk::RenderWindow::New(NULL, "mitkMIDASPaintbrushToolClass", renderingManager);
 
-    std::vector< mitk::BaseRenderer* > renderers;
+    std::vector<const mitk::BaseRenderer*> renderers;
     renderers.push_back(renderWindow->GetRenderer());
 
     // Create the setter we are testing.
@@ -148,7 +148,9 @@ public:
     bool foundProperty = false;
     if (doRendererSpecific)
     {
-      foundProperty = dataNode->GetBoolProperty("visible", visibility, renderers[0]);
+      /// TODO
+      /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+      foundProperty = dataNode->GetBoolProperty("visible", visibility, const_cast<mitk::BaseRenderer*>(renderers[0]));
     }
     else
     {

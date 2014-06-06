@@ -24,9 +24,8 @@ namespace mitk {
 
 /**
  * \class LuiLeastSquaresWithNormalsRegistration
- * \brief Performs SVD based registration of two point sets with surface normals, as in Liu, Fitzpatrick 2003.
- *
- * See also <a href="http://proceedings.spiedigitallibrary.org/proceeding.aspx?articleid=758228">this link</a>.
+ * \brief Performs SVD based registration of two point sets with surface normals, as in
+ * <a href="http://proceedings.spiedigitallibrary.org/proceeding.aspx?articleid=758228">Marker orientation in fiducial registration, Liu, Fitzpatrick, 2003, 10.1117/12.480860</a>.
  */
 class LiuLeastSquaresWithNormalsRegistration : public itk::Object
 {

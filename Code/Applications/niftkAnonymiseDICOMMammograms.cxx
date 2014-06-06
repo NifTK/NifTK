@@ -374,7 +374,6 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
 	    ( tagModalityValue == std::string( "PT" ) ) || //  Positron emission tomography
 	    ( tagModalityValue == std::string( "PX" ) ) || //  Panoramic X-Ray
 	    ( tagModalityValue == std::string( "RF" ) ) || //  Radiofluoroscopy
-	    ( tagModalityValue == std::string( "RG" ) ) || //  Radiographic imaging
 	    ( tagModalityValue == std::string( "RTIMAGE" ) ) || //  Radiotherapy Image
 	    ( tagModalityValue == std::string( "SM" ) ) || //  Slide Microscopy
 	    ( tagModalityValue == std::string( "US" ) ) || //  Ultrasound

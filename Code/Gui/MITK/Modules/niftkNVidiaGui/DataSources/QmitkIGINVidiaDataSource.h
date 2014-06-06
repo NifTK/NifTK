@@ -125,6 +125,10 @@ signals:
    */
   void UpdateDisplay();
 
+protected slots:
+  // to be used by QmitkIGINVidiaDataSourceImpl to make us show a message box.
+  void ShowFatalErrorMessage(QString msg);
+
 protected:
 
   QmitkIGINVidiaDataSource(mitk::DataStorage* storage); // Purposefully hidden.
@@ -184,7 +188,7 @@ private:
 
 
 private:
-  bool InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
+  bool InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore, bool forReal);
 
 }; // end class
 

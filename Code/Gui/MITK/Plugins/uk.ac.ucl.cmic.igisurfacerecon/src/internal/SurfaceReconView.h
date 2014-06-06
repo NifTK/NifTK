@@ -42,7 +42,7 @@ public:
   /**
    * \brief Static view ID = uk.ac.ucl.cmic.igisurfacerecon
    */
-  static const std::string VIEW_ID;
+  static const char* VIEW_ID;
 
   /**
    * \brief Returns the view ID.
@@ -65,6 +65,9 @@ protected:
   // this should probably go into one of our modules, for easier testing and re-use!
   std::string IncrementNodeName(const std::string& name);
 
+  /** Called via ctk-event bus when user starts an IGI data recording session. */
+  void WriteCurrentConfig(const QString& directory) const;
+
 protected slots:
 
   /**
@@ -81,6 +84,9 @@ private slots:
 
   // we connect the future to this slot
   void OnBackgroundProcessFinished();
+
+  /** Triggered by igidatasources plugin (and QmitkIGIDataSourceManager) to tell us that recording has started. */
+  void OnRecordingStarted(const ctkEvent& event);
 
 private:
   mitk::BaseData::Pointer RunBackgroundReconstruction(niftk::SurfaceReconstruction::ParamPacket param);
@@ -107,6 +113,11 @@ private:
   std::string                                m_BackgroundLeftNodeName;
   std::string                                m_BackgroundRightNodeName;
   bool                                       m_BackgroundOutputNodeIsVisible;
+  std::string                                m_BackgroundErrorMessage;
+
+  // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
+  qlonglong           m_IGIUpdateSubscriptionID;
+  qlonglong           m_IGIRecordingStartedSubscriptionID;
 };
 
 #endif // SurfaceReconView_h

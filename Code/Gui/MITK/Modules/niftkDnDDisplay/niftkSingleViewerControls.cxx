@@ -42,11 +42,16 @@ niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
   ui = new Ui::niftkSingleViewerControls();
   ui->setupUi(parent);
 
-  ui->m_SliceIndexSlider->layout()->setSpacing(3);
-  ui->m_SliceIndexSlider->setDecimals(0);
-  ui->m_SliceIndexSlider->setTickInterval(1.0);
-  ui->m_SliceIndexSlider->setSingleStep(1.0);
-  ui->m_SliceIndexSlider->spinBox()->setAlignment(Qt::AlignRight);
+  // Disable synchronising the decimal precision. Synchronise width only.
+  ui->m_SliceSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+  ui->m_TimeStepSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+  ui->m_MagnificationSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+
+  ui->m_SliceSlider->layout()->setSpacing(3);
+  ui->m_SliceSlider->setDecimals(0);
+  ui->m_SliceSlider->setTickInterval(1.0);
+  ui->m_SliceSlider->setSingleStep(1.0);
+  ui->m_SliceSlider->spinBox()->setAlignment(Qt::AlignRight);
 
   ui->m_TimeStepSlider->layout()->setSpacing(3);
   ui->m_TimeStepSlider->setDecimals(0);
@@ -60,7 +65,7 @@ niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
   ui->m_MagnificationSlider->setSingleStep(1.0);
   ui->m_MagnificationSlider->spinBox()->setAlignment(Qt::AlignRight);
 
-  this->connect(ui->m_SliceIndexSlider, SIGNAL(valueChanged(double)), SLOT(OnSliceIndexChanged(double)));
+  this->connect(ui->m_SliceSlider, SIGNAL(valueChanged(double)), SLOT(OnSelectedSliceChanged(double)));
   this->connect(ui->m_TimeStepSlider, SIGNAL(valueChanged(double)), SLOT(OnTimeStepChanged(double)));
   this->connect(ui->m_MagnificationSlider, SIGNAL(valueChanged(double)), SIGNAL(MagnificationChanged(double)));
 
@@ -113,6 +118,21 @@ void niftkSingleViewerControls::SetMagnificationControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool niftkSingleViewerControls::AreMagnificationControlsEnabled() const
+{
+  return ui->m_MagnificationLabel->isEnabled() && ui->m_MagnificationSlider->isEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerControls::SetMagnificationControlsEnabled(bool enabled)
+{
+  ui->m_MagnificationLabel->setEnabled(enabled);
+  ui->m_MagnificationSlider->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkSingleViewerControls::AreShowOptionsVisible() const
 {
   return m_ShowShowOptions;
@@ -147,9 +167,9 @@ void niftkSingleViewerControls::SetWindowLayoutControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnSliceIndexChanged(double sliceIndex)
+void niftkSingleViewerControls::OnSelectedSliceChanged(double selectedSlice)
 {
-  emit SliceIndexChanged(static_cast<int>(sliceIndex));
+  emit SelectedSliceChanged(static_cast<int>(selectedSlice));
 }
 
 
@@ -161,9 +181,9 @@ void niftkSingleViewerControls::OnTimeStepChanged(double timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetSliceIndexTracking(bool tracking)
+void niftkSingleViewerControls::SetSliceTracking(bool tracking)
 {
-  ui->m_SliceIndexSlider->setTracking(tracking);
+  ui->m_SliceSlider->setTracking(tracking);
 }
 
 
@@ -182,34 +202,34 @@ void niftkSingleViewerControls::SetMagnificationTracking(bool tracking)
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetMaxSliceIndex() const
+int niftkSingleViewerControls::GetMaxSlice() const
 {
-  return static_cast<int>(ui->m_SliceIndexSlider->maximum());
+  return static_cast<int>(ui->m_SliceSlider->maximum());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMaxSliceIndex(int maxSliceIndex)
+void niftkSingleViewerControls::SetMaxSlice(int maxSlice)
 {
-  bool wasBlocked = ui->m_SliceIndexSlider->blockSignals(true);
-  ui->m_SliceIndexSlider->setMaximum(maxSliceIndex);
-  ui->m_SliceIndexSlider->blockSignals(wasBlocked);
+  bool wasBlocked = ui->m_SliceSlider->blockSignals(true);
+  ui->m_SliceSlider->setMaximum(maxSlice);
+  ui->m_SliceSlider->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetSliceIndex() const
+int niftkSingleViewerControls::GetSelectedSlice() const
 {
-  return static_cast<int>(ui->m_SliceIndexSlider->value());
+  return static_cast<int>(ui->m_SliceSlider->value());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetSliceIndex(int sliceIndex)
+void niftkSingleViewerControls::SetSelectedSlice(int selectedSlice)
 {
-  bool wasBlocked = ui->m_SliceIndexSlider->blockSignals(true);
-  ui->m_SliceIndexSlider->setValue(sliceIndex);
-  ui->m_SliceIndexSlider->blockSignals(wasBlocked);
+  bool wasBlocked = ui->m_SliceSlider->blockSignals(true);
+  ui->m_SliceSlider->setValue(selectedSlice);
+  ui->m_SliceSlider->blockSignals(wasBlocked);
 }
 
 

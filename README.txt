@@ -64,6 +64,8 @@ License : Doc/Licenses/ITK.txt (Apache v2 license)
 Mods    : 4.3.2.1: Removed path length check in top level CMakeLists.txt
           4.3.2.2: Raised https://issues.itk.org/jira/browse/ITK-3206
                    Applied patch directly to our 4.3.2.1 version.
+          4.3.2.3: Fixed ITK_USE_FFTWF to USE_FFTWF in itkExternal_FFTW.cmake
+                   This is not required to be fed back to ITK, as they already fixed it (albeit differently).
 
 Library : OpenCV
 Website : http://opencv.willowgarage.com/wiki
@@ -141,4 +143,4 @@ License : Doc/Licenses/NiftyRec.txt (BSD 3 clause license)
 Library : NiftyLink
 Website : http://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html
 Purpose : Messaging Library to talk to client applications
-License : Doc/Licenses/NiftyLink.txt (BSD 3 clause license)
+License : Private NiftyLink license - not for distribution outside of CMIC.

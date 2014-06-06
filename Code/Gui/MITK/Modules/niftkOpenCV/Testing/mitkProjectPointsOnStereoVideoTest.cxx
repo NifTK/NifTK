@@ -66,10 +66,10 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
   leftErrors.push_back(cv::Point2d(19.0695, 11.079));
   
   std::vector <cv::Point2d> rightErrors;
-  rightErrors.push_back(cv::Point2d(0.0,0.0));
-  rightErrors.push_back(cv::Point2d(40.5056, -0.068661 ));
-  rightErrors.push_back(cv::Point2d(-0.0689459, 30.6163 ));
-  rightErrors.push_back(cv::Point2d(19.8522, 11.2005));
+  rightErrors.push_back(cv::Point2d(0.195419, 0.23519));
+  rightErrors.push_back(cv::Point2d(40.7176, -0.0442551 ));
+  rightErrors.push_back(cv::Point2d(-0.522525, 30.5887 ));
+  rightErrors.push_back(cv::Point2d(19.3863, 11.421));
   
   for ( int i = 0 ; i < 4 ; i ++ ) 
   {
@@ -244,16 +244,16 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   Projector->SetClassifierWorldPoints(WorldGridPoints);
   Projector->Project(matcher);
 
-  std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
-  std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
-  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(664.844, 69.984)));
-  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(628.092, 279.283)));
-  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1264.44, 296.217)));
-  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1277.2, 79.8817)));
-  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(753.793, 68.306)));
-  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(711.968, 279.424)));
-  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1365.82, 296.783)));
-  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1380.06, 75.8718)));
+  std::vector < mitk::GoldStandardPoint> leftGS;
+  std::vector < mitk::GoldStandardPoint> rightGS;
+  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(664.844, 69.984)));
+  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(628.092, 279.283)));
+  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1264.44, 296.217)));
+  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1277.2, 79.8817)));
+  rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(753.793, 68.306)));
+  rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(711.968, 279.424)));
+  rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1365.82, 296.783)));
+  rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1380.06, 75.8718)));
   Projector->SetLeftGoldStandardPoints(leftGS);
   Projector->SetRightGoldStandardPoints(rightGS);
   Projector->CalculateProjectionErrors("");

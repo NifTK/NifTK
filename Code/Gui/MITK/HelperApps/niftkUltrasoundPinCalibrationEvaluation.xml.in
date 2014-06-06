@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Ultrasound Pin Calibration Evaluation</title>
+  <description><![CDATA[Processes point and tracking data by evaluating against an invariant point.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>pointDirectory</name>
+      <longflag>pointDirectory</longflag>
+      <description>Directory containing 2D point locations in plain text files.</description>
+      <label>Points Directory</label>
+    </directory>
+    <file fileExtensions="*.txt,*.mat,*.4x4">
+      <name>calibrationMatrix</name>
+      <longflag>calibrationMatrix</longflag>
+      <description>The ultrasound to probe calibration matrix.</description>
+      <label>Calibration Matrix</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.txt,*.mat,*.4x4">
+      <name>cameraToWorldMatrix</name>
+      <longflag>cameraToWorldMatrix</longflag>
+      <description>The camera to world matrix.</description>
+      <label>Camera to World Matrix</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <point>
+      <name>invariantPoint</name>
+      <longflag>invariantPoint</longflag>
+      <description>Location of the invariant point in millimetres.</description>
+      <label>Invariant Point</label>
+      <default>0,0,0</default>
+      <channel>input</channel>
+    </point>
+    <float-vector>
+      <name>millimetresPerPixel</name>
+      <longflag>millimetresPerPixel</longflag>
+      <description>Initial millimetres per pixel</description>
+      <label>Millimetres/Pixel</label>
+      <default>1,1</default>
+      <channel>input</channel>
+    </float-vector>
+  </parameters>
+
+</executable>

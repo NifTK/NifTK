@@ -181,7 +181,7 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    Check that it exists an important overlapping between mask, headmask, head and input file.<br>
    </p>
    ]]></description>
-   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811907009494</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>

@@ -40,10 +40,23 @@ DataNodeAddedVisibilitySetter::~DataNodeAddedVisibilitySetter()
 
 
 //-----------------------------------------------------------------------------
-void DataNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+bool DataNodeAddedVisibilitySetter::GetVisibility() const
 {
-  m_Renderers = list;
-  this->Modified();
+  return m_Visibility;
+}
+
+
+//-----------------------------------------------------------------------------
+void DataNodeAddedVisibilitySetter::SetVisibility(bool visibility)
+{
+  m_Visibility = visibility;
+}
+
+
+//-----------------------------------------------------------------------------
+void DataNodeAddedVisibilitySetter::SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers)
+{
+  m_Renderers = renderers;
 }
 
 
@@ -51,7 +64,6 @@ void DataNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*
 void DataNodeAddedVisibilitySetter::ClearRenderers()
 {
   m_Renderers.clear();
-  this->Modified();
 }
 
 
@@ -60,9 +72,13 @@ void DataNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
 {
   if (m_Renderers.size() > 0)
   {
+    /// TODO
+//    node->SetBoolProperty("visible", m_Visibility);
     for (unsigned int i = 0; i < m_Renderers.size(); i++)
     {
-      node->SetBoolProperty("visible", m_Visibility, m_Renderers[i]);
+      /// TODO
+      /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+      node->SetBoolProperty("visible", m_Visibility, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
     }
   }
   else

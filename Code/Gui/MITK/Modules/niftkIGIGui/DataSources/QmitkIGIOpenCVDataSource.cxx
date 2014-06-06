@@ -77,6 +77,11 @@ QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
   m_Lock.lock();
   m_SourcesInUse.remove(m_ChannelNumber);
   m_Lock.unlock();
+
+  // explicitly tell base class to stop the thread.
+  // otherwise there's a race condition where this class has been cleaned up but the thread
+  // calls a virtual function on us before the base class destructor has had a chance to stop it.
+  StopGrabbingThread();
 }
 
 
@@ -136,9 +141,25 @@ bool QmitkIGIOpenCVDataSource::IsCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGIOpenCVDataSource::GrabData()
 {
+  // somehow this can become null, probably a race condition during destruction.
+  if (m_VideoSource.IsNull())
+  {
+    MITK_ERROR << "Video source is null. This should not happen! It's most likely a race-condition.";
+    return;
+  }
+
   // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
+  // beware: recent mitk will throw a bunch of exceptions, for some random reasons.
+  const IplImage* img = 0;
+  try
+  {
+    m_VideoSource->FetchFrame();
+    img = m_VideoSource->GetCurrentFrame();
+  }
+  catch (...)
+  {
+    // if (img == 0) below will handle this.
+  }
 
   // Check if grabbing failed (maybe no webcam present)
   if (img == 0)
@@ -248,11 +269,10 @@ bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUi
   igtlUint64    lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-  QDir directory(directoryPath);
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
-    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString("jpg"));
+    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString(".jpg"));
     if (!timestamps.empty())
     {
       firstTimeStampFound = *timestamps.begin();
@@ -280,12 +300,11 @@ void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64
   ClearBuffer();
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-  QDir directory(directoryPath);
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
-    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString("jpg"));
-    m_PlaybackDirectoryName = directoryPath.toStdString();
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".jpg"));
+    m_PlaybackDirectoryName = path;
   }
   else
   {

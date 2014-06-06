@@ -25,6 +25,7 @@ set(CPP_FILES
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
   VideoProcessing/mitkSplitVideo.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
+  VideoTrackerMatching/mitkPickPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
@@ -41,8 +42,16 @@ set(CPP_FILES
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
   VideoTrackerMatching/mitkTrackingMatrixTimeStamps.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
+  VideoTrackerMatching/mitkTwoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
+  VideoTrackerMatching/mitkTwoTrackerAnalysis.cxx
+  UltrasoundCalibration/itkUltrasoundCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
+  UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx
+  UltrasoundCalibration/mitkUltrasoundCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
+  UltrasoundCalibration/mitkUltrasoundPointerCalibration.cxx
+  UltrasoundCalibration/mitkUltrasoundPinCalibrationEvaluation.cxx
+  UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
 )

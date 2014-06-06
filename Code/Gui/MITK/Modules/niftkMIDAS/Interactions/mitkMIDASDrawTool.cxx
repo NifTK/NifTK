@@ -64,9 +64,6 @@ mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
   m_EraserScopeNode->SetData(m_EraserScope);
   m_EraserScopeNode->SetName("Draw tool eraser");
   m_EraserScopeNode->SetBoolProperty("helper object", true);
-  // This is for the DnD display, so that it does not try to change the
-  // visibility after node addition.
-  m_EraserScopeNode->SetBoolProperty("managed visibility", false);
   m_EraserScopeNode->SetBoolProperty("includeInBoundingBox", false);
   m_EraserScopeNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
   m_EraserScopeNode->SetBoolProperty("planarfigure.drawname", false);
@@ -443,7 +440,8 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
           {
             ++axis;
           }
-          assert(axis != 3);
+          // TODO This should not happen, but it does sometimes.
+//          assert(axis != 3);
 
           if (t[0] >= 0.0f)
           {
@@ -461,7 +459,10 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
               outputContour->AddVertex(entryPoint);
             }
 
-            outputContourSet->AddContourModel(outputContour);
+            if (outputContour->GetNumberOfVertices() >= 2)
+            {
+              outputContourSet->AddContourModel(outputContour);
+            }
             outputContour = 0;
           }
           if (t[1] <= 1.0f)
@@ -496,7 +497,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
       c = f * f - m_CursorSize * m_CursorSize;
     }
 
-    if (outputContour.IsNotNull())
+    if (outputContour.IsNotNull() && outputContour->GetNumberOfVertices() >= 2)
     {
       outputContourSet->AddContourModel(outputContour);
     }
@@ -682,7 +683,7 @@ void mitk::MIDASDrawTool::ITKCleanContours(
       {
         outputContour->AddVertex(point);
       }
-      else if (outputContour->GetNumberOfVertices() > 0)
+      else if (outputContour->GetNumberOfVertices() >= 2)
       {
         outputContours.AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
@@ -690,7 +691,10 @@ void mitk::MIDASDrawTool::ITKCleanContours(
       }
     }
 
-    outputContours.AddContourModel(outputContour);
+    if (outputContour->GetNumberOfVertices() >= 2)
+    {
+      outputContours.AddContourModel(outputContour);
+    }
     outputContour = mitk::ContourModel::New();
     mitk::MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
     contourIt++;

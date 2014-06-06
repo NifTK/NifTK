@@ -103,6 +103,8 @@ Options:
 
     --gcc44                         Uses gcc4.4. Deprecated. Set the CC and CXX variables, instead.
 
+    -D <variable=value>             Sets a CMake variable for the build. Space after -D is optional.
+
     --no-testing                    Does not build the tests.
 
     --no-docs                       Does not build the documentation pages.
@@ -156,6 +158,7 @@ Build options:
   build type:            $build_type
   threads:               $threads
   gcc44:                 $use_gcc44
+  CMake variables:       $cmake_vars
 
 Components:
 
@@ -260,6 +263,15 @@ do
   elif [ "$1" == "--gcc44" ]
   then
     use_gcc44=true
+    shift 1
+  elif [ "$1" == "-D" ]
+  then
+    check_next_arg ${@}
+    cmake_vars="${cmake_vars} -D$2"
+    shift 2
+  elif [ "${1:0:2}" == "-D" ]
+  then
+    cmake_vars="${cmake_vars} $1"
     shift 1
   elif [ "$1" == "--no-testing" ]
   then
@@ -408,7 +420,7 @@ run_command "mkdir -p ${build_path}" 0-clean.log
 # Composing cmake and ctest command line
 # -----------------------------------------------------------------------------
 
-cmake_args="-DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX=${install_prefix}"
+cmake_args="-DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX=${install_prefix} ${cmake_vars}"
 
 if $do_coverage
 then
@@ -489,9 +501,8 @@ fi
 # Do the job
 # -----------------------------------------------------------------------------
 
-echo "Build started at `date` on `hostname -f`." > ${log_dir}/1-start.log
+echo "Build started at `date` on `hostname -f`." > ${log_path}/1-start.log
 print_options >> ${log_path}/1-start.log
-
 run_command "git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK ${source_path}" 2-clone.log
 cd ${source_path}
 # For some reason the time-based checkout works only if the branch has already been checked out once.

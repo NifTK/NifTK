@@ -1,0 +1,114 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+#set -x 
+
+source _niftkCommon.sh
+
+# Default values used on img-135 by Kelvin. 
+if [ ! -n "${MIDAS_BIN}" ]
+then 
+  export MIDAS_BIN=/var/NOT_BACKUP/work/midas/build/bin
+fi 
+if [ ! -n "${FFITK_BIN}" ]
+then
+  export FFITK_BIN=/var/NOT_BACKUP/work/ffitk/bin
+fi 
+if [ ! -n "${MIDAS_FFD}" ]
+then
+  export MIDAS_FFD=/var/NOT_BACKUP/work/midasffd
+fi   
+if [ ! -n "${FSLDIR}" ]
+then 
+  export FSLDIR=/var/lib/midas/pkg/i686-pc-linux-gnu/fsl
+fi   
+if [ ! -n "${F3D_BIN}" ]
+then 
+  export F3D_BIN=/home/samba/user/leung/work/nifti-reg/nifty_reg-1.2/reg-apps
+fi   
+
+script_dir=`dirname $0`
+
+function Usage()
+{
+cat <<EOF
+
+This script is a wrapper which compute symmetric vents BSI.
+
+Usage: $0 input_file ss_atlas output_dir
+
+Mandatory Arguments:
+ 
+  input_file : is the input file containing paths to your images and regions. 
+                  "image1 brain_region1 local_region1 ss_air_reg_file1 image2 brain_region2 local_region2 ss_air_reg_file2 ......"
+  ss_atlas   : atlas used in the standard space registration.
+  output_dir : is the output directory.
+  
+Optional arguements:  
+  
+  -dilation [int]     : number of dilations for the masks [10].
+  -dof [int]          : rigid=2, rigid+scale=3, affine=4 [4]. 
+  -similarity [int]   : similarity used in the registration [4]. 
+                        1. Sum Squared Difference
+                        2. Mean Squared Difference
+                        3. Sum Absolute Difference
+                        4. Normalized Cross Correlation
+                        5. Ratio Image Uniformity
+                        6. Partitioned Image Uniformity
+                        7. Joint Entropy
+                        8. Mutual Information
+                        9. Normalized Mutual Information
+  -pptol [float]      : stopping criteria for the powell optimization. [0.01]
+  -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI.
+  -brain_reg_dir [dir]          : brain-to-brain reg results to be reused. All dof files will be copied to output dir.
+  -reset_vox_offset [yes/no]    : reset vox_offset or not [no].
+
+EOF
+exit 127
+}
+
+ndefargs=3
+# Check args
+if [ $# -lt ${ndefargs} ]; then
+  Usage
+fi
+
+ComputeSymmetricLocalBSIBatch.sh  $* -double_window no
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

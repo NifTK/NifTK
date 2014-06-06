@@ -21,11 +21,13 @@
 #include <QGLContext>
 #include <QGLWidget>
 #include <QWaitCondition>
+#include <QMessageBox>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
 #include <boost/typeof/typeof.hpp>
 #include <mitkProperties.h>
+#include <mitkLogMacros.h>
 
 
 // note the trailing space
@@ -53,6 +55,10 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   try
   {
     m_Pimpl = new QmitkIGINVidiaDataSourceImpl;
+
+    bool ok = false;
+    ok = QObject::connect(m_Pimpl, SIGNAL(SignalFatalError(QString)), this, SLOT(ShowFatalErrorMessage(QString)), Qt::QueuedConnection);
+    assert(ok);
 
     // pre-create any number of datastorage nodes to avoid threading issues
     for (int i = 0; i < 4; ++i)
@@ -145,7 +151,14 @@ QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
   // we need to manage which thread is currently in charge of the capture context!
   this->StopCapturing();
 
-  delete m_Pimpl;
+  if (m_Pimpl)
+  {
+    bool ok = false;
+    ok = QObject::disconnect(m_Pimpl, SIGNAL(SignalFatalError(QString)), this, SLOT(ShowFatalErrorMessage(QString)));
+    assert(ok);
+
+    delete m_Pimpl;
+  }
 }
 
 
@@ -172,7 +185,7 @@ void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
 
   if (s)
   {
-    std::cerr << "WARNING: sdi data source does not support SaveInBackground(true)" << std::endl;
+    MITK_WARN << "WARNING: sdi data source does not support SaveInBackground(true)";
   }
 }
 
@@ -250,6 +263,7 @@ void QmitkIGINVidiaDataSource::GrabData()
       {
         // sdi bits died while we were enumerating sequence numbers.
         // not much we can do so lets just stop.
+        MITK_WARN << "SDI capture setup seems to have died while enumerating sequence numbers. Expect a few glitches.";
         break;
       }
 
@@ -371,6 +385,9 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
             haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
             haswrongsize |= imageInNode->GetDimension(2) != 1;
+            // check image type as well.
+            haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()   != subimg.depth;
+            haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != subimg.nChannels;
 
             if (haswrongsize)
             {
@@ -446,10 +463,16 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         m_MostRecentlyUpdatedTimeStamp = dataType->GetTimeStampInNanoSeconds();
       }
       else
+      {
         this->SetStatus("Failed");
+        MITK_WARN << "Looks like SDI capture setup dropped out.";
+      }
     }
     else
+    {
+      // this is not an error. there are simply stale IGINVidiaDataType in flight.
       this->SetStatus("...");
+    }
   }
   else
     this->SetStatus("...");
@@ -643,34 +666,12 @@ int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore, bool forReal)
 {
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
-  QString directoryPath = QString::fromStdString(path);
-  // path used to be fixed. but now there's a suffix, so enum directories.
-  QDir directory(directoryPath);
-  if (!directory.exists())
-  {
-    return false;
-  }
-
-  directory.setNameFilters(QStringList() << "QmitkIGINVidiaDataSource*");
-  directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
-  QStringList possibledirs = directory.entryList();
-  if (possibledirs.size() > 1)
-  {
-    // yes, die here if in debug mode!
-    assert(false);
-    MITK_ERROR << "QmitkIGINVidiaDataSource: Warning: found more than one data directory, will use " + possibledirs[0].toStdString() + " only!" << std::endl;
-  }
-  if (possibledirs.size() == 0)
-  {
-    return false;
-  }
-
-  directory = (directoryPath + QDir::separator()) + possibledirs[0];
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
     QStringList filters;
@@ -689,7 +690,8 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
       QString     basename = nalfiles[0].split(".264")[0];
       std::string nalfilename = (directory.path() + QDir::separator() + basename + ".264").toStdString();
 
-      // try to open video file
+      // try to open video file.
+      // it will throw if something goes wrong.
       m_Pimpl->TryPlayback(nalfilename);
 
       // now we need to correlate frame numbers with timestamps
@@ -757,7 +759,10 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           case STACK_FIELDS:
           case DROP_ONE_FIELD:
           case DO_NOTHING_SPECIAL:
-            m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+            if (forReal)
+            {
+              m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+            }
             break;
         }
       }
@@ -790,8 +795,19 @@ bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUi
     return false;
   }
 
-  std::map<igtlUint64, PlaybackPerFrameInfo> index;
-  return InitWithRecordedData(index, path, firstTimeStampInStore, lastTimeStampInStore);
+  bool  ok = false;
+  try
+  {
+    std::map<igtlUint64, PlaybackPerFrameInfo> index;
+    ok = InitWithRecordedData(index, path, firstTimeStampInStore, lastTimeStampInStore, false);
+  }
+  catch (const std::exception& e)
+  {
+    MITK_ERROR << "Caught exception while probing for playback data: " << e.what();
+    ok = false;
+  }
+
+  return ok;
 }
 
 
@@ -816,7 +832,7 @@ void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64
 
   m_MostRecentlyUpdatedTimeStamp = 0;
 
-  bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0);
+  bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0, true);
   assert(ok);
 
   // lets guess how many streams we have dumped into that file.
@@ -886,3 +902,14 @@ void QmitkIGINVidiaDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::ShowFatalErrorMessage(QString msg)
+{
+  QMessageBox msgBox;
+  msgBox.setText("SDI video capture failed.");
+  msgBox.setInformativeText(msg);
+  msgBox.setStandardButtons(QMessageBox::Ok);
+  msgBox.setDefaultButton(QMessageBox::Ok);
+  msgBox.exec();
+}

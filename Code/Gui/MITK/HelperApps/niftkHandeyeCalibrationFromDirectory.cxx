@@ -41,8 +41,11 @@ int main(int argc, char** argv)
     calibrator->SetSortByAngle(false);
     calibrator->SetPixelScaleFactor(pixelScales);
     calibrator->SetSwapVideoChannels(swapVideoChannels);
+    calibrator->SetNumberCornersWidth(NumberCornerWidth);
+    calibrator->SetNumberCornersHeight(NumberCornerHeight);
     calibrator->InitialiseOutputDirectory();
     calibrator->InitialiseTracking();
+
 
     if ( existingCalibrationDirectory != "" ) 
     {

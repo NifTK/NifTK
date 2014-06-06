@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyIGIApplicationPlugin.h"
-#include <QmitkNiftyViewIGIPerspective.h>
+#include <QmitkCommonAppsIGIPerspective.h>
 #include "../QmitkNiftyIGIApplication.h"
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 
@@ -32,22 +32,20 @@ QmitkNiftyIGIApplicationPlugin::~QmitkNiftyIGIApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyIGIApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyigi/bundle/index.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyigi/bundle/uk_ac_ucl_cmic_gui_qt_niftyigi_intro.html");
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 {
-  berry::AbstractUICTKPlugin::start(context);
-  this->SetPluginContext(context);
+  QmitkCommonAppsApplicationPlugin::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->RegisterDataStorageListener();
 }
 
 

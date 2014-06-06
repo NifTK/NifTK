@@ -43,6 +43,13 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(MINGW)
 
+  if(APPLE)
+    set(additional_cmake_args
+        ${additional_cmake_args}
+        -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=""
+        )
+  endif(APPLE)
+
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
   set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -DWIN32_OPENGL_RW_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/vtkWin32OpenGLRenderWindow.cxx.vtk-5.10.patched -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK-5.10.cmake)

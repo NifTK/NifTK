@@ -10,19 +10,19 @@
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective"
-      name="IGI Perspective"
-      class="QmitkNiftyViewIGIPerspective"
-      icon="resources/icon_cmic.xpm">
+      id="uk.ac.ucl.cmic.gui.qt.niftyview.minimalperspective"
+      name="Minimal Perspective"
+      class="QmitkCommonAppsMinimalPerspective"
+      icon="resources/icon_ucl.xpm">
     </perspective>
   </extension>
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
-      name="MIDAS Perspective"
-      class="QmitkNiftyViewMIDASPerspective"
-    icon="resources/icon_ion.xpm">
+      id="uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective"
+      name="IGI Perspective"
+      class="QmitkCommonAppsIGIPerspective"
+      icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
 

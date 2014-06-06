@@ -61,6 +61,11 @@ class NIFTKMIDAS_EXPORT MIDASTool : public FeedbackContourTool, public MIDASStat
 public:
 
   mitkClassMacro(MIDASTool, FeedbackContourTool);
+
+  /// \brief Loads the behaviour string to the global interaction.
+  /// This function should be called before any MIDASTool object is created.
+  static void LoadBehaviourStrings();
+
   const char* GetGroup() const;
 
   /// \brief Stores a seed point set name, so all classes have access to the name.
@@ -98,24 +103,6 @@ public:
 
   /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
   static const std::string MORPH_EDITS_DILATIONS_ADDITIONS;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_DROPPER_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_POLY_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_DRAW_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML;
 
   /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
   virtual void Activated();
@@ -177,6 +164,24 @@ private:
   /// \brief Called when the seeds have been modified.
   void OnSeedsModified();
 
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_SEED_TOOL_STATE_MACHINE_XML;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_SEED_DROPPER_STATE_MACHINE_XML;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_POLY_TOOL_STATE_MACHINE_XML;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_DRAW_TOOL_STATE_MACHINE_XML;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML;
+
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
   mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
 
@@ -195,6 +200,8 @@ private:
   /// \brief Stores the current display interactor configurations when this tool is activated.
   /// The configurations are restored when the tool is deactivated.
   std::map<us::ServiceReferenceU, mitk::EventConfig> m_DisplayInteractorConfigs;
+
+  static bool s_BehaviourStringsLoaded;
 
 };
 

@@ -13,12 +13,24 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,1">
+   <property name="leftMargin">
     <number>0</number>
    </property>
-   <property name="spacing">
+   <property name="topMargin">
     <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="horizontalSpacing">
+    <number>0</number>
+   </property>
+   <property name="verticalSpacing">
+    <number>3</number>
    </property>
    <item row="0" column="0">
     <widget class="QmitkToolSelectionBox" name="m_ManualToolSelectionBox" native="true">

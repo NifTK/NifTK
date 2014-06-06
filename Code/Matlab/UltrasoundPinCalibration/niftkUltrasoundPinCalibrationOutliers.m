@@ -14,7 +14,7 @@ function [outliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, tM
 % NOTE: This function should only be called from niftkUltrasoundPinCalibration.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 outliers = [];
-S = diag([finalParams(10) finalParams(10) 1 1]);
+S = diag([finalParams(10) finalParams(11) 1 1]);
 ptsR = [];
 for i = 1:size(pinPositions,1)
     ptsR = [ptsR tMr{i,1}*rMi*S*pinPositions{i,1}];

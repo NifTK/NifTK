@@ -153,6 +153,17 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   derivativeFilterX->SetOrder( xOrder );
   derivativeFilterY->SetOrder( yOrder );
 
+  if ( m_Mask ) {
+    derivativeFilterX->SetMask( m_Mask );
+    derivativeFilterY->SetMask( m_Mask );
+  }
+
+  if ( this->GetDebug() )
+  {
+    derivativeFilterX->SetDebug( true );
+    derivativeFilterY->SetDebug( true );
+  }
+
   derivativeFilterY->Update(); 
 
   return derivativeFilterY->GetOutput();
@@ -173,41 +184,41 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 
   // S00
 
-  niftkitkInfoMacro(<< "Computing S00");
+  niftkitkDebugMacro(<< "Computing S00");
 
   m_S00 = GetDerivative(DerivativeFilterTypeX::ZeroOrder,
 			DerivativeFilterTypeY::ZeroOrder );
   // S10
 
-  niftkitkInfoMacro(<< "Computing S10");
+  niftkitkDebugMacro(<< "Computing S10");
 
   m_S10 = GetDerivative(DerivativeFilterTypeX::FirstOrder,
 			DerivativeFilterTypeY::ZeroOrder );
 
   // S01
 
-  niftkitkInfoMacro(<< "Computing S01");
+  niftkitkDebugMacro(<< "Computing S01");
 
   m_S01 = GetDerivative(DerivativeFilterTypeX::ZeroOrder,
 			DerivativeFilterTypeY::FirstOrder );
 
   // S11
 
-  niftkitkInfoMacro(<< "Computing S11");
+  niftkitkDebugMacro(<< "Computing S11");
 
   m_S11 = GetDerivative(DerivativeFilterTypeX::FirstOrder,
 			DerivativeFilterTypeY::FirstOrder );
 
   // S20
 
-  niftkitkInfoMacro(<< "Computing S02");
+  niftkitkDebugMacro(<< "Computing S02");
 
   m_S20 = GetDerivative(DerivativeFilterTypeX::SecondOrder,
 			DerivativeFilterTypeY::ZeroOrder );
 
   // S02
 
-  niftkitkInfoMacro(<< "Computing S20");
+  niftkitkDebugMacro(<< "Computing S20");
 
   m_S02 = GetDerivative(DerivativeFilterTypeX::ZeroOrder,
 			DerivativeFilterTypeY::SecondOrder );
@@ -528,10 +539,10 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     itLightBlob.Set( opts[3] );
 
     opts[4] = oneSqrtTwo*( gamma - lambda );
-    itDarkLine.Set( opts[4] );
+    itLightLine.Set( opts[4] );
 
     opts[5] = oneSqrtTwo*( gamma + lambda );
-    itLightLine.Set( opts[5] );
+    itDarkLine.Set( opts[5] );
 
     opts[6] = gamma;
     itSaddle.Set( opts[6] );
@@ -610,7 +621,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 	double lambda2 = ((S20 + S02) - sqrt((S20 + S02)*(S20 + S02) - 4*(S20*S02 - S11*S11)))/2.;
 
 	if ( fabs( lambda1 ) > fabs( lambda2 ) ) {
-	  vStructure( 0 ) = S20 - lambda1;;
+	  vStructure( 0 ) = S20 - lambda1;
 	  vStructure( 1 ) = S11;
 	}
 	else {
@@ -643,7 +654,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 	  vReference[1] = m_OrientationInY->GetPixel( orientIndex );
 	}
       
-	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(0), vStructure(1));
+	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(1), vStructure(0));
       }
 
       // Or are we interested in the orientation w.r.t. the origin
@@ -656,26 +667,34 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 	vReference[0] -= m_Origin[0];
 	vReference[1] -= m_Origin[1];
       
-	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(0), vStructure(1));
+	theta = atan2(vReference[1], vReference[0]) - atan2(vStructure(1), vStructure(0));
       }
     
       // Otherwise use absolute orientation
 
       else 
-	theta = atan2(vStructure(0), vStructure(1));
+      {
+	theta = atan2(vStructure(1), vStructure(0));
+      }
 
 
       // Ensure angle is between -pi and +pi for first order or between
       // 0 and pi for second order
       
       if ( theta > vnl_math::pi )
+      {
 	theta = theta - 2.*vnl_math::pi;
+      }
       
       else if ( theta < -vnl_math::pi )
+      {
 	theta = 2.*vnl_math::pi + theta;
+      }
 
       if ( flgIsSecondOrder && ( theta < 0 ) )
+      {
 	theta = -theta;  
+      }
 
       itOrientation.Set( theta );
     }
@@ -963,8 +982,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     case 1: { inputImage = m_ResponseSlope;     break; }
     case 2: { inputImage = m_ResponseDarkBlob;  break; }
     case 3: { inputImage = m_ResponseLightBlob; break; }
-    case 4: { inputImage = m_ResponseDarkLine;  break; }
-    case 5: { inputImage = m_ResponseLightLine; break; }
+    case 4: { inputImage = m_ResponseLightLine; break; }
+    case 5: { inputImage = m_ResponseDarkLine;  break; }
     case 6: { inputImage = m_ResponseSaddle;    break; }
       
     default : {

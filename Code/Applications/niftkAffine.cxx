@@ -436,6 +436,12 @@ int DoMain(arguments args)
         }
     }
 
+  if (args.symmetricMetric == 2)
+    {
+      multiResMethod->SetIsAutoAdjustMovingSamping(false);
+    }
+
+
   try
   {
     // The main filter.

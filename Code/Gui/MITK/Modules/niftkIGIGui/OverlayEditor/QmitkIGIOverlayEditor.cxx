@@ -234,6 +234,13 @@ void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
 
 
 //-----------------------------------------------------------------------------
+std::string QmitkIGIOverlayEditor::GetCalibrationFileName() const
+{
+  return m_OverlayViewer->GetTrackingCalibrationFileName();
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
 {
   m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);

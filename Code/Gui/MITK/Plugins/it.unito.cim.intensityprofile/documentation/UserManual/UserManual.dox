@@ -1,5 +1,5 @@
 /**
-\bundlemainpage{it.unito.cim.intensityprofile} The Intensity Profile View
+\page it_unito_cim_intensityprofile The Intensity Profile View
 
 \image html intensity_profile_icon.jpg "Icon for Intensity Profile"
 
@@ -21,9 +21,7 @@ make it visible by toggling its checkbox in the Data Manager View.
 In addition it is possible to create the intensity profile plot, averaged within a given ROI. A ROI is simply a binary image.
 A binary image can be created using any segmentation tool, such as the 
 <a href="qthelp://uk.ac.ucl.cmic.midasgeneralsegmentor/bundle/index.html">MIDAS Irregular Volume Editor</a>
-or the 
-<a href="qthelp://uk.ac.ucl.cmic.mitksegmentation/bundle/index.html">MITK Segmentation</a>
-tools.
+tool.
 
 A segmentation image will normally have the same dimension as the reference image that it is based on.
 If a 4D segmentation is created, every slice at each time-step can have a different segmentation.

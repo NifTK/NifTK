@@ -139,6 +139,23 @@
 	<default>3.0</default>
     </float>
 
+    <float>
+	<name>projectorScreenBuffer</name>
+	<longflag>projectorScreenBuffer</longflag>
+	<description>Exclude points that project beyond the screen plus this buffer, to prevent problems with distortion.</description>
+	<label>Exclude points that project beyond the screen plus this buffer, to prevent problems with distortion.</label>
+	<default>0.0</default>
+    </float>
+
+    <float>
+	<name>classifierScreenBuffer</name>
+	<longflag>classifierScreenBuffer</longflag>
+	<description>Exclude classifier points that project beyond the screen plus this buffer, to prevent problems with distortion.</description>
+	<label>Exclude classifier points that project beyond the screen plus this buffer, to prevent problems with distortion.</label>
+	<default>100.0</default>
+    </float>
+
+
 						
 
   </parameters>

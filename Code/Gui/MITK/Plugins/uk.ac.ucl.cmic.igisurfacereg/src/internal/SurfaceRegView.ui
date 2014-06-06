@@ -73,9 +73,6 @@
        <item row="4" column="1">
         <widget class="QmitkDataStorageCheckableComboBox" name="m_ComposeWithDataNode"/>
        </item>
-       <item row="5" column="1">
-        <widget class="ctkPathLineEdit" name="m_SaveToFilePathEdit"/>
-       </item>
        <item row="5" column="0">
         <widget class="QPushButton" name="m_SaveToFileButton">
          <property name="text">
@@ -152,7 +149,7 @@
            <string>If your &quot;moving surface&quot; is inside-out.</string>
           </property>
           <property name="text">
-           <string> </string>
+           <string/>
           </property>
          </widget>
         </item>
@@ -191,11 +188,6 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkPathLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ctkPathLineEdit.h</header>
   </customwidget>
   <customwidget>
    <class>ctkMatrixWidget</class>

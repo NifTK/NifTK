@@ -1,0 +1,149 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+source _niftkCommon.sh
+
+# Note: The automatic doxygen generator uses the first two lines of the usage message.
+
+function Usage()
+{
+  cat <<EOF
+  
+This script will import and prepare the input images for the DRC fluid registration (fluid_jo).
+
+Usage: $0 fileContainingListOfFiles input_fluid.txt
+
+Mandatory Arguments:
+  fileContainingListOfFiles : is a text file containing 6 columns, containing the full path of 
+                              "input baseline standard space image",
+                              "input baseline standard space brain mask",
+                              "input baseline standard space vents mask",
+                              "input baseline native-to-standard-space AIR file",
+                              "input registered repeat native space image",
+                              "input registered repeat native space brain mask".
+  input_fluid.txt : is the name of the output file.
+
+Options:
+  -no_dbc : no DBC.
+
+Note that the input baseline native-to-standard-space AIR file normally sits in params/atlas-9dof6/register-air/ in Midas.
+  
+EOF
+exit 127
+}
+
+
+function iterate_through_input_file()
+{
+  FILEOFDETAILS=$1
+  DO_THE_CROPPING=$2
+  
+  # Iterate through file. Each line should contain
+  # baselineRegion baselineImage repeatImage
+  n=`wc -l $FILEOFDETAILS | sed -n 's/^\(.*\) .*/\1/p'`
+  i=0
+
+  while [ "$i" -lt "$n" ] 
+  do
+  
+    bl_image=`awk 'NR-1 == '$i' {print $1}' $FILEOFDETAILS`
+    bl_brain=`awk 'NR-1 == '$i' {print $2}' $FILEOFDETAILS`
+    bl_vents=`awk 'NR-1 == '$i' {print $3}' $FILEOFDETAILS`
+    bl_air=`awk 'NR-1 == '$i' {print $4}' $FILEOFDETAILS`
+    rp_image_native=`awk 'NR-1 == '$i' {print $5}' $FILEOFDETAILS`
+    rp_brain_native=`awk 'NR-1 == '$i' {print $6}' $FILEOFDETAILS`
+    
+    if [ "$DO_THE_CROPPING" = "CROP" ]; then
+
+      # Generate a file of all commands
+      echo "_flImport.sh \"${bl_image}\" \"${bl_brain}\" \"${bl_vents}\" \"${bl_air}\" \"${rp_image_native}\" \"${rp_brain_native}\" \"${input_fluid}\" ${no_dbc}" >> ${job_file}
+
+    else
+    
+      echo "Checking for input images"
+  
+      # This will stop the script if one of the files doesn't exist
+      check_file_exists ${bl_image}
+      check_file_exists ${bl_brain}
+      check_file_exists ${bl_vents}
+      check_file_exists ${bl_air}
+      check_file_exists ${rp_image_native}
+      check_file_exists ${rp_brain_native}
+
+    fi
+    
+    # Increment loop counter
+    i=$(($i+1))
+  done
+  
+}
+
+# Check args
+
+check_for_help_arg "$*"
+if [ $? -eq 1 ]; then
+  Usage
+fi
+
+if [ $# -lt 2 ]; then
+  Usage
+fi
+
+FILENAME=$1
+input_fluid=$2
+
+if [ "$FILENAME" = "" ]; then
+  Usage
+fi
+
+shift 2
+no_dbc=0
+
+while [ "$1" != "" ] ; do
+    if [ "$1" = "-no_dbc" ] ; then
+        no_dbc=1
+        shift 1
+    else
+        Usage
+    fi
+done
+
+
+
+
+echo "Running $0 using file=$FILENAME"
+
+check_program_exists "fluid_jo"
+
+check_file_exists $FILENAME
+
+dos_2_unix ${FILENAME}
+rm ${input_fluid}
+
+job_file=flImport_$$_commands.txt
+
+# We first simply scan through file, because then we can stop early if there are missing files
+iterate_through_input_file $FILENAME "CHECKONLY"
+
+# We then iterate through file, generating the commands
+iterate_through_input_file $FILENAME "CROP"
+
+# We then run it
+run_batch_job ${job_file}
+
+
+
+

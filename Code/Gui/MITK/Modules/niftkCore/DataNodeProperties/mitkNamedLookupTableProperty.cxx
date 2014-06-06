@@ -61,4 +61,23 @@ itk::LightObject::Pointer NamedLookupTableProperty::InternalClone() const
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+bool NamedLookupTableProperty::IsEqual(const BaseProperty& property) const
+{
+  return *(this->m_LookupTable) == *(static_cast<const Self&>(property).m_LookupTable)
+      && this->m_Name == static_cast<const Self&>(property).m_Name
+      ;
+}
+
+
+//-----------------------------------------------------------------------------
+bool NamedLookupTableProperty::Assign(const BaseProperty& property)
+{
+  this->m_LookupTable = static_cast<const Self&>(property).m_LookupTable;
+  this->m_Name = static_cast<const Self&>(property).m_Name;
+  return true;
+
+}
+
 } // namespace mitk

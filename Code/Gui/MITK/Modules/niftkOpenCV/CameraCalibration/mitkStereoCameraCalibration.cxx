@@ -29,6 +29,11 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 StereoCameraCalibration::StereoCameraCalibration()
+: m_IntrinsicMatrixLeft(cvCreateMat(3,3,CV_64FC1))
+, m_IntrinsicMatrixRight(cvCreateMat(3,3,CV_64FC1))
+, m_DistortionCoefficientsLeft(cvCreateMat(4,1,CV_64FC1))
+, m_DistortionCoefficientsRight(cvCreateMat(4,1,CV_64FC1))
+, m_OptimiseIntrinsics(true)
 {
 
 }
@@ -37,9 +42,29 @@ StereoCameraCalibration::StereoCameraCalibration()
 //-----------------------------------------------------------------------------
 StereoCameraCalibration::~StereoCameraCalibration()
 {
-
+  cvReleaseMat(&m_IntrinsicMatrixLeft);
+  cvReleaseMat(&m_IntrinsicMatrixRight);
+  cvReleaseMat(&m_DistortionCoefficientsLeft);
+  cvReleaseMat(&m_DistortionCoefficientsRight);
 }
 
+
+//-----------------------------------------------------------------------------
+void StereoCameraCalibration::LoadExistingIntrinsics(const std::string& directoryName)
+{
+  cv::Mat litemp = cv::Mat(m_IntrinsicMatrixLeft);
+  cv::Mat ldtemp = cv::Mat(m_DistortionCoefficientsLeft);
+  cv::Mat ritemp = cv::Mat(m_IntrinsicMatrixRight);
+  cv::Mat rdtemp = cv::Mat(m_DistortionCoefficientsRight);
+
+  mitk::LoadCameraIntrinsicsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.left.intrinsic.txt"), &litemp, &ldtemp);
+  mitk::LoadCameraIntrinsicsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.right.intrinsic.txt"), &ritemp, &rdtemp);
+  *m_IntrinsicMatrixLeft = CvMat(litemp);
+  *m_DistortionCoefficientsLeft = CvMat(ldtemp);
+  *m_IntrinsicMatrixRight = CvMat(ritemp);
+  *m_DistortionCoefficientsRight = CvMat(rdtemp);
+  m_OptimiseIntrinsics = false;
+}
 
 //-----------------------------------------------------------------------------
 double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
@@ -238,13 +263,28 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
 
   int numberOfSuccessfulViews = successfullImagesLeft.size();
 
-  CvMat *intrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
-  CvMat *distortionCoeffsLeft = cvCreateMat(4, 1, CV_64FC1);
+  CvMat *intrinsicMatrixLeft = NULL;
+  CvMat *distortionCoeffsLeft = NULL;
+  CvMat *intrinsicMatrixRight = NULL;
+  CvMat *distortionCoeffsRight = NULL;
+
+  if (m_OptimiseIntrinsics)
+  {
+    intrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
+    distortionCoeffsLeft = cvCreateMat(1, 4, CV_64FC1);
+    intrinsicMatrixRight = cvCreateMat(3,3,CV_64FC1);
+    distortionCoeffsRight = cvCreateMat(1, 4, CV_64FC1);
+  }
+  else
+  {
+    intrinsicMatrixLeft = m_IntrinsicMatrixLeft;
+    distortionCoeffsLeft = m_DistortionCoefficientsLeft;
+    intrinsicMatrixRight = m_IntrinsicMatrixRight;
+    distortionCoeffsRight = m_DistortionCoefficientsRight;
+  }
+
   CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
-
-  CvMat *intrinsicMatrixRight = cvCreateMat(3,3,CV_64FC1);
-  CvMat *distortionCoeffsRight = cvCreateMat(4, 1, CV_64FC1);
   CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
@@ -276,7 +316,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       *rightToLeftRotationMatrix,
       *rightToLeftTranslationVector,
       *essentialMatrix,
-      *fundamentalMatrix
+      *fundamentalMatrix,
+      !m_OptimiseIntrinsics
       );
 
   fs << "Stereo calibration" << std::endl;
@@ -359,9 +400,6 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       CV_MAT_ELEM(*r2LTrans, double, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, double, i, j);
     }
     
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), r2LRot);
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
-    
     // Also output in plain text format, which is a [3x3] rotation, AND THEN a [1x3] translation.
     std::ofstream tmpR2L;
     std::string tmpR2LFileName = niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.txt"));
@@ -382,6 +420,10 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     {
       tmpR2L.close();
     }
+
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), rightToLeftRotationMatrix);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
+
     fs << "Projecting error to individual camera[" << successfullFileNamesLeft[i] << "]: left=" << leftMonoReprojectionErrors[i] << ", right=" << rightMonoReprojectionErrors[i] << ", mean=" << (leftMonoReprojectionErrors[i]+rightMonoReprojectionErrors[i])/2.0 << std::endl;
   }  // end for each file
 
@@ -407,13 +449,16 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   cvReleaseMat(&objectPointsRight);
   cvReleaseMat(&pointCountsRight);
 
-  cvReleaseMat(&intrinsicMatrixLeft);
-  cvReleaseMat(&distortionCoeffsLeft);
+  if (m_OptimiseIntrinsics)
+  {
+    cvReleaseMat(&intrinsicMatrixLeft);
+    cvReleaseMat(&distortionCoeffsLeft);
+    cvReleaseMat(&intrinsicMatrixRight);
+    cvReleaseMat(&distortionCoeffsRight);
+  }
+
   cvReleaseMat(&rotationVectorsLeft);
   cvReleaseMat(&translationVectorsLeft);
-
-  cvReleaseMat(&intrinsicMatrixRight);
-  cvReleaseMat(&distortionCoeffsRight);
   cvReleaseMat(&rotationVectorsRight);
   cvReleaseMat(&translationVectorsRight);
 

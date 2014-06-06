@@ -148,13 +148,49 @@ int ApplicationMain(int argc, char** argv,
   sbConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
   sbConfig->setString(berry::Platform::ARG_APPLICATION, applicationPlugin.toStdString());
 
+#ifdef Q_OS_WIN
+#define CTK_LIB_PREFIX
+#else
+#define CTK_LIB_PREFIX "lib"
+#endif
+
+  QString libraryPath = "liborg_mitk_gui_qt_ext,";
+
+  // Fix for bug 17557:
+  // Setting absolute path to liborg_mitk_gui_qt_ext. Otherwise MITK fails to preload
+  // the library liborg_mitk_gui_qt_ext which leads to a crash on Mac OS 10.9
+#ifdef Q_OS_MAC
+
+  // In case the application is started from an install directory
+  QString tempLibraryPath = QCoreApplication::applicationDirPath().append("/plugins/liborg_mitk_gui_qt_ext.dylib");
+
+  QFile preloadLibrary (tempLibraryPath);
+  if (preloadLibrary.exists())
+  {
+    tempLibraryPath.append(",");
+    libraryPath = tempLibraryPath;
+  }
+  else
+  {
+    // In case the application is started from a build tree
+    tempLibraryPath = QCoreApplication::applicationDirPath().append("/../../../../../MITK-build/MITK-build/bin/plugins/liborg_mitk_gui_qt_ext.dylib");
+
+    preloadLibrary.setFileName(tempLibraryPath);
+    if (preloadLibrary.exists())
+    {
+      tempLibraryPath.append(",");
+      libraryPath = tempLibraryPath;
+    }
+  }
+#endif
+
 #ifndef Q_OS_WIN
   // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) and DICOM libs to speed
   // up a clean-cache start. This also works around bugs in older gcc and glibc implementations,
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext,libCTKDICOMCore:0.1");
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPath.toStdString()+CTK_LIB_PREFIX "CTKDICOMCore:0.1");
 #else
   // On Windows, there are libraries that are missing an Unregister() in their cleanup code.
   // When the plugin mechanism unloads these they trash the ITK class factory, leaving dead pointers.

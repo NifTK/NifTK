@@ -1,0 +1,98 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+# Pick up command line parameters
+bl_image=$1
+bl_brain=$2
+bl_vents=$3
+bl_air=$4
+rp_image_native=$5
+rp_brain_native=$6
+input_fluid=$7
+no_dbc=$8
+
+# Include necessary functions
+source _niftkCommon.sh
+
+echo "Running on ${HOSTNAME}"
+echo "Started on `date`"
+
+execute_command "tmpdir=`mktemp -d -q _flImport.XXXXXX`"
+execute_command "mkdir -p ${tmpdir}"
+function cleanup
+{
+  echo "Cleaning up..."
+  execute_command "rm -rf  ${tmpdir}"
+}
+trap "cleanup" EXIT SIGINT SIGTERM SIGKILL 
+
+bl_id=`basename ${bl_image} | awk -F- '{printf $1}'`
+rp_id=`basename ${rp_image_native} | awk -F- '{printf $1}'`
+
+# baseline brain+vents in standard space.
+bl_brain_vents=${bl_id}_brain_vents
+# repeat image in standard space.
+rp_image=${rp_id}-005-1.img
+# repeat brain in standard space.
+rp_brain=brain_ss_${rp_id}
+# baseline image after dbc
+bl_image_dbc=${bl_id}-005-1_dbc
+# repeat image after dbc.
+rp_image_dbc=${rp_id}-005-1_dbc
+
+# Add brain and vents together.
+addRegions.sh ${bl_image} ${bl_brain} ${bl_vents} ${bl_brain_vents} "-d 3"
+
+# Transform the registered repeat native space image to standard space.
+cp ${bl_air} ${tmpdir}/.
+new_rp_air=${tmpdir}/`basename ${bl_air}`
+air_targets ${new_rp_air} ${bl_image} ${rp_image_native}
+${AIR_BIN}/reslice ${new_rp_air} ${rp_image} -k -n 10 -o
+orient=`imginfo ${bl_image} -orient`
+anchange ${rp_image} ${rp_image} -setorient ${orient}
+
+# Transform the repeat region to standard space.
+regslice ${new_rp_air} ${rp_brain_native} ${rp_brain} 5 -i 2
+
+# baseline image after dbc
+bl_image_dbc=${bl_id}-005-1_dbc
+# repeat image after dbc.
+rp_image_dbc=${rp_id}-005-1_dbc
+
+if [ "${no_dbc}" == "0" ]
+then
+  # Differential bias correction.
+  differentialbiascorrect ${bl_image} ${rp_image} ${bl_brain} ${rp_brain} . 5 /tmp ${bl_image_dbc} ${rp_image_dbc} 3 0 0 0 0
+else
+  anchange ${bl_image} ${bl_image_dbc} -sex m
+  anchange ${rp_image} ${rp_image_dbc} -sex m
+fi
+
+# output image with "_cropped" appended.
+echo "${bl_brain_vents} ${bl_image_dbc}.img ${rp_image_dbc}.img" > ${tmpdir}/input.txt
+flCrop.sh ${tmpdir}/input.txt
+
+echo "${bl_image_dbc}_cropped.img ${bl_image_dbc}_mask.img ${rp_image_dbc}_cropped.img ${rp_id}-warped.img ${rp_id}-warped.trf ${rp_id}-warped.str" >> ${input_fluid}
+
+# Clean up. 
+execute_command "rm -rf  ${tmpdir}"
+
+
+echo "Finished on `date`"
+
+
+
+

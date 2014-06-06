@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calibrate and analysise two independent tracking directories</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>Directory1</name>
+      <longflag>Directory1</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+  
+    <directory>
+      <name>Directory2</name>
+      <longflag>Directory2</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <file>
+      <name>TCfileout</name>
+      <longflag>TCfileout</longflag>
+      <description>A file to writeout the temporal calibration results.</description>
+      <label>A file to writeout the temporal calibration results</label>
+    </file>
+    <file>
+      <name>HEfileout</name>
+      <longflag>HEfileout</longflag>
+      <description>A file to writeout the handeye results.</description>
+      <label>A file to writeout the temporal handeye results</label>
+    </file>
+
+    <integer>
+      <name>MatricesToUse</name>
+      <longflag>MatricesToUse</longflag>
+      <description>How Many Matrices to use for the handeye  </description>
+      <label>How many matrices to use for the handeye</label>
+      <default>40</default>
+    </integer>
+
+    <boolean>
+      <name>FlipDir1</name>
+      <longflag>FlipDir1</longflag>
+      <description>Flip the matrices in directory 1 </description>
+      <label>Flip the matrices in directory 1</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>FlipDir2</name>
+      <longflag>FlipDir2</longflag>
+      <description>Flip the matrices in directory 2</description>
+      <label>Flip the matrices in directory 2</label>
+      <default>0</default>
+    </boolean>
+   
+    <integer>
+      <name>MaxTimingError</name>
+      <longflag>MaxTimingError</longflag>
+      <description>The maximum allowable timing error in milliseconds</description>
+      <label>The maximum allowable timing error in milliseconds</label>
+      <default>50</default>
+    </integer>
+   
+    <boolean>
+      <name>CullOnDistance</name>
+      <longflag>CullOnDistance</longflag>
+      <description>Use rigid body distances to remove outliers</description>
+      <label>Use rigid body distances to remove outliers</label>
+      <default>0</default>
+    </boolean>
+   
+
+
+
+ 
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <integer>
+	<name>temporalWindowLow</name>
+	<longflag>temporalWindowLow</longflag>
+	<description>The lower value (ms) for the temporal calibration window</description>
+	<label>The lower valuer (ms) for the temporal calibration window</label>
+	<default>-50</default>
+    </integer>
+
+    <integer>
+	<name>temporalWindowHigh</name>
+	<longflag>temporalWindowHigh</longflag>
+	<description>The upper value (ms) for the temporal calibration window</description>
+	<label>The upper valuer (ms) for the temporal calibration window</label>
+	<default>50</default>
+</integer>
+
+  </parameters>
+  
+</executable>

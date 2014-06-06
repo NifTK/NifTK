@@ -23,8 +23,6 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include <Interactions/mitkDnDDisplayInteractor.h>
-
 #include "mitkMIDASEventFilter.h"
 
 //-----------------------------------------------------------------------------

@@ -16,10 +16,11 @@
 #define QmitkCommonAppsApplicationPlugin_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
-#include <ctkPluginActivator.h>
 #include <ctkServiceTracker.h>
+#include <berryAbstractUICTKPlugin.h>
 #include <berryIPreferencesService.h>
 #include <mitkIDataStorageService.h>
+#include <QmitkLookupTableProviderService.h>
 
 #include <QObject>
 #include <QString>
@@ -34,7 +35,7 @@ namespace mitk {
  * \brief Abstract class that implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  */
-class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public ctkPluginActivator
+class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public berry::AbstractUICTKPlugin
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -47,10 +48,15 @@ public:
   static QmitkCommonAppsApplicationPlugin* GetDefault();
   ctkPluginContext* GetPluginContext() const;
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
+  virtual void start(ctkPluginContext* context);
+  virtual void stop(ctkPluginContext* context);
 
 protected:
+
+  /**
+   * \brief Called when the user toggles the opacity control properties.
+   */
+  virtual void OnLookupTablePropertyChanged(const itk::Object *caller, const itk::EventObject &event);
 
   /// \brief Deliberately not virtual method that enables derived classes to set the plugin context, and should be called from within the plugin start method.
   void SetPluginContext(ctkPluginContext*);
@@ -67,11 +73,11 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
   void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
+  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial "Image Rendering.Mode" property to each image.
+  void RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
   void RegisterInterpolationProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
-
-  /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for black opacity property.
-  void RegisterBlackOpacityProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
   void RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
@@ -85,6 +91,9 @@ protected:
   /// \brief Called each time a data node is added, and derived classes can override it.
   virtual void NodeAdded(const mitk::DataNode *node);
 
+  /// \brief Called each time a data node is removed, and derived classes can override it.
+  virtual void NodeRemoved(const mitk::DataNode *node);
+
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const { return QString(); }
 
@@ -95,7 +104,13 @@ protected:
 private:
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
-  virtual void NodeAddedProxy(const mitk::DataNode *node);
+  void NodeAddedProxy(const mitk::DataNode *node);
+
+  /// \brief Private method that checks whether or not we are already removing and if not, calls NodeRemoved()
+  void NodeRemovedProxy(const mitk::DataNode *node);
+
+  /// \brief Returns the lookup table provider service.
+  QmitkLookupTableProviderService* GetLookupTableProvider();
 
   /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
   const mitk::DataStorage* GetDataStorage();
@@ -118,6 +133,9 @@ private:
   bool m_InDataStorageChanged;
   static QmitkCommonAppsApplicationPlugin* s_Inst;
 
+  std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
 };
 
 #endif /* QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_ */

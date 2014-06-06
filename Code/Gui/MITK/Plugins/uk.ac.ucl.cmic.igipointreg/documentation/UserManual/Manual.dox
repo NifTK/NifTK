@@ -1,23 +1,51 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.igipointreg} The Point Based Registration View
+\page uk_ac_ucl_cmic_igipointreg The Point Based Registration View
 
-\image html icon.png "The Icon for the Point Based Registration View"
+\image html PointRegIcon.png "The Icon for the Point Based Registration View"
 
 \section PointRegIntro Introduction
 
-Do an introduction here.
+This view provides registration of two data nodes containing points.
+The current implementation allows a rigid (6 degree of freedom) registration between the
+moving and fixed data.
+Two methods are available. For ordered point sets, where the correspondence between points is known
+the registration can be posed as an orthogonal Procrustes problem and the optimal 
+registration found using matrix SVD. For point sets of unequal size or where the 
+correspondence is not known, an implementation of ITK's iterative closest point algorithm is used.
+
+The resulting transform is not composed with the moving node by default. To physically move the
+data the user is required to use the "compose with data" button. The interface allows the transform
+to be composed with any available data node.
 
 \section PointRegUsage Usage
 
-Put all usage information here.
+Please refer to Figure 1. The user must select a fixed points data node.
+Only nodes containing points or surfaces are available.
+The user must select a moving points data node.
+Only nodes containing surfaces are available.
+
+\image html PointRegView.jpg "Figure 1: The Point Based Registration View."
+
+Pressing the calculate button will begin the registration algorithm. When the algorithm
+completes, the resulting transform is displayed. The user may save the transform to
+file and/or compose the transform with a selection of data nodes.
 
 \section PointRegPreferences Preferences
 
-Put all information on user configurable preferences here.
+Please refer to Figure 2: The preference page contains contains options to
+\li use ICP initialisation: By default (checkbox unchecked), matrix SVD is used, so the number of
+points in each point set must match exactly. If checked, the ICP algorithm is used to determine point correspondence.
+\li use point ID to match: MITK Point Sets can have an identifier attached to each point. If this method
+is checked, only points with matching identifiers are used. This means points can be unordered,
+and the two point sets can have different numbers of points.
+
+\image html PointRegPrefs.jpg "Figure 2: The Point Based Registration Preferences."
 
 \section PointRegReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+Wikipedia contains more about
+\li <a href="http://en.wikipedia.org/wiki/Iterative_closest_point">The Iterative Closest Point (ICP) algorithm.</a>
+\li <a href="http://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem">The Orthogonal Procrustes problem.</a>
 
 */
 

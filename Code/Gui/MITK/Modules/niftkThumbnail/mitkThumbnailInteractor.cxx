@@ -29,9 +29,6 @@ mitk::ThumbnailInteractor::ThumbnailInteractor(QmitkThumbnailRenderWindow* thumb
 , m_ZoomFactor(1.05)
 {
   m_Renderer = thumbnailWindow->GetRenderer();
-  m_SliceNavigationController = m_Renderer->GetSliceNavigationController();
-  m_StartDisplayCoordinate.Fill(0);
-  m_StartCoordinateInMM.Fill(0);
   m_LastDisplayCoordinate.Fill(0);
   m_CurrentDisplayCoordinate.Fill(0);
 }
@@ -51,58 +48,22 @@ void mitk::ThumbnailInteractor::Notify(InteractionEvent* interactionEvent, bool 
 
 void mitk::ThumbnailInteractor::ConnectActionsAndFunctions()
 {
-//  mitk::DisplayInteractor::ConnectActionsAndFunctions();
+  /// Note:
+  /// We do not delegate the call to the superclass because do not want
+  /// mouse wheel interactions for changing slice.
   CONNECT_FUNCTION("init", Init);
-  CONNECT_FUNCTION("initZoom", Init);
   CONNECT_FUNCTION("move", Move);
   CONNECT_FUNCTION("zoom", Zoom);
 }
 
 bool mitk::ThumbnailInteractor::Init(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  BaseRenderer* renderer = interactionEvent->GetSender();
   InteractionPositionEvent* positionEvent = static_cast<InteractionPositionEvent*>(interactionEvent);
 
-  Vector2D origin = renderer->GetDisplayGeometry()->GetOriginInMM();
-  double scaleFactorMMPerDisplayUnit = renderer->GetDisplayGeometry()->GetScaleFactorMMPerDisplayUnit();
-  m_StartDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
   m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
   m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
-  m_StartCoordinateInMM = mitk::Point2D(
-      (origin + m_StartDisplayCoordinate.GetVectorFromOrigin() * scaleFactorMMPerDisplayUnit).GetDataPointer());
 
   return true;
-}
-
-bool mitk::ThumbnailInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
-{
-  mitk::InteractionPositionEvent* positionEvent = static_cast<mitk::InteractionPositionEvent*>(interactionEvent);
-
-  m_ThumbnailWindow->OnSelectedPositionChanged(positionEvent->GetPositionInWorld());
-
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-
-  mitk::Point3D focusPoint3DInMm = positionEvent->GetPositionInWorld();
-  const mitk::Geometry3D* worldGeometry = renderer->GetWorldGeometry();
-  mitk::Point3D focusPoint3DIndex;
-  worldGeometry->WorldToIndex(focusPoint3DInMm, focusPoint3DIndex);
-  focusPoint3DIndex[0] = std::floor(focusPoint3DIndex[0]) + 0.5;
-  focusPoint3DIndex[1] = std::floor(focusPoint3DIndex[1]) + 0.5;
-  worldGeometry->IndexToWorld(focusPoint3DIndex, focusPoint3DInMm);
-
-  mitk::Point2D focusPoint2DInMm;
-  mitk::Point2D focusPoint2DInPx;
-  mitk::Point2D focusPoint2DInPxUL;
-
-  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-  displayGeometry->Map(focusPoint3DInMm, focusPoint2DInMm);
-  displayGeometry->WorldToDisplay(focusPoint2DInMm, focusPoint2DInPx);
-  displayGeometry->DisplayToULDisplay(focusPoint2DInPx, focusPoint2DInPxUL);
-
-  // Create a new position event with the "corrected" position.
-  mitk::InteractionPositionEvent::Pointer positionEvent2 = InteractionPositionEvent::New(renderer, focusPoint2DInPxUL);
-
-  return this->Init(action, positionEvent2);
 }
 
 bool mitk::ThumbnailInteractor::Move(StateMachineAction* action, InteractionEvent* interactionEvent)
@@ -139,7 +100,7 @@ bool mitk::ThumbnailInteractor::Zoom(StateMachineAction* action, InteractionEven
   m_LastDisplayCoordinate = m_CurrentDisplayCoordinate;
   m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
 
-  m_ThumbnailWindow->OnBoundingBoxZoomed(scaleFactor, m_StartCoordinateInMM);
+  m_ThumbnailWindow->OnBoundingBoxZoomed(scaleFactor);
 
   return true;
 }

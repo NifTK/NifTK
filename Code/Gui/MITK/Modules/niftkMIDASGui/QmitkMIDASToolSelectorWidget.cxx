@@ -19,6 +19,22 @@
 QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 {
   this->setupUi(parent);
+
+  /// Note: If we did not set a layout for the GUI container then one would be
+  /// created with 9,9,9,9 margins.
+  m_ManualToolGUIContainer->setLayout(new QHBoxLayout());
+  m_ManualToolGUIContainer->layout()->setContentsMargins(6, 0, 6, 0);
+
+  /// Note:
+  /// We set a minimum height for the tool GUI container so that if a tool
+  /// needs additional GUI controls, they can be put into that 'empty' area,
+  /// and the rest of the GUI controls do not 'jump down'. From the MIDAS
+  /// tools only the paintbrush tool (morphological editor) and the draw tool
+  /// (irregular editor) have such controls, both provide one slider.
+  /// On Mac OS X Mountain Lion the required height for this is 24 pixels,
+  /// but this might be different on other platforms.
+  m_ManualToolGUIContainer->setMinimumHeight(24);
+
   this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
@@ -26,14 +42,19 @@ QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 //-----------------------------------------------------------------------------
 QmitkMIDASToolSelectorWidget::~QmitkMIDASToolSelectorWidget()
 {
-
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::ToolManager* QmitkMIDASToolSelectorWidget::GetToolManager() const
 {
-  return mitk::ToolManagerProvider::GetInstance()->GetToolManager();
+  return m_ManualToolSelectionBox->GetToolManager();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager& toolManager) // no NULL pointer allowed here, a manager is required
+{
+  m_ManualToolSelectionBox->SetToolManager(toolManager);
 }
 
 

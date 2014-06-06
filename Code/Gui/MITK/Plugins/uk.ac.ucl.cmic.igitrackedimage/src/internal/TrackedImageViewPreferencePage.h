@@ -68,6 +68,11 @@ public:
    */
   static const std::string FLIP_Y_SCALING;
 
+    /**
+   * \brief Stores the status whether we show the clone image button.
+   */
+  static const std::string CLONE_IMAGE;
+
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
   ~TrackedImageViewPreferencePage();
@@ -104,6 +109,8 @@ private:
   QDoubleSpinBox  *m_YScaling;
   QCheckBox       *m_FlipXScaling;
   QCheckBox       *m_FlipYScaling;
+
+  QCheckBox       *m_CloneImage;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };

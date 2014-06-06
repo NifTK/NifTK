@@ -1,23 +1,41 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.igirmserror} The RMS Error View
+\page uk_ac_ucl_cmic_igirmserror The RMS Error View
 
 \image html icon.png "The Icon for RMS Error View"
 
 \section RMSErrorIntro Introduction
 
-Do an introduction here.
-
+The <b>RMS Error</b> plugin provides a visual display of the RMS error between 
+a fixed point set and a transformed moving point set. This is most useful when
+you want to measure some form of registration accuracy.
+  
 \section RMSErrorUsage Usage
 
-Put all usage information here.
+\image html rmserror-screenshot.png "RMS Error plugin"
+
+The plugin uses the notion of a <b>Fixed</b> point set (towards which you have registered
+something else) and a <b>Moving</b> point set (the one that has been registered to the
+fixed one).
+In most cases, the <b>Fixed</b> point set is an intra-operatively measured point set
+based on landmarks. The <b>Moving</b> point set would be a pre-operative model that you
+have registered to the intra-op scene. The <b>Transform</b> matrix is the transformation
+supplied by whatever registration mechanism you've used (see for example the <b>Point Based
+Registration</b> plugin).
+
+<b>Beware:</b> the plugin assumes you are using <b>Data Sources</b> and will only update
+the error number if it receives an update-timer-tick. Try adding "local frame grabber"
+if you have no other data source active.
+
+<b>Beware:</b> the plugin assumes pair-wise correspondence between Fixed and Moving, so
+both have to have the same number of points!
 
 \section RMSErrorPreferences Preferences
 
-Put all information on user configurable preferences here.
+There are currently no settings to twiddle.
 
 \section RMSErrorReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+-# http://www.math-interactive.com/products/calgraph/help/fit_curve_to_data/root_mean_squared_error.htm
 
 */
 

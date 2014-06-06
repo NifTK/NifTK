@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+
+  <category>Breast Cancer Imaging Tools . MG . Individual Images</category>
+
+  <title>Mammogram Mask Segmentation</title>
+
+  <description><![CDATA[Segments a mammogram generating a binary mask corresponding to the breast area.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputMask</name>
+      <flag>m</flag>
+      <longflag>om</longflag>
+      <description>Output mask image</description>      
+      <label>Output mask</label>
+      <default>outputMask.nii</default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>outputMasked.nii</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgPectoralis</name>
+      <longflag>pectoralis</longflag>
+      <description>Also mask the pectoral muscle on MLO mammogram images.</description>
+      <label>Also mask the pectoral muscle?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgIncludeBorderRegion</name>
+      <longflag>border</longflag>
+      <description>Include the border region in the segmented mask.</description>
+      <label>Include border region?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose output?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <image>
+      <name>outputTemplate</name>
+      <flag>t</flag>
+      <longflag>ot</longflag>
+      <description>Output the final pectoral muscle template image</description>      
+      <label>Output template image</label>
+      <channel>output</channel>
+    </image>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debugging output?</label>
+    </boolean>
+
+  </parameters>
+</executable>

@@ -73,6 +73,21 @@
       <channel>output</channel>
     </file>
 
+    <float>
+      <name>perturbTrans</name>
+      <longflag>perturbTrans</longflag>
+      <description>Perturb the initial transform with a random transform (SD of translations)</description>
+      <label>Perturb the initial transform with a random transform (SD of translations)</label>
+      <default>0.0</default>
+    </float>
+	
+    <float>
+      <name>perturbRot</name>
+      <longflag>perturbRot</longflag>
+      <description>Perturb the initial transform with a random transform (SD of rotations)</description>
+      <label>Perturb the initial transform with a random transform (SD of rotations)</label>
+      <default>0.0</default>
+    </float>
 
   </parameters>
   

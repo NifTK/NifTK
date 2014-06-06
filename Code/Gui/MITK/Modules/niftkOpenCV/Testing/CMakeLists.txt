@@ -28,6 +28,8 @@ mitkAddCustomModuleTest(Video-Tracker_Matching mitkVideoTrackerMatchingTest ${NI
   
 mitkAddCustomModuleTest(Reprojection-Test mitkReprojectionTest --calibration ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
 
+mitkAddCustomModuleTest(UndistortionLoop-Test mitkUndistortionLoopTest --calibration ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
+
 mitkAddCustomModuleTest(IdealCalibration-Test mitkIdealStereoCalibrationTest --calibration ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration --tracking ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/TrackerMatrices0 --gridToWorldTransform ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/calib.left.gridtoworld.txt --maxTrackingMatricesToUse 6)
 
 mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)

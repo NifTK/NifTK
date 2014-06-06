@@ -17,6 +17,9 @@
 #include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
 #include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -57,6 +60,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_PlaybackSliderBase(0)
 , m_PlaybackSliderFactor(1)
 , m_CurrentSourceGUI(NULL)
+, m_setupUiHasBeenCalled(false)
 {
   m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -84,6 +88,33 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
   if (m_ClearDownTimer != NULL)
   {
     m_ClearDownTimer->stop();
+  }
+
+  if (m_setupUiHasBeenCalled)
+  {
+    bool  ok = false;
+    ok = QObject::disconnect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
+    assert(ok);
+    ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+    assert(ok);
+    ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+    assert(ok);
+    ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+    assert(ok);
+    ok = QObject::disconnect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+    assert(ok);
+    ok = QObject::disconnect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+    assert(ok);
+    ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+    assert(ok);
+    ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+    assert(ok);
+    ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+    assert(ok);
+    ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+    assert(ok);
+    ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -304,19 +335,52 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  // the active column has a fixed, minimal size. note that this line relies on the table having
+  // columns already! the ui file has them added.
+  m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
-  connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
-  connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
-  connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
-  connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
-  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
-  connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
-  connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
-  connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
-  // FIXME: do we need to connect a slot to the playback slider? gui-update-timer will eventually check its state anyway.
+  bool    ok = false;
+  ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
+  assert(ok);
+  ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+  assert(ok);
+  ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+  assert(ok);
+  ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+  assert(ok);
+  ok = QObject::connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  assert(ok);
+  ok = QObject::connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  assert(ok);
+  ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+  assert(ok);
+  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
+  ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+  assert(ok);
+  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+  assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
+
+  m_setupUiHasBeenCalled = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnFreezeTableHeaderClicked(int section)
+{
+  if (section == 0)
+  {
+    // we only ever freeze data sources. always.
+
+    for (int i = 0; i < m_TableWidget->rowCount(); ++i)
+    {
+      m_TableWidget->item(i, 0)->setCheckState(Qt::Unchecked);
+    }
+  }
 }
 
 
@@ -705,15 +769,19 @@ void QmitkIGIDataSourceManager::UpdateSourceView(const int& sourceIdentifier, bo
     m_TableWidget->insertRow(rowNumber);
   }
 
-  for (unsigned int i = 0; i < fields.size(); i++)
+  for (unsigned int i = 1; i < fields.size(); i++)
   {
     QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
     item->setTextAlignment(Qt::AlignCenter);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     m_TableWidget->setItem(rowNumber, i, item);
   }
-  m_TableWidget->item(rowNumber, 0)->setFlags(m_TableWidget->item(rowNumber, 0)->flags() | Qt::ItemIsUserCheckable);
-  m_TableWidget->item(rowNumber, 0)->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+
+  QTableWidgetItem* freezeitem = new QTableWidgetItem(" ");
+  freezeitem->setTextAlignment(Qt::AlignCenter);
+  freezeitem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+  freezeitem->setCheckState(update ? Qt::Checked : Qt::Unchecked);
+  m_TableWidget->setItem(rowNumber, 0, freezeitem);
 
   if (instantiateRelatedSources)
   {
@@ -730,6 +798,44 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnTimestampEditFinished()
+{
+  igtlUint64  maxSliderTime  = m_PlaybackSliderBase + ((igtlUint64) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
+
+  // try to parse as single number, a timestamp in nano seconds.
+  bool  ok = false;
+  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime   parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
+      ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
+    }
+  }
+
+
+  if (ok)
+  {
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
@@ -738,7 +844,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   if (m_PlayPushButton->isChecked())
   {
     int         sliderValue = m_PlaybackSlider->value();
-    igtlUint64  sliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) sliderValue / m_PlaybackSliderFactor));
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
 
     m_CurrentTime = sliderTime;
   }
@@ -748,7 +854,22 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  // only update text if user is not editing
+  if (!m_TimeStampEdit->hasFocus())
+  {
+    // avoid flickering the text field. it makes copy-n-paste impossible
+    // during playback mode because it resets the selection every few milliseconds.
+    if (m_TimeStampEdit->text() != humanReadableTimeStamp)
+    {
+      m_TimeStampEdit->setText(humanReadableTimeStamp);
+    }
+    if (m_TimeStampEdit->toolTip() != rawTimeStampString)
+    {
+      m_TimeStampEdit->setToolTip(rawTimeStampString);
+    }
+  }
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
@@ -783,16 +904,16 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
       frameRateItem->setTextAlignment(Qt::AlignCenter);
       frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 4, frameRateItem);
+      m_TableWidget->setItem(rowNumber, 5, frameRateItem);
 
       // Update the lag number.
       QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
       lagItem->setTextAlignment(Qt::AlignCenter);
       lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 5, lagItem);
+      m_TableWidget->setItem(rowNumber, 6, lagItem);
 
       // Update the status icon.
-      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
+      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
       if (!shouldUpdate)
       {
         QPixmap pix(22, 22);
@@ -818,7 +939,9 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       }
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
-      tItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+
+      QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
+      activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
 
     emit UpdateGuiFinishedDataSources(idNow);
@@ -929,6 +1052,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 {
   QString directoryName = this->GetDirectoryName();
   QDir directory(directoryName);
+  QDir().mkpath(directoryName);
 
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
 
@@ -941,6 +1065,60 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   m_StopPushButton->setEnabled(true);
   assert(!m_PlayPushButton->isChecked());
   m_PlayPushButton->setEnabled(false);
+
+  // tell interested parties (e.g. other plugins) that recording has started.
+  // we do this before dumping the descriptor because that might pop up a message box,
+  // which would stall delivering this signal.
+  emit RecordingStarted(directory.absolutePath());
+
+  // dump our descriptor file
+  QFile   descfile(directory.absolutePath() + QDir::separator() + "descriptor.cfg");
+  bool openok = descfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  if (openok)
+  {
+    QTextStream   descstream(&descfile);
+    descstream.setCodec("UTF-8");
+    descstream << 
+      "# this file is encoded as utf-8.\n"
+      "# lines starting with hash are comments and ignored.\n"
+      "   # all lines are white-space trimmed.   \n"
+      "   # empty lines are ignored too.\n"
+      "\n"
+      "# the format is:\n"
+      "#   key = value\n"
+      "# both key and value are white-space trimmed.\n"
+      "# key is the directory which you want to associate with a data source class.\n"
+      "# value is the name of the data source class.\n"
+      "# there is no escaping! so neither key nor value can contain the equal sign!\n"
+      "#\n"
+      "# known data source classes are:\n"
+      "#  QmitkIGINVidiaDataSource\n"
+      "#  QmitkIGIUltrasonixTool\n"
+      "#  QmitkIGIOpenCVDataSource\n"
+      "#  QmitkIGITrackerSource\n"
+      "# however, not all might be compiled in.\n";
+
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      // this should be a relative path!
+      // relative to the descriptor file or directoryName (equivalent).
+      QString datasourcedir = QString::fromStdString(source->GetSaveDirectoryName());
+      // despite this being relativeFilePath() it works perfectly fine for directories too.
+      datasourcedir = directory.relativeFilePath(datasourcedir);
+
+      descstream << datasourcedir << " = " << QString::fromStdString(source->GetNameOfClass()) << "\n";
+    }
+
+    descstream.flush();
+  }
+  else
+  {
+    QMessageBox msgbox;
+    msgbox.setText("Error creating descriptor file.");
+    msgbox.setInformativeText("Cannot open " + descfile.fileName() + " for writing. Data source playback will be borked later on; you will need to create a descriptor by hand.");
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
+  }
 }
 
 
@@ -967,6 +1145,80 @@ void QmitkIGIDataSourceManager::OnStop()
 
 
 //-----------------------------------------------------------------------------
+QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(const QString& filepath)
+{
+  QFile   descfile(filepath);
+  if (!descfile.exists())
+  {
+    throw std::runtime_error("Descriptor file does not exist: " + filepath.toStdString());
+  }
+
+  bool openedok = descfile.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!openedok)
+  {
+    throw std::runtime_error("Cannot open descriptor file: " + filepath.toStdString());
+  }
+
+  QTextStream   descstream(&descfile);
+  descstream.setCodec("UTF-8");
+
+  QMap<QString, QString>      map;
+
+  // used for error diagnostic
+  int   lineNumber = 0;
+
+  while (!descstream.atEnd())
+  {
+    QString   line = descstream.readLine().trimmed();
+    ++lineNumber;
+
+    if (line.isEmpty())
+      continue;
+    if (line.startsWith('#'))
+      continue;
+
+    // parse string by hand. my regexp skills are too rusty to come up
+    // with something that can deal with all the path names we had so far.
+    QStringList items = line.split('=');
+
+    if (items.size() != 2)
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": parsing failed";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    QString   directoryKey   = items[0].trimmed();
+    QString   classnameValue = items[1].trimmed();
+
+    if (directoryKey.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+    if (classnameValue.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    if (map.contains(directoryKey))
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key already seen; specified it twice?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    map.insert(directoryKey, classnameValue);
+  }
+
+  return map;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnPlayStart()
 {
   if (m_PlayPushButton->isChecked())
@@ -979,65 +1231,142 @@ void QmitkIGIDataSourceManager::OnPlayStart()
     }
     else
     {
-      std::set<QmitkIGIDataSource::Pointer> goodSources;
+      // data sources participating in igi data playback.
+      // key = fully qualified path for that data source.
+      QMap<std::string, QmitkIGIDataSource::Pointer>  goodSources;
 
+      // union of the time range encompassing everything recorded in that session.
       igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
       igtlUint64    overallEndTime   = std::numeric_limits<igtlUint64>::min();
-      std::string   pathstring       = playbackpath.toStdString();
 
-      foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+      try
       {
-        igtlUint64  startTime = -1;
-        igtlUint64  endTime   = -1;
-        bool cando = source->ProbeRecordedData(pathstring, &startTime, &endTime);
-        if (cando)
-        {
-          overallStartTime = std::min(overallStartTime, startTime);
-          overallEndTime   = std::max(overallEndTime, endTime);
+        QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
 
-          goodSources.insert(source);
+        // for each existing data source (that the user added before), check whether it can playback
+        // that particular directory mentioned in the descriptor.
+        foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+        {
+          // find a suitable directory
+          for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
+               dir2classmapIterator != dir2classmap.end();
+               ++dir2classmapIterator)
+          {
+            if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+            {
+              igtlUint64  startTime = -1;
+              igtlUint64  endTime   = -1;
+              std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
+              bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
+              if (cando)
+              {
+                overallStartTime = std::min(overallStartTime, startTime);
+                overallEndTime   = std::max(overallEndTime, endTime);
+
+                goodSources.insert(dataSourceDir, source);
+
+                // we found a directory <-> source combination that can work.
+                // so drop it off the list dir2classmap.
+                dir2classmap.erase(dir2classmapIterator);
+                // try the next source that exist already.
+                break;
+              }
+              else
+              {
+                // no special else here (only diagnostic). if this data source cannot playback that particular directory,
+                // even though the descriptor says it can, the data source may still be able to play another director
+                // coming later in the list.
+                MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
+              }
+            }
+          }
+        }
+
+        // if there are more user-added data sources than listed in the descriptor
+        // then simply leave them be. at first, i thought it might make sense to freeze-frame
+        // these. but now this feels wrong.
+
+        if (overallEndTime >= overallStartTime)
+        {
+          // sanity check: if we have a timestamp range than at least one source should be ok.
+          assert(!goodSources.empty());
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->ClearBuffer();
+            source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
+          }
+
+          m_PlaybackSliderBase = overallStartTime;
+          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
+          // if the time range is very short then dont upscale for the slider
+          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
+
+          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
+          assert(sliderMax < std::numeric_limits<int>::max());
+
+          m_PlaybackSlider->setMinimum(0);
+          m_PlaybackSlider->setMaximum((int) sliderMax);
+
+          // set slider step values, so user can click or mouse-wheel the slider to advance time.
+          // on windows-qt, single-step corresponds to a single mouse-wheel event.
+          // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
+          // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
+          igtlUint64  tenthASecondInNanoseconds = 100000000;
+          igtlUint64  tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+          tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
+          assert(tenthASecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
+          // on windows-qt, a page-step is when clicking on the slider track.
+          igtlUint64  oneSecondInNanoseconds = 1000000000;
+          igtlUint64  oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+          oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
+          assert(oneSecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setPageStep((int) oneSecondStep);
+
+          // pop open the controls
+          m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+          // can stop playback with stop button (in addition to unchecking the playbutton)
+          m_StopPushButton->setEnabled(true);
+          // for now, cannot start recording directly from playback mode.
+          // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+          m_RecordPushButton->setEnabled(false);
+
+          m_TimeStampEdit->setReadOnly(false);
+          m_PlaybackSlider->setEnabled(true);
+          m_PlaybackSlider->setValue(0);
         }
         else
         {
-          // data source that cannot playback enters freeze-frame mode
-          source->SetShouldCallUpdate(false);
+          m_PlayPushButton->setChecked(false);
         }
       }
-
-      if (overallEndTime >= overallStartTime)
+      catch (const std::exception& e)
       {
-        foreach (QmitkIGIDataSource::Pointer source, goodSources)
+        MITK_ERROR << "Caught exception while trying to initialise data playback: " << e.what();
+
+        // try stopping playback if we had it started already on some sources.
+        try
         {
-          source->ClearBuffer();
-          source->StartPlayback(pathstring, overallStartTime, overallEndTime);
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->StopPlayback();
+          }
+        }
+        catch (...)
+        {
+          // swallow
+          MITK_WARN << "Caught exception while trying to stop data source playback during an exception handler.";
         }
 
+        QMessageBox msgbox;
+        msgbox.setText("Data playback initialisation failed.");
+        msgbox.setInformativeText("Playback cannot continue and will stop. Have a look at the detailed message and try to fix it. Good luck.");
+        msgbox.setDetailedText(QString::fromStdString(e.what()));
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.exec();
 
-        m_PlaybackSliderBase = overallStartTime;
-        m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
-        // if the time range is very short then dont upscale for the slider
-        m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
-
-        double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
-        assert(sliderMax < std::numeric_limits<int>::max());
-
-        m_PlaybackSlider->setMinimum(0);
-        m_PlaybackSlider->setMaximum((int) sliderMax);
-
-        // pop open the controls
-        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
-        // can stop playback with stop button (in addition to unchecking the playbutton)
-        m_StopPushButton->setEnabled(true);
-        // for now, cannot start recording directly from playback mode.
-        // could be possible: leave this enabled and simply stop all playback when user clicks on record.
-        m_RecordPushButton->setEnabled(false);
-
-        m_TimeStampEdit->setReadOnly(false);
-        m_PlaybackSlider->setEnabled(true);
-        m_PlaybackSlider->setValue(0);
-      }
-      else
-      {
+        // switch off playback. hopefully, user will fix the error
+        // and can then try to click on playback again.
         m_PlayPushButton->setChecked(false);
       }
     }

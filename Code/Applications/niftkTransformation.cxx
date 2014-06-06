@@ -639,23 +639,13 @@ int main(int argc, char** argv)
   switch (componentType)
     {
     case itk::ImageIOBase::CHAR:
-      if (dims == 2)
-        result = DoMain<2, short>(args);
-      else
-        result = DoMain<3, short>(args);
-      break;    
     case itk::ImageIOBase::UCHAR:
-      if (dims == 2)
-        result = DoMain<2, short>(args);
-      else
-        result = DoMain<3, short>(args);
-      break;    
     case itk::ImageIOBase::SHORT:
       if (dims == 2)
         result = DoMain<2, short>(args);
       else
         result = DoMain<3, short>(args);
-      break;
+      break;    
     case itk::ImageIOBase::USHORT:
       if (dims == 2)
         result = DoMain<2, unsigned short>(args);
@@ -674,30 +664,25 @@ int main(int argc, char** argv)
       else
         result = DoMain<3, unsigned int>(args);
       break;
-    case itk::ImageIOBase::LONG:
-      if (dims == 2)
-        result = DoMain<2, long>(args);
-      else
-        result = DoMain<3, long>(args);
-      break;
-    case itk::ImageIOBase::ULONG:
-      if (dims == 2)
-        result = DoMain<2, unsigned long>(args);
-      else
-        result = DoMain<3, unsigned long>(args);
-      break;
     case itk::ImageIOBase::FLOAT:
       if (dims == 2)
         result = DoMain<2, float>(args);
       else
         result = DoMain<3, float>(args);
       break;
-    case itk::ImageIOBase::DOUBLE:
-      if (dims == 2)
-        result = DoMain<2, double>(args);
-      else
-        result = DoMain<3, double>(args);
-      break;
+
+/* 
+ * DON'T DO THIS. It crashes some compilers on some machines.
+ * e.g. gcc44, gcc41 on comic1. We decided that we don't need this.
+ *
+ *    case itk::ImageIOBase::DOUBLE:
+ *      if (dims == 2)
+ *        result = DoMain<2, double>(args);
+ *      else
+ *        result = DoMain<3, double>(args);
+ *      break;
+ */
+
     default:
       std::cerr << "Unsupported pixel format" << std::endl;
       return EXIT_FAILURE;

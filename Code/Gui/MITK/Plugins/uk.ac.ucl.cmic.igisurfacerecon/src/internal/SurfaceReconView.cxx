@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-// Qmitk
 #include "SurfaceReconView.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
@@ -23,7 +22,10 @@
 #include "SurfaceReconViewActivator.h"
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkLogMacros.h>
 #include <QFileDialog>
+#include <QDateTime>
+#include <QMessageBox>
 #include <mitkCoordinateAxesData.h>
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
@@ -33,12 +35,14 @@
 #include <cctype>
 
 
-const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+const char* SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
   : m_BackgroundOutputNodeIsVisible(true)
+  , m_IGIUpdateSubscriptionID(-1)
+  , m_IGIRecordingStartedSubscriptionID(-1)
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
 
@@ -54,6 +58,21 @@ SurfaceReconView::~SurfaceReconView()
   bool ok = false;
   ok = disconnect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
   assert(ok);
+
+
+  // ctk event bus de-registration
+  {
+    ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = mitk::SurfaceReconViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+      if (eventAdmin)
+      {
+        eventAdmin->unsubscribeSlot(m_IGIUpdateSubscriptionID);
+        eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
+      }
+    }
+  }
 
   // wait for it to finish first and then disconnect?
   // or the other way around?
@@ -87,7 +106,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = mitk::SurfaceReconViewActivator::getContext()->getService<ctkEventAdmin>(ref);
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    m_IGIUpdateSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
+    m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
   }
 
   this->RetrievePreferenceValues();
@@ -131,6 +153,7 @@ void SurfaceReconView::RetrievePreferenceValues()
 
   m_MinDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName, 1.0f));
   m_MaxDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName, 1000.0f));
+  m_BakeWorldTransformCheckBox->setChecked(prefs->GetBool(SurfaceReconViewPreferencePage::s_DefaultBakeCameraTransformPrefsName, true));
 
   bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
   if (useUndistortDefaultPath)
@@ -174,6 +197,67 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
     {
       DoSurfaceReconstruction();
     }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::WriteCurrentConfig(const QString& directory) const
+{
+  QFile   infoFile(directory + QDir::separator() + VIEW_ID + ".txt");
+  bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
+  if (opened)
+  {
+    QTextStream   info(&infoFile);
+    info.setCodec("UTF-8");
+    info << "START: " << QDateTime::currentDateTime().toString() << "\n";
+
+    mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
+    mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
+
+    info << "leftnode=" << (leftNode.IsNotNull() ? QString::fromStdString("\"" + leftNode->GetName() + "\"") : "null") << "\n";
+    info << "rightnode=" << (rightNode.IsNotNull() ? QString::fromStdString("\"" + rightNode->GetName() + "\"") : "null") << "\n";
+
+    info << "leftcalibfile=" << m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName() << "\n";
+    info << "rightcalibfile=" << m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName() << "\n";
+    info << "stereorigfile=" << m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName() << "\n";
+
+    info << "outputnodeisvisible=" << (OutputNodeIsVisibleCheckBox->isChecked() ? "yes" : "no") << "\n";
+    info << "outputnode=" << OutputNodeNameLineEdit->text() << "\n";
+    info << "autoincoutputnodename=" << (AutoIncNodeNameCheckBox->isChecked() ? "yes" : "no") << "\n";
+    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage" : "pointcloud") << "\n";
+
+    mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
+    info << "cameranode=" << (camNode.IsNotNull() ? QString::fromStdString("\"" + camNode->GetName() + "\"") : "null") << "\n";
+
+    info << "methodname=" << MethodComboBox->currentText() << "\n";
+    info << "maxtrierror=" << m_MaxTriangulationErrorThresholdSpinBox->value() << "\n";
+    info << "mindepth=" << m_MinDepthRangeSpinBox->value() << "\n";
+    info << "maxdepth=" << m_MaxDepthRangeSpinBox->value() << "\n";
+
+    info << "bakingcameratoworldtransform=" << (m_BakeWorldTransformCheckBox->isChecked() ? "yes" : "no") << "\n";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnRecordingStarted(const ctkEvent& event)
+{
+  QString   directory = event.getProperty("directory").toString();
+  if (!directory.isEmpty())
+  {
+    try
+    {
+      WriteCurrentConfig(directory);
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Caught exception while writing info file! Ignoring it and aborting info file.";
+    }
+  }
+  else
+  {
+    MITK_WARN << "Received igi-recording-started event without directory information! Ignoring it.";
   }
 }
 
@@ -303,6 +387,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
       float maxTriError = (float) m_MaxTriangulationErrorThresholdSpinBox->value();
       float minDepth    = (float) m_MinDepthRangeSpinBox->value();
       float maxDepth    = (float) m_MaxDepthRangeSpinBox->value();
+      bool  bakeTransform = m_BakeWorldTransformCheckBox->isChecked();
 
       try
       {
@@ -319,14 +404,26 @@ void SurfaceReconView::DoSurfaceReconstruction()
         params.maxTriangulationError = maxTriError;
         params.minDepth = minDepth;
         params.maxDepth = maxDepth;
+        params.bakeCameraTransform = bakeTransform;
+
+        // make sure to reset this before we start processing.
+        m_BackgroundErrorMessage = "";
 
         m_BackgroundProcess = QtConcurrent::run(this, &SurfaceReconView::RunBackgroundReconstruction, params);
         m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
       }
       catch (const std::exception& e)
       {
-        std::cerr << "Whoops... something went wrong with surface reconstruction: " << e.what() << std::endl;
-        // FIXME: show an error message on the plugin panel somewhere?
+        // i dont think this will ever catch here. it's a remnant of when surface-recon was called directly,
+        // instead of bouncing it through a future.
+        MITK_ERROR << "Whoops... something went wrong with surface reconstruction: " << e.what() << std::endl;
+
+        QMessageBox msgBox;
+        msgBox.setText("Starting surface reconstruction failed.");
+        msgBox.setInformativeText(QString::fromStdString(e.what()));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.exec();
       }
     }
   }
@@ -343,11 +440,13 @@ mitk::BaseData::Pointer SurfaceReconView::RunBackgroundReconstruction(niftk::Sur
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Caught exception: " << e.what() << std::endl;
+    MITK_ERROR << "Caught exception: " << e.what() << std::endl;
+    m_BackgroundErrorMessage = e.what();
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception!" << std::endl;
+    MITK_ERROR << "Caught unknown exception!" << std::endl;
+    m_BackgroundErrorMessage = "unknown exception";
   }
   return result;
 }
@@ -356,6 +455,23 @@ mitk::BaseData::Pointer SurfaceReconView::RunBackgroundReconstruction(niftk::Sur
 //-----------------------------------------------------------------------------
 void SurfaceReconView::OnBackgroundProcessFinished()
 {
+  if (!m_BackgroundErrorMessage.empty())
+  {
+    MITK_ERROR << "Background processing returned an error message: " << m_BackgroundErrorMessage;
+
+    QMessageBox msgBox;
+    msgBox.setText("Surface Reconstruction failed.");
+    msgBox.setInformativeText(QString::fromStdString(m_BackgroundErrorMessage));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+
+    DoItButton->setEnabled(true);
+
+    // dont think we should continue, trying to parse the output from our future.
+    return;
+  }
+
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
@@ -406,7 +522,7 @@ void SurfaceReconView::OnBackgroundProcessFinished()
   {
     // i think this else branch will only ever happen if we are half-way down the shutdown process.
     // but not sure...
-    std::cerr << "Warning: data storage gone while processing surface reconstruction!" << std::endl;
+    MITK_ERROR << "Warning: data storage gone while processing surface reconstruction!";
   }
 }
 

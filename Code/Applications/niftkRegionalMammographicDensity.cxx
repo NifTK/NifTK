@@ -97,18 +97,20 @@ std::string GetText( itk::DOMNode::ChildrenListType::iterator &itNode, std::stri
 
 void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 {
+  //                                   123456789012345678901234567890
 
   *foutOutputDensityCSV 
-    //                                 123456789012345678901234567890
     << std::right << std::setw(10) << "Patient id" << ", "
 
     << std::right << std::setw(17) << "Diagnostic ID"   << ", "
     << std::right << std::setw(60) << "Diagnostic file" << ", "
     << std::right << std::setw(18) << "Diag threshold"  << ", "
 
-    << std::right << std::setw(17) << "Pre-diagnostic ID"   << ", "
-    << std::right << std::setw(60) << "Pre-diagnostic file" << ", "
-    << std::right << std::setw(18) << "Pre-diag threshold"  << ", "
+    << std::right << std::setw(15) << "Pre-diagnostic or Control?"   << ", "
+
+    << std::right << std::setw(17) << "Pre-diagnostic/Control ID"   << ", "
+    << std::right << std::setw(60) << "Pre-diagnostic/Control file" << ", "
+    << std::right << std::setw(18) << "Pre-diag/Control threshold"  << ", "
   
     << std::right << std::setw( 9) << "Tumour ID"         << ", "
     << std::right << std::setw(17) << "Tumour image ID"   << ", "
@@ -117,8 +119,10 @@ void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 
     << std::right << std::setw(11) << "Patch size" << ", "
 
-    << std::right << std::setw(22) << "Pre-diag patch number" << ", "
-    << std::right << std::setw(22) << "Pre-diag patch density"
+    << std::right << std::setw(22) << "Pre-diag/Control patch number" << ", "
+    << std::right << std::setw(15) << "Patch index (x)" << ", "
+    << std::right << std::setw(15) << "Patch index (y)" << ", "
+    << std::right << std::setw(22) << "Pre-diag/Control patch density"
 
     << std::endl;
 };
@@ -152,7 +156,8 @@ int main(int argc, char** argv)
 
   std::string strPatientID;
   std::string strImageID, strFilename, strThreshold, strImageOrder, strMammoType;
-  std::string strTumourID, strTumourLeft, strTumourRight;
+  std::string strComments, strCase, strSetNumber, strDiagPreDiagOrControl;
+  std::string strTumourID, strTumourLeft, strTumourRight, strTumourDiameter;
   std::string strTumourTop, strTumourBottom, strTumourImageID;
   std::string strBreastEdgeID, strXCoord, strYCoord, strBreastEdgeImageID;
   std::string strPectoralID, strPectoralImageID;
@@ -172,10 +177,18 @@ int main(int argc, char** argv)
   PARSE_ARGS;
 
   std::cout << std::endl
-            << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
+            << "Input directory: " << dirInput << std::endl
             << "Input image info XML file: " << fileImageXML << std::endl
             << "Input tumour mask info XML file: " << fileTumourXML << std::endl
             << "Input breast edge points XML file: " << fileBreastEdgeXML << std::endl
+            << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
+            << "Region size in mm: " << regionSizeInMM << std::endl
+            << "Register? " << flgRegister << std::endl
+            << "Ouput directory: " << dirOutput << std::endl
+            << "Output CSV file: " << fileOutputDensityCSV << std::endl
+            << "Verbose? " << flgVerbose << std::endl
+            << "Overwrite? " << flgOverwrite << std::endl
+            << "Debug? " << flgDebug << std::endl
             << std::endl;
 
   // Validate command line args
@@ -194,9 +207,9 @@ int main(int argc, char** argv)
 
   if ( fileOutputDensityCSV.length() != 0 ) {
     foutOutputDensityCSV 
-      = new std::ofstream( niftk::ConcatenatePath( dirOutput, fileOutputDensityCSV ).c_str() );
+      = new std::ofstream( fileOutputDensityCSV.c_str(), std::ios::binary );
 
-    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad()) {
+    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad() || foutOutputDensityCSV->fail()) {
       std::cerr << "ERROR: Could not open CSV output file: " << fileOutputDensityCSV << std::endl;
       return EXIT_FAILURE;
     }
@@ -267,27 +280,50 @@ int main(int argc, char** argv)
       {
         strImageOrder = textNode->GetText();
       }
+      else if ( nodeRecord->GetName() == std::string( "comments" ) )
+      {
+        strComments = textNode->GetText();
+      }
+      else if ( nodeRecord->GetName() == std::string( "case" ) )
+      {
+        strDiagPreDiagOrControl = textNode->GetText();
+      }
+      else if ( nodeRecord->GetName() == std::string( "setnum" ) )
+      {
+        strSetNumber = textNode->GetText();
+      }
     }
 
-    if ( strImageOrder == std::string( "1" ) )
-      strMammoType = "diagnostic";
-    else if ( strImageOrder == std::string( "2" ) )
+    if (      strDiagPreDiagOrControl == std::string( "1" ) )
+    {
       strMammoType = "pre-diagnostic";
+    }
+    else if ( strDiagPreDiagOrControl == std::string( "2" ) )
+    {
+      strMammoType = "diagnostic";
+    }
+    else if ( strDiagPreDiagOrControl == std::string( "3" ) )
+    {
+      strMammoType = "control";
+    }
     else
     {
       strMammoType = "undefined";
-      std::cerr << "ERROR: Mammogram type (diagnostic/prediagnostic) undefined" << std::endl;
+      std::cerr << "ERROR: Mammogram type (prediagnostic/diagnostic/control) undefined" << std::endl;
       exit( EXIT_FAILURE );
     }
 
     strPatientID = fs::path( strFilename ).branch_path().string();
    
-    std::cout << "    patient id: " << strPatientID  << std::endl
-              << "    image id: "   << strImageID    << std::endl
-              << "    file_name: "  << strFilename   << std::endl
-              << "    threshold: "  << strThreshold  << std::endl
-              << "    order: "      << strImageOrder << std::endl
-              << "    type: "       << strMammoType  << std::endl;
+    std::cout << "    patient id:           " << strPatientID            << std::endl
+              << "    image id:             " << strImageID              << std::endl
+              << "    file_name:            " << strFilename             << std::endl
+              << "    threshold:            " << strThreshold            << std::endl
+              << "    order:                " << strImageOrder           << std::endl
+              << "    comments:             " << strComments             << std::endl
+              << "    prediag/diag/control: " << strDiagPreDiagOrControl << std::endl
+              << "    setnum:               " << strSetNumber            << std::endl
+              << "    type:                 " << strMammoType            << std::endl;
 
     // Find a patient with this ID
 
@@ -334,6 +370,12 @@ int main(int argc, char** argv)
       patient->SetIDPreDiagnosticImage(   strImageID );
       patient->SetFilePreDiagnostic(      strFilename );
       patient->SetThresholdPreDiagnostic( atoi( strThreshold.c_str() ) );
+    }
+    else if  ( strMammoType == std::string( "control" ) )
+    {
+      patient->SetIDControlImage(   strImageID );
+      patient->SetFileControl(      strFilename );
+      patient->SetThresholdControl( atoi( strThreshold.c_str() ) );
     }
 
     if ( ! flgFound ) 
@@ -400,6 +442,10 @@ int main(int argc, char** argv)
       {
         strTumourImageID = textNode->GetText();
       }
+      else if ( nodeRecord->GetName() == std::string( "tumor_diameter" ) )
+      {
+        strTumourDiameter = textNode->GetText();
+      }
     }
 
     std::cout << "    tumour id: " << std::left << std::setw(6) << strTumourID
@@ -408,6 +454,7 @@ int main(int argc, char** argv)
               << "    top: "       << std::left << std::setw(6) << strTumourTop
               << "    bottom: "    << std::left << std::setw(6) << strTumourBottom
               << "    image id: "  << std::left << std::setw(6) << strTumourImageID
+              << "    diameter: "  << std::left << std::setw(6) << strTumourDiameter
               << std::endl << std::endl;
 
     // Find a patient with this image ID
@@ -442,6 +489,8 @@ int main(int argc, char** argv)
     patient->SetTumourRight(  atoi( strTumourRight.c_str() ) );
     patient->SetTumourTop(    atoi( strTumourTop.c_str() ) );
     patient->SetTumourBottom( atoi( strTumourBottom.c_str() ) );
+
+    patient->SetTumourDiameter( atof( strTumourDiameter.c_str() ) );
 
     if ( ! flgFound ) 
     {
@@ -522,7 +571,8 @@ int main(int argc, char** argv)
           itPatient++ )
     {
       if ( ( (*itPatient)->GetIDDiagnosticImage() == strBreastEdgeImageID ) ||
-           ( (*itPatient)->GetIDPreDiagnosticImage() == strBreastEdgeImageID ) )
+           ( (*itPatient)->GetIDPreDiagnosticImage() == strBreastEdgeImageID ) ||
+           ( (*itPatient)->GetIDControlImage() == strBreastEdgeImageID ) )
       {
         patient = (*itPatient);
         flgFound = true;
@@ -614,7 +664,8 @@ int main(int argc, char** argv)
           itPatient++ )
     {
       if ( ( (*itPatient)->GetIDDiagnosticImage() == strPectoralImageID ) ||
-           ( (*itPatient)->GetIDPreDiagnosticImage() == strPectoralImageID ) )
+           ( (*itPatient)->GetIDPreDiagnosticImage() == strPectoralImageID ) ||
+           ( (*itPatient)->GetIDControlImage() == strPectoralImageID ) )
       {
         patient = (*itPatient);
         flgFound = true;

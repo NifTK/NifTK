@@ -37,9 +37,9 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <mitkFocusManager.h>
 #include <mitkGeometry3D.h>
 #include <mitkGlobalInteraction.h>
+#include <mitkFocusManager.h>
 #include <QmitkRenderWindow.h>
 
 #include <niftkSingleViewerWidget.h>
@@ -62,7 +62,6 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_VisibilityManager(visibilityManager)
 , m_DataStorage(dataStorage)
 , m_RenderingManager(renderingManager)
-, m_FocusManagerObserverTag(0)
 , m_SelectedViewerIndex(0)
 , m_DefaultViewerRows(defaultViewerRows)
 , m_DefaultViewerColumns(defaultViewerColumns)
@@ -70,12 +69,12 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_CursorDefaultVisibility(true)
 , m_RememberSettingsPerWindowLayout(false)
 , m_IsThumbnailMode(false)
-, m_SegmentationModeEnabled(false)
-, m_NavigationControllerEventListening(false)
+, m_LinkedNavigationEnabled(false)
 , m_Magnification(0.0)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_ControlPanel(0)
+, m_FocusManagerObserverTag(0)
 {
   assert(visibilityManager);
 
@@ -172,7 +171,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->SetViewerNumber(m_DefaultViewerRows, m_DefaultViewerColumns, false);
 
   // Connect Qt Signals to make it all hang together.
-  this->connect(m_ControlPanel, SIGNAL(SliceIndexChanged(int)), SLOT(OnSliceIndexChanged(int)));
+  this->connect(m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceChanged(int)));
   this->connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
   this->connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
 
@@ -197,11 +196,9 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
 
-  // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
-  itk::SimpleMemberCommand<niftkMultiViewerWidget>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<niftkMultiViewerWidget>::New();
-  onFocusChangedCommand->SetCallbackFunction( this, &niftkMultiViewerWidget::OnFocusChanged );
-
+  // Register focus observer.
+  itk::SimpleMemberCommand<niftkMultiViewerWidget>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<niftkMultiViewerWidget>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &niftkMultiViewerWidget::OnFocusChanged);
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
@@ -224,37 +221,34 @@ niftkMultiViewerControls* niftkMultiViewerWidget::CreateControlPanel(QWidget* pa
 //-----------------------------------------------------------------------------
 niftkMultiViewerWidget::~niftkMultiViewerWidget()
 {
+  this->EnableLinkedNavigation(false);
+
+  // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
-  this->Deactivated();
+  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 }
 
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 {
-  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(tr("QmitkRenderWindow"),
-                                                                      -5, 20,
-                                                                      this,
-                                                                      m_RenderingManager,
-                                                                      m_DataStorage);
+  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(this, m_RenderingManager);
+  viewer->SetDataStorage(m_DataStorage);
   viewer->setObjectName(tr("niftkSingleViewerWidget"));
   viewer->setVisible(false);
 
-  viewer->SetBackgroundColor(m_BackgroundColour);
+  viewer->SetBackgroundColour(m_BackgroundColour);
   viewer->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
   viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
-  viewer->SetCursorPositionsBound(true);
-  viewer->SetScaleFactorsBound(true);
+  viewer->SetLinkedNavigationEnabled(m_LinkedNavigationEnabled);
+  viewer->SetCursorPositionBinding(true);
+  viewer->SetScaleFactorBinding(true);
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
-  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
@@ -380,7 +374,7 @@ void niftkMultiViewerWidget::SetDropType(DnDDisplayDropType dropType)
   {
     m_ControlPanel->SetDropType(dropType);
 
-    m_VisibilityManager->ClearAllViewers();
+    m_VisibilityManager->ClearViewers();
     m_VisibilityManager->SetDropType(dropType);
     this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
   }
@@ -493,7 +487,7 @@ void niftkMultiViewerWidget::SetThumbnailMode(bool enabled)
   }
   else
   {
-    m_ControlPanel->SetSingleViewerControlsEnabled(m_NavigationControllerEventListening);
+    m_ControlPanel->SetSingleViewerControlsEnabled(m_LinkedNavigationEnabled);
     m_ControlPanel->SetMultiViewerControlsEnabled(true);
     m_ControlPanel->SetViewerNumber(m_ViewerRowsInNonThumbnailMode, m_ViewerColumnsInNonThumbnailMode);
     this->SetViewerNumber(m_ViewerRowsInNonThumbnailMode, m_ViewerColumnsInNonThumbnailMode, false);
@@ -509,61 +503,13 @@ bool niftkMultiViewerWidget::GetThumbnailMode() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSegmentationModeEnabled(bool enabled)
-{
-  m_SegmentationModeEnabled = enabled;
-
-  if (enabled)
-  {
-    m_ViewerRowsBeforeSegmentationMode = m_ControlPanel->GetViewerRows();
-    m_ViewerColumnsBeforeSegmentationMode = m_ControlPanel->GetViewerColumns();
-    m_ControlPanel->SetMultiViewerControlsEnabled(false);
-    this->SetViewerNumber(1, 1, false);
-    this->SetSelectedViewerByIndex(0);
-    this->UpdateFocusManagerToSelectedViewer();
-  }
-  else
-  {
-    m_ControlPanel->SetMultiViewerControlsEnabled(true);
-    this->SetViewerNumber(m_ViewerRowsBeforeSegmentationMode, m_ViewerColumnsBeforeSegmentationMode, false);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::IsSegmentationModeEnabled() const
-{
-  return m_SegmentationModeEnabled;
-}
-
-
-//-----------------------------------------------------------------------------
-WindowLayout niftkMultiViewerWidget::GetDefaultWindowLayoutForSegmentation() const
-{
-  assert(m_VisibilityManager);
-
-  WindowLayout windowLayout = m_VisibilityManager->GetDefaultWindowLayout();
-
-  if (   windowLayout != WINDOW_LAYOUT_AXIAL
-      && windowLayout != WINDOW_LAYOUT_SAGITTAL
-      && windowLayout != WINDOW_LAYOUT_CORONAL
-     )
-  {
-    windowLayout = WINDOW_LAYOUT_CORONAL;
-  }
-
-  return windowLayout;
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
 {
   m_BackgroundColour = backgroundColour;
 
   foreach (niftkSingleViewerWidget* viewer, m_Viewers)
   {
-    viewer->SetBackgroundColor(m_BackgroundColour);
+    viewer->SetBackgroundColour(m_BackgroundColour);
   }
 }
 
@@ -617,13 +563,12 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
       m_Viewers.push_back(viewer);
       m_VisibilityManager->RegisterViewer(viewer);
-      m_VisibilityManager->SetAllNodeVisibilityForViewer(currentNumberOfViewers + i, false);
     }
   }
   else if (requiredNumberOfViewers < currentNumberOfViewers)
   {
     // destroy surplus viewers
-    m_VisibilityManager->DeRegisterViewers(requiredNumberOfViewers, m_Viewers.size() - 1);
+    m_VisibilityManager->DeregisterViewers(requiredNumberOfViewers, m_Viewers.size());
 
     for (int i = requiredNumberOfViewers; i < m_Viewers.size(); i++)
     {
@@ -682,9 +627,11 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
+    bool signalsWereBlocked = m_Viewers[i]->blockSignals(true);
     m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
     m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
     m_Viewers[i]->SetScaleFactors(scaleFactorsInSurvivingViewers[i]);
+    m_Viewers[i]->blockSignals(signalsWereBlocked);
   }
 
   ////////////////////////////////////////
@@ -695,20 +642,12 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   m_ControlPanel->SetViewerNumber(viewerRows, viewerColumns);
 
   // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
-  int selectedViewerIndex = this->GetSelectedViewerIndex();
-  niftkSingleViewerWidget* selectedViewer;
-  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
-  if (this->GetViewerRowFromIndex(selectedViewerIndex) >= viewerRows || this->GetViewerColumnFromIndex(selectedViewerIndex) >= viewerColumns)
+  if (this->GetViewerRowFromIndex(m_SelectedViewerIndex) >= viewerRows
+      || this->GetViewerColumnFromIndex(m_SelectedViewerIndex) >= viewerColumns)
   {
-    selectedViewerIndex = 0;
-    selectedViewer = m_Viewers[selectedViewerIndex];
-    selectedRenderWindow = selectedViewer->GetSelectedRenderWindow();
+    m_SelectedViewerIndex = 0;
   }
-  else
-  {
-    selectedViewer = m_Viewers[selectedViewerIndex];
-  }
-  this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
+  niftkSingleViewerWidget* selectedViewer = m_Viewers[m_SelectedViewerIndex];
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
@@ -717,20 +656,33 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-    mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
 
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetBoundGeometry(geometry);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetBoundTimeGeometry(timeGeometry);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    this->UpdateBoundMagnification();
+    niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    double magnification = selectedViewer->GetMagnification(orientation);
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer)
+      {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetMagnification(orientation, magnification);
+        otherViewer->blockSignals(signalsWereBlocked);
+      }
+    }
   }
 }
 
@@ -786,15 +738,21 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
     return;
   }
 
-  m_ControlPanel->SetSliceIndex(viewer->GetSliceIndex(viewer->GetOrientation()));
+  MIDASOrientation orientation = viewer->GetOrientation();
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(orientation));
+  }
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    for (int i = 0; i < m_Viewers.size(); i++)
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
-      if (m_Viewers[i] != viewer)
+      if (otherViewer != viewer)
       {
-        m_Viewers[i]->SetSelectedPosition(selectedPosition);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -814,11 +772,13 @@ void niftkMultiViewerWidget::OnSelectedTimeStepChanged(niftkSingleViewerWidget* 
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    for (int i = 0; i < m_Viewers.size(); i++)
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
-      if (m_Viewers[i] != viewer)
+      if (otherViewer != viewer)
       {
-        m_Viewers[i]->SetTimeStep(timeStep);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetTimeStep(timeStep);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -834,7 +794,9 @@ void niftkMultiViewerWidget::OnCursorPositionChanged(niftkSingleViewerWidget* vi
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorPosition(orientation, cursorPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -853,7 +815,9 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactor(orientation, scaleFactor);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -870,7 +834,9 @@ void niftkMultiViewerWidget::OnCursorPositionBindingChanged(niftkSingleViewerWid
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetCursorPositionsBound(bound);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetCursorPositionBinding(bound);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -886,7 +852,9 @@ void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetScaleFactorsBound(bound);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetScaleFactorBinding(bound);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -894,7 +862,7 @@ void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, std::vector<mitk::DataNode*> nodes)
 {
   // See also niftkMultiViewerVisibilityManager::OnNodesDropped which should trigger first.
   if (m_ControlPanel->GetDropType() != DNDDISPLAY_DROP_ALL)
@@ -904,30 +872,35 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
-  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first viewer already has focus.
-  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
-
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetWindowLayout(selectedViewer->GetWindowLayout());
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
     const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetSelectedPosition(selectedPosition);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
     const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetCursorPositions(cursorPositions);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
     double scaleFactor = selectedViewer->GetScaleFactor(selectedViewer->GetOrientation());
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetScaleFactor(dropOntoViewer->GetOrientation(), scaleFactor);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
 //  m_ControlPanel->SetMagnification(magnification);
@@ -953,107 +926,79 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow)
+bool niftkMultiViewerWidget::IsFocused()
 {
-  if (selectedViewerIndex >= 0 && selectedViewerIndex < m_Viewers.size())
-  {
-    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
-
-    // This, to turn off borders on all other windows.
-    this->SetSelectedViewerByIndex(selectedViewerIndex);
-
-    // This to specifically set the border round one sub-pane for if its in 2x2 window layout.
-    if (selectedRenderWindow != NULL)
-    {
-      int numberOfNodes = m_VisibilityManager->GetNodesInViewer(selectedViewerIndex);
-      if (numberOfNodes > 0)
-      {
-        selectedViewer->SetSelectedRenderWindow(selectedRenderWindow);
-      }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
-    WindowLayout windowLayout = selectedViewer->GetWindowLayout();
-
-    if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
-    {
-      m_ControlPanel->SetWindowLayout(windowLayout);
-    }
-
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-    {
-      unsigned int maxSliceIndex = selectedViewer->GetMaxSliceIndex(orientation);
-      unsigned int sliceIndex = selectedViewer->GetSliceIndex(orientation);
-      m_ControlPanel->SetMaxSliceIndex(maxSliceIndex);
-      m_ControlPanel->SetSliceIndex(sliceIndex);
-    }
-
-    unsigned int maxTimeStep = selectedViewer->GetMaxTimeStep();
-    unsigned int timeStep = selectedViewer->GetTimeStep();
-    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
-    m_ControlPanel->SetTimeStep(timeStep);
-
-    double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
-    double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
-    double magnification = selectedViewer->GetMagnification(orientation);
-    m_ControlPanel->SetMinMagnification(minMagnification);
-    m_ControlPanel->SetMaxMagnification(maxMagnification);
-    m_ControlPanel->SetMagnification(magnification);
-
-    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
-  }
-  this->RequestUpdateAll();
+  return this->GetSelectedViewer()->IsFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetFocus()
+void niftkMultiViewerWidget::SetFocused()
 {
-  this->GetSelectedViewer()->SetFocus();
+  this->GetSelectedViewer()->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnFocusChanged()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
 
   int selectedViewerIndex = -1;
-  QmitkRenderWindow* focusedRenderWindow = NULL;
-
-  if (focusedRenderer)
+  for (int i = 0; i < m_Viewers.size(); ++ i)
   {
-    for (int i = 0; i < m_Viewers.size(); i++)
+    if (m_Viewers[i]->GetSelectedRenderWindow()->GetRenderer() == focusedRenderer)
     {
-      const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewers[i]->GetRenderWindows();
-      for (int j = 0; j < viewerRenderWindows.size(); ++j)
-      {
-        if (focusedRenderer == viewerRenderWindows[j]->GetRenderer())
-        {
-          selectedViewerIndex = i;
-          focusedRenderWindow = viewerRenderWindows[j];
-          break;
-        }
-      }
-      if (focusedRenderWindow)
-      {
-        break;
-      }
+      selectedViewerIndex = i;
+      break;
     }
   }
 
-  this->SetSelectedRenderWindow(selectedViewerIndex, focusedRenderWindow);
+  if (0 <= selectedViewerIndex && selectedViewerIndex < m_Viewers.size())
+  {
+    m_SelectedViewerIndex = selectedViewerIndex;
+    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
+
+    m_ControlPanel->SetWindowLayout(selectedViewer->GetWindowLayout());
+
+    int maxTimeStep = selectedViewer->GetMaxTimeStep();
+    int timeStep = selectedViewer->GetTimeStep();
+    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
+    m_ControlPanel->SetTimeStep(timeStep);
+
+    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      int maxSlice = selectedViewer->GetMaxSlice(orientation);
+      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
+      m_ControlPanel->SetMaxSlice(maxSlice);
+      m_ControlPanel->SetSelectedSlice(selectedSlice);
+
+      m_ControlPanel->SetMagnificationControlsEnabled(true);
+      double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
+      double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
+      double magnification = selectedViewer->GetMagnification(orientation);
+      m_ControlPanel->SetMinMagnification(minMagnification);
+      m_ControlPanel->SetMaxMagnification(maxMagnification);
+      m_ControlPanel->SetMagnification(magnification);
+    }
+    else
+    {
+      m_ControlPanel->SetMagnificationControlsEnabled(false);
+    }
+
+    m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
+
+    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnDropTypeChanged(DnDDisplayDropType dropType)
 {
-  m_VisibilityManager->ClearAllViewers();
+  m_VisibilityManager->ClearViewers();
   m_VisibilityManager->SetDropType(dropType);
   this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
 }
@@ -1067,21 +1012,16 @@ void niftkMultiViewerWidget::OnDropAccumulateChanged(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSliceIndexChanged(int sliceIndex)
-{
-  this->SetSelectedWindowSliceIndex(sliceIndex);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
+void niftkMultiViewerWidget::OnSelectedSliceChanged(int selectedSlice)
 {
   MIDASOrientation orientation = this->GetSelectedViewer()->GetOrientation();
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-    selectedViewer->SetSliceIndex(orientation, sliceIndex);
+    bool signalsWereBlocked = selectedViewer->blockSignals(true);
+    selectedViewer->SetSelectedSlice(orientation, selectedSlice);
+    selectedViewer->blockSignals(signalsWereBlocked);
 
     if (m_ControlPanel->AreViewerPositionsBound())
     {
@@ -1089,14 +1029,16 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
-          otherViewer->SetSliceIndex(orientation, sliceIndex);
+          signalsWereBlocked = otherViewer->blockSignals(true);
+          otherViewer->SetSelectedSlice(orientation, selectedSlice);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
   }
   else
   {
-    MITK_WARN << "Found an invalid orientation in viewer " << this->GetSelectedViewerIndex() << ", so ignoring request to change to slice " << sliceIndex << std::endl;
+    MITK_WARN << "Found an invalid orientation in viewer " << this->GetSelectedViewerIndex() << ", so ignoring request to change to slice " << selectedSlice << std::endl;
   }
 }
 
@@ -1120,7 +1062,11 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  selectedViewer->SetMagnification(selectedViewer->GetOrientation(), magnification);
+  MIDASOrientation orientation = selectedViewer->GetOrientation();
+
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
+  selectedViewer->SetMagnification(orientation, magnification);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
@@ -1128,7 +1074,9 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
+        signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetMagnification(orientation, magnification);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1150,7 +1098,9 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
   DnDDisplayDropType dropType = m_ControlPanel->GetDropType();
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetTimeStep(timeStep);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   if (dropType == DNDDISPLAY_DROP_ALL)
   {
@@ -1158,7 +1108,9 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        signalsWereBlocked = selectedViewer->blockSignals(true);
         otherViewer->SetTimeStep(timeStep);
+        selectedViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1171,10 +1123,6 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
     this->SetWindowLayout(windowLayout);
-
-    // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
-    // (or indeed anything that's listening to the FocusManager).
-    this->UpdateFocusManagerToSelectedViewer();
   }
 
 }
@@ -1184,54 +1132,33 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* selectedViewer, WindowLayout windowLayout)
 {
   m_ControlPanel->SetWindowLayout(windowLayout);
-  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
-  this->UpdateFocusManagerToSelectedViewer();
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
-  if (m_ControlPanel->AreViewerWindowLayoutsBound())
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
   {
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    if (otherViewer != selectedViewer && otherViewer->isVisible())
     {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      bool updateWasBlocked = otherViewer->BlockUpdate(true);
+      if (m_ControlPanel->AreViewerWindowLayoutsBound())
       {
-        otherViewer->SetWindowLayout(windowLayout, m_ControlPanel->AreViewerPositionsBound(), m_ControlPanel->AreViewerCursorsBound(), m_ControlPanel->AreViewerMagnificationsBound());
+        otherViewer->SetWindowLayout(windowLayout);
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerPositionsBound())
-  {
-    const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerPositionsBound())
       {
-        otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->SetSelectedPosition(selectedViewer->GetSelectedPosition());
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerCursorsBound())
-  {
-    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerCursorsBound())
       {
-        otherViewer->SetCursorPositions(cursorPositions);
+        otherViewer->SetCursorPositions(selectedViewer->GetCursorPositions());
       }
-    }
-  }
-
-  if (m_ControlPanel->AreViewerMagnificationsBound())
-  {
-    std::vector<double> scaleFactors = selectedViewer->GetScaleFactors();
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-    {
-      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      if (m_ControlPanel->AreViewerMagnificationsBound())
       {
-        otherViewer->SetScaleFactors(scaleFactors);
+        otherViewer->SetScaleFactors(selectedViewer->GetScaleFactors());
       }
+      otherViewer->BlockUpdate(updateWasBlocked);
+      otherViewer->blockSignals(signalsWereBlocked);
     }
   }
 }
@@ -1248,7 +1175,9 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* 
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorVisible(visible);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1256,13 +1185,15 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* geometry)
+void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* timeGeometry)
 {
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
-      viewer->SetBoundGeometry(geometry);
+      bool signalsWereBlocked = viewer->blockSignals(true);
+      viewer->SetBoundTimeGeometry(timeGeometry);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
 }
@@ -1280,13 +1211,15 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
     {
       if (viewer->isVisible())
       {
-        viewer->SetCursorPositionsBound(bound);
+        bool signalsWereBlocked = viewer->blockSignals(true);
+        viewer->SetCursorPositionBinding(bound);
+        viewer->blockSignals(signalsWereBlocked);
       }
     }
   }
   else
   {
-    this->GetSelectedViewer()->SetCursorPositionsBound(bound);
+    this->GetSelectedViewer()->SetCursorPositionBinding(bound);
   }
 }
 
@@ -1295,7 +1228,9 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  selectedViewer->SetScaleFactorsBound(bound);
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
+  selectedViewer->SetScaleFactorBinding(bound);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   /// If the scale factors are bound across the viewers then the binding property
   /// across the windows of the viewers can be controlled just together. That is, it
@@ -1307,8 +1242,10 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
       const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetScaleFactorsBound(bound);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetScaleFactorBinding(bound);
         otherViewer->SetScaleFactors(scaleFactors);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1337,23 +1274,6 @@ void niftkMultiViewerWidget::OnShow3DWindowChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::UpdateFocusManagerToSelectedViewer()
-{
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  if (QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow())
-  {
-    mitk::BaseRenderer* selectedRenderer = selectedRenderWindow->GetRenderer();
-    if (selectedRenderer != focusedRenderer)
-    {
-      focusManager->SetFocused(selectedRenderer);
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::ToggleCursorVisibility()
 {
   this->SetCursorVisible(!this->IsCursorVisible());
@@ -1366,11 +1286,13 @@ bool niftkMultiViewerWidget::ToggleCursorVisibility()
 void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetWindowLayout(windowLayout);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   m_ControlPanel->SetWindowLayout(windowLayout);
-  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
@@ -1378,7 +1300,9 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetWindowLayout(windowLayout);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1396,11 +1320,15 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowCursorsBound())
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPositions(cursorPositions);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPosition(orientation, cursorPosition);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1417,11 +1345,15 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowMagnificationsBound())
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactors(scaleFactors);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1434,21 +1366,6 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
   else
   {
     m_MultiWindowLayout = windowLayout;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::UpdateBoundMagnification()
-{
-  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
-  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-  {
-    if (otherViewer != selectedViewer)
-    {
-      otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
-    }
   }
 }
 
@@ -1481,33 +1398,16 @@ MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 int niftkMultiViewerWidget::GetSelectedViewerIndex() const
 {
-  int selectedViewerIndex = m_SelectedViewerIndex;
-  if (selectedViewerIndex < 0 || selectedViewerIndex >= m_Viewers.size())
-  {
-    // Default back to first viewer.
-    selectedViewerIndex = 0;
-  }
-
-  // Note the following specification.
-  assert(selectedViewerIndex >= 0);
-  assert(selectedViewerIndex < m_Viewers.size());
-
-  // Return a valid selected viewer index.
-  return selectedViewerIndex;
+  assert(m_SelectedViewerIndex >= 0 && m_SelectedViewerIndex < m_Viewers.size());
+  return m_SelectedViewerIndex;
 }
 
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget* niftkMultiViewerWidget::GetSelectedViewer() const
 {
-  int selectedViewerIndex = m_SelectedViewerIndex;
-  if (selectedViewerIndex < 0 || selectedViewerIndex >= m_Viewers.size())
-  {
-    // Default back to first viewer.
-    selectedViewerIndex = 0;
-  }
-
-  return m_Viewers[selectedViewerIndex];
+  assert(m_SelectedViewerIndex >= 0 && m_SelectedViewerIndex < m_Viewers.size());
+  return m_Viewers[m_SelectedViewerIndex];
 }
 
 
@@ -1628,93 +1528,22 @@ void niftkMultiViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::Activated()
-{
-//  this->setEnabled(true);
-  this->EnableLinkedNavigation(true);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::Deactivated()
-{
-//  this->setEnabled(false);
-  this->EnableLinkedNavigation(false);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::EnableLinkedNavigation(bool enable)
-{
-  this->SetNavigationControllerEventListening(enable);
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::IsLinkedNavigationEnabled() const
 {
-  return this->GetNavigationControllerEventListening();
+  return m_LinkedNavigationEnabled;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::GetNavigationControllerEventListening() const
+void niftkMultiViewerWidget::EnableLinkedNavigation(bool linkedNavigationEnabled)
 {
-  return m_NavigationControllerEventListening;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetNavigationControllerEventListening(bool enabled)
-{
-  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  if (enabled && !m_NavigationControllerEventListening)
+  if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
   {
-    selectedViewer->SetNavigationControllerEventListening(true);
-  }
-  else if (!enabled && m_NavigationControllerEventListening)
-  {
-    selectedViewer->SetNavigationControllerEventListening(false);
-  }
-  m_NavigationControllerEventListening = enabled;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
-{
-  if (selectedViewerIndex >= 0 && selectedViewerIndex < m_Viewers.size())
-  {
-    m_SelectedViewerIndex = selectedViewerIndex;
-    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
-
-    for (int i = 0; i < m_Viewers.size(); i++)
+    m_LinkedNavigationEnabled = linkedNavigationEnabled;
+    foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
-      niftkSingleViewerWidget* viewer = m_Viewers[i];
-
-      int nodesInWindow = m_VisibilityManager->GetNodesInViewer(i);
-
-      if (viewer == selectedViewer)
-      {
-        viewer->SetSelected(nodesInWindow > 0);
-        viewer->SetNavigationControllerEventListening(true);
-      }
-      else
-      {
-        viewer->SetSelected(false);
-        viewer->SetNavigationControllerEventListening(false);
-      }
+      viewer->SetLinkedNavigationEnabled(linkedNavigationEnabled);
     }
-
-    m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
-
-    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
-    this->RequestUpdateAll();
-  }
-  else
-  {
-    MITK_WARN << "Ignoring request to set the selected window to window number " << selectedViewerIndex << std::endl;
   }
 }
 
@@ -1731,7 +1560,9 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1742,7 +1573,7 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  bool windowCursorPositionsBound = selectedViewer->AreCursorPositionsBound();
+  bool windowCursorPositionsBound = selectedViewer->GetCursorPositionBinding();
 
   if (bound)
   {
@@ -1754,14 +1585,20 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetCursorPositionsBound(windowCursorPositionsBound);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetCursorPositionBinding(windowCursorPositionsBound);
+        otherViewer->blockSignals(signalsWereBlocked);
         if (windowCursorPositionsBound)
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPositions(cursorPositions);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPosition(orientation, cursorPosition);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1773,7 +1610,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  bool windowScaleFactorsBound = selectedViewer->AreScaleFactorsBound();
+  bool windowScaleFactorsBound = selectedViewer->GetScaleFactorBinding();
 
   if (bound)
   {
@@ -1785,14 +1622,20 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetScaleFactorsBound(windowScaleFactorsBound);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetScaleFactorBinding(windowScaleFactorsBound);
+        otherViewer->blockSignals(signalsWereBlocked);
         if (windowScaleFactorsBound)
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactors(scaleFactors);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1812,7 +1655,9 @@ void niftkMultiViewerWidget::OnViewerWindowLayoutBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetWindowLayout(windowLayout);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1826,19 +1671,23 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
 
   if (bound)
   {
-    mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
+    const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
 
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
-      viewer->SetBoundGeometry(geometry);
-      viewer->SetBoundGeometryActive(true);
+      bool signalsWereBlocked = viewer->blockSignals(true);
+      viewer->SetBoundTimeGeometry(timeGeometry);
+      viewer->SetBoundTimeGeometryActive(true);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
   else
   {
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
-      viewer->SetBoundGeometryActive(false);
+      bool signalsWereBlocked = viewer->blockSignals(true);
+      viewer->SetBoundTimeGeometryActive(false);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
 
@@ -1857,9 +1706,9 @@ void niftkMultiViewerWidget::OnPopupOpened(bool opened)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSliceIndexTracking(bool tracking)
+void niftkMultiViewerWidget::SetSliceTracking(bool tracking)
 {
-  m_ControlPanel->SetSliceIndexTracking(tracking);
+  m_ControlPanel->SetSliceTracking(tracking);
 }
 
 

@@ -59,6 +59,7 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
   m_StartLevel = std::numeric_limits<unsigned int>::max();
   m_StopLevel = std::numeric_limits<unsigned int>::max();
   m_UseOriginalImageAtFinalLevel = true; 
+  m_IsAutoAdjustMovingSamping = true;
   
   niftkitkDebugMacro(<<"Constructed:MultiResolutionImageRegistrationWrapper, m_Stop=" << m_Stop \
       << ", m_NumberOfLevels=" << m_NumberOfLevels \
@@ -146,17 +147,20 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
                 << "  Fixed resolution: "
                 << std::setw( 9 ) << fixedResolution;
 
-      while ( sampling*movingSpacing[d] < fixedResolution )
+      if (m_IsAutoAdjustMovingSamping)
       {
-        sampling++;
-      }
+          while ( sampling*movingSpacing[d] < fixedResolution )
+          {
+            sampling++;
+          }
 
-      if ( movingSchedule[i][d] != sampling )
-      {
-        flgUseShrinkImageFilter = false;
-      }
+          if ( movingSchedule[i][d] != sampling )
+          {
+            flgUseShrinkImageFilter = false;
+          }
 
-      movingSchedule[i][d] = sampling;
+          movingSchedule[i][d] = sampling;
+      }
 
       std::cout << "  Moving sampling: " 
                 << std::setw( 3 ) << movingSchedule[i][d]

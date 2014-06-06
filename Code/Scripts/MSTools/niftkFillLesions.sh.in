@@ -125,7 +125,7 @@ function cfityk_OLDER_T1() {
  
 	message=$(cat ${image_root}_bet_n3.fityk)
 	
-	if [[ "${message}" == *Warning* ]]; then
+	if [[ "${message}" == *Warning* || "${message}" == *Error* ]]; then
 		progressXML "0.77" "3 Gaussians"
 		# cfityk version older than 0.9.8
 		cfityk -q -c '
@@ -323,7 +323,11 @@ function histogram() {
 	class="Smooth_Histogram"
 
 	# Path to ImageJ user plugins, this lines set automatically the path
-	ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	ij_path="/local/ImageJ/"
+	
+	if [[ ! -d ${ij_path} ]]; then
+		ij_path=$(locate ImageJ | grep 'ImageJ/plugins' | tail -n 1 | sed 's/plugins\/*/ /g' | awk '$1 {print $1}')
+	fi
 	
 	if [[ ! -n ${ij_path} ]]; then
 		ij_path=$(which imagej | tail -n 1 | sed 's/\/imagej*/ /g' | awk '$1 {print $1}')
@@ -385,7 +389,7 @@ For the installation and configuration of the different needed software in this 
 <a href="https://docs.google.com/document/d/1L9dNHdUzsNPFOXCILOWdb-XFxyWmUAIo4N1VWOwCZjQ/edit">document</a>.  
    </p>
    ]]></description>
-   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@</version>
    <documentation-url>http://onlinelibrary.wiley.com/doi/10.1002/jmri.22214/abstract</documentation-url>
    <license>BSD</license>
    <contributor>Ferran Prados (UCL)</contributor>

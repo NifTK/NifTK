@@ -22,6 +22,7 @@
 #include <mitkNodePredicateDataType.h>
 #include <QMessageBox>
 #include <QmitkIGIUtils.h>
+#include <QFileDialog>
 #include <limits>
 
 const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
@@ -106,7 +107,7 @@ void PointRegView::RetrievePreferenceValues()
   if (prefs.IsNotNull())
   {
     m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION);
-    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH);
+    m_UsePointIDToMatch = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH);
   }
 }
 
@@ -226,7 +227,14 @@ void PointRegView::OnComposeWithDataButtonPressed()
 //-----------------------------------------------------------------------------
 void PointRegView::OnSaveToFileButtonPressed()
 {
-  SaveMatrixToFile(*m_Matrix, m_Controls->m_SaveToFilePathEdit->currentPath());
+  QString fileName = QFileDialog::getSaveFileName( NULL,
+                                                   tr("Save Transform As ..."),
+                                                   QDir::currentPath(),
+                                                   "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
+  if (fileName.size() > 0)
+  {
+    SaveMatrixToFile(*m_Matrix, fileName);
+  }
 }
 
 

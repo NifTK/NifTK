@@ -1,23 +1,62 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.igisurfacereg} The Surface Based Registration View
+\page uk_ac_ucl_cmic_igisurfacereg The Surface Based Registration View
 
-\image html icon.png "The Icon for the Surface Based Registration View"
+\image html SurfaceRegIcon.png "The Icon for the Surface Based Registration View"
 
 \section SurfaceRegIntro Introduction
 
-Do an introduction here.
+This view provides registration of two data nodes when at least the moving data is 
+a surface, i.e. has  surface cells and normals defined for each point.
+Defining the moving data as a surface enable interpolation between points and 
+removal of hidden surfaces. The fixed data may be a surface or a point set. In the current 
+implementation any surface information in the fixed data is ignored. i.e. the fixed
+data is treated as a point cloud.
+
+The current implementation allows a rigid (6 degree of freedom) registration between the 
+moving and fixed data, using VTK's iterative closest point (ICP) algorithm. It is intended that
+other point to surface or surface to surface algorithms may be given an interface here if 
+and when they become available.
+
+The resulting transform is not composed with the moving node by default. To physically move the 
+data the user is required to use the "compose with data" button. The interface allows the transform
+to be composed with any available data node.
 
 \section SurfaceRegUsage Usage
 
-Put all usage information here.
+Please refer to Figure 1. The user must select a fixed data node.
+Only nodes containing points or surfaces are available.
+The user must select a moving data node.
+Only nodes containing surfaces are available.
+
+Pressing the calculate button will begin the registration algorithm. When the algorithm 
+completes, the resulting transform is displayed. The user may save the transform to 
+file and/or compose the transform with a selection of data nodes.
+
+Registration residual error may be displayed using the "compute live distance" button.
+
+\image html SurfaceRegView.jpg "Figure 1: The Surface Based Registration View."
+
+\subsection SurfaceRegHiddenSurfaceRemoval Hidden Surface Removal
+
+In some applications (e.g. where the fixed points represent points reconstructed 
+from video) it may be useful to remove hidden surfaces. Hidden surface removal requires that the 
+approximate position of the moving surface relative to the camera is known. The user must therefore 
+select a data node representing the camera position and ensure that the registration is 
+reasonably well initialised. Surfaces whose normals point away from the camera are excluded from
+the registration. This can prevent matching to the rear surface of thin structures.
 
 \section SurfaceRegPreferences Preferences
 
-Put all information on user configurable preferences here.
+The preference page contains options to set the maximum number of points used and the
+maximum number of iterations used.
+
+\image html SurfaceRegPrefs.jpg "Figure 2: The Surface Based Registration Preferences."
 
 \section SurfaceRegReferences References
 
-Put lots of useful references here, including html links, and DOI references.
+Please also refer to:
+\li <a href="http://www.vtk.org/doc/nightly/html/classvtkIterativeClosestPointTransform.html">VTK's ICP class.</a>
+\li <a href="http://en.wikipedia.org/wiki/Iterative_closest_point">All about ICP.</a>
 
 */
 

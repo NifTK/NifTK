@@ -2,7 +2,7 @@
   \defgroup uk_ac_ucl_cmic_undistort uk.ac.ucl.cmic.undistort Plugin
   \ingroup CMICPlugins
 
-  \brief Provides a simple plugin to FIXME.
+  \brief Provides a simple plugin to correct lens distortion on camera images.
   
   Written by Johannes Totz (j.totz@ucl.ac.uk). 
   

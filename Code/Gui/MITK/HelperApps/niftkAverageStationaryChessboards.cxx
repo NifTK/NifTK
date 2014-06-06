@@ -214,7 +214,7 @@ int main(int argc, char** argv)
       pointPairs[imageIndex].first.x += CV_MAT_ELEM(*imagePointsLeft, double, i, 0);
       pointPairs[imageIndex].first.y += CV_MAT_ELEM(*imagePointsLeft, double, i, 1);
       pointPairs[imageIndex].second.x += CV_MAT_ELEM(*imagePointsRight, double, i, 0);
-      pointPairs[imageIndex].second.y += CV_MAT_ELEM(*imagePointsRight, double, i, 0);
+      pointPairs[imageIndex].second.y += CV_MAT_ELEM(*imagePointsRight, double, i, 1);
     }
     for (unsigned int i = 0; i < expectedNumberOfPointsPerImage; i++)
     {

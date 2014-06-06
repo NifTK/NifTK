@@ -32,23 +32,25 @@ QmitkMIDASPaintbrushToolGUI::QmitkMIDASPaintbrushToolGUI()
 {
   // create the visible widgets
   QBoxLayout* layout = new QHBoxLayout( this );
-  this->setContentsMargins( 0, 0, 0, 0 );
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setSpacing(3);
+  this->setLayout(layout);
 
-  QLabel* label = new QLabel( "Cursor Width ", this );
+  QLabel* label = new QLabel( "cursor width:", this );
   layout->addWidget(label);
 
-  m_SizeLabel = new QLabel( " 1", this );
+  m_SizeLabel = new QLabel("1", this);
   layout->addWidget(m_SizeLabel);
 
-  m_Slider = new QSlider( Qt::Horizontal, this );
+  m_Slider = new QSlider(Qt::Horizontal, this);
   m_Slider->setMinimum(1);
   m_Slider->setMaximum(6);
   m_Slider->setPageStep(1);
   m_Slider->setValue(1);
-  connect( m_Slider, SIGNAL(valueChanged(int)), this, SLOT(OnSliderValueChanged(int)));
-  layout->addWidget( m_Slider );
+  this->connect(m_Slider, SIGNAL(valueChanged(int)), SLOT(OnSliderValueChanged(int)));
+  layout->addWidget(m_Slider);
 
-  connect( this, SIGNAL(NewToolAssociated(mitk::Tool*)), this, SLOT(OnNewToolAssociated(mitk::Tool*)) );
+  this->connect(this, SIGNAL(NewToolAssociated(mitk::Tool*)), SLOT(OnNewToolAssociated(mitk::Tool*)));
 }
 
 

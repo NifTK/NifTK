@@ -5,12 +5,12 @@ function [meanAccuracy, stdDevAccuracy, meanPrecision, stdDevPrecision] = niftkU
 %   [meanAccuracy, stdDevAccuracy, meanPrecision, stdDevPrecision]
 %     = niftkUltrasoundPinCalibrationEvaluation(initialGuess, goldStandardPoint, numberOfPoints, numberOfRepetitions, residualThreshold)
 % where:
-%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
 %                  where:
 %                  tx, ty, tz = translation in millimetres
 %                  rx, ry, rz = rotations in radians
-%                  s          = isotropic scale factor (mm/pix)
-%                  x,y,z      = location of invariant point in millimetres
+%                  x, y, z    = location of invariant point in millimetres
+%                  sx, sy     = scale factor (mm/pix)
 %
 %   goldStandardPoint   : [x y z] = location of invariant point in millimetres.
 %   numberOfPoints      : the number of randomly selected points to use to calibrate.
@@ -61,7 +61,7 @@ while(true)
   if (sumsqs < sumSquaresThreshold)
 
     rMi = Comp_RigidBody_Matrix(finalParams(1:6));
-    S = diag([finalParams(10) finalParams(10) 1 1]);
+    S = diag([finalParams(10) finalParams(11) 1 1]);
 
     % -----------------------------------------------------------------------------------
     % Work out median reconstructed point using all data, that is not an obvious outlier.
@@ -122,6 +122,17 @@ while(true)
     results(counterForSuccessfulCalibrations, 1) = rmsErrorFromGold;
     results(counterForSuccessfulCalibrations, 2) = rmsErrorFromMedian;
     results(counterForSuccessfulCalibrations, 3) = counterForStats;
+    results(counterForSuccessfulCalibrations, 4) = finalParams(1);
+    results(counterForSuccessfulCalibrations, 5) = finalParams(2);
+    results(counterForSuccessfulCalibrations, 6) = finalParams(3);
+    results(counterForSuccessfulCalibrations, 7) = finalParams(4);
+    results(counterForSuccessfulCalibrations, 8) = finalParams(5);
+    results(counterForSuccessfulCalibrations, 9) = finalParams(6);
+    results(counterForSuccessfulCalibrations, 10) = finalParams(7);
+    results(counterForSuccessfulCalibrations, 11) = finalParams(8);
+    results(counterForSuccessfulCalibrations, 12) = finalParams(9);
+    results(counterForSuccessfulCalibrations, 13) = finalParams(10);
+    results(counterForSuccessfulCalibrations, 14) = finalParams(11);
 
   end
 
@@ -134,6 +145,8 @@ end
 % Finished.
 % ----------------------------------------------------------------------------------------------------------------------
 means = mean(results,1);
+mins = min(results);
+maxs = max(results);
 stdDevs = std(results, 0, 1);
 disp('Number of samples in data');
 disp(numberOfTrackingMatrices);
@@ -147,13 +160,33 @@ disp('Mean accuracy');
 disp(means(1,1));
 disp('Std Dev accuracy');
 disp(stdDevs(1,1));
+disp('Min (best) accuracy');
+disp(mins(1,1));
+disp('Max (worse) accuracy');
+disp(maxs(1,1));
 disp('Mean precision');
 disp(means(1,2));
 disp('Std Dev precision');
 disp(stdDevs(1,2));
+disp('Min (best) precision');
+disp(mins(1,2));
+disp('Max (worse) precision');
+disp(maxs(1,2));
 disp('Mean points in validation');
 disp(means(1,3));
 disp('Std Dev points in validation');
 disp(stdDevs(1,3));
-
-   
+[bestValue, bestIndex] = min(results(:,1),[],1);
+disp('Best calibration index');
+disp(bestIndex);
+disp('Best calibration value');
+disp(bestValue);
+disp('Best calibration');
+bestCalib = results(bestIndex,4:14);
+disp(bestCalib);
+rMi = Comp_RigidBody_Matrix(bestCalib(1:6));
+S = diag([bestCalib(10) bestCalib(11) 1 1]);
+disp('Best calibration Matrix');
+disp(rMi);
+disp('Best calibration Scaling Matrix');
+disp(S);

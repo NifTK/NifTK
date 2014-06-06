@@ -80,6 +80,11 @@ public:
    */
   void OnClearPoints();
 
+  /**
+   * \brief Returns the point set from data storage, creating one if it can't be found.
+   */
+  mitk::PointSet::Pointer RetrievePointSet();
+
 protected:
 
   TrackedPointerManager(); // Purposefully hidden.
@@ -94,11 +99,6 @@ private:
    * \brief Operation constant, used in Undo/Redo framework.
    */
   static const mitk::OperationType OP_UPDATE_POINTSET;
-
-  /**
-   * \brief Returns the point set from data storage, creating one if it can't be found.
-   */
-  mitk::PointSet::Pointer RetrievePointSet();
 
   /**
    * \brief Stores a local reference to the data storage.

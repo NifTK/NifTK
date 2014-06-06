@@ -47,7 +47,7 @@ set(PROJECT_PLUGINS
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
-  Plugins/uk.ac.ucl.cmic.thumbnail:ON    
+  Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
   Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.xnat:ON
@@ -71,11 +71,11 @@ set(PROJECT_PLUGINS
 if(BUILD_MIDAS)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON  
-    Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON    
-    Plugins/uk.ac.ucl.cmic.mitksegmentation:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
+    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
+    Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
     Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
-    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON 
+    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   )
 endif(BUILD_MIDAS)
 

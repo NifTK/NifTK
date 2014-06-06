@@ -25,6 +25,8 @@
 #include <QSet>
 #include <QColor>
 #include <QThread>
+#include <QMap>
+#include <QString>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
@@ -148,6 +150,15 @@ public:
    */
   void SetPickLatestData(const bool& pickLatest);
 
+  /**
+   * Tries to parse the data source descriptor for directory-to-classname mappings.
+   * @param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
+   * @returns a map with key = directory, value = classname
+   * @throws std::exception if something goes wrong.
+   * @warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
+   */
+  static QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
+
 signals:
 
   /**
@@ -169,6 +180,9 @@ signals:
    * \brief Emmitted when the OnUpdateGui method has finished, after the QCoreApplication::processEvents() has been called.
    */
   void UpdateGuiEnd(igtlUint64 timeStamp);
+
+  void RecordingStarted(QString basedirectory);
+
 
 protected:
 
@@ -247,6 +261,10 @@ private slots:
 
   void OnPlayStart();
 
+  void OnFreezeTableHeaderClicked(int section);
+
+  void OnTimestampEditFinished();
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;
@@ -276,11 +294,14 @@ private:
   // slider position is relative to this base value.
   // slider can only represent int values, but we need all 64 bit.
   igtlUint64                                m_PlaybackSliderBase;
-  double                                    m_PlaybackSliderFactor;
+  igtlUint64                                m_PlaybackSliderFactor;
 
   // This class now remembers the current GUI, and asks it to update
   // at the assigned frame rate.
   QmitkIGIDataSourceGui                    *m_CurrentSourceGUI;
+
+  // used to decide whether to clean up signals in the destructor;
+  bool                                      m_setupUiHasBeenCalled;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.

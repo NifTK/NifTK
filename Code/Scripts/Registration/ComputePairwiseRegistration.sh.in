@@ -175,7 +175,7 @@ do
           --sm ${moving_image_mask_img} \
           --ot ${output}_affine_first.dof \
           --it ${output}_affine_init.dof \
-          -ri "Linear" --fi "BSpline" -s ${similarity} --tr ${dof} \
+          --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "${dof}" \
           -o "UCL Powell optimisation" --nlevels 1 --rmin 0.001 --rmax 1 \
           ${symmetric_flag} ${dilation_flag} --wsim 2 --pptol ${pptol}
       fi 
@@ -187,7 +187,7 @@ do
         niftkAffine \
           --ti ${fixed_image} --si ${moving_image} \
           --ot ${output}_affine_first.dof \
-          --ri "Linear" --fi "BSpline" -s ${similarity} --tr ${dof} \
+          --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "${dof}" \
           -o "Regular Step Size" --nlevels 3 --rmax 1 --rmin 0.01 \
           ${symmetric_flag} --wsim 2 --pptol 0.001
       fi 
@@ -202,7 +202,7 @@ do
         --sm ${moving_image_mask_img} \
         --ot ${output}_affine_second.dof \
         --it ${output}_affine_first.dof \
-        --ri "Linear" --fi "BSpline" -s ${similarity} --tr "Rigid" \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" \
         -o "UCL Powell optimisation" --nlevels 1 --rmin 0.001 --rmax 0.5 \
         ${symmetric_flag} -d 2 --wsim 2 --pptol ${pptol}
     fi 
@@ -237,7 +237,7 @@ do
         --sm ${moving_roi1_img} \
         --ot ${output}_affine_second_roi1.dof \
         --it ${output}_affine_second.dof \
-        --ri "Linear" --fi "BSpline" -s ${similarity} --tr "Rigid" -o "UCL Powell optimisation" \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" -o "UCL Powell optimisation" \
         --rmin 0.001 ${local_region_search_options} ${symmetric_flag} --wsim 2 --pptol ${pptol}
     fi 
     
@@ -264,7 +264,7 @@ do
         --sm ${moving_roi2_img} \
         --ot ${output}_affine_second_roi2.dof \
         --it ${output}_affine_second.dof \
-        --ri "Linear" --fi "BSpline" -s ${similarity} --tr "Rigid" \
+        --ri "Linear" --fi "BSpline" -s "${similarity}" --tr "Rigid" \
         -o "UCL Powell optimisation" --rmin 0.001 ${local_region_search_options} \
         ${symmetric_flag} --wsim 2 --pptol ${pptol}
     fi 

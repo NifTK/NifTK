@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyIGIAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
-  return "uk.ac.ucl.cmic.gui.qt.niftyview.igiperspective";
+  return "uk.ac.ucl.cmic.gui.qt.niftyigi.igiperspective";
 }
 
 //-----------------------------------------------------------------------------

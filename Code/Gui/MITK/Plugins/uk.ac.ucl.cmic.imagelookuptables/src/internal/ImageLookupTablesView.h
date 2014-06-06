@@ -23,7 +23,7 @@
 
 class QWidget;
 class QSlider;
-class LookupTableManager;
+class QmitkLookupTableManager;
 
 /**
  * \class ImageLookupTablesView
@@ -73,6 +73,11 @@ protected:
    * \brief We listen to the Level/Window property on the registered image, so this callback updates this GUI when the watched property changes.
    */
   virtual void OnPropertyChanged(const itk::EventObject&);
+
+  /**
+   * \brief Called when the user toggles the opacity control properties.
+   */
+  virtual void OnLookupTablePropertyChanged(const itk::EventObject&);
 
   /**
    * \brief Actually updates the GUI when property changes.
@@ -168,7 +173,7 @@ private:
   /**
    * \brief We contain a LookupTableManager containing vtkLookupTables loaded from the resource system.
    */
-  LookupTableManager *m_LookupTableManager;
+  QmitkLookupTableManager *m_LookupTableManager;
 
   /**
    * \brief Tracks the currently selected node.
@@ -196,9 +201,19 @@ private:
   int m_ThresholdForIntegerBehaviour;
 
   /**
-   * \brief To store the
+   * \brief To store the observer ID on the LevelWindow property.
    */
-  unsigned long int m_PropertyObserverTag;
+  unsigned long int m_LevelWindowPropertyObserverTag;
+
+  /**
+   * \brief To store the observer ID on the "Image Rendering.Lowest Value Is Opaque" property.
+   */
+  unsigned long int m_LowestIsOpaquePropertyObserverTag;
+
+  /**
+   * \brief To store the observer ID on the "Image Rendering.Highest Value Is Opaque" property.
+   */
+  unsigned long int m_HighestIsOpaquePropertyObserverTag;
 
 };
 

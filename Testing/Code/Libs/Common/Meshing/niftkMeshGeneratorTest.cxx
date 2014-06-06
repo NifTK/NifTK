@@ -12,23 +12,25 @@
 
 =============================================================================*/
 
-#include <cstdlib>
-#include <string>
-#include <cmath>
-#include <limits>
-#include <algorithm>
+#include <niftkMeshGenerator.h>
+#include "niftkMeshingUnitTestHelpers.h"
+
 #include <itkImage.h>
 #include <itkPoint.h>
 #include <itkStatisticsImageFilter.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageFileReader.h>
 #include <itkBinaryContourImageFilter.h>
+
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkPoints.h>
 
-#include <niftkMeshGenerator.h>
-#include "niftkMeshingUnitTestHelpers.h"
+#include <cstdlib>
+#include <string>
+#include <cmath>
+#include <limits>
+#include <algorithm>
 
 typedef itk::Image<unsigned char, 3> _LabelImageType;
 

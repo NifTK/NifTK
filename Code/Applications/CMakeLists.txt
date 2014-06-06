@@ -52,9 +52,10 @@ set(NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
 if (BUILD_MESHING)
   set(NIFTK_MESHING_APPLICATION_LIBRARIES
     niftkMeshingLib
-    ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
-    CGAL
-    CGAL_ImageIO
+    niftkITK
+    niftkVTK
+    niftkcommon
+    ${ITK_LIBRARIES}
     )
 endif (BUILD_MESHING)
 
@@ -90,12 +91,16 @@ if(SlicerExecutionModel_FOUND)
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
+    niftkMammogramMaskSegmentation
+    niftkMaskDICOMMammograms
+    niftkMammogramPectoralisSegmentation
     niftkMultiply
     niftkN4BiasFieldCorrection
     niftkNegateImage
     niftkOtsuThresholdImage
     niftkRegionalMammographicDensity
     niftkScalarConnectedComponentImageFilter
+    niftkSegmentForegroundFromBackground
     niftkSubsampleImage
     niftkSubtract
     niftkUnaryImageOperatorsOnDirectoryTree
@@ -120,7 +125,10 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
-      niftkMakeLapUSProbeModel
+      #niftkMakeLapUSProbeBasicModel
+      niftkMakeLapUSProbeARUCOModel
+      niftkMakeLapUSProbeAprilTagsModel
+      niftkMakeLapUSProbeAprilTagsVisualisation
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )
@@ -189,6 +197,7 @@ endif()
 
 set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
   niftkBreastMaskSegmentationFromMRI
+  niftkOCTVolumeConstructor
   niftkVesselExtractor
   )
 list(APPEND _all_command_line_apps ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
@@ -273,10 +282,12 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkKMeansWindowBSI
   niftkKMeansWindowWithLinearRegressionNormalisationBSI
   niftkKNDoubleWindowBSI
+  niftkMammogramCharacteristics
   niftkMTPDbc
   niftkMultiplyTransformation
   niftkMultiScaleHessianImageEnhancement2D
   niftkMultiScaleHessianImageEnhancement3D
+  niftkOCTVolumeConstructor
   niftkPadImage
   niftkProjectionGeometry
   niftkReorientateImage
@@ -300,6 +311,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
+  niftkKmeansClassifier
 )
 list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
 
@@ -396,7 +408,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
     target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
     install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   endforeach()
-  
+
 endif()
 
 ##############################################################
