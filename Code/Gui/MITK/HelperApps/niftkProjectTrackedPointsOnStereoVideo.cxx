@@ -55,7 +55,6 @@ int main(int argc, char** argv)
     if ( outputVideo.length() != 0 ) 
     {
       projector->SetSaveVideo(true, outputVideo);
-   //   do this after initialise so I can get fps and size from m_capture??
     }
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();

@@ -133,9 +133,9 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     {
       cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
       double fps = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FPS);
-      MITK_INFO << "Original video is " << fps << " frames per second";
-      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),30,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),30,S, true);
+      double halfFPS = fps/2.0;
+      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
   }
 
