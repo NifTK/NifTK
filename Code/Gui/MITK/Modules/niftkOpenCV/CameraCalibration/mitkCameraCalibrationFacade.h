@@ -291,7 +291,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   CvMat& outputRightToLeftTranslation,
   CvMat& outputEssentialMatrix,
   CvMat& outputFundamentalMatrix,
-  const bool& fixedIntrinsics = false
+  const bool& fixedIntrinsics = false,
+  const bool& fixedRightToLeft = false
   );
 
 

@@ -690,11 +690,22 @@ double CalibrateStereoCameraParameters(
     CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
     CvMat& outputFundamentalMatrix,
-    const bool& fixedIntrinsics
+    const bool& fixedIntrinsics,
+    const bool& fixedRightToLeft
     )
 {
+
+  // If fixedIntrinsics == true and fixedRightToLeft == true,
+  // then this returnedProjectionError will not be updated as
+  // CalibrateSingleCameraExtrinsics does not return a projection error.
+
+  double returnedProjectionError = 0;
+
   if ( ! fixedIntrinsics )
   {
+    // Intrinsics are not fixed, so we do intrinsic and extrinsic.
+    // i.e. a full mono camera calibration for each camera.
+
     double leftProjectionError = CalibrateSingleCameraUsingMultiplePasses(
         objectPointsLeft,
         imagePointsLeft,
@@ -717,7 +728,9 @@ double CalibrateStereoCameraParameters(
         outputTranslationVectorsRight
         );
 
-    std::cout << "Initial mono calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+    returnedProjectionError = (leftProjectionError + rightProjectionError) / static_cast<double>(2);
+
+    std::cout << "Initial mono calibration gave re-projection errors of left = " << leftProjectionError << ", right = " << rightProjectionError << ", mean = " << returnedProjectionError << std::endl;
   }
   else
   {
@@ -745,64 +758,81 @@ double CalibrateStereoCameraParameters(
       outputTranslationVectorsRight
     );
 
-    std::cout << "Calibrated just the extrinsics" << std::endl;
+    std::cout << "Calibrated just the extrinsics, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
   }
 
-  int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
-  if ( fixedIntrinsics ) 
+  if (!fixedRightToLeft)
   {
-    flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
-  }
+    //
+    // Matt: Decided not to do these following 5 lines.
+    //       OpenCV docs say optimising intrinsic and right-to-left can diverge,
+    //       and they recommend calibrating intrinsic params for each mono camera,
+    //       and then using CV_CALIB_FIX_INTRINSIC here, which is also the default.
+    //       So the commented out section here may have introduced instability.
+    //
+    // int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
+    // if ( fixedIntrinsics )
+    // {
+    //   flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
+    // }
 
-  double stereoCalibrationProjectionError = cvStereoCalibrate
-      (
-      &objectPointsLeft,
-      &imagePointsLeft,
-      &imagePointsRight,
-      &pointCountsLeft,
-      &outputIntrinsicMatrixLeft,
-      &outputDistortionCoefficientsLeft,
-      &outputIntrinsicMatrixRight,
-      &outputDistortionCoefficientsRight,
-      imageSize,
-      &outputRightToLeftRotation,
-      &outputRightToLeftTranslation,
-      &outputEssentialMatrix,
-      &outputFundamentalMatrix,
-      cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      flags 
-      );
+    CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+    CvMat *leftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
+    CvMat *leftToRightMatrix = cvCreateMat(4,4,CV_64FC1);
+    CvMat *leftToRightMatrixInverted = cvCreateMat(4,4,CV_64FC1);
 
-  std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
+    double stereoCalibrationProjectionError = cvStereoCalibrate
+        (
+        &objectPointsLeft,
+        &imagePointsLeft,
+        &imagePointsRight,
+        &pointCountsLeft,
+        &outputIntrinsicMatrixLeft,
+        &outputDistortionCoefficientsLeft,
+        &outputIntrinsicMatrixRight,
+        &outputDistortionCoefficientsRight,
+        imageSize,
+        leftToRightRotationMatrix,
+        leftToRightTranslationVector,
+        &outputEssentialMatrix,
+        &outputFundamentalMatrix,
+        cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
+        CV_CALIB_FIX_INTRINSIC                                        // i.e. just do right to left.
+        );
 
-  // OpenCV calculates left to right, so we want right to left.
-  CvMat *leftToRight = cvCreateMat(4,4,CV_64FC1);
-  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_64FC1);
-  for (int i = 0; i < 3; ++i)
-  {
-    for (int j = 0; j < 3; ++j)
+    std::cout << "Stereo re-projection error = " << stereoCalibrationProjectionError << std::endl;
+
+    for (int i = 0; i < 3; ++i)
     {
-      CV_MAT_ELEM(*leftToRight, double, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, double, i, j);
+      for (int j = 0; j < 3; ++j)
+      {
+        CV_MAT_ELEM(*leftToRightMatrix, double, i, j) = CV_MAT_ELEM(*leftToRightRotationMatrix, double, i, j);
+      }
+      CV_MAT_ELEM(*leftToRightMatrix, double, i, 3) = CV_MAT_ELEM(*leftToRightTranslationVector, double, i, 0);
     }
-    CV_MAT_ELEM(*leftToRight, double, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0);
-  }
-  CV_MAT_ELEM(*leftToRight, double, 3, 0) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 1) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 2) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 3) = 1;
-  cvInvert(leftToRight, leftToRightInverted);
-  for (int i = 0; i < 3; ++i)
-  {
-    for (int j = 0; j < 3; ++j)
+    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 0) = 0;
+    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 1) = 0;
+    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 2) = 0;
+    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 3) = 1;
+    cvInvert(leftToRightMatrix, leftToRightMatrixInverted);
+    for (int i = 0; i < 3; ++i)
     {
-      CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightInverted, double, i, j);
+      for (int j = 0; j < 3; ++j)
+      {
+        CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightMatrixInverted, double, i, j);
+      }
+      CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightMatrixInverted, double, i, 3);
     }
-    CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightInverted, double, i, 3);
-  }
-  cvReleaseMat(&leftToRight);
-  cvReleaseMat(&leftToRightInverted);
 
-  return stereoCalibrationProjectionError;
+    cvReleaseMat(&leftToRightRotationMatrix);
+    cvReleaseMat(&leftToRightTranslationVector);
+    cvReleaseMat(&leftToRightMatrix);
+    cvReleaseMat(&leftToRightMatrixInverted);
+
+    returnedProjectionError = stereoCalibrationProjectionError;
+  }
+
+  return returnedProjectionError;
 }
 
 
