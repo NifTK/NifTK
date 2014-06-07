@@ -33,7 +33,10 @@ StereoCameraCalibration::StereoCameraCalibration()
 , m_IntrinsicMatrixRight(cvCreateMat(3,3,CV_64FC1))
 , m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
 , m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
+, m_RotationMatrixRightToLeft(cvCreateMat(3,3,CV_64FC1))
+, m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
+, m_OptimiseRightToLeft(true)
 {
 
 }
@@ -46,6 +49,8 @@ StereoCameraCalibration::~StereoCameraCalibration()
   cvReleaseMat(&m_IntrinsicMatrixRight);
   cvReleaseMat(&m_DistortionCoefficientsLeft);
   cvReleaseMat(&m_DistortionCoefficientsRight);
+  cvReleaseMat(&m_RotationMatrixRightToLeft);
+  cvReleaseMat(&m_TranslationVectorRightToLeft);
 }
 
 
@@ -59,12 +64,30 @@ void StereoCameraCalibration::LoadExistingIntrinsics(const std::string& director
 
   mitk::LoadCameraIntrinsicsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.left.intrinsic.txt"), &litemp, &ldtemp);
   mitk::LoadCameraIntrinsicsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.right.intrinsic.txt"), &ritemp, &rdtemp);
+
   *m_IntrinsicMatrixLeft = CvMat(litemp);
   *m_DistortionCoefficientsLeft = CvMat(ldtemp);
   *m_IntrinsicMatrixRight = CvMat(ritemp);
   *m_DistortionCoefficientsRight = CvMat(rdtemp);
+
   m_OptimiseIntrinsics = false;
 }
+
+
+//-----------------------------------------------------------------------------
+void StereoCameraCalibration::LoadExistingRightToLeft(const std::string& directoryName)
+{
+  cv::Mat r2lr = cv::Mat(m_RotationMatrixRightToLeft);
+  cv::Mat r2lt = cv::Mat(m_TranslationVectorRightToLeft);
+
+  mitk::LoadStereoTransformsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.r2l.txt"), &r2lr, &r2lt);
+
+  *m_RotationMatrixRightToLeft = CvMat(r2lr);
+  *m_TranslationVectorRightToLeft = CvMat(r2lt);
+
+  m_OptimiseRightToLeft = false;
+}
+
 
 //-----------------------------------------------------------------------------
 double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
@@ -283,13 +306,25 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     distortionCoeffsRight = m_DistortionCoefficientsRight;
   }
 
+  CvMat *rightToLeftRotationMatrix = NULL;
+  CvMat *rightToLeftTranslationVector = NULL;
+
+  if (m_OptimiseRightToLeft)
+  {
+    rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_64FC1);
+    rightToLeftTranslationVector = cvCreateMat(3, 1, CV_64FC1);
+  }
+  else
+  {
+    rightToLeftRotationMatrix = m_RotationMatrixRightToLeft;
+    rightToLeftTranslationVector = m_TranslationVectorRightToLeft;
+  }
+
   CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
   CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
-  CvMat *rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_64FC1);
-  CvMat *rightToLeftTranslationVector = cvCreateMat(3, 1, CV_64FC1);
   CvMat *rightToLeftRotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *rightToLeftTranslationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
   CvMat *r2LRot = cvCreateMat(1, 3, CV_64FC1);
@@ -317,7 +352,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       *rightToLeftTranslationVector,
       *essentialMatrix,
       *fundamentalMatrix,
-      !m_OptimiseIntrinsics
+      !m_OptimiseIntrinsics,
+      !m_OptimiseRightToLeft
       );
 
   fs << "Stereo calibration, reprojection error = " << reprojectionError << std::endl;
@@ -457,13 +493,17 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     cvReleaseMat(&distortionCoeffsRight);
   }
 
+  if (m_OptimiseRightToLeft)
+  {
+    cvReleaseMat(&rightToLeftRotationMatrix);
+    cvReleaseMat(&rightToLeftTranslationVector);
+  }
+
   cvReleaseMat(&rotationVectorsLeft);
   cvReleaseMat(&translationVectorsLeft);
   cvReleaseMat(&rotationVectorsRight);
   cvReleaseMat(&translationVectorsRight);
 
-  cvReleaseMat(&rightToLeftRotationMatrix);
-  cvReleaseMat(&rightToLeftTranslationVector);
   cvReleaseMat(&rightToLeftRotationVectors);
   cvReleaseMat(&rightToLeftTranslationVectors);
   cvReleaseMat(&r2LRot);

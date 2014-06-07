@@ -758,7 +758,7 @@ double CalibrateStereoCameraParameters(
       outputTranslationVectorsRight
     );
 
-    std::cout << "Calibrated just the extrinsics, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
+    std::cout << "Initial extrinsic only calibration performed, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
   }
 
   if (!fixedRightToLeft)
@@ -800,7 +800,7 @@ double CalibrateStereoCameraParameters(
         CV_CALIB_FIX_INTRINSIC                                        // i.e. just do right to left.
         );
 
-    std::cout << "Stereo re-projection error = " << stereoCalibrationProjectionError << std::endl;
+    std::cout << "Stereo right-to-left calibration performed, with re-projection error = " << stereoCalibrationProjectionError << std::endl;
 
     for (int i = 0; i < 3; ++i)
     {

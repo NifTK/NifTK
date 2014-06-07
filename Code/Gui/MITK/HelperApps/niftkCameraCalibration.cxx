@@ -74,10 +74,16 @@ int main(int argc, char** argv)
     {
       mitk::StereoCameraCalibration::Pointer calibrationObject = mitk::StereoCameraCalibration::New();
 
-      if ( existingCalibrationDirectory != "" )
+      if ( existingIntrinsicsDirectory != "" )
       {
-        MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingCalibrationDirectory;
-        calibrationObject->LoadExistingIntrinsics(existingCalibrationDirectory);
+        MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingIntrinsicsDirectory;
+        calibrationObject->LoadExistingIntrinsics(existingIntrinsicsDirectory);
+      }
+
+      if ( existingRightToLeftDirectory != "" )
+      {
+        MITK_INFO << "Attempting to use existing right-to-left calibration from " << existingRightToLeftDirectory;
+        calibrationObject->LoadExistingRightToLeft(existingRightToLeftDirectory);
       }
 
       reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, numberOfFrames, xCorners, yCorners, size, pixelScales, outputDirectory, writeImages);
