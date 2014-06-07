@@ -761,7 +761,7 @@ double CalibrateStereoCameraParameters(
     std::cout << "Initial extrinsic only calibration performed, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
   }
 
-  if (!fixedRightToLeft)
+  if ( ! fixedRightToLeft)
   {
     //
     // Matt: Decided not to do these following 5 lines.
@@ -780,6 +780,11 @@ double CalibrateStereoCameraParameters(
     CvMat *leftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
     CvMat *leftToRightMatrix = cvCreateMat(4,4,CV_64FC1);
     CvMat *leftToRightMatrixInverted = cvCreateMat(4,4,CV_64FC1);
+
+    cvSetIdentity(leftToRightRotationMatrix);
+    cvSetZero(leftToRightTranslationVector);
+    cvSetIdentity(leftToRightMatrix);
+    cvSetIdentity(leftToRightMatrixInverted);
 
     double stereoCalibrationProjectionError = cvStereoCalibrate
         (
@@ -810,11 +815,10 @@ double CalibrateStereoCameraParameters(
       }
       CV_MAT_ELEM(*leftToRightMatrix, double, i, 3) = CV_MAT_ELEM(*leftToRightTranslationVector, double, i, 0);
     }
-    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 0) = 0;
-    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 1) = 0;
-    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 2) = 0;
-    CV_MAT_ELEM(*leftToRightMatrix, double, 3, 3) = 1;
-    cvInvert(leftToRightMatrix, leftToRightMatrixInverted);
+
+    // Invert without using SVD, or any form of decomposition, as we know this matrix is orthonormal.
+    InvertRigid4x4Matrix(*leftToRightMatrix, *leftToRightMatrixInverted);
+
     for (int i = 0; i < 3; ++i)
     {
       for (int j = 0; j < 3; ++j)

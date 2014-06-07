@@ -1752,4 +1752,42 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
   return q;
 }
 
+
+//-----------------------------------------------------------------------------
+void InvertRigid4x4Matrix(const CvMat& input, CvMat& output)
+{
+  CvMat *inputRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat *inputRotationMatrixTransposed = cvCreateMat(3,3,CV_64FC1);
+  CvMat *inputTranslationVector = cvCreateMat(3,1,CV_64FC1);
+  CvMat *inputTranslationVectorInverted = cvCreateMat(3,1,CV_64FC1);
+
+  // Copy from 4x4 to separate rotation matrix and translation vector.
+  for (int r = 0; r < 3; ++r)
+  {
+    for (int c = 0; c < 3; ++c)
+    {
+      CV_MAT_ELEM(*inputRotationMatrix, double, r, c) = CV_MAT_ELEM(input, double, r, c);
+    }
+    CV_MAT_ELEM(*inputTranslationVector, double, r, 0) = CV_MAT_ELEM(input, double, r, 3);
+  }
+
+  cvTranspose(inputRotationMatrix, inputRotationMatrixTransposed);
+  cvGEMM(inputRotationMatrixTransposed, inputTranslationVector, -1, NULL, 0, inputTranslationVectorInverted);
+
+  // Copy inverted matrix to output.
+  for (int r = 0; r < 3; ++r)
+  {
+    for (int c = 0; c < 3; ++c)
+    {
+      CV_MAT_ELEM(output, double, r, c) = CV_MAT_ELEM(*inputRotationMatrixTransposed, double, r, c);
+    }
+    CV_MAT_ELEM(output, double, r, 3) = CV_MAT_ELEM(*inputTranslationVectorInverted, double, r, 0);
+  }
+
+  cvReleaseMat(&inputRotationMatrix);
+  cvReleaseMat(&inputRotationMatrixTransposed);
+  cvReleaseMat(&inputTranslationVector);
+  cvReleaseMat(&inputTranslationVectorInverted);
+}
+
 } // end namespace
