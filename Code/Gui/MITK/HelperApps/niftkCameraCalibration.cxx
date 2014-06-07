@@ -95,6 +95,6 @@ int main(int argc, char** argv)
     returnStatus = -2;
   }
 
-  std::cout << "Reprojection error=" << reprojectionError << ", return status = " << returnStatus << std::endl;
+  std::cout << "Reprojection error = " << reprojectionError << ", return status = " << returnStatus << std::endl;
   return returnStatus;
 }
