@@ -320,7 +320,7 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       !m_OptimiseIntrinsics
       );
 
-  fs << "Stereo calibration" << std::endl;
+  fs << "Stereo calibration, reprojection error = " << reprojectionError << std::endl;
 
   fs << "Left camera" << std::endl;
   leftMonoReprojectionErrors = OutputCalibrationData(
