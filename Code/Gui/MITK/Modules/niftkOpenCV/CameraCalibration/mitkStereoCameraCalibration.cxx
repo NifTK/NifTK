@@ -38,7 +38,12 @@ StereoCameraCalibration::StereoCameraCalibration()
 , m_OptimiseIntrinsics(true)
 , m_OptimiseRightToLeft(true)
 {
-
+  cvSetIdentity(m_IntrinsicMatrixLeft);
+  cvSetIdentity(m_IntrinsicMatrixRight);
+  cvSetZero(m_DistortionCoefficientsLeft);
+  cvSetZero(m_DistortionCoefficientsRight);
+  cvSetIdentity(m_RotationMatrixRightToLeft);
+  cvSetZero(m_TranslationVectorRightToLeft);
 }
 
 
@@ -286,40 +291,6 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
 
   int numberOfSuccessfulViews = successfullImagesLeft.size();
 
-  CvMat *intrinsicMatrixLeft = NULL;
-  CvMat *distortionCoeffsLeft = NULL;
-  CvMat *intrinsicMatrixRight = NULL;
-  CvMat *distortionCoeffsRight = NULL;
-
-  if (m_OptimiseIntrinsics)
-  {
-    intrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
-    distortionCoeffsLeft = cvCreateMat(1, 4, CV_64FC1);
-    intrinsicMatrixRight = cvCreateMat(3,3,CV_64FC1);
-    distortionCoeffsRight = cvCreateMat(1, 4, CV_64FC1);
-  }
-  else
-  {
-    intrinsicMatrixLeft = m_IntrinsicMatrixLeft;
-    distortionCoeffsLeft = m_DistortionCoefficientsLeft;
-    intrinsicMatrixRight = m_IntrinsicMatrixRight;
-    distortionCoeffsRight = m_DistortionCoefficientsRight;
-  }
-
-  CvMat *rightToLeftRotationMatrix = NULL;
-  CvMat *rightToLeftTranslationVector = NULL;
-
-  if (m_OptimiseRightToLeft)
-  {
-    rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_64FC1);
-    rightToLeftTranslationVector = cvCreateMat(3, 1, CV_64FC1);
-  }
-  else
-  {
-    rightToLeftRotationMatrix = m_RotationMatrixRightToLeft;
-    rightToLeftTranslationVector = m_TranslationVectorRightToLeft;
-  }
-
   CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
   CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
@@ -340,16 +311,16 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       *objectPointsRight,
       *imagePointsRight,
       *pointCountsRight,
-      *intrinsicMatrixLeft,
-      *distortionCoeffsLeft,
+      *m_IntrinsicMatrixLeft,
+      *m_DistortionCoefficientsLeft,
       *rotationVectorsLeft,
       *translationVectorsLeft,
-      *intrinsicMatrixRight,
-      *distortionCoeffsRight,
+      *m_IntrinsicMatrixRight,
+      *m_DistortionCoefficientsRight,
       *rotationVectorsRight,
       *translationVectorsRight,
-      *rightToLeftRotationMatrix,
-      *rightToLeftTranslationVector,
+      *m_RotationMatrixRightToLeft,
+      *m_TranslationVectorRightToLeft,
       *essentialMatrix,
       *fundamentalMatrix,
       !m_OptimiseIntrinsics,
@@ -366,8 +337,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       *objectPointsLeft,
       *imagePointsLeft,
       *pointCountsLeft,
-      *intrinsicMatrixLeft,
-      *distortionCoeffsLeft,
+      *m_IntrinsicMatrixLeft,
+      *m_DistortionCoefficientsLeft,
       *rotationVectorsLeft,
       *translationVectorsLeft,
       reprojectionError,
@@ -379,8 +350,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       );
 
   // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-  cvSave(leftIntrinsicXmlFile.c_str(), intrinsicMatrixLeft);
-  cvSave(leftDistortionXmlFile.c_str(), distortionCoeffsLeft);
+  cvSave(leftIntrinsicXmlFile.c_str(), m_IntrinsicMatrixLeft);
+  cvSave(leftDistortionXmlFile.c_str(), m_DistortionCoefficientsLeft);
 
   fs << "Right camera" << std::endl;
   rightMonoReprojectionErrors = OutputCalibrationData(
@@ -390,8 +361,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       *objectPointsRight,
       *imagePointsRight,
       *pointCountsRight,
-      *intrinsicMatrixRight,
-      *distortionCoeffsRight,
+      *m_IntrinsicMatrixRight,
+      *m_DistortionCoefficientsRight,
       *rotationVectorsRight,
       *translationVectorsRight,
       reprojectionError,
@@ -403,20 +374,20 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       );
 
   // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-  cvSave(rightIntrinsicXmlFile.c_str(), intrinsicMatrixRight);
-  cvSave(rightDistortionXmlFile.c_str(), distortionCoeffsRight);
+  cvSave(rightIntrinsicXmlFile.c_str(), m_IntrinsicMatrixRight);
+  cvSave(rightDistortionXmlFile.c_str(), m_DistortionCoefficientsRight);
 
   // Output the right to left rotation and translation.
   // This is the MEDIAN of all the views.
-  cvSave(r2lRotationFileName.c_str(), rightToLeftRotationMatrix);
-  cvSave(r2lTranslationFileName.c_str(), rightToLeftTranslationVector);
+  cvSave(r2lRotationFileName.c_str(), m_RotationMatrixRightToLeft);
+  cvSave(r2lTranslationFileName.c_str(), m_TranslationVectorRightToLeft);
 
   // Output right to left MEDIAN transformation as a rotation [3x3] then a translation [1x3]
   for (int i = 0; i < 3; i++)
   {
-    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 2) << std::endl;
+    fsr2l << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, i, 0) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, i, 1) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, i, 2) << std::endl;
   }
-  fsr2l << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 2, 0) << std::endl;
+  fsr2l << CV_MAT_ELEM(*m_TranslationVectorRightToLeft, double, 0, 0) << " " << CV_MAT_ELEM(*m_TranslationVectorRightToLeft, double, 1, 0) << " " << CV_MAT_ELEM(*m_TranslationVectorRightToLeft, double, 2, 0) << std::endl;
 
   // Also calculate specific right to left transformations for each view.
   ComputeRightToLeftTransformations(
@@ -442,10 +413,10 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     tmpR2L.open((tmpR2LFileName).c_str(), std::ios::out);
     if (!tmpR2L.fail())
     {
-      cvRodrigues2(r2LRot, rightToLeftRotationMatrix);
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 2) << std::endl;
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 2) << std::endl;
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 2) << std::endl;
+      cvRodrigues2(r2LRot, m_RotationMatrixRightToLeft);
+      tmpR2L << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 0, 0) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 0, 1) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 0, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 1, 0) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 1, 1) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 1, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 2, 0) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 2, 1) << " " << CV_MAT_ELEM(*m_RotationMatrixRightToLeft, double, 2, 2) << std::endl;
       tmpR2L << CV_MAT_ELEM(*r2LTrans, double, 0, 0) << " " << CV_MAT_ELEM(*r2LTrans, double, 0, 1) << " " << CV_MAT_ELEM(*r2LTrans, double, 0, 2) << std::endl;
     }
     else
@@ -457,8 +428,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       tmpR2L.close();
     }
 
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), rightToLeftRotationMatrix);
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), m_RotationMatrixRightToLeft);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), m_TranslationVectorRightToLeft);
 
     fs << "Projecting error to individual camera[" << successfullFileNamesLeft[i] << "]: left=" << leftMonoReprojectionErrors[i] << ", right=" << rightMonoReprojectionErrors[i] << ", mean=" << (leftMonoReprojectionErrors[i]+rightMonoReprojectionErrors[i])/2.0 << std::endl;
   }  // end for each file
@@ -484,20 +455,6 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   cvReleaseMat(&imagePointsRight);
   cvReleaseMat(&objectPointsRight);
   cvReleaseMat(&pointCountsRight);
-
-  if (m_OptimiseIntrinsics)
-  {
-    cvReleaseMat(&intrinsicMatrixLeft);
-    cvReleaseMat(&distortionCoeffsLeft);
-    cvReleaseMat(&intrinsicMatrixRight);
-    cvReleaseMat(&distortionCoeffsRight);
-  }
-
-  if (m_OptimiseRightToLeft)
-  {
-    cvReleaseMat(&rightToLeftRotationMatrix);
-    cvReleaseMat(&rightToLeftTranslationVector);
-  }
 
   cvReleaseMat(&rotationVectorsLeft);
   cvReleaseMat(&translationVectorsLeft);
