@@ -123,17 +123,11 @@ public:
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
   MIDASOrientation GetOrientation() const;
 
-  /// \brief Turn the 2D cursors on/off locally.
-  void SetCursorVisible(bool visible);
-
   /// \brief Get the flag controlling 2D cursors on/off.
   bool IsCursorVisible() const;
 
-  /// \brief Turn the 2D cursors on/off globally.
-  void SetCursorGloballyVisible(bool visible);
-
-  /// \brief Get the flag controlling 2D cursors on/off.
-  bool IsCursorGloballyVisible() const;
+  /// \brief Turn the 2D cursors on/off.
+  void SetCursorVisible(bool visible);
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;
@@ -168,13 +162,13 @@ public:
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  /// \brief Sets the visible flag for all the nodes, and all the renderers.
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
-  /// \brief Returns the minimum allowed magnification, which is passed in as constructor arg, and held constant.
+  /// \brief Returns the minimum allowed magnification.
   double GetMinMagnification() const;
 
-  /// \brief Returns the maximum allowed magnification, which is passed in as constructor arg, and held constant.
+  /// \brief Returns the maximum allowed magnification.
   double GetMaxMagnification() const;
 
   /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.
@@ -186,21 +180,21 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
-  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
-  void SetGeometry(mitk::TimeGeometry::Pointer timeGeometry);
+  /// \brief Gets the world geometry.
+  const mitk::TimeGeometry* GetTimeGeometry() const;
 
-  /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
-  mitk::TimeGeometry::Pointer GetGeometry();
+  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
+  void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(mitk::TimeGeometry::Pointer geometry);
+  void SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
   /// this viewer will be bound to other viewers in the same multi viewer widget.
-  void SetBoundGeometryActive(bool isBound);
+  void SetBoundTimeGeometryActive(bool isBound);
 
   /// \brief Returns true if the geometry of the viewer is bound to other viewers, otherwise false.
-  bool IsBoundGeometryActive();
+  bool IsBoundTimeGeometryActive();
 
   /// \brief Gets the index of the selected slice for a given orientation.
   int GetSelectedSlice(MIDASOrientation orientation) const;
@@ -374,7 +368,7 @@ signals:
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
+  void GeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* geometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
@@ -390,6 +384,9 @@ protected:
   virtual void paintEvent(QPaintEvent* event);
 
 protected slots:
+
+  /// \brief Called when the window layout has changed.
+  virtual void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -410,7 +407,7 @@ private:
 
   inline int Index(int index) const
   {
-    return (index << 1) + m_IsBoundGeometryActive;
+    return (index << 1) + m_IsBoundTimeGeometryActive;
   }
 
   /// \brief Resets the last few remembered selected and cursor positions.
@@ -438,9 +435,9 @@ private:
   QGridLayout* m_GridLayout;
   niftkMultiWindowWidget* m_MultiWidget;
 
-  bool m_IsBoundGeometryActive;
-  mitk::TimeGeometry::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::TimeGeometry::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
+  bool m_IsBoundTimeGeometryActive;
+  mitk::TimeGeometry::ConstPointer m_TimeGeometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::TimeGeometry::ConstPointer m_BoundTimeGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.

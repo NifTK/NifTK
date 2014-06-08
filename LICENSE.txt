@@ -18,10 +18,10 @@ NifTK Software library, Release @NIFTK_VERSION_STRING@, (the "Software").
    electronic or mechanical, without the express permission of 
    Prof. Ourselin.
 
-3. The software may be used solely for non-commercial, academic 
+3. The Software may be used solely for non-commercial, academic 
    research purposes. 
 
-4. The software may not be used for, or in relation to, 
+4. The Software may not be used for, or in relation to, 
    patient management.
 
 5. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS 

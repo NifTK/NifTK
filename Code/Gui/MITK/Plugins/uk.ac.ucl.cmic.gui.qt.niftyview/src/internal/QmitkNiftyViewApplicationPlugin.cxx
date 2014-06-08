@@ -34,24 +34,21 @@ QmitkNiftyViewApplicationPlugin::~QmitkNiftyViewApplicationPlugin()
 //-----------------------------------------------------------------------------
 QString QmitkNiftyViewApplicationPlugin::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/uk_8ac_8ucl_8cmic_8gui_8qt_8niftyview.html");
+  return QString("qthelp://uk.ac.ucl.cmic.gui.qt.niftyview/bundle/uk_ac_ucl_cmic_gui_qt_niftyview_intro.html");
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
 {
-  berry::AbstractUICTKPlugin::start(context);
-  this->SetPluginContext(context);
+  QmitkCommonAppsApplicationPlugin::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMinimalPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMIDASPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->RegisterDataStorageListener();
 }
 
 

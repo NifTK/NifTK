@@ -26,15 +26,6 @@
     </perspective>
   </extension>
 
-  <extension point="org.blueberry.ui.perspectives">
-    <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective"
-      name="MIDAS Perspective"
-      class="QmitkCommonAppsMIDASPerspective"
-    icon="resources/icon_ion.xpm">
-    </perspective>
-  </extension>
-
   <extension point="org.blueberry.ui.preferencePages">
     <page id="uk.ac.ucl.cmic.gui.qt.niftyview.NiftyViewPreferencePage" name="Application Preferences - NiftyView" class="QmitkNiftyViewApplicationPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.gui.qt.niftyview.NiftyViewPreferencePageKeywords"></keywordreference>

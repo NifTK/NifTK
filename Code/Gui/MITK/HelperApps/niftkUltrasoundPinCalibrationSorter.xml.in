@@ -27,13 +27,13 @@
     <directory>
       <name>outputMatrixDirectory</name>
       <longflag>outputMatrixDirectory</longflag>
-      <description>Directory to write selected 4x4 tracking matrices in plain text files.</description>
+      <description>Directory to write selected 4x4 tracking matrices in plain text files, which must differ from outputPointDirectory.</description>
       <label>Output Matrix Directory</label>
     </directory>
     <directory>
       <name>outputPointDirectory</name>
       <longflag>outputPointDirectory</longflag>
-      <description>Directory to write selected 2D pin locations.</description>
+      <description>Directory to write selected 2D pin locations, which must differ from outputMatrixDirectory.</description>
       <label>Output Points Directory</label>
     </directory>
   </parameters>

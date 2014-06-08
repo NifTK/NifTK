@@ -91,6 +91,7 @@ void QmitkCommonAppsApplicationPlugin::SetPluginContext(ctkPluginContext* contex
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
 {
+  berry::AbstractUICTKPlugin::start(context);
   this->SetPluginContext(context);
   this->RegisterQmitkCommonAppsExtensions();
   this->RegisterDataStorageListener();

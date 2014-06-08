@@ -119,7 +119,8 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *
       nodes.push_back(it->Value());
     }
   }
-  m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
+
+  m_Viewers[viewerIndex]->SetVisibility(nodes, false);
 }
 
 
@@ -189,7 +190,7 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
   {
     std::vector<mitk::DataNode*> nodes;
     nodes.push_back(node);
-    m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, false);
+    m_Viewers[viewerIndex]->SetVisibility(nodes, false);
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
@@ -292,7 +293,7 @@ void niftkMultiViewerVisibilityManager::OnGlobalVisibilityChanged(mitk::DataNode
       {
         std::vector<mitk::DataNode*> nodes;
         nodes.push_back(node);
-        m_Viewers[viewerIndex]->SetRendererSpecificVisibility(nodes, globalVisibility);
+        m_Viewers[viewerIndex]->SetVisibility(nodes, globalVisibility);
 
 //        if (!globalVisibility)
 //        {
@@ -342,7 +343,7 @@ void niftkMultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
     nodes.push_back(*iter);
   }
 
-  viewer->SetRendererSpecificVisibility(nodes, false);
+  viewer->SetVisibility(nodes, false);
   m_DataNodesPerViewer[viewerIndex].clear();
 }
 
@@ -382,12 +383,12 @@ void niftkMultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::D
     }
   }
 
-  viewer->SetRendererSpecificVisibility(nodes, initialVisibility);
+  viewer->SetVisibility(nodes, initialVisibility);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
+mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
   mitk::TimeGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
@@ -598,8 +599,8 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
 
       MITK_DEBUG << "Dropped single" << std::endl;
 
-      mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
-      if (geometry.IsNull())
+      mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, -1);
+      if (timeGeometry.IsNull())
       {
         MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into viewer " << viewerIndex << ", could not find geometry which must be a programming bug." << std::endl;
         return;
@@ -614,7 +615,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
       // Then set up geometry of that single viewer.
       if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
-        m_Viewers[viewerIndex]->SetGeometry(geometry.GetPointer());
+        m_Viewers[viewerIndex]->SetTimeGeometry(timeGeometry.GetPointer());
         m_Viewers[viewerIndex]->SetWindowLayout(windowLayout);
         m_Viewers[viewerIndex]->SetEnabled(true);
       }
@@ -648,8 +649,8 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
           dropIndex = 0;
         }
 
-        mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, i);
-        if (geometry.IsNull())
+        mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, i);
+        if (timeGeometry.IsNull())
         {
           MITK_ERROR << "Error, dropping node " << i << ", from a list of " << nodes.size() << " nodes into viewer " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
           return;
@@ -664,7 +665,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
         // Initialise geometry according to first image
         if (this->GetNodesInViewer(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
         {
-          m_Viewers[dropIndex]->SetGeometry(geometry.GetPointer());
+          m_Viewers[dropIndex]->SetTimeGeometry(timeGeometry.GetPointer());
           m_Viewers[dropIndex]->SetWindowLayout(windowLayout);
           m_Viewers[dropIndex]->SetEnabled(true);
         }
@@ -680,8 +681,8 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
     {
       MITK_DEBUG << "Dropped thumbnail" << std::endl;
 
-      mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
-      if (geometry.IsNull())
+      mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, -1);
+      if (timeGeometry.IsNull())
       {
         MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into viewer " << viewerIndex << ", could not find geometry which must be a programming bug." << std::endl;
         return;
@@ -720,7 +721,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
       // If we have more slices than viewers, we need to interpolate the number of slices.
       if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
-        m_Viewers[0]->SetGeometry(geometry.GetPointer());
+        m_Viewers[0]->SetTimeGeometry(timeGeometry.GetPointer());
         m_Viewers[0]->SetWindowLayout(windowLayout);
       }
 
@@ -738,7 +739,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
         {
           if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
           {
-            m_Viewers[i]->SetGeometry(geometry.GetPointer());
+            m_Viewers[i]->SetTimeGeometry(timeGeometry.GetPointer());
             m_Viewers[i]->SetWindowLayout(windowLayout);
             m_Viewers[i]->SetEnabled(true);
           }
@@ -754,7 +755,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
         {
           if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
           {
-            m_Viewers[i]->SetGeometry(geometry.GetPointer());
+            m_Viewers[i]->SetTimeGeometry(timeGeometry.GetPointer());
             m_Viewers[i]->SetWindowLayout(windowLayout);
             m_Viewers[i]->SetEnabled(true);
           }

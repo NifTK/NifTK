@@ -32,15 +32,7 @@ public:
   * \param the rigid body filename to define the location of the tracking markers
   * \param the handeye calibration to define the tool origin
   */
-  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string handeyeFilename );
-
-  /**
-  * \brief For visualisation purposes, creates a representation of the laparoscope.
-  * \param the rigid body filename to define the location of the tracking markers
-  * \param the handeye calibration to define the tool origin
-  */
-  vtkSmartPointer<vtkPolyData> MakeLaparoscopePolaris(std::string rigidBodyFilename, std::string handeyeFilename );
-
+  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string leftHandeyeFilename, std::string rightHandeyeFilename, std::string centreHandeyeFilename ,  bool AddCrossHairs = true, float trackerMarkerRadius = 3.0 , float LensAngle = 30.0, float BodyLength = 500.0 );
 
   /**
   * \brief For visualisation purposes, creates a representation of the pointer.
@@ -102,14 +94,21 @@ public:
    * \brief for visualisation purposes, make a representation of an Optotrak Certus 
    * camera unit
    * \param the width of the camera unit
+   * \param set to true to turn the neck over so it looks (a bit) more like a polaris
    */
-  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width = 500);
+  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width = 500, bool Polaris = false);
 
   /**
   * \brief For visualisation purposes, creates a representation of a transrectal ultrasound probe
   * \param the handeye calibration to define the tool origin
   */
   vtkSmartPointer<vtkPolyData> MakeTransrectalUSProbe(std::string handeyeFilename );
+
+  /**
+  * \brief For visualisation purposes, creates a representation of a monitor
+  * \param 
+  */
+  vtkSmartPointer<vtkPolyData> MakeMonitor();
 
 private:
   /** 

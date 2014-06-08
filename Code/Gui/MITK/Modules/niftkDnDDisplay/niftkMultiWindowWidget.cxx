@@ -16,11 +16,11 @@
 
 #include <cmath>
 #include <itkMatrix.h>
+#include <itkSpatialOrientationAdapter.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <QmitkRenderWindow.h>
 #include <QGridLayout>
-#include <mitkMIDASOrientationUtils.h>
 
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
@@ -84,7 +84,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_CursorGlobalVisibility(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_CursorPositions(3)
@@ -92,14 +91,15 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
-, m_Geometry(NULL)
 , m_TimeGeometry(NULL)
+, m_Geometry(NULL)
 , m_BlockDisplayEvents(false)
 , m_BlockSncEvents(false)
 , m_BlockFocusEvents(false)
 , m_BlockUpdate(false)
 , m_FocusHasChanged(false)
 , m_GeometryHasChanged(false)
+, m_WindowLayoutHasChanged(false)
 , m_TimeStepHasChanged(false)
 , m_SelectedSliceHasChanged(3)
 , m_CursorPositionHasChanged(3)
@@ -136,7 +136,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
-  this->SetCursorGloballyVisible(false);
+  m_PlaneNode1->SetVisibility(false);
+  m_PlaneNode2->SetVisibility(false);
+  m_PlaneNode3->SetVisibility(false);
   this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
@@ -253,6 +255,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 //-----------------------------------------------------------------------------
 niftkMultiWindowWidget::~niftkMultiWindowWidget()
 {
+  this->SetEnabled(false);
+
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   focusManager->RemoveObserver(m_FocusManagerObserverTag);
 
@@ -631,27 +635,6 @@ void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
-{
-  return m_CursorGlobalVisibility;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorGloballyVisible(bool visible)
-{
-  // Here, "globally" means the plane nodes created within this widget will be available in ALL other render windows.
-  m_CursorGlobalVisibility = visible;
-  m_PlaneNode1->SetVisibility(visible);
-  m_PlaneNode1->Modified();
-  m_PlaneNode2->SetVisibility(visible);
-  m_PlaneNode2->Modified();
-  m_PlaneNode3->SetVisibility(visible);
-  m_PlaneNode3->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 {
   return m_DirectionAnnotations[AXIAL]->GetVisibility()
@@ -663,10 +646,9 @@ bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 {
-  for (int i = 0; i < 3; ++i)
-  {
-    m_DirectionAnnotations[i]->SetVisibility(visible);
-  }
+  m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
+  m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
+  m_DirectionAnnotations[CORONAL]->SetVisibility(visible);
   this->RequestUpdate();
 }
 
@@ -724,6 +706,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
         show3DPlanes = true;
       }
     }
+
     this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
@@ -753,9 +736,9 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
-  for (unsigned int i = 0; i < nodes.size(); i++)
+  for (std::size_t i = 0; i < nodes.size(); ++i)
   {
     this->SetVisibility(mitkWidget1, nodes[i], visible);
     this->SetVisibility(mitkWidget2, nodes[i], visible);
@@ -785,6 +768,11 @@ const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows(
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
+  if (!m_Geometry)
+  {
+    return;
+  }
+
   bool updateWasBlocked = this->BlockUpdate(true);
 
   if (!m_CursorPositionBinding && !m_ScaleFactorBinding)
@@ -957,7 +945,7 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
+void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   if (timeGeometry != NULL)
   {
@@ -965,8 +953,8 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
-    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
     m_TimeGeometry = timeGeometry;
+    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
 
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
@@ -1017,23 +1005,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
     mitk::AffineTransform3D::Pointer affineTransform = m_Geometry->GetIndexToWorldTransform();
     itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        normalisedAffineTransformMatrix[i][j] = affineTransformMatrix[i][j];
-      }
-    }
-    normalisedAffineTransformMatrix.normalize_columns();
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        affineTransformMatrix[i][j] = normalisedAffineTransformMatrix[i][j];
-      }
-    }
-
+    affineTransformMatrix.GetVnlMatrix().normalize_columns();
     mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
     int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
@@ -1045,16 +1017,15 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
     int permutedBoundingBox[3];
     int permutedAxes[3];
-    int flippedAxes[3];
     double permutedSpacing[3];
 
     permutedAxes[0] = dominantAxisRL;
     permutedAxes[1] = dominantAxisAP;
     permutedAxes[2] = dominantAxisSI;
 
-    flippedAxes[0] = signRL;
-    flippedAxes[1] = signAP;
-    flippedAxes[2] = signSI;
+    m_UpDirections[0] = signRL;
+    m_UpDirections[1] = signAP;
+    m_UpDirections[2] = signSI;
 
     permutedBoundingBox[0] = static_cast<int>(m_Geometry->GetExtent(dominantAxisRL));
     permutedBoundingBox[1] = static_cast<int>(m_Geometry->GetExtent(dominantAxisAP));
@@ -1068,15 +1039,15 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
     permutedMatrix.set_identity();
 
     // permutedMatrix(column) = inverseTransformMatrix(row) * flippedAxes
-    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * flippedAxes[0];
-    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * flippedAxes[0];
-    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * flippedAxes[0];
-    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * flippedAxes[1];
-    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * flippedAxes[1];
-    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * flippedAxes[1];
-    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * flippedAxes[2];
-    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * flippedAxes[2];
-    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * flippedAxes[2];
+    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * m_UpDirections[0];
+    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * m_UpDirections[0];
+    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * m_UpDirections[0];
+    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * m_UpDirections[1];
+    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * m_UpDirections[1];
+    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * m_UpDirections[1];
+    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * m_UpDirections[2];
+    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * m_UpDirections[2];
+    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * m_UpDirections[2];
 
     m_OrientationAxes[AXIAL] = dominantAxisSI;
     m_OrientationAxes[SAGITTAL] = dominantAxisRL;
@@ -1107,46 +1078,44 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 //      MITK_INFO << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
 //    }
 
-    mitk::Point3D originInVx;
-    for (int i = 0; i < 3; ++i)
+    mitk::Point3D worldBottomLeftBackCorner = m_Geometry->GetOrigin();
+
+    if (m_Geometry->GetImageGeometry())
     {
-      if (flippedAxes[i] >= 0)
+      m_GeometryType = ImageGeometry;
+      for (int i = 0; i < 3; ++i)
       {
-        originInVx[permutedAxes[i]] = 0;
-      }
-      else
-      {
-        originInVx[permutedAxes[i]] = m_Geometry->GetExtent(permutedAxes[i]) - 1;
+        if (m_UpDirections[i] > 0)
+        {
+          worldBottomLeftBackCorner[i] -= 0.5 * permutedSpacing[i];
+        }
+        else
+        {
+          worldBottomLeftBackCorner[i] -= permutedBoundingBox[i] * permutedSpacing[i] * permutedMatrix[i][i] - 0.5 * permutedSpacing[i];
+        }
       }
     }
-
-    mitk::Point3D originInMm;
-    m_Geometry->IndexToWorld(originInVx, originInMm);
-
-//    MITK_INFO << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm;
-
-    if (!m_Geometry->GetImageGeometry())
+    else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
     {
-      if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
-      {
-        originInMm[0] += 0.5 * permutedSpacing[0];
-        originInMm[1] -= 0.5 * permutedSpacing[1];
-      }
-      else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
-      {
-        originInMm[1] += 0.5 * permutedSpacing[1];
-        originInMm[2] += 0.5 * permutedSpacing[2];
-      }
-      else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
-      {
-        originInMm[0] += 0.5 * permutedSpacing[0];
-        originInMm[2] += 0.5 * permutedSpacing[2];
-      }
-      else
-      {
-        assert(false);
-      }
+      m_GeometryType = AxialGeometry;
+      worldBottomLeftBackCorner[1] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+      worldBottomLeftBackCorner[2] -= permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
     }
+    else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
+    {
+      m_GeometryType = SagittalGeometry;
+      worldBottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
+    }
+    else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
+    {
+      m_GeometryType = CoronalGeometry;
+      worldBottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
+    }
+    else
+    {
+      assert(false);
+    }
+//    MITK_INFO << "Matt, bottom left corner: " << worldBottomLeftBackCorner;
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
@@ -1159,7 +1128,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
       sliceNavigationController->SetViewDirectionToDefault();
 
       // Get the view/orientation flags.
-      mitk::SliceNavigationController::ViewDirection viewDirection = const_cast<const mitk::SliceNavigationController*>(sliceNavigationController)->GetViewDirection();
+      mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
 
       if (i < 3)
       {
@@ -1182,9 +1151,13 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          originOfSlice[0] = originInMm[0];
-          originOfSlice[1] = originInMm[1] - 0.5 * permutedSpacing[1];
-          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
+          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2];
+          if (m_GeometryType == SagittalGeometry)
+          {
+            originOfSlice[0] += 0.5 * permutedSpacing[0];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
@@ -1202,9 +1175,13 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          originOfSlice[0] = originInMm[0] - 0.5 * permutedSpacing[0];
-          originOfSlice[1] = originInMm[1];
-          originOfSlice[2] = originInMm[2] - 0.5 * permutedSpacing[2];
+          originOfSlice[0] = worldBottomLeftBackCorner[0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2];
+          if (m_GeometryType == CoronalGeometry)
+          {
+//            originOfSlice[1] += 0.5 * permutedSpacing[1];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
@@ -1221,19 +1198,23 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
           height = permutedBoundingBox[1];
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
-          isFlipped = true;
-          originOfSlice[0] = originInMm[0] + permutedBoundingBox[0] * permutedSpacing[0] * permutedMatrix[0][1] - 0.5 * permutedSpacing[0];
-          originOfSlice[1] = originInMm[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1] - 0.5 * permutedSpacing[1];
-          originOfSlice[2] = originInMm[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][1];
+          isFlipped = false;
+          originOfSlice[0] = worldBottomLeftBackCorner[0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
+          if (m_GeometryType == AxialGeometry)
+          {
+            originOfSlice[2] -= 0.5 * permutedSpacing[2];
+          }
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
           bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
           bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
-          normal[0] = permutedMatrix[0][2];
-          normal[1] = permutedMatrix[1][2];
-          normal[2] = permutedMatrix[2][2];
+          normal[0] = -1.0 * permutedMatrix[0][2];
+          normal[1] = -1.0 * permutedMatrix[1][2];
+          normal[2] = -1.0 * permutedMatrix[2][2];
           break;
         }
 
@@ -1314,19 +1295,38 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
         if (renderer->GetMapperID() == 1)
         {
           // Now geometry is established, set to middle slice.
-          int sliceNumber = (int)((sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
-          sliceNavigationController->GetSlice()->SetPos(sliceNumber);
+          int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
+          if ((slices % 2 == 0) && isFlipped)
+          {
+            middleSlicePos -= 1;
+          }
+          sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
-        // Now geometry is established, get the display geometry to fit the picture to the window.
         renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
+
+        /// Note:
+        /// The renderers are listening to the GeometrySendEvents of their slice navigation
+        /// controller, and they update their world geometry to the one of their SNC whenever
+        /// it changes. However, the SNC signals are blocked when the update of this viewer is
+        /// blocked, and the SNC GeometrySendEvents are sent out only when BlockUpdate(false)
+        /// is called for this widget. The renderers would update their world geometry right
+        /// after this. However, the focus change signals are sent out *before* the SNC signals.
+        /// As a result, if somebody is listening to the focus change signals, will find the
+        /// old world geometry in the renderer. Therefore, here we manually set the new geometry
+        /// to the renderers, even if they would get it later.
+        /// Note also that the SNCs' Update function clones the input world geometry, therefore
+        /// here we should not use the reference to 'createdTimeGeometry' but have to get
+        /// it from the SNC.
+        renderer->SetWorldTimeGeometry(sliceNavigationController->GetCreatedWorldGeometry());
       }
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
-    m_TimeStepHasChanged = true;
     m_GeometryHasChanged = true;
+    m_TimeStepHasChanged = true;
+    m_SelectedPosition = this->GetCrossPosition();
     for (int i = 0; i < 3; ++i)
     {
       m_SelectedSliceHasChanged[i] = true;
@@ -1347,6 +1347,14 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
+/// The viewer is not correctly initialised if this check is enabled.
+//  if (windowLayout == m_WindowLayout)
+//  {
+//    return;
+//  }
+
+  bool updateWasBlocked = this->BlockUpdate(true);
+
   bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
   if (m_GridLayout != NULL)
@@ -1531,6 +1539,7 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   m_ScaleFactorBinding = ::IsMultiWindowLayout(windowLayout);
 
   m_WindowLayout = windowLayout;
+  m_WindowLayoutHasChanged = true;
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
@@ -1563,6 +1572,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   }
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -1900,10 +1911,12 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    m_SelectedPosition = this->GetCrossPosition();
-    m_SelectedSliceHasChanged[windowIndex] = true;
-
-    this->SynchroniseCursorPositions(windowIndex);
+    mitk::Point3D selectedPosition = this->GetCrossPosition();
+    if (selectedPosition != m_SelectedPosition)
+    {
+      m_SelectedPosition = selectedPosition;
+      m_SelectedSliceHasChanged[windowIndex] = true;
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -1919,11 +1932,13 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 
   if (m_Geometry != NULL)
   {
-    mitk::Index3D selectedPositionInVx;
+    int axis = m_OrientationAxes[windowIndex];
+
+    mitk::Point3D selectedPositionInVx;
     m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-    int axis = m_OrientationAxes[windowIndex];
-    selectedSlice = selectedPositionInVx[axis];
+    /// Round it to the closest integer.
+    selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
   }
 
   return selectedSlice;
@@ -1933,29 +1948,18 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 {
-  const mitk::Geometry3D* geometry = m_Geometry;
-  if (geometry != NULL)
+  if (m_Geometry != NULL)
   {
-    mitk::Index3D selectedPositionInVx;
     mitk::Point3D selectedPosition = m_SelectedPosition;
 
-    geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+    mitk::Point3D selectedPositionInVx;
+    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
 
-    mitk::Point3D tmp;
-    tmp[0] = selectedPositionInVx[0];
-    tmp[1] = selectedPositionInVx[1];
-    tmp[2] = selectedPositionInVx[2];
+    m_Geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
-    geometry->IndexToWorld(tmp, selectedPosition);
-
-    // Does not work, as it relies on the StateMachine event broadcasting mechanism,
-    // and if the widget is not listening, then it goes unnoticed.
-    //this->MoveCrossToPosition(selectedPosition);
-
-    // This however, directly forces the SNC to the right place.
     this->SetSelectedPosition(selectedPosition);
   }
 }
@@ -1964,14 +1968,27 @@ void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::MoveAnteriorOrPosterior(int windowIndex, int slices)
 {
-  if (windowIndex < 3 && slices != 0)
+  if (m_Geometry && windowIndex < 3 && slices != 0)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
     int selectedSlice = this->GetSelectedSlice(windowIndex);
-    int upDirection = this->GetSliceUpDirection(windowIndex);
 
-    int nextSelectedSlice = selectedSlice + slices * upDirection;
+    int upDirection;
+    if (windowIndex == AXIAL)
+    {
+      upDirection = m_UpDirections[2];
+    }
+    else if (windowIndex == SAGITTAL)
+    {
+      upDirection = m_UpDirections[0];
+    }
+    else if (windowIndex == CORONAL)
+    {
+      upDirection = m_UpDirections[1];
+    }
+
+    int nextSelectedSlice = selectedSlice + upDirection * slices;
 
     int maxSlice = this->GetMaxSlice(windowIndex);
 
@@ -2059,6 +2076,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
+
+    m_SelectedPosition = this->GetCrossPosition();
 
     if (m_WindowLayout != WINDOW_LAYOUT_3D)
     {
@@ -2253,9 +2272,14 @@ void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
   mitk::Point2D point2DInPx;
   displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
 
-  m_CursorPositions[windowIndex][0] = point2DInPx[0] / displaySize[0];
-  m_CursorPositions[windowIndex][1] = point2DInPx[1] / displaySize[1];
-  m_CursorPositionHasChanged[windowIndex] = true;
+  mitk::Vector2D cursorPositions;
+  cursorPositions[0] = point2DInPx[0] / displaySize[0];
+  cursorPositions[1] = point2DInPx[1] / displaySize[1];
+  if (cursorPositions != m_CursorPositions[windowIndex])
+  {
+    m_CursorPositions[windowIndex] = cursorPositions;
+    m_CursorPositionHasChanged[windowIndex] = true;
+  }
 
   this->BlockUpdate(updateWasBlocked);
 }
@@ -2424,12 +2448,23 @@ void niftkMultiWindowWidget::SetMagnification(int windowIndex, double magnificat
 //-----------------------------------------------------------------------------
 int niftkMultiWindowWidget::GetSliceUpDirection(int orientation) const
 {
-  int result = 0;
-  if (m_Geometry != NULL)
+  int upDirection = 0;
+  if (m_Geometry && orientation >= 0 && orientation < 3)
   {
-    result = mitk::GetUpDirection(m_Geometry, itk::Orientation(orientation));
+    if (orientation == AXIAL)
+    {
+      upDirection = m_UpDirections[2];
+    }
+    else if (orientation == SAGITTAL)
+    {
+      upDirection = m_UpDirections[0];
+    }
+    else if (orientation == CORONAL)
+    {
+      upDirection = m_UpDirections[1];
+    }
   }
-  return result;
+  return upDirection;
 }
 
 
@@ -2771,6 +2806,12 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       if (selectedPositionHasChanged)
       {
         emit SelectedPositionChanged(m_SelectedPosition);
+      }
+
+      if (m_WindowLayoutHasChanged)
+      {
+        m_WindowLayoutHasChanged = false;
+        emit WindowLayoutChanged(m_WindowLayout);
       }
 
       for (unsigned i = 0; i < 3; ++i)
