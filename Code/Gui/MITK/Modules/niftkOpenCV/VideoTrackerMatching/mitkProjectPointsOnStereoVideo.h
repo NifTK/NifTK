@@ -17,6 +17,7 @@
 
 #include "niftkOpenCVExports.h"
 #include <string>
+#include <fstream>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
@@ -25,6 +26,29 @@
 #include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
+
+class NIFTKOPENCV_EXPORT GoldStandardPoint
+{
+  /**
+   * \class contains the gold standard points
+   * consisting of the frame number, the point and optionally the point index
+   */
+  public:
+    GoldStandardPoint();
+    GoldStandardPoint(unsigned int , int, cv::Point2d);
+    GoldStandardPoint(std::istream& is);
+    unsigned int m_FrameNumber;
+    int m_Index;
+    cv::Point2d  m_Point;
+   
+    /** 
+     * \brief an input operator
+     */
+    friend std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
+
+    friend bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
+
+};
 
 /**
  * \class Project points on stereo video
@@ -97,8 +121,8 @@ public:
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
-  void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
-  void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
+  void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points );
+  void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points );
 
   /**
    * \brief sets the world points and corresponding vectors
@@ -171,6 +195,9 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_DrawAxes;
+  bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
+  bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
+  int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
@@ -202,9 +229,9 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   // a bunch of stuff for calculating errors
-  std::vector < std::pair < unsigned int , cv::Point2d > >
+  std::vector < mitk::GoldStandardPoint >
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
-  std::vector < std::pair < unsigned int , cv::Point2d > >
+  std::vector < mitk::GoldStandardPoint >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
   std::vector< cv::Point3d >    m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
@@ -229,20 +256,20 @@ private:
    * calculates the x and y errors between the passed point and the nearest point in 
    * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
    */
-  void CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  void CalculateProjectionError (  GoldStandardPoint GSPoint, bool left );
 
   /* \brief 
    * calculates the x,y, and z error between the passed point and the nearest point in 
    * m_ProjectedPoints when projected onto a plane distant from the camera
    * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
    */
-  void CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  void CalculateReProjectionError ( GoldStandardPoint GSPoint, bool left );
  
   /* \brief 
    * Finds  the nearest point in 
    * m_ProjectedPoints
    */
-  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, 
+  cv::Point2d FindNearestScreenPoint ( GoldStandardPoint GSPoint, 
       bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
   
 }; // end class
