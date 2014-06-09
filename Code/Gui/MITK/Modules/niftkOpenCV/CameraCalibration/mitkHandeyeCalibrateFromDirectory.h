@@ -62,6 +62,7 @@ public:
   itkSetMacro(SwapVideoChannels, bool);
 
   bool LoadExistingIntrinsicCalibrations (std::string directory);
+  bool LoadExistingRightToLeft(const std::string& directory);
   void SetInputDirectory(const std::string& inputDir);
   virtual void SetOutputDirectory(const std::string& outputDir);
   
@@ -116,8 +117,10 @@ private:
   CvMat*                              m_IntrinsicMatrixRight;
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
+  CvMat*                              m_RotationMatrixRightToLeft;
+  CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
-
+  bool                                m_OptimiseRightToLeft;
 }; // end class
 
 } // end namespace

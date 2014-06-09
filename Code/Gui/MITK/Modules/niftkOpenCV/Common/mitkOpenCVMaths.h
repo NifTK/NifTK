@@ -394,6 +394,12 @@ extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv
  *   */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
 
+/**
+ * \brief Specific method that inverts a matrix without SVD or decomposition,
+ * because the input is known to be orthonormal.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const CvMat& input, CvMat& output);
+
 } // end namespace
 
 #endif

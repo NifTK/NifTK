@@ -269,7 +269,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalculateRPE(
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
  * and also outputs the rotation and translation vector between the two cameras.
- * plus option to fix the intrinsics, so only the extrinsics and r2l transform are calculated
+ *
+ * Now we also have an option to fix the intrinsics, and an option to fix the right to left calculation.
  */
 extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   const CvMat& objectPointsLeft,
@@ -291,7 +292,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   CvMat& outputRightToLeftTranslation,
   CvMat& outputEssentialMatrix,
   CvMat& outputFundamentalMatrix,
-  const bool& fixedIntrinsics = false
+  const bool& fixedIntrinsics = false,
+  const bool& fixedRightToLeft = false
   );
 
 
