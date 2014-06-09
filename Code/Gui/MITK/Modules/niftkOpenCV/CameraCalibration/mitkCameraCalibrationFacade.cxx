@@ -14,6 +14,7 @@
 
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
@@ -337,13 +338,15 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
 
 //-----------------------------------------------------------------------------
-double CalibrateSingleCameraIntrinsicParameters(
+double CalibrateSingleCameraParameters(
     const CvMat&  objectPoints,
     const CvMat&  imagePoints,
     const CvMat&  pointCounts,
     const CvSize& imageSize,
-    CvMat&  outputIntrinsicMatrix,
-    CvMat&  outputDistortionCoefficients,
+    CvMat& outputIntrinsicMatrix,
+    CvMat& outputDistortionCoefficients,
+    CvMat* outputRotationVectors,
+    CvMat* outputTranslationVectors,
     const int& flags
     )
 {
@@ -353,8 +356,8 @@ double CalibrateSingleCameraIntrinsicParameters(
                             imageSize,
                             &outputIntrinsicMatrix,
                             &outputDistortionCoefficients,
-                            NULL,
-                            NULL,
+                            outputRotationVectors,
+                            outputTranslationVectors,
                             flags
                             );
 
@@ -362,13 +365,15 @@ double CalibrateSingleCameraIntrinsicParameters(
 
 
 //-----------------------------------------------------------------------------
-double CalibrateSingleCameraIntrinsicUsing3Passes(
+double CalibrateSingleCameraUsingMultiplePasses(
        const CvMat& objectPoints,
        const CvMat& imagePoints,
        const CvMat& pointCounts,
        const CvSize& imageSize,
        CvMat& outputIntrinsicMatrix,
-       CvMat& outputDistortionCoefficients
+       CvMat& outputDistortionCoefficients,
+       CvMat& outputRotationVectors,
+       CvMat& outputTranslationVectors
        )
 {
   CvScalar zero = cvScalar(0);
@@ -378,89 +383,97 @@ double CalibrateSingleCameraIntrinsicUsing3Passes(
   CV_MAT_ELEM(outputIntrinsicMatrix, double, 0, 0) = 1.0f;
   CV_MAT_ELEM(outputIntrinsicMatrix, double, 1, 1) = 1.0f;
 
-  double reprojectionError1 = CalibrateSingleCameraIntrinsicParameters(
+  double reprojectionError1 = CalibrateSingleCameraParameters(
       objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
+      NULL, NULL,
       CV_CALIB_FIX_PRINCIPAL_POINT | CV_CALIB_FIX_ASPECT_RATIO
       );
 
-  double reprojectionError2 = CalibrateSingleCameraIntrinsicParameters(
+  double reprojectionError2 = CalibrateSingleCameraParameters(
       objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
+      NULL, NULL,
       CV_CALIB_FIX_PRINCIPAL_POINT
       );
 
-  double reprojectionError3 = CalibrateSingleCameraIntrinsicParameters(
-      objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients
+  double reprojectionError3 = CalibrateSingleCameraParameters(
+      objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
+      &outputRotationVectors, &outputTranslationVectors,
+      CV_CALIB_USE_INTRINSIC_GUESS
       );
 
-  std::cout << "3 pass intrinsic calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3 << std::endl;
+  std::cout << "3 pass single camera calibration yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << ", " << reprojectionError3  << std::endl;
 
   return reprojectionError3;
 }
 
 
 //-----------------------------------------------------------------------------
-void CalibrateSingleCameraExtrinsicParameters(
-    const CvMat& objectPoints,
-    const CvMat& imagePoints,
-    const CvMat& intrinsicMatrix,
-    const CvMat& distortionCoefficients,
-    CvMat& outputRotationMatrix,
-    CvMat& outputTranslationVector
-    )
+void CalibrateSingleCameraExtrinsics(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  const bool& useExtrinsicGuess,
+  CvMat& outputRotationVectors,
+  CvMat& outputTranslationVectors
+  )
 {
-  CvMat *rotationVector = cvCreateMat(3, 1, CV_32FC1);
+  for (unsigned int i = 0; i < pointCounts.rows; i++)
+  {
+    unsigned int numberOfPoints = CV_MAT_ELEM(pointCounts, int, i, 0);
+    unsigned int offset = i*numberOfPoints;
 
-  cvFindExtrinsicCameraParams2(&objectPoints,
-      &imagePoints,
+    CvMat *tmpRotationVector = cvCreateMat(1, 3, CV_64FC1);
+    CvMat *tmpTranslationVector = cvCreateMat(1, 3, CV_64FC1);
+    CvMat* tmpObjectPoints = cvCreateMat(numberOfPoints, 3, CV_64FC1);
+    CvMat* tmpImagePoints  = cvCreateMat(numberOfPoints, 2, CV_64FC1);
+
+    for (unsigned int j = 0; j < numberOfPoints; j++)
+    {
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 0) = CV_MAT_ELEM(objectPoints, double, offset + j, 0);
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 1) = CV_MAT_ELEM(objectPoints, double, offset + j, 1);
+      CV_MAT_ELEM(*tmpObjectPoints, double, j, 2) = CV_MAT_ELEM(objectPoints, double, offset + j, 2);
+      CV_MAT_ELEM(*tmpImagePoints, double, j, 0) = CV_MAT_ELEM(imagePoints, double, offset + j, 0);
+      CV_MAT_ELEM(*tmpImagePoints, double, j, 1) = CV_MAT_ELEM(imagePoints, double, offset + j, 1);
+    }
+
+    if (useExtrinsicGuess)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        CV_MAT_ELEM(*tmpRotationVector, double, 0, j) = CV_MAT_ELEM(outputRotationVectors, double, i, j);
+        CV_MAT_ELEM(*tmpTranslationVector, double, 0, j) = CV_MAT_ELEM(outputTranslationVectors, double, i, j);
+      }
+    }
+
+    int useGuess = 0;
+    if (useExtrinsicGuess)
+    {
+      useGuess = 1;
+    }
+
+    cvFindExtrinsicCameraParams2(
+      tmpObjectPoints,
+      tmpImagePoints,
       &intrinsicMatrix,
       &distortionCoefficients,
-      rotationVector,
-      &outputTranslationVector
-      );
+      tmpRotationVector,
+      tmpTranslationVector,
+      useGuess
+    );
 
-  cvRodrigues2(rotationVector, &outputRotationMatrix);
-  cvReleaseMat(&rotationVector);
-}
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      CV_MAT_ELEM(outputRotationVectors, double, i, j) = CV_MAT_ELEM(*tmpRotationVector, double, 0, j);
+      CV_MAT_ELEM(outputTranslationVectors, double, i, j) = CV_MAT_ELEM(*tmpTranslationVector, double, 0, j);
+    }
 
-
-//-----------------------------------------------------------------------------
-double CalibrateSingleCameraParameters(
-     const CvMat& objectPoints,
-     const CvMat& imagePoints,
-     const CvMat& pointCounts,
-     const CvSize& imageSize,
-     CvMat& outputIntrinsicMatrix,
-     CvMat& outputDistortionCoefficients,
-     CvMat& outputRotationVectors,
-     CvMat& outputTranslationVectors
-     )
-{
-
-  double reprojectionError1 = CalibrateSingleCameraIntrinsicUsing3Passes
-      (
-       objectPoints,
-       imagePoints,
-       pointCounts,
-       imageSize,
-       outputIntrinsicMatrix,
-       outputDistortionCoefficients
-      );
-
-  double reprojectionError2 = cvCalibrateCamera2(
-                            &objectPoints,
-                            &imagePoints,
-                            &pointCounts,
-                            imageSize,
-                            &outputIntrinsicMatrix,
-                            &outputDistortionCoefficients,
-                            &outputRotationVectors,
-                            &outputTranslationVectors,
-                            CV_CALIB_USE_INTRINSIC_GUESS // This assumes you have called
-                                                         // CalibrateSingleCameraIntrinsicUsing3Passes
-                            );
-  std::cout << "3 pass intrinsic, then intrinsic+extrinsic yielded RPE of " << reprojectionError1 << ", " << reprojectionError2 << std::endl;
-
-  return reprojectionError2;
+    cvReleaseMat(&tmpRotationVector);
+    cvReleaseMat(&tmpTranslationVector);
+    cvReleaseMat(&tmpObjectPoints);
+    cvReleaseMat(&tmpImagePoints);
+  }
 }
 
 
@@ -677,112 +690,153 @@ double CalibrateStereoCameraParameters(
     CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
     CvMat& outputFundamentalMatrix,
-    const bool& fixedIntrinsics
+    const bool& fixedIntrinsics,
+    const bool& fixedRightToLeft
     )
 {
+
+  // If fixedIntrinsics == true and fixedRightToLeft == true,
+  // then this returnedProjectionError will not be updated as
+  // CalibrateSingleCameraExtrinsics does not return a projection error.
+
+  double returnedProjectionError = 0;
+
   if ( ! fixedIntrinsics )
   {
-    double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+    // Intrinsics are not fixed, so we do intrinsic and extrinsic.
+    // i.e. a full mono camera calibration for each camera.
+
+    double leftProjectionError = CalibrateSingleCameraUsingMultiplePasses(
         objectPointsLeft,
         imagePointsLeft,
         pointCountsLeft,
         imageSize,
         outputIntrinsicMatrixLeft,
-        outputDistortionCoefficientsLeft
+        outputDistortionCoefficientsLeft,
+        outputRotationVectorsLeft,
+        outputTranslationVectorsLeft
         );
 
-    double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+    double rightProjectionError = CalibrateSingleCameraUsingMultiplePasses(
         objectPointsRight,
         imagePointsRight,
         pointCountsRight,
         imageSize,
         outputIntrinsicMatrixRight,
-        outputDistortionCoefficientsRight);
+        outputDistortionCoefficientsRight,
+        outputRotationVectorsRight,
+        outputTranslationVectorsRight
+        );
 
-    std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+    returnedProjectionError = (leftProjectionError + rightProjectionError) / static_cast<double>(2);
+
+    std::cout << "Initial mono calibration gave re-projection errors of left = " << leftProjectionError << ", right = " << rightProjectionError << ", mean = " << returnedProjectionError << std::endl;
   }
-  int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
-  if ( fixedIntrinsics ) 
+  else
   {
-    flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
+    // Intrinsics are fixed, so JUST do extrinsics.
+
+    CalibrateSingleCameraExtrinsics(
+      objectPointsLeft,
+      imagePointsLeft,
+      pointCountsLeft,
+      outputIntrinsicMatrixLeft,
+      outputDistortionCoefficientsLeft,
+      false,
+      outputRotationVectorsLeft,
+      outputTranslationVectorsLeft
+    );
+
+    CalibrateSingleCameraExtrinsics(
+      objectPointsRight,
+      imagePointsRight,
+      pointCountsRight,
+      outputIntrinsicMatrixRight,
+      outputDistortionCoefficientsRight,
+      false,
+      outputRotationVectorsRight,
+      outputTranslationVectorsRight
+    );
+
+    std::cout << "Initial extrinsic only calibration performed, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
   }
 
-  double stereoCalibrationProjectionError = cvStereoCalibrate
-      (
-      &objectPointsLeft,
-      &imagePointsLeft,
-      &imagePointsRight,
-      &pointCountsLeft,
-      &outputIntrinsicMatrixLeft,
-      &outputDistortionCoefficientsLeft,
-      &outputIntrinsicMatrixRight,
-      &outputDistortionCoefficientsRight,
-      imageSize,
-      &outputRightToLeftRotation,
-      &outputRightToLeftTranslation,
-      &outputEssentialMatrix,
-      &outputFundamentalMatrix,
-      cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      flags 
-      );
-
-  std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
-
-  // OpenCV calculates left to right, so we want right to left.
-  CvMat *leftToRight = cvCreateMat(4,4,CV_64FC1);
-  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_64FC1);
-  for (int i = 0; i < 3; ++i)
+  if ( ! fixedRightToLeft)
   {
-    for (int j = 0; j < 3; ++j)
+    //
+    // Matt: Decided not to do these following 5 lines.
+    //       OpenCV docs say optimising intrinsic and right-to-left can diverge,
+    //       and they recommend calibrating intrinsic params for each mono camera,
+    //       and then using CV_CALIB_FIX_INTRINSIC here, which is also the default.
+    //       So the commented out section here may have introduced instability.
+    //
+    // int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
+    // if ( fixedIntrinsics )
+    // {
+    //   flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
+    // }
+
+    CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+    CvMat *leftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
+    CvMat *leftToRightMatrix = cvCreateMat(4,4,CV_64FC1);
+    CvMat *leftToRightMatrixInverted = cvCreateMat(4,4,CV_64FC1);
+
+    cvSetIdentity(leftToRightRotationMatrix);
+    cvSetZero(leftToRightTranslationVector);
+    cvSetIdentity(leftToRightMatrix);
+    cvSetIdentity(leftToRightMatrixInverted);
+
+    double stereoCalibrationProjectionError = cvStereoCalibrate
+        (
+        &objectPointsLeft,
+        &imagePointsLeft,
+        &imagePointsRight,
+        &pointCountsLeft,
+        &outputIntrinsicMatrixLeft,
+        &outputDistortionCoefficientsLeft,
+        &outputIntrinsicMatrixRight,
+        &outputDistortionCoefficientsRight,
+        imageSize,
+        leftToRightRotationMatrix,
+        leftToRightTranslationVector,
+        &outputEssentialMatrix,
+        &outputFundamentalMatrix,
+        cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
+        CV_CALIB_FIX_INTRINSIC                                        // i.e. just do right to left.
+        );
+
+    std::cout << "Stereo right-to-left calibration performed, with re-projection error = " << stereoCalibrationProjectionError << std::endl;
+
+    for (int i = 0; i < 3; ++i)
     {
-      CV_MAT_ELEM(*leftToRight, double, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, double, i, j);
+      for (int j = 0; j < 3; ++j)
+      {
+        CV_MAT_ELEM(*leftToRightMatrix, double, i, j) = CV_MAT_ELEM(*leftToRightRotationMatrix, double, i, j);
+      }
+      CV_MAT_ELEM(*leftToRightMatrix, double, i, 3) = CV_MAT_ELEM(*leftToRightTranslationVector, double, i, 0);
     }
-    CV_MAT_ELEM(*leftToRight, double, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0);
-  }
-  CV_MAT_ELEM(*leftToRight, double, 3, 0) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 1) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 2) = 0;
-  CV_MAT_ELEM(*leftToRight, double, 3, 3) = 1;
-  cvInvert(leftToRight, leftToRightInverted);
-  for (int i = 0; i < 3; ++i)
-  {
-    for (int j = 0; j < 3; ++j)
+
+    // Invert without using SVD, or any form of decomposition, as we know this matrix is orthonormal.
+    InvertRigid4x4Matrix(*leftToRightMatrix, *leftToRightMatrixInverted);
+
+    for (int i = 0; i < 3; ++i)
     {
-      CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightInverted, double, i, j);
+      for (int j = 0; j < 3; ++j)
+      {
+        CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightMatrixInverted, double, i, j);
+      }
+      CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightMatrixInverted, double, i, 3);
     }
-    CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightInverted, double, i, 3);
+
+    cvReleaseMat(&leftToRightRotationMatrix);
+    cvReleaseMat(&leftToRightTranslationVector);
+    cvReleaseMat(&leftToRightMatrix);
+    cvReleaseMat(&leftToRightMatrixInverted);
+
+    returnedProjectionError = stereoCalibrationProjectionError;
   }
 
-  double leftProjectError2 = cvCalibrateCamera2(
-                            &objectPointsLeft,
-                            &imagePointsLeft,
-                            &pointCountsLeft,
-                            imageSize,
-                            &outputIntrinsicMatrixLeft,
-                            &outputDistortionCoefficientsLeft,
-                            &outputRotationVectorsLeft,
-                            &outputTranslationVectorsLeft,
-                            CV_CALIB_FIX_INTRINSIC
-                            );
-
-  double rightProjectError2 = cvCalibrateCamera2(
-                            &objectPointsRight,
-                            &imagePointsRight,
-                            &pointCountsRight,
-                            imageSize,
-                            &outputIntrinsicMatrixRight,
-                            &outputDistortionCoefficientsRight,
-                            &outputRotationVectorsRight,
-                            &outputTranslationVectorsRight,
-                            CV_CALIB_FIX_INTRINSIC
-                            );
-
-  std::cout << "Final extrinsic calibration gave re-projection errors of left=" << leftProjectError2 << ", right=" << rightProjectError2 << std::endl;
-
-  cvReleaseMat(&leftToRight);
-  cvReleaseMat(&leftToRightInverted);
-
-  return stereoCalibrationProjectionError;
+  return returnedProjectionError;
 }
 
 

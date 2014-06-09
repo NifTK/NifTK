@@ -108,10 +108,18 @@
     </integer>
 
     <directory>
-      <name>existingCalibrationDirectory</name>
-      <longflag>existingCalibrationDirectory</longflag>
-      <description>For stereo calibration, use an exsiting intrinsic calibration</description>
-      <label>Existing calibration directory</label>
+      <name>existingIntrinsicsDirectory</name>
+      <longflag>existingIntrinsicsDirectory</longflag>
+      <description>For stereo calibration, use an existing intrinsic calibration.</description>
+      <label>Existing intrinsics directory</label>
+      <channel>input</channel>
+    </directory>
+
+    <directory>
+      <name>existingRightToLeftDirectory</name>
+      <longflag>existingRightToLeftDirectory</longflag>
+      <description>For stereo calibration, use an existing right-to-left calibration.</description>
+      <label>Existing right-to-left directory</label>
       <channel>input</channel>
     </directory>
 
