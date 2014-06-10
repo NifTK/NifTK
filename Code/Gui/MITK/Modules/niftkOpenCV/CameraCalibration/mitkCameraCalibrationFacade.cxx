@@ -761,6 +761,16 @@ double CalibrateStereoCameraParameters(
     std::cout << "Initial extrinsic only calibration performed, but OpenCV does not return projection errors, so nothing else to report." << std::endl;
   }
 
+  CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat *leftToRightTranslationVectorTransposed = cvCreateMat(3,1,CV_64FC1);
+  CvMat *leftToRightMatrix = cvCreateMat(4,4,CV_64FC1);
+  CvMat *leftToRightMatrixInverted = cvCreateMat(4,4,CV_64FC1);
+
+  cvSetIdentity(leftToRightRotationMatrix);
+  cvSetZero(leftToRightTranslationVectorTransposed);
+  cvSetIdentity(leftToRightMatrix);
+  cvSetIdentity(leftToRightMatrixInverted);
+
   if ( ! fixedRightToLeft)
   {
     //
@@ -776,16 +786,6 @@ double CalibrateStereoCameraParameters(
     //   flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
     // }
 
-    CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
-    CvMat *leftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
-    CvMat *leftToRightMatrix = cvCreateMat(4,4,CV_64FC1);
-    CvMat *leftToRightMatrixInverted = cvCreateMat(4,4,CV_64FC1);
-
-    cvSetIdentity(leftToRightRotationMatrix);
-    cvSetZero(leftToRightTranslationVector);
-    cvSetIdentity(leftToRightMatrix);
-    cvSetIdentity(leftToRightMatrixInverted);
-
     double stereoCalibrationProjectionError = cvStereoCalibrate
         (
         &objectPointsLeft,
@@ -798,7 +798,7 @@ double CalibrateStereoCameraParameters(
         &outputDistortionCoefficientsRight,
         imageSize,
         leftToRightRotationMatrix,
-        leftToRightTranslationVector,
+        leftToRightTranslationVectorTransposed,
         &outputEssentialMatrix,
         &outputFundamentalMatrix,
         cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
@@ -813,7 +813,7 @@ double CalibrateStereoCameraParameters(
       {
         CV_MAT_ELEM(*leftToRightMatrix, double, i, j) = CV_MAT_ELEM(*leftToRightRotationMatrix, double, i, j);
       }
-      CV_MAT_ELEM(*leftToRightMatrix, double, i, 3) = CV_MAT_ELEM(*leftToRightTranslationVector, double, i, 0);
+      CV_MAT_ELEM(*leftToRightMatrix, double, i, 3) = CV_MAT_ELEM(*leftToRightTranslationVectorTransposed, double, i, 0);
     }
 
     // Invert without using SVD, or any form of decomposition, as we know this matrix is orthonormal.
@@ -828,13 +828,13 @@ double CalibrateStereoCameraParameters(
       CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightMatrixInverted, double, i, 3);
     }
 
-    cvReleaseMat(&leftToRightRotationMatrix);
-    cvReleaseMat(&leftToRightTranslationVector);
-    cvReleaseMat(&leftToRightMatrix);
-    cvReleaseMat(&leftToRightMatrixInverted);
-
     returnedProjectionError = stereoCalibrationProjectionError;
   }
+
+  cvReleaseMat(&leftToRightRotationMatrix);
+  cvReleaseMat(&leftToRightTranslationVectorTransposed);
+  cvReleaseMat(&leftToRightMatrix);
+  cvReleaseMat(&leftToRightMatrixInverted);
 
   return returnedProjectionError;
 }
