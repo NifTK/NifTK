@@ -192,8 +192,8 @@ bool ExtractChessBoardPoints(const cv::Mat& image,
     for ( int k=0; k<(int)numberOfCorners; ++k)
     {
       cv::Point3d objectCorner;
-      objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
-      objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
+      objectCorner.x = (k%numberCornersWidth)*squareSizeInMillimetres; 
+      objectCorner.y = (k/numberCornersWidth)*squareSizeInMillimetres;
       objectCorner.z = 0; 
       objectPoints.push_back(objectCorner);
     }
@@ -289,8 +289,8 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
       {
         CV_MAT_ELEM(*imagePoints, double, j, 0) = static_cast<double>(corners[k].x);
         CV_MAT_ELEM(*imagePoints, double, j, 1) = static_cast<double>(corners[k].y);
-        CV_MAT_ELEM(*objectPoints, double, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
-        CV_MAT_ELEM(*objectPoints, double, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 0) = (k%numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 1) = (k/numberCornersWidth)*squareSizeInMillimetres;
         CV_MAT_ELEM(*objectPoints, double, j, 2) = 0;
       }
       CV_MAT_ELEM(*pointCounts, int, successes, 0) = numberOfCorners;
