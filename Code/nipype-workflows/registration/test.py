@@ -16,7 +16,7 @@ dg.inputs.sort_filelist = False
 dg.inputs.template = 'vol*.nii.gz' 
 
 # Add options here
-linear_hash = {}
+linear_hash = {'ref_low_val' : 0.5}
 
 pipeline = pe.Workflow('workflow')
 #r = reg.create_linear_coregistration_workflow('rigid_workflow', linear_options_hash = linear_hash)

@@ -11,7 +11,7 @@ and non-linear image co-registration '''
 # Do a single iteration of an average b0 image from rigid registration and averaging
 # Options include rig_only 
 # TODO:Aladin options hash?
-def create_linear_coregistration_workflow(name="linear_registration_niftyreg", demean=True, linear_options_hash = None, initial_affines = False):
+def create_linear_coregistration_workflow(name="linear_registration_niftyreg", demean=True, linear_options_hash = dict(), initial_affines = False):
     """Creates a workflow that perform linear co-registration of a set of images using RegAladin, 
     producing an affine average image and a set of affine transformation matrices linking each
     of the floating images to the average.
@@ -56,9 +56,9 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
     # Passing empty strings are not valid filenames, and undefined fields can not be iterated over.
     # Current simple solution, as this is not generally required, is to use a flag which specifies wherther to iterate
     if initial_affines == False:
-        lin_reg = pe.MapNode(interface=niftyreg.RegAladin(options_hash=linear_options_hash), name="lin_reg", iterfield=['flo_file'])
+        lin_reg = pe.MapNode(interface=niftyreg.RegAladin(**linear_options_hash), name="lin_reg", iterfield=['flo_file'])
     else:
-        lin_reg = pe.MapNode(interface=niftyreg.RegAladin(options_hash=linear_options_hash), name="lin_reg", iterfield=['flo_file','in_aff_file'])
+        lin_reg = pe.MapNode(interface=niftyreg.RegAladin(**linear_options_hash), name="lin_reg", iterfield=['flo_file','in_aff_file'])
     # Synchronize over the iterfields    
     lin_reg.synchronize = True
 
