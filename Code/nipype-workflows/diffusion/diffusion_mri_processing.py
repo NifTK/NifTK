@@ -192,31 +192,39 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', co
     
     workflow.connect(find_B0s,   'out',       select_B0s, 'index')
     workflow.connect(find_DWIs,  'out',       select_DWIs, 'index')
-
+    
+    workflow.connect(split_dwis, 'out_files', select_B0s, 'inlist')
+    workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
     # Use the B0s to define a groupwise atlas
     workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'input_node.in_files')
     
     # If we're logging the DWI before registration, need to connect the logged images
-    # rather than the split dwi
+    # rather than the split dwi into the dwi_to_b0_registration
     if log_data:
-        # Make a log images node, but we'll only connect it if it's used
+        # Make a log images node
         log_ims = pe.MapNode(interface = niftyseg.UnaryMaths(operation = 'log', output_datatype = 'float'),
                              name = 'log_ims', iterfield=['in_file'])
-        log_b0 = pe.Node(interface = niftyseg.UnaryMaths(operation = 'log'), name = 'log_b0')                 
-        smooth_ims = pe.MapNode(interface = niftyseg.BinaryMaths(operation = 'smo',operand_value = 0.75),
+        log_b0 = pe.Node(interface = niftyseg.UnaryMaths(operation = 'log'), name = 'log_b0')
+        # The amount to smooth the logged diffusion weighted images by (in voxels)        
+        smooth_log_sigma = 0.75
+           
+        smooth_ims = pe.MapNode(interface = niftyseg.BinaryMaths(operation = 'smo',operand_value = smooth_log_sigma),
                                 name = 'smooth_ims', iterfield=['in_file'])
+        smooth_b0 = pe.Node(interface = niftyseg.BinaryMaths(operation = 'smo',operand_value = smooth_log_sigma),
+                                name = 'smooth_b0')
         
-        workflow.connect(select_DWIs,'inlist', log_ims, 'in_file')
+        workflow.connect(select_DWIs,'out', log_ims, 'in_file')
         workflow.connect(log_ims, 'out_file', smooth_ims, 'in_file')
+        
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image',
                          log_b0, 'in_file')
-        workflow.connect(log_b0, 'out_file',
+        workflow.connect(log_b0, 'out_file', smooth_b0, 'in_file')
+
+        workflow.connect(smooth_b0, 'out_file',
                          dwi_to_B0_registration, 'ref_file')
-        workflow.connect(smooth_ims, 'out', dwi_to_B0_registration, 'flo_file')
+        workflow.connect(smooth_ims, 'out_file', dwi_to_B0_registration, 'flo_file')
 
     else:
-        workflow.connect(split_dwis, 'out_files', select_B0s, 'inlist')
-        workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
         
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', dwi_to_B0_registration, 'ref_file')
         workflow.connect(select_DWIs,                 'out',                       dwi_to_B0_registration, 'flo_file')
