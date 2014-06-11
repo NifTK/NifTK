@@ -11,6 +11,7 @@ import inspect
 
 import cropimage as cropimage
 
+
 def get_subs1(T1s_paths, Cpps_paths):
     import os
     subs = []
@@ -28,7 +29,7 @@ def get_subs2(inputfile, outputfile):
     import os
     subs = []
     suffixes = [
-        '_labels_Parcelation',
+        '_labels_Parcellation',
         '_labels_geo',
         '_labels_prior']
 
@@ -39,9 +40,15 @@ def get_subs2(inputfile, outputfile):
 
     return subs
 
-def get_basedir(Cpps_paths):
+def get_basedir(paths):
+    mypaths = list(paths)
     import os
-    return os.path.dirname(Cpps_paths[0])
+    return os.path.dirname(mypaths[0])
+
+def get_common_directory(in_files):
+    import os
+    commonpath = os.path.commonprefix(list(in_files))    
+    return commonpath
 
 
 def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagation'):
@@ -54,27 +61,52 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
     input_node = pe.Node(
         interface = niu.IdentityInterface(
             fields=['in_file',
+                    'mask_file',
                     'template_db_file',
                     'cpp_directory',
                     'out_directory']),
         name='input_node')
     
-    gif = pe.Node(interface=niftyseg.Gif(), name='gif')
+    gif = pe.MapNode(interface=niftyseg.Gif(), 
+                     name='gif',
+                     iterfield=['in_file', 'mask_file', 'cpp_dir'])
 
-    gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')    
-    gif_post_sink.inputs.substitutions = [
-        ('_labels_Parcelation',''),
-        ('_labels_geo',''),
-        ('_labels_prior','')]
+    gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
+    subs = []
+    subs.append (('_gif[0-9]+/', ''))
+    suffixes = [
+        '_labels_Parcellation',
+        '_labels_geo',
+        '_labels_prior']
+    for suffix in suffixes:
+        subs.append((suffix, ''))
+    gif_post_sink.inputs.regexp_substitutions = subs
 
     workflow.connect(input_node, 'in_file',           gif, 'in_file')
+    workflow.connect(input_node, 'mask_file',         gif, 'mask_file')
     workflow.connect(input_node, 'template_db_file',  gif, 'database_file')
-    workflow.connect(input_node, 'out_cpp_directory', gif, 'cpp_dir')
+    workflow.connect(input_node, 'cpp_directory',     gif, 'cpp_dir')
     
-    workflow.connect(input_node, 'out_res_directory', gif_post_sink, 'base_directory')
-    workflow.connect(gif,        'out_parc',      gif_post_sink, 'labels')  
-    workflow.connect(gif,        'out_geo',       gif_post_sink, 'labels_geo')
-    workflow.connect(gif,        'out_prior',     gif_post_sink, 'priors')
+    workflow.connect(input_node, 'out_directory',  gif_post_sink, 'base_directory')
+    workflow.connect(gif,        'parc_file',      gif_post_sink, 'labels')  
+    workflow.connect(gif,        'geo_file',       gif_post_sink, 'labels_geo')
+    workflow.connect(gif,        'prior_file',     gif_post_sink, 'priors')
+
+    extract_sink_dir = pe.Node(interface = niu.Function(input_names = ['in_files'],
+                                                        output_names = ['out_dir'],
+                                                        function = get_common_directory),
+                               name = 'extract_sink_dir')
+    workflow.connect(gif_post_sink, 'out_file', extract_sink_dir, 'in_files')
+
+    output_node = pe.Node(
+        interface = niu.IdentityInterface(
+            fields=['parc_file', 'geo_file', 'prior_file', 'out_directory']),
+        name='output_node')
+    
+    workflow.connect(extract_sink_dir, 'out_dir',       output_node, 'out_directory')
+    workflow.connect(gif,              'parc_file',     output_node, 'parc_file')
+    workflow.connect(gif,              'geo_file',      output_node, 'geo_file')
+    workflow.connect(gif,              'prior_file',    output_node, 'prior_file')
 
     return workflow
 
@@ -139,7 +171,11 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     resampler_mask.inputs.inter_val = 'NN'
 
     non_linear_registration = pe.MapNode(interface=niftyreg.RegF3D(), name = 'non_linear_registration', iterfield = ['flo_file'])
-    non_linear_registration.inputs.output_type = 'NIFTI_GZ'
+    non_linear_registration.inputs.vel_flag  = True
+    non_linear_registration.inputs.lncc_val  = -5
+    non_linear_registration.inputs.maxit_val = 150
+    non_linear_registration.inputs.be_val    = 0.025    
+    non_linear_registration.inputs.output_type = 'NIFTI_GZ'    
 
     subsgen1 = pe.Node(niu.Function(input_names=['T1s_paths', 'Cpps_paths'],
                                     output_names=['substitutions'],
@@ -160,8 +196,8 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     sformdeupdate_geo   = pe.Node(interface = niftyreg.RegTransform(), name = 'sformdeupdate_geo')
     sformdeupdate_prior = pe.Node(interface = niftyreg.RegTransform(), name = 'sformdeupdate_prior')
 
-    pathgen = pe.Node(niu.Function(input_names=['Cpps_paths'],
-                                   output_names=['Cpp_path'],
+    pathgen = pe.Node(niu.Function(input_names=['paths'],
+                                   output_names=['path'],
                                    function=get_basedir),
                       name='pathgen')
     
@@ -200,9 +236,9 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     workflow.connect(non_linear_registration, 'cpp_file',          gif_pre_sink, '@cpps')
     workflow.connect(subsgen1,                'substitutions',     gif_pre_sink, 'substitutions')
     
-    workflow.connect(gif_pre_sink, 'out_file', pathgen, 'Cpps_paths')
+    workflow.connect(gif_pre_sink, 'out_file', pathgen, 'paths')
     
-    workflow.connect(pathgen,        'Cpp_path',         gif, 'cpp_dir')
+    workflow.connect(pathgen,        'path',             gif, 'cpp_dir')
     workflow.connect(cropper,        'out_file',         gif, 'in_file')
     workflow.connect(resampler_mask, 'res_file',         gif, 'mask_file')
     workflow.connect(input_node,     'template_db_file', gif, 'database_file')
@@ -213,9 +249,9 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     workflow.connect(sformupdate, 'out_file',     resampler_parc,  'ref_file')
     workflow.connect(sformupdate, 'out_file',     resampler_geo,   'ref_file')
     workflow.connect(sformupdate, 'out_file',     resampler_prior, 'ref_file')
-    workflow.connect(gif,         'out_parc',     resampler_parc,  'flo_file')
-    workflow.connect(gif,         'out_geo',      resampler_geo,   'flo_file')
-    workflow.connect(gif,         'out_prior',    resampler_prior, 'flo_file')
+    workflow.connect(gif,         'parc_file',     resampler_parc,  'flo_file')
+    workflow.connect(gif,         'geo_file',      resampler_geo,   'flo_file')
+    workflow.connect(gif,         'prior_file',    resampler_prior, 'flo_file')
 
     workflow.connect(registration_to_average, 'aff_file', invaffer, 'inv_aff_input')
 
