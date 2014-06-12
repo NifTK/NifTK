@@ -10,9 +10,13 @@ import nipype.interfaces.io             as nio
 import inspect
 
 import cropimage as cropimage
+import n4biascorrection as biascorrection
 
 import registration as reg
 import seg_gif_propagation as gif_propagation
+
+import os
+
 
 '''
 '''
@@ -38,11 +42,14 @@ def create_T1_and_cpp_dirs(basedir):
     import os
     ret1 = os.path.join(basedir, 'T1s')
     ret2 = os.path.join(basedir, 'cpps')
+    ret3 = os.path.join(basedir, 'labels')
     if not os.path.exists(ret1):
         os.mkdir(ret1)
     if not os.path.exists(ret2):
         os.mkdir(ret2)
-    return ret1, ret2
+    if not os.path.exists(ret3):
+        os.mkdir(ret3)
+    return ret1, ret2, ret3
 
 def extract_directories(in_files):
     import os
@@ -53,27 +60,41 @@ def extract_directories(in_files):
     dirs.sort()
     return dirs
 
-def select_items(in_items, in_toremove):
+def find_items(in_items, in_toseparate):
     import os
-    ret = []
-    toremove = []
-    for item in in_toremove:
+    indices_1 = []
+    indices_2 = []
+    toseparate = []
+    for item in in_toseparate:
         pattern = os.path.basename(os.path.abspath(item))
         if pattern.endswith('.nii.gz'):
             pattern = pattern[:-7]
         if pattern.endswith('.nii'):
             pattern = pattern[:-4]
-        toremove.append(pattern)
-    for item in in_items:        
-        pattern = os.path.basename(os.path.abspath(item))
-        if pattern.endswith('.nii.gz'):
-            pattern = pattern[:-7]
-        if pattern.endswith('.nii'):
-            pattern = pattern[:-4]
-        if pattern not in toremove:
-            ret.append(item)
-    return ret
+        toseparate.append(pattern)
 
+    for i in range(len(in_items)):
+        item = in_items[i]
+        pattern = os.path.basename(os.path.abspath(item))
+        if pattern.endswith('.nii.gz'):
+            pattern = pattern[:-7]
+        if pattern.endswith('.nii'):
+            pattern = pattern[:-4]
+        print 'patern  is ', pattern
+        isitin = False
+        for tosep in toseparate:
+            if tosep in pattern:
+                isitin = True
+                break
+        if isitin:
+            indices_1.append(i)
+        else:
+            indices_2.append(i)
+
+    print 'i1 is ', indices_1
+    print 'i2 is ', indices_2
+
+    return indices_1, indices_2
 
 def create_database(inputs, labels, iteration, basedir):
 
@@ -141,7 +162,7 @@ def create_database(inputs, labels, iteration, basedir):
     ensuredir(geosdir)
     createlink(inputs, os.path.join(database,os.path.basename(inputs)))
 
-    labelslist=glob.glob(labels+"/*.nii.gz")
+    labelslist=glob.glob(labels+os.sep+'*.nii.gz')
     labelslinkslist = []
     for file in labelslist:
         filename=os.path.basename(file)
@@ -190,7 +211,7 @@ def get_subs_cpps(in_paths, cpp_files, invcpp_files, prefix_to_remove):
             basename = basename[:-7]
         if basename.endswith('.nii'):
             basename = basename[:-4]
-        outputsubdirs.append(basename+'/')
+        outputsubdirs.append(basename+os.sep)
 
     N = len(in_paths)
     size = N * (N-1) / 2
@@ -222,7 +243,9 @@ def get_subs_cpps(in_paths, cpp_files, invcpp_files, prefix_to_remove):
     return subs
 
 
-def prepare_inputs(name='prepare_inputs'):
+def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
+
+    do_post_bias_correction = False
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
@@ -230,47 +253,89 @@ def prepare_inputs(name='prepare_inputs'):
     input_node = pe.Node(
         interface = niu.IdentityInterface(fields=['in_files']),
         name='input_node')
+    
+    biascorrect_pre = pe.MapNode(interface = biascorrection.N4BiasCorrection(),
+                                 name = 'biascorrect_pre',
+                                 iterfield = ['in_file'])
+    biascorrect_pre.inputs.in_downsampling = 2
+
+    initial_ref = False
+
+    if ref_file != None:
+        initial_ref = True
 
     groupwise_coregistration = reg.create_atlas(name = 'groupwise_coregistration', 
-                                                itr_rigid = 0, itr_affine = 1, 
-                                                itr_non_lin = 0, initial_ref = False)
+                                                itr_rigid = 0,
+                                                itr_affine = 1, 
+                                                itr_non_lin = 0,
+                                                initial_ref = initial_ref)
+    
+    if initial_ref:
+        groupwise_coregistration.inputs.input_node.ref_file = ref_file
 
     sformupdate = pe.MapNode(interface = niftyreg.RegTransform(), 
                              name = 'sformupdate', 
                              iterfield = ['upd_s_form_input', 'upd_s_form_input2'])
 
-    average_mask = pe.Node(interface=fsl.BET(), name='average_mask')
-    average_mask.inputs.mask = True
-    
-    average_mask_dil = pe.Node(interface = niftyseg.BinaryMaths(), name = 'average_mask_dil')
-    average_mask_dil.inputs.operation = 'dil'
-    average_mask_dil.inputs.operand_value = 10
+    if ref_mask == None:
+        average_mask = pe.Node(interface=fsl.BET(), name='average_mask')
+        average_mask.inputs.mask = True
+        average_mask_dil = pe.Node(interface = niftyseg.BinaryMaths(), name = 'average_mask_dil')
+        average_mask_dil.inputs.operation = 'dil'
+        average_mask_dil.inputs.operand_value = 10
+
+    average_mask_res = pe.MapNode(interface = niftyreg.RegResample(), 
+                                  name = 'average_mask_res',
+                                  iterfield = ['ref_file'])
+    average_mask_res.inputs.inter_val = 'NN'
 
     average_crop = pe.Node(interface = cropimage.CropImage(), name='average_crop')
 
     crop = pe.MapNode(interface = cropimage.CropImage(), name='crop', 
-                      iterfield = ['in_file'])
+                      iterfield = ['in_file', 'mask_file'])
+
+    biascorrect_post = pe.MapNode(interface = biascorrection.N4BiasCorrection(),
+                                  name = 'biascorrect_post',
+                                  iterfield = ['in_file'])
+    biascorrect_post.inputs.in_downsampling = 2
 
     output_node = pe.Node(
-        interface = niu.IdentityInterface(fields=['out_files', 'out_average', 'out_mask']),
+        interface = niu.IdentityInterface(fields=['out_files', 'out_average', 'out_mask', 'out_affs', 'out_masks']),
         name='output_node')
     
-    workflow.connect(input_node,               'in_files',                  groupwise_coregistration, 'input_node.in_files')
+    workflow.connect(input_node,               'in_files',                  biascorrect_pre,          'in_file')
+    workflow.connect(biascorrect_pre,          'out_file',                  groupwise_coregistration, 'input_node.in_files')
     workflow.connect(input_node,               'in_files',                  sformupdate,              'upd_s_form_input')
     workflow.connect(groupwise_coregistration, 'output_node.aff_files',     sformupdate,              'upd_s_form_input2')
-    workflow.connect(groupwise_coregistration, 'output_node.average_image', average_mask,             'in_file')
-    workflow.connect(average_mask,             'mask_file',                 average_mask_dil,         'in_file')
-    workflow.connect(average_mask_dil,         'out_file',                  average_crop,             'mask_file')
+    if ref_mask == None:
+        workflow.connect(groupwise_coregistration, 'output_node.average_image', average_mask,             'in_file')
+        workflow.connect(average_mask,             'mask_file',                 average_mask_dil,         'in_file')
+        workflow.connect(average_mask_dil,         'out_file',                  average_crop,             'mask_file')
+    else:
+        average_crop.inputs.mask_file = ref_mask
     workflow.connect(groupwise_coregistration, 'output_node.average_image', average_crop,             'in_file')
-    workflow.connect(sformupdate,              'out_file',                  crop,                     'in_file')
-    workflow.connect(average_crop,             'out_file',                  crop,                     'mask_file')
+    workflow.connect(sformupdate,              'out_file',                  average_mask_res,         'ref_file')
+    if ref_mask == None:
+        workflow.connect(average_mask_dil,     'out_file',                  average_mask_res,         'flo_file')
+    else:
+        average_mask_res.inputs.flo_file = ref_mask
+    workflow.connect(sformupdate,              'out_file',                  crop,                     'in_file')    
+    workflow.connect(average_mask_res,         'res_file',                  crop,                     'mask_file')
     workflow.connect(groupwise_coregistration, 'output_node.average_image', output_node,              'out_average')
-    workflow.connect(average_mask_dil,         'out_file',                  output_node,              'out_mask')
-    workflow.connect(crop,                     'out_file',                  output_node,              'out_files')
+    if do_post_bias_correction:
+        workflow.connect(crop,                 'out_file',                  biascorrect_post,         'in_file')
+    workflow.connect(average_crop,             'out_file',                  output_node,              'out_mask')
+    if do_post_bias_correction:
+        workflow.connect(biascorrect_post,     'out_file',                  output_node,              'out_files')
+    else:
+        workflow.connect(crop,                 'out_file',                  output_node,              'out_files')
+
+    workflow.connect(groupwise_coregistration, 'output_node.aff_files',     output_node,              'out_affs')
+    workflow.connect(average_mask_res,         'res_file',                  output_node,              'out_masks')
 
     return workflow
 
-def seg_gif_preproc(name='seg_gif_preproc'):
+def seg_gif_preproc(name='seg_gif_preproc', ref_file = None, ref_mask = None):
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
@@ -293,7 +358,7 @@ def seg_gif_preproc(name='seg_gif_preproc'):
         name='makesubdir',
         iterfield = ['input_filename'])
 
-    prep_inputs = prepare_inputs(name='prep_inputs')
+    prep_inputs = prepare_inputs(name='prep_inputs', ref_file = ref_file, ref_mask = ref_mask)
 
     generate_pair = pe.Node(
         niu.Function(input_names=['in_files'],
@@ -308,7 +373,6 @@ def seg_gif_preproc(name='seg_gif_preproc'):
     non_lin_reg.inputs.lncc_val  = -5
     non_lin_reg.inputs.maxit_val = 150
     non_lin_reg.inputs.be_val    = 0.025    
-    non_lin_reg.inputs.output_type = 'NIFTI_GZ'
 
     workflow.connect(input_node,    'in_entries_directory',    grabber,       'base_directory')
     workflow.connect(input_node,    'out_cpps_directory',      makesubdir,    'base_dir')
@@ -341,8 +405,9 @@ def seg_gif_preproc(name='seg_gif_preproc'):
             fields=['out_T1s',
                     'out_average',
                     'out_mask',
+                    'out_affs',
                     'out_cpps',
-                    '']),
+                    'out_masks']),
         name='output_node')
 
     workflow.connect(grabber,     'T1s_paths',               subsgen1, 'in_paths')
@@ -359,15 +424,17 @@ def seg_gif_preproc(name='seg_gif_preproc'):
     workflow.connect(non_lin_reg, 'invcpp_file',             cpp_sink, '@invcpps')
     workflow.connect(T1_sink,     'out_file',                output_node, 'out_T1s')
     workflow.connect(cpp_sink,    'out_file',                output_node, 'out_cpps')
+    workflow.connect(prep_inputs, 'output_node.out_affs',    output_node, 'out_affs')
     workflow.connect(prep_inputs, 'output_node.out_average', output_node, 'out_average')
     workflow.connect(prep_inputs, 'output_node.out_mask',    output_node, 'out_mask')
+    workflow.connect(prep_inputs, 'output_node.out_masks',   output_node, 'out_masks')
     
     return workflow
 
 
 
 
-def create_seg_gif_create_template_database_workflow(name='gif_create_template_library', number_of_iterations = 1):
+def create_seg_gif_create_template_database_workflow(name='gif_create_template_library', number_of_iterations = 1, ref_file = None, ref_mask = None):
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
@@ -381,37 +448,17 @@ def create_seg_gif_create_template_database_workflow(name='gif_create_template_l
 
     # make a node to create all subdirectories, that will include the cropped T1s and cpps
     create_T1_and_cpp = pe.Node(interface = niu.Function(input_names = ['basedir'],
-                                                         output_names = ['out_T1_directory', 'out_cpp_directory'],
+                                                         output_names = ['out_T1_directory', 'out_cpp_directory', 'out_label_directory'],
                                                          function=create_T1_and_cpp_dirs),
                         name = 'create_T1_and_cpp')
 
     workflow.connect(input_node, 'out_database_directory', create_T1_and_cpp, 'basedir')
     
-    preproc = seg_gif_preproc(name = 'preproc')
+    preproc = seg_gif_preproc(name = 'preproc', ref_file = ref_file, ref_mask = ref_mask)
     
     workflow.connect (input_node,        'in_entries_directory', preproc, 'input_node.in_entries_directory')
     workflow.connect (create_T1_and_cpp, 'out_T1_directory',     preproc, 'input_node.out_T1_directory')
     workflow.connect (create_T1_and_cpp, 'out_cpp_directory',    preproc, 'input_node.out_cpps_directory')
-
-    grabber = pe.Node(interface = nio.DataGrabber(outfields=['out_files']), name = 'grabber')
-    grabber.inputs.template = '*.nii*'
-    grabber.inputs.sort_filelist = False
-
-    workflow.connect(input_node, 'in_initial_labels_directory', grabber, 'base_directory')
-
-    select_T1s = pe.Node(interface = niu.Function(input_names  = ['in_items', 'in_toremove'],
-                                                  output_names = ['out_items'],
-                                                  function=select_items),
-                        name = 'select_T1s')
-
-    workflow.connect(grabber, 'out_files',           select_T1s, 'in_toremove')
-    workflow.connect(preproc, 'output_node.out_T1s', select_T1s, 'in_items')
-
-    resampler_mask = pe.MapNode(interface = niftyreg.RegResample(), name = 'resampler_mask', iterfield = ['ref_file'])
-    resampler_mask.inputs.inter_val = 'NN'
-    
-    workflow.connect(select_T1s, 'out_items',            resampler_mask, 'ref_file')
-    workflow.connect(preproc,    'output_node.out_mask', resampler_mask, 'flo_file')
 
     extract_cpp_dirs = pe.Node(interface = niu.Function(input_names = ['in_files'],
                                                         output_names = ['out_directories'],
@@ -420,14 +467,78 @@ def create_seg_gif_create_template_database_workflow(name='gif_create_template_l
 
     workflow.connect(preproc, 'output_node.out_cpps', extract_cpp_dirs, 'in_files')
 
-    select_cpp_dirs = pe.Node(interface = niu.Function(input_names  = ['in_items', 'in_toremove'],
-                                                       output_names = ['out_items'],
-                                                       function=select_items),
-                        name = 'select_cpp_dirs')
+    grabber = pe.Node(interface = nio.DataGrabber(outfields=['out_files']), name = 'grabber')
+    grabber.inputs.template = '*.nii*'
+    grabber.inputs.sort_filelist = False
 
-    workflow.connect(extract_cpp_dirs, 'out_directories', select_cpp_dirs, 'in_items')
-    workflow.connect(grabber,          'out_files',       select_cpp_dirs, 'in_toremove')
+    workflow.connect(input_node, 'in_initial_labels_directory', grabber, 'base_directory')
     
+    find_labels_T1s = pe.Node(interface = niu.Function(input_names  = ['in_items', 'in_toseparate'],
+                                                       output_names = ['out_labels_indices', 'out_T1s_indices'],
+                                                       function=find_items),
+                              name = 'find_labels_T1s')
+    select_T1s = pe.Node(interface = niu.Select(),
+                         name = 'select_T1s')
+    select_T1masks = pe.Node(interface = niu.Select(),
+                           name = 'select_T1masks')
+    select_labelmasks = pe.Node(interface = niu.Select(),
+                           name = 'select_labelmasks')
+    select_labelsaffs = pe.Node(interface = niu.Select(),
+                                name = 'select_labelsaffs')
+    select_cpp_dirs = pe.Node(interface = niu.Select(),
+                              name = 'select_cpp_dirs')
+
+
+    workflow.connect(preproc, 'output_node.out_T1s', find_labels_T1s, 'in_items')
+    workflow.connect(grabber, 'out_files',           find_labels_T1s, 'in_toseparate')
+
+    workflow.connect(find_labels_T1s, 'out_T1s_indices', select_T1s, 'index')
+    workflow.connect(preproc, 'output_node.out_T1s',     select_T1s, 'inlist')
+
+    workflow.connect(find_labels_T1s, 'out_T1s_indices', select_T1masks, 'index')
+    workflow.connect(preproc, 'output_node.out_masks',   select_T1masks, 'inlist')
+
+    workflow.connect(find_labels_T1s, 'out_labels_indices', select_labelmasks, 'index')
+    workflow.connect(preproc, 'output_node.out_masks',      select_labelmasks, 'inlist')
+
+    workflow.connect(find_labels_T1s, 'out_labels_indices', select_labelsaffs, 'index')
+    workflow.connect(preproc, 'output_node.out_affs',       select_labelsaffs, 'inlist')
+
+    workflow.connect(extract_cpp_dirs, 'out_directories', select_cpp_dirs, 'inlist')
+    workflow.connect(find_labels_T1s, 'out_T1s_indices',  select_cpp_dirs, 'index')
+
+    sformupdate_labels = pe.MapNode(interface = niftyreg.RegTransform(), 
+                             name = 'sformupdate_labels', 
+                             iterfield = ['upd_s_form_input', 'upd_s_form_input2'])
+    crop_labels = pe.MapNode(interface = cropimage.CropImage(), 
+                             name='crop_labels', 
+                             iterfield = ['in_file', 'mask_file'])
+    sink_labels = pe.Node(nio.DataSink(), name='sink_labels')
+    subs = []
+    subs.append (('_crop_labels[0-9]+'+os.sep, ''))
+    subs.append (('_reg_transform_crop_image', ''))
+    sink_labels.inputs.regexp_substitutions = subs
+
+    workflow.connect(grabber, 'out_files',     sformupdate_labels, 'upd_s_form_input')
+    workflow.connect(select_labelsaffs, 'out', sformupdate_labels, 'upd_s_form_input2')
+    workflow.connect(sformupdate_labels, 'out_file', crop_labels, 'in_file')
+    workflow.connect(select_labelmasks, 'out', crop_labels, 'mask_file')
+    workflow.connect(create_T1_and_cpp, 'out_label_directory', sink_labels, 'base_directory')
+    workflow.connect(crop_labels, 'out_file', sink_labels, '@labels')
+
+    extract_label_dir = pe.Node(interface = niu.Function(input_names = ['paths'],
+                                                         output_names = ['out_dir'],
+                                                         function = gif_propagation.get_basedir),
+                                name = 'extract_label_dir')
+    workflow.connect(sink_labels, 'out_file', extract_label_dir, 'paths')
+
+    resampler_mask  = pe.MapNode(interface = niftyreg.RegResample(), 
+                                 name = 'resampler_mask',
+                                 iterfield = ['ref_file', 'flo_file'])
+    resampler_mask.inputs.inter_val = 'NN'
+    workflow.connect (select_T1s,     'out', resampler_mask, 'ref_file')
+    workflow.connect (select_T1masks, 'out', resampler_mask, 'flo_file')
+                                
     list_of_gifs = []
 
     for i in range(1, number_of_iterations+1):
@@ -438,7 +549,7 @@ def create_seg_gif_create_template_database_workflow(name='gif_create_template_l
         create_db.inputs.iteration = i
 
         workflow.connect (create_T1_and_cpp, 'out_T1_directory',            create_db, 'inputs')
-        workflow.connect (input_node,        'in_initial_labels_directory', create_db, 'labels')
+        workflow.connect (extract_label_dir, 'out_dir',                     create_db, 'labels')
 
         if (i == 1):
             workflow.connect (input_node, 'out_database_directory', create_db, 'basedir')
@@ -453,8 +564,8 @@ def create_seg_gif_create_template_database_workflow(name='gif_create_template_l
 
         gif = gif_propagation.create_niftyseg_gif_propagation_pipeline_simple(name = 'gif_propagation_'+str(i))
         
-        workflow.connect (select_T1s,       'out_items',            gif, 'input_node.in_file')
-        workflow.connect (select_cpp_dirs,  'out_items',            gif, 'input_node.cpp_directory')
+        workflow.connect (select_T1s,       'out',                  gif, 'input_node.in_file')
+        workflow.connect (select_cpp_dirs,  'out',                  gif, 'input_node.cpp_directory')
         workflow.connect (resampler_mask,   'res_file',             gif, 'input_node.mask_file')
         workflow.connect (create_db,        'db_file',              gif, 'input_node.template_db_file')
         workflow.connect (create_db,        'next_db_directory',    gif, 'input_node.out_directory')    
