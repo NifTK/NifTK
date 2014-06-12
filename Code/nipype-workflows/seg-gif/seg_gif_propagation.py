@@ -8,9 +8,33 @@ import nipype.interfaces.fsl            as fsl
 
 import nipype.interfaces.io             as nio
 import inspect
+import os
 
 import cropimage as cropimage
 
+
+def ensure_aff_files (basedir):
+    import os, glob
+    cppslist=glob.glob(basedir+os.sep+'*.nii.gz')
+    
+    affcontent='1 0 0 0\n\
+    0 1 0 0\n\
+    0 0 1 0\n\
+    0 0 0 1\n'
+
+    afffilelist = []
+    
+    for f in cppslist:
+        afffile = f.replace('.nii.gz', '.txt')
+        print 'making file ', afffile
+        if not os.path.exists(afffile):
+            f1=open(afffile, 'w+')
+            f1.write(affcontent)
+            f1.close()
+        afffilelist.append(afffile)
+
+    return basedir, afffilelist
+            
 
 def get_subs1(T1s_paths, Cpps_paths):
     import os
@@ -67,13 +91,20 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
                     'out_directory']),
         name='input_node')
     
+    # make a node to create all subdirectories, that will include the cropped T1s and cpps
+    create_aff_files = pe.MapNode(interface = niu.Function(input_names = ['basedir'],
+                                                           output_names = ['out_dir', 'afffilelist'],
+                                                           function=ensure_aff_files),
+                                  name = 'create_aff_files',
+                                  iterfield = ['basedir'])
+
     gif = pe.MapNode(interface=niftyseg.Gif(), 
                      name='gif',
                      iterfield=['in_file', 'mask_file', 'cpp_dir'])
 
     gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
     subs = []
-    subs.append (('_gif[0-9]+/', ''))
+    subs.append (('_gif[0-9]+'+os.sep, ''))
     suffixes = [
         '_labels_Parcellation',
         '_labels_geo',
@@ -82,10 +113,12 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
         subs.append((suffix, ''))
     gif_post_sink.inputs.regexp_substitutions = subs
 
+    workflow.connect(input_node, 'cpp_directory',     create_aff_files, 'basedir')
+
     workflow.connect(input_node, 'in_file',           gif, 'in_file')
     workflow.connect(input_node, 'mask_file',         gif, 'mask_file')
     workflow.connect(input_node, 'template_db_file',  gif, 'database_file')
-    workflow.connect(input_node, 'cpp_directory',     gif, 'cpp_dir')
+    workflow.connect(create_aff_files, 'out_dir',     gif, 'cpp_dir')
     
     workflow.connect(input_node, 'out_directory',  gif_post_sink, 'base_directory')
     workflow.connect(gif,        'parc_file',      gif_post_sink, 'labels')  
