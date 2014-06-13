@@ -969,7 +969,7 @@ std::vector<double> OutputCalibrationData(
     extrinsicFileOutput.precision(outputPrecision);
     extrinsicFileOutput.width(outputWidth);
 
-    extrinsicFileOutput.open((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.xml"))).c_str(), std::ios::out);
+    extrinsicFileOutput.open((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.txt"))).c_str(), std::ios::out);
     if (!extrinsicFileOutput.fail())
     {
       writeExtrinsicToFlatFile = true;
