@@ -15,6 +15,8 @@
 #include <mitkFileIOUtils.h>
 #include <niftkVTKFunctions.h>
 #include <iostream>
+#include <mitkIOUtil.h>
+#include <niftkFileHelper.h>
 
 namespace mitk {
 
@@ -122,6 +124,37 @@ bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& ma
     isSuccessful = niftk::SaveMatrix4x4ToFile(fileName, matrix);
   }
   return isSuccessful;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::PointSet::Pointer> LoadPointSetsFromDirectory(const std::string fullDirectoryName)
+{
+  std::vector<mitk::PointSet::Pointer> pointSets;
+
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(), files.end());
+
+  if (files.size() > 0)
+  {
+    for(unsigned int i = 0; i < files.size(); i++)
+    {
+      mitk::PointSet::Pointer tmp = mitk::IOUtil::LoadPointSet(files[i]);
+      pointSets.push_back(tmp);
+    }
+  }
+  else
+  {
+    mitkThrow() << "No files found in directory:" << fullDirectoryName << std::endl;
+  }
+
+  if (pointSets.size() == 0)
+  {
+    mitkThrow() << "No mitk::PointSet files found in directory!" << std::endl;
+  }
+
+  std::cout << "Loaded " << pointSets.size() << " mitk::PointSet from " << fullDirectoryName << std::endl;
+  return pointSets;
 }
 
 } // end namespace
