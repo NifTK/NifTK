@@ -211,21 +211,22 @@ void mitk::ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& 
 
 //-----------------------------------------------------------------------------
 void mitk::TransformPointByVtkMatrix(
-    vtkMatrix4x4* matrix,
+    const vtkMatrix4x4* matrix,
     const bool& isNormal,
     mitk::Point3D& point
     )
 {
   double transformedPoint[4] = {0, 0, 0, 1};
+  vtkMatrix4x4* nonConstMatrix = const_cast<vtkMatrix4x4*>(matrix);
 
-  if(matrix != NULL)
+  if(nonConstMatrix != NULL)
   {
     transformedPoint[0] = point[0];
     transformedPoint[1] = point[1];
     transformedPoint[2] = point[2];
     transformedPoint[3] = 1;
 
-    matrix->MultiplyPoint(transformedPoint, transformedPoint);
+    nonConstMatrix->MultiplyPoint(transformedPoint, transformedPoint);
 
     point[0] = transformedPoint[0];
     point[1] = transformedPoint[1];
@@ -234,18 +235,37 @@ void mitk::TransformPointByVtkMatrix(
     if (isNormal)
     {
       double transformedOrigin[4] = {0, 0, 0, 1};
-      matrix->MultiplyPoint(transformedOrigin, transformedOrigin);
+      nonConstMatrix->MultiplyPoint(transformedOrigin, transformedOrigin);
 
       point[0] = point[0] - transformedOrigin[0];
       point[1] = point[1] - transformedOrigin[1];
       point[2] = point[2] - transformedOrigin[2];
     }
   }
-  else
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::TransformPointsByVtkMatrix(
+    const mitk::PointSet& input,
+    const vtkMatrix4x4& matrix,
+    mitk::PointSet& output
+    )
+{
+  mitk::PointSet::DataType* itkPointSet = input.GetPointSet();
+  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+  mitk::PointSet::PointsIterator pIt;
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType point;
+
+  output.Clear();
+
+  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
-    transformedPoint[0] = point[0];
-    transformedPoint[1] = point[1];
-    transformedPoint[2] = point[2];
+    pointID = pIt->Index();
+    point = pIt->Value();
+    mitk::TransformPointByVtkMatrix(&matrix, false, point);
+    output.InsertPoint(pointID, point);
   }
 }
 
