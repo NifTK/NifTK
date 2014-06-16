@@ -15,7 +15,6 @@
 #ifndef QmitkNiftyIGIApplicationPlugin_h
 #define QmitkNiftyIGIApplicationPlugin_h
 
-#include <berryAbstractUICTKPlugin.h>
 #include <QmitkCommonAppsApplicationPlugin.h>
 
 /**
@@ -23,7 +22,7 @@
  * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_niftyigi_internal
  */
-class QmitkNiftyIGIApplicationPlugin : public QmitkCommonAppsApplicationPlugin, public berry::AbstractUICTKPlugin
+class QmitkNiftyIGIApplicationPlugin : public QmitkCommonAppsApplicationPlugin
 {
   Q_OBJECT
   
@@ -32,8 +31,8 @@ public:
   QmitkNiftyIGIApplicationPlugin();
   ~QmitkNiftyIGIApplicationPlugin();
 
-  void start(ctkPluginContext*);
-  void stop(ctkPluginContext*);
+  virtual void start(ctkPluginContext*);
+  virtual void stop(ctkPluginContext*);
 
 protected:
 

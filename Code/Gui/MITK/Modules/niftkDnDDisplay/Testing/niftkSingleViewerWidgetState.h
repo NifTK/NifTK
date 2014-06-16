@@ -270,25 +270,50 @@ public:
     }
 
     /// Note:
-    /// The axial and the coronal slice position is always flipped and the coronal never is.
-    /// See how the geometry is calculated for each slice navigation controller in the multi
-    /// window widget.
+    /// Here we check the relation between the selected slice indices and the
+    /// positions of the slice navigation controllers. The SNC positions always
+    /// go from bottom to top, from left to right and from back to front. The
+    /// slice indexes are in the same range, but their direction might be flipped
+    /// depending on the input geometry.
+    /// The 'flipped' property of the axes is stored in m_WorldFlippedAxes.
+
     int axialSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
     int sagittalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
     int coronalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
+
+    int axialMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_AXIAL);
+    int sagittalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_SAGITTAL);
+    int coronalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_CORONAL);
+
     mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
     mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
     mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-    if (axialSliceIndex != axialSnc->GetSlice()->GetSteps() - 1 - axialSnc->GetSlice()->GetPos()
-        || sagittalSliceIndex != sagittalSnc->GetSlice()->GetPos()
-        || coronalSliceIndex != coronalSnc->GetSlice()->GetSteps() - 1 - coronalSnc->GetSlice()->GetPos())
+
+    QVERIFY(axialMaxSliceIndex == axialSnc->GetSlice()->GetSteps() - 1);
+    QVERIFY(sagittalMaxSliceIndex == sagittalSnc->GetSlice()->GetSteps() - 1);
+    QVERIFY(coronalMaxSliceIndex == coronalSnc->GetSlice()->GetSteps() - 1);
+
+    int axialSncPos = axialSnc->GetSlice()->GetPos();
+    int sagittalSncPos = sagittalSnc->GetSlice()->GetPos();
+    int coronalSncPos = coronalSnc->GetSlice()->GetPos();
+
+    int expectedAxialSliceIndex = m_UpDirections[2] > 0 ? axialSncPos : axialMaxSliceIndex - axialSncPos;
+    int expectedSagittalSliceIndex = m_UpDirections[0] > 0 ? sagittalSncPos : sagittalMaxSliceIndex - sagittalSncPos;
+    int expectedCoronalSliceIndex = m_UpDirections[1] > 0 ? coronalSncPos : coronalMaxSliceIndex - coronalSncPos;
+
+    if (axialSliceIndex != expectedAxialSliceIndex
+        || sagittalSliceIndex != expectedSagittalSliceIndex
+        || coronalSliceIndex != expectedCoronalSliceIndex)
     {
-      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
-      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; axial slice number: " << axialSnc->GetSlice()->GetSteps() << " ; axial SNC position: " << axialSnc->GetSlice()->GetPos();
-      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; sagittal slice number: " << sagittalSnc->GetSlice()->GetSteps() << " ; sagittal SNC position: " << sagittalSnc->GetSlice()->GetPos();
-      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; coronal slice number: " << coronalSnc->GetSlice()->GetSteps() << " ; coronal SNC position: " << coronalSnc->GetSlice()->GetPos();
-      MITK_INFO << Self::ConstPointer(this);
-      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
+//      MITK_INFO << "ERROR: Invalid state. The selected slice indices do not match in the viewer and in the SNCs.";
+//      MITK_INFO << "Axial slice index: " << axialSliceIndex << " ; SNC position: " << axialSncPos
+//                << " ; max index: " << axialMaxSliceIndex << " ; flipped: " << m_UpDirections[2];
+//      MITK_INFO << "Sagittal slice index: " << sagittalSliceIndex << " ; SNC position: " << sagittalSncPos
+//                << " ; max index: " << sagittalMaxSliceIndex << " ; flipped: " << m_UpDirections[0];
+//      MITK_INFO << "Coronal slice index: " << coronalSliceIndex << " ; SNC position: " << coronalSncPos
+//                << " ; max index: " << coronalMaxSliceIndex << " ; flipped: " << m_UpDirections[1];
+//      MITK_INFO << Self::ConstPointer(this);
+//      QFAIL("Invalid state. The selected slice indices do not match in the viewer and in the SNCs.");
     }
   }
 
@@ -309,6 +334,9 @@ protected:
   , m_CursorPositionBinding(viewer->GetCursorPositionBinding())
   , m_ScaleFactorBinding(viewer->GetScaleFactorBinding())
   {
+    m_UpDirections[0] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_SAGITTAL);
+    m_UpDirections[1] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_CORONAL);
+    m_UpDirections[2] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_AXIAL);
   }
 
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
@@ -325,6 +353,7 @@ protected:
   , m_ScaleFactors(otherState->GetScaleFactors())
   , m_CursorPositionBinding(otherState->GetCursorPositionBinding())
   , m_ScaleFactorBinding(otherState->GetScaleFactorBinding())
+  , m_UpDirections(otherState->m_UpDirections)
   {
   }
 
@@ -336,7 +365,7 @@ protected:
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
   {
-    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
+//    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
     os << indent << "window layout: " << m_WindowLayout << std::endl;
     if (m_SelectedRenderWindow)
@@ -390,6 +419,8 @@ private:
   /// \brief The scale factor binding property of the viewer.
   bool m_ScaleFactorBinding;
 
+  /// \brief Tells if the world axis is flipped or not.
+  mitk::Vector3D m_UpDirections;
 };
 
 #endif

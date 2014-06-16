@@ -49,16 +49,30 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_IntrinsicMatrixRight(cvCreateMat(3,3,CV_64FC1))
 , m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
 , m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
+, m_RotationMatrixRightToLeft(cvCreateMat(3,3,CV_64FC1))
+, m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
+, m_OptimiseRightToLeft(true)
 {
   m_PixelScaleFactor.Fill(1);
+  cvSetIdentity(m_IntrinsicMatrixLeft);
+  cvSetIdentity(m_IntrinsicMatrixRight);
+  cvSetZero(m_DistortionCoefficientsLeft);
+  cvSetZero(m_DistortionCoefficientsRight);
+  cvSetIdentity(m_RotationMatrixRightToLeft);
+  cvSetZero(m_TranslationVectorRightToLeft);
 }
 
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 {
-
+  cvReleaseMat(&m_IntrinsicMatrixLeft);
+  cvReleaseMat(&m_IntrinsicMatrixRight);
+  cvReleaseMat(&m_DistortionCoefficientsLeft);
+  cvReleaseMat(&m_DistortionCoefficientsRight);
+  cvReleaseMat(&m_RotationMatrixRightToLeft);
+  cvReleaseMat(&m_TranslationVectorRightToLeft);
 }
 
 
@@ -159,10 +173,16 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   cv::Mat ritemp = cv::Mat(m_IntrinsicMatrixRight);
   cv::Mat rdtemp = cv::Mat(m_DistortionCoefficientsRight);
 
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.left.intrinsic.txt",
-     &litemp, &ldtemp);
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.right.intrinsic.txt",
-     &ritemp, &rdtemp);
+  std::string leftIntrinsicName("calib.left.intrinsic.txt");         
+  boost::filesystem::path leftIntrinsicNameFull (directory);
+  leftIntrinsicNameFull /= leftIntrinsicName;
+
+  std::string rightIntrinsicName("calib.right.intrinsic.txt");         
+  boost::filesystem::path rightIntrinsicNameFull (directory);
+  rightIntrinsicNameFull /= rightIntrinsicName;
+
+  mitk::LoadCameraIntrinsicsFromPlainText(leftIntrinsicNameFull.string(), &litemp, &ldtemp);
+  mitk::LoadCameraIntrinsicsFromPlainText(rightIntrinsicNameFull.string(), &ritemp, &rdtemp);
   *m_IntrinsicMatrixLeft = CvMat(litemp);
   *m_DistortionCoefficientsLeft = CvMat(ldtemp);
   *m_IntrinsicMatrixRight = CvMat(ritemp);
@@ -170,6 +190,23 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   m_OptimiseIntrinsics=false;
   return true;
 }
+
+
+//-----------------------------------------------------------------------------
+bool HandeyeCalibrateFromDirectory::LoadExistingRightToLeft(const std::string& directoryName)
+{
+  cv::Mat r2lr = cv::Mat(m_RotationMatrixRightToLeft);
+  cv::Mat r2lt = cv::Mat(m_TranslationVectorRightToLeft);
+
+  mitk::LoadStereoTransformsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.r2l.txt"), &r2lr, &r2lt);
+
+  *m_RotationMatrixRightToLeft = CvMat(r2lr);
+  *m_TranslationVectorRightToLeft = CvMat(r2lt);
+
+  m_OptimiseRightToLeft = false;
+  return true;
+}
+
 
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
@@ -483,11 +520,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       *m_DistortionCoefficientsRight,
       *outputRotationVectorsRight,
       *outputTranslationVectorsRight,
-      *outputRightToLeftRotation,
-      *outputRightToLeftTranslation,
+      *m_RotationMatrixRightToLeft,
+      *m_TranslationVectorRightToLeft,
       *outputEssentialMatrix,
       *outputFundamentalMatrix,
-      ! m_OptimiseIntrinsics
+      ! m_OptimiseIntrinsics,
+      ! m_OptimiseRightToLeft
       );
   
   //write it out

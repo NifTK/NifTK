@@ -71,18 +71,15 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 5");
 
-  surface = MakeLaparoscope (baseDirectory + "lap_06_09.rig", baseDirectory + "calib.left.handeye.txt");
+  surface = MakeLaparoscope (baseDirectory + "lap_06_09.rig",
+      baseDirectory + "calib.left.handeye.txt",
+      baseDirectory + "calib.left.handeye.txt",
+      baseDirectory + "calib.left.handeye.txt", false);
+  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
-      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1385 ) &&
-      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 782 ) ,
+      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1699 ) &&
+      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 942 ) ,
       ".. Testing make laparoscope");
-
-  surface = MakeLaparoscopePolaris (baseDirectory + "lap_06_09.rig", baseDirectory + "calib.left.handeye.txt");
-  MITK_TEST_CONDITION_REQUIRED(
-      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1385 ) &&
-      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 782 ) ,
-      ".. Testing make laparoscopePolaris");
-
 
   surface = MakePointer ( baseDirectory + "pointer_cal.rig", "" );
   MITK_TEST_CONDITION_REQUIRED(

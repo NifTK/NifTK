@@ -38,8 +38,8 @@ namespace niftk {
      *  @{
      */
   public:
-	  /** Itk image type used for I/O */
-	  typedef itk::Image<unsigned char, 3> ITKImageType;
+    /** Itk image type used for I/O */
+    typedef itk::Image<unsigned char, 3> ITKImageType;
 
   private:
     std::string m_InputFileName;

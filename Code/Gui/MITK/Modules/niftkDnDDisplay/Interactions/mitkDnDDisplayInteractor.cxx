@@ -30,6 +30,7 @@ mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWi
 : mitk::DisplayInteractor()
 , m_MultiWindowWidget(multiWindowWidget)
 , m_Renderers(3)
+, m_FocusManager(mitk::GlobalInteraction::GetInstance()->GetFocusManager())
 {
   const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWindowWidget->GetRenderWindows();
   m_Renderers[0] = renderWindows[0]->GetRenderer();
@@ -108,7 +109,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
+  if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
@@ -133,7 +134,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
+  if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
@@ -166,7 +167,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
+  if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
@@ -213,7 +214,7 @@ bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, Interactio
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
+  if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
@@ -248,7 +249,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
+  if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);

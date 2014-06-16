@@ -12,20 +12,22 @@
 
 =============================================================================*/
 
+#include <niftkMeshGenerator.h>
+#include <niftkMeshMerger.h>
+#include <niftkCommandLineParser.h>
+
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGridWriter.h>
+#include <vtkErrorCode.h>
+
+#include <boost/tokenizer.hpp>
+
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
 #include <sstream>
 #include <iterator>
-#include <boost/tokenizer.hpp>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkErrorCode.h>
-
-#include <niftkCommandLineParser.h>
-#include <niftkMeshGenerator.h>
-#include <niftkMeshMerger.h>
 
 static niftk::CommandLineArgumentDescription g_opts[] = {
     { OPT_SWITCH, "surf", 0, "Generate only a surface mesh" },
@@ -92,7 +94,7 @@ static bool _WriteMesh(vtkSmartPointer<vtkUnstructuredGrid> sp_grid, const std::
   return true;
 }
 
-std::string _LabelListToString(const std::vector<int> &labels)
+static std::string _LabelListToString(const std::vector<int> &labels)
 {
   std::ostringstream oss;
 

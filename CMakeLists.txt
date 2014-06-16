@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
@@ -138,9 +138,9 @@ foreach(NIFTK_APP ${NIFTK_APPS})
       set(BUILD_IGI ON)
     endif()
 
-    if (${app_name} STREQUAL "NiftyMIDAS")
-      set(BUILD_MIDAS ON)
-    endif()
+#    if (${app_name} STREQUAL "NiftyMIDAS")
+#      set(BUILD_MIDAS ON)
+#    endif()
 
   endif()
 
@@ -187,9 +187,14 @@ option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command li
 ######################################################################
 include (CheckIncludeFiles)
 
-CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
-if (NIFTK_MESHING_CAN_BUILD)
-  option(BUILD_MESHING "Build meshing?" OFF)
+# superbuild for cgal is only supported on non-windows.
+# so for windows, this check here does not apply (and in fact prevents us
+# from passing in an existing cgal installation).
+if(NOT MSVC)
+  CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
+  if (NIFTK_MESHING_CAN_BUILD)
+    option(BUILD_MESHING "Build meshing?" OFF)
+  endif()
 endif()
 
 ######################################################################
@@ -234,7 +239,7 @@ set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 set(NIFTK_VERSION_NIFTYSIM "f36708639c" CACHE STRING "Version of NiftySim" FORCE)
-set(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
+set(NIFTK_VERSION_CGAL "4.4" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
@@ -893,8 +898,14 @@ endif(MITK_FOUND)
 ######################################################################
 
 if (BUILD_MESHING)
-  set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL")
-  find_package(CGAL)
+  # on windows, you have to build cgal yourself because it has dependencies
+  # on other libraries that cannot be built with the superbuild.
+  # so in case, do not overwrite the carefully user-configured CGAL_DIR with
+  # our superbuild path.
+  if (NOT CGAL_DIR)
+    set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL" CACHE PATH "")
+  endif()
+  find_package(CGAL QUIET COMPONENTS Core ImageIO)
   link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
 

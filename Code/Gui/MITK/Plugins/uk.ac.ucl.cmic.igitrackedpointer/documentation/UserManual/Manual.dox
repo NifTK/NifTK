@@ -1,23 +1,56 @@
 /**
-\page uk.ac.ucl.cmic.igitrackedpointer The Tracked Pointer View
+\page uk_ac_ucl_cmic_igitrackedpointer The Tracked Pointer View
 
 \image html icon.png "The Icon for Tracked Pointer View"
 
 \section TrackedPointerIntro Introduction
 
-Do an introduction here.
+The Tracked Pointer View plugin is to move a tracked pointer in a 3D space. Figure 1 shows a pointer pointing to a phantom of rib cage. The pointer has trackballs (i.e. tracking sensor) attached, which are tracked by a NDI Polaris optical tracking system. Figure 2 shows a virtual pointer overlays on the model of the rib cage phantom, both in the Polaris coordinate system.
+
+\image html pointer-in-real-world.png "Figure 1. A pointer pointing to a phantom of rib cage. The pointer is tracked by a NDI Polaris optical tracking system."
+
+\image html pointer-in-virtual-world.png "Figure 2. A virtual pointer overlays on the model of the rib cage phantom."
 
 \section TrackedPointerUsage Usage
 
-Put all usage information here.
+\image html usage_1.png "Figure 3. The input from the plugin."
+
+
+<ul>
+
+<li> <b>pointer</b> A 3D model of the pointer being tracked, often the model is saved in .vtk or .stl format.</li>
+
+<li> <b>pointer to world</b> The tracking sensor provides the transformation of the pointer in the tracking system. </li>
+
+<li> <b>tip origin</b> The coordinate of the pointer's tip relative to the origin of the tracking sensor.
+This coordinate should be obtained via pivot calibration. The origin can be filled as (0, 0, 0) if you have provided the calibration matrix (.4x4) in the "Preferences->Tracked Pointer->calibration matrix file name". 
+</li>
+
+<li> <b>maps to</b> The coordinate of the pointer's tip in the tracking coordinate system.
+These fields will be automatically updated for each frame, when the tracking sensor has been tracked.
+</li>
+
+<li> <b>grab</b> Press the button, the plugin will start computing the coordinates of the pointer's tip in the tracking coordinate system for certain number of frames, then average those coordinates over the number of frames. The result will be save as a "PointSet" in the "Data Manager".
+</li>
+
+</ul>
+
 
 \section TrackedPointerPreferences Preferences
 
-Put all information on user configurable preferences here.
+From the menu "Window-->Preferences", open "Preferences" GUI, select "Tracked Pointer" in the "Filter" list (Figure 4).
 
-\section TrackedPointerReferences References
+\image html preferences.png "Figure 4. Set the plugin preferences."
 
-Put lots of useful references here, including html links, and DOI references.
+<ul>
+
+<li> <b>calibration matrix file name</b>  A calibration matrix (.4x4) which determines the transform from the tip of pointer to the tracking sensor.
+If you have already filled the "maps to" fields in previous section, you can provide an identity matrix or just ignoring it.
+</li>
+
+<li> <b>number of samples to average</b> The number of frames to be used for average.</li>
+
+</ul>
 
 */
 

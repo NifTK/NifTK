@@ -51,6 +51,11 @@ public:
   cv::Mat GetCameraTrackingMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 , std::vector <double> * Perturbation = NULL , int ReferenceIndex = -1 );
 
   /**
+   * \brief Returns a frame of video data (WARNING, not implemented, if you use this you will only get a 4x4 junk matrix back) and the time stamp for a given frame number
+   */
+  cv::Mat GetVideoFrame ( unsigned int FrameNumber, unsigned long long * TimingStamp = NULL );
+
+  /**
    * \brief returns state of m_Ready
    */
   bool IsReady () 
@@ -63,6 +68,10 @@ public:
    */
   itkSetMacro (FlipMatrices, bool);
 
+  /**
+   * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
+   */
+  itkSetMacro (HaltOnFrameSkip, bool);
   /**
    * \brief Get the frame count.
    */
@@ -100,6 +109,7 @@ protected:
   
   std::vector<unsigned int>             m_FrameNumbers;
   std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
+  TrackingMatrixTimeStamps              m_VideoTimeStamps; 
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
   std::string                           m_Directory;
@@ -126,6 +136,7 @@ private:
   bool                              CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                              ProcessFrameMapFile();
   bool                              CheckTimingErrorStats();
+  bool                              m_HaltOnFrameSkip;
   std::vector<cv::Mat>              m_CameraToTracker;
 
   std::vector <unsigned long long> m_VideoLag; //the delay between the tracking and video data

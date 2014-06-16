@@ -530,7 +530,14 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack)
+mitk::BaseRenderer::ConstPointer QmitkThumbnailRenderWindow::GetTrackedRenderer() const
+{
+  return m_TrackedRenderer;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack)
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   if (dataStorage.IsNull())
@@ -538,65 +545,75 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
     return;
   }
 
+  if (rendererToTrack == m_TrackedRenderer)
+  {
+    return;
+  }
+
   // Remove any existing geometry observers
   this->RemoveObserversFromTrackedObjects();
+
+  if (rendererToTrack.IsNull())
+  {
+    m_VisibilityTracker->SetTrackedRenderer(0);
+    return;
+  }
 
   // Store pointers to the display and world geometry, and render window
   m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(rendererToTrack->GetWorldGeometry());
   m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(rendererToTrack->GetDisplayGeometry());
 
-  if (m_TrackedWorldGeometry.IsNotNull()
-      && m_TrackedDisplayGeometry.IsNotNull())
-  {
-    m_TrackedRenderer = rendererToTrack;
-    m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()))->GetSliceNavigationController();
-
-    // Add Observers to track when these geometries change
-    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
-      itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
-    onWorldGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnWorldGeometryChanged );
-    m_TrackedWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
-
-    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
-      itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
-    onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
-    m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
-
-    itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onSliceChangedCommand =
-      itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
-    onSliceChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnSliceChanged );
-    m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
-
-    itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onTimeChangedCommand =
-      itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
-    onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
-    m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
-
-    // I'm doing this in this method so that when the initial first
-    // window starts (i.e. before any data is loaded),
-    // the bounding box will not be included, and not visible.
-    this->AddBoundingBoxToDataStorage(true);
-    if (!dataStorage->Exists(m_BoundingBoxNode))
-    {
-      this->GetDataStorage()->Add(m_BoundingBoxNode);
-    }
-
-    this->UpdateSliceAndTimeStep();
-
-    // Setup the visibility tracker.
-    m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
-    m_VisibilityTracker->NotifyAll();
-
-    // Get the box to update
-    this->UpdateBoundingBox();
-
-    // Request a single update at the end of the method.
-    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
-  }
-  else
+  if (m_TrackedWorldGeometry.IsNull()
+      || m_TrackedDisplayGeometry.IsNull())
   {
     m_VisibilityTracker->SetTrackedRenderer(0);
+    return;
   }
+
+  m_TrackedRenderer = rendererToTrack;
+  m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()))->GetSliceNavigationController();
+
+  // Add Observers to track when these geometries change
+  itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
+    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
+  onWorldGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnWorldGeometryChanged );
+  m_TrackedWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
+
+  itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
+    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
+  onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
+  m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+
+  itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onSliceChangedCommand =
+    itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
+  onSliceChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnSliceChanged );
+  m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
+
+  itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onTimeChangedCommand =
+    itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();
+  onTimeChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnTimeStepChanged );
+  m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
+
+  // I'm doing this in this method so that when the initial first
+  // window starts (i.e. before any data is loaded),
+  // the bounding box will not be included, and not visible.
+  this->AddBoundingBoxToDataStorage(true);
+  if (!dataStorage->Exists(m_BoundingBoxNode))
+  {
+    this->GetDataStorage()->Add(m_BoundingBoxNode);
+  }
+
+  this->UpdateSliceAndTimeStep();
+
+  // Setup the visibility tracker.
+  m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
+  m_VisibilityTracker->NotifyAll();
+
+  // Get the box to update
+  this->UpdateBoundingBox();
+
+  // Request a single update at the end of the method.
+  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
 
 

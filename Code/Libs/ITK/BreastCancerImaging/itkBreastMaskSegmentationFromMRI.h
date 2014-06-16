@@ -333,6 +333,7 @@ protected:
   typename InternalImageType::Pointer imFatSat;
   typename InternalImageType::Pointer imBIFs;
 
+  typename InternalImageType::Pointer imSpeedFuncInputImage; // This will be a copy of the structural image after smoothing
   typename InternalImageType::Pointer imMax;
   typename InternalImageType::Pointer imPectoralVoxels;
   typename InternalImageType::Pointer imPectoralSurfaceVoxels;
