@@ -18,6 +18,8 @@
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
 #include <niftkFileHelper.h>
 #include <iostream>
 #include <fstream>
@@ -997,6 +999,10 @@ std::vector<double> OutputCalibrationData(
     }
 
     rms = 0;
+
+    mitk::PointSet::Pointer pointsInCameraCoordinates = mitk::PointSet::New();
+    mitk::Point3D pointInCameraCoordinates;
+
     for (unsigned int j = 0; j < numberOfPoints; j++)
     {
       CV_MAT_ELEM(*modelPointInputHomogeneous, double, 0 ,0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0);
@@ -1011,8 +1017,14 @@ std::vector<double> OutputCalibrationData(
           + (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))*(CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))
           );
 
+      pointInCameraCoordinates[0] = CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 0 ,0);
+      pointInCameraCoordinates[1] = CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 1 ,0);
+      pointInCameraCoordinates[2] = CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 2 ,0);
+
+      pointsInCameraCoordinates->InsertPoint(j, pointInCameraCoordinates);
+
       os << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 2) \
-          << " transforms to " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 0 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 1 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 2 ,0) \
+          << " transforms to " << pointInCameraCoordinates[0] << ", " << pointInCameraCoordinates[1] << ", " << pointInCameraCoordinates[2] \
           << " projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
           << " compares with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
           << " error = " << incurredDistanceError \
@@ -1029,6 +1041,8 @@ std::vector<double> OutputCalibrationData(
     }
     rms = sqrt((double)rms);
     allRMSErrors.push_back(rms);
+
+    mitk::IOUtil::SavePointSet(pointsInCameraCoordinates, niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".camera.mps")));
   }
 
   cvReleaseMat(&extrinsicMatrix);
