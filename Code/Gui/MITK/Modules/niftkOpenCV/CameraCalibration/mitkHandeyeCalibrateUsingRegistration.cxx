@@ -237,7 +237,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
   }
 
   cv::Mat averageHandeye = cvCreateMat(4,4,CV_64FC1);
-  averageHandeye = mitk::AverageMatrices(handEyeMatrices[0]);
+  averageHandeye = mitk::AverageMatrices(handEyeMatrices);
   mitk::CopyToVTK4x4Matrix(averageHandeye, outputMatrix);
 }
 
