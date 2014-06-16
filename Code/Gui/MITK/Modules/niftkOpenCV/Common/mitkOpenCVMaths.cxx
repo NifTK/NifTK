@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <functional>
 #include <mitkMathsUtils.h>
+#include <mitkExceptionMacro.h>
 
 namespace mitk {
 
@@ -280,6 +281,51 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
     }
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void CopyToVTK4x4Matrix(const cv::Mat& input, vtkMatrix4x4& output)
+{
+  if (input.rows != 4)
+  {
+    mitkThrow() << "Input matrix does not have 4 rows." << std::endl;
+  }
+  if (input.cols != 4)
+  {
+    mitkThrow() << "Input matrix does not have 4 columns." << std::endl;
+  }
+
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      output.SetElement(i, j, input.at<double>(i,j));
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output)
+{
+  if (output.rows != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 rows." << std::endl;
+  }
+  if (output.cols != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 columns." << std::endl;
+  }
+
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      output.at<double>(i,j) = input.GetElement(i,j);
+    }
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const std::vector< std::pair < cv::Point3d, cv::Scalar > > & p)
@@ -1781,6 +1827,15 @@ void InvertRigid4x4Matrix(const CvMat& input, CvMat& output)
   cvReleaseMat(&inputRotationMatrixTransposed);
   cvReleaseMat(&inputTranslationVector);
   cvReleaseMat(&inputTranslationVectorInverted);
+}
+
+
+//-----------------------------------------------------------------------------
+void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output)
+{
+  const CvMat wrappedInput = input;
+  CvMat wrappedOutput = output;
+  InvertRigid4x4Matrix(wrappedInput, wrappedOutput);
 }
 
 } // end namespace

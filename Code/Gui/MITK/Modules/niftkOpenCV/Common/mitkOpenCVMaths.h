@@ -101,6 +101,18 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& matr
 
 
 /**
+ * \brief Copies to VTK matrix, throwing exceptions if input is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToVTK4x4Matrix(const cv::Mat& input, vtkMatrix4x4& output);
+
+
+/**
+ * \brief Copies to OpenCV matrix, throwing exceptions if output is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output);
+
+
+/**
  * \brief Generates a rotation about X-axis, given a Euler angle in radians.
  * \param rx angle in radians
  * \return a new [3x3] rotation matrix
@@ -399,6 +411,11 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_M
  * because the input is known to be orthonormal.
  */
 extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const CvMat& input, CvMat& output);
+
+/**
+ * \brief Wrapper for the above method.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output);
 
 } // end namespace
 
