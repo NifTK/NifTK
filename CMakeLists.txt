@@ -223,7 +223,7 @@ set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/ht
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
 set(NIFTK_VERSION_DATA "7915f6a087" CACHE STRING "Version of NifTKData" FORCE)
-set(NIFTK_VERSION_Boost "86799" CACHE STRING "Version of Boost" FORCE)
+set(NIFTK_VERSION_Boost "86799.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
