@@ -1466,7 +1466,7 @@ cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& T
 } 
 
 //-----------------------------------------------------------------------------------------
-cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
 {
   cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
   cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);

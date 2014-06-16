@@ -236,8 +236,9 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
     mitkThrow() << "No suitable registration results were found." << std::endl;
   }
 
-  // At the moment, just picking first one, but should really use average.
-  mitk::CopyToVTK4x4Matrix(handEyeMatrices[0], outputMatrix);
+  cv::Mat averageHandeye = cvCreateMat(4,4,CV_64FC1);
+  averageHandeye = mitk::AverageMatrices(handEyeMatrices[0]);
+  mitk::CopyToVTK4x4Matrix(averageHandeye, outputMatrix);
 }
 
 //-----------------------------------------------------------------------------
