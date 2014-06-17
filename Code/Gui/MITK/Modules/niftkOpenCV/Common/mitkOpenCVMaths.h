@@ -101,6 +101,18 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& matr
 
 
 /**
+ * \brief Copies to VTK matrix, throwing exceptions if input is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToVTK4x4Matrix(const cv::Mat& input, vtkMatrix4x4& output);
+
+
+/**
+ * \brief Copies to OpenCV matrix, throwing exceptions if output is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output);
+
+
+/**
  * \brief Generates a rotation about X-axis, given a Euler angle in radians.
  * \param rx angle in radians
  * \return a new [3x3] rotation matrix
@@ -329,6 +341,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d
 extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
     const cv::Point2d& p2 );
 
+
 /**
  * \brief works out the rigid rotation correspondence between two sets of corresponding 
  * rigid body transforms
@@ -366,7 +379,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::ve
 /**
  * \brief find the average of a vector of 4x4 matrices
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(const std::vector<cv::Mat>& matrices);
 
 
  /**
@@ -410,6 +423,7 @@ extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const CvMat& input, Cv
  * \brief Overloaded invert method that calls the C-looking one.
  */
 extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output);
+
 
 /**
  * \brief Overloaded invert method that calls the C-looking one.

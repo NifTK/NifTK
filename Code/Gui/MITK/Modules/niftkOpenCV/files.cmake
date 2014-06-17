@@ -34,6 +34,7 @@ set(CPP_FILES
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx
   CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
+  CameraCalibration/mitkHandeyeCalibrateUsingRegistration.cxx
   CameraCalibration/Undistortion.cxx
   CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx

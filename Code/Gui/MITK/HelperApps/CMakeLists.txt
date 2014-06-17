@@ -120,6 +120,7 @@ if(SlicerExecutionModel_FOUND)
       niftkProject3DPointsToStereoPair
       niftkHandeyeCalibration
       niftkHandeyeCalibrationFromDirectory
+      niftkHandeyeCalibrationUsingRegistration
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
       niftkTwoTrackerAnalysis

@@ -19,6 +19,7 @@
 #include <vtkMatrix4x4.h>
 #include <mitkImage.h>
 #include <mitkVector.h>
+#include <mitkPointSet.h>
 
 namespace mitk {
 
@@ -52,6 +53,11 @@ NIFTKCORE_EXPORT vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string &fileN
  * \return true if successful and false otherwise 
  */
 NIFTKCORE_EXPORT bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix);
+
+/**
+ * \brief Loads all point sets from directory.
+ */
+NIFTKCORE_EXPORT std::vector<mitk::PointSet::Pointer> LoadPointSetsFromDirectory(const std::string fullDirectoryName);
 
 } // end namespace
 
