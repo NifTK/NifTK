@@ -560,7 +560,7 @@ void ComputeRightToLeftTransformations(
   {
     ExtractExtrinsicMatrixFromRotationAndTranslationVectors(rotationVectorsLeft, translationVectorsLeft, i, *leftCameraTransform);
     ExtractExtrinsicMatrixFromRotationAndTranslationVectors(rotationVectorsRight, translationVectorsRight, i, *rightCameraTransform);
-    cvInvert(rightCameraTransform, rightCameraTransformInverted);
+    InvertRigid4x4Matrix(*rightCameraTransform, *rightCameraTransformInverted);
     cvGEMM(leftCameraTransform, rightCameraTransformInverted, 1, NULL, 0, rightToLeftCameraTransform);
 
     for (int j = 0; j < 3; j++)
@@ -1202,7 +1202,7 @@ void Project3DModelPositionsToStereo2D(
     CV_MAT_ELEM(*rightToLeft, double, i, 3) = CV_MAT_ELEM(rightToLeftTranslationVector, double, i, 0);
   }
 
-  cvInv(rightToLeft, leftToRight);
+  InvertRigid4x4Matrix(*rightToLeft, *leftToRight);
   cvGEMM(leftToRight, leftExtrinsics, 1, NULL, 0, rightExtrinsics);
 
   for (int i = 0; i < 3; i++)
