@@ -17,6 +17,7 @@ set(MODULE_TESTS
   ImageConversionTest.cxx
   mitkCameraCalibrationFacadeTest.cxx
   UndistortionTest.cxx
+  mitkMatrixInvertTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

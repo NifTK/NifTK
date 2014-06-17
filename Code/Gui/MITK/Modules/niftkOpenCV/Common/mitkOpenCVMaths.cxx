@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <functional>
 #include <mitkMathsUtils.h>
+#include <mitkExceptionMacro.h>
 
 namespace mitk {
 
@@ -280,6 +281,51 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
     }
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void CopyToVTK4x4Matrix(const cv::Mat& input, vtkMatrix4x4& output)
+{
+  if (input.rows != 4)
+  {
+    mitkThrow() << "Input matrix does not have 4 rows." << std::endl;
+  }
+  if (input.cols != 4)
+  {
+    mitkThrow() << "Input matrix does not have 4 columns." << std::endl;
+  }
+
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      output.SetElement(i, j, input.at<double>(i,j));
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output)
+{
+  if (output.rows != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 rows." << std::endl;
+  }
+  if (output.cols != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 columns." << std::endl;
+  }
+
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      output.at<double>(i,j) = input.GetElement(i,j);
+    }
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const std::vector< std::pair < cv::Point3d, cv::Scalar > > & p)
@@ -1420,7 +1466,7 @@ cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& T
 } 
 
 //-----------------------------------------------------------------------------------------
-cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
 {
   cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
   cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
@@ -1749,6 +1795,23 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
 //-----------------------------------------------------------------------------
 void InvertRigid4x4Matrix(const CvMat& input, CvMat& output)
 {
+  if (input.rows != 4)
+  {
+    mitkThrow() << "Input matrix must have 4 rows." << std::endl;
+  }
+  if (input.cols != 4)
+  {
+    mitkThrow() << "Input matrix must have 4 columns." << std::endl;
+  }
+  if (output.rows != 4)
+  {
+    mitkThrow() << "Output matrix must have 4 rows." << std::endl;
+  }
+  if (output.cols != 4)
+  {
+    mitkThrow() << "Output matrix must have 4 columns." << std::endl;
+  }
+
   CvMat *inputRotationMatrix = cvCreateMat(3,3,CV_64FC1);
   CvMat *inputRotationMatrixTransposed = cvCreateMat(3,3,CV_64FC1);
   CvMat *inputTranslationVector = cvCreateMat(3,1,CV_64FC1);
@@ -1777,10 +1840,41 @@ void InvertRigid4x4Matrix(const CvMat& input, CvMat& output)
     CV_MAT_ELEM(output, double, r, 3) = CV_MAT_ELEM(*inputTranslationVectorInverted, double, r, 0);
   }
 
+  CV_MAT_ELEM(output, double, 3, 0) = 0;
+  CV_MAT_ELEM(output, double, 3, 1) = 0;
+  CV_MAT_ELEM(output, double, 3, 2) = 0;
+  CV_MAT_ELEM(output, double, 3, 3) = 1;
+
   cvReleaseMat(&inputRotationMatrix);
   cvReleaseMat(&inputRotationMatrixTransposed);
   cvReleaseMat(&inputTranslationVector);
   cvReleaseMat(&inputTranslationVectorInverted);
+}
+
+
+//-----------------------------------------------------------------------------
+void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output)
+{
+  const CvMat inputCv = input;
+  CvMat outputCv = output;
+  InvertRigid4x4Matrix(inputCv, outputCv);
+}
+
+
+//-----------------------------------------------------------------------------
+void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output)
+{
+  cv::Mat tmpInput = cvCreateMat(4,4,CV_64FC1);
+  cv::Mat tmpOutput = cvCreateMat(4,4,CV_64FC1);
+  for (unsigned int r = 0; r < 4; r++)
+  {
+    for (unsigned int c = 0; c < 4; c++)
+    {
+      tmpInput.at<double>(r,c) = input(r,c);
+    }
+  }
+  InvertRigid4x4Matrix(tmpInput, tmpOutput);
+  output = tmpOutput;
 }
 
 } // end namespace

@@ -106,9 +106,18 @@ NIFTKCORE_EXPORT int FilterMatchingPoints(
  * \param isNormal if true, will transform the mitk::Point3D as if it was a surface normal.
  */
 NIFTKCORE_EXPORT void TransformPointByVtkMatrix(
-    vtkMatrix4x4* matrix,
+    const vtkMatrix4x4* matrix,
     const bool& isNormal,
     mitk::Point3D& pointOrNormal
+    );
+
+/**
+ * \brief Multiplies one point set by a matrix.
+ */
+NIFTKCORE_EXPORT void TransformPointsByVtkMatrix(
+    const mitk::PointSet& input,
+    const vtkMatrix4x4& matrix,
+    mitk::PointSet& output
     );
 
 } // end namespace mitk
