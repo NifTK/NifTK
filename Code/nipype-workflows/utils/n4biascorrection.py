@@ -14,10 +14,6 @@ from nipype.interfaces.niftyseg.base import NIFTYSEGCommand, NIFTYSEGCommandInpu
 from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath,
                                     isdefined)
 
-
-warn = warnings.warn
-warnings.filterwarnings('always', category=UserWarning)
-
 class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
     
     in_file = File(argstr="-i %s", exists=True, mandatory=True,
@@ -54,27 +50,6 @@ class N4BiasCorrectionOutputSpec(TraitedSpec):
     out_biasfield_file = File(desc="output bias field")
 
 class N4BiasCorrection(NIFTYSEGCommand):
-
-    """
-    
-    -i	 Input Image - mandatory
-    -o	 Output Image - mandatory
-    -m	 Binary Mask Image - optional
-    -n	 Number of Multi-Scale Levels - optional - default = 3
-    -d	 Level of Downsampling - optional - default = 1 (no downsampling), downsampling to level 2 is recommended
-    -t	 Maximum number of Iterations - optional - default = 50
-    -b	 Output Bias Field image - optional
-    -c	 Convergence Threshold - optional - default = 0.001
-    
-    Examples
-    --------
-    from n4biascorrection import N4BiasCorrection
-    biascorrect = N4BiasCorrection()
-    biascorrect.inputs.in_file = "T1.nii.gz"
-    biascorrect.inputs.mask_file = "mask.nii.gz"
-    biascorrect.inputs.out_file = "T1_cropped.nii.gz"
-    biascorrect.run()
-    """
 
     _cmd = "n4biascorrection"
 
