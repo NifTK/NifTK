@@ -46,6 +46,8 @@ public:
   mitkClassMacro(MIDASDrawTool, MIDASContourTool);
   itkNewMacro(MIDASDrawTool);
 
+  virtual void InitializeStateMachine();
+
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(Operation* operation);
 
@@ -55,47 +57,48 @@ public:
   /// \see mitk::Tool::GetXPM()
   virtual const char** GetXPM() const;
 
-  /// \brief Get the Cursor size, default 0.5.
-  itkGetConstMacro(CursorSize, double);
+  /// \brief Gets the cursor size.
+  /// Default size is 0.5.
+  double GetCursorSize() const;
 
-  /// \brief Set the cursor size, default 0.5.
+  /// \brief Sets the cursor size.
   void SetCursorSize(double cursorSize);
 
   /// \brief Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<double> CursorSizeChanged;
 
   /// \brief Start drawing a line at the given mouse point.
-  virtual bool OnLeftMousePressed  (Action* action, const StateEvent* stateEvent);
+  virtual bool StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Continue drawing a line.
-  virtual bool OnLeftMouseMoved    (Action* action, const StateEvent* stateEvent);
+  virtual bool KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Finish drawing a line.
-  virtual bool OnLeftMouseReleased (Action* action, const StateEvent* stateEvent);
+  virtual bool StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
-  virtual bool OnMiddleMousePressed(Action* action, const StateEvent* stateEvent);
+  virtual bool StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
-  virtual bool OnMiddleMouseMoved  (Action* action, const StateEvent* stateEvent);
+  virtual bool KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Finish editing.
-  virtual bool OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent);
+  virtual bool StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Different to MIDASContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
   virtual void ClearWorkingData();
 
   /// \brief Called by the main application to clean the contour, which means, to erase any bits of contour
   /// not currently touching the region growing image.
-  virtual void Clean(const int& sliceNumber, const int& axisNumber);
+  virtual void Clean(int sliceNumber, int axisNumber);
 
 protected:
 
   MIDASDrawTool(); // purposely hidden
   virtual ~MIDASDrawTool(); // purposely hidden
 
-  /// \see mitk::MIDASStateMachine::CanHandle
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  /// \brief Connects state machine actions to functions.
+  virtual void ConnectActionsAndFunctions();
 
   /**
   \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
@@ -111,8 +114,8 @@ private:
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::ContourModelSet& inputContours,
       mitk::ContourModelSet& outputContours,
-      const int& axis,
-      const int& sliceNumber
+      int axis,
+      int sliceNumber
       );
 
   /// \brief Operation constant, used in Undo/Redo framework.
@@ -122,7 +125,7 @@ private:
   static const mitk::OperationType MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR;
 
   /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourModelSet representing the "currentContours" ie Green lines in MIDAS.
-  bool DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent);
+  bool DeleteFromContour(int workingDataNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Shows or hides the transparent circle around the mouse pointer during the erasure.
   void SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer = 0);

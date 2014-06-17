@@ -18,7 +18,6 @@
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPointSetInteractor.h"
-#include <mitkStateEvent.h>
 
 namespace mitk {
 
@@ -46,6 +45,8 @@ public:
   mitkClassMacro(MIDASSeedTool, MIDASTool);
   itkNewMacro(MIDASSeedTool);
 
+  virtual void InitializeStateMachine();
+
   /// \see mitk::Tool::GetName()
   virtual const char* GetName() const;
 
@@ -72,9 +73,6 @@ protected:
 
   MIDASSeedTool();
   virtual ~MIDASSeedTool();
-
-  /// \see mitk::MIDASStateMachine::CanHandle
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
 private:
 

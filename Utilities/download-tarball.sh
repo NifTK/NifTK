@@ -230,7 +230,7 @@ then
   download_from_github Slicer $project $version
 elif [ $project = pcl ]
 then
-  download_from_github PointCloudLibrary $project $version
+  download_from_github NifTK $project $version
 elif [ $project = RTK ]
 then
   download_from_github NifTK $project $version

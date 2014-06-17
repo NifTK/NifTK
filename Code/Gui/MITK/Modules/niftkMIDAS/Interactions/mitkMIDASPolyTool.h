@@ -68,16 +68,16 @@ public:
   virtual void Deactivated();
 
   /// \brief When called, we incrementally build up a poly line.
-  virtual bool OnLeftMousePressed(Action* action, const StateEvent* stateEvent);
+  virtual bool AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief When called, we select the closest point in poly line, ready to move it.
-  virtual bool OnMiddleMousePressed(Action* action, const StateEvent* stateEvent);
+  virtual bool SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief When called, we move the selected point and hence move the poly line.
-  virtual bool OnMiddleMousePressedAndMoved(Action* action, const StateEvent* stateEvent);
+  virtual bool MovePoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief When called, we release the selected point and hence stop moving the poly line.
-  virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
+  virtual bool DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Clears the contour, meaning it re-initialised the feedback contour in
   /// mitk::FeedbackContourTool, and also the background contour in mitk::MIDASContourTool
@@ -89,8 +89,10 @@ protected:
   MIDASPolyTool(); // purposely hidden
   virtual ~MIDASPolyTool(); // purposely hidden
 
-  /// \see mitk::MIDASStateMachine::CanHandle
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  virtual void InitializeStateMachine();
+
+  /// \brief Connects state machine actions to functions.
+  virtual void ConnectActionsAndFunctions();
 
 private:
 
@@ -107,7 +109,7 @@ private:
   void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
 
   /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.
-  void UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo, bool registerNewPoint);
+  void UpdateContours(mitk::StateMachineAction* action, mitk::InteractionPositionEvent* positionEvent, bool provideUndo, bool registerNewPoint);
 
   /// \brief Called from UpdateContours, takes the given point and geometry, and the existing contour (poly line), and calculates the closest point in the current contourReferencePointsInput, sets it to the closestCornerPoint and redraws the feedbackContour and backgroundContour by calling DrawWholeContour.
   void UpdateFeedbackContour(bool registerNewPoint, const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::ContourModel& contourReferencePointsInput, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour, bool provideUndo);

@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
   INCLUDE_DIRS Common CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration
-  DEPENDS mitkOpenCVVideoSupport MitkExt mitkCameraCalibration niftkCore
+  DEPENDS MitkOpenCVVideoSupport MitkCameraCalibration niftkCore
   PACKAGE_DEPENDS OpenCV
 )
 
@@ -25,6 +25,6 @@ target_link_libraries(niftkOpenCV
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkOpenCV)
-endif() 
+endif()
 
 add_subdirectory(Testing)

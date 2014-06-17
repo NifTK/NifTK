@@ -43,6 +43,11 @@ public:
   void LoadExistingIntrinsics(const std::string& directoryName);
 
   /**
+   * \brief Tries to load existing r2l params from a previous calibration.
+   */
+  void LoadExistingRightToLeft(const std::string& directoryName);
+
+  /**
    * \brief Calibration function that returns the reprojection error (squared error).
    * \param numberOfFrames if != 0, will pick either left or right directory, scan for image pairs (sequential files),
    * try to extract chessboards on all frames, and build a list of suitable pairs, and then randomly select a suitable number of frames.
@@ -74,7 +79,10 @@ private:
   CvMat*                              m_IntrinsicMatrixRight;
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
+  CvMat*                              m_RotationMatrixRightToLeft;
+  CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
+  bool                                m_OptimiseRightToLeft;
 
 }; // end class
 

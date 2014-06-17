@@ -1,0 +1,29 @@
+<config>
+  <event_variant class="MousePressEvent" name="StartAddingAddition">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="KeepAddingAddition">
+    <attribute name="ButtonState" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="StopAddingAddition">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MousePressEvent" name="StartAddingSubtraction">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="KeepAddingSubtraction">
+    <attribute name="ButtonState" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="StopAddingSubtraction">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MousePressEvent" name="StartRemovingSubtraction">
+    <attribute name="EventButton" value="RightMouseButton"/>
+  </event_variant>
+   <event_variant class="MouseMoveEvent" name="KeepRemovingSubtraction">
+    <attribute name="ButtonState" value="RightMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="StopRemovingSubtraction">
+    <attribute name="EventButton" value="RightMouseButton"/>
+  </event_variant>
+</config>

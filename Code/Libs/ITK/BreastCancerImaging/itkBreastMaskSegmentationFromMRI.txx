@@ -193,7 +193,18 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::SmoothTheInputImages( void )
 {
   if ( ! flgSmooth ) 
+  {
+    // If no smoothing is to be performed, then the input of the speed function will also not be smoothed!
+    typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+    duplicator->SetInputImage(imStructural);
+    duplicator->Update();
+
+    imSpeedFuncInputImage = duplicator->GetOutput();
+    imSpeedFuncInputImage->DisconnectPipeline();
+
     return;
+  }
 
 
   typename SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
@@ -211,7 +222,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imTmp->DisconnectPipeline();
     
   imStructural = imTmp;
-    
+
+  // Keep a copy of the smoothed structural image for the region growing of the pectoral muscle 
+  typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage(imStructural);
+  duplicator->Update();
+
+  imSpeedFuncInputImage = duplicator->GetOutput();
+  imSpeedFuncInputImage->DisconnectPipeline();
+
   WriteImageToFile( fileOutputSmoothedStructural, "smoothed structural image", 
 		    imStructural, flgLeft, flgRight );
   
@@ -599,16 +619,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 #endif
   }
   else
-    imMax = imStructural;
+    imMax=imStructural;
 
-  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion, "MaxLeft" );
-  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );
-
-  std::string fileOutput( "imMax.nii" );
-  WriteImageToFile( fileOutput, "max image", 
-                    imMax, flgLeft, flgRight );      
+  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion,  "MaxLeft" );
+  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );     
   
-
   // Smooth the image to increase separation of the background
 
 #if 0
@@ -1764,8 +1779,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename GradientFilterType::Pointer gradientMagnitude = GradientFilterType::New();
     
   gradientMagnitude->SetSigma( 1 );
-  gradientMagnitude->SetInput( imStructural );
-
+  gradientMagnitude->SetInput( imSpeedFuncInputImage );
   gradientMagnitude->Update();
 
   WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
@@ -3037,7 +3051,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
-  surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
+  surfaceExtractor->SetInputDataObject((vtkDataObject *) convertITKtoVTK->GetOutput());
   pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
 
   if (flgVerbose) {
@@ -3059,7 +3073,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   postSmoothingFilter->SetNumberOfIterations(niterations);
   postSmoothingFilter->SetPassBand(bandwidth);
     
-  postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+  postSmoothingFilter->SetInputDataObject(pipeVTKPolyDataConnector);
   pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
 
   // Write the created vtk surface to a file
@@ -3067,7 +3081,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
 
   writer3D->SetFileName( fileModifiedOutput.c_str() );
-  writer3D->SetInput(pipeVTKPolyDataConnector);
+  writer3D->SetInputDataObject(pipeVTKPolyDataConnector);
 
   writer3D->SetFileType(VTK_BINARY);
 

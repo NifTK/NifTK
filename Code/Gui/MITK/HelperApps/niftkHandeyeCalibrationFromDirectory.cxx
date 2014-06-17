@@ -41,14 +41,24 @@ int main(int argc, char** argv)
     calibrator->SetSortByAngle(false);
     calibrator->SetPixelScaleFactor(pixelScales);
     calibrator->SetSwapVideoChannels(swapVideoChannels);
+    calibrator->SetNumberCornersWidth(NumberCornerWidth);
+    calibrator->SetNumberCornersHeight(NumberCornerHeight);
     calibrator->InitialiseOutputDirectory();
     calibrator->InitialiseTracking();
 
-    if ( existingCalibrationDirectory != "" ) 
+
+    if ( existingIntrinsicsDirectory != "" )
     {
-      MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingCalibrationDirectory;
-      calibrator->LoadExistingIntrinsicCalibrations(existingCalibrationDirectory);
+      MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingIntrinsicsDirectory;
+      calibrator->LoadExistingIntrinsicCalibrations(existingIntrinsicsDirectory);
     }
+
+    if ( existingRightToLeftDirectory != "" )
+    {
+      MITK_INFO << "Attempting to use existing right-to-left calibration from " << existingRightToLeftDirectory;
+      calibrator->LoadExistingRightToLeft(existingRightToLeftDirectory);
+    }
+
     calibrator->InitialiseVideo();
 
     returnStatus = EXIT_SUCCESS;

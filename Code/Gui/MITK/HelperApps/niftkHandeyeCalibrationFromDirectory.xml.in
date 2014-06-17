@@ -89,6 +89,22 @@
       <label>The target number of randomly selected video frames to use</label>
       <default>30</default>
     </integer>
+    
+    <integer>
+      <name>NumberCornerWidth</name>
+      <longflag>NumberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis</description>
+      <label>The number of internal chessboard corners along the width axis</label>
+      <default>14</default>
+    </integer>
+    
+    <integer>
+      <name>NumberCornerHeight</name>
+      <longflag>NumberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis</description>
+      <label>The number of internal chessboard corners along the height axis</label>
+      <default>10</default>
+    </integer>
 
     <boolean>
       <name>DontSortByDistance</name>
@@ -115,13 +131,21 @@
     </boolean>
 
     <directory>
-      <name>existingCalibrationDirectory</name>
-      <longflag>existingCalibrationDirectory</longflag>
-      <description>Use an exsiting intrinsic calibration</description>
-      <label>input intrinsics calibration</label>
+      <name>existingIntrinsicsDirectory</name>
+      <longflag>existingIntrinsicsDirectory</longflag>
+      <description>For stereo calibration, use an existing intrinsic calibration.</description>
+      <label>Existing intrinsics directory</label>
       <channel>input</channel>
     </directory>
- 
+
+    <directory>
+      <name>existingRightToLeftDirectory</name>
+      <longflag>existingRightToLeftDirectory</longflag>
+      <description>For stereo calibration, use an existing right-to-left calibration.</description>
+      <label>Existing right-to-left directory</label>
+      <channel>input</channel>
+    </directory>
+
   </parameters>
   
 </executable>

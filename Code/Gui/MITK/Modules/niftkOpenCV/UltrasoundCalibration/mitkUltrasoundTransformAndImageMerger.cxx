@@ -18,6 +18,7 @@
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkImagePixelReadAccessor.h>
 #include <niftkFileHelper.h>
 #include <niftkVTKFunctions.h>
 #include <mitkIOUtil.h>
@@ -116,25 +117,25 @@ void UltrasoundTransformAndImageMerger::Merge(
   outputImage->FillBuffer(0);
 
   // Fill 3D image, slice by slice. This is slow, but we wont do it often.
-  mitk::Index3D inputImageIndex;
-  ImageType::IndexType outputImageIndex;
+  itk::Index<2> inputImageIndex; 
+  itk::Index<3> outputImageIndex;
 
   for (unsigned int i = 0; i < images.size(); i++)
   {
+    mitk::ImagePixelReadAccessor<unsigned char, 2> readAccess(images[i], images[i]->GetVolumeData(0));
+
     for (unsigned int y = 0; y < sizeY; y++)
     {
       for (unsigned int x = 0; x < sizeX; x++)
       {
         inputImageIndex[0] = x;
         inputImageIndex[1] = y;
-        inputImageIndex[2] = 0;
 
         outputImageIndex[0] = x;
         outputImageIndex[1] = y;
         outputImageIndex[2] = i;
 
-        mitk::Image::Pointer tmpImage = images[i];
-        outputImage->SetPixel(outputImageIndex, tmpImage->GetPixelValueByIndex(inputImageIndex));
+        outputImage->SetPixel(outputImageIndex, readAccess.GetPixelByIndex(inputImageIndex));
       }
     }
   }

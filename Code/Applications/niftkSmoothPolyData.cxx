@@ -147,7 +147,7 @@ int main(int argc, char** argv)
   reader->SetFileName(args.inputPolyDataFile.c_str());
  
   vtkSmoothPolyDataFilter *filter = vtkSmoothPolyDataFilter::New();
-  filter->SetInput(reader->GetOutput());
+  filter->SetInputDataObject(reader->GetOutput());
   filter->SetConvergence(args.convergenceThreshold);
   filter->SetNumberOfIterations(args.numberIterations);
   filter->SetRelaxationFactor(args.relaxationFactor);
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
   filter->SetGenerateErrorVectors(args.generateErrorVectors);
  
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInput(filter->GetOutput());
+  writer->SetInputDataObject(filter->GetOutput());
   writer->SetFileName(args.outputPolyDataFile.c_str());
   writer->Update();
 }

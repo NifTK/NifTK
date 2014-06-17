@@ -64,7 +64,7 @@ public:
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
-  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const;
+  virtual bool EventFilter(mitk::InteractionEvent* event) const;
 
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).

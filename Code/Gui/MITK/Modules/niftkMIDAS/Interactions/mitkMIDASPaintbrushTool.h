@@ -61,7 +61,7 @@ namespace mitk
   * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
   * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
-class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D//, public MIDASStateMachine
 {
 
 public:
@@ -71,6 +71,8 @@ public:
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
+  virtual void InitializeStateMachine();
+
   /** Strings to help the tool identify itself in GUI. */
   virtual const char* GetName() const;
   virtual const char** GetXPM() const;
@@ -78,17 +80,20 @@ public:
   /** We store the name of a property that stores the image region. */
   static const std::string REGION_PROPERTY_NAME;
 
-  /** Get the Cursor size, default 1. */
-  itkGetConstMacro(CursorSize, int);
+  /// \brief Gets the cursor size.
+  /// Default size is 1 pixel.
+  int GetCursorSize() const;
 
-  /** Set the cursor size, default 1. */
-  void SetCursorSize(int current);
+  /// \brief Sets the cursor size.
+  void SetCursorSize(int cursorSize);
 
-  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
-  itkSetMacro(ErosionMode, bool);
+  /// \brief Gets the erosion mode.
+  /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
+  bool GetErosionMode() const;
 
-  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
-  itkGetMacro(ErosionMode, bool);
+  /// \brief Sets the erosion mode.
+  /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
+  void SetErosionMode(bool erosionMode);
 
   /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<int> CursorSizeChanged;
@@ -97,20 +102,23 @@ public:
   virtual void ExecuteOperation(Operation* operation);
 
   /** Process all mouse events. */
-  virtual bool OnLeftMousePressed   (Action* action, const StateEvent* stateEvent);
-  virtual bool OnLeftMouseMoved     (Action* action, const StateEvent* stateEvent);
-  virtual bool OnLeftMouseReleased  (Action* action, const StateEvent* stateEvent);
-  virtual bool OnMiddleMousePressed (Action* action, const StateEvent* stateEvent);
-  virtual bool OnMiddleMouseMoved   (Action* action, const StateEvent* stateEvent);
-  virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMousePressed  (Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMouseMoved    (Action* action, const StateEvent* stateEvent);
-  virtual bool OnRightMouseReleased (Action* action, const StateEvent* stateEvent);
+  virtual bool StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
 protected:
 
   MIDASPaintbrushTool();          // purposely hidden
   virtual ~MIDASPaintbrushTool(); // purposely hidden
+
+  /// \brief Connects state machine actions to functions.
+  virtual void ConnectActionsAndFunctions();
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -120,10 +128,7 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
-
-  /** \see mitk::MIDASStateMachine::CanHandle */
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
   /**
   \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
@@ -157,7 +162,7 @@ private:
       ProcessorType &processor);
 
   /// \brief Marks the initial mouse position when any of the left/middle/right mouse buttons are pressed.
-  bool MarkInitialPosition(unsigned int imageNumber, Action* action, const StateEvent* stateEvent);
+  bool MarkInitialPosition(unsigned int imageNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Sets an invalid region (indicating that we are not editing) on the chosen image number data node.
   void SetInvalidRegion(unsigned int imageNumber);
@@ -169,8 +174,7 @@ private:
   void SetRegion(unsigned int imageNumber, bool valid, const std::vector<int>& boundingBox = std::vector<int>());
 
   /// \brief Does the main functionality when the mouse moves.
-  bool DoMouseMoved(Action* action,
-      const StateEvent* stateEvent,
+  bool DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
       int imageNumber,
       unsigned char valueForRedo,
       unsigned char valueForUndo

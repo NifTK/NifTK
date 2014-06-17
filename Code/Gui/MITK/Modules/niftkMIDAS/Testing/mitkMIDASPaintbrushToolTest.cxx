@@ -27,7 +27,7 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkToolManager.h>
 #include <mitkGeometry3D.h>
-#include <mitkPositionEvent.h>
+#include <mitkInteractionPositionEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
@@ -120,6 +120,21 @@ public:
   }
 
   //-----------------------------------------------------------------------------
+  mitk::InteractionPositionEvent::Pointer GeneratePositionEvent(mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation)
+  {
+    mitk::Point2D point2D;
+    point2D[0] = 0;
+    point2D[1] = 0;
+
+    mitk::Point3D millimetreCoordinate;
+    image->GetGeometry()->IndexToWorld(voxelLocation, millimetreCoordinate);
+
+    mitk::InteractionPositionEvent::Pointer event = mitk::InteractionPositionEvent::New(renderer, point2D, millimetreCoordinate );
+    return event;
+  }
+
+
+  //-----------------------------------------------------------------------------
   void TestToolPresent()
   {
     MITK_TEST_OUTPUT(<< "Starting TestToolPresent...");
@@ -151,22 +166,18 @@ public:
 
     // Get Middle Voxel, convert to millimetres, make position event.
     mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(image);
-    mitk::PositionEvent event = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
+    mitk::InteractionPositionEvent::Pointer event = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Generate Left or Right mouse click event.
     if (imageId == 0)
     {
-      int eventId = mitk::EIDLEFTMOUSEBTN;
-      const mitk::StateEvent stateEvent(eventId, &event);
-      m_Tool->OnLeftMousePressed(NULL, &stateEvent);
-      m_Tool->OnLeftMouseReleased(NULL, &stateEvent);
+      m_Tool->StartAddingAddition(NULL, event);
+      m_Tool->StopAddingAddition(NULL, event);
     }
     else
     {
-      int eventId = mitk::EIDRIGHTMOUSEBTN;
-      const mitk::StateEvent stateEvent(eventId, &event);
-      m_Tool->OnRightMousePressed(NULL, &stateEvent);
-      m_Tool->OnRightMouseReleased(NULL, &stateEvent);
+      m_Tool->StartRemovingSubtraction(NULL, event);
+      m_Tool->StopRemovingSubtraction(NULL, event);
     }
 
     // Count voxels that got painted.
@@ -205,7 +216,7 @@ public:
 
     // Get Middle Voxel, convert to millimetres, make position event.
     mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(constImage);
-    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
+    mitk::InteractionPositionEvent::Pointer middlePositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -213,32 +224,20 @@ public:
     nextVoxelIndex[1] += numberOfVoxelsDifference;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
+    mitk::InteractionPositionEvent::Pointer nextPositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     // Generate Left or Right mouse click events.
     if (imageId == 0 || imageId == 2)
     {
-      int eventId = mitk::EIDLEFTMOUSEBTN;
-      const mitk::StateEvent stateEvent1(eventId, &middlePositionEvent);
-      m_Tool->OnLeftMousePressed(NULL, &stateEvent1);
-
-      const mitk::StateEvent stateEvent2(eventId, &nextPositionEvent);
-      m_Tool->OnLeftMouseMoved(NULL, &stateEvent2);
-
-      const mitk::StateEvent stateEvent3(eventId, &nextPositionEvent);
-      m_Tool->OnLeftMouseReleased(NULL, &stateEvent3);
+      m_Tool->StartAddingAddition(NULL, middlePositionEvent);
+      m_Tool->KeepAddingAddition(NULL, nextPositionEvent);
+      m_Tool->StopAddingAddition(NULL, nextPositionEvent);
     }
     else
     {
-      int eventId = mitk::EIDMIDDLEMOUSEBTN;
-      const mitk::StateEvent stateEvent1(eventId, &middlePositionEvent);
-      m_Tool->OnMiddleMousePressed(NULL, &stateEvent1);
-
-      const mitk::StateEvent stateEvent2(eventId, &nextPositionEvent);
-      m_Tool->OnMiddleMouseMoved(NULL, &stateEvent2);
-
-      const mitk::StateEvent stateEvent3(eventId, &nextPositionEvent);
-      m_Tool->OnMiddleMouseReleased(NULL, &stateEvent3);
+      m_Tool->StartAddingSubtraction(NULL, middlePositionEvent);
+      m_Tool->KeepAddingSubtraction(NULL, nextPositionEvent);
+      m_Tool->StopAddingSubtraction(NULL, nextPositionEvent);
     }
 
     // Count voxels that got painted.
@@ -271,7 +270,7 @@ public:
 
     // Get Middle Voxel, convert to millimetres, make position event.
     mitk::Point3D voxelIndex = mitk::GetMiddlePointInVoxels(constImage);
-    mitk::PositionEvent middlePositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
+    mitk::InteractionPositionEvent::Pointer middlePositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -279,18 +278,12 @@ public:
     nextVoxelIndex[1] += 1;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
+    mitk::InteractionPositionEvent::Pointer nextPositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
     // Generate Right mouse click events.
-    int eventId = mitk::EIDRIGHTMOUSEBTN;
-    const mitk::StateEvent stateEvent1(eventId, &middlePositionEvent);
-    m_Tool->OnRightMousePressed(NULL, &stateEvent1);
-
-    const mitk::StateEvent stateEvent2(eventId, &nextPositionEvent);
-    m_Tool->OnRightMouseMoved(NULL, &stateEvent2);
-
-    const mitk::StateEvent stateEvent3(eventId, &nextPositionEvent);
-    m_Tool->OnRightMouseReleased(NULL, &stateEvent3);
+    m_Tool->StartRemovingSubtraction(NULL, middlePositionEvent);
+    m_Tool->KeepRemovingSubtraction(NULL, nextPositionEvent);
+    m_Tool->StopRemovingSubtraction(NULL, nextPositionEvent);
 
     // Count voxels that got painted.
     voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
@@ -334,7 +327,7 @@ public:
           voxelIndex[1] = y;
           voxelIndex[2] = z;
 
-          mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
+          mitk::InteractionPositionEvent::Pointer positionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
           // Paint in XY plane, exactly diagonal.
           mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -342,17 +335,11 @@ public:
           nextVoxelIndex[1] += 1;
 
           // Create another position event.
-          mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
+          mitk::InteractionPositionEvent::Pointer nextPositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
-          int eventId = mitk::EIDLEFTMOUSEBTN;
-          const mitk::StateEvent stateEvent1(eventId, &positionEvent);
-          m_Tool->OnLeftMousePressed(NULL, &stateEvent1);
-
-          const mitk::StateEvent stateEvent2(eventId, &nextPositionEvent);
-          m_Tool->OnLeftMouseMoved(NULL, &stateEvent2);
-
-          const mitk::StateEvent stateEvent3(eventId, &nextPositionEvent);
-          m_Tool->OnLeftMouseReleased(NULL, &stateEvent3);
+          m_Tool->StartAddingAddition(NULL, positionEvent);
+          m_Tool->KeepAddingAddition(NULL, nextPositionEvent);
+          m_Tool->StopAddingAddition(NULL, nextPositionEvent);
         }
       }
     }
@@ -387,7 +374,7 @@ public:
     voxelIndex[1] = y;
     voxelIndex[2] = z;
 
-    mitk::PositionEvent positionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
+    mitk::InteractionPositionEvent::Pointer positionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
     mitk::Point3D nextVoxelIndex = voxelIndex;
@@ -395,17 +382,11 @@ public:
     nextVoxelIndex[1] += 1;
 
     // Create another position event.
-    mitk::PositionEvent nextPositionEvent = mitk::GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
+    mitk::InteractionPositionEvent::Pointer nextPositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, nextVoxelIndex);
 
-    int eventId = mitk::EIDLEFTMOUSEBTN;
-    const mitk::StateEvent stateEvent1(eventId, &positionEvent);
-    m_Tool->OnLeftMousePressed(NULL, &stateEvent1);
-
-    const mitk::StateEvent stateEvent2(eventId, &nextPositionEvent);
-    m_Tool->OnLeftMouseMoved(NULL, &stateEvent2);
-
-    const mitk::StateEvent stateEvent3(eventId, &nextPositionEvent);
-    m_Tool->OnLeftMouseReleased(NULL, &stateEvent3);
+    m_Tool->StartAddingAddition(NULL, positionEvent);
+    m_Tool->KeepAddingAddition(NULL, nextPositionEvent);
+    m_Tool->StopAddingAddition(NULL, nextPositionEvent);
 
     // Count voxels that got painted, should be zero.
     unsigned long int voxelCounter = mitk::CountBetweenThreshold(constImage, 0.99, 1.01);
@@ -479,4 +460,3 @@ int mitkMIDASPaintbrushToolTest(int argc, char * argv[])
   delete testClass;
   MITK_TEST_END();
 }
-

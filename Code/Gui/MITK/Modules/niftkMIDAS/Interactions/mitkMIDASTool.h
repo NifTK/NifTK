@@ -55,12 +55,12 @@ namespace mitk
  * \sa mitk::MIDASPolyTool
  * \sa mitk::MIDASPointSetInteractor
  */
-class NIFTKMIDAS_EXPORT MIDASTool : public FeedbackContourTool, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {
 
 public:
 
-  mitkClassMacro(MIDASTool, FeedbackContourTool);
+  mitkClassMacro(MIDASTool, mitk::FeedbackContourTool);
 
   /// \brief Loads the behaviour string to the global interaction.
   /// This function should be called before any MIDASTool object is created.
@@ -113,11 +113,11 @@ public:
   /// \brief Used to signal that the number of seeds has changed
   Message1<int> NumberOfSeedsHasChanged;
 
-  /// \brief Set the flag to block the signal that indicates that the number of seeds has changed.
-  itkSetMacro(BlockNumberOfSeedsSignal, bool);
+  /// \brief Gets the flag to block the signal that indicates that the number of seeds has changed.
+  bool GetBlockNumberOfSeedsSignal() const;
 
-  /// \brief Get the flag to block the signal that indicates that the number of seeds has changed.
-  itkGetMacro(BlockNumberOfSeedsSignal, bool);
+  /// \brief Sets the flag to block the signal that indicates that the number of seeds has changed.
+  void SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal);
 
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
   /// Overrides mitkMIDASStateMachine::InstallEventFilter() so that it adds every filter also to the
@@ -143,9 +143,7 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
-
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
   /// \brief Makes the current window re-render
   virtual void RenderCurrentWindow(const PositionEvent& event);
@@ -163,24 +161,6 @@ private:
 
   /// \brief Called when the seeds have been modified.
   void OnSeedsModified();
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_SEED_DROPPER_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_POLY_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_DRAW_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML;
-
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML;
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
   mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;

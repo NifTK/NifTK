@@ -157,7 +157,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
-    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
+//    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
+    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New(this);
 
     this->CreateConnections();
   }
@@ -218,7 +219,8 @@ void MIDASGeneralSegmentorView::Visible()
 {
   QmitkMIDASBaseSegmentationFunctionality::Visible();
 
-  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
+  /// TODO
+//  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
 
   // Connect registered tools back to here, so we can do seed processing logic here.
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -243,7 +245,8 @@ void MIDASGeneralSegmentorView::Hidden()
     m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
   }
 
-  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ToolKeyPressStateMachine);
+  /// TODO
+//  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ToolKeyPressStateMachine);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -4044,7 +4047,7 @@ MIDASGeneralSegmentorView
   for (unsigned int i = 0; i < numberOfContours; i++)
   {
     mitk::ContourModel::Pointer contour = mitk::ContourModel::New();
-    contour->SetIsClosed(false);
+    contour->SetClosed(false);
 
     typename PathType::Pointer path = extractContoursFilter->GetOutput(i);
     const typename PathType::VertexListType* list = path->GetVertexList();

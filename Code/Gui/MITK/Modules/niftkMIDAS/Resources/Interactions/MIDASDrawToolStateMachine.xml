@@ -1,0 +1,26 @@
+<statemachine>
+  <state name="start" startstate="true">
+    <transition event_class="InteractionPositionEvent" event_variant="StartDrawing" target="drawing">
+      <action name="startDrawing" />
+    </transition>
+    <transition event_class="InteractionPositionEvent" event_variant="StartErasing" target="erasing">
+      <action name="startErasing" />
+    </transition>
+  </state>
+  <state name="drawing">
+    <transition event_class="InteractionPositionEvent" event_variant="KeepDrawing" target="drawing">
+      <action name="keepDrawing" />
+    </transition>
+    <transition event_class="InteractionPositionEvent" event_variant="StopDrawing" target="start">
+      <action name="stopDrawing" />
+    </transition>
+  </state>
+  <state name="erasing">
+    <transition event_class="InteractionPositionEvent" event_variant="KeepErasing" target="erasing">
+      <action name="keepErasing" />
+    </transition>
+    <transition event_class="InteractionPositionEvent" event_variant="StopErasing" target="start">
+      <action name="stopErasing" />
+    </transition>
+  </state>
+</statemachine>

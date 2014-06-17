@@ -91,9 +91,9 @@ if(SlicerExecutionModel_FOUND)
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
-    niftkMammogramMaskSegmentation
-    niftkMaskDICOMMammograms
-    niftkMammogramPectoralisSegmentation
+    #niftkMammogramMaskSegmentation
+    #niftkMaskDICOMMammograms
+    #niftkMammogramPectoralisSegmentation
     niftkMultiply
     niftkN4BiasFieldCorrection
     niftkNegateImage
@@ -141,7 +141,7 @@ if(SlicerExecutionModel_FOUND)
         NAME ${APP}
         BUILD_SLICER
         INSTALL_SCRIPT
-        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
+        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} vtkIOImage
       )
     endforeach()
 
@@ -196,7 +196,7 @@ endif()
 ###############################################################
 
 set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
-  niftkBreastMaskSegmentationFromMRI
+  #niftkBreastMaskSegmentationFromMRI
   niftkOCTVolumeConstructor
   niftkVesselExtractor
   )
@@ -333,7 +333,7 @@ if(VTK_FOUND)
   # Add new programs to this list.
   ##############################################################
   set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
-    niftkBreastMaskSegmentationFromMRI
+    #niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
     niftkConvertNiftiVectorImage
     niftkDecimatePolyData
@@ -374,7 +374,7 @@ if(VTK_FOUND)
     # Add new programs to this list.
     ##############################################################
     set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
-      niftkCreateBreastMesh
+      #niftkCreateBreastMesh
     )
     list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
 

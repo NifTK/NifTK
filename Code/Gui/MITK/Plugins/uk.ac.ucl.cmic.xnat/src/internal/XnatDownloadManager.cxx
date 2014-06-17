@@ -7,15 +7,28 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QWidget>
+#include <QDataStream>
 
 #include <ctkXnatException.h>
 #include <ctkXnatTreeModel.h>
 #include <ctkXnatSettings.h>
 
-#include <JlCompress.h>
-
 #include "XnatDownloadDialog.h"
 #include "XnatTreeView.h"
+
+/// Note: This is needed for miniz.
+#if defined(__GNUC__)
+  // Ensure we get the 64-bit variants of the CRT's file I/O calls
+  #ifndef _FILE_OFFSET_BITS
+    #define _FILE_OFFSET_BITS 64
+  #endif
+  #ifndef _LARGEFILE64_SOURCE
+    #define _LARGEFILE64_SOURCE 1
+  #endif
+#endif
+
+#include <cstring>
+#include "miniz.c"
 
 class XnatDownloadManagerPrivate
 {
@@ -69,7 +82,7 @@ void XnatDownloadManager::downloadFile()
 
   d->xnatFileName = QFileInfo(fileName).fileName();
 
-  d->currDir = d->settings->getDefaultDirectory();
+  d->currDir = d->settings->defaultDirectory();
 
   QString caption = tr("Save Downloaded File");
   QString dir = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
@@ -163,7 +176,7 @@ void XnatDownloadManager::silentlyDownloadFile(const QString& fileName, const QS
   // initialize download variables
   d->finished = false;
   d->totalBytes = 0;
-  connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+  this->connect(this, SIGNAL(done()), SLOT(finishDownload()));
 
   this->downloadDataBlocking(false);
 }
@@ -183,7 +196,7 @@ void XnatDownloadManager::startDownload()
   // initialize download variables
   d->finished = false;
   d->totalBytes = 0;
-  connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+  this->connect(this, SIGNAL(done()), SLOT(finishDownload()));
 
   QTimer::singleShot(0, this, SLOT(downloadData()));
 }
@@ -224,7 +237,7 @@ void XnatDownloadManager::downloadAllFiles()
   // download files
 
   // initialize current directory
-  d->currDir = d->settings->getDefaultDirectory();
+  d->currDir = d->settings->defaultDirectory();
 
   // get output directory from user
   QString outputDir = QFileDialog::getExistingDirectory(d->xnatTreeView, tr("Save Downloaded Files"), d->currDir);
@@ -269,7 +282,7 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   // initialize download variables
   d->finished = false;
   d->totalBytes = 0;
-  QObject::connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+  this->connect(this, SIGNAL(done()), SLOT(finishDownload()));
 
   this->downloadDataBlocking(true);
 }
@@ -468,20 +481,70 @@ void XnatDownloadManager::unzipData()
   }
 
   // unzip downloaded file
-  QStringList files = JlCompress::extractDir(d->zipFileName, d->currDir);
+  try
+  {
+    this->ExtractFile(d->zipFileName, d->currDir);
+  }
+  catch (QString& exception)
+  {
+    QMessageBox::warning(d->xnatTreeView, tr("Error"), exception);
+  }
 
   // close dialog
   d->downloadDialog->close();
 
-  if (files.isEmpty())    // check unzip status
-  {
-    QMessageBox::warning(d->xnatTreeView, tr("Unzip Downloaded File Error"), tr("Failed to extract the archive."));
-  }
-  else if (!QFile::remove(d->zipFileName))    // delete zip file
+  if (!QFile::remove(d->zipFileName))    // delete zip file
   {
     QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
   }
+
   emit done();
+}
+
+
+void XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
+{
+  mz_zip_archive zipArchive;
+  std::memset(&zipArchive, 0, sizeof(zipArchive));
+
+  if (!mz_zip_reader_init_file(&zipArchive, zipFileName.toAscii().data(), 0))
+  {
+    throw QString("Cannot open the zip archive.");
+  }
+
+  QDir dir(directory);
+
+  mz_uint fileNumber = mz_zip_reader_get_num_files(&zipArchive);
+
+  for (mz_uint i = 0; i < fileNumber; ++i)
+  {
+    char fileName[1024];
+    mz_zip_reader_get_filename(&zipArchive, i, fileName, 1024);
+
+    if (mz_zip_reader_is_file_a_directory(&zipArchive, i))
+    {
+      dir.mkpath(fileName);
+    }
+    else
+    {
+      QFileInfo extractedFile(dir, fileName);
+      QDir extractedFileDir = extractedFile.dir();
+      if (!extractedFileDir.exists())
+      {
+        extractedFileDir.mkpath(".");
+      }
+      if (!mz_zip_reader_extract_to_file(&zipArchive, i, extractedFile.absoluteFilePath().toAscii().data(), 0))
+      {
+        mz_zip_reader_end(&zipArchive);
+        throw QString("Cannot extract the zip archive. Disk full?");
+      }
+    }
+  }
+
+  if (!mz_zip_reader_end(&zipArchive))
+  {
+    throw QString("Cannot close the zip archive.");
+  }
 }
 
 void XnatDownloadManager::finishDownload()

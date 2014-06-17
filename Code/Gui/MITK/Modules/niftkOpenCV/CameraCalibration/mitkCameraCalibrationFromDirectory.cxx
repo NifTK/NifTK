@@ -93,7 +93,7 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *rotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
   CvMat *translationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
-  reprojectionError = CalibrateSingleCameraParameters(
+  reprojectionError = CalibrateSingleCameraUsingMultiplePasses(
       *objectPoints,
       *imagePoints,
       *pointCounts,

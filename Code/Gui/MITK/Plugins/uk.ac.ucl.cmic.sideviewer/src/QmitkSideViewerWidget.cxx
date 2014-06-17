@@ -587,7 +587,9 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     return;
   }
 
-  if (mainWindow != m_MainWindow)
+  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
+
+  if (geometry && geometry != m_TimeGeometry)
   {
     m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
     m_VisibilityTracker->NotifyAll();
@@ -622,7 +624,7 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
   }
 
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
 
   /// Note:
   /// The SetWindowLayout function does not change the layout if the viewer has not got

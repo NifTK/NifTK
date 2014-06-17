@@ -1179,13 +1179,6 @@ bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
 }
 
 //-----------------------------------------------------------------------------
-bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1, 
-    const std::pair < unsigned int , cv::Point2d> & p2 )
-{
-  return p1.first < p2.first;
-}
-
-//-----------------------------------------------------------------------------
 cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
     const std::vector<cv::Mat>& World2ToTracker2, double& Residual)
 {
@@ -1582,6 +1575,9 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
   int counter = 0;
   int startIndex = 0;
   double distance = 1e-10;
+  cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
+  cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
+  double d;
 
   while ( fabs(distance) > 0 )
   {
@@ -1594,7 +1590,13 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
     {
       if ( ( startIndex != i ) && ( used[i] != 0 ))
       {
-        double d = mitk::DistanceBetweenMatrices(Matrices[startIndex],Matrices[i]);
+        for ( int row = 0; row < 3; row ++ )
+        {
+          t1.at<double>(row,0) = Matrices[startIndex].at<double>(row,3);
+          t2.at<double>(row,0) = Matrices[i].at<double>(row,3);
+        }
+        d = cv::norm(t1-t2);
+
         if ( d > distance )
         {
           distance = d;
@@ -1608,6 +1610,8 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
     }
     startIndex = CurrentIndex;
   }
+  t1.release();
+  t2.release();
   return index;
 }
 
@@ -1628,10 +1632,13 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
   int startIndex = 0;
   double distance = 1e-10;
 
+  cv::Mat t1 = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat t2 = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat t1q = cvCreateMat(4,1,CV_64FC1);
+  cv::Mat t2q = cvCreateMat(4,1,CV_64FC1);
+  double d;
   while ( fabs(distance) > 0.0 )
   {
-    cv::Mat t1 = cvCreateMat(3,3,CV_64FC1);
-    cv::Mat t2 = cvCreateMat(3,3,CV_64FC1);
    
     for ( int row = 0; row < 3; row ++ )
     {
@@ -1656,7 +1663,13 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
             t2.at<double>(row,col) = Matrices[i].at<double>(row,col);
           }
         }
-        double d = AngleBetweenMatrices(t1,t2);
+
+        t1q = DirectionCosineToQuaternion(t1);
+        t2q = DirectionCosineToQuaternion(t2);
+        d = 2 * acos (t1q.at<double>(3,0) * t2q.at<double>(3,0)
+          + t1q.at<double>(0,0) * t2q.at<double>(0,0)
+          + t1q.at<double>(1,0) * t2q.at<double>(1,0)
+          + t1q.at<double>(2,0) * t2q.at<double>(2,0));
         if ( d > distance )
         {
           distance = d;
@@ -1670,6 +1683,10 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
     }
     startIndex = CurrentIndex;
   }
+  t1.release();
+  t2.release();
+  t1q.release();
+  t2q.release();
   return index;
 }
 
@@ -1698,7 +1715,12 @@ double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
     t1.at<double>(row,0) = Mat1.at<double>(row,3);
     t2.at<double>(row,0) = Mat2.at<double>(row,3);
   }
-  return cv::norm(t1-t2);
+  double returnVal = cv::norm(t1-t2);
+  //This function still leaks memory, I'm not the following statements are 
+  //working
+  t1.release();
+  t2.release();
+  return returnVal;
 }
 
 //-----------------------------------------------------------------------------
@@ -1721,6 +1743,44 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
   dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
 
   return q;
+}
+
+
+//-----------------------------------------------------------------------------
+void InvertRigid4x4Matrix(const CvMat& input, CvMat& output)
+{
+  CvMat *inputRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat *inputRotationMatrixTransposed = cvCreateMat(3,3,CV_64FC1);
+  CvMat *inputTranslationVector = cvCreateMat(3,1,CV_64FC1);
+  CvMat *inputTranslationVectorInverted = cvCreateMat(3,1,CV_64FC1);
+
+  // Copy from 4x4 to separate rotation matrix and translation vector.
+  for (int r = 0; r < 3; ++r)
+  {
+    for (int c = 0; c < 3; ++c)
+    {
+      CV_MAT_ELEM(*inputRotationMatrix, double, r, c) = CV_MAT_ELEM(input, double, r, c);
+    }
+    CV_MAT_ELEM(*inputTranslationVector, double, r, 0) = CV_MAT_ELEM(input, double, r, 3);
+  }
+
+  cvTranspose(inputRotationMatrix, inputRotationMatrixTransposed);
+  cvGEMM(inputRotationMatrixTransposed, inputTranslationVector, -1, NULL, 0, inputTranslationVectorInverted);
+
+  // Copy inverted matrix to output.
+  for (int r = 0; r < 3; ++r)
+  {
+    for (int c = 0; c < 3; ++c)
+    {
+      CV_MAT_ELEM(output, double, r, c) = CV_MAT_ELEM(*inputRotationMatrixTransposed, double, r, c);
+    }
+    CV_MAT_ELEM(output, double, r, 3) = CV_MAT_ELEM(*inputTranslationVectorInverted, double, r, 0);
+  }
+
+  cvReleaseMat(&inputRotationMatrix);
+  cvReleaseMat(&inputRotationMatrixTransposed);
+  cvReleaseMat(&inputTranslationVector);
+  cvReleaseMat(&inputTranslationVectorInverted);
 }
 
 } // end namespace

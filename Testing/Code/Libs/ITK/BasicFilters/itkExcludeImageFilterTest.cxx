@@ -20,6 +20,7 @@
 #include <math.h>
 #include <itkImage.h>
 #include <itkExcludeImageFilter.h>
+#include <itkImageRegionConstIterator.h>
 
 /**
  * Basic tests for ExcludeImageFilterTest
@@ -69,11 +70,11 @@ int itkExcludeImageFilterTest(int argc, char * argv[])
       imageIndex[1] = j;
       if((i == 0) || (i == 3))
       {
-    	  intensityValue = 0;
+        intensityValue = 0;
       }
       else
       {
-    	  intensityValue = 1;
+        intensityValue = 1;
       }
 
       inputImageMain->SetPixel(imageIndex, intensityValue);
@@ -114,11 +115,11 @@ int itkExcludeImageFilterTest(int argc, char * argv[])
       imageIndex[1] = j;
       if( (i == 1 || i == 2) && (j == 2) )
       {
-    	  maskValue = 1;
+        maskValue = 1;
       }
       else
       {
-    	  maskValue = 0;
+        maskValue = 0;
       }
       inputImageMask->SetPixel(imageIndex, maskValue);
     }

@@ -25,6 +25,7 @@
 */
 
 #include <itkLogHelper.h>
+#include <NifTKConfigure.h>
 #include <niftkConversionUtils.h>
 #include <niftkVTKDistanceToSurfaceCLP.h>
 #include <niftkVTK4PointsReader.h>
@@ -134,15 +135,10 @@ int main(int argc, char** argv)
       
     std::cerr << "There are no cells in the source data, running delaunay filter\n";
     vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
-#if VTK_MAJOR_VERSION <= 5
-    delaunay->SetInput(source);
-    sourceMapper->SetInputConnection(delaunay->GetOutputPort());
+    delaunay->SetInputDataObject(source);
+    sourceMapper->SetInputDataObject(delaunay->GetOutput());
     delaunay->Update();
-#else
-    delaunay->SetInputData(source);
-    sourceMapper->SetInputData(delaunay);
-    delaunay->Update();
-#endif
+
     //build a lookup table
     vtkSmartPointer<vtkLookupTable> colorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
     colorLookupTable->SetTableRange ( min_dist, max_dist);
@@ -155,11 +151,7 @@ int main(int argc, char** argv)
     sourceActor->GetProperty()->SetRepresentationToPoints();
 
     vtkSmartPointer<vtkPolyDataMapper> targetMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#if VTK_MAJOR_VERSION <= 5
-    targetMapper->SetInputConnection(target->GetProducerPort());
-#else
-    targetMapper->SetInputData(target);
-#endif
+    targetMapper->SetInputDataObject(target);
 
     vtkSmartPointer<vtkActor> targetActor = vtkSmartPointer<vtkActor>::New();
     targetActor->SetMapper(targetMapper);

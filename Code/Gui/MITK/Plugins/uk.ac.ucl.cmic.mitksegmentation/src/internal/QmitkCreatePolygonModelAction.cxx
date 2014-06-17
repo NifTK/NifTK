@@ -112,9 +112,9 @@ void QmitkCreatePolygonModelAction::Run(const QList<DataNode::Pointer> &selected
       IPreferences::Pointer segPref = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.mitksegmentation");
 
       bool smoothingHint = segPref->GetBool("smoothing hint", true);
-      float smoothing = (float)segPref->GetDouble("smoothing value", 1.0);
-      float decimation = (float)segPref->GetDouble("decimation rate", 0.5);
-      float closing = (float)segPref->GetDouble("closing ratio", 0.0);
+      double smoothing = segPref->GetDouble("smoothing value", 1.0);
+      double decimation = segPref->GetDouble("decimation rate", 0.5);
+      double closing = segPref->GetDouble("closing ratio", 0.0);
       
       if (smoothingHint)
       {
@@ -122,7 +122,7 @@ void QmitkCreatePolygonModelAction::Run(const QList<DataNode::Pointer> &selected
         Vector3D spacing = image->GetGeometry()->GetSpacing();
         
         for (Vector3D::Iterator iter = spacing.Begin(); iter != spacing.End(); ++iter)
-          smoothing = max(smoothing, *iter);
+          smoothing = std::max(smoothing, *iter);
       }
 
       surfaceFilter->SetParameter("Smoothing", smoothing);

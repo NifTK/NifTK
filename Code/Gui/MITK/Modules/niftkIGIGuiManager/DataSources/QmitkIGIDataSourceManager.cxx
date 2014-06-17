@@ -994,7 +994,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
             vtkSmartPointer<vtkJPEGWriter> writer = vtkJPEGWriter::New();
             writer->SetQuality(100);
             writer->ProgressiveOff();
-            writer->SetInput(windowToImageFilter->GetOutput());
+            writer->SetInputDataObject(windowToImageFilter->GetOutput());
             writer->SetFileName(fileName.toLatin1());
             writer->Write();
           }

@@ -29,11 +29,6 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
                         
   set(MY_APP_NAME ${_APP_NAME})
 
-  # The MITK_USE_MODULE sets up the include path for compile time...
-  MITK_USE_MODULE(niftkCore)
-  MITK_USE_MODULE(qtsingleapplication)
-  include_directories(${ALL_INCLUDE_DIRECTORIES})
-  
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
     niftkCore
@@ -63,18 +58,6 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   if(BUILD_IGI)
     include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
     list(APPEND _library_dirs ${NiftyLink_LIBRARY_DIRS})
-  endif()
-
-  # FIXME
-  # Temporary workaround for CTK bug of not exposing external project library dirs.
-  # Should be removed as soon as this is fixed in CTK. (espakm)
-  if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
-    include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
-    list(APPEND _library_dirs ${qRestAPI_LIBRARY_DIRS})
-  endif()
-  if(EXISTS "${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake")
-    include(${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake)
-    list(APPEND _library_dirs ${QUAZIP_LIBRARY_DIRS})
   endif()
 
   #############################################################################
@@ -107,6 +90,8 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     LIBRARY_DIRS ${_library_dirs}
     ${_app_options}
   )
+
+  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.

@@ -142,6 +142,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   IplImage blankImage(blankMat);
   cvShowImage("Left Channel" , &blankImage);
   cvShowImage("Right Channel" , &blankImage);
+  unsigned long long startTime;
+  trackerMatcher->GetVideoFrame(0, &startTime);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
@@ -167,17 +169,18 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
         if ( framenumber %m_Frequency == 0 ) 
         {
+          unsigned long long timeStamp;
+          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
+
           if ( m_OrderedPoints )
           {
-            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick unordered, n for next frame, q to quit";
+            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, n for next frame, q to quit";
           }
           else 
           {
-            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick ordered, n for next frame, q to quit";
+            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, n for next frame, q to quit";
           }
           
-          unsigned long long timeStamp;
-          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
           std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
           std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";

@@ -47,7 +47,6 @@ if(NOT DEFINED ITK_DIR)
 
     list(APPEND additional_cmake_args
          -DITK_WRAPPING:BOOL=ON
-         #-DITK_USE_REVIEW:BOOL=ON
          -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
          -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
          -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
@@ -96,7 +95,13 @@ if(NOT DEFINED ITK_DIR)
     endif()
   endif()
 
-  set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.3.1.cmake)
+  # Keep the behaviour of ITK 4.3 which by default turned on ITK Review
+  # see MITK bug #17338
+  list(APPEND additional_cmake_args
+    -DModule_ITKReview:BOOL=ON
+  )
+
+  set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
 
