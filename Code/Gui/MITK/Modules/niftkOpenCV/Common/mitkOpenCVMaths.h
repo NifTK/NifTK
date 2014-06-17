@@ -337,6 +337,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat Tracker2ToTracker1Rotation (
     const std::vector<cv::Mat>& Tracker1ToWorld1, const std::vector<cv::Mat>& World2ToTracker2,
     double& Residual);
 
+
 /**
  * \brief works out the rigid translation correspondence between two sets of corresponding 
  * rigid body transforms
@@ -379,26 +380,41 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const s
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
 
+
 /**
- *  * \brief Returns the angular distance between two rotation matrices
- *   */
+ * \brief Returns the angular distance between two rotation matrices
+ */
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
-/**
- *  * \brief Returns the distance between two 4x4 matrices
- *   */
-extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
 /**
- *  * \brief Converts a 3x3 rotation matrix to a quaternion
- *   */
+ * \brief Returns the distance between two 4x4 matrices
+ */
+extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+
+
+/**
+ * \brief Converts a 3x3 rotation matrix to a quaternion
+ */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+
 
 /**
  * \brief Specific method that inverts a matrix without SVD or decomposition,
  * because the input is known to be orthonormal.
  */
 extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const CvMat& input, CvMat& output);
+
+
+/**
+ * \brief Overloaded invert method that calls the C-looking one.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output);
+
+/**
+ * \brief Overloaded invert method that calls the C-looking one.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output);
 
 } // end namespace
 
