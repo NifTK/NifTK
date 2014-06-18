@@ -213,7 +213,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geome
 mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
