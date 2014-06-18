@@ -35,6 +35,8 @@
 
 const std::string ImageStatisticsView::VIEW_ID = "uk.ac.ucl.cmic.imagestatistics";
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsView::ImageStatisticsView()
 : m_AutoUpdate(false)
 , m_RequireSameSizeImage(true)
@@ -45,14 +47,20 @@ ImageStatisticsView::ImageStatisticsView()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsView::~ImageStatisticsView()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::SetFocus()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
 {
   // Create GUI widgets from the Qt Designer's .ui file
@@ -67,6 +75,8 @@ void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()) );
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::EnableControls(bool enabled)
 {
   m_Controls.m_ImageLabel->setEnabled(enabled);
@@ -79,12 +89,16 @@ void ImageStatisticsView::EnableControls(bool enabled)
   m_Controls.m_CopyButton->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   // Retrieve up-to-date preference values.
   this->RetrievePreferenceValues();
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::RetrievePreferenceValues()
 {
   berry::IPreferencesService::Pointer prefService
@@ -102,6 +116,8 @@ void ImageStatisticsView::RetrievePreferenceValues()
   m_BackgroundValue = prefs->GetInt(ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME, 0);
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
@@ -149,6 +165,8 @@ void ImageStatisticsView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*s
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
   bool isValid = true;
@@ -207,6 +225,8 @@ bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>&
   return isValid;
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::TryUpdate()
 {
 
@@ -234,6 +254,7 @@ void ImageStatisticsView::TryUpdate()
 }
 
 
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 {
   // We are assuming nodes is valid input, and not checking it any further.
@@ -305,6 +326,8 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::InitializeTable()
 {
   m_Controls.m_TreeWidget->clear();
@@ -326,6 +349,8 @@ void ImageStatisticsView::InitializeTable()
   m_Controls.m_TreeWidget->setHeaderLabels(headers);
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType>
 void
 ImageStatisticsView
@@ -348,6 +373,8 @@ ImageStatisticsView
   items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType, unsigned int VImageDimension>
 void
 ImageStatisticsView
@@ -366,6 +393,8 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType, unsigned int VImageDimension>
 void
 ImageStatisticsView
@@ -387,6 +416,8 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
@@ -406,6 +437,8 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
@@ -430,6 +463,8 @@ ImageStatisticsView
   counter = 0;
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
@@ -449,6 +484,8 @@ ImageStatisticsView
   counter++;
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
@@ -470,6 +507,8 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel1, typename TPixel2, typename LabelType>
 void
 ImageStatisticsView
@@ -498,6 +537,8 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::CalculateMeanAndStdDev(
     double& mean,
     double s0,
@@ -519,6 +560,8 @@ void ImageStatisticsView::CalculateMeanAndStdDev(
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
 void
 ImageStatisticsView
@@ -569,6 +612,8 @@ ImageStatisticsView
   m_Controls.m_TreeWidget->addTopLevelItems(items);
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
 void
 ImageStatisticsView
