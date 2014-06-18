@@ -40,9 +40,9 @@
 */
 class ImageStatisticsView : public QmitkAbstractView
 {  
-// this is needed for all Qt objects that should have a Qt meta-object
-// (everything that derives from QObject and wants to have signal/slots)
-Q_OBJECT
+  Q_OBJECT
+
+  typedef QmitkAbstractView Superclass;
 
 public:
 
@@ -65,6 +65,9 @@ protected slots:
 
   /// \brief Checks to see if there is a valid selection, and if so, triggers Update with the currently selected nodes.
   void TryUpdate();
+
+  /// \brief Copies statistics to the clipboard in comma separated format.
+  void Copy();
 
 protected:
 
@@ -205,6 +208,11 @@ private:
       itk::Image<TPixel1, VImageDimension1>* itkImage,
       itk::Image<TPixel2, VImageDimension2>* itkMask
       );
+
+
+  /// \brief Processes the clipboard copy event.
+  bool eventFilter(QObject* object, QEvent* event);
+
 
   Ui::ImageStatisticsViewControls m_Controls;
   bool                            m_AutoUpdate;
