@@ -23,6 +23,7 @@
 #include "ImageStatisticsViewPreferencesPage.h"
 
 // Qt
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QTableWidgetItem>
 
@@ -61,10 +62,12 @@ void ImageStatisticsView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
+void ImageStatisticsView::CreateQtPartControl(QWidget* parent)
 {
   // Create GUI widgets from the Qt Designer's .ui file
-  m_Controls.setupUi( parent );
+  m_Controls.setupUi(parent);
+
+  parent->installEventFilter(this);
 
   this->InitializeTable();
 
@@ -72,7 +75,8 @@ void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
   this->RetrievePreferenceValues();
 
   // Connect slots, so we are ready for action.
-  connect( m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()) );
+  this->connect(m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()));
+  this->connect(m_Controls.m_CopyButton, SIGNAL(clicked()), this, SLOT(Copy()));
 }
 
 
@@ -725,4 +729,28 @@ ImageStatisticsView
   }
 
   delete[] imagePixelsCopy;
+}
+
+
+//-----------------------------------------------------------------------------
+bool ImageStatisticsView::eventFilter(QObject* object, QEvent* event)
+{
+  if (event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
+    if (keyEvent->matches(QKeySequence::Copy))
+    {
+      this->Copy();
+      return true;
+    }
+  }
+
+  // pass the event on to the parent class
+  return Superclass::eventFilter(object, event);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::Copy()
+{
 }
