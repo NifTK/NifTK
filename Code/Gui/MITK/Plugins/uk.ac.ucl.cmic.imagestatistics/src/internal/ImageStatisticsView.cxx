@@ -23,6 +23,7 @@
 #include "ImageStatisticsViewPreferencesPage.h"
 
 // Qt
+#include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QTableWidgetItem>
@@ -753,4 +754,40 @@ bool ImageStatisticsView::eventFilter(QObject* object, QEvent* event)
 //-----------------------------------------------------------------------------
 void ImageStatisticsView::Copy()
 {
+  QItemSelectionModel* selection = m_Controls.m_TreeWidget->selectionModel();
+  QModelIndexList indexes = selection->selectedIndexes();
+
+  if (indexes.size() < 1)
+  {
+    return;
+  }
+
+  // You need a pair of indexes to find the row changes
+  QModelIndex previous = indexes.first();
+  indexes.removeFirst();
+  QString selectedText;
+  QModelIndex current;
+  foreach (current, indexes)
+  {
+    QVariant data = m_Controls.m_TreeWidget->model()->data(previous);
+
+    selectedText.append(data.toString());
+
+    if (current.row() != previous.row())
+    {
+      selectedText.append(QLatin1Char('\n'));
+    }
+    else
+    {
+      selectedText.append(QLatin1Char('\t'));
+    }
+
+    previous = current;
+  }
+
+  // add last element
+  selectedText.append(m_Controls.m_TreeWidget->model()->data(current).toString());
+  selectedText.append(QLatin1Char('\n'));
+
+  qApp->clipboard()->setText(selectedText);
 }
