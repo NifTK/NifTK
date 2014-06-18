@@ -58,6 +58,8 @@ void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
   // Create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
 
+  this->InitializeTable();
+
   // Retrieve up-to-date preference values.
   this->RetrievePreferenceValues();
 
@@ -67,12 +69,14 @@ void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
 
 void ImageStatisticsView::EnableControls(bool enabled)
 {
-  m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
-  m_Controls.m_Table->setEnabled(enabled);
-  m_Controls.m_MaskNameLabel->setEnabled(enabled);
-  m_Controls.m_MaskLabel->setEnabled(enabled);
-  m_Controls.m_ImageNameLabel->setEnabled(enabled);
   m_Controls.m_ImageLabel->setEnabled(enabled);
+  m_Controls.m_ImageNameLabel->setEnabled(enabled);
+  m_Controls.m_MaskLabel->setEnabled(enabled);
+  m_Controls.m_MaskNameLabel->setEnabled(enabled);
+  m_Controls.m_TreeWidget->setEnabled(enabled);
+  m_Controls.m_PerSliceStatsCheckBox->setEnabled(enabled);
+  m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
+  m_Controls.m_CopyButton->setEnabled(enabled);
 }
 
 void ImageStatisticsView::OnPreferencesChanged(const berry::IBerryPreferences*)
@@ -295,7 +299,7 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
   {
     MITK_ERROR << "During ImageStatisticsView::Update, caught mitk::AccessByItkException caused by:" << e.what() << std::endl;
   }
-  catch( itk::ExceptionObject &err )
+  catch(itk::ExceptionObject& err)
   {
     MITK_ERROR << "During ImageStatisticsView::Update, caught itk::ExceptionObject caused by:" << err.what() << std::endl;
   }
@@ -303,8 +307,8 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 
 void ImageStatisticsView::InitializeTable()
 {
-  m_Controls.m_Table->clear();
-  m_Controls.m_Table->setColumnCount(9);
+  m_Controls.m_TreeWidget->clear();
+  m_Controls.m_TreeWidget->setColumnCount(9);
 
   // The order of these columns must match the order in AddTableRow.
   QStringList headers;
@@ -318,46 +322,30 @@ void ImageStatisticsView::InitializeTable()
   headers << "min";
   headers << "max";
   headers << "count";
-  m_Controls.m_Table->setHorizontalHeaderLabels(headers);
+
+  m_Controls.m_TreeWidget->setHeaderLabels(headers);
 }
 
 template <typename PixelType>
 void
 ImageStatisticsView
-::AddTableRow(int row,
-    QString &value, PixelType &min, PixelType &max, double &mean, double median,
-    double &stdDev, unsigned long int &count, double &volume)
+::AddTableRow(QList<QTreeWidgetItem*>& items,
+    const QString& value, PixelType min, PixelType max, double mean, double median,
+    double stdDev, unsigned long count, double volume)
 {
-  QTableWidgetItem *valueItem = new QTableWidgetItem(tr("%1").arg(value));
-  m_Controls.m_Table->setItem(row, 0, valueItem);
+  QStringList values;
+  values.append(QString("%1").arg(value));
+  values.append(QString("%1").arg(volume / 1000.0));
+  values.append(QString("%1").arg(mean));
+  values.append(QString("%1").arg(mean * 0.6));
+  values.append(QString("%1").arg(mean * 0.7));
+  values.append(QString("%1").arg(median));
+  values.append(QString("%1").arg(stdDev));
+  values.append(QString("%1").arg(min));
+  values.append(QString("%1").arg(max));
+  values.append(QString("%1").arg(count));
 
-  QTableWidgetItem *volumeItem = new QTableWidgetItem(tr("%1").arg(volume/1000.0)); // convert cubic millimetres to cubic centimetres (ml).
-  m_Controls.m_Table->setItem(row, 1, volumeItem);
-
-  QTableWidgetItem *meanItem = new QTableWidgetItem(tr("%1").arg(mean));
-  m_Controls.m_Table->setItem(row, 2, meanItem);
-
-  QTableWidgetItem *mean60Item = new QTableWidgetItem(tr("%1").arg(mean * 0.6));
-  m_Controls.m_Table->setItem(row, 3, mean60Item);
-
-  QTableWidgetItem *mean70Item = new QTableWidgetItem(tr("%1").arg(mean * 0.7));
-  m_Controls.m_Table->setItem(row, 4, mean70Item);
-
-  QTableWidgetItem *medianItem = new QTableWidgetItem(tr("%1").arg(median));
-  m_Controls.m_Table->setItem(row, 5, medianItem);
-
-  QTableWidgetItem *stdDevItem = new QTableWidgetItem(tr("%1").arg(stdDev));
-  m_Controls.m_Table->setItem(row, 6, stdDevItem);
-
-  QTableWidgetItem *minItem = new QTableWidgetItem(tr("%1").arg(min));
-  m_Controls.m_Table->setItem(row, 7, minItem);
-
-  QTableWidgetItem *maxItem = new QTableWidgetItem(tr("%1").arg(max));
-  m_Controls.m_Table->setItem(row, 8, maxItem);
-
-  QTableWidgetItem *countItem = new QTableWidgetItem(tr("%1").arg(count));
-  m_Controls.m_Table->setItem(row, 9, countItem);
-
+  items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
 }
 
 template <typename PixelType, unsigned int VImageDimension>
@@ -365,7 +353,7 @@ void
 ImageStatisticsView
 ::GetLabelValues(
     itk::Image<PixelType, VImageDimension>* itkImage,
-    std::set<PixelType> &labels)
+    std::set<PixelType>& labels)
 {
   labels.clear();
 
@@ -383,7 +371,7 @@ void
 ImageStatisticsView
 ::GetVoxelVolume(
     itk::Image<PixelType, VImageDimension>* itkImage,
-    double &volume
+    double& volume
     )
 {
 
@@ -403,9 +391,9 @@ template <typename TPixel>
 void
 ImageStatisticsView
 ::TestMinAndMax(
-    TPixel &imageValue,
-    TPixel &min,
-    TPixel &max
+    TPixel imageValue,
+    TPixel& min,
+    TPixel& max
     )
 {
   if (imageValue < min)
@@ -422,14 +410,14 @@ template <typename TPixel>
 void
 ImageStatisticsView
 ::InitializeData(
-    TPixel &min,
-    TPixel &max,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    double &stdDev,
-    unsigned long int &counter
+    TPixel& min,
+    TPixel& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    double& stdDev,
+    unsigned long& counter
     )
 {
   min = std::numeric_limits<TPixel>::max();
@@ -446,18 +434,18 @@ template <typename TPixel>
 void
 ImageStatisticsView
 ::AccumulateData(
-    TPixel &imageValue,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    unsigned long int &counter
+    TPixel imageValue,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter
     )
 {
   mean += imageValue;
   s0 += 1;
   s1 += imageValue;
-  s2 += imageValue*imageValue;
+  s2 += imageValue * imageValue;
   counter++;
 }
 
@@ -465,14 +453,14 @@ template <typename TPixel>
 void
 ImageStatisticsView
 ::AccumulateValue(
-    TPixel &imageValue,
-    TPixel &min,
-    TPixel &max,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    unsigned long int &counter
+    TPixel imageValue,
+    TPixel& min,
+    TPixel& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter
     )
 {
   if (imageValue != (TPixel)m_BackgroundValue)
@@ -486,17 +474,17 @@ template <typename TPixel1, typename TPixel2, typename LabelType>
 void
 ImageStatisticsView
 ::AccumulateValue(
-    bool &invert,
-    LabelType &valueToCompareMaskAgainst,
-    TPixel1 &imageValue,
-    TPixel2 &maskValue,
-    TPixel1 &min,
-    TPixel1 &max,
-    double  &mean,
-    double  &s0,
-    double  &s1,
-    double  &s2,
-    unsigned long int &counter,
+    bool invert,
+    LabelType valueToCompareMaskAgainst,
+    TPixel1 imageValue,
+    TPixel2 maskValue,
+    TPixel1& min,
+    TPixel1& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter,
     TPixel1* imagePixelsCopy
     )
 {
@@ -511,12 +499,12 @@ ImageStatisticsView
 }
 
 void ImageStatisticsView::CalculateMeanAndStdDev(
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    double &stdDev,
-    unsigned long int &counter
+    double& mean,
+    double s0,
+    double s1,
+    double s2,
+    double& stdDev,
+    unsigned long counter
     )
 {
   if (counter > 0)
@@ -545,7 +533,6 @@ ImageStatisticsView
 
   // Initialize table.
   this->InitializeTable();
-  m_Controls.m_Table->setRowCount(1);
 
   // Calculate Stats.
   this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
@@ -576,7 +563,10 @@ ImageStatisticsView
   delete[] imagePixelsCopy;
 
   QString value = tr("All except %1").arg(m_BackgroundValue);
-  this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+  QList<QTreeWidgetItem*> items;
+  this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
+  m_Controls.m_TreeWidget->clear();
+  m_Controls.m_TreeWidget->addTopLevelItems(items);
 }
 
 template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
@@ -604,14 +594,6 @@ ImageStatisticsView
 
   // Initialize table.
   this->InitializeTable();
-  if (labels.size() > 1)
-  {
-    m_Controls.m_Table->setRowCount(labels.size());
-  }
-  else
-  {
-    m_Controls.m_Table->setRowCount(1);
-  }
 
   typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
   TPixel1* imagePixelsCopy = new TPixel1[itkImagePixelContainer->Size()];
@@ -647,7 +629,10 @@ ImageStatisticsView
     volume *= (double)counter;
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
-    this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+    QList<QTreeWidgetItem*> items;
+    this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
+    m_Controls.m_TreeWidget->clear();
+    m_Controls.m_TreeWidget->addTopLevelItems(items);
   }
   else
   {
@@ -656,8 +641,9 @@ ImageStatisticsView
     // We compute stats for EACH label.
     // This is a bit slow, as we repeatedly iterate over the image.
 
+    QList<QTreeWidgetItem*> items;
+
     typename std::set<TPixel2>::iterator iterator;
-    unsigned int rowCounter = 0;
     for (iterator = labels.begin(); iterator != labels.end(); iterator++)
     {
       TPixel2 labelValue = *iterator;
@@ -686,8 +672,11 @@ ImageStatisticsView
       volume *= (double)counter;
 
       QString value = tr("%1").arg(labelValue);
-      this->AddTableRow(rowCounter++, value, min, max, mean, median, stdDev, counter, volume);
+      this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
     }
+
+    m_Controls.m_TreeWidget->clear();
+    m_Controls.m_TreeWidget->addTopLevelItems(items);
   }
 
   delete[] imagePixelsCopy;
