@@ -302,10 +302,16 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
   m_ErosionsUpperThresholdSlider->setPageStep(pageSize);
 
+  m_ErosionsIterationsSlider->setSingleStep(1.0);
+  m_ErosionsIterationsSlider->setPageStep(1.0);
+
   m_DilationsLowerThresholdSlider->setSingleStep(1.0);  // this is a percentage.
   m_DilationsLowerThresholdSlider->setPageStep(10.0);   // this is a percentage.
   m_DilationsUpperThresholdSlider->setSingleStep(1.0);  // this is a percentage.
   m_DilationsUpperThresholdSlider->setPageStep(10.0);   // this is a percentage.
+
+  m_DilationsIterationsSlider->setSingleStep(1.0);
+  m_DilationsIterationsSlider->setPageStep(1.0);
 
   this->blockSignals(false);
 }
