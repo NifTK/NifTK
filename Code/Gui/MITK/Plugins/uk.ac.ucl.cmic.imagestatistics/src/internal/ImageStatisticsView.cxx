@@ -348,7 +348,7 @@ void ImageStatisticsView::InitializeTable()
   m_Controls.m_TreeWidget->clear();
   m_Controls.m_TreeWidget->setColumnCount(9);
 
-  // The order of these columns must match the order in AddTableRow.
+  // The order of these columns must match the order in CreateTableRow.
   QStringList headers;
   headers << "value";
   headers << "volume (ml)";
@@ -367,9 +367,9 @@ void ImageStatisticsView::InitializeTable()
 
 //-----------------------------------------------------------------------------
 template <typename PixelType>
-void
+QTreeWidgetItem*
 ImageStatisticsView
-::AddTableRow(QList<QTreeWidgetItem*>& items,
+::CreateTableRow(QTreeWidgetItem* parentItem,
     const QString& value, PixelType min, PixelType max, double mean, double median,
     double stdDev, unsigned long count, double volume)
 {
@@ -385,7 +385,7 @@ ImageStatisticsView
   values.append(QString("%1").arg(max));
   values.append(QString("%1").arg(count));
 
-  items.append(new QTreeWidgetItem((QTreeWidget*)0, values));
+  return new QTreeWidgetItem(parentItem, values);
 }
 
 
@@ -621,10 +621,8 @@ ImageStatisticsView
   delete[] imagePixelsCopy;
 
   QString value = tr("All except %1").arg(m_BackgroundValue);
-  QList<QTreeWidgetItem*> items;
-  this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
-  m_Controls.m_TreeWidget->clear();
-  m_Controls.m_TreeWidget->addTopLevelItems(items);
+  QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+  m_Controls.m_TreeWidget->addTopLevelItem(item);
 }
 
 
@@ -689,10 +687,8 @@ ImageStatisticsView
     volume *= (double)counter;
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
-    QList<QTreeWidgetItem*> items;
-    this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
-    m_Controls.m_TreeWidget->clear();
-    m_Controls.m_TreeWidget->addTopLevelItems(items);
+    QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+    m_Controls.m_TreeWidget->addTopLevelItem(item);
   }
   else
   {
@@ -700,8 +696,6 @@ ImageStatisticsView
 
     // We compute stats for EACH label.
     // This is a bit slow, as we repeatedly iterate over the image.
-
-    QList<QTreeWidgetItem*> items;
 
     typename std::set<TPixel2>::iterator iterator;
     for (iterator = labels.begin(); iterator != labels.end(); iterator++)
@@ -732,11 +726,9 @@ ImageStatisticsView
       volume *= (double)counter;
 
       QString value = tr("%1").arg(labelValue);
-      this->AddTableRow(items, value, min, max, mean, median, stdDev, counter, volume);
+      QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+      m_Controls.m_TreeWidget->addTopLevelItem(item);
     }
-
-    m_Controls.m_TreeWidget->clear();
-    m_Controls.m_TreeWidget->addTopLevelItems(items);
   }
 
   delete[] imagePixelsCopy;

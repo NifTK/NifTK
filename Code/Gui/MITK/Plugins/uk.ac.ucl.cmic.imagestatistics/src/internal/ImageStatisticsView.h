@@ -103,8 +103,7 @@ private:
 
   /// \brief Used to add a single row.
   template <typename PixelType>
-  void AddTableRow(
-      QList<QTreeWidgetItem*>& items,
+  QTreeWidgetItem* CreateTableRow(QTreeWidgetItem* parentItem,
       const QString& value,
       PixelType min,
       PixelType max,
