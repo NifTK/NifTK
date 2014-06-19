@@ -84,6 +84,9 @@
    </item>
    <item row="1" column="0" colspan="2">
     <widget class="QTreeWidget" name="m_TreeWidget">
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ContiguousSelection</enum>
+     </property>
      <column>
       <property name="text">
        <string notr="true">1</string>
