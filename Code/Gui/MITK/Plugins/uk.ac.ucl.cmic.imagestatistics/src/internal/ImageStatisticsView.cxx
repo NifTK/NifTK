@@ -739,7 +739,12 @@ bool ImageStatisticsView::eventFilter(QObject* object, QEvent* event)
   if (event->type() == QEvent::KeyPress)
   {
     QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
-    if (keyEvent->matches(QKeySequence::Copy))
+    if (keyEvent->matches(QKeySequence::SelectAll))
+    {
+      m_Controls.m_TreeWidget->selectAll();
+      return true;
+    }
+    else if (keyEvent->matches(QKeySequence::Copy))
     {
       this->Copy();
       return true;
