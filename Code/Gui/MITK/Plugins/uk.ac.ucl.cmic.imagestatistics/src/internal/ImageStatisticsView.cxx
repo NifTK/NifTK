@@ -77,7 +77,7 @@ void ImageStatisticsView::CreateQtPartControl(QWidget* parent)
 
   // Connect slots, so we are ready for action.
   this->connect(m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()));
-  this->connect(m_Controls.m_CopyButton, SIGNAL(clicked()), this, SLOT(Copy()));
+  this->connect(m_Controls.m_CopyAllButton, SIGNAL(clicked()), this, SLOT(OnCopyAllButtonClicked()));
 }
 
 
@@ -91,7 +91,7 @@ void ImageStatisticsView::EnableControls(bool enabled)
   m_Controls.m_TreeWidget->setEnabled(enabled);
   m_Controls.m_PerSliceStatsCheckBox->setEnabled(enabled);
   m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
-  m_Controls.m_CopyButton->setEnabled(enabled);
+  m_Controls.m_CopyAllButton->setEnabled(enabled);
 }
 
 
@@ -753,6 +753,14 @@ bool ImageStatisticsView::eventFilter(QObject* object, QEvent* event)
 
   // pass the event on to the parent class
   return Superclass::eventFilter(object, event);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnCopyAllButtonClicked()
+{
+  m_Controls.m_TreeWidget->selectAll();
+  this->Copy();
 }
 
 

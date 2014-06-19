@@ -66,14 +66,17 @@ protected slots:
   /// \brief Checks to see if there is a valid selection, and if so, triggers Update with the currently selected nodes.
   void TryUpdate();
 
-  /// \brief Copies statistics to the clipboard in comma separated format.
-  void Copy();
+  /// \brief Selects every row in the table and copies them to the clipboard.
+  void OnCopyAllButtonClicked();
 
 protected:
 
   virtual void SetFocus();
 
 private:
+
+  /// \brief Copies statistics to the clipboard in comma separated format.
+  void Copy();
 
   /// \brief Retrieves the preferences, and sets the private member variables accordingly.
   void RetrievePreferenceValues();
