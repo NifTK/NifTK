@@ -498,8 +498,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
-  CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputRightToLeftTranslation = cvCreateMat(3,1,CV_64FC1);
   CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_64FC1);
   CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
 
@@ -564,7 +562,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       fs_leftIntrinsic << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, row,col) << " ";
       fs_rightIntrinsic << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, row,col) << " ";
-      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, double , row,col) << " ";
+      fs_r2l << CV_MAT_ELEM (*m_RotationMatrixRightToLeft, double , row,col) << " ";
     }
     fs_leftIntrinsic << std::endl;
     fs_rightIntrinsic << std::endl;
@@ -580,7 +578,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
-    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, double , i, 0 ) << " ";
+    fs_r2l << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double , i, 0 ) << " ";
   }
   fs_r2l << std::endl;
 
