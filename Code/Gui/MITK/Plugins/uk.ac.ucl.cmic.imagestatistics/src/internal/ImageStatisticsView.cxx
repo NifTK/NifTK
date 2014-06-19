@@ -46,6 +46,8 @@ ImageStatisticsView::ImageStatisticsView()
 , m_BackgroundValue(0)
 , m_MaskNode(NULL)
 , m_ImageNode(NULL)
+, m_PerSliceStats(false)
+, m_Orientation(Axial)
 {
 }
 
@@ -68,6 +70,8 @@ void ImageStatisticsView::CreateQtPartControl(QWidget* parent)
   // Create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi(parent);
 
+  this->EnableControls(false);
+
   parent->installEventFilter(this);
 
   this->InitializeTable();
@@ -76,8 +80,12 @@ void ImageStatisticsView::CreateQtPartControl(QWidget* parent)
   this->RetrievePreferenceValues();
 
   // Connect slots, so we are ready for action.
-  this->connect(m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()));
-  this->connect(m_Controls.m_CopyAllButton, SIGNAL(clicked()), this, SLOT(OnCopyAllButtonClicked()));
+  this->connect(m_Controls.m_PerSliceStatsCheckBox, SIGNAL(toggled(bool)), SLOT(OnPerSliceStatsCheckBoxToggled(bool)));
+  this->connect(m_Controls.m_AxialRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_SagittalRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_CoronalRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_UpdateButton, SIGNAL(clicked()), SLOT(OnUpdateButtonClicked()));
+  this->connect(m_Controls.m_CopyAllButton, SIGNAL(clicked()), SLOT(OnCopyAllButtonClicked()));
 }
 
 
@@ -90,6 +98,9 @@ void ImageStatisticsView::EnableControls(bool enabled)
   m_Controls.m_MaskNameLabel->setEnabled(enabled);
   m_Controls.m_TreeWidget->setEnabled(enabled);
   m_Controls.m_PerSliceStatsCheckBox->setEnabled(enabled);
+  m_Controls.m_AxialRadioButton->setEnabled(enabled && m_PerSliceStats);
+  m_Controls.m_SagittalRadioButton->setEnabled(enabled && m_PerSliceStats);
+  m_Controls.m_CoronalRadioButton->setEnabled(enabled && m_PerSliceStats);
   m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
   m_Controls.m_CopyAllButton->setEnabled(enabled);
 }
@@ -232,9 +243,8 @@ bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>&
 
 
 //-----------------------------------------------------------------------------
-void ImageStatisticsView::TryUpdate()
+void ImageStatisticsView::OnUpdateButtonClicked()
 {
-
   // This does not work, as when you select the Update button, you lose the selection in the DataManager as it loses focus.
   // const QList<mitk::DataNode::Pointer>& nodes = this->GetDataManagerSelection();
 
@@ -730,6 +740,37 @@ ImageStatisticsView
   }
 
   delete[] imagePixelsCopy;
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnPerSliceStatsCheckBoxToggled(bool toggled)
+{
+  m_PerSliceStats = toggled;
+  m_Controls.m_AxialRadioButton->setEnabled(m_PerSliceStats);
+  m_Controls.m_SagittalRadioButton->setEnabled(m_PerSliceStats);
+  m_Controls.m_CoronalRadioButton->setEnabled(m_PerSliceStats);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnAxialRadioButtonToggled(bool toggled)
+{
+  m_Orientation = Axial;
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnSagittalRadioButtonToggled(bool toggled)
+{
+  m_Orientation = Sagittal;
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnCoronalRadioButtonToggled(bool toggled)
+{
+  m_Orientation = Coronal;
 }
 
 

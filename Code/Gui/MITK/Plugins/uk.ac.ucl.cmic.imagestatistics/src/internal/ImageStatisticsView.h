@@ -63,8 +63,16 @@ public:
 
 protected slots:
 
+  void OnPerSliceStatsCheckBoxToggled(bool toggled);
+
+  void OnAxialRadioButtonToggled(bool toggled);
+
+  void OnSagittalRadioButtonToggled(bool toggled);
+
+  void OnCoronalRadioButtonToggled(bool toggled);
+
   /// \brief Checks to see if there is a valid selection, and if so, triggers Update with the currently selected nodes.
-  void TryUpdate();
+  void OnUpdateButtonClicked();
 
   /// \brief Selects every row in the table and copies them to the clipboard.
   void OnCopyAllButtonClicked();
@@ -216,6 +224,7 @@ private:
   /// \brief Processes the clipboard copy event.
   bool eventFilter(QObject* object, QEvent* event);
 
+  enum Orientation { Axial, Sagittal, Coronal };
 
   Ui::ImageStatisticsViewControls m_Controls;
   bool                            m_AutoUpdate;
@@ -224,6 +233,8 @@ private:
   int                             m_BackgroundValue;
   mitk::DataNode::Pointer         m_MaskNode;
   mitk::DataNode::Pointer         m_ImageNode;
+  bool m_PerSliceStats;
+  Orientation m_Orientation;
 
 };
 
