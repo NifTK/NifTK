@@ -21,6 +21,7 @@
 
 #include "ui_ImageStatisticsViewControls.h"
 
+#include <itkMIDASHelper.h>
 
 /*!
  * \class ImageStatisticsView
@@ -111,7 +112,8 @@ private:
       double median,
       double stdDev,
       unsigned long count,
-      double volume);
+      double volume,
+      int sliceIndex = 0);
 
   /// Gets a set of labels from a mask image.
   template <typename PixelType, unsigned int VImageDimension>
@@ -202,6 +204,21 @@ private:
       TPixel1* imagePixelsCopy
       );
 
+  template <typename TPixel, unsigned int VImageDimension>
+  void CalculateStats(
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      const itk::ImageRegion<VImageDimension>& region,
+      TPixel& min,
+      TPixel& max,
+      double& mean,
+      double& s0,
+      double& s1,
+      double& s2,
+      double& stdDev,
+      unsigned long& counter,
+      TPixel* imagePixelsCopy
+      );
+
   /// See: http://docs.mitk.org/nightly-qt4/group__Adaptor.html
   /// Specifically: http://docs.mitk.org/nightly-qt4/group__Adaptor.html#gaf4672e81ea40d0683dfcf996e788ca98
   /// \brief Updates the stats in the table.
@@ -223,8 +240,6 @@ private:
   /// \brief Processes the clipboard copy event.
   bool eventFilter(QObject* object, QEvent* event);
 
-  enum Orientation { Axial, Sagittal, Coronal };
-
   Ui::ImageStatisticsViewControls m_Controls;
   bool                            m_AutoUpdate;
   bool                            m_RequireSameSizeImage;
@@ -233,7 +248,7 @@ private:
   mitk::DataNode::Pointer         m_MaskNode;
   mitk::DataNode::Pointer         m_ImageNode;
   bool m_PerSliceStats;
-  Orientation m_Orientation;
+  itk::Orientation m_Orientation;
 
 };
 
