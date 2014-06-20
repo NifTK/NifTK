@@ -349,11 +349,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
           if ( m_WriteOutCalibrationImages )
           {
-            std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
+            std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
             MITK_INFO << "Writing image to " << leftfilename;
             cv::imwrite( leftfilename, LeftFrame_orig );
             
-            std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
+            std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
             MITK_INFO << "Writing image to " << rightfilename;            
             cv::imwrite( rightfilename, RightFrame_orig );
           }
@@ -369,11 +369,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         
         if ( m_WriteOutChessboards )
         {
-          std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
+          std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".png";
           MITK_INFO << "Writing image to " << leftfilename;
           cv::imwrite( leftfilename, LeftFrame );
           
-          std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".jpg";
+          std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".png";
           MITK_INFO << "Writing image to " << rightfilename;          
           cv::imwrite( rightfilename, RightFrame );
         }
