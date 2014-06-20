@@ -360,15 +360,15 @@ void ImageStatisticsView::InitializeTable()
     QString orientationName;
     if (m_Orientation == itk::ORIENTATION_AXIAL)
     {
-      orientationName = "Slice (I->S)";
+      orientationName = "slice (I->S)";
     }
     else if (m_Orientation == itk::ORIENTATION_SAGITTAL)
     {
-      orientationName = "Slice (L->R)";
+      orientationName = "slice (L->R)";
     }
     else if (m_Orientation == itk::ORIENTATION_CORONAL)
     {
-      orientationName = "Slice (P->A)";
+      orientationName = "slice (P->A)";
     }
     headers << orientationName;
   }
@@ -610,7 +610,6 @@ ImageStatisticsView
     itk::Image<TPixel, VImageDimension>* itkImage
     )
 {
-  MITK_INFO << "UpdateTable";
   typedef typename itk::Image<TPixel, VImageDimension> GreyImage;
   double mean, s0, s1, s2, stdDev;
   unsigned long int counter;
@@ -911,40 +910,42 @@ void ImageStatisticsView::OnCopyAllButtonClicked()
 //-----------------------------------------------------------------------------
 void ImageStatisticsView::Copy()
 {
+  QAbstractItemModel* model = m_Controls.m_TreeWidget->model();
   QItemSelectionModel* selection = m_Controls.m_TreeWidget->selectionModel();
-  QModelIndexList indexes = selection->selectedIndexes();
+  QModelIndexList indexes = selection->selectedRows();
 
-  if (indexes.size() < 1)
+  int columnCount = model->columnCount();
+
+  QString selectedText;
+
+  QVariant data = model->headerData(0, Qt::Horizontal);
+  selectedText.append(data.toString());
+
+  for (int column = 1; column < columnCount; ++column)
   {
-    return;
+    selectedText.append(QLatin1Char('\t'));
+    data = model->headerData(column, Qt::Horizontal);
+    selectedText.append(data.toString());
   }
 
-  // You need a pair of indexes to find the row changes
-  QModelIndex previous = indexes.first();
-  indexes.removeFirst();
-  QString selectedText;
-  QModelIndex current;
-  foreach (current, indexes)
-  {
-    QVariant data = m_Controls.m_TreeWidget->model()->data(previous);
+  selectedText.append(QLatin1Char('\n'));
 
+  foreach (QModelIndex current, indexes)
+  {
+    int row = current.row();
+
+    data = model->data(current);
     selectedText.append(data.toString());
 
-    if (current.row() != previous.row())
-    {
-      selectedText.append(QLatin1Char('\n'));
-    }
-    else
+    for (int column = 1; column < columnCount; ++column)
     {
       selectedText.append(QLatin1Char('\t'));
+      data = model->data(model->index(row, column));
+      selectedText.append(data.toString());
     }
 
-    previous = current;
+    selectedText.append(QLatin1Char('\n'));
   }
-
-  // add last element
-  selectedText.append(m_Controls.m_TreeWidget->model()->data(current).toString());
-  selectedText.append(QLatin1Char('\n'));
 
   qApp->clipboard()->setText(selectedText);
 }
