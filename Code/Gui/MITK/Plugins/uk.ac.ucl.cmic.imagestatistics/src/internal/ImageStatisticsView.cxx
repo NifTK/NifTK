@@ -732,45 +732,142 @@ ImageStatisticsView
 
   if (m_AssumeBinary)
   {
-    typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
-    TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
     TPixel2 labelValue = m_BackgroundValue;
 
-    // Calculate Stats.
-    this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
-
-    double volume = voxelVolume * counter;
-
-    QString value = tr("All except %1").arg(m_BackgroundValue);
-    QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
-    m_Controls.m_TreeWidget->addTopLevelItem(item);
-
-    delete[] imagePixelsCopy;
-  }
-  else
-  {
-    typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
-    TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
-
-    // We compute stats for EACH label.
-    // This is a bit slow, as we repeatedly iterate over the image.
-
-    typename std::set<TPixel2>::iterator itLabels;
-    for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
+    if (!m_PerSliceStats)
     {
-      TPixel2 labelValue = *itLabels;
+      typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+      TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
 
       // Calculate Stats.
-      this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+      this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
 
       double volume = voxelVolume * counter;
 
-      QString value = tr("%1").arg(labelValue);
+      QString value = tr("All except %1").arg(m_BackgroundValue);
       QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
       m_Controls.m_TreeWidget->addTopLevelItem(item);
-    }
 
-    delete[] imagePixelsCopy;
+      delete[] imagePixelsCopy;
+    }
+    else
+    {
+      if (VImageDimension1 == 3)
+      {
+        typedef typename itk::Image<TPixel1, 3> GreyImage3D;
+        typedef typename itk::Image<TPixel2, 3> MaskImage3D;
+        GreyImage3D* itkImage3D = reinterpret_cast<GreyImage3D*>(itkImage);
+        MaskImage3D* itkMask3D = reinterpret_cast<MaskImage3D*>(itkMask);
+
+        typename GreyImage3D::RegionType region = itkImage3D->GetLargestPossibleRegion();
+
+        int axis;
+        itk::GetAxisFromITKImage(itkImage3D, m_Orientation, axis);
+        int upDirection;
+        itk::GetUpDirectionFromITKImage(itkImage3D, m_Orientation, upDirection);
+
+        int sliceNumber = region.GetSize(axis);
+        int startSlice = upDirection > 0 ? 0 : sliceNumber - 1;
+        int endSlice = upDirection > 0 ? sliceNumber : -1;
+
+        region.SetSize(axis, 1);
+
+        TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+
+        for (int sliceIndex = startSlice; sliceIndex != endSlice; sliceIndex += upDirection)
+        {
+          region.SetIndex(axis, sliceIndex);
+
+          this->CalculateStatsWithMask(itkImage3D, itkMask3D, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+          double volume = voxelVolume * counter;
+
+          QString value = tr("All except %1").arg(m_BackgroundValue);
+          QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
+          m_Controls.m_TreeWidget->addTopLevelItem(item);
+        }
+
+        delete[] imagePixelsCopy;
+      }
+    }
+  }
+  else
+  {
+    if (!m_PerSliceStats)
+    {
+      typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+      TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+
+      // We compute stats for EACH label.
+      // This is a bit slow, as we repeatedly iterate over the image.
+
+      typename std::set<TPixel2>::iterator itLabels;
+      for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
+      {
+        TPixel2 labelValue = *itLabels;
+
+        // Calculate Stats.
+        this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+        double volume = voxelVolume * counter;
+
+        QString value = tr("%1").arg(labelValue);
+        QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+        m_Controls.m_TreeWidget->addTopLevelItem(item);
+      }
+
+      delete[] imagePixelsCopy;
+    }
+    else
+    {
+      if (VImageDimension1 == 3)
+      {
+        typedef typename itk::Image<TPixel1, 3> GreyImage3D;
+        typedef typename itk::Image<TPixel2, 3> MaskImage3D;
+        GreyImage3D* itkImage3D = reinterpret_cast<GreyImage3D*>(itkImage);
+        MaskImage3D* itkMask3D = reinterpret_cast<MaskImage3D*>(itkMask);
+
+        typename GreyImage3D::RegionType region = itkImage3D->GetLargestPossibleRegion();
+
+        int axis;
+        itk::GetAxisFromITKImage(itkImage3D, m_Orientation, axis);
+        int upDirection;
+        itk::GetUpDirectionFromITKImage(itkImage3D, m_Orientation, upDirection);
+
+        int sliceNumber = region.GetSize(axis);
+        int startSlice = upDirection > 0 ? 0 : sliceNumber - 1;
+        int endSlice = upDirection > 0 ? sliceNumber : -1;
+
+        region.SetSize(axis, 1);
+
+        TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+
+        for (int sliceIndex = startSlice; sliceIndex != endSlice; sliceIndex += upDirection)
+        {
+          region.SetIndex(axis, sliceIndex);
+
+          // We compute stats for EACH label.
+          // This is a bit slow, as we repeatedly iterate over the image.
+
+          typename std::set<TPixel2>::iterator itLabels;
+          for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
+          {
+            TPixel2 labelValue = *itLabels;
+
+            // Calculate Stats.
+            this->CalculateStatsWithMask(itkImage3D, itkMask3D, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+            double volume = voxelVolume * counter;
+
+            QString value = tr("%1").arg(labelValue);
+            QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
+            m_Controls.m_TreeWidget->addTopLevelItem(item);
+          }
+        }
+
+        delete[] imagePixelsCopy;
+      }
+    }
   }
 }
 
