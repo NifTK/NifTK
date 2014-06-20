@@ -592,37 +592,38 @@ ImageStatisticsView
   // Initialize table.
   this->InitializeTable();
 
+  typename GreyImageType::RegionType region = itkImage->GetLargestPossibleRegion();
+  typename GreyImageType::SizeValueType imageSize = region.GetNumberOfPixels();
+  TPixel* imagePixelsCopy = new TPixel[imageSize];
+
+  // Get voxel volume.
+  double voxelVolume;
+  this->GetVoxelVolume<TPixel, VImageDimension>(itkImage, voxelVolume);
+
   // Calculate Stats.
   this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
 
   // Iterate through image, calculating stats for anything != background value.
-  itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
-  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
+  itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, region);
+  TPixel* itImagePixelsCopy = imagePixelsCopy;
+  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter, ++itImagePixelsCopy)
   {
     greyPixel = iter.Get();
     this->AccumulateValue<TPixel>(greyPixel, min, max, mean, s0, s1, s2, counter);
+    *itImagePixelsCopy = greyPixel;
   }
   this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
 
-  // Get voxel volume.
-  double volume;
-  this->GetVoxelVolume<TPixel, VImageDimension>(itkImage, volume);
-  volume *= (double)counter;
-
-  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
-  TPixel* itkImagePixels = itkImagePixelContainer->GetImportPointer();
-  typename GreyImageType::SizeValueType imageSize = itkImagePixelContainer->Size();
-  TPixel* imagePixelsCopy = new TPixel[imageSize];
-  std::copy(itkImagePixels, itkImagePixels + imageSize, imagePixelsCopy);
+  double volume = voxelVolume * counter;
 
   std::nth_element(imagePixelsCopy, imagePixelsCopy + imageSize / 2, imagePixelsCopy + imageSize);
   double median = imagePixelsCopy[imageSize / 2];
 
-  delete[] imagePixelsCopy;
-
   QString value = tr("All except %1").arg(m_BackgroundValue);
   QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
   m_Controls.m_TreeWidget->addTopLevelItem(item);
+
+  delete[] imagePixelsCopy;
 }
 
 
