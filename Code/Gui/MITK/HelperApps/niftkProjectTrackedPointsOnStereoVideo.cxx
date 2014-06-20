@@ -144,9 +144,17 @@ int main(int argc, char** argv)
       int b; 
       int g;
       int r;
-
-      while ( fin >> x >> y >> z >> b >> g >> r )
+      
+      std::string in[6];
+      while ( fin >> in[0] >> in[1] >> in[2] >> in[3] >> in[4] >> in[5] )
       {
+        x=atof(in[0].c_str());
+        y=atof(in[1].c_str());
+        z=atof(in[2].c_str());
+        b=atoi(in[3].c_str());
+        g=atoi(in[4].c_str());
+        r=atoi(in[5].c_str());
+
         worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
