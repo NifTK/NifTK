@@ -149,19 +149,6 @@ private:
       unsigned long& counter
       );
 
-  /// \brief Used to set the values to initial values such as zero.
-  template <typename TPixel>
-  void InitializeData(
-      TPixel& min,
-      TPixel& max,
-      double& mean,
-      double& s0,
-      double& s1,
-      double& s2,
-      double& stdDev,
-      unsigned long& counter
-      );
-
   /// \brief Does final calculation of mean and stddev.
   void CalculateMeanAndStdDev(
       double& mean,
@@ -205,6 +192,7 @@ private:
       TPixel1* imagePixelsCopy
       );
 
+  /// \brief Calculates the statistics of a greyscale image.
   template <typename TPixel, unsigned VImageDimension>
   void CalculateStats(
       itk::Image<TPixel, VImageDimension>* itkImage,
@@ -217,9 +205,14 @@ private:
       double& s2,
       double& stdDev,
       unsigned long& counter,
-      TPixel* imagePixelsCopy
+      TPixel* imagePixelsCopy,
+      double median
       );
 
+  /// \brief Calculates the statistics of a greyscale image with a mask.
+  /// If 'invert' is true, the 'label' is considered as a background value and the
+  /// statistics will be calculated for the pixel values of the greyscale image
+  /// where the mask has a different value than the 'label'.
   template <typename TPixel1, typename TPixel2, unsigned int VImageDimension>
   void CalculateStatsWithMask(
       itk::Image<TPixel1, VImageDimension>* itkImage,
@@ -235,7 +228,8 @@ private:
       double& s2,
       double& stdDev,
       unsigned long& counter,
-      TPixel1* imagePixelsCopy
+      TPixel1* imagePixelsCopy,
+      double median
       );
 
   /// See: http://docs.mitk.org/nightly-qt4/group__Adaptor.html

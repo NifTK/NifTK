@@ -483,32 +483,6 @@ ImageStatisticsView
 template <typename TPixel>
 void
 ImageStatisticsView
-::InitializeData(
-    TPixel& min,
-    TPixel& max,
-    double& mean,
-    double& s0,
-    double& s1,
-    double& s2,
-    double& stdDev,
-    unsigned long& counter
-    )
-{
-  min = std::numeric_limits<TPixel>::max();
-  max = std::numeric_limits<TPixel>::min();
-  mean = 0;
-  s0 = 0;
-  s1 = 0;
-  s2 = 0;
-  stdDev = 0;
-  counter = 0;
-}
-
-
-//-----------------------------------------------------------------------------
-template <typename TPixel>
-void
-ImageStatisticsView
 ::AccumulateData(
     TPixel imageValue,
     double& mean,
@@ -613,7 +587,7 @@ ImageStatisticsView
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyImage;
-  double mean, s0, s1, s2, stdDev;
+  double mean, s0, s1, s2, stdDev, median;
   unsigned long int counter;
   TPixel min, max;
 
@@ -630,10 +604,9 @@ ImageStatisticsView
     TPixel* imagePixelsCopy = new TPixel[region.GetNumberOfPixels()];
 
     // Calculate Stats.
-    this->CalculateStats(itkImage, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
+    this->CalculateStats(itkImage, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
 
     double volume = voxelVolume * counter;
-    double median = imagePixelsCopy[counter / 2];
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
     QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
@@ -667,10 +640,9 @@ ImageStatisticsView
       {
         region.SetIndex(axis, sliceIndex);
 
-        this->CalculateStats(itkImage3D, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
+        this->CalculateStats(itkImage3D, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
 
         double volume = voxelVolume * counter;
-        double median = imagePixelsCopy[counter / 2];
 
         QString value = tr("All except %1").arg(m_BackgroundValue);
         QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
@@ -698,12 +670,21 @@ ImageStatisticsView
     double& s2,
     double& stdDev,
     unsigned long& counter,
-    TPixel* imagePixelsCopy
+    TPixel* imagePixelsCopy,
+    double median
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyImageType;
 
-  this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+  min = std::numeric_limits<TPixel>::max();
+  max = std::numeric_limits<TPixel>::min();
+  mean = 0.0;
+  s0 = 0.0;
+  s1 = 0.0;
+  s2 = 0.0;
+  stdDev = 0.0;
+  counter = 0;
+  median = 0.0;
 
   // Iterate through image, calculating stats for anything != background value.
   itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, region);
@@ -716,6 +697,7 @@ ImageStatisticsView
 
   /// Median is put in the middle of the copy array.
   std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+  median = imagePixelsCopy[counter / 2];
 }
 
 
@@ -730,7 +712,7 @@ ImageStatisticsView
 {
   typedef typename itk::Image<TPixel1, VImageDimension1> GreyImage;
   typedef typename itk::Image<TPixel2, VImageDimension2> MaskImage;
-  double mean, s0, s1, s2, stdDev;
+  double mean, s0, s1, s2, stdDev, median;
   unsigned long int counter;
   TPixel1 min, max;
 
@@ -755,9 +737,8 @@ ImageStatisticsView
     TPixel2 labelValue = m_BackgroundValue;
 
     // Calculate Stats.
-    this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
+    this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
 
-    double median = imagePixelsCopy[counter / 2];
     double volume = voxelVolume * counter;
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
@@ -780,9 +761,8 @@ ImageStatisticsView
       TPixel2 labelValue = *itLabels;
 
       // Calculate Stats.
-      this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
+      this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
 
-      double median = imagePixelsCopy[counter / 2];
       double volume = voxelVolume * counter;
 
       QString value = tr("%1").arg(labelValue);
@@ -813,14 +793,23 @@ ImageStatisticsView
     double& s2,
     double& stdDev,
     unsigned long& counter,
-    TPixel1* imagePixelsCopy
+    TPixel1* imagePixelsCopy,
+    double median
     )
 {
   typedef typename itk::Image<TPixel1, VImageDimension> GreyImage;
   typedef typename itk::Image<TPixel2, VImageDimension> MaskImage;
 
   // Initialize variables
-  this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+  min = std::numeric_limits<TPixel1>::max();
+  max = std::numeric_limits<TPixel1>::min();
+  mean = 0.0;
+  s0 = 0.0;
+  s1 = 0.0;
+  s2 = 0.0;
+  stdDev = 0.0;
+  counter = 0;
+  median = 0.0;
 
   // We iterate over the image, calculating stats for any voxel where the mask value is NOT the background value.
   // i.e. we are using the mask image, but if the mask has multiple labels, we treat any label except the background label as foreground, and accumulate stats.
@@ -838,6 +827,7 @@ ImageStatisticsView
   this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
 
   std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+  median = imagePixelsCopy[counter / 2];
 }
 
 
