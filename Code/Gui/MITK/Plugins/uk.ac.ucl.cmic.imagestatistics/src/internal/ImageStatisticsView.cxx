@@ -538,24 +538,26 @@ ImageStatisticsView
     double& s0,
     double& s1,
     double& s2,
-    unsigned long& counter
+    unsigned long& counter,
+    TPixel* imagePixelsCopy
     )
 {
   if (imageValue != (TPixel)m_BackgroundValue)
   {
     this->TestMinAndMax<TPixel>(imageValue, min, max);
+    imagePixelsCopy[counter] = imageValue;
     this->AccumulateData<TPixel>(imageValue, mean, s0, s1, s2, counter);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-template <typename TPixel1, typename TPixel2, typename LabelType>
+template <typename TPixel1, typename TPixel2>
 void
 ImageStatisticsView
 ::AccumulateValue(
     bool invert,
-    LabelType valueToCompareMaskAgainst,
+    TPixel2 valueToCompareMaskAgainst,
     TPixel1 imageValue,
     TPixel2 maskValue,
     TPixel1& min,
@@ -682,7 +684,7 @@ ImageStatisticsView
 
 
 //-----------------------------------------------------------------------------
-template <typename TPixel, unsigned int VImageDimension>
+template <typename TPixel, unsigned VImageDimension>
 void
 ImageStatisticsView
 ::CalculateStats(
@@ -705,12 +707,10 @@ ImageStatisticsView
 
   // Iterate through image, calculating stats for anything != background value.
   itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, region);
-  TPixel* itImagePixelsCopy = imagePixelsCopy;
-  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter, ++itImagePixelsCopy)
+  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
   {
     TPixel greyPixel = iter.Get();
-    this->AccumulateValue<TPixel>(greyPixel, min, max, mean, s0, s1, s2, counter);
-    *itImagePixelsCopy = greyPixel;
+    this->AccumulateValue<TPixel>(greyPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
   }
   this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
 
@@ -720,7 +720,7 @@ ImageStatisticsView
 
 
 //-----------------------------------------------------------------------------
-template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
+template <typename TPixel1, unsigned VImageDimension1, typename TPixel2, unsigned VImageDimension2>
 void
 ImageStatisticsView
 ::UpdateTableWithMask(
@@ -728,13 +728,11 @@ ImageStatisticsView
     itk::Image<TPixel2, VImageDimension2>* itkMask
     )
 {
-  typedef typename itk::Image<TPixel1, VImageDimension1> GreyImageType;
-  typedef typename itk::Image<TPixel2, VImageDimension2> MaskImageType;
+  typedef typename itk::Image<TPixel1, VImageDimension1> GreyImage;
+  typedef typename itk::Image<TPixel2, VImageDimension2> MaskImage;
   double mean, s0, s1, s2, stdDev;
   unsigned long int counter;
-  bool invert;
-  TPixel1 greyPixel, min, max;
-  TPixel2 maskPixel;
+  TPixel1 min, max;
 
   // Get a list of values in itkMask.
   std::set<TPixel2> labels;
@@ -746,85 +744,100 @@ ImageStatisticsView
   // Initialize table.
   this->InitializeTable();
 
-  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
-  TPixel1* imagePixelsCopy = new TPixel1[itkImagePixelContainer->Size()];
+  // Get voxel volume.
+  double voxelVolume;
+  this->GetVoxelVolume<TPixel1, VImageDimension1>(itkImage, voxelVolume);
 
   if (m_AssumeBinary)
   {
-    invert = true;
+    typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+    TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+    TPixel2 labelValue = m_BackgroundValue;
 
-    // Initialize variables
-    this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+    // Calculate Stats.
+    this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
 
-    // We iterate over the image, calculating stats for any voxel where the mask value is NOT the background value.
-    // i.e. we are using the mask image, but if the mask has multiple labels, we treat any label except the background label as foreground, and accumulate stats.
-
-    itk::ImageRegionConstIterator<GreyImageType> greyIter(itkImage, itkImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<MaskImageType> binaryIter(itkMask, itkMask->GetLargestPossibleRegion());
-    for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
-    {
-      greyPixel = greyIter.Get();
-      maskPixel = binaryIter.Get();
-
-      this->AccumulateValue<TPixel1, TPixel2, int>
-        (invert, m_BackgroundValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
-    }
-    this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
-
-    std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
     double median = imagePixelsCopy[counter / 2];
-
-    // Get voxel volume.
-    double volume;
-    this->GetVoxelVolume<TPixel1, VImageDimension2>(itkImage, volume);
-    volume *= (double)counter;
+    double volume = voxelVolume * counter;
 
     QString value = tr("All except %1").arg(m_BackgroundValue);
     QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
     m_Controls.m_TreeWidget->addTopLevelItem(item);
+
+    delete[] imagePixelsCopy;
   }
   else
   {
-    invert = false;
+    typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+    TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
 
     // We compute stats for EACH label.
     // This is a bit slow, as we repeatedly iterate over the image.
 
-    typename std::set<TPixel2>::iterator iterator;
-    for (iterator = labels.begin(); iterator != labels.end(); iterator++)
+    typename std::set<TPixel2>::iterator itLabels;
+    for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
     {
-      TPixel2 labelValue = *iterator;
+      TPixel2 labelValue = *itLabels;
 
-      // Initialize variables
-      this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+      // Calculate Stats.
+      this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy);
 
-      itk::ImageRegionConstIterator<GreyImageType> greyIter(itkImage, itkImage->GetLargestPossibleRegion());
-      itk::ImageRegionConstIterator<MaskImageType> binaryIter(itkMask, itkMask->GetLargestPossibleRegion());
-      for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
-      {
-        greyPixel = greyIter.Get();
-        maskPixel = binaryIter.Get();
-
-        this->AccumulateValue<TPixel1, TPixel2, TPixel2>
-          (invert, labelValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
-      }
-      this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
-
-      std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
       double median = imagePixelsCopy[counter / 2];
-
-      // Get voxel volume.
-      double volume;
-      this->GetVoxelVolume<TPixel1, VImageDimension1>(itkImage, volume);
-      volume *= (double)counter;
+      double volume = voxelVolume * counter;
 
       QString value = tr("%1").arg(labelValue);
       QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
       m_Controls.m_TreeWidget->addTopLevelItem(item);
     }
-  }
 
-  delete[] imagePixelsCopy;
+    delete[] imagePixelsCopy;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template <typename TPixel1, typename TPixel2, unsigned int VImageDimension>
+void
+ImageStatisticsView
+::CalculateStatsWithMask(
+    itk::Image<TPixel1, VImageDimension>* itkImage,
+    itk::Image<TPixel2, VImageDimension>* itkMask,
+    const itk::ImageRegion<VImageDimension>& region,
+    bool invert,
+    TPixel2 label,
+    TPixel1& min,
+    TPixel1& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    double& stdDev,
+    unsigned long& counter,
+    TPixel1* imagePixelsCopy
+    )
+{
+  typedef typename itk::Image<TPixel1, VImageDimension> GreyImage;
+  typedef typename itk::Image<TPixel2, VImageDimension> MaskImage;
+
+  // Initialize variables
+  this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+
+  // We iterate over the image, calculating stats for any voxel where the mask value is NOT the background value.
+  // i.e. we are using the mask image, but if the mask has multiple labels, we treat any label except the background label as foreground, and accumulate stats.
+
+  itk::ImageRegionConstIterator<GreyImage> greyIter(itkImage, region);
+  itk::ImageRegionConstIterator<MaskImage> binaryIter(itkMask, region);
+  for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
+  {
+    TPixel1 greyPixel = greyIter.Get();
+    TPixel2 maskPixel = binaryIter.Get();
+
+    this->AccumulateValue<TPixel1, TPixel2>
+      (invert, label, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
+  }
+  this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
+
+  std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
 }
 
 

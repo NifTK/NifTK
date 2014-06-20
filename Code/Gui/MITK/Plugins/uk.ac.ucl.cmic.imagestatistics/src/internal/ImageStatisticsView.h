@@ -182,16 +182,17 @@ private:
       double& s0,
       double& s1,
       double& s2,
-      unsigned long& counter
+      unsigned long& counter,
+      TPixel* imagePixelsCopy
       );
 
   /// \brief Used to check value against min, max etc.
   /// It copies the pixels designated by the mask to the imagePixelsCopy array, continuously.
   /// The number of processed element (same as the copied elements) is in 'counter'.
-  template <typename TPixel1, typename TPixel2, typename LabelType>
+  template <typename TPixel1, typename TPixel2>
   void AccumulateValue(
       bool invert,
-      LabelType valueToCompareMaskAgainst,
+      TPixel2 valueToCompareMaskAgainst,
       TPixel1 imageValue,
       TPixel2 maskValue,
       TPixel1& min,
@@ -204,7 +205,7 @@ private:
       TPixel1* imagePixelsCopy
       );
 
-  template <typename TPixel, unsigned int VImageDimension>
+  template <typename TPixel, unsigned VImageDimension>
   void CalculateStats(
       itk::Image<TPixel, VImageDimension>* itkImage,
       const itk::ImageRegion<VImageDimension>& region,
@@ -217,6 +218,24 @@ private:
       double& stdDev,
       unsigned long& counter,
       TPixel* imagePixelsCopy
+      );
+
+  template <typename TPixel1, typename TPixel2, unsigned int VImageDimension>
+  void CalculateStatsWithMask(
+      itk::Image<TPixel1, VImageDimension>* itkImage,
+      itk::Image<TPixel2, VImageDimension>* itkMask,
+      const itk::ImageRegion<VImageDimension>& region,
+      bool invert,
+      TPixel2 label,
+      TPixel1& min,
+      TPixel1& max,
+      double& mean,
+      double& s0,
+      double& s1,
+      double& s2,
+      double& stdDev,
+      unsigned long& counter,
+      TPixel1* imagePixelsCopy
       );
 
   /// See: http://docs.mitk.org/nightly-qt4/group__Adaptor.html
