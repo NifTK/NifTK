@@ -178,7 +178,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     divide_dwis = pe.Node(interface = niftyseg.BinaryMaths(operation='div'), name = 'divide_dwis')
     
     # The masks in T1 mask needs to be rigidly registered to the B0 space
-    T1_to_b0_registration = pe.Node(niftyreg.RegAladin({'rig_only_flag' : True}), name='T1_to_b0_registration')
+    T1_to_b0_registration = pe.Node(niftyreg.RegAladin(), name='T1_to_b0_registration')
+    T1_to_b0_registration.inputs.rig_only_flag = True
     # Use nearest neighbour resampling for the mask image
     T1_mask_resampling = pe.Node(niftyreg.RegResample(inter_val = 'NN'), name = 'T1_mask_resampling')
     # Fit the tensors    
@@ -284,7 +285,10 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # Once we have a resampled mask from the T1 space, this can be used as a ref mask for the B0 registration
     # the susceptibility correction and for the tensor fitting    
     workflow.connect(T1_mask_resampling, 'res_file', dwi_to_B0_registration, 'rmask_file')
-    workflow.connect(T1_mask_resampling, 'res_file',  susceptibility_correction, 'input_node.mask_image')
+    
+    if correct_susceptibility == True:
+        workflow.connect(T1_mask_resampling, 'res_file',  susceptibility_correction, 'input_node.mask_image')
+
     workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask_file')
     
     # Merge the DWI into a file for tensor fitting etc.
@@ -293,7 +297,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # If we're correcting for susceptibility distortions, need to divide by the
     # jacobian of the distortion field
     # Connect up the correct image to the tensor fitting software
-    if correct_susceptibility:
+    if correct_susceptibility == True:
         workflow.connect(merge_dwis, 'merged_file', divide_dwis, 'in_file')
         workflow.connect(susceptibility_correction, 'output_node.out_jac', divide_dwis, 'operand_file')
         workflow.connect(divide_dwis,'out_file',  tensor_fitting, 'source_file')
@@ -307,17 +311,13 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     if resample_in_t1 == False:
         workflow.connect(tensor_fitting, 'famap_file', output_node, 'FA')
         
-    if correct_susceptibility:
-        workflow.connect(divide_dwis,'out_file',  tensor_fitting, 'source_file')
-    else:
-        workflow.connect(tensor_fitting, 'mdmap_file', output_node, 'MD')
     workflow.connect(tensor_fitting, 'mdmap_file', output_node, 'MD')
     workflow.connect(tensor_fitting, 'rgbmap_file', output_node, 'COL_FA')
     workflow.connect(tensor_fitting, 'v1map_file', output_node, 'V1')
     workflow.connect(tensor_fitting, 'syn_file', output_node, 'predicted_image')
     workflow.connect(tensor_fitting, 'res_file', output_node, 'residual_image')
     workflow.connect(tensor_fitting, 'error_file', output_node, 'parameter_uncertainty_image')
-    if correct_susceptibility ==True:
+    if correct_susceptibility == True:
         workflow.connect(transformation_composition, 'out_file', output_node, 'transformations')
     else:
         workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
