@@ -59,7 +59,8 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     gen_fm = pe.Node(interface=GenFm(), name='gen_fm')
 
     # Create nodes to register the field map defomation field       
-    reg_fm_to_b0 = pe.Node(interface=RegAladin({'rig_only_flag':True}), name='reg_fm_to_b0')
+    reg_fm_to_b0 = pe.Node(interface=RegAladin(), name='reg_fm_to_b0')
+    reg_fm_to_b0.inputs.rig_only_flag = True
     invert_aff = pe.Node(interface=RegTransform(), name='invert_fm_to_b0' )
     resample_mask = pe.Node(interface=RegResample(), name='resample_mask', interp='NN')
     resample_epi = pe.Node(interface=RegResample(), name='resample_epi')
