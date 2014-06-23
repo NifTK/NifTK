@@ -44,8 +44,8 @@ bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASTool::MIDASTool(const char* type) :
-    FeedbackContourTool(type)
+mitk::MIDASTool::MIDASTool()
+: mitk::FeedbackContourTool("")
 , m_AddToPointSetInteractor(NULL)
 , m_LastSeenNumberOfSeeds(0)
 , m_SeedsChangedTag(0)

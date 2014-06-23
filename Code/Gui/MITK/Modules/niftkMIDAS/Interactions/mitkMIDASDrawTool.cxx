@@ -41,7 +41,8 @@ namespace mitk
 }
 
 //-----------------------------------------------------------------------------
-mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
+mitk::MIDASDrawTool::MIDASDrawTool()
+: MIDASContourTool()
 , m_CursorSize(0.5)
 , m_Interface(NULL)
 , m_EraserScopeVisible(false)

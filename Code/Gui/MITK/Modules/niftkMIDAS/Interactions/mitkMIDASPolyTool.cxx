@@ -36,7 +36,8 @@ namespace mitk{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
 }
 
-mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
+mitk::MIDASPolyTool::MIDASPolyTool()
+: MIDASContourTool()
 , m_ReferencePoints(NULL)
 , m_PreviousContourReferencePoints(NULL)
 , m_PreviousContour(NULL)

@@ -132,7 +132,6 @@ public:
 protected:
 
   MIDASTool(); // purposefully hidden
-  MIDASTool(const char* type); // purposefully hidden
   virtual ~MIDASTool(); // purposely hidden
 
   /// \brief Tells if this tool can handle the given event.

@@ -45,7 +45,7 @@ namespace mitk
 }
 
 mitk::MIDASPaintbrushTool::MIDASPaintbrushTool()
-: mitk::SegTool2D("MIDASPaintbrushTool")
+: mitk::SegTool2D("")
 , m_Interface(NULL)
 , m_CursorSize(1)
 , m_WorkingImageGeometry(NULL)

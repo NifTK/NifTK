@@ -36,7 +36,8 @@ mitk::MIDASSeedTool::~MIDASSeedTool()
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASSeedTool::MIDASSeedTool() : MIDASTool("dummy")
+mitk::MIDASSeedTool::MIDASSeedTool()
+: MIDASTool()
 , m_PointSetInteractor(NULL)
 {
 }

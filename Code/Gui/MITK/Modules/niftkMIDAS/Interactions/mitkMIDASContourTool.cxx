@@ -36,7 +36,8 @@ const std::string mitk::MIDASContourTool::EDITING_PROPERTY_NAME = std::string("m
 const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");
 const mitk::OperationType mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR = 320419;
 
-mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
+mitk::MIDASContourTool::MIDASContourTool()
+: MIDASTool()
 , m_ContourWidth(1)
 , m_ContourClosed(false)
 , m_Tolerance(0.01)
