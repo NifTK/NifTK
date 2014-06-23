@@ -83,7 +83,6 @@ public:
 protected:
 
   MIDASContourTool(); // purposely hidden
-  MIDASContourTool(const char* type); // purposely hidden
   virtual ~MIDASContourTool(); // purposely hidden
 
   /// \brief Calls the FeedbackContour::OnMousePressed method, then checks for working image, reference image and geometry.

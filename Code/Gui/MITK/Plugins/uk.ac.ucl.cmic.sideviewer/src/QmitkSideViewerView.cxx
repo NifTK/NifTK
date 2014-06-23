@@ -81,6 +81,28 @@ bool QmitkSideViewerView::EventFilter(const mitk::StateEvent* stateEvent) const
 }
 
 
+bool QmitkSideViewerView::EventFilter(mitk::InteractionEvent* event) const
+{
+  // If we have a render window part (aka. editor or display)...
+  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
+  {
+    // and it has a focused render window...
+    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
+    {
+      // whose renderer is the sender of this event...
+      if (renderWindow->GetRenderer() == event->GetSender())
+      {
+        // then we let the event pass through.
+        return false;
+      }
+    }
+  }
+
+  // Otherwise, if it comes from another window, we reject it.
+  return true;
+}
+
+
 //-----------------------------------------------------------------------------
 void QmitkSideViewerView::Activated()
 {

@@ -6,7 +6,7 @@
     <attribute name="Key" value="D"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="KeySpace">
-    <attribute name="Key" value="Space"/>
+    <attribute name="Key" value=" "/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="KeyN">
     <attribute name="Key" value="N"/>

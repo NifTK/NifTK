@@ -45,7 +45,7 @@ namespace mitk
 }
 
 mitk::MIDASPaintbrushTool::MIDASPaintbrushTool()
-: mitk::SegTool2D("MIDASPaintbrushTool")
+: mitk::SegTool2D("")
 , m_Interface(NULL)
 , m_CursorSize(1)
 , m_WorkingImageGeometry(NULL)
@@ -64,12 +64,12 @@ void mitk::MIDASPaintbrushTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASPaintbrushToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("MIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
     this->SetEventConfig("MIDASPaintbrushToolConfig.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
-    MITK_ERROR << "Could not load statemachine pattern MIDASPaintbrushToolStateMachine.xml with exception: " << e.what();
+    MITK_ERROR << "Could not load statemachine pattern MIDASPaintbrushTool.xml with exception: " << e.what();
   }
 }
 

@@ -1201,86 +1201,125 @@ void MIDASGeneralSegmentorView::ToggleTool(int toolId)
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::SelectSeedTool()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int activeToolId = toolManager->GetActiveToolID();
-  int seedToolId = toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>();
+  /// Note:
+  /// If the tool selection box is disabled then the tools are not registered to
+  /// the tool manager ( RegisterClient() ). Then if you activate a tool and another
+  /// tool was already active, then its interaction event observer service tries to
+  /// be unregistered. But since the tools was not registered into the tool manager,
+  /// the observer service is still null, and the attempt to unregister it causes crash.
+  ///
+  /// Consequence:
+  /// We should not do anything with the tools until they are registered to the
+  /// tool manager.
 
-  if (seedToolId != activeToolId)
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
-    toolManager->ActivateTool(seedToolId);
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    int activeToolId = toolManager->GetActiveToolID();
+    int seedToolId = toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>();
+
+    if (seedToolId != activeToolId)
+    {
+      toolManager->ActivateTool(seedToolId);
+    }
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::SelectDrawTool()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int activeToolId = toolManager->GetActiveToolID();
-  int drawToolId = toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>();
-
-  if (drawToolId != activeToolId)
+  /// Note: see comment in SelectSeedTool().
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
-    toolManager->ActivateTool(drawToolId);
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    int activeToolId = toolManager->GetActiveToolID();
+    int drawToolId = toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>();
+
+    if (drawToolId != activeToolId)
+    {
+      toolManager->ActivateTool(drawToolId);
+    }
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::SelectPolyTool()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int activeToolId = toolManager->GetActiveToolID();
-  int polyToolId = toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>();
-
-  if (polyToolId != activeToolId)
+  /// Note: see comment in SelectSeedTool().
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
-    toolManager->ActivateTool(polyToolId);
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    int activeToolId = toolManager->GetActiveToolID();
+    int polyToolId = toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>();
+
+    if (polyToolId != activeToolId)
+    {
+      toolManager->ActivateTool(polyToolId);
+    }
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::UnselectTools()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-
-  if (toolManager->GetActiveToolID() != -1)
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
-    toolManager->ActivateTool(-1);
+    mitk::ToolManager* toolManager = this->GetToolManager();
+
+    if (toolManager->GetActiveToolID() != -1)
+    {
+      toolManager->ActivateTool(-1);
+    }
+
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::SelectViewMode()
 {
-  if (!this->HasInitialisedWorkingData())
+  /// Note: see comment in SelectSeedTool().
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
-    QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
-    foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
+    if (!this->HasInitialisedWorkingData())
     {
-      selectedNode->SetVisibility(!selectedNode->IsVisible(0));
+      QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
+      foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
+      {
+        selectedNode->SetVisibility(!selectedNode->IsVisible(0));
+      }
+      this->RequestRenderWindowUpdate();
+
+      return true;
     }
+
+    mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
+    bool segmentationNodeIsVisible = workingNodes[0]->IsVisible(0);
+    workingNodes[0]->SetVisibility(!segmentationNodeIsVisible);
     this->RequestRenderWindowUpdate();
 
     return true;
   }
 
-  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-  bool segmentationNodeIsVisible = workingNodes[0]->IsVisible(0);
-  workingNodes[0]->SetVisibility(!segmentationNodeIsVisible);
-  this->RequestRenderWindowUpdate();
-
-  return true;
+  return false;
 }
 
 
@@ -1500,8 +1539,14 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::CleanSlice()
 {
-  this->OnCleanButtonClicked();
-  return true;
+  /// Note: see comment in SelectSeedTool().
+  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  {
+    this->OnCleanButtonClicked();
+    return true;
+  }
+
+  return false;
 }
 
 

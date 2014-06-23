@@ -17,6 +17,7 @@
 
 #include "niftkMIDASExports.h"
 
+#include <mitkStateEvent.h>
 #include <mitkInteractionEvent.h>
 
 #include <vector>
@@ -72,6 +73,8 @@ public:
   /// The original logic should be implemented in the CanHandle function.
   ///
   /// \see mitk::StateMachine::CanHandleEvent
+  float CanHandleEvent(const mitk::StateEvent* event) const;
+
   bool CanHandleEvent(mitk::InteractionEvent* event);
 
   /// \brief Installs an event filter that can reject a state machine event or let it pass through.
@@ -84,6 +87,9 @@ public:
   std::vector<MIDASEventFilter*> GetEventFilters() const;
 
   /// \brief Tells if the event is rejected by the installed event filters or they let it pass through.
+  bool IsFiltered(const mitk::StateEvent* stateEvent) const;
+
+  /// \brief Tells if the event is rejected by the installed event filters or they let it pass through.
   bool IsFiltered(mitk::InteractionEvent* event);
 
 protected:
@@ -92,6 +98,11 @@ protected:
   /// has not been rejected by one of the event filters.
   /// Derived classes should override this function in favor of mitk::StateMachine::CanHandleEvent
   /// if they can process also other kinds of events than what their base class can do.
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const
+  {
+    return 1.0;
+  }
+
   virtual bool CanHandle(mitk::InteractionEvent* event)
   {
     return true;
