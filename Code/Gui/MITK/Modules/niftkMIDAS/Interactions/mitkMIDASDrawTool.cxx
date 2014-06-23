@@ -80,12 +80,12 @@ void mitk::MIDASDrawTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASDrawToolStateMachine.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("MIDASDrawTool.xml", us::GetModuleContext()->GetModule());
     this->SetEventConfig("MIDASDrawToolConfig.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
-    MITK_ERROR << "Could not load statemachine pattern MIDASDrawToolStateMachine.xml with exception: " << e.what();
+    MITK_ERROR << "Could not load statemachine pattern MIDASDrawTool.xml with exception: " << e.what();
   }
 }
 
