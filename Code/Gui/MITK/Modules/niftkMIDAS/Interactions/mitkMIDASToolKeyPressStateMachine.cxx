@@ -40,8 +40,8 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressRe
   assert(responder);
   m_Responder = responder;
 
-  this->LoadStateMachine("MIDASToolStateMachine.xml", us::GetModuleContext()->GetModule());
-  this->SetEventConfig("MIDASToolConfig.xml", us::GetModuleContext()->GetModule());
+  this->LoadStateMachine("MIDASToolKeyPressStateMachine.xml", us::GetModuleContext()->GetModule());
+  this->SetEventConfig("MIDASToolKeyPressStateMachineConfig.xml", us::GetModuleContext()->GetModule());
 
   // Register as listener via micro services
   us::ServiceProperties props;

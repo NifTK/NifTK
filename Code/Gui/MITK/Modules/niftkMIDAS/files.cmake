@@ -51,6 +51,6 @@ set(RESOURCE_FILES
   Interactions/MIDASSeedDropperStateMachine.xml
   Interactions/MIDASSeedToolConfig.xml
   Interactions/MIDASSeedToolStateMachine.xml
-  Interactions/MIDASToolConfig.xml
-  Interactions/MIDASToolStateMachine.xml
+  Interactions/MIDASToolKeyPressStateMachine.xml
+  Interactions/MIDASToolKeyPressStateMachineConfig.xml
 )
