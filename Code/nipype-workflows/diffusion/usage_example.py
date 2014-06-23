@@ -21,12 +21,12 @@ lin_reg_hash = {}
 r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow_log_2', resample_in_t1 = True, log_data = True)
 r.base_dir = basedir
 
-r.inputs.inputnode.in_dwi_4d_file = dwis
-r.inputs.inputnode.in_bvec_file = bvecs
-r.inputs.inputnode.in_bval_file = bvals
-r.inputs.inputnode.in_fm_magnitude_file = fmmag
-r.inputs.inputnode.in_fm_phase_file = fmph
-r.inputs.inputnode.in_T1_file = T1
+r.inputs.input_node.in_dwi_4d_file = dwis
+r.inputs.input_node.in_bvec_file = bvecs
+r.inputs.input_node.in_bval_file = bvals
+r.inputs.input_node.in_fm_magnitude_file = fmmag
+r.inputs.input_node.in_fm_phase_file = fmph
+r.inputs.input_node.in_T1_file = T1
 
 r.write_graph(graph2use = 'exec')
 
