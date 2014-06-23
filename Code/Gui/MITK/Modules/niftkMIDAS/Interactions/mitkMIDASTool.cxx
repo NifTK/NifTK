@@ -143,6 +143,8 @@ void mitk::MIDASTool::Activated()
     {
 //      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
       m_AddToPointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
+      m_AddToPointSetInteractor->LoadStateMachine("MIDASToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+      m_AddToPointSetInteractor->SetEventConfig("MIDASToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
@@ -151,10 +153,12 @@ void mitk::MIDASTool::Activated()
       {
         m_AddToPointSetInteractor->InstallEventFilter(*it);
       }
-    }
 
-    /// TODO
-//    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+      m_AddToPointSetInteractor->SetDataNode(pointSetNode);
+
+      /// TODO
+  //    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+    }
 
     itk::SimpleMemberCommand<mitk::MIDASTool>::Pointer onSeedsModifiedCommand =
       itk::SimpleMemberCommand<mitk::MIDASTool>::New();
@@ -186,11 +190,13 @@ void mitk::MIDASTool::Activated()
 //-----------------------------------------------------------------------------
 void mitk::MIDASTool::Deactivated()
 {
-  Superclass::Deactivated();
   m_IsActivated = false;
 
   if (m_AddToPointSetInteractor.IsNotNull())
   {
+    /// TODO
+///    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
+
     std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
     std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
     std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
@@ -199,8 +205,7 @@ void mitk::MIDASTool::Deactivated()
       m_AddToPointSetInteractor->RemoveEventFilter(*it);
     }
 
-    /// TODO
-///    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
+    m_AddToPointSetInteractor = NULL;
   }
 
   mitk::PointSet* pointSet = NULL;
@@ -212,7 +217,6 @@ void mitk::MIDASTool::Deactivated()
   {
     pointSet->RemoveObserver(m_SeedsChangedTag);
   }
-  m_AddToPointSetInteractor = NULL;
 
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
@@ -231,6 +235,8 @@ void mitk::MIDASTool::Deactivated()
     }
   }
   m_DisplayInteractorConfigs.clear();
+
+  Superclass::Deactivated();
 }
 
 
