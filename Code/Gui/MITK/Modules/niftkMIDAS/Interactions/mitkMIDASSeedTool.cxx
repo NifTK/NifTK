@@ -48,8 +48,7 @@ void mitk::MIDASSeedTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASSeedToolStateMachine.xml", us::GetModuleContext()->GetModule());
-    this->SetEventConfig("MIDASSeedToolConfig.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("MIDASSeedTool.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
