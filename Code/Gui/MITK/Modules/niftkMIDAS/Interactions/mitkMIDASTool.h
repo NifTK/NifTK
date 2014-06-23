@@ -16,7 +16,7 @@
 #define mitkMIDASTool_h
 
 #include "niftkMIDASExports.h"
-#include "mitkMIDASPointSetInteractor.h"
+#include "mitkMIDASPointSetDataInteractor.h"
 #include "mitkMIDASStateMachine.h"
 #include <mitkFeedbackContourTool.h>
 #include <mitkPointSet.h>
@@ -39,7 +39,7 @@ namespace mitk
  * Matt: I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
  *
  * Note that the MIDASSeedTool, MIDASDrawTool and MIDASPolyTool all inherit from this class.
- * Each of these tools will have their MIDASPointSetInteractor. Each tool is managed
+ * Each of these tools will have their point set interactor. Each tool is managed
  * by an mitk::ToolManager which guarantees that only one is active at any given time.
  * As each tool becomes activated it will register the interactor with GlobalInteraction,
  * and as the tool becomes deactivated it will de-register the interactor with GlobalInteraction.
@@ -53,7 +53,7 @@ namespace mitk
  * \sa mitk::MIDASContourTool
  * \sa mitk::MIDASDrawTool
  * \sa mitk::MIDASPolyTool
- * \sa mitk::MIDASPointSetInteractor
+ * \sa mitk::MIDASPointSetDataInteractor
  */
 class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {
@@ -162,7 +162,7 @@ private:
   void OnSeedsModified();
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
-  mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
+  mitk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief Used to track when the number of seeds changes.
   int m_LastSeenNumberOfSeeds;

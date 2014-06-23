@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkMIDASPointSetInteractor_h
-#define mitkMIDASPointSetInteractor_h
+#ifndef mitkMIDASPointSetDataInteractor_h
+#define mitkMIDASPointSetDataInteractor_h
 
 #include "niftkMIDASExports.h"
 
@@ -25,14 +25,14 @@
 namespace mitk
 {
 /**
- * \class mitkMIDASPointSetInteractor
- * \brief Derived from mitkPointSetInteractor so we can handle the mouse move event.
+ * \class mitkMIDASPointSetDataInteractor
+ * \brief Derived from mitkPointSetDataInteractor so we can handle the mouse move event.
  * \ingroup Interaction
  */
-class NIFTKMIDAS_EXPORT MIDASPointSetInteractor : public mitk::PointSetDataInteractor, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT MIDASPointSetDataInteractor : public mitk::PointSetDataInteractor, public MIDASStateMachine
 {
 public:
-  mitkClassMacro(MIDASPointSetInteractor, mitk::PointSetDataInteractor);
+  mitkClassMacro(MIDASPointSetDataInteractor, mitk::PointSetDataInteractor);
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
 
@@ -43,12 +43,12 @@ protected:
    * If no n is set, then the number of points is unlimited
    * n=0 is not supported. In this case, n is set to 1.
    */
-  MIDASPointSetInteractor();
+  MIDASPointSetDataInteractor();
 
   /**
    * \brief Default Destructor
    **/
-  virtual ~MIDASPointSetInteractor();
+  virtual ~MIDASPointSetDataInteractor();
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -65,7 +65,7 @@ protected:
   /**
   * @brief Convert the given Actions to Operations and send to data and UndoController
   *
-  * Overrides mitk::PointSetInteractor::ExecuteAction() so that for any operation the
+  * Overrides mitk::PointSetDataInteractor::ExecuteAction() so that for any operation the
   * display position is modified to be in the middle of a pixel.
   */
   virtual bool ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);

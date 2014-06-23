@@ -12,7 +12,8 @@
 
 =============================================================================*/
 
-#include "mitkMIDASPointSetInteractor.h"
+#include "mitkMIDASPointSetDataInteractor.h"
+
 #include <mitkPositionEvent.h>
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
@@ -20,24 +21,24 @@
 #include <mitkInteractionConst.h>
 #include <mitkInteractionPositionEvent.h>
 
-mitk::MIDASPointSetInteractor::MIDASPointSetInteractor()
+mitk::MIDASPointSetDataInteractor::MIDASPointSetDataInteractor()
 : mitk::PointSetDataInteractor()
 {
   this->SetAccuracy(1.0);
 }
 
-mitk::MIDASPointSetInteractor::~MIDASPointSetInteractor()
+mitk::MIDASPointSetDataInteractor::~MIDASPointSetDataInteractor()
 {
 }
 
-bool mitk::MIDASPointSetInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool mitk::MIDASPointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return MIDASStateMachine::CanHandleEvent(event);
 }
 
 //##Documentation
 //## overwritten cause this class can handle it better!
-bool mitk::MIDASPointSetInteractor::CanHandle(mitk::InteractionEvent* event)
+bool mitk::MIDASPointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
 {
 /*
   float returnValue = 0.0f;
@@ -93,7 +94,7 @@ bool mitk::MIDASPointSetInteractor::CanHandle(mitk::InteractionEvent* event)
   return true;
 }
 
-bool mitk::MIDASPointSetInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool mitk::MIDASPointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent =
       dynamic_cast<mitk::InteractionPositionEvent*>(event);

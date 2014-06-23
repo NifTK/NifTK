@@ -142,7 +142,7 @@ void mitk::MIDASTool::Activated()
     if (m_AddToPointSetInteractor.IsNull())
     {
 //      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
-      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New();
+      m_AddToPointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();

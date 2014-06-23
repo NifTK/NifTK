@@ -23,7 +23,7 @@ set(CPP_FILES
   Interactions/mitkMIDASDrawToolOpEraseContour.cxx
   Interactions/mitkMIDASDrawTool.cxx
   Interactions/mitkMIDASEventFilter.cxx
-  Interactions/mitkMIDASPointSetInteractor.cxx
+  Interactions/mitkMIDASPointSetDataInteractor.cxx
   Interactions/mitkMIDASPolyToolEventInterface.cxx
   Interactions/mitkMIDASPolyToolOpAddToFeedbackContour.cxx
   Interactions/mitkMIDASPolyToolOpUpdateFeedbackContour.cxx
