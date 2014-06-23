@@ -50,6 +50,8 @@ set(RESOURCE_FILES
   Interactions/MIDASToolPointSetDataInteractor.xml
   Interactions/MIDASToolPointSetDataInteractorConfig.xml
   Interactions/MIDASSeedTool.xml
+  Interactions/MIDASSeedToolPointSetDataInteractor.xml
+  Interactions/MIDASSeedToolPointSetDataInteractorConfig.xml
   Interactions/MIDASToolKeyPressStateMachine.xml
   Interactions/MIDASToolKeyPressStateMachineConfig.xml
 )
