@@ -109,10 +109,11 @@ void mitk::MIDASSeedTool::Activated()
   {
     if (m_PointSetInteractor.IsNull())
     {
-//      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
-      m_PointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
-      m_PointSetInteractor->LoadStateMachine("MIDASSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-      m_PointSetInteractor->SetEventConfig("MIDASSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
+
+//      m_PointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
+//      m_PointSetInteractor->LoadStateMachine("MIDASSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+//      m_PointSetInteractor->SetEventConfig("MIDASSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
@@ -122,9 +123,9 @@ void mitk::MIDASSeedTool::Activated()
         m_PointSetInteractor->InstallEventFilter(*it);
       }
 
-      m_PointSetInteractor->SetDataNode(pointSetNode);
+//      m_PointSetInteractor->SetDataNode(pointSetNode);
 
-//      mitk::GlobalInteraction::GetInstance()->AddInteractor(m_PointSetInteractor);
+      mitk::GlobalInteraction::GetInstance()->AddInteractor(m_PointSetInteractor);
     }
   }
 }
@@ -142,14 +143,14 @@ void mitk::MIDASSeedTool::Deactivated()
   {
     if (m_PointSetInteractor.IsNotNull())
     {
-  //    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
+      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
 
       /// Note:
       /// The interactor is disabled after it is destructed, therefore we have to make sure
       /// that we remove every reference to it. The data node also has a reference to it,
       /// therefore we have to decouple them here.
       /// If we do not do this, the interactor stays active and will keep processing the events.
-      m_PointSetInteractor->SetDataNode(0);
+//      m_PointSetInteractor->SetDataNode(0);
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();

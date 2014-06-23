@@ -23,6 +23,7 @@ set(CPP_FILES
   Interactions/mitkMIDASDrawToolOpEraseContour.cxx
   Interactions/mitkMIDASDrawTool.cxx
   Interactions/mitkMIDASEventFilter.cxx
+  Interactions/mitkMIDASPointSetInteractor.cxx
   Interactions/mitkMIDASPointSetDataInteractor.cxx
   Interactions/mitkMIDASPolyToolEventInterface.cxx
   Interactions/mitkMIDASPolyToolOpAddToFeedbackContour.cxx
@@ -47,9 +48,11 @@ set(RESOURCE_FILES
   Interactions/MIDASPolyToolConfig.xml
   Interactions/MIDASPaintbrushTool.xml
   Interactions/MIDASPaintbrushToolConfig.xml
+  Interactions/MIDASToolPointSetInteractor.xml
   Interactions/MIDASToolPointSetDataInteractor.xml
   Interactions/MIDASToolPointSetDataInteractorConfig.xml
   Interactions/MIDASSeedTool.xml
+  Interactions/MIDASSeedToolPointSetInteractor.xml
   Interactions/MIDASSeedToolPointSetDataInteractor.xml
   Interactions/MIDASSeedToolPointSetDataInteractorConfig.xml
   Interactions/MIDASToolKeyPressStateMachine.xml

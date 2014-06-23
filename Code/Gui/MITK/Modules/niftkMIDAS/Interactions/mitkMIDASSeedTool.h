@@ -17,7 +17,8 @@
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"
-#include "mitkMIDASPointSetDataInteractor.h"
+#include "mitkMIDASPointSetInteractor.h"
+//#include "mitkMIDASPointSetDataInteractor.h"
 
 namespace mitk {
 
@@ -76,7 +77,8 @@ protected:
 
 private:
 
-  mitk::MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
+  mitk::MIDASPointSetInteractor::Pointer m_PointSetInteractor;
+//  mitk::MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
 
 };
 

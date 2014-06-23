@@ -16,13 +16,16 @@
 #define mitkMIDASTool_h
 
 #include "niftkMIDASExports.h"
-#include "mitkMIDASPointSetDataInteractor.h"
 #include "mitkMIDASStateMachine.h"
 #include <mitkFeedbackContourTool.h>
 #include <mitkPointSet.h>
 #include <mitkDataNode.h>
 #include <mitkPositionEvent.h>
 #include <mitkMessage.h>
+
+#include "mitkMIDASPointSetInteractor.h"
+//#include "mitkMIDASPointSetDataInteractor.h"
+
 #include <usServiceReference.h>
 
 #include <map>
@@ -65,6 +68,8 @@ public:
   /// \brief Loads the behaviour string to the global interaction.
   /// This function should be called before any MIDASTool object is created.
   static void LoadBehaviourStrings();
+
+  static bool LoadBehaviour(const std::string& fileName, us::Module* module);
 
   const char* GetGroup() const;
 
@@ -162,7 +167,8 @@ private:
   void OnSeedsModified();
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
-  mitk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
+  mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
+//  mitk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief Used to track when the number of seeds changes.
   int m_LastSeenNumberOfSeeds;
