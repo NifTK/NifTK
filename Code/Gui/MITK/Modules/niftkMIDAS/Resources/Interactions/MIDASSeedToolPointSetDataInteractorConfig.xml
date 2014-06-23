@@ -2,8 +2,11 @@
   <event_variant class="InteractionKeyEvent" name="Abort">
     <attribute name="Key" value="Escape"/>
   </event_variant>
-  <event_variant class="MousePressEvent" name="AddPointClick">
+  <event_variant class="MousePressEvent" name="AddPoint">
     <attribute name="EventButton" value="RightMouseButton"/>
+  </event_variant>
+  <event_variant class="MousePressEvent" name="SelectPoint">
+    <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
   <event_variant class="MousePressEvent" name="DeletePoint">
     <attribute name="EventButton" value="MiddleMouseButton"/>
@@ -13,10 +16,10 @@
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
   <event_variant class="MouseMoveEvent" name="CheckSelected"/>
-  <event_variant class="MouseMoveEvent" name="PointMove">
+  <event_variant class="MouseMoveEvent" name="MovePoint">
     <attribute name="ButtonState" value="LeftMouseButton"/>
   </event_variant>
-  <event_variant class="MouseReleaseEvent" name="EndMovement">
+  <event_variant class="MouseReleaseEvent" name="EndMovingPoint">
     <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
 </config>
