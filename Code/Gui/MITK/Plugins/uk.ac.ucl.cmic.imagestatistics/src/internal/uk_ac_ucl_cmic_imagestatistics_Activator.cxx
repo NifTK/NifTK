@@ -19,14 +19,18 @@
 #include "ImageStatisticsView.h"
 #include "ImageStatisticsViewPreferencesPage.h"
 
-namespace mitk {
+namespace mitk
+{
 
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_imagestatistics_Activator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ImageStatisticsView, context)
   BERRY_REGISTER_EXTENSION_CLASS(ImageStatisticsViewPreferencesPage, context);
 }
 
+
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_imagestatistics_Activator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
