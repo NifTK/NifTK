@@ -21,7 +21,7 @@ linear_hash = {'ref_low_val' : 0.5}
 pipeline = pe.Workflow('workflow')
 #r = reg.create_linear_coregistration_workflow('rigid_workflow', linear_options_hash = linear_hash)
 # As we're passing an initial reference image, initial_ref=True
-r = reg.create_atlas('atlas_creation', linear_options_hash = linear_hash, initial_ref=False, itr_rigid = 3, itr_affine = 0, itr_non_lin=0)
+r = reg.create_atlas('atlas_creation', linear_options_hash = linear_hash, initial_ref=False, itr_rigid = 2, itr_affine = 0, itr_non_lin=0)
 # If we don't have a reference image file defined, make one by averaging the input images
 if not isdefined(ref_file):
     ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims")

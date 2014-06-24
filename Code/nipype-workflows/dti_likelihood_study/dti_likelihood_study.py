@@ -10,7 +10,7 @@ import nipype.interfaces.susceptibility as susceptibility
 
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.ttk            as ttk
-import epi_distortion_generation        as epi
+import diffusion_distortion_simulation        as distortion_sim
 import math
 
 '''
@@ -53,11 +53,11 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                     'in_bval_file']),
         name='input_node')
     
-    distortion_generator = pe.Node(interface = epi.DistortionGenerator(), 
+    distortion_generator = pe.Node(interface = distortion_sim.DistortionGenerator(), 
                                    name = 'distortion_generator')
-    distortion_generator.inputs.in_var_translation = 0.2
-    distortion_generator.inputs.in_var_rotation = 0.01*math.pi/180
-    distortion_generator.inputs.in_var_shear = 0.0003
+    distortion_generator.inputs.stddev_translation_val = 0.2
+    distortion_generator.inputs.stddev_rotation_val = 0.01*math.pi/180
+    distortion_generator.inputs.stddev_shear_val = 0.0003
     
     tensor_resampling = pe.MapNode(interface = niftyreg.RegResample(), 
                                    name = 'tensor_resampling', 
@@ -97,8 +97,8 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                 'estimated_tensors']),
                            name="output_node" )
     
-    workflow.connect(input_node, 'in_bval_file', distortion_generator, 'in_bval_file')
-    workflow.connect(input_node, 'in_bvec_file', distortion_generator, 'in_bvec_file')
+    workflow.connect(input_node, 'in_bval_file', distortion_generator, 'bval_file')
+    workflow.connect(input_node, 'in_bvec_file', distortion_generator, 'bvec_file')
     workflow.connect(input_node, 'in_tensors_file', tensor_resampling, 'ref_file')
     workflow.connect(input_node, 'in_tensors_file', tensor_resampling, 'flo_file')
     workflow.connect(distortion_generator, 'aff_files', tensor_resampling, 'trans_file')

@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-    Simple interface for the EPI distortion generation script
+    Simple interface for the Diffusion distortion simulation script
 """
 
 import os
@@ -10,7 +10,7 @@ from nibabel import load
 import os.path as op
 import warnings
 import math
-import random
+import numpy.random as random
 
 
 from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
@@ -21,16 +21,16 @@ import dipy.core.gradients as gradients
 from nipype.utils.filemanip import split_filename
 
 
-def generatedistortion(Vtrans,Vrot,shear):
+def generate_distortion(std_trans,std_rot,std_shear):
 
-    print 'generate a distortion with tr=', Vtrans, ', rot=', Vrot, ', shear=', shear 
-    translations   = [0 + (Vtrans/3)  ** (0.5) * random.random(), \
-                      0 + (Vtrans/3)  ** (0.5) * random.random(), \
-                      0 + (Vtrans/3)  ** (0.5) * random.random()]
-    rotations_a    =  0 +       Vrot  ** (0.5) * random.random()
-    rotations_b    =  0 +       Vrot  ** (0.5) * random.random()
-    rotations_g    =  0 +       Vrot  ** (0.5) * random.random()
-    shearings      =  0 +       shear ** (0.5) * random.random()
+    print 'generate a distortion with tr=', std_trans, ', rot=', std_rot, ', shear=', std_shear 
+    translations   = [0 + std_trans * random.randn(), \
+                      0 + std_trans  * random.randn(), \
+                      0 + std_trans  * random.randn()]
+    rotations_a    =  0 +       std_rot * random.randn()
+    rotations_b    =  0 +       std_rot * random.randn()
+    rotations_g    =  0 +       std_rot * random.randn()
+    shearings      =  0 +       std_shear * random.randn()
 
     Mtrans=np.identity(4);
     for j in range(3):
@@ -71,13 +71,13 @@ def generatedistortion(Vtrans,Vrot,shear):
 
 class DistortionGeneratorInputSpec(BaseInterfaceInputSpec):
     
-    in_bval_file = File(argstr="%s", exists=True, mandatory=True,
+    bval_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input b-factor file to generate appropriate distortions")
-    in_bvec_file = File(argstr="%s", exists=True, mandatory=True,
+    bvec_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input b-vector file to generate appropriate distortions")
-    in_var_translation = traits.Float(argstr="%f", desc="Variance for the translation")
-    in_var_rotation = traits.Float(argstr="%f", desc="Variance for the rotation")
-    in_var_shear = traits.Float(argstr="%f", desc="Variance for the shear")
+    stddev_translation_val = traits.Float(argstr="%f", desc="Variance for the translation")
+    stddev_rotation_val = traits.Float(argstr="%f", desc="Variance for the rotation")
+    stddev_shear_val = traits.Float(argstr="%f", desc="Variance for the shear")
     
 class DistortionGeneratorOutputSpec(TraitedSpec):
     aff_files   = OutputMultiPath(desc="Output distortion matrices")
@@ -106,25 +106,25 @@ class DistortionGenerator(BaseInterface):
         return outfilenames
 
     def _run_interface(self, runtime):
-        Vtrans = self.inputs.in_var_translation
-        Vrot = self.inputs.in_var_rotation
-        Vshear = self.inputs.in_var_shear        
-        bvalfile = self.inputs.in_bval_file
-        bvecfile = self.inputs.in_bvec_file
+        std_trans = self.inputs.stddev_translation_val
+        std_rot = self.inputs.stddev_rotation_val
+        std_shear = self.inputs.stddev_shear_val        
+        bval_file = self.inputs.bval_file
+        bvec_file = self.inputs.bvec_file
         
-        gtab = gradients.gradient_table(bvalfile, bvecfile)
+        gtab = gradients.gradient_table(bval_file, bvec_file)
         b0_list = list(gtab.b0s_mask)
 
-        outfilenames = self._gen_output_filenames(bvalfile, bvecfile)
+        out_filenames = self._gen_output_filenames(bval_file, bvec_file)
 
         for i in range(len(b0_list)):
             is_b0 = b0_list[i]
             if is_b0 == True:
                 shear = 0
             else:
-                shear = Vshear
-            distortion = generatedistortion(Vtrans,Vrot,shear)
-            outfile = outfilenames[i]
+                shear = std_shear
+            distortion = generate_distortion(std_trans,std_rot,shear)
+            outfile = out_filenames[i]
             f=open(outfile, 'w+')
             for i in range(len(distortion)-1):
                 l = str(distortion[i])
@@ -138,9 +138,9 @@ class DistortionGenerator(BaseInterface):
     
     def _list_outputs(self):
         outputs = self.output_spec().get()
-        outfilenames = self._gen_output_filenames(self.inputs.in_bval_file, self.inputs.in_bvec_file)
+        out_filenames = self._gen_output_filenames(self.inputs.bval_file, self.inputs.bvec_file)
         aff_files = []
-        for item in outfilenames:
+        for item in out_filenames:
             aff_files.append(os.path.abspath(item))
         outputs['aff_files'] = aff_files
         return outputs
