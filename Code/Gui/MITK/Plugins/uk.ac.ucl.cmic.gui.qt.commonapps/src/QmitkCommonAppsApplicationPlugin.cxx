@@ -523,7 +523,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
       mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
 
-      node->SetProperty("LookupTable", mitkLUTProperty);
+      node->ReplaceProperty("LookupTable", mitkLUTProperty);
       node->SetIntProperty("LookupTableIndex", defaultIndex);
       node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
