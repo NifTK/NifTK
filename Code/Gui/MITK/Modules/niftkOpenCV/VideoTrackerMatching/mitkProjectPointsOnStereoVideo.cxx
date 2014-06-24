@@ -184,23 +184,26 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
   m_ClassifierProjectedPoints.clear();
-  if ( m_WorldPoints.size() == 0 ) 
+  if ( m_WorldPoints.size() < m_MaxGoldStandardIndex ) 
+  {
+    MITK_INFO << "Filling world points with dummy data to enable triangulation";
+    std::pair<cv::Point3d,cv::Scalar> emptyWorldPoint = 
+      std::pair < cv::Point3d,cv::Scalar> (
+      cv::Point3d(
+      std::numeric_limits<double>::infinity(),
+      std::numeric_limits<double>::infinity(),
+      std::numeric_limits<double>::infinity()),
+      cv::Scalar(0,0,0) );
+
+    for ( int i = m_WorldPoints.size() ; i <= m_MaxGoldStandardIndex ; i ++ )
+    {
+      m_WorldPoints.push_back(emptyWorldPoint);
+    }
+  }
+  if (  m_WorldPoints.size() == 0 )
   {
     MITK_WARN << "Called project with nothing to project";
-    if ( m_MaxGoldStandardIndex != -1 )
-    {
-      MITK_INFO << "Filling world points with dummy data to enable triangulation";
-      std::pair<cv::Point3d,cv::Scalar> emptyWorldPoint = 
-        std::pair < cv::Point3d,cv::Scalar> (cv::Point3d(0.0,0.0,0.0), cv::Scalar(0,0,0) );
-      for ( int i = 0 ; i <= m_MaxGoldStandardIndex ; i ++ )
-      {
-        m_WorldPoints.push_back(emptyWorldPoint);
-      }
-    }
-    else 
-    {
-      return;
-    }
+    return;
   }
 
   if ( m_Visualise ) 
@@ -629,7 +632,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
               if ( rightIndex == index ) 
               {
                 matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
+                (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
               }
             }
           }
@@ -699,7 +702,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
         
         cv::Mat leftCameraToWorld = trackerMatcher->GetCameraTrackingMatrix(frameNumber, NULL, m_TrackerIndex, NULL, m_ReferenceIndex);
-      
+        
         classifiedPoints[matchedPairs[i].first].push_back(leftCameraToWorld * triangulatedGS);
         cvReleaseMat (&leftScreenPointsMat);
         cvReleaseMat (&rightScreenPointsMat);
