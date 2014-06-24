@@ -20,6 +20,10 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   MODULE_DEPENDENCIES QmitkExt
 )
 
+target_link_libraries(uk_ac_ucl_cmic_imagestatistics
+  niftkITK
+)
+
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(uk_ac_ucl_cmic_imagestatistics)
 endif()

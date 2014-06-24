@@ -30,8 +30,8 @@ public:
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-}; // uk_ac_ucl_cmic_imagestatistics_Activator
+};
 
 }
 
-#endif // uk_ac_ucl_cmic_imagestatistics_Activator_h
+#endif
