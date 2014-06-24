@@ -81,7 +81,9 @@ void DataStorageVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* 
           mitk::BoolProperty* rendererSpecificProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", m_ManagedRenderers[i]));
           if (rendererSpecificProperty == globalProperty)
           {
-            node->SetBoolProperty("visibility", false, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
+            /// TODO
+            /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+            node->SetBoolProperty("visible", false, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
           }
           else if (rendererSpecificProperty && rendererSpecificProperty->GetValue())
           {

@@ -31,7 +31,7 @@ class niftkSingleViewerWidget;
  * \class niftkMultiViewerVisibilityManager
  * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
- * to Modified events from the nodes "visibility" property in DataStorage.
+ * to Modified events from the nodes "visible" property in DataStorage.
  */
 class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject
 {

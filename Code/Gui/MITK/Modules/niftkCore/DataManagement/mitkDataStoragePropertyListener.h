@@ -29,7 +29,7 @@ class VisibilityChangedCommand;
 
 /**
  * \class DataStoragePropertyListener
- * \brief Base class for objects that Listen to data storage for a specific property such as "visibility".
+ * \brief Base class for objects that Listen to data storage for a specific property such as "visible".
  *
  * This class is derived from itk::Object so we can use things like the ITK setter/getter macros, listening to
  * Modified events via the Observer pattern etc.
