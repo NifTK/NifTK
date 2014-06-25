@@ -184,7 +184,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
   m_ClassifierProjectedPoints.clear();
-  if ( m_WorldPoints.size() < m_MaxGoldStandardIndex ) 
+  if ( static_cast<int>(m_WorldPoints.size()) < m_MaxGoldStandardIndex ) 
   {
     MITK_INFO << "Filling world points with dummy data to enable triangulation";
     std::pair<cv::Point3d,cv::Scalar> emptyWorldPoint = 
