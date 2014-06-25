@@ -14,6 +14,8 @@
 
 #include "mitkITKRegionParametersDataNodeProperty.h"
 
+#include <assert.h>
+
 namespace mitk
 {
 
