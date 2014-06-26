@@ -103,12 +103,11 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_MainAxialSnc(0)
 , m_MainSagittalSnc(0)
 , m_MainCoronalSnc(0)
-, m_NodeAddedSetter(0)
 , m_VisibilityTracker(0)
 , m_Magnification(0.0)
 , m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
-, m_MIDASToolNodeNameFilter(0)
+//, m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
@@ -140,13 +139,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
 
-  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
-  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
-  m_NodeAddedSetter->SetRenderers(renderers);
-  m_NodeAddedSetter->SetVisibility(false);
+//  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
 
-  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New();
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
 
@@ -156,29 +151,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_Viewer->SetCursorPositionBinding(false);
   m_Viewer->SetScaleFactorBinding(true);
 
-  this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
-  this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));
-  this->connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalWindowRadioButtonToggled(bool)));
-  this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
-  this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
-
-  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
-
-  this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
-  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
-  this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
-  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
-
-  // Register focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
-
-    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-  }
 
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
@@ -209,6 +182,29 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
         this->OnMainWindowChanged(selectedEditor, mainWindow);
       }
     }
+  }
+
+  this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
+  this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));
+  this->connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalWindowRadioButtonToggled(bool)));
+  this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
+  this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
+
+  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+
+  this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
+  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
+
+  // Register focus observer.
+  if (focusManager)
+  {
+    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
+
+    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
 }
 
@@ -248,7 +244,6 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
 
-  /// m_NodeAddedSetter deleted by smart pointer.
   /// m_VisibilityTracker deleted by smart pointer.
 }
 
@@ -260,7 +255,6 @@ void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage* dataStorage)
   {
     m_Viewer->SetDataStorage(dataStorage);
 
-    m_NodeAddedSetter->SetDataStorage(dataStorage);
     m_VisibilityTracker->SetDataStorage(dataStorage);
   }
 }

@@ -21,9 +21,8 @@
 
 #include <berryIPartListener.h>
 
-#include <mitkDataNodeAddedVisibilitySetter.h>
-#include <mitkDataStorageVisibilityTracker.h>
-#include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkDataNodeVisibilityTracker.h>
+//#include <mitkMIDASDataNodeNameStringFilter.h>
 #include <mitkMIDASEnums.h>
 
 #include <QString>
@@ -183,11 +182,10 @@ private:
   /// \brief Renderer of the currently focused window of the main display.
   mitk::BaseRenderer* m_FocusedRenderer;
 
-  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
-  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+//  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers

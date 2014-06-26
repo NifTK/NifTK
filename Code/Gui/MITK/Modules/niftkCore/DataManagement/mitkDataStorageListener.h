@@ -42,11 +42,11 @@ public:
   itkNewMacro(DataStorageListener);
   mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer);
 
-  /// \brief Get the data storage.
-  itkGetMacro(DataStorage, mitk::DataStorage::Pointer);
+  /// \brief Gets the data storage.
+  mitk::DataStorage::Pointer GetDataStorage() const;
 
-  /// \brief Set the data storage.
-  void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
+  /// \brief Sets the data storage.
+  virtual void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Adds a filter.
   ///
@@ -56,11 +56,12 @@ public:
   /// \brief Clears all filters.
   void ClearFilters();
 
-  /// \brief Gets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
+  /// \brief Gets the blocked flag that tells if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
   bool IsBlocked() const;
 
-  /// \brief Sets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  void SetBlocked(bool blocked);
+  /// \brief Sets the blocked flag that tells if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
+  /// Returns the previous value of the flag that should be restored after unblocking.
+  bool SetBlocked(bool blocked);
 
 protected:
 
@@ -70,12 +71,6 @@ protected:
 
   DataStorageListener(const DataStorageListener&); // Purposefully not implemented.
   DataStorageListener& operator=(const DataStorageListener&); // Purposefully not implemented.
-
-  /// \brief Called to register to the data storage.
-  virtual void Activate(const mitk::DataStorage::Pointer storage);
-
-  /// \brief Called to un-register from the data storage.
-  virtual void Deactivate();
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards,
   /// and subclasses should override the NodeAdded event.
@@ -111,11 +106,17 @@ protected:
 
 private:
 
+  /// \brief Called to register to the data storage.
+  void AddListeners();
+
+  /// \brief Called to un-register from the data storage.
+  void RemoveListeners();
+
   /// \brief Checks the node against the list of filters.
   ///
   /// \param node A data node to check
   /// \return true if the data node passess all filters and false otherwise.
-  bool Pass(const mitk::DataNode* node);
+  bool Pass(const mitk::DataNode* node) const;
 
   /// \brief  This object MUST be connected to a datastorage for it to work.
   mitk::DataStorage::Pointer m_DataStorage;

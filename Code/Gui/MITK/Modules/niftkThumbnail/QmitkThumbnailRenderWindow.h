@@ -19,10 +19,9 @@
 
 #include <mitkCuboid.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodeAddedVisibilitySetter.h>
-#include <mitkDataNodeStringPropertyFilter.h>
+//#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
-#include <mitkDataStorageVisibilityTracker.h>
+#include <mitkDataNodeVisibilityTracker.h>
 
 #include <QColor>
 
@@ -249,11 +248,9 @@ private:
   bool m_InDataStorageChanged;
 
   // To track visibility changes.
-  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
-
-  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+//  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 
   mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
 

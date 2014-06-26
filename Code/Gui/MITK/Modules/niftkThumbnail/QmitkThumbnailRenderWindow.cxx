@@ -53,7 +53,6 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_MouseEventEater(NULL)
 , m_WheelEventEater(NULL)
 , m_InDataStorageChanged(false)
-, m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 {
   // This should come early on, as we are setting renderer specific properties,
@@ -83,41 +82,35 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
 
-  std::vector<const mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_Renderer);
-
-  std::vector<mitk::DataNode*> nodesToIgnore;
-  nodesToIgnore.push_back(m_BoundingBoxNode);
-
-  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-
   // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
   //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
 
-  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
-  m_MIDASToolNodeNameFilter->SetPropertyName("name");
-  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
-  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+//  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+//  m_MIDASToolNodeNameFilter->SetPropertyName("name");
+//  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+//  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+//  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
 
-  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
-  m_NodeAddedSetter->SetRenderers(renderers);
-  m_NodeAddedSetter->SetVisibility(false);
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New();
 
-  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  std::vector<const mitk::BaseRenderer*> renderers;
+  renderers.push_back(m_Renderer);
   m_VisibilityTracker->SetManagedRenderers(renderers);
+
+  std::vector<mitk::DataNode*> nodesToIgnore;
+  nodesToIgnore.push_back(m_BoundingBoxNode);
   m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 }
 
@@ -274,7 +267,6 @@ void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataS
 
   m_Renderer->SetDataStorage(dataStorage);
 
-  m_NodeAddedSetter->SetDataStorage(dataStorage);
   m_VisibilityTracker->SetDataStorage(dataStorage);
 }
 
