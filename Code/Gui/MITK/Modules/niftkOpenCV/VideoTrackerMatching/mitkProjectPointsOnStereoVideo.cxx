@@ -692,7 +692,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
           rightCameraRotationVectorMat,
           rightCameraTranslationVectorMat,
           *leftCameraTriangulatedWorldPoints);
-        
+
         cv::Point3d triangulatedGS;
         triangulatedGS.x = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,0);
         triangulatedGS.y = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,1);

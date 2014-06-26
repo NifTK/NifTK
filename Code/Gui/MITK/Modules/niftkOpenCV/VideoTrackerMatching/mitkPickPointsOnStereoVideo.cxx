@@ -157,8 +157,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
 
-      cv::Mat leftVideoImage = cvQueryFrame ( m_Capture ) ;
-      cv::Mat rightVideoImage = cvQueryFrame ( m_Capture ) ;
+      cv::Mat tempMat;
+      cv::Mat leftVideoImage;
+      tempMat = cvQueryFrame ( m_Capture );
+      leftVideoImage = tempMat.clone();
+      tempMat = cvQueryFrame ( m_Capture );
+      cv::Mat rightVideoImage = tempMat.clone();
+
       if ( std::abs(timingError) <  m_AllowableTimingError )
       {
         key = cvWaitKey (20);
