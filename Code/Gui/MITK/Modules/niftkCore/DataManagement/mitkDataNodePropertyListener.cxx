@@ -113,7 +113,7 @@ void DataNodePropertyListener::SetRenderers(const std::vector<const mitk::BaseRe
 
 
 //-----------------------------------------------------------------------------
-void DataNodePropertyListener::NodeAdded(mitk::DataNode* node)
+void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 {
   this->AddObservers(node);
   this->Notify(node);
@@ -121,7 +121,7 @@ void DataNodePropertyListener::NodeAdded(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void DataNodePropertyListener::NodeRemoved(mitk::DataNode* node)
+void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 {
   this->Notify(node);
   this->RemoveObservers(node);
@@ -129,7 +129,7 @@ void DataNodePropertyListener::NodeRemoved(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void DataNodePropertyListener::NodeDeleted(mitk::DataNode* node)
+void DataNodePropertyListener::OnNodeDeleted(mitk::DataNode* node)
 {
   this->Notify(node);
   this->RemoveObservers(node);

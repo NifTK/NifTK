@@ -44,12 +44,6 @@ public:
   mitkClassMacro(DataNodeVisibilityTracker, mitk::DataNodePropertyListener);
   itkNewMacro(DataNodeVisibilityTracker);
 
-  /// \brief Gets the default visibility for new nodes.
-  bool GetDefaultVisibility() const;
-
-  /// \brief Sets the default visibility for new nodes.
-  void SetDefaultVisibility(bool defaultVisibility);
-
   /// \brief Sets the renderer we are tracking.
   void SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer);
 
@@ -72,7 +66,7 @@ protected:
   DataNodeVisibilityTracker& operator=(const DataNodeVisibilityTracker&); // Purposefully not implemented.
 
   /// \see DataStorageListener::NodeAdded
-  virtual void NodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node);
 
   /// \brief Called when the property value has changed globally or for the given renderer.
   /// If the global property has changed, renderer is NULL.
@@ -80,7 +74,6 @@ protected:
 
 private:
 
-  bool m_DefaultVisibility;
   const mitk::BaseRenderer* m_TrackedRenderer;
   std::vector<const mitk::BaseRenderer*> m_ManagedRenderers;
   std::vector<mitk::DataNode*> m_NodesToIgnore;

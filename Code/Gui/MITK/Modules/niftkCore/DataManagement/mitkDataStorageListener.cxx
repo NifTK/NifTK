@@ -176,7 +176,7 @@ void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
     m_InDataStorageChanged = true;
     if (this->Pass(node))
     {
-      this->NodeAdded(const_cast<mitk::DataNode*>(node));
+      this->OnNodeAdded(const_cast<mitk::DataNode*>(node));
     }
     m_InDataStorageChanged = false;
   }
@@ -192,7 +192,7 @@ void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
     m_InDataStorageChanged = true;
     if (this->Pass(node))
     {
-      this->NodeChanged(const_cast<mitk::DataNode*>(node));
+      this->OnNodeChanged(const_cast<mitk::DataNode*>(node));
     }
     m_InDataStorageChanged = false;
   }
@@ -208,7 +208,7 @@ void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
     m_InDataStorageChanged = true;
     if (this->Pass(node))
     {
-      this->NodeRemoved(const_cast<mitk::DataNode*>(node));
+      this->OnNodeRemoved(const_cast<mitk::DataNode*>(node));
     }
     m_InDataStorageChanged = false;
   }
@@ -224,7 +224,7 @@ void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
     m_InDataStorageChanged = true;
     if (this->Pass(node))
     {
-      this->NodeDeleted(const_cast<mitk::DataNode*>(node));
+      this->OnNodeDeleted(const_cast<mitk::DataNode*>(node));
     }
     m_InDataStorageChanged = false;
   }
@@ -232,25 +232,25 @@ void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::NodeAdded(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeAdded(mitk::DataNode* /*node*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::NodeChanged(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeChanged(mitk::DataNode* /*node*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::NodeRemoved(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeRemoved(mitk::DataNode* /*node*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::NodeDeleted(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeDeleted(mitk::DataNode* /*node*/)
 {
 }
 
