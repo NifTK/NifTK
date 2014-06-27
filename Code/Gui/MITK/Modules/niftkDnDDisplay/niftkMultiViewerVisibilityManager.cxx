@@ -161,7 +161,7 @@ void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* no
   if(!m_BlockDataStorageEvents)
   {
     m_BlockDataStorageEvents = true;
-    this->NodeAdded(node);
+    this->OnNodeAdded(node);
     m_BlockDataStorageEvents = false;
   }
 }
@@ -174,14 +174,14 @@ void niftkMultiViewerVisibilityManager::NodeRemovedProxy( const mitk::DataNode* 
   if(!m_BlockDataStorageEvents)
   {
     m_BlockDataStorageEvents = true;
-    this->NodeRemoved(node);
+    this->OnNodeRemoved(node);
     m_BlockDataStorageEvents = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
+void niftkMultiViewerVisibilityManager::OnNodeAdded(const mitk::DataNode* node2)
 {
   mitk::DataNode* node = const_cast<mitk::DataNode*>(node2);
 
@@ -256,7 +256,7 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::NodeRemoved(const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::OnNodeRemoved(const mitk::DataNode* node)
 {
   mitk::BoolProperty* property = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
   if (property)
