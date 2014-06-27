@@ -599,7 +599,6 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
 
   // Setup the visibility tracker.
   m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
-  m_VisibilityTracker->NotifyAll();
 
   // Get the box to update
   this->UpdateBoundingBox();

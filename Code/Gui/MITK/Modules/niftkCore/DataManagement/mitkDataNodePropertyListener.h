@@ -53,12 +53,6 @@ public:
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
 
-  /// \brief Sends a signal with current the property value of the given node to the registered listeners.
-  void Notify(mitk::DataNode* node);
-
-  /// \brief Sends a signal with current the property value of all nodes to the registered listeners.
-  void NotifyAll();
-
 protected:
 
   DataNodePropertyListener(const std::string& propertyName);

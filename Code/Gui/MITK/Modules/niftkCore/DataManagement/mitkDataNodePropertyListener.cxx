@@ -116,14 +116,12 @@ void DataNodePropertyListener::SetRenderers(const std::vector<const mitk::BaseRe
 void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 {
   this->AddObservers(node);
-  this->Notify(node);
 }
 
 
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 {
-  this->Notify(node);
   this->RemoveObservers(node);
 }
 
@@ -131,7 +129,6 @@ void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeDeleted(mitk::DataNode* node)
 {
-  this->Notify(node);
   this->RemoveObservers(node);
 }
 
@@ -274,61 +271,4 @@ void DataNodePropertyListener::OnPropertyChanged(mitk::DataNode* node, const mit
 {
 }
 
-
-//-----------------------------------------------------------------------------
-void DataNodePropertyListener::Notify(mitk::DataNode* node)
-{
-  NodePropertyObserverTags::iterator propertyObserverTagsPerNodeIt = m_PropertyObserverTagsPerNode.find(node);
-  if (propertyObserverTagsPerNodeIt != m_PropertyObserverTagsPerNode.end())
-  {
-    std::vector<unsigned long>& propertyObserverTags = propertyObserverTagsPerNodeIt->second;
-
-    mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str(), 0);
-    if (globalProperty && propertyObserverTags[0])
-    {
-      PropertyChangedCommand* observer = dynamic_cast<PropertyChangedCommand*>(globalProperty->GetCommand(propertyObserverTags[0]));
-      /// Note:
-      /// We need to do a null check here because the observer tag is not cleared when a property is removed.
-      if (observer)
-      {
-        observer->Notify();
-      }
-    }
-
-    for (std::size_t i = 0; i < m_Renderers.size(); ++i)
-    {
-      /// Note:
-      /// GetProperty() returns the global property if there is no renderer specific property.
-      /// Therefore, we need to check if the property is really renderer specific.
-      mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
-      if (rendererSpecificProperty && rendererSpecificProperty != globalProperty && propertyObserverTags[i + 1])
-      {
-        PropertyChangedCommand* observer = dynamic_cast<PropertyChangedCommand*>(rendererSpecificProperty->GetCommand(propertyObserverTags[i + 1]));
-        /// Note:
-        /// We need to do a null check here because the observer tag is not cleared when a property is removed.
-        if (observer)
-        {
-          observer->Notify();
-        }
-      }
-    }
-  }
 }
-
-
-//-----------------------------------------------------------------------------
-void DataNodePropertyListener::NotifyAll()
-{
-  if (!this->IsBlocked())
-  {
-    NodePropertyObserverTags::iterator nodeToObserverTagsIt = m_PropertyObserverTagsPerNode.begin();
-    NodePropertyObserverTags::iterator nodeToObserverTagsEnd = m_PropertyObserverTagsPerNode.end();
-
-    for ( ; nodeToObserverTagsIt != nodeToObserverTagsEnd; ++nodeToObserverTagsIt)
-    {
-      this->Notify(nodeToObserverTagsIt->first);
-    }
-  }
-}
-
-} // end namespace
