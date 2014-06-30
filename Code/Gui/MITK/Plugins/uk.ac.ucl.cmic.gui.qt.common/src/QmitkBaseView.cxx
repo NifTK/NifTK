@@ -337,6 +337,13 @@ bool QmitkBaseView::IsVisible()
 
 
 //-----------------------------------------------------------------------------
+mitk::DataStorage::Pointer QmitkBaseView::GetDataStorage() const
+{
+  return SuperClass::GetDataStorage();
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
