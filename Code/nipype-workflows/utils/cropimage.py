@@ -5,38 +5,27 @@
 """
 
 import os
-import numpy as np
-from nibabel import load
-import os.path as op
-import warnings
 
-from nipype.interfaces.niftyseg.base import NIFTYSEGCommand, NIFTYSEGCommandInputSpec
-from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath,
+from nipype.interfaces.fsl.base import FSLCommand as CROPIMAGECommand
+from nipype.interfaces.fsl.base import FSLCommandInputSpec as CROPIMAGECommandInputSpec
+from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, OutputMultiPath,
                                     isdefined)
 
-
-warn = warnings.warn
-warnings.filterwarnings('always', category=UserWarning)
-
-class CropImageInputSpec(NIFTYSEGCommandInputSpec):
+class CropImageInputSpec(CROPIMAGECommandInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True, position = 2,
                 desc="Input target image filename")
-    
     mask_file = File(exists=True, mandatory=True, argstr="%s", position = -3,
                      desc="Mask over the input image")
-
     out_file = File(exists=False, genfile = True, mandatory=False, argstr="%s", position = -2, 
                      desc="Mask over the input image [default: none]")
-
 
 class CropImageOutputSpec(TraitedSpec):
     out_file   = File(exists=False, genfile = True, desc="Output cropped image file")
 
-class CropImage(NIFTYSEGCommand):
+class CropImage(CROPIMAGECommand):
 
     """
-
     Examples
     --------
     from cropimage import CropImage
@@ -46,7 +35,6 @@ class CropImage(NIFTYSEGCommand):
     cropper.inputs.out_file = "T1_cropped.nii.gz"
     cropper.run()
     """
-
     _cmd = "CropImage.sh"
     _suffix = "_crop_image"
     input_spec = CropImageInputSpec  
@@ -59,11 +47,9 @@ class CropImage(NIFTYSEGCommand):
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
-        
         if isdefined(self.inputs.out_file) and self.inputs.out_file:
             outputs['out_file'] = os.path.abspath(self.inputs.out_file)
         else:
-            outputs['out_file'] = self._gen_filename('out_file')
-        
+            outputs['out_file'] = self._gen_filename('out_file')        
         return outputs
         

@@ -5,13 +5,9 @@
 """
 
 import os
-import numpy as np
-from nibabel import load
-import os.path as op
-import warnings
 import math
+import numpy as np
 import numpy.random as random
-
 
 from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
 from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, OutputMultiPath,
@@ -20,17 +16,16 @@ from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, Output
 import dipy.core.gradients as gradients
 from nipype.utils.filemanip import split_filename
 
-
 def generate_distortion(std_trans,std_rot,std_shear):
 
     print 'generate a distortion with tr=', std_trans, ', rot=', std_rot, ', shear=', std_shear 
     translations   = [0 + std_trans * random.randn(), \
-                      0 + std_trans  * random.randn(), \
-                      0 + std_trans  * random.randn()]
-    rotations_a    =  0 +       std_rot * random.randn()
-    rotations_b    =  0 +       std_rot * random.randn()
-    rotations_g    =  0 +       std_rot * random.randn()
-    shearings      =  0 +       std_shear * random.randn()
+                      0 + std_trans * random.randn(), \
+                      0 + std_trans * random.randn()]
+    rotations_a    =  0 + std_rot   * random.randn()
+    rotations_b    =  0 + std_rot   * random.randn()
+    rotations_g    =  0 + std_rot   * random.randn()
+    shearings      =  0 + std_shear * random.randn()
 
     Mtrans=np.identity(4);
     for j in range(3):
