@@ -125,14 +125,11 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     workflow.connect(input_node, 'in_bval_file',    tensor_2_dwi, 'bval_file')
     workflow.connect(input_node, 'in_B0_file',      tensor_2_dwi, 'b0_file')
     
-    #TODO: Need to make rigidly distorted B0s for 'psuedo-observations'
-    
     #TODO: Need to add noise to the B0 and the distorted DWI!
 
     # Merge distorted DWI
     workflow.connect(tensor_2_dwi, 'syn_file', merge_dwis, 'in_files')
     
-    #TODO:  Can we merge DWI and b0 images at the same time?!?
     workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')
     
     # Now perform the diffusion pre-processing pipeline
