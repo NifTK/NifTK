@@ -195,7 +195,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                 'residual_image',
                 'parameter_uncertainty_image',
                 'dwis',
-                'transformations']),
+                'transformations',
+                'average_b0']),
                            name="output_node" )
     
     workflow.connect(input_node, 'in_dwi_4d_file', split_dwis, 'in_file')
@@ -304,6 +305,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     else:
         workflow.connect(merge_dwis, 'merged_file', tensor_fitting, 'source_file')
     
+    
     workflow.connect(input_node, 'in_bvec_file', tensor_fitting, 'bvec_file')
     workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bval_file')    
     
@@ -317,10 +319,14 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     workflow.connect(tensor_fitting, 'syn_file', output_node, 'predicted_image')
     workflow.connect(tensor_fitting, 'res_file', output_node, 'residual_image')
     workflow.connect(tensor_fitting, 'error_file', output_node, 'parameter_uncertainty_image')
+    
+    
     if correct_susceptibility == True:
         workflow.connect(transformation_composition, 'out_file', output_node, 'transformations')
+        workflow.connect(susceptibility_correction, 'output_node.out_epi', output_node, 'average_b0')
     else:
         workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
+        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')
     
     if resample_in_t1:
         rig_reg = pe.Node(niftyreg.RegAladin(), name = 'b0_to_T1_registration')
