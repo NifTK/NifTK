@@ -116,6 +116,11 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
 
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
+  m_Viewer->SetCursorVisible(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
+  m_Viewer->SetDisplayInteractionsEnabled(true);
+  m_Viewer->SetCursorPositionBinding(false);
+  m_Viewer->SetScaleFactorBinding(true);
 
   m_CoronalWindowRadioButton->setChecked(true);
 
@@ -145,11 +150,13 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
 
-  m_Viewer->SetCursorVisible(true);
-  m_Viewer->SetRememberSettingsPerWindowLayout(false);
-  m_Viewer->SetDisplayInteractionsEnabled(true);
-  m_Viewer->SetCursorPositionBinding(false);
-  m_Viewer->SetScaleFactorBinding(true);
+  /// Note:
+  /// The data storage has to be set *after* the user interface and the visibility tracker
+  /// is created, since it is simply passed down to these objects.
+  /// Also, it has to be set *before* the internal viewer is initialised from a main window
+  /// because its the crosshair planes needs to be added to the data storage after the viewer
+  /// is initialised based on the geometry of the main window.
+  this->SetDataStorage(view->GetDataStorage());
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
@@ -249,14 +256,10 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage* dataStorage)
+void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
-  if (dataStorage)
-  {
-    m_Viewer->SetDataStorage(dataStorage);
-
-    m_VisibilityTracker->SetDataStorage(dataStorage);
-  }
+  m_Viewer->SetDataStorage(dataStorage);
+  m_VisibilityTracker->SetDataStorage(dataStorage);
 }
 
 
