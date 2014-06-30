@@ -218,6 +218,13 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     gif_pre_sink = pe.Node(nio.DataSink(), name='gif_pre_sink')
     gif_pre_sink.inputs._outputs = dict([['cpps','cpps']])
 
+    # make a node to create all subdirectories, that will include the cropped T1s and cpps
+    create_aff_files = pe.MapNode(interface = niu.Function(input_names = ['basedir'],
+                                                           output_names = ['out_dir', 'afffilelist'],
+                                                           function=ensure_aff_files),
+                                  name = 'create_aff_files',
+                                  iterfield = ['basedir'])
+
     gif = pe.Node(interface=niftyseg.Gif(), name='gif')
 
     resampler_parc  = pe.Node(interface = niftyreg.RegResample(), name = 'resampler_parc')
@@ -271,7 +278,9 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     
     workflow.connect(gif_pre_sink, 'out_file', pathgen, 'paths')
     
-    workflow.connect(pathgen,        'path',             gif, 'cpp_dir')
+    workflow.connect(pathgen, 'path', create_aff_files, 'basedir')
+    
+    workflow.connect(create_aff_files, 'out_dir',        gif, 'cpp_dir')
     workflow.connect(cropper,        'out_file',         gif, 'in_file')
     workflow.connect(resampler_mask, 'res_file',         gif, 'mask_file')
     workflow.connect(input_node,     'template_db_file', gif, 'database_file')

@@ -6,7 +6,7 @@ import seg_gif_propagation as gif
 
 basedir = '/Users/nicolastoussaint/data/nipype/gif/'
 
-infile = basedir + '072_S_4391_ADNI2_M_74.61_3.0T_HC_277672.nii.gz'
+infile = basedir + 'input.nii.gz'
 T1s    = basedir + 'template-database/T1s/'
 db     = basedir + 'template-database/db.xml'
 avg    = basedir + 'template-database/average.nii.gz'
@@ -40,5 +40,5 @@ else:
     
     r.write_graph(graph2use='orig')
     
-    r.run('Linear')
+    r.run('MultiProc')
 
