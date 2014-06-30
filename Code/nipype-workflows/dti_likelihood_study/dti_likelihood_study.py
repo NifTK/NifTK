@@ -10,8 +10,7 @@ import nipype.interfaces.susceptibility as susceptibility
 
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.ttk            as ttk
-import diffusion_distortion_simulation        as distortion_sim
-import math
+import diffusion_distortion_simulation  as distortion_sim
 
 '''
 This file provides the creation of the whole workflow necessary for 
@@ -50,14 +49,14 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                     'in_T1_file',
                     'in_B0_file',
                     'in_bvec_file',
-                    'in_bval_file']),
+                    'in_bval_file',
+                    'in_stddev_translation',
+                    'in_stddev_rotation',
+                    'in_stddev_shear']),
         name='input_node')
     
     distortion_generator = pe.Node(interface = distortion_sim.DistortionGenerator(), 
                                    name = 'distortion_generator')
-    distortion_generator.inputs.stddev_translation_val = 0.2
-    distortion_generator.inputs.stddev_rotation_val = 0.01*math.pi/180
-    distortion_generator.inputs.stddev_shear_val = 0.0003
     
     tensor_resampling = pe.MapNode(interface = niftyreg.RegResample(), 
                                    name = 'tensor_resampling', 
@@ -70,9 +69,9 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
 
     tensor_2_dwi = pe.MapNode(interface = niftyfit.DwiTool(), 
                               name = 'tensor_2_dwi', 
-                              iterfield = ['source_file','b0_file'])
+                              iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
 
-    merge_dwis = pe.Node(interface = fsl.Merge(), 
+    merge_dwis = pe.Node(interface = fsl.Merge(dimension = 't'), 
                          direction = 't',
                          name = 'merge_dwis')
     
@@ -89,11 +88,11 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                                   name = 'b0_resampling_2',
                                   iterfield = ['trans_file'])
 
-    tensor_2_dwi_2 = pe.MapNode(interface = niftyfit.DwiTool(dtiFlag2 = True), 
+    tensor_2_dwi_2 = pe.MapNode(interface = niftyfit.DwiTool(dti_flag2 = True), 
                                 name = 'tensor_2_dwi_2', 
-                                iterfield = ['in_file'])
+                                iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
 
-    merge_dwis_2 = pe.Node(interface = fsl.Merge(), 
+    merge_dwis_2 = pe.Node(interface = fsl.Merge(dimension = 't'), 
                           direction = 't',
                           name = 'merge_dwis_2')
 
@@ -104,10 +103,11 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                 'simulated_tensors',
                 'estimated_tensors']),
                            name="output_node" )
-                           
     
     
-    #TODO: How to separate bvec/bvalue pairs for the DWI generation?
+    workflow.connect(input_node, 'in_stddev_translation', distortion_generator, 'stddev_translation_val')
+    workflow.connect(input_node, 'in_stddev_rotation', distortion_generator, 'stddev_rotation_val')
+    workflow.connect(input_node, 'in_stddev_shear', distortion_generator, 'stddev_shear_val')
     workflow.connect(input_node, 'in_bval_file', distortion_generator, 'bval_file')
     workflow.connect(input_node, 'in_bvec_file', distortion_generator, 'bvec_file')
     # Resample tensors
@@ -117,13 +117,13 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     # Resample B0s the same way as the distorted tensor
     workflow.connect(input_node, 'in_B0_file', b0_resampling, 'flo_file')
     workflow.connect(input_node, 'in_B0_file', b0_resampling, 'ref_file')
-    workflow.connect(distortion_generator, 'aff_files', tensor_resampling, 'trans_file')
+    workflow.connect(distortion_generator, 'aff_files', b0_resampling, 'trans_file')
     
     # Make distortedDWI using the the affine distorted tensors and B0s
     workflow.connect(tensor_resampling, 'res_file', tensor_2_dwi, 'source_file')
-    workflow.connect(input_node, 'in_bvec_file',    tensor_2_dwi, 'bvec_file')
-    workflow.connect(input_node, 'in_bval_file',    tensor_2_dwi, 'bval_file')
-    workflow.connect(input_node, 'in_B0_file',      tensor_2_dwi, 'b0_file')
+    workflow.connect(distortion_generator, 'bval_files', tensor_2_dwi, 'bval_file')
+    workflow.connect(distortion_generator, 'bvec_files', tensor_2_dwi, 'bvec_file')
+    workflow.connect(b0_resampling, 'res_file', tensor_2_dwi, 'b0_file')
     
     #TODO: Need to add noise to the B0 and the distorted DWI!
 
@@ -153,10 +153,10 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     
     # Predict the DWI for this particular b-vector/b-value pair, ignore 
     workflow.connect(tensor_resampling_2, 'res_file', tensor_2_dwi_2, 'source_file')
-    workflow.connect(input_node, 'in_bvec_file', tensor_2_dwi_2, 'bvec_file')
     # TODO: Need to pass the correct bval/bvec pair
-    workflow.connect(input_node, 'in_bval_file', tensor_2_dwi_2, 'bval_file')
-    workflow.connect(b0_resampling_2, 'res_file', tensor_2_dwi_2, 'B0_file')
+    workflow.connect(distortion_generator, 'bval_files', tensor_2_dwi_2, 'bval_file')
+    workflow.connect(distortion_generator, 'bvec_files', tensor_2_dwi_2, 'bvec_file')
+    workflow.connect(b0_resampling_2, 'res_file', tensor_2_dwi_2, 'b0_file')
     
     workflow.connect(tensor_2_dwi_2, 'syn_file', merge_dwis_2, 'in_files')
     workflow.connect(merge_dwis,'merged_file',output_node, 'simulated_dwis')
