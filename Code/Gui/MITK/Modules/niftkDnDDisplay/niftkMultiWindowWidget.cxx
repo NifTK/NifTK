@@ -114,6 +114,11 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
 {
+  /// Note:
+  /// The rendering manager is surely not null. If NULL is specified then the superclass
+  /// constructor initialised it with the default one.
+  this->SetDataStorage(m_RenderingManager->GetDataStorage());
+
   m_RenderWindows[AXIAL] = this->GetRenderWindow1();
   m_RenderWindows[SAGITTAL] = this->GetRenderWindow2();
   m_RenderWindows[CORONAL] = this->GetRenderWindow3();
