@@ -19,7 +19,6 @@
 
 #include <deque>
 
-#include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
 #include <mitkTimeGeometry.h>
 #include <mitkRenderingManager.h>
@@ -175,12 +174,6 @@ public:
 
   /// \brief Returns the maximum allowed magnification.
   double GetMaxMagnification() const;
-
-  /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.
-  mitk::DataStorage::Pointer GetDataStorage() const;
-
-  /// \brief Sets the data storage on m_DataStorage, m_RenderingManager and m_MultiWidget.
-  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
@@ -434,7 +427,6 @@ private:
   /// \brief Gets the cursor positions in the render windows, assuming that the centre of the displayed regions is at the given display positions.
   std::vector<mitk::Vector2D> GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions);
 
-  mitk::DataStorage::Pointer m_DataStorage;
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   QGridLayout* m_GridLayout;

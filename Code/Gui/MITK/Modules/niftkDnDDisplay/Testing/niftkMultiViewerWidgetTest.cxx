@@ -139,7 +139,7 @@ void niftkMultiViewerWidgetTestClass::init()
   Q_D(niftkMultiViewerWidgetTestClass);
 
   // Create the niftkMultiViewerWidget
-  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, d->DataStorage, 1, 1);
+  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, 1, 1);
 
   // Setup GUI a bit more.
   d->MultiViewer->SetDropType(DNDDISPLAY_DROP_SINGLE);

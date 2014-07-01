@@ -50,7 +50,6 @@
 niftkMultiViewerWidget::niftkMultiViewerWidget(
     niftkMultiViewerVisibilityManager* visibilityManager,
     mitk::RenderingManager* renderingManager,
-    mitk::DataStorage::Pointer dataStorage,
     int defaultViewerRows,
     int defaultViewerColumns,
     QWidget* parent, Qt::WindowFlags f)
@@ -60,7 +59,6 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_PinButton(NULL)
 , m_PopupWidget(NULL)
 , m_VisibilityManager(visibilityManager)
-, m_DataStorage(dataStorage)
 , m_RenderingManager(renderingManager)
 , m_SelectedViewerIndex(0)
 , m_DefaultViewerRows(defaultViewerRows)
@@ -233,7 +231,6 @@ niftkMultiViewerWidget::~niftkMultiViewerWidget()
 niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& name)
 {
   niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(this, m_RenderingManager, name);
-  viewer->SetDataStorage(m_DataStorage);
   viewer->setObjectName(name);
   viewer->setVisible(false);
 

@@ -28,7 +28,6 @@
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::RenderingManager* renderingManager, const QString& name)
 : QWidget(parent)
-, m_DataStorage(NULL)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
 , m_IsBoundTimeGeometryActive(false)
@@ -376,13 +375,6 @@ double niftkSingleViewerWidget::GetMaxMagnification() const
 
 
 //-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer niftkSingleViewerWidget::GetDataStorage() const
-{
-  return m_DataStorage;
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetRememberSettingsPerWindowLayout(bool remember)
 {
   m_RememberSettingsPerWindowLayout = remember;
@@ -393,14 +385,6 @@ void niftkSingleViewerWidget::SetRememberSettingsPerWindowLayout(bool remember)
 bool niftkSingleViewerWidget::GetRememberSettingsPerWindowLayout() const
 {
   return m_RememberSettingsPerWindowLayout;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
-{
-  m_DataStorage = dataStorage;
-  m_MultiWidget->SetDataStorage(m_DataStorage);
 }
 
 

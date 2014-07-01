@@ -16,15 +16,18 @@
 #define niftkMultiViewerVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
-#include <mitkMIDASEnums.h>
-#include "niftkSingleViewerWidget.h"
-#include <QWidget>
-#include <mitkDataStorage.h>
-#include <mitkBaseProperty.h>
-#include <mitkProperties.h>
+
+#include <QObject>
+
 #include <itkImage.h>
 
-class QmitkRenderWindow;
+#include <mitkBaseProperty.h>
+#include <mitkDataStorage.h>
+#include <mitkProperties.h>
+
+#include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
+
 class niftkSingleViewerWidget;
 
 /**

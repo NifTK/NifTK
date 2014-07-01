@@ -613,7 +613,6 @@ void niftkSingleViewerWidgetTestClass::init()
   Q_D(niftkSingleViewerWidgetTestClass);
 
   d->Viewer = new niftkSingleViewerWidget(0, d->RenderingManager);
-  d->Viewer->SetDataStorage(d->DataStorage);
   d->Viewer->setObjectName(tr("niftkSingleViewerWidget"));
 
 //  QColor backgroundColour("black");

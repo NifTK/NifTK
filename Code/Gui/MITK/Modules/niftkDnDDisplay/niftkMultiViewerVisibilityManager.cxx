@@ -13,13 +13,10 @@
 =============================================================================*/
 
 #include "niftkMultiViewerVisibilityManager.h"
-#include <QmitkRenderWindow.h>
 #include "niftkSingleViewerWidget.h"
-#include <mitkBaseRenderer.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkImageAccessByItk.h>
-#include <vtkRenderWindow.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
 
@@ -99,8 +96,6 @@ niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *viewer)
 {
-  viewer->SetDataStorage(m_DataStorage);
-
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
   m_Viewers.push_back(viewer);
