@@ -45,7 +45,6 @@
       <longflag>om</longflag>
       <description>Output binary pectoral mask image</description>      
       <label>Output pectoral mask</label>
-      <default>outputMask.nii</default>
       <channel>output</channel>
     </image>
 
@@ -55,7 +54,6 @@
       <longflag>outputImage</longflag>
       <description>Output image with pectoral muscle removed</description>      
       <label>Output masked image</label>
-      <default>outputMasked.nii</default>
       <channel>output</channel>
     </image>
 
@@ -72,6 +70,13 @@
       <longflag>verbose</longflag>
       <description>Generate verbose output.</description>
       <label>Verbose</label>
+    </boolean>
+
+    <boolean>
+      <name>flgIgnoreView</name>
+      <longflag>ignoreView</longflag>
+      <description>Continue the processing even if the image is believed to be a CC view.</description>
+      <label>Ignore view?</label>
     </boolean>
 
   </parameters>
