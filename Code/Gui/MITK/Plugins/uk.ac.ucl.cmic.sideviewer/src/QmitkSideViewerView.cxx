@@ -142,8 +142,6 @@ void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
     m_SideViewerWidget = new QmitkSideViewerWidget(this, parent);
     m_SideViewerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    m_SideViewerWidget->SetDataStorage(this->GetDataStorage());
-
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
   }

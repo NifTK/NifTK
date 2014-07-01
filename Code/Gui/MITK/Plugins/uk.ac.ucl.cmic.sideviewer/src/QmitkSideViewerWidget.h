@@ -73,12 +73,6 @@ public:
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
 
-  /**
-   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
-   * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
-   */
-  void SetDataStorage(mitk::DataStorage::Pointer storage);
-
   /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
   void SetGeometry(const itk::EventObject& geometrySendEvent);
 
