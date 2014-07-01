@@ -23,8 +23,13 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
+
 #include <itkMammogramPectoralisSegmentationImageFilter.h>
 #include <itkMammogramMaskSegmentationImageFilter.h>
+#include <itkMammogramMLOorCCViewCalculator.h>
 
 #include <niftkMammogramPectoralisSegmentationCLP.h>
 
@@ -45,6 +50,7 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+  bool flgIgnoreView;
 
   std::string inputImage;
   std::string maskImage;
@@ -55,6 +61,41 @@ struct arguments
   arguments() {
     flgVerbose = false;
     flgDebug = false;
+    flgIgnoreView = false;
+  }
+};
+
+
+typedef itk::MetaDataDictionary DictionaryType;
+typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+
+// -------------------------------------------------------------------------
+// PrintDictionary()
+// -------------------------------------------------------------------------
+
+void PrintDictionary( DictionaryType &dictionary )
+{
+  DictionaryType::ConstIterator tagItr = dictionary.Begin();
+  DictionaryType::ConstIterator end = dictionary.End();
+   
+  while ( tagItr != end )
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+    
+    if ( entryvalue )
+    {
+      std::string tagkey = tagItr->first;
+      std::string tagID;
+      bool found =  itk::GDCMImageIO::GetLabelFromTag( tagkey, tagID );
+
+      std::string tagValue = entryvalue->GetMetaDataObjectValue();
+      
+      std::cout << tagkey << " " << tagID <<  ": " << tagValue << std::endl;
+    }
+
+    ++tagItr;
   }
 };
 
@@ -111,6 +152,58 @@ int DoMain(arguments args)
   typename InputImageType::Pointer image = imageReader->GetOutput();
 
   image->DisconnectPipeline();
+  imageReader = 0;
+
+  DictionaryType dictionary = image->GetMetaDataDictionary();
+  
+  if ( args.flgVerbose )
+  {
+    PrintDictionary( dictionary );
+  }
+
+
+  // Check that this is an MLO view mammogram
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( ! args.flgIgnoreView )
+  {
+
+    typedef typename itk::MammogramMLOorCCViewCalculator< InputImageType > 
+      MammogramMLOorCCViewCalculatorType;
+    
+    typedef typename MammogramMLOorCCViewCalculatorType::MammogramViewType MammogramViewType;
+
+    MammogramViewType mammogramView = MammogramMLOorCCViewCalculatorType::UNKNOWN_MAMMO_VIEW;
+    double mammogramViewScore = 0;
+
+    typename MammogramMLOorCCViewCalculatorType::Pointer 
+      viewCalculator = MammogramMLOorCCViewCalculatorType::New();
+
+    viewCalculator->SetImage( image );
+    viewCalculator->SetDictionary( dictionary );
+    viewCalculator->SetImageFileName(  args.inputImage );
+
+    viewCalculator->SetVerbose( args.flgVerbose );
+    viewCalculator->SetDebug( args.flgDebug );
+
+    try {
+      viewCalculator->Compute();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to compute mammogram view" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    mammogramView = viewCalculator->GetMammogramView();
+
+    if ( mammogramView != MammogramMLOorCCViewCalculatorType::MLO_MAMMO_VIEW )
+    {
+      std::cout << "Mammogram does not appear to be an MLO view, processing aborted." << std::endl;
+      return EXIT_SUCCESS;
+    }                
+  }
 
 
   // Read the mask image?
@@ -190,8 +283,6 @@ int DoMain(arguments args)
 
   mask = pecFilter->GetOutput( 0 );
   mask->DisconnectPipeline();
-
-
 
 
   // Apply the mask to the image?
@@ -306,6 +397,7 @@ int main(int argc, char** argv)
 
   args.flgVerbose          = flgVerbose;
   args.flgDebug            = flgDebug;
+  args.flgIgnoreView       = flgIgnoreView;
 
   args.inputImage     = inputImage;
   args.maskImage      = maskImage;
