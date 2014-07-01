@@ -11,6 +11,7 @@ import nipype.interfaces.susceptibility as susceptibility
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.ttk            as ttk
 import diffusion_distortion_simulation  as distortion_sim
+import add_noise 
 
 '''
 This file provides the creation of the whole workflow necessary for 
@@ -52,7 +53,8 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                     'in_bval_file',
                     'in_stddev_translation',
                     'in_stddev_rotation',
-                    'in_stddev_shear']),
+                    'in_stddev_shear',
+                    'in_noise_sigma']),
         name='input_node')
     
     distortion_generator = pe.Node(interface = distortion_sim.DistortionGenerator(), 
@@ -67,7 +69,7 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                                   iterfield = ['trans_file'])
                                    
 
-    tensor_2_dwi = pe.MapNode(interface = niftyfit.DwiTool(), 
+    tensor_2_dwi = pe.MapNode(interface = niftyfit.DwiTool(dti_flag2 = True), 
                               name = 'tensor_2_dwi', 
                               iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
 
@@ -95,6 +97,10 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     merge_dwis_2 = pe.Node(interface = fsl.Merge(dimension = 't'), 
                           direction = 't',
                           name = 'merge_dwis_2')
+                          
+    noise_adder = pe.MapNode(interface=add_noise.NoiseAdder(noise_type='gaussian'), name='noise_adder', iterfield = ['in_file'])
+    noise_adder.inputs.sigma_val = 10
+    
 
     # Output node
     output_node = pe.Node( interface=niu.IdentityInterface(
@@ -125,10 +131,12 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     workflow.connect(distortion_generator, 'bvec_files', tensor_2_dwi, 'bvec_file')
     workflow.connect(b0_resampling, 'res_file', tensor_2_dwi, 'b0_file')
     
-    #TODO: Need to add noise to the B0 and the distorted DWI!
+    # Add noise
+    workflow.connect(input_node, 'in_noise_sigma', noise_adder, 'sigma_val')
+    workflow.connect(tensor_2_dwi, 'syn_file', noise_adder, 'in_file')
 
-    # Merge distorted DWI
-    workflow.connect(tensor_2_dwi, 'syn_file', merge_dwis, 'in_files')
+    # Merge noisy distorted DWI
+    workflow.connect(noise_adder, 'out_file', merge_dwis, 'in_files')
     
     workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')
     

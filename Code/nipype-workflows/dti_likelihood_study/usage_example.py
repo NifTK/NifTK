@@ -25,9 +25,10 @@ r.inputs.input_node.in_bvec_file = bvecs
 r.inputs.input_node.in_bval_file = bvals
 r.inputs.input_node.in_B0_file = B0
 r.inputs.input_node.in_T1_file = T1
-r.inputs.input_node.in_stddev_translation = 0.2
-r.inputs.input_node.in_stddev_rotation = 0.01*math.pi/180
-r.inputs.input_node.in_stddev_shear = 0.0003
+r.inputs.input_node.in_stddev_translation = 0.4
+r.inputs.input_node.in_stddev_rotation = 0.02*math.pi/180
+r.inputs.input_node.in_stddev_shear = 0.0006
+r.inputs.input_node.in_noise_sigma = 10.0
 
 r.write_graph(graph2use = 'hierarchical')
 
