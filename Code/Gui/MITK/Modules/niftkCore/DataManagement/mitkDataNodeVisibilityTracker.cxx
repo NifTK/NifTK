@@ -19,8 +19,8 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-DataNodeVisibilityTracker::DataNodeVisibilityTracker()
-: mitk::DataNodePropertyListener("visible")
+DataNodeVisibilityTracker::DataNodeVisibilityTracker(const mitk::DataStorage::Pointer dataStorage)
+: mitk::DataNodePropertyListener(dataStorage, "visible")
 , m_TrackedRenderer(0)
 {
 }

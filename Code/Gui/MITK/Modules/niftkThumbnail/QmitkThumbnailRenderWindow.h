@@ -82,9 +82,6 @@ public:
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
-  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
-
   /// \brief Registers listeners.
   void Activated();
 
@@ -198,9 +195,6 @@ private:
 
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
-
-  // Internal method, so that any time we need the mitk::DataStorage we go via this method, which checks assert(m_DataStorage).
-  mitk::DataStorage::Pointer GetDataStorage();
 
   // Used for when the tracked window world geometry changes
   unsigned long m_TrackedWorldGeometryTag;

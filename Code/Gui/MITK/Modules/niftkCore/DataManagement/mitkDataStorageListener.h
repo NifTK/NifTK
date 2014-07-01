@@ -39,14 +39,10 @@ class NIFTKCORE_EXPORT DataStorageListener : public itk::LightObject
 public:
 
   mitkClassMacro(DataStorageListener, itk::LightObject);
-  itkNewMacro(DataStorageListener);
   mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer);
 
   /// \brief Gets the data storage.
   mitk::DataStorage::Pointer GetDataStorage() const;
-
-  /// \brief Sets the data storage.
-  virtual void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Adds a filter.
   ///
@@ -65,7 +61,6 @@ public:
 
 protected:
 
-  DataStorageListener();
   DataStorageListener(const mitk::DataStorage::Pointer);
   virtual ~DataStorageListener();
 

@@ -55,6 +55,9 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_InDataStorageChanged(false)
 , m_VisibilityTracker(NULL)
 {
+  m_DataStorage = mitk::RenderingManager::GetInstance()->GetDataStorage();
+  assert(m_DataStorage.IsNotNull());
+
   // This should come early on, as we are setting renderer specific properties,
   // and when you set a renderer specific property, if the renderer is NULL,
   // it is an equivalent function call to setting a global property.
@@ -103,7 +106,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 //  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
 //  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
 
-  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New();
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
 
   std::vector<const mitk::BaseRenderer*> renderers;
   renderers.push_back(m_Renderer);
@@ -178,20 +181,16 @@ bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (dataStorage.IsNotNull())
+  if (add && !m_DataStorage->Exists(m_BoundingBoxNode))
   {
-    if (add && !dataStorage->Exists(m_BoundingBoxNode))
-    {
 
-      dataStorage->Add(m_BoundingBoxNode);
-      this->setBoundingBoxVisible(true);
+    m_DataStorage->Add(m_BoundingBoxNode);
+    this->setBoundingBoxVisible(true);
 
-    } else if (!add && dataStorage->Exists(m_BoundingBoxNode))
-    {
-      dataStorage->Remove(m_BoundingBoxNode);
-      this->setBoundingBoxVisible(false);
-    }
+  } else if (!add && m_DataStorage->Exists(m_BoundingBoxNode))
+  {
+    m_DataStorage->Remove(m_BoundingBoxNode);
+    this->setBoundingBoxVisible(false);
   }
 }
 
@@ -255,28 +254,6 @@ void QmitkThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
     m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
     m_TrackedTimeStepSelectorTag = -1;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
-{
-  // Don't allow anyone to pass in a null dataStorage.
-  assert(dataStorage);
-  m_DataStorage = dataStorage;
-
-  m_Renderer->SetDataStorage(dataStorage);
-
-  m_VisibilityTracker->SetDataStorage(dataStorage);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer QmitkThumbnailRenderWindow::GetDataStorage()
-{
-  // This MUST be set before you actually use this widget.
-  assert(m_DataStorage);
-  return m_DataStorage;
 }
 
 
@@ -531,12 +508,6 @@ mitk::BaseRenderer::ConstPointer QmitkThumbnailRenderWindow::GetTrackedRenderer(
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (dataStorage.IsNull())
-  {
-    return;
-  }
-
   if (rendererToTrack == m_TrackedRenderer)
   {
     return;
@@ -590,9 +561,9 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // window starts (i.e. before any data is loaded),
   // the bounding box will not be included, and not visible.
   this->AddBoundingBoxToDataStorage(true);
-  if (!dataStorage->Exists(m_BoundingBoxNode))
+  if (!m_DataStorage->Exists(m_BoundingBoxNode))
   {
-    this->GetDataStorage()->Add(m_BoundingBoxNode);
+    m_DataStorage->Add(m_BoundingBoxNode);
   }
 
   this->UpdateSliceAndTimeStep();

@@ -167,8 +167,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
 //  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
 
-  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New();
-  m_VisibilityTracker->SetDataStorage(dataStorage);
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
 

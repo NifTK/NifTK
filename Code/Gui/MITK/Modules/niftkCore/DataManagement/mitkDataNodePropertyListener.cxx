@@ -62,39 +62,20 @@ private:
 
 
 //-----------------------------------------------------------------------------
-DataNodePropertyListener::DataNodePropertyListener(const std::string& propertyName)
-: m_PropertyName(propertyName)
+DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName)
+: mitk::DataStorageListener(dataStorage),
+  m_PropertyName(propertyName)
 {
+  assert(dataStorage.IsNotNull());
+
+  this->AddAllObservers();
 }
 
 
 //-----------------------------------------------------------------------------
 DataNodePropertyListener::~DataNodePropertyListener()
 {
-  if (this->GetDataStorage().IsNotNull())
-  {
-    this->RemoveAllObservers();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void DataNodePropertyListener::SetDataStorage(const mitk::DataStorage::Pointer dataStorage)
-{
-  if (dataStorage != this->GetDataStorage())
-  {
-    if (this->GetDataStorage().IsNotNull())
-    {
-      this->RemoveAllObservers();
-    }
-
-    Superclass::SetDataStorage(dataStorage);
-
-    if (this->GetDataStorage().IsNotNull())
-    {
-      this->AddAllObservers();
-    }
-  }
+  this->RemoveAllObservers();
 }
 
 

@@ -18,33 +18,21 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-DataStorageListener::DataStorageListener()
-: m_DataStorage(NULL)
-, m_InDataStorageChanged(false)
-, m_Blocked(false)
-{
-}
-
-
-//-----------------------------------------------------------------------------
 DataStorageListener::DataStorageListener(const mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
 , m_InDataStorageChanged(false)
+, m_Blocked(false)
 {
-  if (m_DataStorage.IsNotNull())
-  {
-    this->AddListeners();
-  }
+  assert(m_DataStorage.IsNotNull());
+
+  this->AddListeners();
 }
 
 
 //-----------------------------------------------------------------------------
 DataStorageListener::~DataStorageListener()
 {
-  if (m_DataStorage.IsNotNull())
-  {
-    this->RemoveListeners();
-  }
+  this->RemoveListeners();
 }
 
 
@@ -52,26 +40,6 @@ DataStorageListener::~DataStorageListener()
 mitk::DataStorage::Pointer DataStorageListener::GetDataStorage() const
 {
   return m_DataStorage;
-}
-
-
-//-----------------------------------------------------------------------------
-void DataStorageListener::SetDataStorage(const mitk::DataStorage::Pointer dataStorage)
-{
-  if (dataStorage != m_DataStorage)
-  {
-    if (m_DataStorage.IsNotNull())
-    {
-      this->RemoveListeners();
-    }
-
-    m_DataStorage = dataStorage;
-
-    if (m_DataStorage.IsNotNull())
-    {
-      this->AddListeners();
-    }
-  }
 }
 
 
@@ -124,8 +92,6 @@ bool DataStorageListener::Pass(const mitk::DataNode* node) const
 //-----------------------------------------------------------------------------
 void DataStorageListener::AddListeners()
 {
-  assert(m_DataStorage.IsNotNull());
-
   m_DataStorage->AddNodeEvent.AddListener(
       mitk::MessageDelegate1<DataStorageListener, const mitk::DataNode*>
     ( this, &DataStorageListener::NodeAddedProxy ) );
@@ -147,8 +113,6 @@ void DataStorageListener::AddListeners()
 //-----------------------------------------------------------------------------
 void DataStorageListener::RemoveListeners()
 {
-  assert(m_DataStorage.IsNotNull());
-
   m_DataStorage->AddNodeEvent.RemoveListener(
       mitk::MessageDelegate1<DataStorageListener, const mitk::DataNode*>
   ( this, &DataStorageListener::NodeAddedProxy ));
@@ -171,7 +135,7 @@ void DataStorageListener::RemoveListeners()
 void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_Blocked && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -187,7 +151,7 @@ void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -203,7 +167,7 @@ void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -219,7 +183,7 @@ void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && m_DataStorage.IsNotNull() && node != NULL && !m_InDataStorageChanged)
+  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))

@@ -45,17 +45,14 @@ class NIFTKCORE_EXPORT DataNodePropertyListener : public mitk::DataStorageListen
 public:
 
   mitkClassMacro(DataNodePropertyListener, mitk::DataStorageListener);
-  mitkNewMacro1Param(DataNodePropertyListener, const std::string&);
-
-  /// \brief Sets the data storage.
-  virtual void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
+  mitkNewMacro2Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&);
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
 
 protected:
 
-  DataNodePropertyListener(const std::string& propertyName);
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName);
   virtual ~DataNodePropertyListener();
 
   DataNodePropertyListener(const DataNodePropertyListener&); // Purposefully not implemented.
@@ -112,6 +109,6 @@ friend class PropertyChangedCommand;
 
 };
 
-} // end namespace
+}
 
 #endif

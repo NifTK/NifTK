@@ -42,7 +42,7 @@ class NIFTKCORE_EXPORT DataNodeVisibilityTracker : public mitk::DataNodeProperty
 public:
 
   mitkClassMacro(DataNodeVisibilityTracker, mitk::DataNodePropertyListener);
-  itkNewMacro(DataNodeVisibilityTracker);
+  mitkNewMacro1Param(DataNodeVisibilityTracker, const mitk::DataStorage::Pointer);
 
   /// \brief Sets the renderer we are tracking.
   void SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer);
@@ -59,7 +59,7 @@ public:
 
 protected:
 
-  DataNodeVisibilityTracker();
+  DataNodeVisibilityTracker(const mitk::DataStorage::Pointer dataStorage);
   virtual ~DataNodeVisibilityTracker();
 
   DataNodeVisibilityTracker(const DataNodeVisibilityTracker&); // Purposefully not implemented.
