@@ -185,8 +185,8 @@ void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 
     m_DataStorage->Add(m_BoundingBoxNode);
     this->setBoundingBoxVisible(true);
-
-  } else if (!add && m_DataStorage->Exists(m_BoundingBoxNode))
+  }
+  else if (!add && m_DataStorage->Exists(m_BoundingBoxNode))
   {
     m_DataStorage->Remove(m_BoundingBoxNode);
     this->setBoundingBoxVisible(false);
