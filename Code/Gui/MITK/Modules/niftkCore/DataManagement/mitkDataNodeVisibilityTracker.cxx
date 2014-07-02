@@ -44,59 +44,46 @@ void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* tra
     return;
   }
 
-  if (trackedRenderer != m_TrackedRenderer)
+  /// Note:
+  /// Deliberately not checking if the new renderer to track is the same as the old one.
+  /// This function can be used to reinitialise the visibility of every node.
+
+  m_TrackedRenderer = trackedRenderer;
+
+  mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
-    if (m_TrackedRenderer)
+    mitk::DataNode::Pointer node = it->Value();
+
+    bool visibility = false;
+    if (m_TrackedRenderer && !this->IsIgnored(node) && !node->GetProperty("renderer"))
     {
-      /// Disable visibility of all nodes in the managed render windows.
+      /// TODO
+      /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+      visibility = node->IsVisible(const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+    }
 
-      assert(this->GetDataStorage().IsNotNull());
-
-      mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
-      for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+    for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
+    {
+      if (!this->IsIgnored(node) && !node->GetProperty("renderer"))
       {
-        mitk::DataNode::Pointer node = it->Value();
-
-        if (this->IsIgnored(node))
-        {
-          continue;
-        }
-
-        mitk::BoolProperty* globalProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", 0));
-        for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
-        {
-          /// Note:
-          /// GetProperty() returns the global property if there is no renderer specific one.
-          /// If there is no renderer specific property then we create one and set to false.
-          /// Otherwise, we set it to false, unless it alread was.
-          mitk::BoolProperty* rendererSpecificProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", m_ManagedRenderers[i]));
-          if (rendererSpecificProperty == globalProperty)
-          {
-            /// TODO
-            /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-            node->SetBoolProperty("visible", false, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
-          }
-          else if (rendererSpecificProperty && rendererSpecificProperty->GetValue())
-          {
-            rendererSpecificProperty->SetValue(false);
-          }
-        }
+        /// TODO
+        /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+        node->SetBoolProperty("visible", visibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
       }
     }
+  }
 
-    m_TrackedRenderer = trackedRenderer;
-
-    if (trackedRenderer)
-    {
-      std::vector<const mitk::BaseRenderer*> renderersToTrack(1);
-      renderersToTrack[0] = trackedRenderer;
-      this->SetRenderers(renderersToTrack);
-    }
-    else
-    {
-      std::vector<const mitk::BaseRenderer*> renderersToTrack(0);
-      this->SetRenderers(renderersToTrack);
-    }
+  if (trackedRenderer)
+  {
+    std::vector<const mitk::BaseRenderer*> renderersToTrack(1);
+    renderersToTrack[0] = trackedRenderer;
+    this->SetRenderers(renderersToTrack);
+  }
+  else
+  {
+    std::vector<const mitk::BaseRenderer*> renderersToTrack(0);
+    this->SetRenderers(renderersToTrack);
   }
 }
 
@@ -135,17 +122,34 @@ bool DataNodeVisibilityTracker::IsIgnored(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodeVisibilityTracker::OnNodeAdded(mitk::DataNode* node)
 {
-  if (!node->GetProperty("renderer"))
-  {
-    bool visibility = node->IsVisible(const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+  mitk::BoolProperty* globalProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", 0));
 
-    for (unsigned int i = 0; i < m_ManagedRenderers.size(); i++)
+  bool visibility = false;
+  if (m_TrackedRenderer && !this->IsIgnored(node) && !node->GetProperty("renderer"))
+  {
+    /// TODO
+    /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
+    visibility = node->IsVisible(const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+  }
+
+  for (unsigned int i = 0; i < m_ManagedRenderers.size(); i++)
+  {
+    mitk::BoolProperty* rendererSpecificProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible", m_ManagedRenderers[i]));
+
+    /// Note:
+    /// GetProperty() returns the global property if there is no renderer specific one.
+    /// If there is no renderer specific property then we create one and set to the same
+    /// visibility as in the tracked renderer. Otherwise, we leave it as it is.
+    if (rendererSpecificProperty == globalProperty)
     {
       /// TODO
       /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
       node->SetBoolProperty("visible", visibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
     }
   }
+
+  /// Register the observers so that OnPropertyChanged is called when the visibility changes.
+  Superclass::OnNodeAdded(node);
 }
 
 
