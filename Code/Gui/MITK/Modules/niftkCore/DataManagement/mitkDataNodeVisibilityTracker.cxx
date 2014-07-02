@@ -36,6 +36,14 @@ DataNodeVisibilityTracker::~DataNodeVisibilityTracker()
 //-----------------------------------------------------------------------------
 void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer)
 {
+  /// Note:
+  /// We must not manage a renderer that we track, otherwise infinite recursion occurs.
+  if (std::find(m_ManagedRenderers.begin(), m_ManagedRenderers.end(), trackedRenderer) != m_ManagedRenderers.end())
+  {
+    assert(false);
+    return;
+  }
+
   if (trackedRenderer != m_TrackedRenderer)
   {
     if (m_TrackedRenderer)
@@ -96,6 +104,16 @@ void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* tra
 //-----------------------------------------------------------------------------
 void DataNodeVisibilityTracker::SetManagedRenderers(const std::vector<const mitk::BaseRenderer*>& managedRenderers)
 {
+  /// Note:
+  /// We must not manage a renderer that we track, otherwise infinite recursion occurs.
+  bool hasNull = std::find(managedRenderers.begin(), managedRenderers.end(), (const mitk::BaseRenderer*)0) != managedRenderers.end();
+  bool hasTrackedRenderer = std::find(managedRenderers.begin(), managedRenderers.end(), m_TrackedRenderer) != managedRenderers.end();
+  if (hasNull || hasTrackedRenderer)
+  {
+    assert(false);
+    return;
+  }
+
   m_ManagedRenderers = managedRenderers;
 }
 
