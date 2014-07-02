@@ -19,7 +19,6 @@
 #include <mitkDataStorage.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkDisplayGeometry.h>
-#include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 
 #include <QmitkMouseEventEater.h>
@@ -400,7 +399,9 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 {
+  this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
+
   this->UpdateBoundingBox();
 
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
@@ -459,8 +460,6 @@ void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
     {
       m_Renderer->SetSlice(m_TrackedRenderer->GetSlice());
     }
-
-    this->UpdateWorldGeometry(true);
   }
 }
 
@@ -475,25 +474,19 @@ void QmitkThumbnailRenderWindow::OnWorldGeometryChanged()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (m_TrackedRenderer)
   {
-    mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
-    if (focusedRenderer.IsNotNull())
+    // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
+    m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(m_TrackedRenderer->GetWorldTimeGeometry()));
+
+    // Display geometry of widget must encompass whole of world geometry
+    if (fitToDisplay)
     {
-
-      // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
-      m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(focusedRenderer->GetWorldTimeGeometry()));
-
-      // Display geometry of widget must encompass whole of world geometry
-      if (fitToDisplay)
-      {
-        m_Renderer->GetDisplayGeometry()->Fit();
-      }
-
-      // Request a single update at the end of the method.
-      mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+      m_Renderer->GetDisplayGeometry()->Fit();
     }
+
+    // Request a single update at the end of the method.
+    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
   }
 }
 
@@ -566,6 +559,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
     m_DataStorage->Add(m_BoundingBoxNode);
   }
 
+  this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
 
   // Setup the visibility tracker.
