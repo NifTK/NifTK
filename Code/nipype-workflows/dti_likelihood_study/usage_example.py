@@ -25,12 +25,25 @@ r.inputs.input_node.in_bvec_file = bvecs
 r.inputs.input_node.in_bval_file = bvals
 r.inputs.input_node.in_B0_file = B0
 r.inputs.input_node.in_T1_file = T1
-r.inputs.input_node.in_stddev_translation = 0.4
-r.inputs.input_node.in_stddev_rotation = 0.02*math.pi/180
-r.inputs.input_node.in_stddev_shear = 0.0006
+# default values before 
+# r.inputs.input_node.in_stddev_translation = 0.4
+# r.inputs.input_node.in_stddev_rotation = 0.02*math.pi/180
+# r.inputs.input_node.in_stddev_shear = 0.0006
+# r.inputs.input_node.in_noise_sigma = 10.0
+
+# reasonable values from literature 
+# r.inputs.input_node.in_stddev_translation = 0.0
+# r.inputs.input_node.in_stddev_rotation = 0.5*math.pi/180
+# r.inputs.input_node.in_stddev_shear = 0.075
+# r.inputs.input_node.in_noise_sigma = 0.0
+
+# testing values 
+r.inputs.input_node.in_stddev_translation = 1.0
+r.inputs.input_node.in_stddev_rotation = 0.7*math.pi/180
+r.inputs.input_node.in_stddev_shear = 0.075
 r.inputs.input_node.in_noise_sigma = 10.0
 
-r.write_graph(graph2use = 'hierarchical')
+r.write_graph(graph2use = 'colored')
 
 qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 

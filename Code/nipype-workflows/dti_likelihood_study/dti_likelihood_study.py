@@ -11,6 +11,8 @@ import nipype.interfaces.susceptibility as susceptibility
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.ttk            as ttk
 import diffusion_distortion_simulation  as distortion_sim
+import dti_likelihood_postproc          as dmripostproc
+
 import add_noise 
 
 '''
@@ -51,10 +53,15 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                     'in_B0_file',
                     'in_bvec_file',
                     'in_bval_file',
+                    'in_t1_file',
+                    'in_mask_file',
+                    'in_labels_file',
+                    'in_interpolation_scheme',
                     'in_stddev_translation',
                     'in_stddev_rotation',
                     'in_stddev_shear',
-                    'in_noise_sigma']),
+                    'in_noise_sigma',
+                    'in_log_space']),
         name='input_node')
     
     distortion_generator = pe.Node(interface = distortion_sim.DistortionGenerator(), 
@@ -63,63 +70,69 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     tensor_resampling = pe.MapNode(interface = niftyreg.RegResample(), 
                                    name = 'tensor_resampling', 
                                    iterfield = ['trans_file'])
-                                   
-    b0_resampling = pe.MapNode(interface=niftyreg.RegResample(),
-                                  name = 'b0_resampling',
-                                  iterfield = ['trans_file'])
-                                   
+    tensor_resampling.inputs.tensor_flag = True
 
+    b0_resampling = pe.MapNode(interface=niftyreg.RegResample(),
+                               name = 'b0_resampling',
+                               iterfield = ['trans_file'])
+    
     tensor_2_dwi = pe.MapNode(interface = niftyfit.DwiTool(dti_flag2 = True), 
                               name = 'tensor_2_dwi', 
                               iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
 
+    noise_adder = pe.MapNode(interface=add_noise.NoiseAdder(noise_type='gaussian'), 
+                             name='noise_adder', 
+                             iterfield = ['in_file'])
+    
     merge_dwis = pe.Node(interface = fsl.Merge(dimension = 't'), 
                          direction = 't',
                          name = 'merge_dwis')
     
-    r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', correct_susceptibility = False)
-
+    r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
+                                                      correct_susceptibility = False,
+                                                      t1_mask_provided = True)
+    
     inv_estimated_distortions = pe.MapNode(interface = niftyreg.RegTransform(), 
                                            name = 'inv_estimated_distortions', 
                                            iterfield = ['inv_aff_input'])
-
+    
     tensor_resampling_2 = pe.MapNode(interface = niftyreg.RegResample(), 
                                      name = 'tensor_resampling_2', 
                                      iterfield = ['trans_file'])
+    tensor_resampling_2.inputs.tensor_flag = True
+
     b0_resampling_2 = pe.MapNode(interface=niftyreg.RegResample(),
                                   name = 'b0_resampling_2',
                                   iterfield = ['trans_file'])
-
+    
     tensor_2_dwi_2 = pe.MapNode(interface = niftyfit.DwiTool(dti_flag2 = True), 
                                 name = 'tensor_2_dwi_2', 
                                 iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
-
+    
     merge_dwis_2 = pe.Node(interface = fsl.Merge(dimension = 't'), 
                           direction = 't',
-                          name = 'merge_dwis_2')
-                          
-    noise_adder = pe.MapNode(interface=add_noise.NoiseAdder(noise_type='gaussian'), name='noise_adder', iterfield = ['in_file'])
-    noise_adder.inputs.sigma_val = 10
-    
+                          name = 'merge_dwis_2')                          
+
+    postproc = dmripostproc.create_dti_likelihood_post_proc_workflow(name = 'postproc')
 
     # Output node
     output_node = pe.Node( interface=niu.IdentityInterface(
-        fields=['simulated_dwis',
-                'estimated_dwis',
-                'simulated_tensors',
-                'estimated_tensors']),
+        fields=['tensor_metric_map',
+                'tensor_metric_ROI_statistics']),
                            name="output_node" )
     
-    
+    # Generate Distortions
     workflow.connect(input_node, 'in_stddev_translation', distortion_generator, 'stddev_translation_val')
     workflow.connect(input_node, 'in_stddev_rotation', distortion_generator, 'stddev_rotation_val')
     workflow.connect(input_node, 'in_stddev_shear', distortion_generator, 'stddev_shear_val')
     workflow.connect(input_node, 'in_bval_file', distortion_generator, 'bval_file')
     workflow.connect(input_node, 'in_bvec_file', distortion_generator, 'bvec_file')
+
     # Resample tensors
     workflow.connect(input_node, 'in_tensors_file', tensor_resampling, 'ref_file')
     workflow.connect(input_node, 'in_tensors_file', tensor_resampling, 'flo_file')
     workflow.connect(distortion_generator, 'aff_files', tensor_resampling, 'trans_file')
+
     # Resample B0s the same way as the distorted tensor
     workflow.connect(input_node, 'in_B0_file', b0_resampling, 'flo_file')
     workflow.connect(input_node, 'in_B0_file', b0_resampling, 'ref_file')
@@ -134,46 +147,49 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     # Add noise
     workflow.connect(input_node, 'in_noise_sigma', noise_adder, 'sigma_val')
     workflow.connect(tensor_2_dwi, 'syn_file', noise_adder, 'in_file')
-
+    
     # Merge noisy distorted DWI
     workflow.connect(noise_adder, 'out_file', merge_dwis, 'in_files')
     
-    workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')
-    
     # Now perform the diffusion pre-processing pipeline
+    workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')    
     workflow.connect(input_node, 'in_bvec_file', r, 'input_node.in_bvec_file')
     workflow.connect(input_node, 'in_bval_file', r, 'input_node.in_bval_file')
     workflow.connect(input_node, 'in_T1_file', r, 'input_node.in_T1_file')
+    workflow.connect(input_node, 'in_mask_file', r, 'input_node.in_T1_mask')
     
     # Take the final estimated transformation of the DWI, and invert the transformation
-    workflow.connect(r, 'output_node.transformations', inv_estimated_distortions, 'inv_aff_input')
-    
+    workflow.connect(r, 'output_node.transformations', inv_estimated_distortions, 'inv_aff_input')    
     
     # Resample the tensor to the space of each of the observed DWI
     workflow.connect(r, 'output_node.tensor', tensor_resampling_2, 'ref_file')
     workflow.connect(r, 'output_node.tensor', tensor_resampling_2, 'flo_file')
     workflow.connect(inv_estimated_distortions, 'out_file', tensor_resampling_2, 'trans_file')
-
+    
     # Resample the averageB0 to the sapce of the observed DWI for prediction    
     workflow.connect(r, 'output_node.average_b0', b0_resampling_2, 'ref_file')
     workflow.connect(r, 'output_node.average_b0', b0_resampling_2, 'flo_file')
     workflow.connect(inv_estimated_distortions, 'out_file', b0_resampling_2, 'trans_file')
     
-    # Predict the DWI for this particular b-vector/b-value pair, ignore 
+    # Predict the DWI for this particular b-vector/b-value pair
     workflow.connect(tensor_resampling_2, 'res_file', tensor_2_dwi_2, 'source_file')
-    # TODO: Need to pass the correct bval/bvec pair
     workflow.connect(distortion_generator, 'bval_files', tensor_2_dwi_2, 'bval_file')
     workflow.connect(distortion_generator, 'bvec_files', tensor_2_dwi_2, 'bvec_file')
     workflow.connect(b0_resampling_2, 'res_file', tensor_2_dwi_2, 'b0_file')
     
+    # Merge back the predicted DWI
     workflow.connect(tensor_2_dwi_2, 'syn_file', merge_dwis_2, 'in_files')
-    workflow.connect(merge_dwis,'merged_file',output_node, 'simulated_dwis')
-    workflow.connect(merge_dwis_2, 'merged_file', output_node, 'estimated_dwis')
-    workflow.connect(input_node, 'in_tensors_file', output_node, 'simulated_tensors')
-    workflow.connect(r, 'output_node.tensor', output_node, 'estimated_tensors')
+
+    # Perform Post Processing Measurements
+    workflow.connect(merge_dwis,'merged_file', postproc, 'input_node.simulated_dwis')
+    workflow.connect(merge_dwis_2, 'merged_file', postproc, 'input_node.estimated_dwis')
+    workflow.connect(input_node, 'in_tensors_file', postproc, 'input_node.simulated_tensors')
+    workflow.connect(r, 'output_node.tensor', postproc, 'input_node.estimated_tensors')
+    workflow.connect(input_node, 'in_labels_file', postproc, 'input_node.labels_file')
+    
+    # Propagate results into the output node
+    workflow.connect(postproc, 'output_node.tensor_metric_map', output_node, 'tensor_metric_map')
+    workflow.connect(postproc, 'output_node.tensor_metric_ROI_statistics', output_node, 'tensor_metric_ROI_statistics')
     
     return workflow
-    
-
-    # node explanation:
     
