@@ -23,8 +23,9 @@
 #include <berryISelection.h>
 #include <berryISelectionProvider.h>
 #include <berryISelectionListener.h>
-#include "ui_ThumbnailViewControls.h"
 
+
+class QmitkThumbnailRenderWindow;
 
 /**
  * \class ThumbnailView
@@ -89,11 +90,11 @@ private:
   /// Returns 0 if no editor is opened.
   mitk::IRenderWindowPart* GetSelectedEditor();
 
-  // Used for the mitkFocusManager to register callbacks to track the currently focus window.
+  /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focused window.
   unsigned long m_FocusManagerObserverTag;
 
-  // All the controls for the main view part.
-  Ui::ThumbnailViewControls *m_Controls;
+  /// \brief The thumbnail render window.
+  QmitkThumbnailRenderWindow* m_ThumbnailWindow;
 
   /// \brief Tells if the plugin should track only windows of editors, not views.
   bool m_TrackOnlyMainWindows;
@@ -103,5 +104,4 @@ private:
 
 };
 
-#endif // ThumbnailView_h
-
+#endif
