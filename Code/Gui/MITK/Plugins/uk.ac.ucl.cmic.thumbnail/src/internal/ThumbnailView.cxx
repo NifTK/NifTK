@@ -257,10 +257,10 @@ void ThumbnailView::RetrievePreferenceValues()
     colour[2] = boxColor.blue() / 255.0;
   }
 
-  m_ThumbnailWindow->setBoundingBoxColor(colour[0], colour[1], colour[2]);
-  m_ThumbnailWindow->setBoundingBoxLineThickness(thickness);
-  m_ThumbnailWindow->setBoundingBoxOpacity(opacity);
-  m_ThumbnailWindow->setBoundingBoxLayer(layer);
+  m_ThumbnailWindow->SetBoundingBoxColor(colour[0], colour[1], colour[2]);
+  m_ThumbnailWindow->SetBoundingBoxLineThickness(thickness);
+  m_ThumbnailWindow->SetBoundingBoxOpacity(opacity);
+  m_ThumbnailWindow->SetBoundingBoxLayer(layer);
 
   bool onlyMainWindowsWereTracked = m_TrackOnlyMainWindows;
   m_TrackOnlyMainWindows = prefs->GetBool(QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true);

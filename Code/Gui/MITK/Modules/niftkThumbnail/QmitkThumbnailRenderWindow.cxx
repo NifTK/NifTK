@@ -67,11 +67,11 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_BoundingBoxNode->SetProperty("helper object", mitk::BoolProperty::New(true));
   m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
-  this->setBoundingBoxVisible(false);
-  this->setBoundingBoxColor(255, 0, 0);
-  this->setBoundingBoxOpacity(1);
-  this->setBoundingBoxLineThickness(1);
-  this->setBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
+  this->SetBoundingBoxVisible(false);
+  this->SetBoundingBoxColor(255, 0, 0);
+  this->SetBoundingBoxOpacity(1);
+  this->SetBoundingBoxLineThickness(1);
+  this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
 
   m_MouseEventEater = new QmitkMouseEventEater();
   m_MouseEventEater->SetIsEating(false);
@@ -98,6 +98,13 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
   {
     delete m_WheelEventEater;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
+{
+  return m_DisplayInteractor.IsNotNull();
 }
 
 
@@ -137,25 +144,17 @@ void QmitkThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
-{
-  return m_DisplayInteractor.IsNotNull();
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 {
   if (add && !m_DataStorage->Exists(m_BoundingBoxNode))
   {
-
     m_DataStorage->Add(m_BoundingBoxNode);
-    this->setBoundingBoxVisible(true);
+    this->SetBoundingBoxVisible(true);
   }
   else if (!add && m_DataStorage->Exists(m_BoundingBoxNode))
   {
     m_DataStorage->Remove(m_BoundingBoxNode);
-    this->setBoundingBoxVisible(false);
+    this->SetBoundingBoxVisible(false);
   }
 }
 
@@ -357,19 +356,19 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
       mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
       if (viewDirection == mitk::SliceNavigationController::Frontal)
       {
-        this->setBoundingBoxColor(0, 0, 255);
+        this->SetBoundingBoxColor(0, 0, 255);
       }
       else if (viewDirection == mitk::SliceNavigationController::Sagittal)
       {
-        this->setBoundingBoxColor(0, 255, 0);
+        this->SetBoundingBoxColor(0, 255, 0);
       }
       else if (viewDirection == mitk::SliceNavigationController::Axial)
       {
-        this->setBoundingBoxColor(255, 0, 0);
+        this->SetBoundingBoxColor(255, 0, 0);
       }
       else
       {
-        this->setBoundingBoxColor(0, 255, 255);
+        this->SetBoundingBoxColor(0, 255, 255);
       }
     }
 
@@ -396,14 +395,14 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
       )
   {
     m_InDataStorageChanged = true;
-    this->NodeAdded(node);
+    this->OnNodeAdded(node);
     m_InDataStorageChanged = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
+void QmitkThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
 {
   this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
@@ -425,14 +424,14 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
       )
   {
     m_InDataStorageChanged = true;
-    this->NodeChanged(node);
+    this->OnNodeChanged(node);
     m_InDataStorageChanged = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
+void QmitkThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
 {
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
 }
@@ -611,7 +610,7 @@ void QmitkThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-QColor QmitkThumbnailRenderWindow::boundingBoxColor() const
+QColor QmitkThumbnailRenderWindow::GetBoundingBoxColor() const
 {
   float colour[3];
   m_BoundingBoxNode->GetColor(colour);
@@ -622,21 +621,21 @@ QColor QmitkThumbnailRenderWindow::boundingBoxColor() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxColor(QColor &colour)
+void QmitkThumbnailRenderWindow::SetBoundingBoxColor(QColor &colour)
 {
   m_BoundingBoxNode->SetColor(colour.redF(), colour.greenF(), colour.blueF());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxColor(float r, float g, float b)
+void QmitkThumbnailRenderWindow::SetBoundingBoxColor(float r, float g, float b)
 {
   m_BoundingBoxNode->SetColor(r, g, b);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkThumbnailRenderWindow::boundingBoxLineThickness() const
+int QmitkThumbnailRenderWindow::GetBoundingBoxLineThickness() const
 {
   int thickness = 0;
   m_BoundingBoxNode->GetIntProperty("line width", thickness);
@@ -645,14 +644,14 @@ int QmitkThumbnailRenderWindow::boundingBoxLineThickness() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxLineThickness(int thickness)
+void QmitkThumbnailRenderWindow::SetBoundingBoxLineThickness(int thickness)
 {
   m_BoundingBoxNode->SetIntProperty("line width", thickness);
 }
 
 
 //-----------------------------------------------------------------------------
-float QmitkThumbnailRenderWindow::boundingBoxOpacity() const
+float QmitkThumbnailRenderWindow::GetBoundingBoxOpacity() const
 {
   float opacity = 0;
   m_BoundingBoxNode->GetFloatProperty("opacity", opacity);
@@ -661,14 +660,14 @@ float QmitkThumbnailRenderWindow::boundingBoxOpacity() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxOpacity(float opacity)
+void QmitkThumbnailRenderWindow::SetBoundingBoxOpacity(float opacity)
 {
   m_BoundingBoxNode->SetOpacity(opacity);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::boundingBoxVisible() const
+bool QmitkThumbnailRenderWindow::GetBoundingBoxVisible() const
 {
   bool visible = false;
   m_BoundingBoxNode->GetBoolProperty("visible", visible, m_Renderer);
@@ -677,14 +676,14 @@ bool QmitkThumbnailRenderWindow::boundingBoxVisible() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxVisible(bool visible)
+void QmitkThumbnailRenderWindow::SetBoundingBoxVisible(bool visible)
 {
   m_BoundingBoxNode->SetBoolProperty("visible", visible, m_Renderer);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkThumbnailRenderWindow::boundingBoxLayer() const
+int QmitkThumbnailRenderWindow::GetBoundingBoxLayer() const
 {
   bool layer = 0;
   m_BoundingBoxNode->GetBoolProperty("layer", layer);
@@ -693,35 +692,35 @@ int QmitkThumbnailRenderWindow::boundingBoxLayer() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxLayer(int layer)
+void QmitkThumbnailRenderWindow::SetBoundingBoxLayer(int layer)
 {
   m_BoundingBoxNode->SetIntProperty("layer", layer);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setRespondToMouseEvents(bool on)
-{
-  m_MouseEventEater->SetIsEating(!on);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::respondToMouseEvents() const
+bool QmitkThumbnailRenderWindow::GetRespondToMouseEvents() const
 {
   return !m_MouseEventEater->GetIsEating();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setRespondToWheelEvents(bool on)
+void QmitkThumbnailRenderWindow::SetRespondToMouseEvents(bool on)
 {
-  m_WheelEventEater->SetIsEating(!on);
+  m_MouseEventEater->SetIsEating(!on);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::respondToWheelEvents() const
+bool QmitkThumbnailRenderWindow::GetRespondToWheelEvents() const
 {
   return !m_WheelEventEater->GetIsEating();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::SetRespondToWheelEvents(bool on)
+{
+  m_WheelEventEater->SetIsEating(!on);
 }
