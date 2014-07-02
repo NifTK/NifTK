@@ -21,9 +21,8 @@
 
 #include <berryIPartListener.h>
 
-#include <mitkDataNodeAddedVisibilitySetter.h>
-#include <mitkDataStorageVisibilityTracker.h>
-#include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkDataNodeVisibilityTracker.h>
+//#include <mitkMIDASDataNodeNameStringFilter.h>
 #include <mitkMIDASEnums.h>
 
 #include <QString>
@@ -73,12 +72,6 @@ public:
 
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
-
-  /**
-   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
-   * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
-   */
-  void SetDataStorage(mitk::DataStorage* storage);
 
   /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
   void SetGeometry(const itk::EventObject& geometrySendEvent);
@@ -145,6 +138,9 @@ private slots:
   /// \brief Called when one of the main 2D windows has been destroyed.
   virtual void OnAMainWindowDestroyed(QObject* mainWindow);
 
+  /// \brief Fits the displayed region to the size of the viewer window.
+  void FitToDisplay();
+
 private:
 
   /// \brief The view that contains this widget.
@@ -183,11 +179,10 @@ private:
   /// \brief Renderer of the currently focused window of the main display.
   mitk::BaseRenderer* m_FocusedRenderer;
 
-  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
-  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+//  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers

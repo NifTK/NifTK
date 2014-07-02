@@ -152,10 +152,6 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::ThumbnailViewControls();
     m_Controls->setupUi(parent);
 
-    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-    assert(dataStorage);
-    m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
-
     this->RetrievePreferenceValues();
 
     mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();

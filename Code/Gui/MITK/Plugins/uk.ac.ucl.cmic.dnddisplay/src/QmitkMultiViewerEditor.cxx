@@ -204,7 +204,6 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer = new niftkMultiViewerWidget(
         d->m_MultiViewerVisibilityManager,
         d->m_RenderingManager,
-        dataStorage,
         defaultNumberOfRows,
         defaultNumberOfColumns,
         parent);

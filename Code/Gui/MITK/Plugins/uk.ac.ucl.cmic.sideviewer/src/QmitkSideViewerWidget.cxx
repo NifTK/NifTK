@@ -103,20 +103,21 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_MainAxialSnc(0)
 , m_MainSagittalSnc(0)
 , m_MainCoronalSnc(0)
-, m_NodeAddedSetter(0)
 , m_VisibilityTracker(0)
 , m_Magnification(0.0)
 , m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
-, m_MIDASToolNodeNameFilter(0)
+//, m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
 
-  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
-
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
+  m_Viewer->SetCursorVisible(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
+  m_Viewer->SetDisplayInteractionsEnabled(true);
+  m_Viewer->SetCursorPositionBinding(false);
+  m_Viewer->SetScaleFactorBinding(true);
 
   m_CoronalWindowRadioButton->setChecked(true);
 
@@ -135,27 +136,6 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_ControlsWidget->setEnabled(false);
 
-  std::vector<const mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
-  renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
-  renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
-
-  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
-  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
-  m_NodeAddedSetter->SetRenderers(renderers);
-  m_NodeAddedSetter->SetVisibility(false);
-
-  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
-  m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
-  m_VisibilityTracker->SetManagedRenderers(renderers);
-
-  m_Viewer->SetCursorVisible(true);
-  m_Viewer->SetRememberSettingsPerWindowLayout(false);
-  m_Viewer->SetDisplayInteractionsEnabled(true);
-  m_Viewer->SetCursorPositionBinding(false);
-  m_Viewer->SetScaleFactorBinding(true);
-
   this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
   this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));
   this->connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalWindowRadioButtonToggled(bool)));
@@ -169,16 +149,29 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
   this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
 
-  // Register focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
+  mitk::DataStorage::Pointer dataStorage = view->GetDataStorage();
 
-    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-  }
+  /// Note:
+  /// We do not set the data storage for the viewer because that would recalculate
+  /// the time geometry based on the globally visible data nodes in the data storage.
+  /// This is wrong for us, since we want to see the nodes that are visible in the
+  /// tracked window, and hence we want to set the time geometry of the track window
+  /// to the viewer of this widget.
+  /// The viewer gets the data storage from the rendering manager that is set through
+  /// its constructor.
+
+  std::vector<const mitk::BaseRenderer*> renderers;
+  renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
+
+//  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
+
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
+  m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
+  m_VisibilityTracker->SetManagedRenderers(renderers);
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
@@ -210,6 +203,25 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
       }
     }
   }
+
+  // Register focus observer.
+  if (focusManager)
+  {
+    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
+
+    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  }
+
+  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
+  /// Note:
+  /// Direct call to m_Viewer->FitToDisplay() does not work because the function
+  /// computes the desired scale factor for the visible render windows. At this time,
+  /// however, no renderer window is visible, since the widget is just being constructed.
+  QTimer::singleShot(0, this, SLOT(FitToDisplay()));
 }
 
 
@@ -218,7 +230,16 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
   m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
 
+  // Deregister focus observer.
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  }
+
   m_VisibilityTracker->SetTrackedRenderer(0);
+  m_VisibilityTracker = 0;
+
   m_Viewer->SetEnabled(false);
 
   if (m_MainWindow)
@@ -239,29 +260,6 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
   {
     m_MainCoronalSnc->Disconnect(m_Viewer->GetCoronalWindow()->GetSliceNavigationController());
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
-  }
-
-  // Deregister focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
-
-  /// m_NodeAddedSetter deleted by smart pointer.
-  /// m_VisibilityTracker deleted by smart pointer.
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage* dataStorage)
-{
-  if (dataStorage)
-  {
-    m_Viewer->SetDataStorage(dataStorage);
-
-    m_NodeAddedSetter->SetDataStorage(dataStorage);
-    m_VisibilityTracker->SetDataStorage(dataStorage);
   }
 }
 
@@ -302,6 +300,13 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
   }
 
   m_Viewer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::FitToDisplay()
+{
+  m_Viewer->FitToDisplay();
 }
 
 
@@ -587,14 +592,6 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     return;
   }
 
-  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
-
-  if (geometry && geometry != m_TimeGeometry)
-  {
-    m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
-    m_VisibilityTracker->NotifyAll();
-  }
-
   m_MainWindow = mainWindow;
   m_MainWindowSnc = mainWindow->GetSliceNavigationController();
 
@@ -624,14 +621,14 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
   }
 
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
-
   /// Note:
   /// The SetWindowLayout function does not change the layout if the viewer has not got
   /// a valid geometry. Therefore, if the viewer is initialised with a geometry for the
   /// first time, we need to set the window layout again, according to the main window
   /// orientation.
   bool geometryFirstInitialised = false;
+
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
   if (timeGeometry != m_TimeGeometry)
   {
     if (!m_TimeGeometry)
@@ -643,6 +640,7 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     if (timeGeometry)
     {
       m_Viewer->SetTimeGeometry(timeGeometry);
+      m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
     }
     else
     {

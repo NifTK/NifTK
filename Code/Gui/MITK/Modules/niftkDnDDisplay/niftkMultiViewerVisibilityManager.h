@@ -16,22 +16,25 @@
 #define niftkMultiViewerVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
-#include <mitkMIDASEnums.h>
-#include "niftkSingleViewerWidget.h"
-#include <QWidget>
-#include <mitkDataStorage.h>
-#include <mitkBaseProperty.h>
-#include <mitkProperties.h>
+
+#include <QObject>
+
 #include <itkImage.h>
 
-class QmitkRenderWindow;
+#include <mitkBaseProperty.h>
+#include <mitkDataStorage.h>
+#include <mitkProperties.h>
+
+#include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
+
 class niftkSingleViewerWidget;
 
 /**
  * \class niftkMultiViewerVisibilityManager
  * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
- * to Modified events from the nodes "visibility" property in DataStorage.
+ * to Modified events from the nodes "visible" property in DataStorage.
  */
 class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject
 {
@@ -109,10 +112,10 @@ protected:
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
   /// to false for all registered windows, plus other default properties such as interpolation type.
-  virtual void NodeAdded(const mitk::DataNode* node);
+  virtual void OnNodeAdded(const mitk::DataNode* node);
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void OnNodeRemoved(const mitk::DataNode* node);
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
   virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool visibility=true);

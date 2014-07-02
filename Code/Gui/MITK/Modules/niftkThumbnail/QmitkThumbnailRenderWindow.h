@@ -19,10 +19,9 @@
 
 #include <mitkCuboid.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodeAddedVisibilitySetter.h>
-#include <mitkDataNodeStringPropertyFilter.h>
+//#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
-#include <mitkDataStorageVisibilityTracker.h>
+#include <mitkDataNodeVisibilityTracker.h>
 
 #include <QColor>
 
@@ -82,9 +81,6 @@ public:
 
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
-
-  /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
-  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Registers listeners.
   void Activated();
@@ -200,9 +196,6 @@ private:
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
 
-  // Internal method, so that any time we need the mitk::DataStorage we go via this method, which checks assert(m_DataStorage).
-  mitk::DataStorage::Pointer GetDataStorage();
-
   // Used for when the tracked window world geometry changes
   unsigned long m_TrackedWorldGeometryTag;
 
@@ -249,11 +242,9 @@ private:
   bool m_InDataStorageChanged;
 
   // To track visibility changes.
-  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
-
-  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+//  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 
   mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
 

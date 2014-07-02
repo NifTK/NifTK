@@ -13,13 +13,10 @@
 =============================================================================*/
 
 #include "niftkMultiViewerVisibilityManager.h"
-#include <QmitkRenderWindow.h>
 #include "niftkSingleViewerWidget.h"
-#include <mitkBaseRenderer.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkImageAccessByItk.h>
-#include <vtkRenderWindow.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
 
@@ -99,8 +96,6 @@ niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *viewer)
 {
-  viewer->SetDataStorage(m_DataStorage);
-
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
   m_Viewers.push_back(viewer);
@@ -161,7 +156,7 @@ void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* no
   if(!m_BlockDataStorageEvents)
   {
     m_BlockDataStorageEvents = true;
-    this->NodeAdded(node);
+    this->OnNodeAdded(node);
     m_BlockDataStorageEvents = false;
   }
 }
@@ -174,14 +169,14 @@ void niftkMultiViewerVisibilityManager::NodeRemovedProxy( const mitk::DataNode* 
   if(!m_BlockDataStorageEvents)
   {
     m_BlockDataStorageEvents = true;
-    this->NodeRemoved(node);
+    this->OnNodeRemoved(node);
     m_BlockDataStorageEvents = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
+void niftkMultiViewerVisibilityManager::OnNodeAdded(const mitk::DataNode* node2)
 {
   mitk::DataNode* node = const_cast<mitk::DataNode*>(node2);
 
@@ -256,7 +251,7 @@ void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node2)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::NodeRemoved(const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::OnNodeRemoved(const mitk::DataNode* node)
 {
   mitk::BoolProperty* property = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
   if (property)

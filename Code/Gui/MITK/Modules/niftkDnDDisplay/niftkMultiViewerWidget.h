@@ -75,7 +75,6 @@ public:
   niftkMultiViewerWidget(
       niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
-      mitk::DataStorage::Pointer dataStorage,
       int defaultViewerRows,
       int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
@@ -387,7 +386,6 @@ private:
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
   niftkMultiViewerVisibilityManager* m_VisibilityManager;
-  mitk::DataStorage* m_DataStorage;
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.

@@ -312,7 +312,6 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     // Create the niftkSingleViewerWidget
     d->m_SingleViewer = new niftkSingleViewerWidget(parent, d->m_RenderingManager);
-    d->m_SingleViewer->SetDataStorage(dataStorage);
 
     // Setup GUI a bit more.
     d->m_SingleViewer->SetBackgroundColour(backgroundColour);
