@@ -300,6 +300,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkShiftProb
   niftkShiftScale
   niftkShrinkImage
+  niftkSplitVolumeIntoVoxelPlanes
   niftkSTAPLE
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
