@@ -21,7 +21,6 @@ namespace mitk
 DataStorageListener::DataStorageListener(const mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
 , m_InDataStorageChanged(false)
-, m_Blocked(false)
 {
   assert(m_DataStorage.IsNotNull());
 
@@ -54,22 +53,6 @@ void DataStorageListener::AddFilter(mitk::DataNodeFilter::Pointer filter)
 void DataStorageListener::ClearFilters()
 {
   m_Filters.clear();
-}
-
-
-//-----------------------------------------------------------------------------
-bool DataStorageListener::IsBlocked() const
-{
-  return m_Blocked;
-}
-
-
-//-----------------------------------------------------------------------------
-bool DataStorageListener::SetBlocked(bool blocked)
-{
-  bool wasBlocked = m_Blocked;
-  m_Blocked = blocked;
-  return wasBlocked;
 }
 
 
@@ -135,7 +118,7 @@ void DataStorageListener::RemoveListeners()
 void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeAdded()
-  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
+  if(node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -151,7 +134,7 @@ void DataStorageListener::NodeAddedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
+  if(node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -167,7 +150,7 @@ void DataStorageListener::NodeChangedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
+  if(node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))
@@ -183,7 +166,7 @@ void DataStorageListener::NodeRemovedProxy( const mitk::DataNode* node )
 void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if(!m_Blocked && node != NULL && !m_InDataStorageChanged)
+  if(node != NULL && !m_InDataStorageChanged)
   {
     m_InDataStorageChanged = true;
     if (this->Pass(node))

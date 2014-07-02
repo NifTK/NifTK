@@ -52,13 +52,6 @@ public:
   /// \brief Clears all filters.
   void ClearFilters();
 
-  /// \brief Gets the blocked flag that tells if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  bool IsBlocked() const;
-
-  /// \brief Sets the blocked flag that tells if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  /// Returns the previous value of the flag that should be restored after unblocking.
-  bool SetBlocked(bool blocked);
-
 protected:
 
   DataStorageListener(const mitk::DataStorage::Pointer);

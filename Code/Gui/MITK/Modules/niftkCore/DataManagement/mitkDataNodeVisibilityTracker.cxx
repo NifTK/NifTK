@@ -44,9 +44,6 @@ void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* tra
 
       assert(this->GetDataStorage().IsNotNull());
 
-      // block the calls, so we can update stuff, without repeated callback loops.
-      bool wasBlocked = this->SetBlocked(true);
-
       mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
       for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
       {
@@ -77,8 +74,6 @@ void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* tra
           }
         }
       }
-
-      this->SetBlocked(wasBlocked);
     }
 
     m_TrackedRenderer = trackedRenderer;
@@ -153,9 +148,6 @@ void DataNodeVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mi
     return;
   }
 
-  // block the calls, so we can update stuff, without repeated callback loops.
-  bool wasBlocked = this->SetBlocked(true);
-
   // Intention : This object should display all the data nodes visible in the focused window, and none others.
   // Assumption: Renderer specific properties override the global ones.
   // so......    Objects will be visible, unless the the node has a render window specific property that says otherwise.
@@ -186,9 +178,6 @@ void DataNodeVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mi
     /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
     node->SetBoolProperty("visible", finalVisibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
   }
-
-  // don't forget to unblock.
-  this->SetBlocked(wasBlocked);
 }
 
 }
