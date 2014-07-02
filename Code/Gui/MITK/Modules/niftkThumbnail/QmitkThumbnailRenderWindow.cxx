@@ -54,9 +54,6 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_InDataStorageChanged(false)
 , m_VisibilityTracker(NULL)
 {
-  m_DataStorage = mitk::RenderingManager::GetInstance()->GetDataStorage();
-  assert(m_DataStorage.IsNotNull());
-
   // This should come early on, as we are setting renderer specific properties,
   // and when you set a renderer specific property, if the renderer is NULL,
   // it is an equivalent function call to setting a global property.
@@ -83,37 +80,6 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_WheelEventEater = new QmitkWheelEventEater();
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
-
-  // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
-  //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
-
-//  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
-//  m_MIDASToolNodeNameFilter->SetPropertyName("name");
-//  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
-//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-//  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
-//  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
-//  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
-
-  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
-
-  std::vector<const mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_Renderer);
-  m_VisibilityTracker->SetManagedRenderers(renderers);
-
-  std::vector<mitk::DataNode*> nodesToIgnore;
-  nodesToIgnore.push_back(m_BoundingBoxNode);
-  m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 }
 
 
@@ -197,6 +163,46 @@ void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
+  /// Note:
+  /// The data storage should be set for the rendering manager before the window
+  /// gets activated for the first time.
+  if (m_DataStorage.IsNull())
+  {
+    m_DataStorage = mitk::RenderingManager::GetInstance()->GetDataStorage();
+    assert(m_DataStorage.IsNotNull());
+
+    /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
+    ///  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+
+//    m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+//    m_MIDASToolNodeNameFilter->SetPropertyName("name");
+//    m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+//    m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+//    m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+//    m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+//    m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+//    m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+//    m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+
+    m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
+
+    std::vector<const mitk::BaseRenderer*> renderers;
+    renderers.push_back(m_Renderer);
+    m_VisibilityTracker->SetManagedRenderers(renderers);
+
+    std::vector<mitk::DataNode*> nodesToIgnore;
+    nodesToIgnore.push_back(m_BoundingBoxNode);
+    m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
+  }
+
   this->AddBoundingBoxToDataStorage(false);
 
   if (m_DataStorage.IsNotNull())
