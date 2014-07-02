@@ -42,10 +42,11 @@ class QmitkWheelEventEater;
  * The client must
  * <pre>
  * 1. Create widget
- * 2. Provide a DataStorage
- * 3. Call "Activated" to register with the data storage when the widget is considered active (eg. on screen).
- * 4. Call "Deactivated" to de-register with the data storage when the widget is considered not-active (eg. off screen).
+ * 2. Call "Activated" to register with the data storage when the widget is considered active (eg. on screen).
+ * 3. Call "Deactivated" to de-register with the data storage when the widget is considered not-active (eg. off screen).
  * </pre>
+ *
+ * The data storage will be initialised from the rendering manager at the first activation.
  *
  * This class provides methods to set the bounding box colour, opacity, line thickness,
  * and rendering layer. These values would normally be set via preferences pages in the GUI.
