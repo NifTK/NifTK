@@ -216,6 +216,12 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
   m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
+  /// Note:
+  /// Direct call to m_Viewer->FitToDisplay() does not work because the function
+  /// computes the desired scale factor for the visible render windows. At this time,
+  /// however, no renderer window is visible, since the widget is just being constructed.
+  QTimer::singleShot(0, this, SLOT(FitToDisplay()));
 }
 
 
@@ -294,6 +300,13 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
   }
 
   m_Viewer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::FitToDisplay()
+{
+  m_Viewer->FitToDisplay();
 }
 
 
@@ -579,13 +592,6 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     return;
   }
 
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
-
-  if (timeGeometry && timeGeometry != m_TimeGeometry)
-  {
-    m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
-  }
-
   m_MainWindow = mainWindow;
   m_MainWindowSnc = mainWindow->GetSliceNavigationController();
 
@@ -621,6 +627,8 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   /// first time, we need to set the window layout again, according to the main window
   /// orientation.
   bool geometryFirstInitialised = false;
+
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
   if (timeGeometry != m_TimeGeometry)
   {
     if (!m_TimeGeometry)
@@ -632,6 +640,7 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     if (timeGeometry)
     {
       m_Viewer->SetTimeGeometry(timeGeometry);
+      m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
     }
     else
     {

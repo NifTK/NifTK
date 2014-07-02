@@ -138,6 +138,9 @@ private slots:
   /// \brief Called when one of the main 2D windows has been destroyed.
   virtual void OnAMainWindowDestroyed(QObject* mainWindow);
 
+  /// \brief Fits the displayed region to the size of the viewer window.
+  void FitToDisplay();
+
 private:
 
   /// \brief The view that contains this widget.
