@@ -246,7 +246,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
 
   m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
@@ -727,8 +727,10 @@ void niftkMultiViewerWidget::OnViewerNumberChanged(int rows, int columns)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void niftkMultiViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   // If the viewer is not found, we do not do anything.
   if (std::find(m_Viewers.begin(), m_Viewers.end(), viewer) == m_Viewers.end())
   {

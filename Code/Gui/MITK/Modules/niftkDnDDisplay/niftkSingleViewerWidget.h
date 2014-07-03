@@ -345,7 +345,7 @@ signals:
   void NodesDropped(niftkSingleViewerWidget* thisViewer, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
+  void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the selected time step has changed in this viewer.
   void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);

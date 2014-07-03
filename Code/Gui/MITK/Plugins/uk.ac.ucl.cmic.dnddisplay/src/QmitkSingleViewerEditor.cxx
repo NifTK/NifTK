@@ -348,7 +348,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     this->connect(d->m_SingleViewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
     this->connect(d->m_SingleViewer, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SLOT(OnSelectedRenderWindowChanged(MIDASOrientation)));
-    this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+    this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
@@ -771,8 +771,10 @@ void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void QmitkSingleViewerEditor::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {

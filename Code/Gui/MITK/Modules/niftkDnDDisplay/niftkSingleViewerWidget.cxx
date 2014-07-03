@@ -131,7 +131,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
   m_LastSelectedPositions.push_back(selectedPosition);
   m_LastSelectedPositionTimes.push_back(QTime::currentTime());
 
-  emit SelectedPositionChanged(this, selectedPosition);
+  emit SelectedPositionChanged(selectedPosition);
 }
 
 

@@ -141,7 +141,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
 
   this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
-  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
   this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
 
@@ -736,8 +736,10 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void QmitkSideViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   MIDASOrientation orientation = m_Viewer->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {

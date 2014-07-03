@@ -297,7 +297,7 @@ protected slots:
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the selected time step has changed in a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
