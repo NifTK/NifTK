@@ -14,27 +14,15 @@
 
 #include "QmitkSideViewerView.h"
 
-#include "internal/SideViewerActivator.h"
-#include <mitkILinkedRenderWindowPart.h>
-#include <mitkDataNodeObject.h>
-#include <mitkProperties.h>
-#include <mitkRenderingManager.h>
-#include <mitkBaseRenderer.h>
+#include <berryIBerryPreferences.h>
+
 #include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkStateMachine.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkStateEvent.h>
-#include <QmitkRenderWindow.h>
 
-#include <NifTKConfigure.h>
-
+#include "QmitkSideViewerWidget.h"
 
 //-----------------------------------------------------------------------------
 QmitkSideViewerView::QmitkSideViewerView()
 : m_SideViewerWidget(NULL)
-, m_Context(NULL)
-, m_EventAdmin(NULL)
 {
 }
 
@@ -55,82 +43,6 @@ QmitkSideViewerView::~QmitkSideViewerView()
   {
     delete m_SideViewerWidget;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkSideViewerView::EventFilter(const mitk::StateEvent* stateEvent) const
-{
-  // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
-  {
-    // and it has a focused render window...
-    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
-    {
-      // whose renderer is the sender of this event...
-      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
-      {
-        // then we let the event pass through.
-        return false;
-      }
-    }
-  }
-
-  // Otherwise, if it comes from another window, we reject it.
-  return true;
-}
-
-
-bool QmitkSideViewerView::EventFilter(mitk::InteractionEvent* event) const
-{
-  // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
-  {
-    // and it has a focused render window...
-    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
-    {
-      // whose renderer is the sender of this event...
-      if (renderWindow->GetRenderer() == event->GetSender())
-      {
-        // then we let the event pass through.
-        return false;
-      }
-    }
-  }
-
-  // Otherwise, if it comes from another window, we reject it.
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerView::Activated()
-{
-  QmitkBaseView::Activated();
-
-  berry::IWorkbenchPart::Pointer nullPart;
-  this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerView::Deactivated()
-{
-  QmitkBaseView::Deactivated();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerView::Visible()
-{
-  QmitkBaseView::Visible();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSideViewerView::Hidden()
-{
-  QmitkBaseView::Hidden();
 }
 
 
