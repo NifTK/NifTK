@@ -28,10 +28,6 @@
 #include <mitkIRenderWindowPart.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QHBoxLayout>
-#include <QSpacerItem>
-#include <QVBoxLayout>
-
 
 class EditorLifeCycleListener : public berry::IPartListener
 {
@@ -107,7 +103,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_Magnification(0.0)
 , m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
-//, m_MIDASToolNodeNameFilter(0)
+, m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
 {
   this->setupUi(parent);
@@ -165,11 +161,31 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
 
-//  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
+  /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
+//    mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+
+  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_MIDASToolNodeNameFilter->SetPropertyName("name");
+  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
 
   m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
+  m_VisibilityTracker->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 

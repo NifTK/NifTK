@@ -19,7 +19,7 @@
 
 #include <mitkCuboid.h>
 #include <mitkDataNode.h>
-//#include <mitkDataNodeStringPropertyFilter.h>
+#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNodeVisibilityTracker.h>
 
@@ -245,7 +245,7 @@ private:
   /// \brief To track visibility changes.
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-//  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 
   mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
 
