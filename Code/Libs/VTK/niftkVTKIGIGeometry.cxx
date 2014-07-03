@@ -147,7 +147,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
   appenderer->AddInput(clipper->GetOutput());
   appenderer->AddInput(ireds);
-  appenderer->AddInput(this->ConnectIREDs(axis));
+  appenderer->AddInput(this->ConnectIREDs(axis,false , 3.0));
   if ( positions.size() == 3 )
   {
     appenderer->AddInput(this->ConnectIREDsToCentroid(positions));
@@ -699,7 +699,7 @@ std::vector <float>  VTKIGIGeometry::Centroid(std::vector < std::vector <float> 
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::vector <float> > IREDPositions, bool isPointer )
+vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::vector <float> > IREDPositions, bool isPointer , float width )
 {
   vtkSmartPointer<vtkPolyData> polyOut = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
@@ -712,7 +712,18 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
       vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
       join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
       join->SetPoint2 ( IREDPositions[i+1][0], IREDPositions[i+1][1], IREDPositions[i+1][2]);
-      appenderer->AddInput(join->GetOutput());
+      if ( width > 0.0 ) 
+      {
+        vtkSmartPointer<vtkTubeFilter> tube = vtkSmartPointer<vtkTubeFilter>::New();
+        tube->SetInputConnection (join->GetOutputPort());
+        tube->SetRadius(width);
+        tube->SetNumberOfSides(10);
+        appenderer->AddInput(tube->GetOutput());
+      }
+      else
+      {
+        appenderer->AddInput(join->GetOutput());
+      }
     }
   }
   else
