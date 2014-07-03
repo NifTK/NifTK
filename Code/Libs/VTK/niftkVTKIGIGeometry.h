@@ -32,7 +32,7 @@ public:
   * \param the rigid body filename to define the location of the tracking markers
   * \param the handeye calibration to define the tool origin
   */
-  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string leftHandeyeFilename, std::string rightHandeyeFilename, std::string centreHandeyeFilename ,  bool AddCrossHairs = true, float trackerMarkerRadius = 3.0 , float LensAngle = 30.0, float BodyLength = 500.0 );
+  vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string leftHandeyeFilename, std::string rightHandeyeFilename, std::string centreHandeyeFilename ,  bool AddCrossHairs = true, float trackerMarkerRadius = 3.0 , float LensAngle = 30.0, float BodyLength = 600.0 );
 
   /**
   * \brief For visualisation purposes, creates a representation of the pointer.
@@ -132,6 +132,11 @@ private:
   * \brief Connect the IREDS with a line
   */
   vtkSmartPointer<vtkPolyData> ConnectIREDs ( std::vector < std::vector <float> > IREDPositions , bool isPointer = false );
+
+  /**
+  * \brief Connect the IREDS to their centroid with a line
+  */
+  vtkSmartPointer<vtkPolyData> ConnectIREDsToCentroid ( std::vector < std::vector <float> > IREDPositions);
 
 };
 } // end namespace
