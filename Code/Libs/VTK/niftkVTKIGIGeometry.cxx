@@ -14,6 +14,7 @@
 #include "niftkVTKIGIGeometry.h"
 #include "niftkVTKFunctions.h"
 
+#include <niftkConversionUtils.h>
 #include <vtkCubeSource.h>
 #include <vtkSphereSource.h>
 #include <vtkPlane.h>
@@ -83,7 +84,9 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   TranslatePolyData(rightLensCowl,righttransform);
  
   vtkSmartPointer<vtkMatrix4x4> centrehandeye = LoadMatrix4x4FromFile(CentreHandeyeFilename, false);
-  float lapEnd[4] = {0,(BodyLength * 0.5),(-BodyLength*0.86603),1.0};
+  float z = -BodyLength * cos ( LensAngle * NIFTK_PI / 180);
+  float y = BodyLength * sin ( LensAngle * NIFTK_PI / 180);
+  float lapEnd[4] = {0,y,z,1.0};
   float movedLapEnd [4];
   centrehandeye->MultiplyPoint(lapEnd, movedLapEnd);
   vtkSmartPointer<vtkTransform> centretransform = vtkSmartPointer<vtkTransform>::New();
