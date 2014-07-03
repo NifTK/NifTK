@@ -348,7 +348,7 @@ signals:
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the selected time step has changed in this viewer.
-  void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);
+  void SelectedTimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
   void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);

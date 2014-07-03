@@ -219,7 +219,7 @@ protected slots:
 
   /// \brief Called when the selected time step has changed in a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+  void OnSelectedTimeStepChanged(int selectedTimeStep);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
   void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);

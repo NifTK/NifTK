@@ -349,7 +349,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
     this->connect(d->m_SingleViewer, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SLOT(OnSelectedRenderWindowChanged(MIDASOrientation)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
-    this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
+    this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
@@ -786,7 +786,7 @@ void QmitkSingleViewerEditor::OnSelectedPositionChanged(const mitk::Point3D& sel
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int timeStep)
+void QmitkSingleViewerEditor::OnSelectedTimeStepChanged(int timeStep)
 {
   bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
   d->m_ControlPanel->SetTimeStep(timeStep);

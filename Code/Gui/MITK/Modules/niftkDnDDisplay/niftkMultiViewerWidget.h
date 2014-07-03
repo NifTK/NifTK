@@ -301,7 +301,7 @@ protected slots:
 
   /// \brief Called when the selected time step has changed in a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+  void OnSelectedTimeStepChanged(int selectedTimeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
   void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
