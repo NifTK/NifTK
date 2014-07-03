@@ -1182,7 +1182,7 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* timeGeometry)
+void niftkMultiViewerWidget::OnTimeGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* timeGeometry)
 {
   if (m_ControlPanel->AreViewerGeometriesBound())
   {

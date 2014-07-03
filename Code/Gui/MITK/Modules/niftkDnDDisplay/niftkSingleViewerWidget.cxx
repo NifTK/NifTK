@@ -504,7 +504,7 @@ void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeom
     m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
 
-  emit GeometryChanged(this, timeGeometry);
+  emit TimeGeometryChanged(this, timeGeometry);
 }
 
 

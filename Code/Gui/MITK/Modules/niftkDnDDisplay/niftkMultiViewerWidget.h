@@ -313,7 +313,7 @@ protected slots:
   void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
-  void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
+  void OnTimeGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* timeGeometry);
 
   /// \brief Called when the cursor position binding has changed in a viewer.
   void OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound);

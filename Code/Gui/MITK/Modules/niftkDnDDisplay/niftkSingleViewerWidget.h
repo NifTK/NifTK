@@ -181,7 +181,7 @@ public:
   /// \brief Gets the world geometry.
   const mitk::TimeGeometry* GetTimeGeometry() const;
 
-  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
+  /// \brief Sets the world geometry that we are sampling and sends a TimeGeometryChanged signal.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
@@ -366,7 +366,7 @@ signals:
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* geometry);
+  void TimeGeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
