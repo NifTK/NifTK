@@ -19,7 +19,6 @@
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
-#include <mitkWorkbenchUtil.h>
 #include "QmitkThumbnailViewPreferencePage.h"
 #include <QmitkThumbnailRenderWindow.h>
 
@@ -32,14 +31,14 @@ class EditorLifeCycleListener : public berry::IPartListener
 {
   berryObjectMacro(EditorLifeCycleListener)
 
-  public:
+public:
 
-    EditorLifeCycleListener(ThumbnailView* thumbnailView)
-    : m_ThumbnailView(thumbnailView)
-    {
-    }
+  EditorLifeCycleListener(ThumbnailView* thumbnailView)
+  : m_ThumbnailView(thumbnailView)
+  {
+  }
 
-  private:
+private:
 
   Events::Types GetPartEventTypes() const
   {

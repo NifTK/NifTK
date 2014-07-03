@@ -22,7 +22,7 @@
 #include <berryIPartListener.h>
 
 #include <mitkDataNodeVisibilityTracker.h>
-//#include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkMIDASEnums.h>
 
 #include <QString>
@@ -182,7 +182,7 @@ private:
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-//  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers
