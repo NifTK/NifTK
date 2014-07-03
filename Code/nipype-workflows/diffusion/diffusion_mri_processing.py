@@ -66,7 +66,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                              correct_susceptibility = True, 
                                              resample_in_t1 = False, 
                                              log_data = False, 
-                                             t1_mask_provided = False):
+                                             t1_mask_provided = False,
+                                             ref_b0_provided = False):
 
     """Creates a diffusion processing workflow. This initially performs a groupwise registration
     of all the B=0 images, subsequently each of the DWI is registered to the averageB0.
@@ -89,8 +90,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
             (only required if correct_susceptibility = True)
         input_node.in_fm_phase_file - The field map phase image
             (only required if correct_susceptibility = True)
-        input_node.in_T1_file - The T1 image 
-        input_node.in_T1_mask - A mask provided in the T1 space 
+        input_node.in_t1_file - The T1 image 
+        input_node.in_t1_mask - A mask provided in the T1 space 
             (Only require if t1_mask_provided = True)
            
     Outputs::
@@ -118,8 +119,9 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                     'in_bval_file',
                     'in_fm_magnitude_file',
                     'in_fm_phase_file',
-                    'in_T1_file',
-                    'in_T1_mask']),
+                    'in_t1_file',
+                    'in_t1_mask',
+                    'in_ref_b0']),
         name='input_node')
     
     #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
@@ -140,10 +142,13 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     function_find_DWIs.inputs.function_str = str(inspect.getsource(get_DWIs_from_bvals_bvecs))
     find_DWIs   = pe.Node(interface = function_find_DWIs, name = 'find_DWIs')
     select_DWIs = pe.Node(interface = niu.Select(), name = 'select_DWIs')
-
+    
     # Perform rigid groupwise registration
     groupwise_B0_coregistration = create_atlas('groupwise_B0_coregistration', 
-                                               initial_ref=False, itr_rigid = 2, itr_affine = 0, itr_non_lin=0)
+                                               initial_ref = ref_b0_provided, 
+                                               itr_rigid = 2, 
+                                               itr_affine = 0, 
+                                               itr_non_lin=0)
     
     # Perform susceptibility correction, where we already have a mask in the b0 space
     susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction',
@@ -211,11 +216,14 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     workflow.connect(split_dwis, 'out_files', select_B0s, 'inlist')
     workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
     # Use the B0s to define a groupwise atlas
-    workflow.connect(select_B0s,       'out', groupwise_B0_coregistration, 'input_node.in_files')
+    workflow.connect(select_B0s, 'out', groupwise_B0_coregistration, 'input_node.in_files')
+    
+    if ref_b0_provided == True:
+        workflow.connect(input_node, 'in_ref_b0', groupwise_B0_coregistration, 'input_node.ref_file')
     
     # If we're logging the DWI before registration, need to connect the logged images
     # rather than the split dwi into the dwi_to_b0_registration
-    if log_data:
+    if log_data == True:
         # Make a log images node
         log_ims = pe.MapNode(interface = niftyseg.UnaryMaths(operation = 'log', output_datatype = 'float'),
                              name = 'log_ims', iterfield=['in_file'])
@@ -245,11 +253,11 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(select_DWIs,                 'out',                       dwi_to_B0_registration, 'flo_file')
 
     # If we have a proper T1 mask, we can use that, otherwise make one using BET
-    if t1_mask_provided:
-        workflow.connect(input_node, 'in_T1_mask', T1_mask_resampling, 'flo_file')
+    if t1_mask_provided == True:
+        workflow.connect(input_node, 'in_t1_mask', T1_mask_resampling, 'flo_file')
     else:
         T1_mask = pe.Node(interface=fsl.BET(mask=True), name='T1_mask')
-        workflow.connect(input_node, 'in_T1_file', T1_mask, 'in_file')
+        workflow.connect(input_node, 'in_t1_file', T1_mask, 'in_file')
         workflow.connect(T1_mask, 'mask_file', T1_mask_resampling, 'flo_file')    
     
     if correct_susceptibility == True:
@@ -259,7 +267,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(select_first_fm_mag, 'out', susceptibility_correction, 'input_node.mag_image')
         workflow.connect(input_node, 'in_fm_phase_file', susceptibility_correction, 'input_node.phase_image')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.epi_image')
-        #workflow.connect(input_node, 'in_T1_file', susceptibility_correction, 'input_node.in_T1_file')
+        #workflow.connect(input_node, 'in_t1_file', susceptibility_correction, 'input_node.in_t1_file')
         workflow.connect(susceptibility_correction, 'output_node.out_field', transformation_composition, 'comp_input')
         workflow.connect(reorder_transformations, 'out', transformation_composition, 'comp_input2')
     
@@ -277,7 +285,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(reorder_transformations, 'out', resampling, 'trans_file')
     
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image',T1_to_b0_registration, 'ref_file')
-    workflow.connect(input_node, 'in_T1_file',T1_to_b0_registration, 'flo_file')
+    workflow.connect(input_node, 'in_t1_file',T1_to_b0_registration, 'flo_file')
     
     # We can now resample a mask in T1 space into the B0 space
     workflow.connect(T1_to_b0_registration, 'aff_file', T1_mask_resampling, 'trans_file')
@@ -328,17 +336,17 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')
     
-    if resample_in_t1:
+    if resample_in_t1 == True:
         rig_reg = pe.Node(niftyreg.RegAladin(), name = 'b0_to_T1_registration')
         rig_reg.inputs.rig_only_flag = True
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', rig_reg, 'flo_file')
-        workflow.connect(input_node, 'in_T1_file', rig_reg, 'ref_file')
+        workflow.connect(input_node, 'in_t1_file', rig_reg, 'ref_file')
         resamp_fa = pe.Node(niftyreg.RegResample(), name='resamp_fa')
         resamp_fa.inputs.inter_val = 'LIN'
         resamp_fa.inputs.pad_val = -10
         workflow.connect(rig_reg, 'aff_file', resamp_fa, 'trans_file')
         workflow.connect(tensor_fitting, 'famap_file', resamp_fa, 'flo_file')
-        workflow.connect(input_node, 'in_T1_file', resamp_fa, 'ref_file')
+        workflow.connect(input_node, 'in_t1_file', resamp_fa, 'ref_file')
         workflow.connect(resamp_fa, 'res_file', output_node, 'FA')
 
     
@@ -354,7 +362,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # - in_bval_file
     # - in_fm_magnitude_file
     # - in_fm_phase_file
-    # - in_T1_file
+    # - in_t1_file
 
     # split_dwis
     # Node using fsl.Split() to split the 4D image (in_dwi_4d_file) into 3D volume files

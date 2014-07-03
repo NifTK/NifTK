@@ -49,8 +49,7 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     input_node = pe.Node(
         niu.IdentityInterface(
             fields=['in_tensors_file',
-                    'in_T1_file',
-                    'in_B0_file',
+                    'in_b0_file',
                     'in_bvec_file',
                     'in_bval_file',
                     'in_t1_file',
@@ -90,7 +89,8 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     
     r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                       correct_susceptibility = False,
-                                                      t1_mask_provided = True)
+                                                      t1_mask_provided = True,
+                                                      ref_b0_provided = True)
     
     inv_estimated_distortions = pe.MapNode(interface = niftyreg.RegTransform(), 
                                            name = 'inv_estimated_distortions', 
@@ -134,8 +134,8 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     workflow.connect(distortion_generator, 'aff_files', tensor_resampling, 'trans_file')
 
     # Resample B0s the same way as the distorted tensor
-    workflow.connect(input_node, 'in_B0_file', b0_resampling, 'flo_file')
-    workflow.connect(input_node, 'in_B0_file', b0_resampling, 'ref_file')
+    workflow.connect(input_node, 'in_b0_file', b0_resampling, 'flo_file')
+    workflow.connect(input_node, 'in_b0_file', b0_resampling, 'ref_file')
     workflow.connect(distortion_generator, 'aff_files', b0_resampling, 'trans_file')
     
     # Make distortedDWI using the the affine distorted tensors and B0s
@@ -152,11 +152,12 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     workflow.connect(noise_adder, 'out_file', merge_dwis, 'in_files')
     
     # Now perform the diffusion pre-processing pipeline
-    workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')    
+    workflow.connect(merge_dwis, 'merged_file', r, 'input_node.in_dwi_4d_file')
     workflow.connect(input_node, 'in_bvec_file', r, 'input_node.in_bvec_file')
     workflow.connect(input_node, 'in_bval_file', r, 'input_node.in_bval_file')
-    workflow.connect(input_node, 'in_T1_file', r, 'input_node.in_T1_file')
-    workflow.connect(input_node, 'in_mask_file', r, 'input_node.in_T1_mask')
+    workflow.connect(input_node, 'in_t1_file', r, 'input_node.in_t1_file')
+    workflow.connect(input_node, 'in_mask_file', r, 'input_node.in_t1_mask')
+    workflow.connect(input_node, 'in_b0_file', r, 'input_node.in_ref_b0')
     
     # Take the final estimated transformation of the DWI, and invert the transformation
     workflow.connect(r, 'output_node.transformations', inv_estimated_distortions, 'inv_aff_input')    
