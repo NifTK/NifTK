@@ -289,9 +289,6 @@ protected slots:
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateControlChanged(bool checked);
 
-  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(std::vector<mitk::DataNode*> nodes);
-
   /// \brief Called when one of the viewers receives the focus.
   void OnFocusChanged();
 
@@ -313,7 +310,7 @@ protected slots:
   void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
-  void OnTimeGeometryChanged(mitk::TimeGeometry* timeGeometry);
+  void OnTimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Called when the cursor position binding has changed in a viewer.
   void OnCursorPositionBindingChanged(bool bound);
