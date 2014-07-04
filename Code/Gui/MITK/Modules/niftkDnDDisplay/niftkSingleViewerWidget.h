@@ -360,7 +360,7 @@ signals:
   void CursorPositionBindingChanged(bool bound);
 
   /// \brief Emitted when the scale factor binding has changed in this viewer.
-  void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void ScaleFactorBindingChanged(bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
   void WindowLayoutChanged(WindowLayout windowLayout);

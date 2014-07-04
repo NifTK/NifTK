@@ -252,7 +252,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(bool)), SLOT(OnCursorPositionBindingChanged(bool)));
-  this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool)), SLOT(OnScaleFactorBindingChanged(niftkSingleViewerWidget*, bool)));
+  this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
 
   return viewer;
@@ -851,8 +851,10 @@ void niftkMultiViewerWidget::OnCursorPositionBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound)
+void niftkMultiViewerWidget::OnScaleFactorBindingChanged(bool bound)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)

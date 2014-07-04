@@ -319,7 +319,7 @@ protected slots:
   void OnCursorPositionBindingChanged(bool bound);
 
   /// \brief Called when the scale factor binding has changed in a viewer.
-  void OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+  void OnScaleFactorBindingChanged(bool bound);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
