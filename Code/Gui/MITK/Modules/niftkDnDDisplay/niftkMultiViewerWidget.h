@@ -239,55 +239,55 @@ signals:
 protected slots:
 
   /// \brief Called when the selected slice has been changed through the control panel.
-  void OnSelectedSliceChanged(int selectedSlice);
+  void OnSelectedSliceControlChanged(int selectedSlice);
 
   /// \brief Called when the time step has been changed through the control panel.
-  void OnTimeStepChanged(int timeStep);
+  void OnTimeStepControlChanged(int timeStep);
 
   /// \brief Called when the magnification has been changed through the control panel.
-  void OnMagnificationChanged(double magnification);
+  void OnMagnificationControlChanged(double magnification);
 
   /// \brief Called when the show cursor option has been changed through the control panel.
-  void OnCursorVisibilityChanged(bool visible);
+  void OnCursorVisibilityControlChanged(bool visible);
 
   /// \brief Called when the show direction annotations option has been changed through the control panel.
-  void OnShowDirectionAnnotationsChanged(bool visible);
+  void OnShowDirectionAnnotationsControlsChanged(bool visible);
 
   /// \brief Called when the show 3D window option has been changed through the control panel.
-  void OnShow3DWindowChanged(bool visible);
+  void OnShow3DWindowControlChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnWindowLayoutChanged(WindowLayout windowLayout);
+  void OnWindowLayoutControlChanged(WindowLayout windowLayout);
 
   /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
-  void OnWindowCursorBindingChanged(bool);
+  void OnWindowCursorBindingControlChanged(bool);
 
   /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
-  void OnWindowMagnificationBindingChanged(bool);
+  void OnWindowMagnificationBindingControlChanged(bool);
 
   /// \brief Called when the number of viewers has been changed through the control panel.
-  void OnViewerNumberChanged(int rows, int columns);
+  void OnViewerNumberControlChanged(int rows, int columns);
 
   /// \brief Called when the viewer position binding has been changed through the control panel.
-  void OnViewerPositionBindingChanged(bool bound);
+  void OnViewerPositionBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer cursor binding has been changed through the control panel.
-  void OnViewerCursorBindingChanged(bool bound);
+  void OnViewerCursorBindingControlChanged(bool bound);
 
   /// \brief Called when the window layout binding across the viewers has been changed through the control panel.
-  void OnViewerWindowLayoutBindingChanged(bool bound);
+  void OnViewerWindowLayoutBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
-  void OnViewerMagnificationBindingChanged(bool bound);
+  void OnViewerMagnificationBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer geometry binding has been changed through the control panel.
-  void OnViewerGeometryBindingChanged(bool bound);
+  void OnViewerGeometryBindingControlChanged(bool bound);
 
   /// \brief Called when the drop type has been changed through the control panel.
-  void OnDropTypeChanged(DnDDisplayDropType dropType);
+  void OnDropTypeControlChanged(DnDDisplayDropType dropType);
 
   /// \brief Called when the drop accumulation has been changed through the control panel.
-  void OnDropAccumulateChanged(bool checked);
+  void OnDropAccumulateControlChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(std::vector<mitk::DataNode*> nodes);

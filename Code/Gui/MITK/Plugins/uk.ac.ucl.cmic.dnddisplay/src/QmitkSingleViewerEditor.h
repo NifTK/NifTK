@@ -184,31 +184,31 @@ protected slots:
   void OnPinButtonToggled(bool checked);
 
   /// \brief Called when the selected slice has been changed through the control panel.
-  void OnSelectedSliceChanged(int selectedSlice);
+  void OnSelectedSliceControlChanged(int selectedSlice);
 
   /// \brief Called when the time step has been changed through the control panel.
-  void OnTimeStepChanged(int timeStep);
+  void OnTimeStepControlChanged(int timeStep);
 
   /// \brief Called when the magnification has been changed through the control panel.
-  void OnMagnificationChanged(double magnification);
+  void OnMagnificationControlChanged(double magnification);
 
   /// \brief Called when the show cursor option has been changed through the control panel.
-  void OnCursorVisibilityChanged(bool visible);
+  void OnCursorVisibilityControlChanged(bool visible);
 
   /// \brief Called when the show direction annotations option has been changed through the control panel.
-  void OnShowDirectionAnnotationsChanged(bool visible);
+  void OnShowDirectionAnnotationsControlChanged(bool visible);
 
   /// \brief Called when the show 3D window option has been changed through the control panel.
-  void OnShow3DWindowChanged(bool visible);
+  void OnShow3DWindowControlChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnWindowLayoutChanged(WindowLayout windowLayout);
+  void OnWindowLayoutControlChanged(WindowLayout windowLayout);
 
   /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
-  void OnWindowCursorBindingChanged(bool);
+  void OnWindowCursorBindingControlChanged(bool);
 
   /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
-  void OnWindowMagnificationBindingChanged(bool);
+  void OnWindowScaleFactorBindingControlChanged(bool);
 
   /// \brief Called when the selected render window has been changed in the viewer.
   void OnSelectedRenderWindowChanged(MIDASOrientation orientation);

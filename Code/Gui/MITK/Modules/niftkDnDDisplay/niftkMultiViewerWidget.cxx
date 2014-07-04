@@ -169,28 +169,28 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->SetViewerNumber(m_DefaultViewerRows, m_DefaultViewerColumns, false);
 
   // Connect Qt Signals to make it all hang together.
-  this->connect(m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceChanged(int)));
-  this->connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
-  this->connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
+  this->connect(m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
+  this->connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
+  this->connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationControlChanged(double)));
 
-  this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
-  this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
-  this->connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowMagnificationBindingChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
+  this->connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowMagnificationBindingControlChanged(bool)));
 
-  this->connect(m_ControlPanel, SIGNAL(ViewerNumberChanged(int, int)), SLOT(OnViewerNumberChanged(int, int)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerNumberChanged(int, int)), SLOT(OnViewerNumberControlChanged(int, int)));
 
-  this->connect(m_ControlPanel, SIGNAL(ViewerPositionBindingChanged(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(ViewerCursorBindingChanged(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(ViewerMagnificationBindingChanged(bool)), SLOT(OnViewerMagnificationBindingChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(ViewerWindowLayoutBindingChanged(bool)), SLOT(OnViewerWindowLayoutBindingChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(ViewerGeometryBindingChanged(bool)), SLOT(OnViewerGeometryBindingChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerPositionBindingChanged(bool)), SLOT(OnViewerPositionBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerCursorBindingChanged(bool)), SLOT(OnViewerCursorBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerMagnificationBindingChanged(bool)), SLOT(OnViewerMagnificationBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerWindowLayoutBindingChanged(bool)), SLOT(OnViewerWindowLayoutBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerGeometryBindingChanged(bool)), SLOT(OnViewerGeometryBindingControlChanged(bool)));
 
-  this->connect(m_ControlPanel, SIGNAL(DropTypeChanged(DnDDisplayDropType)), SLOT(OnDropTypeChanged(DnDDisplayDropType)));
-  this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(DropTypeChanged(DnDDisplayDropType)), SLOT(OnDropTypeControlChanged(DnDDisplayDropType)));
+  this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateControlChanged(bool)));
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
 
@@ -720,7 +720,7 @@ int niftkMultiViewerWidget::GetViewerIndexFromRowAndColumn(int r, int c) const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerNumberChanged(int rows, int columns)
+void niftkMultiViewerWidget::OnViewerNumberControlChanged(int rows, int columns)
 {
   this->SetViewerNumber(rows, columns, false);
 }
@@ -1003,7 +1003,7 @@ void niftkMultiViewerWidget::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnDropTypeChanged(DnDDisplayDropType dropType)
+void niftkMultiViewerWidget::OnDropTypeControlChanged(DnDDisplayDropType dropType)
 {
   m_VisibilityManager->ClearViewers();
   m_VisibilityManager->SetDropType(dropType);
@@ -1012,14 +1012,14 @@ void niftkMultiViewerWidget::OnDropTypeChanged(DnDDisplayDropType dropType)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnDropAccumulateChanged(bool checked)
+void niftkMultiViewerWidget::OnDropAccumulateControlChanged(bool checked)
 {
   m_VisibilityManager->SetAccumulateWhenDropping(checked);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSelectedSliceChanged(int selectedSlice)
+void niftkMultiViewerWidget::OnSelectedSliceControlChanged(int selectedSlice)
 {
   MIDASOrientation orientation = this->GetSelectedViewer()->GetOrientation();
 
@@ -1051,7 +1051,7 @@ void niftkMultiViewerWidget::OnSelectedSliceChanged(int selectedSlice)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
+void niftkMultiViewerWidget::OnMagnificationControlChanged(double magnification)
 {
   double roundedMagnification = std::floor(magnification);
 
@@ -1093,7 +1093,7 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)
+void niftkMultiViewerWidget::OnTimeStepControlChanged(int timeStep)
 {
   this->SetSelectedTimeStep(timeStep);
 }
@@ -1125,7 +1125,7 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
+void niftkMultiViewerWidget::OnWindowLayoutControlChanged(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -1207,7 +1207,7 @@ void niftkMultiViewerWidget::OnTimeGeometryChanged(mitk::TimeGeometry* timeGeome
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnWindowCursorBindingControlChanged(bool bound)
 {
   /// If the cursor positions are bound across the viewers then the binding property
   /// across the windows of the viewers can be controlled just together. That is, it
@@ -1232,7 +1232,7 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnWindowMagnificationBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
   bool signalsWereBlocked = selectedViewer->blockSignals(true);
@@ -1260,21 +1260,21 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnCursorVisibilityChanged(bool visible)
+void niftkMultiViewerWidget::OnCursorVisibilityControlChanged(bool visible)
 {
   this->SetCursorVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnShowDirectionAnnotationsChanged(bool visible)
+void niftkMultiViewerWidget::OnShowDirectionAnnotationsControlsChanged(bool visible)
 {
   this->SetDirectionAnnotationsVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnShow3DWindowChanged(bool visible)
+void niftkMultiViewerWidget::OnShow3DWindowControlChanged(bool visible)
 {
   this->SetShow3DWindowIn2x2WindowLayout(visible);
 }
@@ -1556,7 +1556,7 @@ void niftkMultiViewerWidget::EnableLinkedNavigation(bool linkedNavigationEnabled
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnViewerPositionBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
@@ -1577,7 +1577,7 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnViewerCursorBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
   bool windowCursorPositionsBound = selectedViewer->GetCursorPositionBinding();
@@ -1614,7 +1614,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnViewerMagnificationBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
   bool windowScaleFactorsBound = selectedViewer->GetScaleFactorBinding();
@@ -1651,7 +1651,7 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerWindowLayoutBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnViewerWindowLayoutBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
@@ -1672,7 +1672,7 @@ void niftkMultiViewerWidget::OnViewerWindowLayoutBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
+void niftkMultiViewerWidget::OnViewerGeometryBindingControlChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 

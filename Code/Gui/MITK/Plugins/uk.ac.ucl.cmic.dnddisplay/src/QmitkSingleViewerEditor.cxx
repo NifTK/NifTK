@@ -354,17 +354,17 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
 
-    this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceChanged(int)));
-    this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
-    this->connect(d->m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
+    this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
+    this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
+    this->connect(d->m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationControlChanged(double)));
 
-    this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
-    this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsChanged(bool)));
-    this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
-    this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
-    this->connect(d->m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingChanged(bool)));
-    this->connect(d->m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowMagnificationBindingChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
+    this->connect(d->m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowScaleFactorBindingControlChanged(bool)));
 
     this->connect(d->m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
   }
@@ -657,7 +657,7 @@ bool QmitkSingleViewerEditor::eventFilter(QObject* object, QEvent* event)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnSelectedSliceChanged(int selectedSlice)
+void QmitkSingleViewerEditor::OnSelectedSliceControlChanged(int selectedSlice)
 {
   MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
 
@@ -676,7 +676,7 @@ void QmitkSingleViewerEditor::OnSelectedSliceChanged(int selectedSlice)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnTimeStepChanged(int timeStep)
+void QmitkSingleViewerEditor::OnTimeStepControlChanged(int timeStep)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetTimeStep(timeStep);
@@ -685,7 +685,7 @@ void QmitkSingleViewerEditor::OnTimeStepChanged(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnMagnificationChanged(double magnification)
+void QmitkSingleViewerEditor::OnMagnificationControlChanged(double magnification)
 {
   double roundedMagnification = std::floor(magnification);
 
@@ -713,7 +713,7 @@ void QmitkSingleViewerEditor::OnMagnificationChanged(double magnification)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnShowDirectionAnnotationsChanged(bool visible)
+void QmitkSingleViewerEditor::OnShowDirectionAnnotationsControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetDirectionAnnotationsVisible(visible);
@@ -722,7 +722,7 @@ void QmitkSingleViewerEditor::OnShowDirectionAnnotationsChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
+void QmitkSingleViewerEditor::OnCursorVisibilityControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetCursorVisible(visible);
@@ -731,7 +731,7 @@ void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnShow3DWindowChanged(bool visible)
+void QmitkSingleViewerEditor::OnShow3DWindowControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(visible);
@@ -740,7 +740,7 @@ void QmitkSingleViewerEditor::OnShow3DWindowChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnWindowCursorBindingChanged(bool bound)
+void QmitkSingleViewerEditor::OnWindowCursorBindingControlChanged(bool bound)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetCursorPositionBinding(bound);
@@ -749,7 +749,7 @@ void QmitkSingleViewerEditor::OnWindowCursorBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnWindowMagnificationBindingChanged(bool bound)
+void QmitkSingleViewerEditor::OnWindowScaleFactorBindingControlChanged(bool bound)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetScaleFactorBinding(bound);
@@ -758,7 +758,7 @@ void QmitkSingleViewerEditor::OnWindowMagnificationBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
+void QmitkSingleViewerEditor::OnWindowLayoutControlChanged(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
