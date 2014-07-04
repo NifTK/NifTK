@@ -351,7 +351,7 @@ signals:
   void SelectedTimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
   void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);

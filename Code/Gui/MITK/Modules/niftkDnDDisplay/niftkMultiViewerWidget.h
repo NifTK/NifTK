@@ -304,7 +304,7 @@ protected slots:
   void OnSelectedTimeStepChanged(int selectedTimeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
   void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);

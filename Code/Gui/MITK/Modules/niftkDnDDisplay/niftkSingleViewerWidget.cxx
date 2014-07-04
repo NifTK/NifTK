@@ -150,7 +150,7 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mit
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(this, MIDASOrientation(windowIndex), cursorPosition);
+  emit CursorPositionChanged(MIDASOrientation(windowIndex), cursorPosition);
 }
 
 

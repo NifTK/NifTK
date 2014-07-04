@@ -248,7 +248,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
-  this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
+  this->connect(viewer, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorPositionBindingChanged(niftkSingleViewerWidget*, bool)));
@@ -787,8 +787,10 @@ void niftkMultiViewerWidget::OnSelectedTimeStepChanged(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkMultiViewerWidget::OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   if (m_ControlPanel->AreViewerCursorsBound())
   {
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
