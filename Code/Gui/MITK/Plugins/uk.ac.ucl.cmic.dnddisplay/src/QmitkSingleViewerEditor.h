@@ -225,7 +225,7 @@ protected slots:
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);

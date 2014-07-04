@@ -363,7 +363,7 @@ signals:
   void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
-  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
   void TimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);

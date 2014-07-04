@@ -113,7 +113,7 @@ protected slots:
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of the viewer has changed through interaction.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
 private:
 

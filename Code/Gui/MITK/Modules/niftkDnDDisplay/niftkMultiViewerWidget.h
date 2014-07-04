@@ -310,7 +310,7 @@ protected slots:
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
   void OnTimeGeometryChanged(mitk::TimeGeometry* timeGeometry);

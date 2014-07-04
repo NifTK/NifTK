@@ -113,7 +113,7 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, st
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
-  emit WindowLayoutChanged(this, windowLayout);
+  emit WindowLayoutChanged(windowLayout);
 }
 
 
