@@ -52,6 +52,14 @@ public:
   /// \brief Clears all filters.
   void ClearFilters();
 
+  /// \brief Tells if the listener is blocked, i.e. the processing of signals is suppressed.
+  bool IsBlocked() const;
+
+  /// \brief Blocks the processing of signals.
+  /// This can be used to avoid eventual infinite recursion.
+  /// Returns true if the listener was already blocked, otherwise false.
+  bool SetBlocked(bool blocked);
+
 protected:
 
   DataStorageListener(const mitk::DataStorage::Pointer);

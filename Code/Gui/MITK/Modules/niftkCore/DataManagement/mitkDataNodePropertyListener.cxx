@@ -51,7 +51,10 @@ public:
 
   void Notify()
   {
-    m_Observer->OnPropertyChanged(m_Node, m_Renderer);
+   if (!m_Observer->IsBlocked())
+   {
+      m_Observer->OnPropertyChanged(m_Node, m_Renderer);
+   }
   }
 
 private:
