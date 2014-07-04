@@ -95,7 +95,7 @@ public:
   mitk::SliceNavigationController::GeometrySliceEvent GeometryTimeEvent;
   mitk::SliceNavigationController::GeometrySliceEvent GeometrySliceEvent;
 
-  const char* GeometryChanged;
+  const char* TimeGeometryChanged;
   const char* WindowLayoutChanged;
   const char* SelectedTimeStepChanged;
   const char* SelectedPositionChanged;
@@ -133,7 +133,7 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   d->CursorPositionBindingChanged = SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool));
   d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool));
   d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout));
-  d->GeometryChanged = SIGNAL(GeometryChanged(niftkSingleViewerWidget*, const mitk::TimeGeometry*));
+  d->TimeGeometryChanged = SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*));
   d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool));
 }
 

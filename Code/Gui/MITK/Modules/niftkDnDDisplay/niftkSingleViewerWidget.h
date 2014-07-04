@@ -366,7 +366,7 @@ signals:
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void TimeGeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* timeGeometry);
+  void TimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
