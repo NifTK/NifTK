@@ -244,8 +244,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
-  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
@@ -865,8 +865,10 @@ void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerWidget::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
+  niftkSingleViewerWidget* dropOntoViewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   // See also niftkMultiViewerVisibilityManager::OnNodesDropped which should trigger first.
   if (m_ControlPanel->GetDropType() != DNDDISPLAY_DROP_ALL)
   {

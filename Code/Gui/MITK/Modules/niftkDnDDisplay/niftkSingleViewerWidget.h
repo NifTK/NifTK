@@ -342,7 +342,7 @@ public:
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(niftkSingleViewerWidget* thisViewer, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);

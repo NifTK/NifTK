@@ -175,7 +175,7 @@ protected:
 
 protected slots:
 
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes);
+  void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);

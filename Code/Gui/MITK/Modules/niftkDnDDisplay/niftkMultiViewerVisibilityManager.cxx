@@ -210,7 +210,7 @@ void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, 
 //            std::vector<mitk::DataNode*>::iterator newNodesIt = std::copy(nodesBegin, it, newNodes.begin());
 //            ++it;
 //            std::copy(it, nodesEnd, newNodesIt);
-//            m_Viewers[viewerIndex]->OnNodesDropped(0, newNodes);
+//            m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
 //          }
 //          else
 //          {
@@ -225,7 +225,7 @@ void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, 
 //          std::vector<mitk::DataNode*> newNodes(m_DataNodesPerViewer[viewerIndex].size() + 1);
 //          std::copy(nodesBegin, nodesEnd, newNodes.begin());
 //          newNodes[newNodes.size() - 1] = node;
-//          m_Viewers[viewerIndex]->OnNodesDropped(0, newNodes);
+//          m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
 //        }
 //      }
 
@@ -485,8 +485,10 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewer) - m_Viewers.begin();
   WindowLayout windowLayout = this->GetWindowLayout(nodes);
 

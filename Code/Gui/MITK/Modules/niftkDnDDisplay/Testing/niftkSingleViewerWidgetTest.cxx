@@ -627,7 +627,7 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->SetDefaultSingleWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->Viewer->SetDefaultMultiWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-//  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+//  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
 
   d->VisibilityManager->RegisterViewer(d->Viewer);
 
@@ -719,8 +719,8 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
     QTest::qWarn("Drop event not accepted by receiving widget.");
   }
 
-  d->VisibilityManager->OnNodesDropped(d->Viewer, nodes);
-//  d->Viewer->OnNodesDropped(0, nodes);
+  d->VisibilityManager->OnNodesDropped(nodes);
+//  d->Viewer->OnNodesDropped(nodes);
 }
 
 
