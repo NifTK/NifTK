@@ -309,7 +309,7 @@ public:
   void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility);
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
@@ -422,7 +422,7 @@ private:
   void Update3DWindowVisibility();
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
-  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
+  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(int windowIndex);

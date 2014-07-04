@@ -99,9 +99,14 @@ void niftkMultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
   {
-    std::vector<mitk::DataNode*> nodes;
-    nodes.push_back(node);
-    m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+    /// Note:
+    /// Do not manage the visibility of the crosshair planes.
+    if (!node->GetProperty("renderer"))
+    {
+      std::vector<mitk::DataNode*> nodes;
+      nodes.push_back(node);
+      m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+    }
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
