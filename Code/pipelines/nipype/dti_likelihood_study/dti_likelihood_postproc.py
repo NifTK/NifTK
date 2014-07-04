@@ -6,7 +6,6 @@ import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyfit       as niftyfit
 import nipype.interfaces.fsl            as fsl
-import nipype.interfaces.ttk            as ttk
 from extract_roi_statistics import ExtractRoiStatistics
 from write_array_to_csv import WriteArrayToCsv
 from calculate_distance_between_affines import CalculateAffineDistances
@@ -33,13 +32,10 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
 
     # TODO: Compare estimated transformation matrices!
 
-    logger1 = pe.Node(interface = ttk.utils.TensorLog(), 
+    logger1 = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), 
                       name = 'logger1')
-    logger1.inputs.use_fsl_style = True
-
-    logger2 = pe.Node(interface = ttk.utils.TensorLog(), 
+    logger2 = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), 
                       name = 'logger2')
-    logger2.inputs.use_fsl_style = True
     
     tensor_subtracter = pe.Node(interface = niftyseg.maths.BinaryMaths(), 
                           name = 'tensor_subtracter')
@@ -90,11 +86,11 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'affine_distances']),
         name='output_node')
     
-    workflow.connect(input_node, 'simulated_tensors', logger1, 'in_file')
-    workflow.connect(input_node, 'estimated_tensors', logger2, 'in_file')
+    workflow.connect(input_node, 'simulated_tensors', logger1, 'source_file')
+    workflow.connect(input_node, 'estimated_tensors', logger2, 'source_file')
     
-    workflow.connect(logger1, 'out_file',  tensor_subtracter, 'in_file')
-    workflow.connect(logger2, 'out_file',  tensor_subtracter, 'operand_file')
+    workflow.connect(logger1, 'logdti_file',  tensor_subtracter, 'in_file')
+    workflow.connect(logger2, 'logdti_file',  tensor_subtracter, 'operand_file')
     
     workflow.connect(tensor_subtracter, 'out_file', tensor_sqr, 'in_file')
     workflow.connect(tensor_subtracter, 'out_file', tensor_sqr, 'operand_file')

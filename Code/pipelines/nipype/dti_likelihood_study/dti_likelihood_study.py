@@ -10,7 +10,6 @@ import nipype.interfaces.susceptibility as susceptibility
 import nipype.interfaces.io             as nio 
 
 import diffusion_mri_processing         as dmri
-import nipype.interfaces.ttk            as ttk
 import diffusion_distortion_simulation  as distortion_sim
 import dti_likelihood_postproc          as dmripostproc
 
