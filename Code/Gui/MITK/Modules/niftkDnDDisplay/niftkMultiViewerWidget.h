@@ -316,7 +316,7 @@ protected slots:
   void OnTimeGeometryChanged(mitk::TimeGeometry* timeGeometry);
 
   /// \brief Called when the cursor position binding has changed in a viewer.
-  void OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+  void OnCursorPositionBindingChanged(bool bound);
 
   /// \brief Called when the scale factor binding has changed in a viewer.
   void OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound);

@@ -164,7 +164,7 @@ void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scale
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnCursorPositionBindingChanged()
 {
-  emit CursorPositionBindingChanged(this, this->GetCursorPositionBinding());
+  emit CursorPositionBindingChanged(this->GetCursorPositionBinding());
 }
 
 

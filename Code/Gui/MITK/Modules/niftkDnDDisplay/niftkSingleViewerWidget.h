@@ -357,7 +357,7 @@ signals:
   void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed in this viewer.
-  void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void CursorPositionBindingChanged(bool bound);
 
   /// \brief Emitted when the scale factor binding has changed in this viewer.
   void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
