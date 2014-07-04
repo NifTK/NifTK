@@ -234,8 +234,6 @@ public:
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
 
-signals:
-
 protected slots:
 
   /// \brief Called when the selected slice has been changed through the control panel.
@@ -326,8 +324,6 @@ protected slots:
 
   /// \brief Called when the pin button is toggled.
   void OnPinButtonToggled(bool checked);
-
-protected:
 
 private:
 
