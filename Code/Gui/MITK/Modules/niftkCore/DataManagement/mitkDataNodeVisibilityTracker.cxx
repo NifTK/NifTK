@@ -164,6 +164,7 @@ void DataNodeVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mi
   if (this->GetDataStorage().IsNull()
       || !m_TrackedRenderer
       || m_ManagedRenderers.empty()
+      || node->GetProperty("renderer")
       || this->IsIgnored(node)
       || (renderer && renderer != m_TrackedRenderer))
   {

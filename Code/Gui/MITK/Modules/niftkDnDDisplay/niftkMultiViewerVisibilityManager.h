@@ -35,6 +35,24 @@ class niftkSingleViewerWidget;
  * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visible" property in DataStorage.
+ *
+ * The strategy is the following:
+ *
+ * If a new data node is added to the data storage, a renderer specific visibility
+ * property is created for the render windows of each registered viewer. The initial
+ * visibility is false.
+ * At the same time, an observer is registered to listen to the change of the global
+ * visibility of the node.
+ * When the global visibility of a node changes, its visibility specific to the renderer
+ * of th selected window is turned to the same as the global visibility.
+ * Similarly in the other around, when the selected window changes, the global visibility
+ * of the data nodes is set to the same as the visibility specific to the selected
+ * window.
+ *
+ * Note:
+ * Since this class will change the global visibility, it cannot be used together with
+ * the MITK display that does not maintain renderer specific visibilities to its render
+ * windows.
  */
 class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject, public mitk::DataNodePropertyListener
 {
@@ -95,6 +113,9 @@ public:
   /// \brief Sets the flag deciding whether we prefer to accumulate images each time they are dropped.
   void SetAccumulateWhenDropping(bool accumulate) { m_Accumulate = accumulate; }
 
+  /// \brief Called when one of the viewers receives the focus.
+  void OnFocusChanged();
+
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
@@ -120,6 +141,10 @@ protected:
   virtual void RemoveNodesFromViewer(int windowIndex);
 
 private:
+
+  /// \brief Updates the global visibilities of every node to the same as in the given renderer.
+  /// The function ignores the crosshair plane nodes.
+  void UpdateGlobalVisibilities(mitk::BaseRenderer* renderer);
 
   /// \brief Gets the number of nodes currently visible in a window.
   virtual int GetNodesInViewer(int windowIndex);
@@ -167,6 +192,7 @@ private:
   // Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
 
+  unsigned long m_FocusManagerObserverTag;
 };
 
 #endif

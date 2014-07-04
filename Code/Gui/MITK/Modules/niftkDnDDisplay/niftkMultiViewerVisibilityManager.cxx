@@ -16,6 +16,8 @@
 #include "niftkSingleViewerWidget.h"
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkDataStorageUtils.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
@@ -27,13 +29,22 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
 , m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION)
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
+, m_FocusManagerObserverTag(0)
 {
+  // Register focus observer.
+  itk::SimpleMemberCommand<niftkMultiViewerVisibilityManager>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<niftkMultiViewerVisibilityManager>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &niftkMultiViewerVisibilityManager::OnFocusChanged);
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
 //-----------------------------------------------------------------------------
 niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 {
+  // Deregister focus observer.
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 }
 
 
@@ -493,6 +504,58 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiViewerVisibilityManager::OnFocusChanged()
+{
+  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+
+  bool found = false;
+  for (int i = 0; i < m_Viewers.size(); ++i)
+  {
+    niftkSingleViewerWidget* viewer = m_Viewers[i];
+    const std::vector<QmitkRenderWindow*>& renderWindows = viewer->GetRenderWindows();
+    std::vector<QmitkRenderWindow*>::const_iterator it = renderWindows.begin();
+    std::vector<QmitkRenderWindow*>::const_iterator itEnd = renderWindows.end();
+    for ( ; it != itEnd; ++it)
+    {
+      if ((*it)->GetRenderer() == focusedRenderer)
+      {
+        found = true;
+        break;
+      }
+    }
+    if (found)
+    {
+      break;
+    }
+  }
+
+  if (found)
+  {
+    this->UpdateGlobalVisibilities(focusedRenderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* renderer)
+{
+  bool wasBlocked = this->SetBlocked(true);
+  mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    /// We set the global visibility of the nodes that the same as the renderer specific visibility.
+    mitk::DataNode::Pointer node = it->Value();
+    if (!node->GetProperty("renderer"))
+    {
+      bool rendererSpecificVisibility = node->IsVisible(renderer);
+      node->SetVisibility(rendererSpecificVisibility, 0);
+    }
+  }
+  this->SetBlocked(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
@@ -704,4 +767,6 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNod
       }
     } // end if (which method of dropping)
   } // end if (we have valid input)
+
+  this->UpdateGlobalVisibilities(viewer->GetSelectedRenderWindow()->GetRenderer());
 }
