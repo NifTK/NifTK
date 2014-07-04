@@ -38,7 +38,7 @@ niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *viewer)
+void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* viewer)
 {
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
@@ -60,6 +60,8 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *
   }
 
   m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+
+  this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
 }
 
 
@@ -72,6 +74,7 @@ void niftkMultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex
   }
   for (std::size_t i = startIndex; i < endIndex; ++i)
   {
+    QObject::disconnect(m_Viewers[i], SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
     this->RemoveNodesFromViewer(i);
   }
   m_DataNodesPerViewer.erase(m_DataNodesPerViewer.begin() + startIndex, m_DataNodesPerViewer.begin() + endIndex);

@@ -244,7 +244,6 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
-  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));

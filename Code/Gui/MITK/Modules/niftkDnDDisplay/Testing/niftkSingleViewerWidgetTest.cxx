@@ -627,8 +627,6 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->SetDefaultSingleWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->Viewer->SetDefaultMultiWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-//  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-
   d->VisibilityManager->RegisterViewer(d->Viewer);
 
   d->Viewer->resize(1024, 1024);

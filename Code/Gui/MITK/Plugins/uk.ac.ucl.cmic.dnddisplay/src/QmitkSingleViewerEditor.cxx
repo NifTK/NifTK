@@ -344,9 +344,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     // Connect Qt Signals to make it all hang together.
 
-    d->m_VisibilityManager->connect(d->m_SingleViewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-
-    this->connect(d->m_SingleViewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+    this->connect(d->m_SingleViewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SLOT(OnSelectedRenderWindowChanged(MIDASOrientation)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
@@ -401,10 +399,9 @@ void QmitkSingleViewerEditor::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> dataNodes)
+void QmitkSingleViewerEditor::OnTimeGeometryChanged(const mitk::TimeGeometry* timeGeometry)
 {
-  Q_UNUSED(renderWindow);
-  Q_UNUSED(dataNodes);
+  Q_UNUSED(timeGeometry);
 
   d->m_ControlPanel->SetCursorVisible(d->m_ShowCursor);
   d->m_SingleViewer->SetCursorVisible(d->m_ShowCursor);
