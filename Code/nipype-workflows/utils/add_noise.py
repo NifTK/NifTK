@@ -30,17 +30,15 @@ def apply_noise(original_image, mask, noise_type, sigma_val):
         nib_mask = nib.load(mask)
         mask_data = nib_mask.get_data()
     
-    sigma = np.ones(data.shape)*sigma_val
+    data[data<0] = 0
     mask_inds  = mask_data>0
     if noise_type == "gaussian":
         output_data[mask_inds] = ss.norm.rvs(loc=data[mask_inds],scale=sigma_val,size=(mask_inds>0).sum())
     elif noise_type == "rician":
-        output_data[mask_inds] = ss.rice.rvs(data[mask_inds],scale=sigma[mask_inds],size=(mask_inds>0).sum())
+        output_data[mask_inds] = ss.rice.rvs(data[mask_inds],loc=data[mask_inds],scale=sigma_val,size=(mask_inds>0).sum())
     
     nib_output = nib.Nifti1Image(output_data, nib_image.get_affine())
-    print sigma_val
     return nib_output
-
 
 
 class NoiseAdderInputSpec(BaseInterfaceInputSpec):

@@ -7,6 +7,7 @@ import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyfit       as niftyfit
 import nipype.interfaces.fsl            as fsl
 import nipype.interfaces.susceptibility as susceptibility
+import nipype.interfaces.io             as nio 
 
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.ttk            as ttk
@@ -20,7 +21,7 @@ This file provides the creation of the whole workflow necessary for
 processing diffusion MRI images.
 '''
 
-def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_study'):
+def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study', log_data = False, dwi_interp_type = 'CUB', result_dir=None):
 
     """
     Example
@@ -55,12 +56,10 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
                     'in_t1_file',
                     'in_mask_file',
                     'in_labels_file',
-                    'in_interpolation_scheme',
                     'in_stddev_translation',
                     'in_stddev_rotation',
                     'in_stddev_shear',
-                    'in_noise_sigma',
-                    'in_log_space']),
+                    'in_noise_sigma']),
         name='input_node')
     
     distortion_generator = pe.Node(interface = distortion_sim.DistortionGenerator(), 
@@ -90,7 +89,9 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                       correct_susceptibility = False,
                                                       t1_mask_provided = True,
-                                                      ref_b0_provided = True)
+                                                      ref_b0_provided = True,
+                                                      log_data = log_data,
+                                                      dwi_interp_type = dwi_interp_type)
     
     inv_estimated_distortions = pe.MapNode(interface = niftyreg.RegTransform(), 
                                            name = 'inv_estimated_distortions', 
@@ -118,7 +119,9 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     # Output node
     output_node = pe.Node( interface=niu.IdentityInterface(
         fields=['tensor_metric_map',
-                'tensor_metric_ROI_statistics']),
+                'tensor_metric_ROI_statistics',
+                'dwi_metric_map',
+                'dwi_metric_ROI_statistics']),
                            name="output_node" )
     
     # Generate Distortions
@@ -192,5 +195,13 @@ def create_dti_reproducibility_study_workflow(name='create_dti_reproducibility_s
     workflow.connect(postproc, 'output_node.tensor_metric_map', output_node, 'tensor_metric_map')
     workflow.connect(postproc, 'output_node.tensor_metric_ROI_statistics', output_node, 'tensor_metric_ROI_statistics')
     
+    if result_dir != None:
+        ds = pe.Node(nio.DataSink(), name='sinker')
+        ds.inputs.base_directory = result_dir
+        ds.inputs.container = name
+        workflow.connect(output_node, 'tensor_metric_ROI_statistics',ds, '@tensor_stats')
+        workflow.connect(output_node, 'tensor_metric_map', ds, '@tensor_residual')
+        workflow.connect(output_node, 'dwi_metric_ROI_statistics',ds, '@dwi_stats')
+        workflow.connect(output_node, 'dwi_metric_map', ds, '@dwi_residual')
     return workflow
     

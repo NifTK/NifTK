@@ -28,7 +28,7 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'labels_file']),
         name='input_node')
 
-
+    # TODO: Compare estimated transformation matrices!
 
     logger1 = pe.Node(interface = ttk.utils.TensorLog(), 
                       name = 'logger1')

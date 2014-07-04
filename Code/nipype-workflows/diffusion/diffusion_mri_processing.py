@@ -67,7 +67,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                              resample_in_t1 = False, 
                                              log_data = False, 
                                              t1_mask_provided = False,
-                                             ref_b0_provided = False):
+                                             ref_b0_provided = False,
+                                             dwi_interp_type = 'CUB'):
 
     """Creates a diffusion processing workflow. This initially performs a groupwise registration
     of all the B=0 images, subsequently each of the DWI is registered to the averageB0.
@@ -175,7 +176,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                             name = 'transformation_composition', iterfield=['comp_input2'])
     # Resample the DWI and B0s
     resampling = pe.MapNode(niftyreg.RegResample(), name = 'resampling', iterfield=['trans_file', 'flo_file'])
-
+    resampling.inputs.inter_val = dwi_interp_type
+    
     # Remerge all the DWIs
     merge_dwis = pe.Node(interface = fsl.Merge(dimension = 't'), name = 'merge_dwis')
     
