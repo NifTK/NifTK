@@ -38,7 +38,7 @@ niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *viewer)
+void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* viewer)
 {
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
@@ -60,6 +60,8 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget *
   }
 
   m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+
+  this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
 }
 
 
@@ -72,6 +74,7 @@ void niftkMultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex
   }
   for (std::size_t i = startIndex; i < endIndex; ++i)
   {
+    QObject::disconnect(m_Viewers[i], SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
     this->RemoveNodesFromViewer(i);
   }
   m_DataNodesPerViewer.erase(m_DataNodesPerViewer.begin() + startIndex, m_DataNodesPerViewer.begin() + endIndex);
@@ -99,9 +102,14 @@ void niftkMultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
   {
-    std::vector<mitk::DataNode*> nodes;
-    nodes.push_back(node);
-    m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+    /// Note:
+    /// Do not manage the visibility of the crosshair planes.
+    if (!node->GetProperty("renderer"))
+    {
+      std::vector<mitk::DataNode*> nodes;
+      nodes.push_back(node);
+      m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+    }
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
@@ -210,7 +218,7 @@ void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, 
 //            std::vector<mitk::DataNode*>::iterator newNodesIt = std::copy(nodesBegin, it, newNodes.begin());
 //            ++it;
 //            std::copy(it, nodesEnd, newNodesIt);
-//            m_Viewers[viewerIndex]->OnNodesDropped(0, newNodes);
+//            m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
 //          }
 //          else
 //          {
@@ -225,7 +233,7 @@ void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, 
 //          std::vector<mitk::DataNode*> newNodes(m_DataNodesPerViewer[viewerIndex].size() + 1);
 //          std::copy(nodesBegin, nodesEnd, newNodes.begin());
 //          newNodes[newNodes.size() - 1] = node;
-//          m_Viewers[viewerIndex]->OnNodesDropped(0, newNodes);
+//          m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
 //        }
 //      }
 
@@ -485,8 +493,10 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewer) - m_Viewers.begin();
   WindowLayout windowLayout = this->GetWindowLayout(nodes);
 

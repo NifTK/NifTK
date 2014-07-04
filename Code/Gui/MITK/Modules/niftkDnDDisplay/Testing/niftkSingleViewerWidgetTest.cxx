@@ -95,7 +95,7 @@ public:
   mitk::SliceNavigationController::GeometrySliceEvent GeometryTimeEvent;
   mitk::SliceNavigationController::GeometrySliceEvent GeometrySliceEvent;
 
-  const char* GeometryChanged;
+  const char* TimeGeometryChanged;
   const char* WindowLayoutChanged;
   const char* SelectedTimeStepChanged;
   const char* SelectedPositionChanged;
@@ -126,15 +126,15 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   d->VisibilityManager = 0;
   d->InteractiveMode = false;
 
-  d->SelectedPositionChanged = SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&));
-  d->SelectedTimeStepChanged = SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int));
-  d->CursorPositionChanged = SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&));
-  d->ScaleFactorChanged = SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double));
-  d->CursorPositionBindingChanged = SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool));
-  d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool));
-  d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout));
-  d->GeometryChanged = SIGNAL(GeometryChanged(niftkSingleViewerWidget*, const mitk::TimeGeometry*));
-  d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool));
+  d->SelectedPositionChanged = SIGNAL(SelectedPositionChanged(const mitk::Point3D&));
+  d->SelectedTimeStepChanged = SIGNAL(SelectedTimeStepChanged(int));
+  d->CursorPositionChanged = SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&));
+  d->ScaleFactorChanged = SIGNAL(ScaleFactorChanged(MIDASOrientation, double));
+  d->CursorPositionBindingChanged = SIGNAL(CursorPositionBindingChanged(bool));
+  d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(bool));
+  d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(WindowLayout));
+  d->TimeGeometryChanged = SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*));
+  d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(bool));
 }
 
 
@@ -627,8 +627,6 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->SetDefaultSingleWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->Viewer->SetDefaultMultiWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-//  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-
   d->VisibilityManager->RegisterViewer(d->Viewer);
 
   d->Viewer->resize(1024, 1024);
@@ -719,8 +717,8 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
     QTest::qWarn("Drop event not accepted by receiving widget.");
   }
 
-  d->VisibilityManager->OnNodesDropped(d->Viewer, nodes);
-//  d->Viewer->OnNodesDropped(0, nodes);
+  d->VisibilityManager->OnNodesDropped(nodes);
+//  d->Viewer->OnNodesDropped(nodes);
 }
 
 

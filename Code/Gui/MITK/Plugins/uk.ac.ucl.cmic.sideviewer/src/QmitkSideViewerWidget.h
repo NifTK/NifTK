@@ -107,13 +107,13 @@ protected slots:
   void OnMagnificationSpinBoxValueChanged(double magnification);
 
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
-  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of the viewer has changed through interaction.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
 private:
 

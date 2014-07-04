@@ -138,12 +138,12 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
   this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
-  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
 
   this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
-  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
-  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
 
   mitk::DataStorage::Pointer dataStorage = view->GetDataStorage();
 
@@ -736,8 +736,10 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void QmitkSideViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
   MIDASOrientation orientation = m_Viewer->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -749,7 +751,7 @@ void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* v
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
+void QmitkSideViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
 {
   double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
@@ -762,7 +764,7 @@ void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDAS
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout windowLayout)
+void QmitkSideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
   bool axialWindowRadioButtonWasBlocked = m_AxialWindowRadioButton->blockSignals(true);
   bool sagittalWindowRadioButtonWasBlocked = m_SagittalWindowRadioButton->blockSignals(true);

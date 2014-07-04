@@ -181,7 +181,7 @@ public:
   /// \brief Gets the world geometry.
   const mitk::TimeGeometry* GetTimeGeometry() const;
 
-  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
+  /// \brief Sets the world geometry that we are sampling and sends a TimeGeometryChanged signal.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
@@ -342,34 +342,34 @@ public:
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(niftkSingleViewerWidget* thisViewer, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
+  void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the selected time step has changed in this viewer.
-  void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);
+  void SelectedTimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
+  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed in this viewer.
-  void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void CursorPositionBindingChanged(bool bound);
 
   /// \brief Emitted when the scale factor binding has changed in this viewer.
-  void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void ScaleFactorBindingChanged(bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
-  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* geometry);
+  void TimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
-  void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
+  void CursorVisibilityChanged(bool visible);
 
 public slots:
 

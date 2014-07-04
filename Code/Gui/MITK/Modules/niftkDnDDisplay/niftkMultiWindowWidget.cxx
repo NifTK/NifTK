@@ -723,7 +723,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible)
+void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility)
 {
   if (renderWindow != NULL && node != NULL)
   {
@@ -733,9 +733,9 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
       bool currentVisibility = false;
       node->GetVisibility(currentVisibility, renderer);
 
-      if (visible != currentVisibility)
+      if (visibility != currentVisibility)
       {
-        node->SetVisibility(visible, renderer);
+        node->SetVisibility(visibility, renderer);
       }
     }
   }
@@ -743,13 +743,13 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility)
 {
   for (std::size_t i = 0; i < nodes.size(); ++i)
   {
-    this->SetVisibility(mitkWidget1, nodes[i], visible);
-    this->SetVisibility(mitkWidget2, nodes[i], visible);
-    this->SetVisibility(mitkWidget3, nodes[i], visible);
+    this->SetVisibility(mitkWidget1, nodes[i], visibility);
+    this->SetVisibility(mitkWidget2, nodes[i], visibility);
+    this->SetVisibility(mitkWidget3, nodes[i], visibility);
   }
   this->Update3DWindowVisibility();
 }

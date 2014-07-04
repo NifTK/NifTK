@@ -105,7 +105,7 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   Q_UNUSED(renderWindow);
-  emit NodesDropped(this, nodes);
+  emit NodesDropped(nodes);
   m_MultiWidget->SetFocused();
 }
 
@@ -113,7 +113,7 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, st
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
-  emit WindowLayoutChanged(this, windowLayout);
+  emit WindowLayoutChanged(windowLayout);
 }
 
 
@@ -131,7 +131,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
   m_LastSelectedPositions.push_back(selectedPosition);
   m_LastSelectedPositionTimes.push_back(QTime::currentTime());
 
-  emit SelectedPositionChanged(this, selectedPosition);
+  emit SelectedPositionChanged(selectedPosition);
 }
 
 
@@ -150,28 +150,28 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mit
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(this, MIDASOrientation(windowIndex), cursorPosition);
+  emit CursorPositionChanged(MIDASOrientation(windowIndex), cursorPosition);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, MIDASOrientation(windowIndex), scaleFactor);
+  emit ScaleFactorChanged(MIDASOrientation(windowIndex), scaleFactor);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnCursorPositionBindingChanged()
 {
-  emit CursorPositionBindingChanged(this, this->GetCursorPositionBinding());
+  emit CursorPositionBindingChanged(this->GetCursorPositionBinding());
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnScaleFactorBindingChanged()
 {
-  emit ScaleFactorBindingChanged(this, this->GetScaleFactorBinding());
+  emit ScaleFactorBindingChanged(this->GetScaleFactorBinding());
 }
 
 
@@ -504,7 +504,7 @@ void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeom
     m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
 
-  emit GeometryChanged(this, timeGeometry);
+  emit TimeGeometryChanged(timeGeometry);
 }
 
 
@@ -1061,7 +1061,7 @@ bool niftkSingleViewerWidget::ToggleCursorVisibility()
 
   this->RequestUpdate();
 
-  emit CursorVisibilityChanged(this, visible);
+  emit CursorVisibilityChanged(visible);
 
   return true;
 }
