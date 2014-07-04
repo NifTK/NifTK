@@ -9,6 +9,7 @@ import nipype.interfaces.fsl            as fsl
 import nipype.interfaces.ttk            as ttk
 from extract_roi_statistics import ExtractRoiStatistics
 from write_array_to_csv import WriteArrayToCsv
+from calculate_distance_between_affines import CalculateAffineDistances
 
 def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
 
@@ -25,7 +26,9 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'estimated_dwis',
                     'simulated_tensors',
                     'estimated_tensors',
-                    'labels_file']),
+                    'labels_file',
+                    'simulated_affines',
+                    'estimated_affines']),
         name='input_node')
 
     # TODO: Compare estimated transformation matrices!
@@ -62,11 +65,16 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                            name = 'dwi_meaner')
     dwi_tmean.inputs.operation = 'tmean'
     
+    calculate_affine_distance = pe.Node(interface=CalculateAffineDistances(), name="calculate_affine_distance")
+    array_affine_writer = pe.Node(interface=WriteArrayToCsv(),name='affine_stat_writer')
+    array_affine_writer.inputs.in_name = 'affine_stats'
+    
     array_tensor_writer = pe.Node(interface=WriteArrayToCsv(),name='tensor_stat_writer')
     array_tensor_writer.inputs.in_name = 'tensor_stats'
     
     array_dwi_writer = pe.Node(interface=WriteArrayToCsv(),name='dwi_stat_writer')
     array_dwi_writer.inputs.in_name = 'dwi_stats'
+    
     
     
     roi_tensor_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_tensor_stats')
@@ -78,7 +86,8 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'tensor_metric_ROI_statistics',
                     'dwi_metric_map',
                     'dwi_metric_ROI_statistics',
-                    'dwi_likelihood']),
+                    'dwi_likelihood',
+                    'affine_distances']),
         name='output_node')
     
     workflow.connect(input_node, 'simulated_tensors', logger1, 'in_file')
@@ -103,6 +112,7 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     workflow.connect(dwi_tmean, 'out_file', roi_dwi_stats, 'in_file')
     workflow.connect(input_node, 'labels_file', roi_dwi_stats, 'roi_file')
     
+    
     workflow.connect(roi_tensor_stats, 'out_array', array_tensor_writer, 'in_array')
     workflow.connect(roi_dwi_stats, 'out_array', array_dwi_writer, 'in_array')
     
@@ -111,6 +121,11 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     
     workflow.connect(dwi_subtracter, 'out_file', output_node, 'dwi_metric_map')
     workflow.connect(array_dwi_writer, 'out_file', output_node, 'dwi_metric_ROI_statistics')
+    
+    workflow.connect(input_node, 'simulated_affines', calculate_affine_distance,'transformation1_list')
+    workflow.connect(input_node, 'estimated_affines', calculate_affine_distance,'transformation2_list')
+    workflow.connect(calculate_affine_distance, 'out_array', array_affine_writer, 'in_array')
+    workflow.connect(array_affine_writer, 'out_file', output_node, 'affine_distances')
     #   workflow.connect(??, output_node, 'tensor_metric_ROI_statistics')
     
     return workflow

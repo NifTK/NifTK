@@ -121,7 +121,8 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
         fields=['tensor_metric_map',
                 'tensor_metric_ROI_statistics',
                 'dwi_metric_map',
-                'dwi_metric_ROI_statistics']),
+                'dwi_metric_ROI_statistics',
+                'affine_distances']),
                            name="output_node" )
     
     # Generate Distortions
@@ -191,9 +192,16 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     workflow.connect(r, 'output_node.tensor', postproc, 'input_node.estimated_tensors')
     workflow.connect(input_node, 'in_labels_file', postproc, 'input_node.labels_file')
     
+    
+    workflow.connect(inv_estimated_distortions, 'out_file', postproc, 'input_node.estimated_affines')
+    workflow.connect(distortion_generator, 'aff_files', postproc, 'input_node.simulated_affines')
+    
     # Propagate results into the output node
     workflow.connect(postproc, 'output_node.tensor_metric_map', output_node, 'tensor_metric_map')
     workflow.connect(postproc, 'output_node.tensor_metric_ROI_statistics', output_node, 'tensor_metric_ROI_statistics')
+    workflow.connect(postproc, 'output_node.dwi_metric_map', output_node, 'dwi_metric_map')
+    workflow.connect(postproc, 'output_node.dwi_metric_ROI_statistics', output_node, 'dwi_metric_ROI_statistics')
+    workflow.connect(postproc, 'output_node.affine_distances', output_node, 'affine_distances')
     
     if result_dir != None:
         ds = pe.Node(nio.DataSink(), name='sinker')
@@ -203,5 +211,6 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
         workflow.connect(output_node, 'tensor_metric_map', ds, '@tensor_residual')
         workflow.connect(output_node, 'dwi_metric_ROI_statistics',ds, '@dwi_stats')
         workflow.connect(output_node, 'dwi_metric_map', ds, '@dwi_residual')
+        workflow.connect(output_node, 'affine_distances', ds, '@affine_distances')
     return workflow
     
