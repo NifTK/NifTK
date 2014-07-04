@@ -157,7 +157,7 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mit
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, MIDASOrientation(windowIndex), scaleFactor);
+  emit ScaleFactorChanged(MIDASOrientation(windowIndex), scaleFactor);
 }
 
 

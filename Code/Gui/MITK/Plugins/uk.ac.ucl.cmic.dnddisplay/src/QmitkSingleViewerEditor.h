@@ -222,7 +222,7 @@ protected slots:
   void OnSelectedTimeStepChanged(int selectedTimeStep);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
   void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);

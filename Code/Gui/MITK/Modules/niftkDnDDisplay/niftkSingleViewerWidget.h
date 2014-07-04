@@ -354,7 +354,7 @@ signals:
   void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
+  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed in this viewer.
   void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);

@@ -129,7 +129,7 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   d->SelectedPositionChanged = SIGNAL(SelectedPositionChanged(const mitk::Point3D&));
   d->SelectedTimeStepChanged = SIGNAL(SelectedTimeStepChanged(int));
   d->CursorPositionChanged = SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&));
-  d->ScaleFactorChanged = SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double));
+  d->ScaleFactorChanged = SIGNAL(ScaleFactorChanged(MIDASOrientation, double));
   d->CursorPositionBindingChanged = SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool));
   d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool));
   d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout));
