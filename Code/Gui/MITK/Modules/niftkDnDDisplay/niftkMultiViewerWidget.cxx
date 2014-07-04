@@ -253,7 +253,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(bool)), SLOT(OnCursorPositionBindingChanged(bool)));
   this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
-  this->connect(viewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
+  this->connect(viewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
 
   return viewer;
 }
@@ -647,7 +647,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   niftkSingleViewerWidget* selectedViewer = m_Viewers[m_SelectedViewerIndex];
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
-  this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
+  this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
   this->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
 
   if (m_ControlPanel->AreViewerGeometriesBound())
@@ -1001,7 +1001,7 @@ void niftkMultiViewerWidget::OnFocusChanged()
     m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
     m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
-    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
+    this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
   }
 }
 
@@ -1178,8 +1178,15 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible)
+void niftkMultiViewerWidget::OnCursorVisibilityChanged(bool visible)
 {
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
   m_ControlPanel->SetCursorVisible(visible);
 
   if (m_ControlPanel->AreViewerCursorsBound())
@@ -1704,7 +1711,7 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingControlChanged(bool bound)
     }
   }
 
-  this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
+  this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
 }
 
 

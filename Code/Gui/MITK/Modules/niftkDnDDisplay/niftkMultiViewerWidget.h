@@ -322,7 +322,7 @@ protected slots:
   void OnScaleFactorBindingChanged(bool bound);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
-  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
+  void OnCursorVisibilityChanged(bool visible);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);

@@ -1061,7 +1061,7 @@ bool niftkSingleViewerWidget::ToggleCursorVisibility()
 
   this->RequestUpdate();
 
-  emit CursorVisibilityChanged(this, visible);
+  emit CursorVisibilityChanged(visible);
 
   return true;
 }

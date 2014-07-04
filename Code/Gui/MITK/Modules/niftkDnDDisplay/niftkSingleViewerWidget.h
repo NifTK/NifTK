@@ -369,7 +369,7 @@ signals:
   void TimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
-  void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
+  void CursorVisibilityChanged(bool visible);
 
 public slots:
 

@@ -228,7 +228,7 @@ protected slots:
   void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
-  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
+  void OnCursorVisibilityChanged(bool visible);
 
 private:
 

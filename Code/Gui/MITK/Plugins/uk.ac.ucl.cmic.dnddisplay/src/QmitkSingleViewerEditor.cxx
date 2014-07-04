@@ -352,7 +352,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
-    this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
     this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
@@ -807,7 +807,7 @@ void QmitkSingleViewerEditor::OnScaleFactorChanged(MIDASOrientation orientation,
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible)
+void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
   d->m_ControlPanel->SetCursorVisible(visible);

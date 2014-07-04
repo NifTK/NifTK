@@ -134,7 +134,7 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   d->ScaleFactorBindingChanged = SIGNAL(ScaleFactorBindingChanged(bool));
   d->WindowLayoutChanged = SIGNAL(WindowLayoutChanged(WindowLayout));
   d->TimeGeometryChanged = SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*));
-  d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool));
+  d->CursorVisibilityChanged = SIGNAL(CursorVisibilityChanged(bool));
 }
 
 
