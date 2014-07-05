@@ -36,7 +36,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="niftkSingleViewerWidget" name="m_Viewer" native="true"/>
+    <widget class="SideViewerSingleViewerWidget" name="m_Viewer" native="true"/>
    </item>
    <item>
     <widget class="QWidget" name="m_ControlsWidget" native="true">
@@ -212,9 +212,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>niftkSingleViewerWidget</class>
+   <class>SideViewerSingleViewerWidget</class>
    <extends>QWidget</extends>
-   <header>niftkSingleViewerWidget.h</header>
+   <header>internal/SideViewerSingleViewerWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
