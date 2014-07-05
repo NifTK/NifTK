@@ -27,6 +27,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/SideViewerActivator.h
+  src/internal/SideViewerSingleViewerWidget.h
   src/QmitkSideViewerView.h
   src/QmitkSideViewerWidget.h
 )
