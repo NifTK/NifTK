@@ -36,7 +36,7 @@
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
-: QmitkRenderWindow(parent)
+: QmitkRenderWindow(parent, "thumbnail viewer")
 , m_TrackedWorldGeometryTag(-1)
 , m_TrackedDisplayGeometryTag(-1)
 , m_TrackedSliceSelectorTag(-1)
