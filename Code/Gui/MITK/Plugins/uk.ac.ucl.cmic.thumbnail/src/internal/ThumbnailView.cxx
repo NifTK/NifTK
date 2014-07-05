@@ -113,6 +113,12 @@ ThumbnailView::ThumbnailView()
 , m_ThumbnailWindow(0)
 , m_TrackOnlyMainWindows(true)
 {
+  mitk::RenderingManager* renderingManager = mitk::RenderingManager::GetInstance();
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  if (renderingManager->GetDataStorage() != dataStorage)
+  {
+    renderingManager->SetDataStorage(dataStorage);
+  }
 }
 
 
