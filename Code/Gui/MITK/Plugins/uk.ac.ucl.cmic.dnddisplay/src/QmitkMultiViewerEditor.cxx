@@ -124,7 +124,13 @@ QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate()
 , m_PartListener(new QmitkMultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 {
-  m_RenderingManager = mitk::RenderingManager::GetInstance();
+  /// Note:
+  /// The DnD Display must use its own rendering manager, not the global one
+  /// returned by mitk::RenderingManager::GetInstance(). The reason is that
+  /// the global rendering manager is reinitialised by its InitializeViewsByBoundingObjects
+  /// function whenever a new file is opened, recalculating a new bounding box
+  /// based on all the globally visible nodes in the data storage.
+  m_RenderingManager = mitk::RenderingManager::New();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
   m_RenderingManagerInterface = mitk::MakeRenderingManagerInterface(m_RenderingManager);
 }
