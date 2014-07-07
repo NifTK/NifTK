@@ -325,8 +325,20 @@ void ThumbnailView::OnFocusChanged()
       return;
     }
 
-    QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
-    if (!mainWindow || mainWindow->GetRenderer() != focusedRenderer)
+    /// Note:
+    /// In the MITK display the active window is always the axial, therefore it is not
+    /// enough to check if the focused renderer is that of the active window, but we have
+    /// to go through all the renderers to check if the focused renderer is among them.
+    bool found = false;
+    foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+    {
+      if (mainWindow->GetRenderer() == focusedRenderer)
+      {
+        found = true;
+      }
+    }
+
+    if (!found)
     {
       return;
     }
