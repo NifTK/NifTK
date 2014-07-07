@@ -113,12 +113,9 @@ ThumbnailView::ThumbnailView()
 , m_ThumbnailWindow(0)
 , m_TrackOnlyMainWindows(true)
 {
-  mitk::RenderingManager* renderingManager = mitk::RenderingManager::GetInstance();
+  m_RenderingManager = mitk::RenderingManager::New();
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (renderingManager->GetDataStorage() != dataStorage)
-  {
-    renderingManager->SetDataStorage(dataStorage);
-  }
+  m_RenderingManager->SetDataStorage(dataStorage);
 }
 
 
@@ -154,7 +151,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
 {
   if (!m_ThumbnailWindow)
   {
-    m_ThumbnailWindow = new QmitkThumbnailRenderWindow(parent);
+    m_ThumbnailWindow = new QmitkThumbnailRenderWindow(parent, m_RenderingManager);
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_ThumbnailWindow);

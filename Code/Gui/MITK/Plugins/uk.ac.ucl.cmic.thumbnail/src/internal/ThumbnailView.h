@@ -24,6 +24,8 @@
 #include <berryISelectionProvider.h>
 #include <berryISelectionListener.h>
 
+#include <mitkRenderingManager.h>
+
 
 class QmitkThumbnailRenderWindow;
 
@@ -89,6 +91,8 @@ private:
   /// \brief Gets the currently visible editor.
   /// Returns 0 if no editor is opened.
   mitk::IRenderWindowPart* GetSelectedEditor();
+
+  mitk::RenderingManager::Pointer m_RenderingManager;
 
   /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focused window.
   unsigned long m_FocusManagerObserverTag;
