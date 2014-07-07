@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>QmitkIGIDataSourcemanager</string>
   </property>
+  <property name="toolTip">
+   <string>Press to advance time automatically.</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -169,25 +172,15 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="m_PausePushButton">
-             <property name="text">
-              <string>||</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_3">
+            <widget class="QPushButton" name="m_PlayingPushButton">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>|&gt;</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
