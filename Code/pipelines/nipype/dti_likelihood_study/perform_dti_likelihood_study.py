@@ -9,25 +9,39 @@ import math
 import os
 
 parser = argparse.ArgumentParser(description='Diffusion usage example')
-parser.add_argument('-i','--tensors',
+parser.add_argument('-i', '--tensors',
+                    dest='tensors',
+                    metavar='tensors',
                     help='Tensor map used for likelihood simulations',
                     required=True)
-parser.add_argument('-l','--bval',
+parser.add_argument('-l','--bvals',
+                    dest='bvals',
+                    metavar='bvals',
                     help='bval file to be associated associated with the tensor map',
                     required=True)
-parser.add_argument('-c','--bvec',
+parser.add_argument('-c','--bvecs',
+                    dest='bvecs',
+                    metavar='bvecs',
                     help='bvec file to be associated associated with the tensor map',
                     required=True)
 parser.add_argument('-b','--b0',
+                    dest='b0',
+                    metavar='b0',
                     help='b0 file to be associated associated with the tensor map',
                     required=True)
 parser.add_argument('-t','--t1',
+                    dest='t1',
+                    metavar='t1',
                     help='T1 file to be associated associated with the tensor map',
                     required=True)
 parser.add_argument('-m','--mask',
+                    dest='mask',
+                    metavar='mask',
                     help='mask file to be associated associated with the tensor map',
                     required=True)
 parser.add_argument('-p','--parcellation',
+                    dest='parcellation',
+                    metavar='parcellation',
                     help='parcellation file to be associated associated with the tensor map',
                     required=True)
 
@@ -50,8 +64,8 @@ for i in range(number_of_repeats):
             r.base_dir = os.getcwd()
 
             r.inputs.input_node.in_tensors_file = os.path.abspath(args.tensors)
-            r.inputs.input_node.in_bvec_file = os.path.abspath(args.bvec)
-            r.inputs.input_node.in_bval_file = os.path.abspath(args.bval)
+            r.inputs.input_node.in_bvec_file = os.path.abspath(args.bvecs)
+            r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals)
             r.inputs.input_node.in_b0_file = os.path.abspath(args.b0)
             r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
             r.inputs.input_node.in_mask_file = os.path.abspath(args.mask)
@@ -61,7 +75,6 @@ for i in range(number_of_repeats):
             r.inputs.input_node.in_stddev_rotation = 0.5*math.pi/180
             r.inputs.input_node.in_stddev_shear = 0.04
             r.inputs.input_node.in_noise_sigma = 10.0
-            
 
             r.write_graph(graph2use = 'colored')
 
@@ -70,5 +83,5 @@ for i in range(number_of_repeats):
             #r.run()
             #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
             #r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
-            r.run(plugin='MultiProc', plugin_args={'n_procs' : 2})
+            r.run(plugin='MultiProc')
 
