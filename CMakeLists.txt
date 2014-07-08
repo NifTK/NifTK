@@ -1405,17 +1405,11 @@ if(WIN32)
     endif()
 
     # on windows, the cgal-provided installer has some required 3rd party dlls.
-    if(BUILD_MESHING)
-      # even though we require cgal, we need to check here whether we found it or not.
-      # otherwise cmake will barf because the variables below are not defined yet.
-      if(CGAL_FOUND)
-        # both gmp and mpfr sit in the same directory, so we only need one here.
-        get_filename_component(CGALGMP_BIN_PATH_FOR_BATCH_FILE ${GMP_LIBRARIES} PATH)
-        # and of course, dont forget cgal's own dlls.
-        set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "${CGALGMP_BIN_PATH_FOR_BATCH_FILE};${CGAL_INSTALL_PREFIX}/bin")
-      else()
-        set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "")
-      endif()
+    if(BUILD_MESHING AND CGAL_FOUND)
+      # both gmp and mpfr sit in the same directory, so we only need one here.
+      get_filename_component(CGALGMP_BIN_PATH_FOR_BATCH_FILE ${GMP_LIBRARIES} PATH)
+      # and of course, dont forget cgal's own dlls.
+      set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "${CGALGMP_BIN_PATH_FOR_BATCH_FILE};${CGAL_INSTALL_PREFIX}/bin")
     else()
       set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "")
     endif()
