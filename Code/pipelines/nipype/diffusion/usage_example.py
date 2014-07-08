@@ -16,8 +16,6 @@ T1    = basedir + 'dwi-1-mprage.nii.gz'
 fmmag = basedir + 'dwi-1-fieldmap-magnitude.nii.gz'
 fmph  = basedir + 'dwi-1-fieldmap-phase.nii.gz'
 
-lin_reg_hash = {}
-
 r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow_log_2', resample_in_t1 = True, log_data = True)
 r.base_dir = basedir
 
