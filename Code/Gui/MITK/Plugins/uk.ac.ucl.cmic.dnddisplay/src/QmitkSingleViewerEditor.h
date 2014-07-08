@@ -34,7 +34,8 @@
 
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
 
-#include <niftkMultiViewerVisibilityManager.h>
+#include <niftkDnDDisplayEnums.h>
+#include <mitkMIDASEnums.h>
 
 namespace mitk
 {
@@ -160,6 +161,9 @@ public:
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
 
+  /// \brief Called when one of the viewers receives the focus.
+  void OnFocusChanged();
+
 protected:
 
   /// \brief Tells the contained niftkSingleViewerWidget to SetFocus().
@@ -209,9 +213,6 @@ protected slots:
 
   /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
   void OnWindowScaleFactorBindingControlChanged(bool);
-
-  /// \brief Called when the selected render window has been changed in the viewer.
-  void OnSelectedRenderWindowChanged(MIDASOrientation orientation);
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.

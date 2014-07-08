@@ -21,6 +21,7 @@
 #include <QGridLayout>
 #include <QToolButton>
 
+#include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
@@ -50,6 +51,8 @@ public:
 
   bool m_ShowCursor;
   double m_Magnification;
+
+  unsigned long m_FocusManagerObserverTag;
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -142,6 +145,7 @@ QmitkSingleViewerEditorPrivate::QmitkSingleViewerEditorPrivate()
 , m_RenderingManagerInterface(0)
 , m_ShowCursor(true)
 , m_Magnification(0.0)
+, m_FocusManagerObserverTag(0)
 , m_TopLevelLayout(0)
 , m_LayoutForRenderWindows(0)
 , m_PinButton(0)
@@ -180,6 +184,10 @@ QmitkSingleViewerEditor::QmitkSingleViewerEditor()
 QmitkSingleViewerEditor::~QmitkSingleViewerEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+
+  // Deregister focus observer.
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  focusManager->RemoveObserver(d->m_FocusManagerObserverTag);
 }
 
 
@@ -345,7 +353,6 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     // Connect Qt Signals to make it all hang together.
 
     this->connect(d->m_SingleViewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
-    this->connect(d->m_SingleViewer, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SLOT(OnSelectedRenderWindowChanged(MIDASOrientation)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
@@ -365,6 +372,12 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), SLOT(OnWindowScaleFactorBindingControlChanged(bool)));
 
     this->connect(d->m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
+
+    // Register focus observer.
+    itk::SimpleMemberCommand<QmitkSingleViewerEditor>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<QmitkSingleViewerEditor>::New();
+    onFocusChangedCommand->SetCallbackFunction(this, &QmitkSingleViewerEditor::OnFocusChanged);
+    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+    d->m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
 }
 
@@ -480,8 +493,17 @@ QmitkRenderWindow *QmitkSingleViewerEditor::GetQmitkRenderWindow(const QString& 
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnSelectedRenderWindowChanged(MIDASOrientation orientation)
+void QmitkSingleViewerEditor::OnFocusChanged()
 {
+  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+
+  if (d->m_SingleViewer->GetSelectedRenderWindow()->GetRenderer() != focusedRenderer)
+  {
+    return;
+  }
+
+  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
