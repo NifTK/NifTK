@@ -1404,6 +1404,29 @@ if(WIN32)
       set(PCL_BIN_PATH_FOR_BATCH_FILE "")
     endif()
 
+    # on windows, the cgal-provided installer has some required 3rd party dlls.
+    if(BUILD_MESHING)
+      # even though we require cgal, we need to check here whether we found it or not.
+      # otherwise cmake will barf because the variables below are not defined yet.
+      if(CGAL_FOUND)
+        # both gmp and mpfr sit in the same directory, so we only need one here.
+        get_filename_component(CGALGMP_BIN_PATH_FOR_BATCH_FILE ${GMP_LIBRARIES} PATH)
+        # and of course, dont forget cgal's own dlls.
+        set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "${CGALGMP_BIN_PATH_FOR_BATCH_FILE};${CGAL_INSTALL_PREFIX}/bin")
+      else()
+        set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "")
+      endif()
+    else()
+      set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
+
+    # some other (top secret) fem code needs niftysim at runtime.
+    if(NIFTYSIM_FOUND)
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NIFTYSIM_DIR}/bin")
+    else()
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
+
     set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
     foreach(VS_BUILD_TYPE debug release)
       mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
