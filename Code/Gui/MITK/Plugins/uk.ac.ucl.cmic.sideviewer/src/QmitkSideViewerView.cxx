@@ -22,7 +22,8 @@
 
 //-----------------------------------------------------------------------------
 QmitkSideViewerView::QmitkSideViewerView()
-: m_SideViewerWidget(NULL)
+: m_RenderingManager(0)
+, m_SideViewerWidget(0)
 {
 }
 
@@ -39,7 +40,7 @@ QmitkSideViewerView::QmitkSideViewerView(
 //-----------------------------------------------------------------------------
 QmitkSideViewerView::~QmitkSideViewerView()
 {
-  if (m_SideViewerWidget != NULL)
+  if (m_SideViewerWidget)
   {
     delete m_SideViewerWidget;
   }
@@ -51,7 +52,10 @@ void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
 {
   if (!m_SideViewerWidget)
   {
-    m_SideViewerWidget = new QmitkSideViewerWidget(this, parent);
+    m_RenderingManager = mitk::RenderingManager::New();
+    m_RenderingManager->SetDataStorage(this->GetDataStorage());
+
+    m_SideViewerWidget = new QmitkSideViewerWidget(this, parent, m_RenderingManager);
     m_SideViewerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
@@ -63,16 +67,19 @@ void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void QmitkSideViewerView::SetFocus()
 {
-  m_SideViewerWidget->m_Viewer->SetFocused();
+  m_SideViewerWidget->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkSideViewerView::ApplyDisplayOptions(mitk::DataNode* node)
 {
-  if (!node) return;
+  if (!node)
+  {
+    return;
+  }
 
-  bool isBinary(false);
+  bool isBinary = false;
   if (node->GetBoolProperty("binary", isBinary) && isBinary)
   {
     node->ReplaceProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST), const_cast<const mitk::BaseRenderer*>((mitk::BaseRenderer*)NULL));

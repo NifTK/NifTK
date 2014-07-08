@@ -15,8 +15,6 @@
 #ifndef QmitkSideViewerWidget_h
 #define QmitkSideViewerWidget_h
 
-#include "ui_QmitkSideViewerWidget.h"
-
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
 #include <berryIPartListener.h>
@@ -25,18 +23,29 @@
 #include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkMIDASEnums.h>
 
-#include <QString>
+#include <QMap>
 #include <QWidget>
+
+#include <niftkDnDDisplayEnums.h>
 
 namespace mitk
 {
 class BaseRenderer;
 class DataStorage;
 class IRenderWindowPart;
+class RenderingManager;
 }
 
 class QmitkBaseView;
 class QmitkRenderWindow;
+
+class niftkSingleViewerWidget;
+
+class QComboBox;
+class QDoubleSpinBox;
+class QLabel;
+class QRadioButton;
+class QSpinBox;
 
 /**
  * \class QmitkSideViewerWidget
@@ -53,8 +62,8 @@ class QmitkRenderWindow;
  * </pre>
  */
 class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget :
-  public QWidget,
-  public Ui_QmitkSideViewerWidget
+  public QWidget//,
+//  public Ui_QmitkSideViewerWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
@@ -68,10 +77,12 @@ public:
   ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
   ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
   ///
-  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent = 0);
+  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
 
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
+
+  void SetFocused();
 
   /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
   void SetGeometry(const itk::EventObject& geometrySendEvent);
@@ -143,6 +154,8 @@ private slots:
 
 private:
 
+  void SetupUi(QWidget* parent);
+
   /// \brief The view that contains this widget.
   QmitkBaseView* m_ContainingView;
 
@@ -204,6 +217,20 @@ private:
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
   berry::IPartListener::Pointer m_EditorLifeCycleListener;
 
+  niftkSingleViewerWidget* m_Viewer;
+  QWidget* m_ControlsWidget;
+  QWidget* m_LayoutWidget;
+  QRadioButton* m_CoronalWindowRadioButton;
+  QRadioButton* m_SagittalWindowRadioButton;
+  QRadioButton* m_AxialWindowRadioButton;
+  QRadioButton* m_MultiWindowRadioButton;
+  QComboBox* m_MultiWindowComboBox;
+  QLabel* m_SliceLabel;
+  QSpinBox* m_SliceSpinBox;
+  QLabel* m_MagnificationLabel;
+  QDoubleSpinBox* m_MagnificationSpinBox;
+
+  mitk::RenderingManager* m_RenderingManager;
 };
 
 #endif

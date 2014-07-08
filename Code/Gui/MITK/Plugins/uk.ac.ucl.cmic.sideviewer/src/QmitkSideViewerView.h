@@ -17,6 +17,8 @@
 
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
+#include <mitkRenderingManager.h>
+
 #include <QmitkBaseView.h>
 
 namespace berry
@@ -67,6 +69,10 @@ protected:
   virtual std::string GetPreferencesNodeName();
 
 private:
+
+  /// \brief Rendering manager of the internal viewer.
+  /// This class holds a smart pointer so that it does not get destroyed too early.
+  mitk::RenderingManager::Pointer m_RenderingManager;
 
   /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
   QmitkSideViewerWidget *m_SideViewerWidget;
