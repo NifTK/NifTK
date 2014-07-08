@@ -22,6 +22,7 @@
 #include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNodeVisibilityTracker.h>
+#include <mitkRenderingManager.h>
 
 #include <QColor>
 
@@ -72,7 +73,7 @@ class niftkThumbnail_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindo
 public:
 
   /// \brief Constructs a QmitkThumbnailRenderWindow object.
-  QmitkThumbnailRenderWindow(QWidget *parent);
+  QmitkThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager);
 
   /// \brief Destructs the QmitkThumbnailRenderWindow object.
   ~QmitkThumbnailRenderWindow();

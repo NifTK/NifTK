@@ -35,8 +35,8 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
-: QmitkRenderWindow(parent, "thumbnail viewer")
+QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager)
+: QmitkRenderWindow(parent, "thumbnail viewer", 0, renderingManager)
 , m_TrackedWorldGeometryTag(-1)
 , m_TrackedDisplayGeometryTag(-1)
 , m_TrackedSliceSelectorTag(-1)
@@ -54,7 +54,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_InDataStorageChanged(false)
 , m_VisibilityTracker(NULL)
 {
-  m_DataStorage = mitk::RenderingManager::GetInstance()->GetDataStorage();
+  m_DataStorage = renderingManager->GetDataStorage();
   assert(m_DataStorage.IsNotNull());
 
   // This should come early on, as we are setting renderer specific properties,
@@ -374,7 +374,7 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
     cube->Delete();
 
     // Request a single update at the end of the method.
-    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+    m_Renderer->RequestUpdate();
   }
 }
 
@@ -404,7 +404,7 @@ void QmitkThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
 
   this->UpdateBoundingBox();
 
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -428,7 +428,7 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
 {
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -486,7 +486,7 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
     }
 
     // Request a single update at the end of the method.
-    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+    m_Renderer->RequestUpdate();
   }
 }
 
@@ -569,7 +569,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   this->UpdateBoundingBox();
 
   // Request a single update at the end of the method.
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 

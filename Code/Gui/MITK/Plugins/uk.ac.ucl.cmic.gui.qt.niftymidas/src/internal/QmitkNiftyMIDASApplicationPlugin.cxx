@@ -46,7 +46,11 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->SetFileOpenTriggersReinit(false);
+  /// Note:
+  /// By default there is a global reinit after file open what reinitialises the global
+  /// rendering manager. Instead of suppressing this, we should make sure that the MIDAS
+  /// components do not use the global rendering manager, but their own one.
+//  this->SetFileOpenTriggersReinit(false);
 }
 
 

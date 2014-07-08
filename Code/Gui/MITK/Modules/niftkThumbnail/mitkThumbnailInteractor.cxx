@@ -14,12 +14,8 @@
 
 #include "mitkThumbnailInteractor.h"
 
-#include <string.h>
-
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionPositionEvent.h>
-#include <mitkLine.h>
-#include <mitkSliceNavigationController.h>
 
 #include <QmitkThumbnailRenderWindow.h>
 

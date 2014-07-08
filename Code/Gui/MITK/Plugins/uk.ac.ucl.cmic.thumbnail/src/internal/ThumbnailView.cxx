@@ -113,12 +113,9 @@ ThumbnailView::ThumbnailView()
 , m_ThumbnailWindow(0)
 , m_TrackOnlyMainWindows(true)
 {
-  mitk::RenderingManager* renderingManager = mitk::RenderingManager::GetInstance();
+  m_RenderingManager = mitk::RenderingManager::New();
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (renderingManager->GetDataStorage() != dataStorage)
-  {
-    renderingManager->SetDataStorage(dataStorage);
-  }
+  m_RenderingManager->SetDataStorage(dataStorage);
 }
 
 
@@ -154,7 +151,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
 {
   if (!m_ThumbnailWindow)
   {
-    m_ThumbnailWindow = new QmitkThumbnailRenderWindow(parent);
+    m_ThumbnailWindow = new QmitkThumbnailRenderWindow(parent, m_RenderingManager);
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_ThumbnailWindow);
@@ -328,8 +325,20 @@ void ThumbnailView::OnFocusChanged()
       return;
     }
 
-    QmitkRenderWindow* mainWindow = renderWindowPart->GetActiveQmitkRenderWindow();
-    if (!mainWindow || mainWindow->GetRenderer() != focusedRenderer)
+    /// Note:
+    /// In the MITK display the active window is always the axial, therefore it is not
+    /// enough to check if the focused renderer is that of the active window, but we have
+    /// to go through all the renderers to check if the focused renderer is among them.
+    bool found = false;
+    foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+    {
+      if (mainWindow->GetRenderer() == focusedRenderer)
+      {
+        found = true;
+      }
+    }
+
+    if (!found)
     {
       return;
     }
