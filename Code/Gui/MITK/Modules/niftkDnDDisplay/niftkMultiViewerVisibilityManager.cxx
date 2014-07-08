@@ -398,10 +398,7 @@ mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetTimeGeometry(s
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    MIDASOrientation &outputOrientation
-    )
+niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation)
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
 
@@ -414,33 +411,33 @@ niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(
   {
     if (orientationString[1] == 'A' || orientationString[1] == 'P')
     {
-      outputOrientation = MIDAS_ORIENTATION_AXIAL;
+      outputOrientation = WINDOW_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_CORONAL;
+      outputOrientation = WINDOW_ORIENTATION_CORONAL;
     }
   }
   else if (orientationString[0] == 'A' || orientationString[0] == 'P')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = MIDAS_ORIENTATION_AXIAL;
+      outputOrientation = WINDOW_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+      outputOrientation = WINDOW_ORIENTATION_SAGITTAL;
     }
   }
   else if (orientationString[0] == 'S' || orientationString[0] == 'I')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = MIDAS_ORIENTATION_CORONAL;
+      outputOrientation = WINDOW_ORIENTATION_CORONAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+      outputOrientation = WINDOW_ORIENTATION_SAGITTAL;
     }
   }
 }
@@ -455,7 +452,7 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
   {
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
-    MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
+    WindowOrientation orientation = WINDOW_ORIENTATION_CORONAL;
 
     mitk::Image::Pointer image = NULL;
     for (std::size_t i = 0; i < nodes.size(); i++)
@@ -482,15 +479,15 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
       MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
     }
 
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    if (orientation == WINDOW_ORIENTATION_AXIAL)
     {
       windowLayout = WINDOW_LAYOUT_AXIAL;
     }
-    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (orientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       windowLayout = WINDOW_LAYOUT_SAGITTAL;
     }
-    else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    else if (orientation == WINDOW_ORIENTATION_CORONAL)
     {
       windowLayout = WINDOW_LAYOUT_CORONAL;
     }
@@ -677,20 +674,20 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNod
       // Note: Remember that we have window layout = axial, coronal, sagittal, 3D and ortho (+ others maybe)
       // So this thumbnail drop, has to switch to a single orientation. If the current default
       // window layout is not a single slice mode, we need to switch to one.
-      MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+      WindowOrientation orientation = WINDOW_ORIENTATION_UNKNOWN;
       switch (windowLayout)
       {
       case WINDOW_LAYOUT_AXIAL:
-        orientation = MIDAS_ORIENTATION_AXIAL;
+        orientation = WINDOW_ORIENTATION_AXIAL;
         break;
       case WINDOW_LAYOUT_SAGITTAL:
-        orientation = MIDAS_ORIENTATION_SAGITTAL;
+        orientation = WINDOW_ORIENTATION_SAGITTAL;
         break;
       case WINDOW_LAYOUT_CORONAL:
-        orientation = MIDAS_ORIENTATION_CORONAL;
+        orientation = WINDOW_ORIENTATION_CORONAL;
         break;
       default:
-        orientation = MIDAS_ORIENTATION_AXIAL;
+        orientation = WINDOW_ORIENTATION_AXIAL;
         windowLayout = WINDOW_LAYOUT_AXIAL;
         break;
       }

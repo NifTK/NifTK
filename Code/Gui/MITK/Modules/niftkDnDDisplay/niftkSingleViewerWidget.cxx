@@ -150,14 +150,14 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mit
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(MIDASOrientation(windowIndex), cursorPosition);
+  emit CursorPositionChanged(WindowOrientation(windowIndex), cursorPosition);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  emit ScaleFactorChanged(MIDASOrientation(windowIndex), scaleFactor);
+  emit ScaleFactorChanged(WindowOrientation(windowIndex), scaleFactor);
 }
 
 
@@ -316,7 +316,7 @@ QColor niftkSingleViewerWidget::GetBackgroundColour() const
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetMaxSlice(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetMaxSlice(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetMaxSlice(orientation);
 }
@@ -337,12 +337,12 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
+WindowOrientation niftkSingleViewerWidget::GetOrientation() const
 {
   /// Note:
   /// This line exploits that the order of orientations are the same and
-  /// THREE_D equals to MIDAS_ORIENTATION_UNKNOWN.
-  return MIDASOrientation(m_MultiWidget->GetSelectedWindowIndex());
+  /// THREE_D equals to WINDOW_ORIENTATION_UNKNOWN.
+  return WindowOrientation(m_MultiWidget->GetSelectedWindowIndex());
 }
 
 
@@ -565,16 +565,16 @@ void niftkSingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometr
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetSelectedSlice(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetSelectedSlice(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetSelectedSlice(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
+void niftkSingleViewerWidget::SetSelectedSlice(WindowOrientation orientation, int selectedSlice)
 {
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     m_MultiWidget->SetSelectedSlice(orientation, selectedSlice);
   }
@@ -810,14 +810,14 @@ void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedP
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidget::GetCursorPosition(MIDASOrientation orientation) const
+mitk::Vector2D niftkSingleViewerWidget::GetCursorPosition(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetCursorPosition(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkSingleViewerWidget::SetCursorPosition(WindowOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -844,14 +844,14 @@ void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetScaleFactor(MIDASOrientation orientation) const
+double niftkSingleViewerWidget::GetScaleFactor(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetScaleFactor(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)
+void niftkSingleViewerWidget::SetScaleFactor(WindowOrientation orientation, double scaleFactor)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -878,14 +878,14 @@ void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFa
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
+double niftkSingleViewerWidget::GetMagnification(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetMagnification(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetMagnification(MIDASOrientation orientation, double magnification)
+void niftkSingleViewerWidget::SetMagnification(WindowOrientation orientation, double magnification)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -918,7 +918,7 @@ std::vector<mitk::DataNode*> niftkSingleViewerWidget::GetWidgetPlanes()
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetSliceUpDirection(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetSliceUpDirection(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetSliceUpDirection(orientation);
 }
@@ -1001,16 +1001,16 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     {
       switch (this->GetOrientation())
       {
-      case MIDAS_ORIENTATION_AXIAL:
+      case WINDOW_ORIENTATION_AXIAL:
         nextWindowLayout = WINDOW_LAYOUT_AXIAL;
         break;
-      case MIDAS_ORIENTATION_SAGITTAL:
+      case WINDOW_ORIENTATION_SAGITTAL:
         nextWindowLayout = WINDOW_LAYOUT_SAGITTAL;
         break;
-      case MIDAS_ORIENTATION_CORONAL:
+      case WINDOW_ORIENTATION_CORONAL:
         nextWindowLayout = WINDOW_LAYOUT_CORONAL;
         break;
-      case MIDAS_ORIENTATION_UNKNOWN:
+      case WINDOW_ORIENTATION_UNKNOWN:
         nextWindowLayout = WINDOW_LAYOUT_3D;
         break;
       default:

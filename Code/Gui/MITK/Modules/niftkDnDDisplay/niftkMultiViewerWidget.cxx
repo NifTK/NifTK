@@ -247,8 +247,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
-  this->connect(viewer, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
-  this->connect(viewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+  this->connect(viewer, SIGNAL(CursorPositionChanged(WindowOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(WindowOrientation, const mitk::Vector2D&)));
+  this->connect(viewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(bool)), SLOT(OnCursorPositionBindingChanged(bool)));
   this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
@@ -668,7 +668,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    WindowOrientation orientation = selectedViewer->GetOrientation();
     double magnification = selectedViewer->GetMagnification(orientation);
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
@@ -736,8 +736,8 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sele
     return;
   }
 
-  MIDASOrientation orientation = viewer->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  WindowOrientation orientation = viewer->GetOrientation();
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(orientation));
   }
@@ -786,7 +786,7 @@ void niftkMultiViewerWidget::OnSelectedTimeStepChanged(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkMultiViewerWidget::OnCursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
@@ -806,7 +806,7 @@ void niftkMultiViewerWidget::OnCursorPositionChanged(MIDASOrientation orientatio
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
+void niftkMultiViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor)
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
@@ -910,8 +910,8 @@ void niftkMultiViewerWidget::OnFocusChanged()
     m_ControlPanel->SetMaxTimeStep(maxTimeStep);
     m_ControlPanel->SetTimeStep(timeStep);
 
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    WindowOrientation orientation = selectedViewer->GetOrientation();
+    if (orientation != WINDOW_ORIENTATION_UNKNOWN)
     {
       int maxSlice = selectedViewer->GetMaxSlice(orientation);
       int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
@@ -958,9 +958,9 @@ void niftkMultiViewerWidget::OnDropAccumulateControlChanged(bool checked)
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnSelectedSliceControlChanged(int selectedSlice)
 {
-  MIDASOrientation orientation = this->GetSelectedViewer()->GetOrientation();
+  WindowOrientation orientation = this->GetSelectedViewer()->GetOrientation();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
     bool signalsWereBlocked = selectedViewer->blockSignals(true);
@@ -1006,7 +1006,7 @@ void niftkMultiViewerWidget::OnMagnificationControlChanged(double magnification)
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  MIDASOrientation orientation = selectedViewer->GetOrientation();
+  WindowOrientation orientation = selectedViewer->GetOrientation();
 
   bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetMagnification(orientation, magnification);
@@ -1322,7 +1322,7 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     }
   }
 
-  MIDASOrientation orientation = selectedViewer->GetOrientation();
+  WindowOrientation orientation = selectedViewer->GetOrientation();
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
@@ -1386,23 +1386,23 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
+WindowOrientation niftkMultiViewerWidget::GetOrientation() const
 {
-  MIDASOrientation orientation;
+  WindowOrientation orientation;
 
   switch (m_ControlPanel->GetWindowLayout())
   {
   case WINDOW_LAYOUT_AXIAL:
-    orientation = MIDAS_ORIENTATION_AXIAL;
+    orientation = WINDOW_ORIENTATION_AXIAL;
     break;
   case WINDOW_LAYOUT_SAGITTAL:
-    orientation = MIDAS_ORIENTATION_SAGITTAL;
+    orientation = WINDOW_ORIENTATION_SAGITTAL;
     break;
   case WINDOW_LAYOUT_CORONAL:
-    orientation = MIDAS_ORIENTATION_CORONAL;
+    orientation = WINDOW_ORIENTATION_CORONAL;
     break;
   default:
-    orientation = MIDAS_ORIENTATION_UNKNOWN;
+    orientation = WINDOW_ORIENTATION_UNKNOWN;
     break;
   }
 
@@ -1592,7 +1592,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingControlChanged(bool bound)
 
   if (bound)
   {
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    WindowOrientation orientation = selectedViewer->GetOrientation();
     mitk::Vector2D cursorPosition = selectedViewer->GetCursorPosition(orientation);
     const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
 
@@ -1629,7 +1629,7 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingControlChanged(bool bou
 
   if (bound)
   {
-    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    WindowOrientation orientation = selectedViewer->GetOrientation();
     double scaleFactor = selectedViewer->GetScaleFactor(orientation);
     std::vector<double> scaleFactors = selectedViewer->GetScaleFactors();
 

@@ -24,10 +24,10 @@
 
 #include <mitkBaseProperty.h>
 #include <mitkRenderingManager.h>
-#include <mitkMIDASEnums.h>
 
-#include <niftkSingleViewerWidget.h>
-#include <niftkMultiViewerVisibilityManager.h>
+#include "niftkDnDDisplayEnums.h"
+#include "niftkSingleViewerWidget.h"
+#include "niftkMultiViewerVisibilityManager.h"
 
 class QSpinBox;
 class QGridLayout;
@@ -182,8 +182,8 @@ public:
   /// \brief Gets the flag indicating whether this viewer is currently in thumnail mode.
   bool GetThumbnailMode() const;
 
-  /// \brief Returns the orientation from the window layout, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
-  MIDASOrientation GetOrientation() const;
+  /// \brief Returns the orientation from the window layout, or WINDOW_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
+  WindowOrientation GetOrientation() const;
 
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   niftkSingleViewerWidget* GetSelectedViewer() const;
@@ -299,10 +299,10 @@ protected slots:
   void OnSelectedTimeStepChanged(int selectedTimeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void OnCursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
   void OnWindowLayoutChanged(WindowLayout windowLayout);

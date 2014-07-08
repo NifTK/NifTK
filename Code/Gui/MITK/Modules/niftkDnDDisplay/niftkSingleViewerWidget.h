@@ -28,8 +28,7 @@
 #include <QTime>
 #include <QWidget>
 
-#include <mitkMIDASEnums.h>
-#include <niftkDnDDisplayEnums.h>
+#include "niftkDnDDisplayEnums.h"
 #include "Interactions/mitkDnDDisplayStateMachineResponder.h"
 #include "Interactions/mitkDnDDisplayStateMachine.h"
 
@@ -124,8 +123,8 @@ public:
   /// \brief Returns the 3D Window.
   QmitkRenderWindow* Get3DWindow() const;
 
-  /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
-  MIDASOrientation GetOrientation() const;
+  /// \brief Returns the orientation for the selected window, returning WINDOW_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
+  WindowOrientation GetOrientation() const;
 
   /// \brief Get the flag controlling 2D cursors on/off.
   bool IsCursorVisible() const;
@@ -158,7 +157,7 @@ public:
   QColor GetBackgroundColour() const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  int GetMaxSlice(MIDASOrientation orientation) const;
+  int GetMaxSlice(WindowOrientation orientation) const;
 
   /// \brief Gets the maximum time step.
   int GetMaxTimeStep() const;
@@ -195,10 +194,10 @@ public:
   bool IsBoundTimeGeometryActive();
 
   /// \brief Gets the index of the selected slice for a given orientation.
-  int GetSelectedSlice(MIDASOrientation orientation) const;
+  int GetSelectedSlice(WindowOrientation orientation) const;
 
   /// \brief Sets the index of the selected slice for a given orientation.
-  void SetSelectedSlice(MIDASOrientation orientation, int slice);
+  void SetSelectedSlice(WindowOrientation orientation, int slice);
 
   /// \brief Get the current time step.
   int GetTimeStep() const;
@@ -219,10 +218,10 @@ public:
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Get the current cursor position of the render window in pixels, normalised with the size of the render windows.
-  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
+  mitk::Vector2D GetCursorPosition(WindowOrientation orientation) const;
 
   /// \brief Set the current cursor position of the render window in pixels, normalised with the size of the render windows.
-  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the current cursor position of each render window in pixels, normalised with the size of the render windows.
   const std::vector<mitk::Vector2D>& GetCursorPositions() const;
@@ -231,10 +230,10 @@ public:
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Get the current scale factor.
-  double GetScaleFactor(MIDASOrientation orientation) const;
+  double GetScaleFactor(WindowOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+  void SetScaleFactor(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Gets the current scale factor of each render window.
   const std::vector<double>& GetScaleFactors() const;
@@ -243,10 +242,10 @@ public:
   void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Get the current magnification.
-  double GetMagnification(MIDASOrientation orientation) const;
+  double GetMagnification(WindowOrientation orientation) const;
 
   /// \brief Set the current magnification.
-  void SetMagnification(MIDASOrientation orientation, double magnification);
+  void SetMagnification(WindowOrientation orientation, double magnification);
 
   /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool IsLinkedNavigationEnabled() const;
@@ -286,9 +285,7 @@ public:
   std::vector<mitk::DataNode*> GetWidgetPlanes();
 
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice index to move "up".
-  ///
-  /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(MIDASOrientation orientation) const;
+  int GetSliceUpDirection(WindowOrientation orientation) const;
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultSingleWindowLayout(WindowLayout windowLayout);
@@ -351,10 +348,10 @@ signals:
   void SelectedTimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void CursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  void ScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed in this viewer.
   void CursorPositionBindingChanged(bool bound);

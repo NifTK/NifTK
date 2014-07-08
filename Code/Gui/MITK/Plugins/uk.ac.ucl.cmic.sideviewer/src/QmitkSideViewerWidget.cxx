@@ -115,7 +115,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_MainCoronalSnc(0)
 , m_VisibilityTracker(0)
 , m_Magnification(0.0)
-, m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
+, m_MainWindowOrientation(WINDOW_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
 , m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
@@ -132,9 +132,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_CoronalWindowRadioButton->setChecked(true);
 
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
 
   m_MagnificationSpinBox->setDecimals(2);
   m_MagnificationSpinBox->setSingleStep(1.0);
@@ -158,7 +158,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
   this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
-  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
 
   mitk::DataStorage::Pointer dataStorage = view->GetDataStorage();
 
@@ -482,22 +482,22 @@ void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
 
 
 //-----------------------------------------------------------------------------
-WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation)
+WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(WindowOrientation mainWindowOrientation)
 {
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
   // 2H
   if (m_MultiWindowComboBox->currentIndex() == 0)
   {
-    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    if (mainWindowOrientation == WINDOW_ORIENTATION_AXIAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_SAG_H;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_AX_H;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_CORONAL)
     {
       windowLayout = WINDOW_LAYOUT_SAG_AX_H;
     }
@@ -505,15 +505,15 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
   // 2V
   else if (m_MultiWindowComboBox->currentIndex() == 1)
   {
-    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    if (mainWindowOrientation == WINDOW_ORIENTATION_AXIAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_SAG_V;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_AX_V;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_CORONAL)
     {
       windowLayout = WINDOW_LAYOUT_SAG_AX_V;
     }
@@ -524,7 +524,7 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation mainWindowOrientation)
+void QmitkSideViewerWidget::OnMainWindowOrientationChanged(WindowOrientation mainWindowOrientation)
 {
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
@@ -542,9 +542,9 @@ void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation main
     }
 
     m_ControlsWidget->setEnabled(true);
-    m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_AXIAL);
-    m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_SAGITTAL);
-    m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_CORONAL);
+    m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_AXIAL);
+    m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_SAGITTAL);
+    m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_CORONAL);
   }
   else
   {
@@ -596,9 +596,9 @@ void QmitkSideViewerWidget::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnViewerWindowChanged()
 {
-  MIDASOrientation orientation = m_Viewer->GetOrientation();
+  WindowOrientation orientation = m_Viewer->GetOrientation();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
     int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
@@ -697,7 +697,7 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     m_MainSagittalSnc = 0;
     m_MainCoronalSnc = 0;
 
-    m_MainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    m_MainWindowOrientation = WINDOW_ORIENTATION_UNKNOWN;
 
     m_Viewer->RequestUpdate();
 
@@ -715,22 +715,22 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   m_MainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
   m_MainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
 
-  MIDASOrientation mainWindowOrientation;
+  WindowOrientation mainWindowOrientation;
   if (mainWindow == mainAxialWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_AXIAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_AXIAL;
   }
   else if (mainWindow == mainSagittalWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_SAGITTAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_SAGITTAL;
   }
   else if (mainWindow == mainCoronalWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_CORONAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_CORONAL;
   }
   else
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    mainWindowOrientation = WINDOW_ORIENTATION_UNKNOWN;
   }
 
   /// Note:
@@ -836,8 +836,8 @@ void QmitkSideViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selec
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
-  MIDASOrientation orientation = m_Viewer->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     bool wasBlocked = m_SliceSpinBox->blockSignals(true);
     m_SliceSpinBox->setValue(m_Viewer->GetSelectedSlice(orientation));
@@ -847,7 +847,7 @@ void QmitkSideViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selec
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
+void QmitkSideViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor)
 {
   double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 

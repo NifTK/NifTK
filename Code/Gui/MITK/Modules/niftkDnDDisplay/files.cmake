@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(H_FILES
+  niftkDnDDisplayEnums.h
+)
+
 set(CPP_FILES
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx

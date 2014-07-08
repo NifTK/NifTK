@@ -355,7 +355,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
     this->connect(d->m_SingleViewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
-    this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+    this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
 
@@ -502,9 +502,9 @@ void QmitkSingleViewerEditor::OnFocusChanged()
     return;
   }
 
-  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+  WindowOrientation orientation = d->m_SingleViewer->GetOrientation();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
 
@@ -678,9 +678,9 @@ bool QmitkSingleViewerEditor::eventFilter(QObject* object, QEvent* event)
 //-----------------------------------------------------------------------------
 void QmitkSingleViewerEditor::OnSelectedSliceControlChanged(int selectedSlice)
 {
-  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+  WindowOrientation orientation = d->m_SingleViewer->GetOrientation();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
     d->m_SingleViewer->SetSelectedSlice(orientation, selectedSlice);
@@ -721,7 +721,7 @@ void QmitkSingleViewerEditor::OnMagnificationControlChanged(double magnification
     d->m_ControlPanel->SetMagnification(magnification);
   }
 
-  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
+  WindowOrientation orientation = d->m_SingleViewer->GetOrientation();
 
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetMagnification(orientation, magnification);
@@ -793,8 +793,8 @@ void QmitkSingleViewerEditor::OnSelectedPositionChanged(const mitk::Point3D& sel
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
-  MIDASOrientation orientation = d->m_SingleViewer->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  WindowOrientation orientation = d->m_SingleViewer->GetOrientation();
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
     d->m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(orientation));
@@ -813,7 +813,7 @@ void QmitkSingleViewerEditor::OnSelectedTimeStepChanged(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleViewerEditor::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
+void QmitkSingleViewerEditor::OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor)
 {
   double magnification = d->m_SingleViewer->GetMagnification(orientation);
 

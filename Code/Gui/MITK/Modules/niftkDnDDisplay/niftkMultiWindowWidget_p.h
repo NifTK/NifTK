@@ -315,9 +315,7 @@ public:
   void RequestUpdate();
 
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
-  ///
-  /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(int orientation) const;
+  int GetSliceUpDirection(WindowOrientation orientation) const;
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);

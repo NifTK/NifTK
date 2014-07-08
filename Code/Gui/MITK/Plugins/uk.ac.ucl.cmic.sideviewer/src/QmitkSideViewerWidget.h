@@ -21,7 +21,6 @@
 
 #include <mitkDataNodeVisibilityTracker.h>
 #include <mitkDataNodeStringPropertyFilter.h>
-#include <mitkMIDASEnums.h>
 
 #include <QMap>
 #include <QWidget>
@@ -121,7 +120,7 @@ protected slots:
   void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of the viewer has changed through interaction.
   void OnWindowLayoutChanged(WindowLayout windowLayout);
@@ -132,7 +131,7 @@ private:
   void OnFocusChanged();
 
   /// \brief Works out a multi window orientation for the given orientation of the main window.
-  WindowLayout GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation);
+  WindowLayout GetMultiWindowLayoutForOrientation(WindowOrientation mainWindowOrientation);
 
   /// \brief Gets the currently visible editor.
   /// Returns 0 if no editor is opened.
@@ -142,7 +141,7 @@ private:
   void OnViewerWindowChanged();
 
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
-  void OnMainWindowOrientationChanged(MIDASOrientation orientation);
+  void OnMainWindowOrientationChanged(WindowOrientation orientation);
 
 private slots:
 
@@ -203,11 +202,11 @@ private:
   double m_Magnification;
 
   /// \brief The orientation of the selected window of the main display.
-  MIDASOrientation m_MainWindowOrientation;
+  WindowOrientation m_MainWindowOrientation;
 
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each orientation of the main window.
-  QMap<MIDASOrientation, WindowLayout> m_SingleWindowLayouts;
+  QMap<WindowOrientation, WindowLayout> m_SingleWindowLayouts;
 
   /// \brief The world geometry of the selected window of the selected editor.
   /// Any time when the selected main window changes, the world geometry of this viewer
