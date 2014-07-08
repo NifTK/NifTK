@@ -2455,7 +2455,7 @@ void niftkMultiWindowWidget::SetMagnification(int windowIndex, double magnificat
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSliceUpDirection(int orientation) const
+int niftkMultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) const
 {
   int upDirection = 0;
   if (m_Geometry && orientation >= 0 && orientation < 3)

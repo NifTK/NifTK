@@ -25,8 +25,8 @@
 #include <mitkProperties.h>
 
 #include <mitkDataNodePropertyListener.h>
-#include <mitkMIDASEnums.h>
-#include <niftkDnDDisplayEnums.h>
+
+#include "niftkDnDDisplayEnums.h"
 
 class niftkSingleViewerWidget;
 
@@ -154,10 +154,7 @@ private:
 
   /// \brief ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
   template<typename TPixel, unsigned int VImageDimension>
-  void GetAsAcquiredOrientation(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      MIDASOrientation &outputOrientation
-      );
+  void GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation);
 
   // Will retrieve the correct geometry from a list of nodes.
   // If nodeIndex < 0 (for single drop case).
