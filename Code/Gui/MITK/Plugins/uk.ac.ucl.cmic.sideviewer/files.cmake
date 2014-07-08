@@ -22,12 +22,10 @@ set(INTERNAL_CPP_FILES
 )
 
 set(UI_FILES
-  src/QmitkSideViewerWidget.ui
 )
 
 set(MOC_H_FILES
   src/internal/SideViewerActivator.h
-  src/internal/SideViewerSingleViewerWidget.h
   src/QmitkSideViewerView.h
   src/QmitkSideViewerWidget.h
 )
