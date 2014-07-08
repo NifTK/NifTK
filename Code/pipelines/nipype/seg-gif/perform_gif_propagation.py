@@ -2,43 +2,75 @@
 
 use_simple = False
 
+import nipype.interfaces.utility        as niu            
+import nipype.interfaces.io             as nio     
+import nipype.pipeline.engine           as pe          
 import seg_gif_propagation as gif
+import argparse
+import os
 
-basedir = '/Users/nicolastoussaint/data/nipype/gif/'
+parser = argparse.ArgumentParser(description='GIF Propagation usage example')
+parser.add_argument('-i', '--inputfile',
+                    dest='inputfile',
+                    metavar='inputfile',
+                    help='Input target image to propagate labels in',
+                    required=True)
+parser.add_argument('-t','--t1s',
+                    dest='t1s',
+                    metavar='t1s',
+                    help='T1 directory of the template database',
+                    required=True)
+parser.add_argument('-d','--database',
+                    dest='database',
+                    metavar='database',
+                    help='gif-based database xml file describing the inputs',
+                    required=True)
+parser.add_argument('-a','--average',
+                    dest='average',
+                    metavar='average',
+                    help='Average image of the T1s on which the registration and masking is performed',
+                    required=False)
+parser.add_argument('-s','--simple',
+                    dest='simple',
+                    metavar='simple',
+                    help='Use the simple version of the workflow (default: 1)',
+                    required=False,
+                    type=int,
+                    default=1)
 
-infile = basedir + 'input.nii.gz'
-T1s    = basedir + 'template-database/T1s/'
-db     = basedir + 'template-database/db.xml'
-avg    = basedir + 'template-database/average.nii.gz'
-outdir = basedir + 'output-database/'
-cppdir = basedir + 'output-database/cpps'
+args = parser.parse_args()
 
+result_dir = os.path.join(os.getcwd(),'results')
+if os.path.exists(result_dir):
+    os.mkdir(result_dir)
 
-if use_simple:
+cpp_dir = os.path.join(result_dir, 'cpps')
+if os.path.exists(result_dir):
+    os.mkdir(result_dir)
 
-    r = gif.create_niftyseg_gif_propagation_pipeline_simple('gif-workflow')
+basedir = os.getcwd()
+
+if args.simple == 1:
+
+    r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow')
     r.base_dir = basedir
-    r.inputs.input_node.in_file = infile
-    r.inputs.input_node.template_db_file = db
-    r.inputs.input_node.out_res_directory = outdir
-    r.inputs.input_node.out_cpp_directory = cppdir
-    r.write_graph(graph2use='orig')
-    r.run('Linear')
-    exit
+    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
+    r.inputs.input_node.template_db_file = os.path.abspath(args.database)
+    r.inputs.input_node.out_directory = result_dir
+    r.inputs.input_node.cpp_directory = cpp_dir
+    r.write_graph(graph2use='colored')
+    r.run('MultiProc')
 
 else:
 
-    r = gif.create_niftyseg_gif_propagation_pipeline('gif-workflow')
-    r.base_dir = basedir
-    
-    r.inputs.input_node.in_file = infile
-    r.inputs.input_node.template_T1s_directory = T1s
-    r.inputs.input_node.template_db_file = db
-    r.inputs.input_node.template_average_image = avg
-    r.inputs.input_node.out_res_directory = outdir
-    r.inputs.input_node.out_cpp_directory = cppdir
-    
-    r.write_graph(graph2use='orig')
-    
+    r = gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
+    r.base_dir = basedir    
+    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
+    r.inputs.input_node.template_db_file = os.path.abspath(args.database)
+    r.inputs.input_node.out_res_directory = result_dir
+    r.inputs.input_node.out_cpp_directory = cpp_dir
+    r.inputs.input_node.template_T1s_directory = os.path.abspath(args.t1s)
+    r.inputs.input_node.template_average_image = os.path.abspath(args.average)
+    r.write_graph(graph2use='colored')    
     r.run('MultiProc')
 
