@@ -319,8 +319,11 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     workflow.connect(groupwise_coregistration, 'output_node.average_image', average_crop,             'in_file')
     workflow.connect(sformupdate,              'out_file',                  average_mask_res,         'ref_file')
 
-    workflow.connect(average_mask_dil,     'out_file',                  average_mask_res,         'flo_file')
-
+    if ref_mask == None:
+        workflow.connect(average_mask, 'mask_file', average_mask_res, 'flo_file')
+    else:
+        average_mask_res.inputs.flo_file = ref_mask
+    
     workflow.connect(sformupdate,              'out_file',                  crop,                     'in_file')    
     workflow.connect(average_mask_res,         'res_file',                  crop,                     'mask_file')
     workflow.connect(groupwise_coregistration, 'output_node.average_image', output_node,              'out_average')

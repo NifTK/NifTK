@@ -29,11 +29,6 @@ parser.add_argument('-d','--database',
                     metavar='database',
                     help='gif-based database xml file describing the inputs',
                     required=True)
-parser.add_argument('-a','--average',
-                    dest='average',
-                    metavar='average',
-                    help='Average image of the T1s on which the registration and masking is performed',
-                    required=False)
 parser.add_argument('-s','--simple',
                     dest='simple',
                     metavar='simple',
@@ -87,5 +82,5 @@ else:
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
     r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask')
     r.write_graph(graph2use='colored')
-    r.run('Linear')
+    r.run('MultiProc')
 

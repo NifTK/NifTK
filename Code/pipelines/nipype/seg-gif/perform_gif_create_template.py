@@ -3,7 +3,6 @@
 import seg_gif_create_template_library as seggif
 import glob, os
 
-
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
