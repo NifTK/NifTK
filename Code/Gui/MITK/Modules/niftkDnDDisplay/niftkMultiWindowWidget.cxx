@@ -2460,15 +2460,15 @@ int niftkMultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) c
   int upDirection = 0;
   if (m_Geometry && orientation >= 0 && orientation < 3)
   {
-    if (orientation == AXIAL)
+    if (orientation == WINDOW_ORIENTATION_AXIAL)
     {
       upDirection = m_UpDirections[2];
     }
-    else if (orientation == SAGITTAL)
+    else if (orientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       upDirection = m_UpDirections[0];
     }
-    else if (orientation == CORONAL)
+    else if (orientation == WINDOW_ORIENTATION_CORONAL)
     {
       upDirection = m_UpDirections[1];
     }
