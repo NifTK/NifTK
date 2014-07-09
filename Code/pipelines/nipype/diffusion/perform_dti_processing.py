@@ -42,7 +42,7 @@ parser.add_argument('-p','--fieldmapphase',
 args = parser.parse_args()
 
 result_dir = os.path.join(os.getcwd(),'results')
-if os.path.exists(result_dir):
+if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow', 
                                                   resample_in_t1 = True, 
