@@ -60,11 +60,8 @@ class QSpinBox;
  *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
  * </pre>
  */
-class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget :
-  public QWidget//,
-//  public Ui_QmitkSideViewerWidget
+class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget : public QWidget
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
@@ -187,9 +184,6 @@ private:
 
   /// \brief The slice navigation controller of the coronal window of the selected editor.
   mitk::SliceNavigationController* m_MainCoronalSnc;
-
-  /// \brief Renderer of the currently focused window of the main display.
-  mitk::BaseRenderer* m_FocusedRenderer;
 
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
