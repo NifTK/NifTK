@@ -185,18 +185,16 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     
     dilater = pe.Node(interface = niftyseg.BinaryMaths(), name = 'dilater')
     dilater.inputs.operation = 'dil'
-    dilater.inputs.operand_value = 5
-
-    sformupdate = pe.Node(interface = niftyreg.RegTransform(), name = 'sformupdate')
-
-    invaffer = pe.Node(interface = niftyreg.RegTransform(), name = 'invaffer')
+    dilater.inputs.operand_value = 8
 
     cropper = pe.Node(interface = cropimage.CropImage(), name='cropper')
 
     resampler_mask  = pe.Node(interface = niftyreg.RegResample(), name = 'resampler_mask')
     resampler_mask.inputs.inter_val = 'NN'
 
-    non_linear_registration = pe.MapNode(interface=niftyreg.RegF3D(), name = 'non_linear_registration', iterfield = ['flo_file'])
+    affine_reg = pe.MapNode(interface=niftyreg.RegAladin(), name='affine_reg', iterfield=['flo_file'])
+    
+    non_linear_registration = pe.MapNode(interface=niftyreg.RegF3D(), name = 'non_linear_registration', iterfield = ['flo_file', 'aff_file'])
     non_linear_registration.inputs.vel_flag  = True
     non_linear_registration.inputs.lncc_val  = -5
     non_linear_registration.inputs.maxit_val = 150
@@ -245,10 +243,14 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     workflow.connect(dilater,    'out_file', cropper, 'mask_file')
 
     workflow.connect(cropper, 'out_file', resampler_mask,  'ref_file')
-    workflow.connect(dilater, 'out_file', resampler_mask,  'flo_file')
+    workflow.connect(input_node, 'in_mask', resampler_mask,  'flo_file')
     
+    workflow.connect(cropper, 'out_file',  affine_reg, 'ref_file')
+    workflow.connect(grabber, 'T1s_paths', affine_reg, 'flo_file')
+
     workflow.connect(cropper, 'out_file',  non_linear_registration, 'ref_file')
     workflow.connect(grabber, 'T1s_paths', non_linear_registration, 'flo_file')
+    workflow.connect(affine_reg, 'aff_file', non_linear_registration, 'aff_file')
     
     workflow.connect(grabber,                 'T1s_paths', subsgen1, 'paths_to_use')
     workflow.connect(non_linear_registration, 'cpp_file',  subsgen1, 'paths_to_replace')
