@@ -82,5 +82,5 @@ else:
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
     r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask')
     r.write_graph(graph2use='colored')
-    r.run('MultiProc')
+    r.run('Linear')
 

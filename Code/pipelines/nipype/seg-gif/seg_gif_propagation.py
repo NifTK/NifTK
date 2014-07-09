@@ -21,7 +21,7 @@ def ensure_aff_files (basedir):
     0 1 0 0\n\
     0 0 1 0\n\
     0 0 0 1\n'
-
+    
     afffilelist = []
     
     for f in cppslist:
@@ -47,19 +47,12 @@ def get_subs1(paths_to_use, paths_to_replace):
 
     return subs
 
-def get_subs2(inputfile, outputfile):
+def get_subs2(outputfile):
     import os
     subs = []
-    suffixes = [
-        '_labels_Parcellation',
-        '_labels_geo',
-        '_labels_prior']
-
-    for suffix in suffixes:
-        subs.append((suffix, ''))
-
-    subs.append((os.path.basename(inputfile),os.path.basename(outputfile)))
-
+    subs.append(('_crop_image_labels_Parcellation_res',''))
+    subs.append(('_crop_image_labels_geo_res',''))
+    subs.append(('_crop_image_labels_prior_res',''))
     return subs
 
 def get_basedir(paths):
@@ -208,13 +201,13 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
 
     gif_pre_sink = pe.Node(nio.DataSink(), name='gif_pre_sink')
     gif_pre_sink.inputs._outputs = dict([['cpps','cpps']])
+    gif_pre_sink.inputs.parameterization = False
 
     # make a node to create all subdirectories, that will include the cropped T1s and cpps
-    create_aff_files = pe.MapNode(interface = niu.Function(input_names = ['basedir'],
+    create_aff_files = pe.Node(interface = niu.Function(input_names = ['basedir'],
                                                            output_names = ['out_dir', 'afffilelist'],
                                                            function=ensure_aff_files),
-                                  name = 'create_aff_files',
-                                  iterfield = ['basedir'])
+                                  name = 'create_aff_files')
 
     gif = pe.Node(interface=niftyseg.Gif(), name='gif')
 
@@ -228,13 +221,14 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
                                    function=get_basedir),
                       name='pathgen')
     
-    subsgen2 = pe.Node(niu.Function(input_names=['inputfile', 'outputfile'],
+    subsgen2 = pe.Node(niu.Function(input_names=['outputfile'],
                                     output_names=['substitutions'],
                                     function=get_subs2),
                        name='subsgen2')
-
-    gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
     
+    gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
+    gif_post_sink.inputs.parameterization = False
+
     workflow.connect(input_node, 'template_T1s_directory', grabber, 'base_directory')
     
     workflow.connect(input_node, 'in_mask',  dilater, 'in_file')
@@ -275,11 +269,10 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     workflow.connect(gif,        'geo_file',   resampler_geo,   'flo_file')
     workflow.connect(gif,        'prior_file', resampler_prior, 'flo_file')
 
-    workflow.connect(resampler_parc, 'res_file', subsgen2, 'inputfile')
     workflow.connect(input_node,     'in_file',  subsgen2, 'outputfile')
 
     workflow.connect(input_node,      'out_res_directory', gif_post_sink, 'base_directory')
-    workflow.connect(subsgen2,        'substitutions', gif_post_sink, 'substitutions')
+    workflow.connect(subsgen2,        'substitutions', gif_post_sink, 'regexp_substitutions')
     workflow.connect(resampler_parc,  'res_file',      gif_post_sink, 'labels')
     workflow.connect(resampler_geo,   'res_file',      gif_post_sink, 'labels_geo')
     workflow.connect(resampler_prior, 'res_file',      gif_post_sink, 'priors')
