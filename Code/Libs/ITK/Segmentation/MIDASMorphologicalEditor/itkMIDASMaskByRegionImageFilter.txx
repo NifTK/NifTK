@@ -46,7 +46,7 @@ MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>::~MIDASMaskByRegionImage
 template <class TInputImage, class TOutputImage>
 void
 MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>
-::SetRegion(MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>::RegionType region)
+::SetRegion(typename MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>::RegionType region)
 {
   if (region != m_Region)
   {
