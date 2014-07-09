@@ -3,35 +3,44 @@
 import seg_gif_create_template_library as seggif
 import glob, os
 
-basedir = '/Users/nicolastoussaint/data/nipype/gif/'
 
-T1s    = basedir + 'template-database/T1s/'
-labels = basedir + 'template-database/labels/'
-out    = basedir + 'output-database/'
-T1s_files = glob.glob(T1s + '*.nii.gz')
+import nipype.interfaces.utility        as niu            
+import nipype.interfaces.io             as nio     
+import nipype.pipeline.engine           as pe          
+import seg_gif_propagation as gif
+import argparse
+import os
+import nipype.interfaces.niftyreg as niftyreg
 
-ref = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
-ref_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
+mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
+mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
 
-T1 = T1s + '1000_3.nii.gz'
+parser = argparse.ArgumentParser(description='GIF Template Creation usage example')
+parser.add_argument('-i', '--inputs',
+                    dest='inputs',
+                    metavar='inputs',
+                    help='Input images',
+                    required=True)
+parser.add_argument('-l','--labels',
+                    dest='labels',
+                    metavar='labels',
+                    help='Input initial labels',
+                    required=True)
 
-r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', number_of_iterations = 3, ref_file = ref, ref_mask = ref_mask)
+args = parser.parse_args()
+
+result_dir = os.path.join(os.getcwd(),'results')
+if not os.path.exists(result_dir):
+    os.mkdir(result_dir)
+
+basedir = os.getcwd()
+
+r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', number_of_iterations = 3, ref_file = mni_template, ref_mask = mni_template_mask)
 
 r.base_dir = basedir
-r.inputs.input_node.in_entries_directory = T1s
-r.inputs.input_node.in_initial_labels_directory = labels
-r.inputs.input_node.out_database_directory = out
-
-#r = seggif.prepare_inputs('gif-prepare-inputs')
-#r.base_dir = basedir
-#r.inputs.input_node.in_files = T1s_files
-
-#r = seggif.seg_gif_preproc('gif-preproc')
-#r.base_dir = basedir
-#r.inputs.input_node.in_entries_directory = T1s
-#r.inputs.input_node.out_T1_directory = out + 'T1s'
-#r.inputs.input_node.out_cpps_directory = out + 'cpps'
+r.inputs.input_node.in_entries_directory = os.path.abspath(args.inputs)
+r.inputs.input_node.in_initial_labels_directory = os.path.abspath(args.labels)
+r.inputs.input_node.out_database_directory = result_dir
 
 r.write_graph(graph2use='hierarchical')
 r.run('MultiProc')
-exit
