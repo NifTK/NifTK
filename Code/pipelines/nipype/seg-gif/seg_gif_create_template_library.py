@@ -266,7 +266,7 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
 
     groupwise_coregistration = reg.create_atlas(name = 'groupwise_coregistration', 
                                                 itr_rigid = 0,
-                                                itr_affine = 1, 
+                                                itr_affine = 1,
                                                 itr_non_lin = 0,
                                                 initial_ref = initial_ref)
     
@@ -280,10 +280,11 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     if ref_mask == None:
         average_mask = pe.Node(interface=fsl.BET(), name='average_mask')
         average_mask.inputs.mask = True
-        average_mask_dil = pe.Node(interface = niftyseg.BinaryMaths(), name = 'average_mask_dil')
-        average_mask_dil.inputs.operation = 'dil'
-        average_mask_dil.inputs.operand_value = 10
-
+    
+    average_mask_dil = pe.Node(interface = niftyseg.BinaryMaths(), name = 'average_mask_dil')
+    average_mask_dil.inputs.operation = 'dil'
+    average_mask_dil.inputs.operand_value = 6
+    
     average_mask_res = pe.MapNode(interface = niftyreg.RegResample(), 
                                   name = 'average_mask_res',
                                   iterfield = ['ref_file'])
@@ -310,15 +311,16 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     if ref_mask == None:
         workflow.connect(groupwise_coregistration, 'output_node.average_image', average_mask,             'in_file')
         workflow.connect(average_mask,             'mask_file',                 average_mask_dil,         'in_file')
-        workflow.connect(average_mask_dil,         'out_file',                  average_crop,             'mask_file')
     else:
-        average_crop.inputs.mask_file = ref_mask
+        average_mask_dil.inputs.in_file = ref_mask
+        
+    workflow.connect(average_mask_dil,         'out_file',                  average_crop,             'mask_file')
+
     workflow.connect(groupwise_coregistration, 'output_node.average_image', average_crop,             'in_file')
     workflow.connect(sformupdate,              'out_file',                  average_mask_res,         'ref_file')
-    if ref_mask == None:
-        workflow.connect(average_mask_dil,     'out_file',                  average_mask_res,         'flo_file')
-    else:
-        average_mask_res.inputs.flo_file = ref_mask
+
+    workflow.connect(average_mask_dil,     'out_file',                  average_mask_res,         'flo_file')
+
     workflow.connect(sformupdate,              'out_file',                  crop,                     'in_file')    
     workflow.connect(average_mask_res,         'res_file',                  crop,                     'mask_file')
     workflow.connect(groupwise_coregistration, 'output_node.average_image', output_node,              'out_average')
