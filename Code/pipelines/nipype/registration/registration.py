@@ -133,8 +133,10 @@ def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_l
             demean_arg = True
         if i > 0:
             initial_affines_arg = True
-        w = create_linear_coregistration_workflow('lin_reg'+str(i), linear_options_hash=linear_options_hash\
-        , initial_affines=initial_affines_arg, demean=demean_arg)
+        w = create_linear_coregistration_workflow('lin_reg'+str(i), 
+                                                  linear_options_hash=linear_options_hash,
+                                                  initial_affines=initial_affines_arg, 
+                                                  demean=demean_arg)
         lin_workflows.append(w)
         # Connect up the input data to the workflows
         pipeline.connect(input_node, 'in_files', w, 'input_node.in_files')
