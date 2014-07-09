@@ -36,16 +36,14 @@ def ensure_aff_files (basedir):
     return basedir, afffilelist
             
 
-def get_subs1(T1s_paths, Cpps_paths):
+def get_subs1(paths_to_use, paths_to_replace):
     import os
     subs = []
 
-    commonpath = os.path.commonprefix(Cpps_paths)
-
-    for i in range(len(Cpps_paths)):
-       T1basename = os.path.basename(T1s_paths[i])
-       _, cppfilepath = Cpps_paths[i].split(commonpath,1)
-       subs.append(('_non_linear_registration'+cppfilepath, T1basename))
+    for i in range(len(paths_to_use)):
+       basename_to_replace = os.path.basename(paths_to_replace[i])
+       basename_to_use = os.path.basename(paths_to_use[i])
+       subs.append((basename_to_replace, basename_to_use))
 
     return subs
 
@@ -173,9 +171,9 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     input_node = pe.Node(
         interface = niu.IdentityInterface(
             fields=['in_file',
+                    'in_mask',
                     'template_T1s_directory',
                     'template_db_file',
-                    'template_average_image',
                     'out_cpp_directory',
                     'out_res_directory']),
         name='input_node')
@@ -185,14 +183,9 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     grabber.inputs.template = '*.nii*'
     grabber.inputs.sort_filelist = False
     
-    input_mask = pe.Node(interface=fsl.BET(), name='input_mask')
-    input_mask.inputs.mask = True
-    
     dilater = pe.Node(interface = niftyseg.BinaryMaths(), name = 'dilater')
     dilater.inputs.operation = 'dil'
-    dilater.inputs.operand_value = 10
-
-    registration_to_average = pe.Node(interface=niftyreg.RegAladin(), name="registration_to_average")
+    dilater.inputs.operand_value = 5
 
     sformupdate = pe.Node(interface = niftyreg.RegTransform(), name = 'sformupdate')
 
@@ -210,7 +203,7 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     non_linear_registration.inputs.be_val    = 0.025    
     non_linear_registration.inputs.output_type = 'NIFTI_GZ'    
 
-    subsgen1 = pe.Node(niu.Function(input_names=['T1s_paths', 'Cpps_paths'],
+    subsgen1 = pe.Node(niu.Function(input_names=['paths_to_use', 'paths_to_replace'],
                                     output_names=['substitutions'],
                                     function=get_subs1),
                        name='subsgen1')
@@ -232,10 +225,6 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     resampler_geo   = pe.Node(interface = niftyreg.RegResample(), name = 'resampler_geo')
     resampler_prior = pe.Node(interface = niftyreg.RegResample(), name = 'resampler_prior')
 
-    sformdeupdate_parc  = pe.Node(interface = niftyreg.RegTransform(), name = 'sformdeupdate_parc')
-    sformdeupdate_geo   = pe.Node(interface = niftyreg.RegTransform(), name = 'sformdeupdate_geo')
-    sformdeupdate_prior = pe.Node(interface = niftyreg.RegTransform(), name = 'sformdeupdate_prior')
-
     pathgen = pe.Node(niu.Function(input_names=['paths'],
                                    output_names=['path'],
                                    function=get_basedir),
@@ -250,18 +239,10 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     
     workflow.connect(input_node, 'template_T1s_directory', grabber, 'base_directory')
     
-    workflow.connect(input_node, 'template_average_image', registration_to_average, 'ref_file')
-    workflow.connect(input_node, 'in_file',                registration_to_average, 'flo_file')
+    workflow.connect(input_node, 'in_mask',  dilater, 'in_file')
 
-    workflow.connect(input_node,              'in_file',  sformupdate, 'upd_s_form_input')
-    workflow.connect(registration_to_average, 'aff_file', sformupdate, 'upd_s_form_input2')
-
-    workflow.connect(sformupdate, 'out_file',  input_mask, 'in_file')
-
-    workflow.connect(input_mask, 'mask_file',  dilater, 'in_file')
-
-    workflow.connect(sformupdate, 'out_file', cropper, 'in_file')
-    workflow.connect(dilater,     'out_file', cropper, 'mask_file')
+    workflow.connect(input_node, 'in_file',  cropper, 'in_file')
+    workflow.connect(dilater,    'out_file', cropper, 'mask_file')
 
     workflow.connect(cropper, 'out_file', resampler_mask,  'ref_file')
     workflow.connect(dilater, 'out_file', resampler_mask,  'flo_file')
@@ -269,8 +250,8 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     workflow.connect(cropper, 'out_file',  non_linear_registration, 'ref_file')
     workflow.connect(grabber, 'T1s_paths', non_linear_registration, 'flo_file')
     
-    workflow.connect(grabber, 'T1s_paths',                subsgen1, 'T1s_paths')
-    workflow.connect(non_linear_registration, 'cpp_file', subsgen1, 'Cpps_paths')
+    workflow.connect(grabber,                 'T1s_paths', subsgen1, 'paths_to_use')
+    workflow.connect(non_linear_registration, 'cpp_file',  subsgen1, 'paths_to_replace')
     
     workflow.connect(input_node,              'out_cpp_directory', gif_pre_sink, 'base_directory')
     workflow.connect(non_linear_registration, 'cpp_file',          gif_pre_sink, '@cpps')
@@ -280,35 +261,26 @@ def create_niftyseg_gif_propagation_pipeline(stand_alone = True, name='niftyseg_
     
     workflow.connect(pathgen, 'path', create_aff_files, 'basedir')
     
-    workflow.connect(create_aff_files, 'out_dir',        gif, 'cpp_dir')
-    workflow.connect(cropper,        'out_file',         gif, 'in_file')
-    workflow.connect(resampler_mask, 'res_file',         gif, 'mask_file')
-    workflow.connect(input_node,     'template_db_file', gif, 'database_file')
+    workflow.connect(create_aff_files, 'out_dir',          gif, 'cpp_dir')
+    workflow.connect(cropper,          'out_file',         gif, 'in_file')
+    workflow.connect(resampler_mask,   'res_file',         gif, 'mask_file')
+    workflow.connect(input_node,       'template_db_file', gif, 'database_file')
     
-    workflow.connect(sformdeupdate_parc, 'out_file', subsgen2, 'inputfile')
-    workflow.connect(input_node,         'in_file',  subsgen2, 'outputfile')
+    workflow.connect(input_node, 'in_file',    resampler_parc,  'ref_file')
+    workflow.connect(input_node, 'in_file',    resampler_geo,   'ref_file')
+    workflow.connect(input_node, 'in_file',    resampler_prior, 'ref_file')
+    workflow.connect(gif,        'parc_file',  resampler_parc,  'flo_file')
+    workflow.connect(gif,        'geo_file',   resampler_geo,   'flo_file')
+    workflow.connect(gif,        'prior_file', resampler_prior, 'flo_file')
 
-    workflow.connect(sformupdate, 'out_file',     resampler_parc,  'ref_file')
-    workflow.connect(sformupdate, 'out_file',     resampler_geo,   'ref_file')
-    workflow.connect(sformupdate, 'out_file',     resampler_prior, 'ref_file')
-    workflow.connect(gif,         'parc_file',     resampler_parc,  'flo_file')
-    workflow.connect(gif,         'geo_file',      resampler_geo,   'flo_file')
-    workflow.connect(gif,         'prior_file',    resampler_prior, 'flo_file')
+    workflow.connect(resampler_parc, 'res_file', subsgen2, 'inputfile')
+    workflow.connect(input_node,     'in_file',  subsgen2, 'outputfile')
 
-    workflow.connect(registration_to_average, 'aff_file', invaffer, 'inv_aff_input')
-
-    workflow.connect(resampler_parc,  'res_file', sformdeupdate_parc,  'upd_s_form_input')
-    workflow.connect(resampler_geo,   'res_file', sformdeupdate_geo,   'upd_s_form_input')
-    workflow.connect(resampler_prior, 'res_file', sformdeupdate_prior, 'upd_s_form_input')
-    workflow.connect(invaffer,        'out_file', sformdeupdate_parc,  'upd_s_form_input2')
-    workflow.connect(invaffer,        'out_file', sformdeupdate_geo,   'upd_s_form_input2')
-    workflow.connect(invaffer,        'out_file', sformdeupdate_prior, 'upd_s_form_input2')
-
-    workflow.connect(input_node,          'out_res_directory', gif_post_sink, 'base_directory')
-    workflow.connect(subsgen2,            'substitutions', gif_post_sink, 'substitutions')
-    workflow.connect(sformdeupdate_parc,  'out_file',      gif_post_sink, 'labels')
-    workflow.connect(sformdeupdate_geo,   'out_file',      gif_post_sink, 'labels_geo')
-    workflow.connect(sformdeupdate_prior, 'out_file',      gif_post_sink, 'priors')
+    workflow.connect(input_node,      'out_res_directory', gif_post_sink, 'base_directory')
+    workflow.connect(subsgen2,        'substitutions', gif_post_sink, 'substitutions')
+    workflow.connect(resampler_parc,  'res_file',      gif_post_sink, 'labels')
+    workflow.connect(resampler_geo,   'res_file',      gif_post_sink, 'labels_geo')
+    workflow.connect(resampler_prior, 'res_file',      gif_post_sink, 'priors')
 
 #    workflow.connect(gif, 'out_tiv',   gif_post_sink, 'others@tiv')
 #    workflow.connect(gif, 'out_seg',   gif_post_sink, 'others@seg')
