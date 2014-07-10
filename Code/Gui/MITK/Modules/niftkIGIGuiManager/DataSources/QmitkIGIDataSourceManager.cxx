@@ -333,7 +333,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerPlaybackGroupBox->setCollapsed(true);
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
   m_ToolManagerConsole->setMaximumHeight(100);
-  m_TableWidget->setMaximumHeight(150);
+  m_TableWidget->setMaximumHeight(200);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   // the active column has a fixed, minimal size. note that this line relies on the table having
   // columns already! the ui file has them added.
