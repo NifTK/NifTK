@@ -13,7 +13,7 @@ import nipype.interfaces.niftyreg as niftyreg
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
 
-parser = argparse.ArgumentParser(description='GIF Propagation usage example')
+parser = argparse.ArgumentParser(description='GIF Propagation')
 parser.add_argument('-i', '--inputfile',
                     dest='inputfile',
                     metavar='inputfile',
@@ -35,11 +35,16 @@ parser.add_argument('-s','--simple',
                     help='Use the simple version of the workflow (default: 1)',
                     required=False,
                     type=int,
-                    default=1)
+                    default=0)
+parser.add_argument('-o','--output',
+                    dest='output',
+                    metavar='output',
+                    help='output directory to which the gif outputs are stored',
+                    required=True)
 
 args = parser.parse_args()
 
-result_dir = os.path.join(os.getcwd(),'results')
+result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 

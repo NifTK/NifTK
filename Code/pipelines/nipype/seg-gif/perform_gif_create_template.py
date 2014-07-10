@@ -14,7 +14,7 @@ import nipype.interfaces.niftyreg as niftyreg
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
 
-parser = argparse.ArgumentParser(description='GIF Template Creation usage example')
+parser = argparse.ArgumentParser(description='GIF Template Creation')
 parser.add_argument('-i', '--inputs',
                     dest='inputs',
                     metavar='inputs',
@@ -25,16 +25,24 @@ parser.add_argument('-l','--labels',
                     metavar='labels',
                     help='Input initial labels',
                     required=True)
+parser.add_argument('-o','--output',
+                    dest='output',
+                    metavar='output',
+                    help='output directory to which the template library is stored',
+                    required=True)
 
 args = parser.parse_args()
 
-result_dir = os.path.join(os.getcwd(),'results')
+result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
 basedir = os.getcwd()
 
-r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', number_of_iterations = 3, ref_file = mni_template, ref_mask = mni_template_mask)
+r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', 
+                                                            number_of_iterations = 3, 
+                                                            ref_file = mni_template, 
+                                                            ref_mask = mni_template_mask)
 
 r.base_dir = basedir
 r.inputs.input_node.in_entries_directory = os.path.abspath(args.inputs)
