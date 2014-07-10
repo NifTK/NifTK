@@ -769,12 +769,12 @@ void QmitkIGIDataSourceManager::UpdateSourceView(const int& sourceIdentifier, bo
     m_TableWidget->insertRow(rowNumber);
   }
 
-  for (unsigned int i = 1; i < fields.size(); i++)
+  for (unsigned int i = 0; i < fields.size(); i++)
   {
     QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(fields[i]));
     item->setTextAlignment(Qt::AlignCenter);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(rowNumber, i, item);
+    m_TableWidget->setItem(rowNumber, i + 1, item);
   }
 
   QTableWidgetItem* freezeitem = new QTableWidgetItem(" ");
