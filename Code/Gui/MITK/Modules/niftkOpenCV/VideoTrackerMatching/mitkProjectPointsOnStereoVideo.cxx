@@ -40,6 +40,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_DrawAxes(false)
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
+, m_MaxGoldStandardIndex(-1)
 , m_RightGSFrameOffset(0)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
@@ -183,7 +184,23 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
   m_ClassifierProjectedPoints.clear();
-  if ( m_WorldPoints.size() == 0 ) 
+  if ( static_cast<int>(m_WorldPoints.size()) < m_MaxGoldStandardIndex ) 
+  {
+    MITK_INFO << "Filling world points with dummy data to enable triangulation";
+    std::pair<cv::Point3d,cv::Scalar> emptyWorldPoint = 
+      std::pair < cv::Point3d,cv::Scalar> (
+      cv::Point3d(
+      std::numeric_limits<double>::infinity(),
+      std::numeric_limits<double>::infinity(),
+      std::numeric_limits<double>::infinity()),
+      cv::Scalar(0,0,0) );
+
+    for ( int i = m_WorldPoints.size() ; i <= m_MaxGoldStandardIndex ; i ++ )
+    {
+      m_WorldPoints.push_back(emptyWorldPoint);
+    }
+  }
+  if (  m_WorldPoints.size() == 0 )
   {
     MITK_WARN << "Called project with nothing to project";
     return;
@@ -455,8 +472,13 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
   m_LeftGoldStandardPoints = points;
+  int maxLeftGSIndex = -1;
   for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
   {
+    if ( m_LeftGoldStandardPoints[i].m_Index > maxLeftGSIndex ) 
+    {
+      maxLeftGSIndex =  m_LeftGoldStandardPoints[i].m_Index;
+    }
     if ( m_LeftGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
     {
       if ( ! m_LeftGSFramesAreEven ) 
@@ -483,7 +505,10 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
   {
     m_RightGSFrameOffset = 1 ;
   }
-
+  if ( maxLeftGSIndex > m_MaxGoldStandardIndex )
+  {
+    m_MaxGoldStandardIndex = maxLeftGSIndex;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -491,9 +516,14 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
   m_RightGoldStandardPoints = points;
+  int maxRightGSIndex = -1;
    
   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
   {
+    if ( m_RightGoldStandardPoints[i].m_Index > maxRightGSIndex ) 
+    {
+      maxRightGSIndex =  m_RightGoldStandardPoints[i].m_Index;
+    }
     if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
     {
       if ( ! m_RightGSFramesAreEven ) 
@@ -520,15 +550,19 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
   {
     m_RightGSFrameOffset = 1 ;
   }
+  if ( maxRightGSIndex > m_MaxGoldStandardIndex )
+  {
+    m_MaxGoldStandardIndex = maxRightGSIndex;
+  }
 }
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPrefix, 
     mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
-  if ( ! m_ProjectOK ) 
+  if ( (! m_ProjectOK) && (m_MaxGoldStandardIndex == -1 ) ) 
   {
-    MITK_ERROR << "Attempted to run CalculateProjectionErrors, before running project(), no result.";
+    MITK_ERROR << "Attempted to run CalculateTriangulateErrors, before running project(), no result.";
     return;
   }
 
@@ -539,6 +573,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   unsigned int rightGSIndex = 0;
 
   std::vector < std::vector < cv::Point3d > > classifiedPoints;
+
   for ( unsigned int i = 0 ; i < m_PointsInLeftLensCS[0].second.size() ; i ++ )
   {
     std::vector < cv::Point3d > pointvector;
@@ -597,7 +632,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
               if ( rightIndex == index ) 
               {
                 matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
+                (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
               }
             }
           }
@@ -657,7 +692,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
           rightCameraRotationVectorMat,
           rightCameraTranslationVectorMat,
           *leftCameraTriangulatedWorldPoints);
-        
+
         cv::Point3d triangulatedGS;
         triangulatedGS.x = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,0);
         triangulatedGS.y = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,1);
@@ -667,7 +702,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
         
         cv::Mat leftCameraToWorld = trackerMatcher->GetCameraTrackingMatrix(frameNumber, NULL, m_TrackerIndex, NULL, m_ReferenceIndex);
-      
+        
         classifiedPoints[matchedPairs[i].first].push_back(leftCameraToWorld * triangulatedGS);
         cvReleaseMat (&leftScreenPointsMat);
         cvReleaseMat (&rightScreenPointsMat);

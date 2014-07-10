@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 07 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
@@ -233,8 +233,8 @@ set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "408b2a308e" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "d811026e79" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "6db5cef309" CACHE STRING "Version of NiftyLink" FORCE)
+set(NIFTK_VERSION_MITK "b3069a429e" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_NIFTYLINK "250644a53b" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -1417,6 +1417,23 @@ if(WIN32)
       set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/../bin")
     else()
       set(PCL_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
+
+    # on windows, the cgal-provided installer has some required 3rd party dlls.
+    if(BUILD_MESHING AND CGAL_FOUND)
+      # both gmp and mpfr sit in the same directory, so we only need one here.
+      get_filename_component(CGALGMP_BIN_PATH_FOR_BATCH_FILE ${GMP_LIBRARIES} PATH)
+      # and of course, dont forget cgal's own dlls.
+      set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "${CGALGMP_BIN_PATH_FOR_BATCH_FILE};${CGAL_INSTALL_PREFIX}/bin")
+    else()
+      set(CGALGMP_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
+
+    # some other (top secret) fem code needs niftysim at runtime.
+    if(NIFTYSIM_FOUND)
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NIFTYSIM_DIR}/bin")
+    else()
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "")
     endif()
 
     set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")

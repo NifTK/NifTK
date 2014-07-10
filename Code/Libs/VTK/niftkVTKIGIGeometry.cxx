@@ -14,6 +14,7 @@
 #include "niftkVTKIGIGeometry.h"
 #include "niftkVTKFunctions.h"
 
+#include <niftkConversionUtils.h>
 #include <vtkCubeSource.h>
 #include <vtkSphereSource.h>
 #include <vtkPlane.h>
@@ -26,6 +27,7 @@
 #include <vtkLineSource.h>
 #include <vtkArcSource.h>
 #include <vtkVersion.h>
+#include <vtkTubeFilter.h>
 
 #include <sstream>
 #include <cassert>
@@ -84,6 +86,11 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   TranslatePolyData(rightLensCowl,righttransform);
  
   vtkSmartPointer<vtkMatrix4x4> centrehandeye = LoadMatrix4x4FromFile(CentreHandeyeFilename, false);
+  float z = -BodyLength * cos ( LensAngle * NIFTK_PI / 180);
+  float y = BodyLength * sin ( LensAngle * NIFTK_PI / 180);
+  float lapEnd[4] = {0,y,z,1.0};
+  float movedLapEnd [4];
+  centrehandeye->MultiplyPoint(lapEnd, movedLapEnd);
   vtkSmartPointer<vtkTransform> centretransform = vtkSmartPointer<vtkTransform>::New();
   centretransform->SetMatrix(centrehandeye);
 
@@ -112,10 +119,13 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   lensOrigin.push_back(centrehandeye->GetElement(1,3));
   lensOrigin.push_back(centrehandeye->GetElement(2,3));
 
+  std::vector < float > vlapEnd; 
+  vlapEnd.push_back(movedLapEnd[0]);
+  vlapEnd.push_back(movedLapEnd[1]);
+  vlapEnd.push_back(movedLapEnd[2]);
   std::vector< std::vector < float > > axis; 
   axis.push_back(this->Centroid(positions));
-  axis.push_back(lensOrigin);
-
+  axis.push_back(vlapEnd);
   vtkSmartPointer<vtkAppendPolyData> LapAppenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
   LapAppenderer->AddInputData(leftLensCowl);
@@ -143,7 +153,10 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   appenderer->AddInputData(clipper->GetOutput());
   appenderer->AddInputData(ireds);
   appenderer->AddInputData(this->ConnectIREDs(axis));
-
+  if ( positions.size() == 3 )
+  {
+    appenderer->AddInputData(this->ConnectIREDsToCentroid(positions));
+  }
   if ( AddCrossHairs ) 
   {
     vtkSmartPointer<vtkArcSource> leftTopArc = vtkSmartPointer<vtkArcSource>::New();
@@ -288,10 +301,12 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string 
   appenderer->AddInput(ireds);
   appenderer->AddInput(tipBall);
   appenderer->AddInput(this->ConnectIREDs(axis));
+  appenderer->AddInput(this->ConnectIREDsToCentroid(positions));
 #else
   appenderer->AddInputData(ireds);
   appenderer->AddInputData(tipBall);
   appenderer->AddInputData(this->ConnectIREDs(axis));
+  appenderer->AddInputData(this->ConnectIREDsToCentroid(positions));
 #endif
 
   appenderer->Update();
@@ -763,7 +778,7 @@ std::vector <float>  VTKIGIGeometry::Centroid(std::vector < std::vector <float> 
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::vector <float> > IREDPositions, bool isPointer )
+vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::vector <float> > IREDPositions, bool isPointer , float width )
 {
   vtkSmartPointer<vtkPolyData> polyOut = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
@@ -776,12 +791,26 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
       vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
       join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
       join->SetPoint2 ( IREDPositions[i+1][0], IREDPositions[i+1][1], IREDPositions[i+1][2]);
-      join->Update();
+      if ( width > 0.0 ) 
+      {
+        vtkSmartPointer<vtkTubeFilter> tube = vtkSmartPointer<vtkTubeFilter>::New();
+        tube->SetInputConnection (join->GetOutputPort());
+        tube->SetRadius(width);
+        tube->SetNumberOfSides(10);
 #if VTK_MAJOR_VERSION <= 5
-      appenderer->AddInput(join->GetOutput());
+        appenderer->AddInput(tube->GetOutput());
 #else
-      appenderer->AddInputData(join->GetOutput());
+        appenderer->AddInputData(tube->GetOutput());
 #endif
+      }
+      else
+      {
+#if VTK_MAJOR_VERSION <= 5
+        appenderer->AddInput(join->GetOutput());
+#else
+        appenderer->AddInputData(join->GetOutput());
+#endif
+      }
     }
   }
   else
@@ -824,4 +853,37 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
   appenderer->Update();
   return appenderer->GetOutput();
 } 
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDsToCentroid(std::vector < std::vector <float> > IREDPositions )
+{
+  vtkSmartPointer<vtkPolyData> polyOut = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  assert ( IREDPositions.size() > 1 );
+  assert ( IREDPositions[0].size() == 3 );
+    
+  std::vector < float >  centroid; 
+
+  centroid = this->Centroid(IREDPositions);
+ 
+  for ( unsigned int i = 0 ; i < IREDPositions.size() ; i ++ )
+  {
+
+    vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
+
+    join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
+    join->SetPoint2 ( centroid[0], centroid[1], centroid[2]);
+    
+    vtkSmartPointer<vtkTubeFilter> tube = vtkSmartPointer<vtkTubeFilter>::New();
+    tube->SetInputConnection (join->GetOutputPort());
+    tube->SetRadius(3.0);
+    tube->SetNumberOfSides(10);
+#if VTK_MAJOR_VERSION <= 5
+    appenderer->AddInput(tube->GetOutput());
+#else
+    appenderer->AddInputData(tube->GetOutput());
+#endif
+  }
+  return appenderer->GetOutput();
+} 
+
 } //end namespace niftk

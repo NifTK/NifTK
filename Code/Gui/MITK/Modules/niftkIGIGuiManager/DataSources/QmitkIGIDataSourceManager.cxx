@@ -836,6 +836,23 @@ void QmitkIGIDataSourceManager::OnTimestampEditFinished()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::AdvancePlaybackTime()
+{
+  int         sliderValue = m_PlaybackSlider->value();
+  igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
+
+  igtlUint64  advanceBy     = 1000000000 / m_FrameRate;
+  igtlUint64  newSliderTime = sliderTime + advanceBy;
+
+  igtlUint64  newSliderValue = (newSliderTime - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
+  // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
+  newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
+  assert(newSliderValue < std::numeric_limits<int>::max());
+  m_PlaybackSlider->setValue((int) newSliderValue);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
 
@@ -843,6 +860,12 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   // depends solely on the state of the play-button.
   if (m_PlayPushButton->isChecked())
   {
+    // simply re-use the existing datasources-update-rate mechanism.
+    if (m_PlayingPushButton->isChecked())
+    {
+      AdvancePlaybackTime();
+    }
+
     int         sliderValue = m_PlaybackSlider->value();
     igtlUint64  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
 
@@ -1040,7 +1063,7 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
   QDateTime dateTime;
   dateTime.setMSecsSinceEpoch(millis);
 
-  QString formattedTime = dateTime.toString("yyyy-MM-dd-hh-mm-ss-zzz");
+  QString formattedTime = dateTime.toString("yyyy-MM-dd_hh-mm-ss-zzz");
   QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
   return directoryName;

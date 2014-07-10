@@ -198,6 +198,7 @@ private:
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
   bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
+  int                           m_MaxGoldStandardIndex; //useful if we're just triangulating gold standard points
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end

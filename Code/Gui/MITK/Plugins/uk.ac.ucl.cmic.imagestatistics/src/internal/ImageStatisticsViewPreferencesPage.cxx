@@ -29,6 +29,8 @@ const std::string ImageStatisticsViewPreferencesPage::ASSUME_BINARY_NAME("assume
 const std::string ImageStatisticsViewPreferencesPage::REQUIRE_SAME_SIZE_IMAGE_NAME("require same size image");
 const std::string ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME("background value");
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsViewPreferencesPage::ImageStatisticsViewPreferencesPage()
 : m_MainControl(0)
 , m_AutoUpdate(0)
@@ -39,6 +41,8 @@ ImageStatisticsViewPreferencesPage::ImageStatisticsViewPreferencesPage()
 
 }
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsViewPreferencesPage::ImageStatisticsViewPreferencesPage(const ImageStatisticsViewPreferencesPage& other)
 : berry::Object(), QObject()
 {
@@ -46,16 +50,22 @@ ImageStatisticsViewPreferencesPage::ImageStatisticsViewPreferencesPage(const Ima
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsViewPreferencesPage::~ImageStatisticsViewPreferencesPage()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsViewPreferencesPage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService::Pointer prefService
@@ -85,11 +95,15 @@ void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
   this->Update();
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* ImageStatisticsViewPreferencesPage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool ImageStatisticsViewPreferencesPage::PerformOk()
 {
   m_ImageStatisticsPreferencesNode->PutBool(AUTO_UPDATE_NAME, m_AutoUpdate->isChecked());
@@ -99,11 +113,15 @@ bool ImageStatisticsViewPreferencesPage::PerformOk()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsViewPreferencesPage::PerformCancel()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsViewPreferencesPage::Update()
 {
   m_AutoUpdate->setChecked(m_ImageStatisticsPreferencesNode->GetBool(AUTO_UPDATE_NAME, false));

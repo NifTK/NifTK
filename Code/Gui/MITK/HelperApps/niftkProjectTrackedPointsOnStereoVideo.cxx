@@ -37,7 +37,10 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( input2D.length() == 0 && input3D.length() == 0 && input3DWithScalars.length() == 0  )
+  if ( ( input2D.length() == 0 ) && 
+       ( input3D.length() == 0 ) && 
+       ( input3DWithScalars.length() == 0 ) && 
+       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -141,16 +144,54 @@ int main(int argc, char** argv)
       int b; 
       int g;
       int r;
-
-      while ( fin >> x >> y >> z >> b >> g >> r )
+      
+      std::string in[6];
+      while ( fin >> in[0] >> in[1] >> in[2] >> in[3] >> in[4] >> in[5] )
       {
+        x=atof(in[0].c_str());
+        y=atof(in[1].c_str());
+        z=atof(in[2].c_str());
+        b=atoi(in[3].c_str());
+        g=atoi(in[4].c_str());
+        r=atoi(in[5].c_str());
+
         worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
       projector->SetWorldPoints(worldPointsWithScalars);
       fin.close();
     }
-
+    
+    if ( leftGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(leftGoldStandard.c_str());
+      std::vector < mitk::GoldStandardPoint > leftGS;
+      while ( fin  )
+      {
+        mitk::GoldStandardPoint point(fin);
+        if ( fin )
+        {
+          leftGS.push_back( point );
+        }
+      }
+      fin.close();
+      projector->SetLeftGoldStandardPoints(leftGS);
+    }
+    if ( rightGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(rightGoldStandard.c_str());
+      std::vector < mitk::GoldStandardPoint > rightGS;
+      while ( fin )
+      {
+        mitk::GoldStandardPoint point(fin);
+        if ( fin ) 
+        {
+          rightGS.push_back(point);
+        }
+      }
+      fin.close();
+      projector->SetRightGoldStandardPoints(rightGS);
+    }
 
     projector->Project(matcher);
    
@@ -214,39 +255,6 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
-    if ( leftGoldStandard.length() != 0 ) 
-    {
-      std::ifstream fin(leftGoldStandard.c_str());
-      std::vector < mitk::GoldStandardPoint > leftGS;
-      while ( fin  )
-      {
-        mitk::GoldStandardPoint point(fin);
-        if ( fin )
-        {
-          leftGS.push_back( point );
-        }
-      }
-      fin.close();
-      projector->SetLeftGoldStandardPoints(leftGS);
-
-    }
-    if ( rightGoldStandard.length() != 0 ) 
-    {
-      std::ifstream fin(rightGoldStandard.c_str());
-      std::vector < mitk::GoldStandardPoint > rightGS;
-      while ( fin )
-      {
-        mitk::GoldStandardPoint point(fin);
-        if ( fin ) 
-        {
-          rightGS.push_back(point);
-        }
-      }
-      fin.close();
-      projector->SetRightGoldStandardPoints(rightGS);
-
-    }
-
     if ( outputErrors.length() != 0 ) 
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);

@@ -79,5 +79,5 @@ protected:
   berry::IPreferences::Pointer m_ImageStatisticsPreferencesNode;
 };
 
-#endif /* QMITKDATAMANAGERPREFERENCEPAGE_H_ */
+#endif
 
