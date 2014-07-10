@@ -161,6 +161,12 @@ private:
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;
 
+  /// \brief Rendering manager of the tracked main window.
+  /// If a main window is being tracked, the render windows of this viewer should be added
+  /// to the rendering manager of the tracked window, so that they are immediately updated
+  /// any time when the contents of the main window changes.
+  mitk::RenderingManager* m_MainRenderingManager;
+
   /// \brief Stores the currently selected window of the visible editor, if any.
   QmitkRenderWindow* m_MainWindow;
 
