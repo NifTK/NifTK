@@ -51,6 +51,7 @@
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkVector.h> // for PointType;
 #include <mitkIDataStorageService.h>
+#include <mitkIRenderingManager.h>
 #include <mitkRenderingManager.h>
 #include <mitkEllipsoid.h>
 #include <mitkCylinder.h>
@@ -750,7 +751,10 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
       if (this->GetDataStorage()->GetNamedDerivedNode("BoundingObject", node))
       {
         m_boundingObject->FitGeometry(m_currentDataObject->GetGeometry());
-        mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+        if (this->GetRenderWindowPart())
+        {
+          this->GetRenderWindowPart()->GetRenderingManager()->RequestUpdateAll();
+        }
         return;
       }
 
@@ -807,8 +811,15 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
       AddBoundingObjectToNode(node, fitBoundingObject);
 
       node->SetVisibility(true);
-      mitk::RenderingManager::GetInstance()->InitializeViews();
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+      if (this->GetRenderWindowPart())
+      {
+        mitk::IRenderingManager* renderingManager = this->GetRenderWindowPart()->GetRenderingManager();
+        if (renderingManager)
+        {
+          renderingManager->InitializeViews();
+          renderingManager->RequestUpdateAll();
+        }
+      }
       //m_Controls->m_NewBoxButton->setText("Reset bounding box!");
       //m_Controls->btnCrop->setEnabled(true);
     }
@@ -858,7 +869,14 @@ void AffineTransformView::OnInteractiveModeToggled(bool on)
   //    this->CreateNewBoundingObject(msp_DataOwnerNode);
 
   //  this->DisplayLegends(true);
-  //  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  //  if (this->GetRenderWindowPart())
+  //  {
+  //    mitk::RenderingManager renderingManager = this->GetRenderWindowPart()->GetRenderingManager();
+  //    if (renderingManager)
+  //    {
+  //      renderingManager->RequestUpdateAll();
+  //    }
+  //  }
   //}
   //else
   //   m_inInteractiveMode = false;
