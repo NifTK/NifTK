@@ -430,6 +430,17 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
       m_PlaybackIndex[tool.toStdString()] = ProbeTimeStampFiles(tooldir, QString(".txt"));
     }
 
+    // the tracker data source can have multiple associated sources that represent
+    // separate tools attached to the same tracking device. for example, multiple
+    // rigid bodies for a single polaris unit.
+    // currently, these are stored in separate directories! so we would not need to emulate
+    // the associated-source-stuff for playback!
+    // log a warning if we encounter a situation where this is not the case.
+    if (m_PlaybackIndex.size() > 1)
+    {
+      MITK_WARN << "Have multiple tool names per storage directory! That is not supposed to happen. Good luck.";
+    }
+
     m_PlaybackDirectoryName = path;
   }
   else
@@ -439,6 +450,13 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
   }
 
   SetIsPlayingBack(true);
+
+  // see above for a note on what happens if there are multiple tool directories (which is not supposed to happen).
+  // we just pick the first tool name.
+  SetName(m_PlaybackIndex.begin()->first);
+
+  // tell gui manager to update the data source table.
+  emit DataSourceStatusUpdated(this->GetIdentifier());
 }
 
 
