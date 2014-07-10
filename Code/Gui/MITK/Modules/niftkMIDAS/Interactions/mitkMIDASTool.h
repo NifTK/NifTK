@@ -150,7 +150,7 @@ protected:
   bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
   /// \brief Makes the current window re-render
-  virtual void RenderCurrentWindow(const PositionEvent& event);
+  virtual void RenderCurrentWindow(const mitk::PositionEvent& event);
 
   /// \brief Makes all windows re-render
   virtual void RenderAllWindows();

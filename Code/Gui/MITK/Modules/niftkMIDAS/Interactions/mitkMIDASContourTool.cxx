@@ -68,12 +68,20 @@ mitk::MIDASContourTool::~MIDASContourTool()
 
 void mitk::MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)
 {
-  const RenderingManager::RenderWindowVector& renderWindows = RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
-  for (RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
+  mitk::RenderingManager* renderingManager =
+      m_LastEventSender ? m_LastEventSender->GetRenderingManager() : 0;
+
+  if (renderingManager)
   {
-    if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == BaseRenderer::Standard3D )
+    const mitk::RenderingManager::RenderWindowVector& renderWindows = renderingManager->GetAllRegisteredRenderWindows();
+    for (mitk::RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin();
+         iter != renderWindows.end();
+         ++iter)
     {
-      node->SetProperty("visible", BoolProperty::New(false), mitk::BaseRenderer::GetInstance((*iter)));
+      if ( mitk::BaseRenderer::GetInstance(*iter)->GetMapperID() == BaseRenderer::Standard3D )
+      {
+        node->SetProperty("visible", BoolProperty::New(false), mitk::BaseRenderer::GetInstance(*iter));
+      }
     }
   }
 }
@@ -605,6 +613,6 @@ void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)
   }
 
   // Make sure all views everywhere get updated.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->RenderAllWindows();
 }
 
