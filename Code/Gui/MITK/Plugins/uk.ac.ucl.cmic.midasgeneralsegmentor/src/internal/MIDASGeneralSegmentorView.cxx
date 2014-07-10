@@ -23,6 +23,7 @@
 #include <mitkColorProperty.h>
 #include <mitkDataNodeObject.h>
 #include <mitkProperties.h>
+#include <mitkIRenderingManager.h>
 #include <mitkRenderingManager.h>
 #include <mitkSegTool2D.h>
 #include <mitkVtkResliceInterpolationProperty.h>
@@ -535,20 +536,32 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
     initialSeedsNode->SetColor(1.0, 0.0, 0.0);
 
-    // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
-    // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
-    const mitk::RenderingManager::RenderWindowVector& renderWindows = mitk::RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
-    for (mitk::RenderingManager::RenderWindowVector::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
+    /// TODO
+    /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
+    /// own rendering manager, not this one, like the MITK display.
+    mitk::IRenderingManager* renderingManager = 0;
+    mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+    if (renderWindowPart)
     {
-      if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == mitk::BaseRenderer::Standard3D )
+      renderingManager = renderWindowPart->GetRenderingManager();
+    }
+    if (renderingManager)
+    {
+      // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
+      // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
+      QList<vtkRenderWindow*> renderWindows = renderingManager->GetAllRegisteredVtkRenderWindows();
+      for (QList<vtkRenderWindow*>::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
       {
-        pointSetNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        seePriorNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        seeNextNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        currentContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        drawContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        initialSegmentationNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        initialSeedsNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+        if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == mitk::BaseRenderer::Standard3D )
+        {
+          pointSetNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          seePriorNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          seeNextNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          currentContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          drawContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          initialSegmentationNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+          initialSeedsNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+        }
       }
     }
 

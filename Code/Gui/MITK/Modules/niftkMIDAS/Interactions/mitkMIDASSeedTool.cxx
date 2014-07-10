@@ -18,7 +18,6 @@
 #include <mitkPointSet.h>
 #include <mitkProperties.h>
 #include <mitkPositionEvent.h>
-#include <mitkRenderingManager.h>
 #include <mitkGlobalInteraction.h>
 
 #include <usModuleResource.h>

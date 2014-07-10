@@ -325,7 +325,7 @@ bool AffineTransformInteractor3D::OnAcSelectPickedObject(mitk::Action * action, 
 {
   // Color object red
   m_DataNode->SetColor( 1.0, 0.0, 0.0 );
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
 
   return true;
 }
@@ -334,7 +334,7 @@ bool AffineTransformInteractor3D::OnAcDeselectPickedObject(mitk::Action * action
 {
   // Color object white
   m_DataNode->SetColor( 1.0, 1.0, 1.0 );
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
 
   return true;
 }
@@ -508,7 +508,7 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
   {
    static_cast<mitk::BoundingObject * >(m_boundingObjectNode->GetData())->FitGeometry(m_DataNode->GetData()->GetGeometry());
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
  
   return true;
 }

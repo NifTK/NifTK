@@ -384,7 +384,7 @@ void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk:
     this->UpdateFeedbackContour(registerNewPoint, closestCornerPoint, *planeGeometry, *(m_ReferencePoints.GetPointer()), *feedbackContour, *backgroundContour, provideUndo);
 
     // Make sure all views everywhere get updated.
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    this->RenderAllWindows();
   }
 }
 
@@ -565,5 +565,5 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
   ContoursHaveChanged.Send();
 
   // Make sure all views everywhere get updated.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->RenderAllWindows();
 }

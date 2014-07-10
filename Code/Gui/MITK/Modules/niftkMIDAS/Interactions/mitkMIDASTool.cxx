@@ -286,14 +286,17 @@ void mitk::MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
 void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );
-  mitk::RenderingManager::GetInstance()->RequestUpdate( positionEvent.GetSender()->GetRenderWindow() );
+  positionEvent.GetSender()->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
 void mitk::MIDASTool::RenderAllWindows()
 {
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  if (m_LastEventSender)
+  {
+    m_LastEventSender->GetRenderingManager()->RequestUpdateAll();
+  }
 }
 
 

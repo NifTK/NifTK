@@ -394,7 +394,8 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, m
     }
   }
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  positionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
+
   m_MostRecentPointInMillimetres = currentPoint;
   return true;
 }
@@ -550,7 +551,10 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
 
       nodeToEdit->Modified();
 
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+      if (m_LastEventSender)
+      {
+        m_LastEventSender->GetRenderingManager()->RequestUpdateAll();
+      }
       break;
     }
   default:;

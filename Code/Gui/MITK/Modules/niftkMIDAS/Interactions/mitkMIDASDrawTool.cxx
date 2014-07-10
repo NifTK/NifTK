@@ -225,7 +225,7 @@ bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::In
   }
 
   // Make sure all views everywhere get updated.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->RenderAllWindows();
   return true;
 }
 
@@ -301,7 +301,7 @@ bool mitk::MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::I
   m_EraserScope->SetControlPoint(0, mousePosition);
 
   this->SetEraserScopeVisible(true, renderer);
-  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
+  renderer->RequestUpdate();
 
   bool result = true;
   result = result && this->DeleteFromContour(2, action, event);
@@ -324,7 +324,7 @@ bool mitk::MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::In
   mitk::Point2D mousePosition;
   geometry2D->Map(positionEvent->GetPositionInWorld(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
-  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
+  renderer->RequestUpdate();
 
   bool result = true;
   result = result && this->DeleteFromContour(2, action, event);
@@ -338,7 +338,7 @@ bool mitk::MIDASDrawTool::StopErasing(mitk::StateMachineAction* action, mitk::In
 {
   this->SetEraserScopeVisible(false, event->GetSender());
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->RenderAllWindows();
 
   return true;
 }
@@ -772,7 +772,7 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
   }
 
   // Make sure all views everywhere get updated.
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  this->RenderAllWindows();
 }
 
 
