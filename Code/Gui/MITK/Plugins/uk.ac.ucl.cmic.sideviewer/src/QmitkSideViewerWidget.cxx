@@ -105,6 +105,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_ContainingView(view)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
+, m_MainRenderingManager(0)
 , m_MainWindow(0)
 , m_MainAxialWindow(0)
 , m_MainSagittalWindow(0)
@@ -259,6 +260,15 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  if (m_MainRenderingManager)
+  {
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    m_MainRenderingManager = 0;
+  }
+
   m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
 
   // Deregister focus observer.
@@ -379,6 +389,15 @@ void QmitkSideViewerWidget::SetupUi(QWidget *parent)
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
+  if (m_MainRenderingManager)
+  {
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    m_MainRenderingManager = 0;
+  }
+
   if (mainWindow == m_MainWindow)
   {
     m_VisibilityTracker->SetTrackedRenderer(0);
@@ -637,6 +656,28 @@ void QmitkSideViewerWidget::OnViewerWindowChanged()
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindowPart, QmitkRenderWindow* mainWindow)
 {
+  mitk::RenderingManager* mainRenderingManager = mainWindow->GetRenderer()->GetRenderingManager();
+  if (mainRenderingManager != m_MainRenderingManager)
+  {
+    if (m_MainRenderingManager)
+    {
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    }
+
+    m_MainRenderingManager = mainRenderingManager;
+
+    if (m_MainRenderingManager)
+    {
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    }
+  }
+
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
   QmitkRenderWindow* mainAxialWindow = renderWindowPart->GetQmitkRenderWindow("axial");
   QmitkRenderWindow* mainSagittalWindow = renderWindowPart->GetQmitkRenderWindow("sagittal");
