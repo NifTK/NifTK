@@ -74,7 +74,7 @@ mitk::ToolManager::Pointer MIDASMorphologicalSegmentorPipelineManager::GetToolMa
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetReferenceImageFromToolManager(const unsigned int& imageNumber) const
+mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetReferenceImageFromToolManager(unsigned int imageNumber) const
 {
   mitk::Image::Pointer result = NULL;
 
@@ -88,7 +88,7 @@ mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetReferenceIma
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetWorkingImageFromToolManager(const unsigned int& imageNumber) const
+mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetWorkingImageFromToolManager(unsigned int imageNumber) const
 {
   mitk::Image::Pointer result = NULL;
 
@@ -128,7 +128,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::HasSegmentationNode() const
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::OnThresholdingValuesChanged(const double& lowerThreshold, const double& upperThreshold, const int& axialSlicerNumber)
+void MIDASMorphologicalSegmentorPipelineManager::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber)
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
@@ -142,7 +142,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnThresholdingValuesChanged(con
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::OnErosionsValuesChanged(const double& upperThreshold, const int& numberOfErosions)
+void MIDASMorphologicalSegmentorPipelineManager::OnErosionsValuesChanged(double upperThreshold, int numberOfErosions)
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
@@ -155,7 +155,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnErosionsValuesChanged(const d
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::OnDilationValuesChanged(const double& lowerPercentage, const double& upperPercentage, const int& numberOfDilations)
+void MIDASMorphologicalSegmentorPipelineManager::OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
@@ -169,7 +169,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnDilationValuesChanged(const d
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::OnRethresholdingValuesChanged(const int& boxSize)
+void MIDASMorphologicalSegmentorPipelineManager::OnRethresholdingValuesChanged(int boxSize)
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
@@ -468,7 +468,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     {
       MITK_ERROR << "Caught exception, so abandoning pipeline update:" << e.what();
     }
-    catch(itk::ExceptionObject &e)
+    catch(itk::ExceptionObject& e)
     {
       MITK_ERROR << "Caught exception, so abandoning pipeline update:" << e.what();
     }

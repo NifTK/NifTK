@@ -71,25 +71,25 @@ public:
   /// \param lowerThreshold the lowest intensity value included in the segmentation
   /// \param upperThreshold the upper intensity value included in the segmentation
   /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void OnThresholdingValuesChanged(const double& lowerThreshold, const double& upperThreshold, const int& axialSliceNumber);
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
   /// \brief Sets the conditional erosion parameters.
   ///
   /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
   /// \param numberOfErosions the number of erosion iterations to perform
-  void OnErosionsValuesChanged(const double& upperThreshold, const int& numberOfErosions);
+  void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
   /// \brief Sets the conditional dilation parameters.
   ///
   /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param numberOfDilations the number of dilation iterations to perform
-  void OnDilationValuesChanged(const double& lowerPercentage, const double& upperPercentage, const int& numberOfDilations);
+  void OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
   /// \brief Sets the re-thresholding parameters.
   ///
   /// \param boxSize the size of the re-thresholding box (see paper).
-  void OnRethresholdingValuesChanged(const int& boxSize);
+  void OnRethresholdingValuesChanged(int boxSize);
 
   /// \brief Called when a node changed.
   void NodeChanged(const mitk::DataNode* node);
@@ -98,10 +98,10 @@ public:
   bool HasSegmentationNode() const;
 
   /// \brief Used to retrieve the reference image from the tool manager, where imageNumber should always be 0 for Morphological Editor.
-  mitk::Image::Pointer GetReferenceImageFromToolManager(const unsigned int& imageNumber) const;
+  mitk::Image::Pointer GetReferenceImageFromToolManager(unsigned int imageNumber) const;
 
   /// \brief Used to retrieve the working image from the tool manager.
-  mitk::Image::Pointer GetWorkingImageFromToolManager(const unsigned int& imageNumber) const;
+  mitk::Image::Pointer GetWorkingImageFromToolManager(unsigned int imageNumber) const;
 
   /// \brief Used to retrieve the actual node of the image being segmented.
   mitk::DataNode::Pointer GetSegmentationNodeFromToolManager() const;
