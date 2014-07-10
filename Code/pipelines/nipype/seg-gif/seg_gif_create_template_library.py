@@ -265,8 +265,8 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
         initial_ref = True
 
     groupwise_coregistration = reg.create_atlas(name = 'groupwise_coregistration', 
-                                                itr_rigid = 0,
-                                                itr_affine = 1,
+                                                itr_rigid = 1,
+                                                itr_affine = 8,
                                                 itr_non_lin = 0,
                                                 initial_ref = initial_ref)
     
@@ -283,7 +283,7 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     
     average_mask_dil = pe.Node(interface = niftyseg.BinaryMaths(), name = 'average_mask_dil')
     average_mask_dil.inputs.operation = 'dil'
-    average_mask_dil.inputs.operand_value = 6
+    average_mask_dil.inputs.operand_value = 8
     
     average_mask_res = pe.MapNode(interface = niftyreg.RegResample(), 
                                   name = 'average_mask_res',
