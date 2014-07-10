@@ -44,7 +44,7 @@ public:
   ~QmitkSingleViewerEditorPrivate();
 
   niftkSingleViewerWidget* m_SingleViewer;
-  niftkMultiViewerVisibilityManager* m_VisibilityManager;
+  niftkMultiViewerVisibilityManager::Pointer m_VisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   berry::IPartListener::Pointer m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -161,11 +161,6 @@ QmitkSingleViewerEditorPrivate::QmitkSingleViewerEditorPrivate()
 //-----------------------------------------------------------------------------
 QmitkSingleViewerEditorPrivate::~QmitkSingleViewerEditorPrivate()
 {
-  if (m_VisibilityManager != NULL)
-  {
-    delete m_VisibilityManager;
-  }
-
   if (m_RenderingManagerInterface != NULL)
   {
     delete m_RenderingManagerInterface;
@@ -309,7 +304,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_VisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
+    d->m_VisibilityManager = niftkMultiViewerVisibilityManager::New(dataStorage);
     d->m_VisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
     d->m_VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);

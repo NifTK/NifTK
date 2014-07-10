@@ -74,7 +74,7 @@ public:
   mitk::Vector3D WorldUpDirections;
 
   niftkSingleViewerWidget* Viewer;
-  niftkMultiViewerVisibilityManager* VisibilityManager;
+  niftkMultiViewerVisibilityManager::Pointer VisibilityManager;
 
   QmitkRenderWindow* AxialWindow;
   QmitkRenderWindow* SagittalWindow;
@@ -571,7 +571,7 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
   d->ImageNode = (*allImages)[0];
 
-  d->VisibilityManager = new niftkMultiViewerVisibilityManager(d->DataStorage);
+  d->VisibilityManager = niftkMultiViewerVisibilityManager::New(d->DataStorage);
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
   d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -603,7 +603,7 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 void niftkSingleViewerWidgetTestClass::cleanupTestCase()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-  delete d->VisibilityManager;
+  d->VisibilityManager = 0;
 }
 
 
