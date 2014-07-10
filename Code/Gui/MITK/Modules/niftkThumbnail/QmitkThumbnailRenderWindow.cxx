@@ -46,6 +46,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
 , m_BoundingBox(NULL)
 , m_Renderer(NULL)
 , m_TrackedRenderer(NULL)
+, m_TrackedRenderingManager(NULL)
 , m_TrackedWorldGeometry(NULL)
 , m_TrackedDisplayGeometry(NULL)
 , m_TrackedSliceNavigator(NULL)
@@ -121,6 +122,8 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 {
+  this->SetTrackedRenderer(0);
+
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
 
@@ -197,8 +200,6 @@ void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
-  this->AddBoundingBoxToDataStorage(false);
-
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
@@ -509,8 +510,25 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // Remove any existing geometry observers
   this->RemoveObserversFromTrackedObjects();
 
+  mitk::RenderingManager* trackedRenderingManager = rendererToTrack ? rendererToTrack->GetRenderingManager() : 0;
+  if (trackedRenderingManager != m_TrackedRenderingManager)
+  {
+    if (m_TrackedRenderingManager)
+    {
+      m_TrackedRenderingManager->RemoveRenderWindow(this->GetRenderWindow());
+    }
+
+    m_TrackedRenderingManager = trackedRenderingManager;
+
+    if (m_TrackedRenderingManager)
+    {
+      m_TrackedRenderingManager->AddRenderWindow(this->GetRenderWindow());
+    }
+  }
+
   if (rendererToTrack.IsNull())
   {
+    this->AddBoundingBoxToDataStorage(false);
     m_VisibilityTracker->SetTrackedRenderer(0);
     m_Renderer->RequestUpdate();
     return;
@@ -523,6 +541,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   if (m_TrackedWorldGeometry.IsNull()
       || m_TrackedDisplayGeometry.IsNull())
   {
+    this->AddBoundingBoxToDataStorage(false);
     m_VisibilityTracker->SetTrackedRenderer(0);
     m_Renderer->RequestUpdate();
     return;
@@ -556,10 +575,6 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // window starts (i.e. before any data is loaded),
   // the bounding box will not be included, and not visible.
   this->AddBoundingBoxToDataStorage(true);
-  if (!m_DataStorage->Exists(m_BoundingBoxNode))
-  {
-    m_DataStorage->Add(m_BoundingBoxNode);
-  }
 
   this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
