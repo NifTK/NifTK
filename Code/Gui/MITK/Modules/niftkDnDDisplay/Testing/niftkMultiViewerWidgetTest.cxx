@@ -42,7 +42,7 @@ public:
   mitk::DataNode::Pointer ImageNode;
 
   niftkMultiViewerWidget* MultiViewer;
-  niftkMultiViewerVisibilityManager* VisibilityManager;
+  niftkMultiViewerVisibilityManager::Pointer VisibilityManager;
 
   bool InteractiveMode;
 };
@@ -118,7 +118,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 
   d->ImageNode = (*allImages)[0];
 
-  d->VisibilityManager = new niftkMultiViewerVisibilityManager(d->DataStorage);
+  d->VisibilityManager = niftkMultiViewerVisibilityManager::New(d->DataStorage);
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
   d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -129,7 +129,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 void niftkMultiViewerWidgetTestClass::cleanupTestCase()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
-  delete d->VisibilityManager;
+  d->VisibilityManager = 0;
 }
 
 
