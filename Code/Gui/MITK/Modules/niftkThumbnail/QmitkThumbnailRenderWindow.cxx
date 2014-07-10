@@ -512,6 +512,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   if (rendererToTrack.IsNull())
   {
     m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Renderer->RequestUpdate();
     return;
   }
 
@@ -523,6 +524,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
       || m_TrackedDisplayGeometry.IsNull())
   {
     m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Renderer->RequestUpdate();
     return;
   }
 
