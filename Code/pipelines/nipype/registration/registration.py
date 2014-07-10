@@ -128,7 +128,7 @@ def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_l
         if( i < itr_rigid ):
             linear_options_hash['rig_only_flag'] = True
         if (i == (itr_rigid-1)) or (i == (itr_affine-1)):
-            demean_arg = False
+            demean_arg = True
         else:
             demean_arg = True
         if i > 0:
