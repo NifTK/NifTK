@@ -1,0 +1,43 @@
+<!--
+   Note: In MIDAS, left button, adds to segmentation image.
+   Note: In MIDAS, middle button, adds to mask that influences connection breaker.
+   Note: In MIDAS, right button, subtracts from the mask that influences connection breaker.
+   So, we just add shift to distinguish from normal MITK interaction.
+-->
+<statemachine>
+  <state name="start" startstate="true">
+    <transition event_class="MousePressEvent" event_variant="StartAddingAddition" target="addingAddition">
+      <action name="startAddingAddition"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartAddingSubtraction" target="addingSubtraction">
+      <action name="startAddingSubtraction"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartRemovingSubtraction" target="removingSubtraction">
+      <action name="startRemovingSubtraction"/>
+    </transition>
+  </state>
+  <state name="addingAddition">
+    <transition event_class="MouseMoveEvent" event_variant="KeepAddingAddition" target="addingAddition">
+      <action name="keepAddingAddition"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopAddingAddition" target="start">
+      <action name="stopAddingAddition"/>
+    </transition>
+  </state>
+  <state name="addingSubtraction">
+    <transition event_class="MouseMoveEvent" event_variant="KeepAddingSubtraction" target="addingSubtraction">
+      <action name="keepAddingSubtraction"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopAddingSubtraction" target="start">
+      <action name="stopAddingSubtraction"/>
+    </transition>
+  </state>
+  <state name="removingSubtraction">
+    <transition event_class="MouseMoveEvent" event_variant="KeepRemovingSubtraction" target="removingSubtraction">
+      <action name="keepRemovingSubtraction"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopRemovingSubtraction" target="start">
+      <action name="stopRemovingSubtraction"/>
+    </transition>
+  </state>
+</statemachine>

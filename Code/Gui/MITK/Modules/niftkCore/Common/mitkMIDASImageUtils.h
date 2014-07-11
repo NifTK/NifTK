@@ -20,7 +20,6 @@
 #include <itkSpatialOrientationAdapter.h>
 #include <mitkImage.h>
 #include <mitkDataNode.h>
-#include <mitkPositionEvent.h>
 #include "mitkMIDASEnums.h"
 
 /**
@@ -160,15 +159,6 @@ namespace mitk
    * returned voxel is <code>(int)(number vox - 1)/2.0</code>
    */
   NIFTKCORE_EXPORT mitk::Point3D GetMiddlePointInVoxels(const mitk::Image* image);
-
-
-  /**
-   * \brief Generates a fake position event, (mainly for unit testing), at a given voxel location.
-   * \param image An MITK image.
-   * \param voxelLocation A voxel location.
-   * \return A fake position event, where by "fake" we mean that there is no valid window Id.
-   */
-  NIFTKCORE_EXPORT mitk::PositionEvent GeneratePositionEvent(const mitk::BaseRenderer* renderer, const mitk::Image* image, const mitk::Point3D& voxelLocation);
 
 
   /**

@@ -250,7 +250,7 @@ int main(int argc, char** argv)
      vtkSmartPointer<vtkPolyData> solution = vtkSmartPointer<vtkPolyData>::New();
      icp->ApplyTransform(solution);
      vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-     writer->SetInput(solution);
+     writer->SetInputDataObject(solution);
      writer->SetFileName(args.outPolyDataFile.c_str());
      writer->Update();
   }
@@ -262,23 +262,13 @@ int main(int argc, char** argv)
     {
       std::cerr << "There are no cells in the source data, running delaunay filter\n";
       vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
-#if VTK_MAJOR_VERSION <= 5
-      delaunay->SetInput(source);
-      sourceMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->SetInputDataObject(source);
+      sourceMapper->SetInputDataObject(delaunay->GetOutput());
       delaunay->Update();
-#else
-      delaunay->SetInputData(source);
-      sourceMapper->SetInputData(delaunay);
-      delaunay->Update();
-#endif
     }
     else
     {
-#if VTK_MAJOR_VERSION <= 5
-      sourceMapper->SetInputConnection(source->GetProducerPort());
-#else
-      sourceMapper->SetInputData(source);
-#endif
+      sourceMapper->SetInputDataObject(source);
     }
     vtkSmartPointer<vtkActor> sourceActor = vtkSmartPointer<vtkActor>::New();
     sourceActor->SetMapper(sourceMapper);
@@ -290,23 +280,13 @@ int main(int argc, char** argv)
     {
       std::cerr << "There are no cells in the target data, running delaunay filter\n";
       vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
-#if VTK_MAJOR_VERSION <= 5
-      delaunay->SetInput(target);
-      targetMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->SetInputDataObject(target);
+      targetMapper->SetInputDataObject(delaunay->GetOutput());
       delaunay->Update();
-#else
-      delaunay->SetInputData(target);
-      targetMapper->SetInputData(delaunay);
-      delaunay->Update();
-#endif
     }
     else
     {
-#if VTK_MAJOR_VERSION <= 5
-      targetMapper->SetInputConnection(target->GetProducerPort());
-#else
-      targetMapper->SetInputData(target);
-#endif
+      targetMapper->SetInputDataObject(target);
     }
 
     vtkSmartPointer<vtkActor> targetActor = vtkSmartPointer<vtkActor>::New();
@@ -320,23 +300,13 @@ int main(int argc, char** argv)
     if ( solution->GetNumberOfCells() == 0 )
     {
       vtkSmartPointer<vtkDelaunay2D> delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
-#if VTK_MAJOR_VERSION <= 5
-      delaunay->SetInput(solution);
-      solutionMapper->SetInputConnection(delaunay->GetOutputPort());
+      delaunay->SetInputDataObject(solution);
+      solutionMapper->SetInputDataObject(delaunay->GetOutput());
       delaunay->Update();
-#else
-      delaunay->SetInputData(solution);
-      solutionMapper->SetInputData(delaunay);
-      delaunay->Update();
-#endif
     }
     else
     {
-#if VTK_MAJOR_VERSION <= 5
-      solutionMapper->SetInputConnection(solution->GetProducerPort());
-#else
-      solutionMapper->SetInputData(solution);
-#endif
+      solutionMapper->SetInputDataObject(solution);
     }
     vtkSmartPointer<vtkActor> solutionActor =
     vtkSmartPointer<vtkActor>::New();

@@ -15,14 +15,12 @@
 MITK_CREATE_MODULE(niftkMIDASGui
   EXPORT_DEFINE NIFTKMIDASGUI_EXPORT
   INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS Mitk Qmitk SegmentationUI niftkCore niftkCoreGui niftkMIDAS
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
+  DEPENDS MitkCore MitkQtWidgets MitkSegmentationUI niftkCore niftkCoreGui niftkMIDAS
 )
 
 target_link_libraries(niftkMIDASGui
   niftkITK
-  )
+)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkMIDASGui)

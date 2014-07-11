@@ -1361,6 +1361,11 @@ macro(CUDA_WRAP_SRCS cuda_target format generated_files)
   get_directory_property(CUDA_NVCC_DEFINITIONS COMPILE_DEFINITIONS)
   if(CUDA_NVCC_DEFINITIONS)
     foreach(_definition ${CUDA_NVCC_DEFINITIONS})
+      # work-around for new vtk versions: it defines something like -DvtkRenderingCore_AUTOINIT=1(vtkRenderingOpenGL)
+      # which cmake breaks apart at the brackets, messing up the command line big time.
+      string(REPLACE "(" "\\(" _definition ${_definition})
+      string(REPLACE ")" "\\)" _definition ${_definition})
+
       list(APPEND nvcc_flags "-D${_definition}")
     endforeach()
   endif()

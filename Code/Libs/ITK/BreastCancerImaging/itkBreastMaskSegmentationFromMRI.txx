@@ -3051,7 +3051,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
-  surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
+  surfaceExtractor->SetInputDataObject((vtkDataObject *) convertITKtoVTK->GetOutput());
   pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
 
   if (flgVerbose) {
@@ -3073,7 +3073,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   postSmoothingFilter->SetNumberOfIterations(niterations);
   postSmoothingFilter->SetPassBand(bandwidth);
     
-  postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+  postSmoothingFilter->SetInputDataObject(pipeVTKPolyDataConnector);
   pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
 
   // Write the created vtk surface to a file
@@ -3081,7 +3081,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
 
   writer3D->SetFileName( fileModifiedOutput.c_str() );
-  writer3D->SetInput(pipeVTKPolyDataConnector);
+  writer3D->SetInputDataObject(pipeVTKPolyDataConnector);
 
   writer3D->SetFileType(VTK_BINARY);
 

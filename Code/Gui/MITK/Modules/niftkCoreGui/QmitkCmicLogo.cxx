@@ -172,7 +172,7 @@ void CMICLogo::Enable()
     OuterBox->SetZLength(100);
     OuterBox->SetCenter(1500,-800,100);
     vtkPolyDataMapper* OuterBoxMapper = vtkPolyDataMapper::New();
-    OuterBoxMapper->SetInput(OuterBox->GetOutput());
+    OuterBoxMapper->SetInputDataObject(OuterBox->GetOutput());
     m_OuterCubeActor->SetMapper(OuterBoxMapper);
     m_OuterCubeActor->GetProperty()->SetOpacity(0.10);
 

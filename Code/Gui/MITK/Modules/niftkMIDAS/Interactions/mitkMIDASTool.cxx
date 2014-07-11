@@ -26,203 +26,18 @@
 
 #include "mitkMIDASEventFilter.h"
 
-const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
-const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
-const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
-const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = std::string("MIDAS_NEXT_CONTOURS");
-const std::string mitk::MIDASTool::DRAW_CONTOURS_NAME = std::string("MIDAS_DRAW_CONTOURS");
-const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = std::string("MIDAS_REGION_GROWING_IMAGE");
-const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_IMAGE_NAME = std::string("MIDAS_INITIAL_SEGMENTATION_IMAGE");
-const std::string mitk::MIDASTool::INITIAL_SEEDS_NAME = std::string("MIDAS_INITIAL_SEEDS");
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS = std::string("MIDAS_EDITS_EROSIONS_SUBTRACTIONS");
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = std::string("MIDAS_EDITS_EROSIONS_ADDITIONS");
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS = std::string("MIDAS_EDITS_DILATIONS_SUBTRACTIONS");
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS = std::string("MIDAS_EDITS_DILATIONS_ADDITIONS");
-
-const std::string mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASToolKeyPressStateMachine\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"keyPressS\" NEXT_STATE_ID=\"1\" EVENT_ID=\"18\">"
-"             <action ID=\"350006\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressD\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4004\">"
-"             <action ID=\"350007\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressSpace\" NEXT_STATE_ID=\"1\" EVENT_ID=\"25\">"
-"             <action ID=\"350008\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressN\" NEXT_STATE_ID=\"1\" EVENT_ID=\"13\">"
-"             <action ID=\"350009\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressY\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4018\">"
-"             <action ID=\"350010\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressV\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4015\">"
-"             <action ID=\"350011\" />"
-"           </transition>"
-"           <transition NAME=\"keyPressC\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4003\">"
-"             <action ID=\"350012\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
-const std::string mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASSeedDropper\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"rightButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"2\">"
-"             <!-- 10 = AcADDPOINT  -->"
-"             <action ID=\"10\" />"
-"             <!-- 72 = AcDESELECTALL  -->"
-"             <action ID=\"72\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
-const std::string mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASSeedTool\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"middleButtonDown\" NEXT_STATE_ID=\"2\" EVENT_ID=\"4\">"
-"             <!-- 30 = AcCHECKELEMENT  -->"
-"             <action ID=\"30\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"2\" EVENT_ID=\"533\">"
-"             <!-- 30 = AcCHECKELEMENT  -->"
-"             <action ID=\"30\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonDown\" NEXT_STATE_ID=\"3\" EVENT_ID=\"1\">"
-"             <!-- 30 = AcCHECKELEMENT  -->"
-"             <action ID=\"30\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"530\">"
-"             <!-- 91 = AcMOVESELECTED  -->"
-"             <action ID=\"91\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"505\">"
-"             <!-- 42 = AcFINISHMOVEMENT  -->"
-"             <action ID=\"42\" />"
-"             <!-- 72 = AcDESELECTALL  -->"
-"             <action ID=\"72\" />"
-"           </transition>"
-"         </state>"
-"         <state NAME=\"guardMiddleButtonPointSelected\"   ID=\"2\" X_POS=\"100\" Y_POS=\"150\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"no\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1003\">"
-"             <!-- 0 = AcDONOTHING -->"
-"             <action ID=\"0\" />"
-"           </transition>"
-"           <transition NAME=\"yes\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1004\">"
-"             <!-- 100 = AcREMOVEPOINT -->"
-"             <action ID=\"100\" />"
-"             <!-- 72 = AcDESELECTALL  -->"
-"             <action ID=\"72\" />"
-"           </transition>"
-"         </state>"
-"         <state NAME=\"guardLeftButtonPointSelected\"     ID=\"3\" X_POS=\"100\" Y_POS=\"50\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"no\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1003\">"
-"             <!-- 0 = AcDONOTHING -->"
-"             <action ID=\"0\" />"
-"           </transition>"
-"           <transition NAME=\"yes\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1004\">"
-"             <!-- 8 = AcINITMOVEMENT -->"
-"             <action ID=\"8\" />"
-"             <!-- 60 = AcSELECTPICKEDOBJECT -->"
-"             <action ID=\"60\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
-const std::string mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASPolyTool\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"leftButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1\">"
-"             <!-- 12 = AcADDLINE  -->"
-"             <action ID=\"12\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDown\" NEXT_STATE_ID=\"2\" EVENT_ID=\"4\">"
-"             <!-- 66 = AcSELECTPOINT  -->"
-"             <action ID=\"66\" />"
-"           </transition>"
-"         </state>"
-"         <state NAME=\"movingLine\"   ID=\"2\" X_POS=\"100\" Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"2\" EVENT_ID=\"533\">"
-"             <!-- 90 = AcMOVEPOINT  -->"
-"             <action ID=\"90\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"506\">"
-"             <!-- 76 = AcDESELECTPOINT  -->"
-"             <action ID=\"76\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
-const std::string mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASDrawTool\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"leftButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1\">"
-"             <action ID=\"320410\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"505\">"
-"             <action ID=\"320411\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"530\">"
-"             <action ID=\"320412\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4\">"
-"             <action ID=\"320413\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"506\">"
-"             <action ID=\"320414\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"533\">"
-"             <action ID=\"320415\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
-
-// Note: In MIDAS, left button, adds to segmentation image.
-// Note: In MIDAS, middle button, adds to mask that influences connection breaker.
-// Note: In MIDAS, right button, subtracts from the mask that influences connection breaker.
-// So, we just add shift to distinguish from normal MITK interaction.
-
-const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std::string(
-"      <stateMachine NAME=\"MIDASPaintbrushTool\">"
-"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-"           <transition NAME=\"leftButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"1\">"
-"             <action ID=\"320401\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"505\">"
-"             <action ID=\"320402\" />"
-"           </transition>"
-"           <transition NAME=\"leftButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"530\">"
-"             <action ID=\"320403\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4\">"
-"             <action ID=\"320404\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"506\">"
-"             <action ID=\"320405\" />"
-"           </transition>"
-"           <transition NAME=\"middleButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"533\">"
-"             <action ID=\"320406\" />"
-"           </transition>"
-"           <transition NAME=\"rightButtonDown\" NEXT_STATE_ID=\"1\" EVENT_ID=\"2\">"
-"             <action ID=\"320407\" />"
-"           </transition>"
-"           <transition NAME=\"rightButtonUp\" NEXT_STATE_ID=\"1\" EVENT_ID=\"507\">"
-"             <action ID=\"320408\" />"
-"           </transition>"
-"           <transition NAME=\"rightButtonDownMouseMove\" NEXT_STATE_ID=\"1\" EVENT_ID=\"531\">"
-"             <action ID=\"320409\" />"
-"           </transition>"
-"         </state>"
-"      </stateMachine>"
-);
-
+const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = "MIDAS_SEEDS";
+const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
+const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
+const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
+const std::string mitk::MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
+const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = "MIDAS_REGION_GROWING_IMAGE";
+const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_IMAGE_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
+const std::string mitk::MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
+const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
+const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = "MIDAS_EDITS_EROSIONS_ADDITIONS";
+const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
+const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS = "MIDAS_EDITS_DILATIONS_ADDITIONS";
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
@@ -251,32 +66,33 @@ void mitk::MIDASTool::LoadBehaviourStrings()
 {
   if (!s_BehaviourStringsLoaded)
   {
-    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
-    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
-    if (stateMachineFactory)
-    {
-      if (stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML)
-          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML)
-          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML)
-          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML)
-          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML)
-          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML))
-      {
-        s_BehaviourStringsLoaded = true;
-      }
-    }
-    else
-    {
-      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
-    }
+    /// TODO
+//    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
+//    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
+//    if (stateMachineFactory)
+//    {
+//      if (stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML)
+//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML)
+//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML)
+//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML)
+//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML)
+//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML))
+//      {
+//        s_BehaviourStringsLoaded = true;
+//      }
+//    }
+//    else
+//    {
+//      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+//    }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+bool mitk::MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+  return MIDASStateMachine::CanHandleEvent(event);
 }
 
 
@@ -325,7 +141,8 @@ void mitk::MIDASTool::Activated()
   {
     if (m_AddToPointSetInteractor.IsNull())
     {
-      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
+//      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
+      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New();
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
@@ -335,7 +152,9 @@ void mitk::MIDASTool::Activated()
         m_AddToPointSetInteractor->InstallEventFilter(*it);
       }
     }
-    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+
+    /// TODO
+//    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
 
     itk::SimpleMemberCommand<mitk::MIDASTool>::Pointer onSeedsModifiedCommand =
       itk::SimpleMemberCommand<mitk::MIDASTool>::New();
@@ -379,7 +198,9 @@ void mitk::MIDASTool::Deactivated()
     {
       m_AddToPointSetInteractor->RemoveEventFilter(*it);
     }
-    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
+
+    /// TODO
+///    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
   }
 
   mitk::PointSet* pointSet = NULL;
@@ -410,6 +231,20 @@ void mitk::MIDASTool::Deactivated()
     }
   }
   m_DisplayInteractorConfigs.clear();
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::MIDASTool::GetBlockNumberOfSeedsSignal() const
+{
+  return m_BlockNumberOfSeedsSignal;
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
+{
+  m_BlockNumberOfSeedsSignal = blockNumberOfSeedsSignal;
 }
 
 
@@ -490,22 +325,5 @@ void mitk::MIDASTool::OnSeedsModified()
         }
       }
     }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-float mitk::MIDASTool::CanHandle(const mitk::StateEvent* stateEvent) const
-{
-  // See StateMachine.xml for event Ids.
-  if (stateEvent->GetId() == 2)   // right mouse down
-  {
-    return 1.0f;
-  }
-  else
-  {
-    // Note that the superclass is not a MIDAS state machine and it does not
-    // have a CanHandle function.
-    return Superclass::CanHandleEvent(stateEvent);
   }
 }

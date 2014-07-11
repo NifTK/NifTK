@@ -44,7 +44,7 @@ public:
   /// \brief Returns true if the sender of the event (the renderer where the event
   /// comes from) is not among the renderers added to this object.
   /// Otherwise, it returns false.
-  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const;
+  virtual bool EventFilter(mitk::InteractionEvent* event) const;
 
   /// \brief Adds the renderer to the list of allowed event sources.
   void AddRenderer(mitk::BaseRenderer* renderer);

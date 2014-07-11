@@ -50,16 +50,16 @@ namespace niftk
 // ---------------------------------------------------------------------------
 
 unsigned int ComputeControlGridSkipFactor( nifti_image *controlPointGrid,
-					   unsigned int subSamplingFactor,
-					   unsigned int maxGridDimension )
+                                           unsigned int subSamplingFactor,
+                                           unsigned int maxGridDimension )
 {
   unsigned int controlGridSkipFactor;
 
   controlGridSkipFactor = subSamplingFactor;
 
   while ( ( controlPointGrid->nx/controlGridSkipFactor > maxGridDimension ) ||
-	  ( controlPointGrid->ny/controlGridSkipFactor > maxGridDimension ) ||
-	  ( controlPointGrid->nz/controlGridSkipFactor > maxGridDimension ) )
+          ( controlPointGrid->ny/controlGridSkipFactor > maxGridDimension ) ||
+          ( controlPointGrid->nz/controlGridSkipFactor > maxGridDimension ) )
   {
     controlGridSkipFactor++;
   }
@@ -110,7 +110,7 @@ nifti_image *AllocateReferenceImageGivenControlPointGrid( nifti_image *controlPo
   referenceImage->nbyper = sizeof(PrecisionTYPE);
 
   referenceImage->data = (void *) calloc( referenceImage->nvox, 
-					  referenceImage->nbyper );
+                                          referenceImage->nbyper );
 
   return referenceImage;
 }
@@ -163,7 +163,7 @@ nifti_image *AllocateDeformationGivenReferenceImage( nifti_image *referenceImage
   deformationFieldImage->nbyper = sizeof(PrecisionTYPE);
 
   deformationFieldImage->data = (void *) calloc( deformationFieldImage->nvox, 
-						 deformationFieldImage->nbyper );
+                                                 deformationFieldImage->nbyper );
 
   return deformationFieldImage;
 }
@@ -204,15 +204,15 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
     {
       for (x=0; x<controlPointGrid->nx; x++)
       {
-	  
-	id = points->InsertNextPoint( -controlPointPtrX[index], 
-				      -controlPointPtrY[index],
-				      controlPointPtrZ[index] );
+          
+        id = points->InsertNextPoint( -controlPointPtrX[index], 
+                                      -controlPointPtrY[index],
+                                      controlPointPtrZ[index] );
 
-	cells->InsertNextCell( 1 );
-	cells->InsertCellPoint( id );
+        cells->InsertNextCell( 1 );
+        cells->InsertCellPoint( id );
 
-	index++;
+        index++;
       }
     }
   }
@@ -229,7 +229,7 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
 // ---------------------------------------------------------------------------
 
   vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataSpheres( nifti_image *controlPointGrid,
-								   float radius )
+                                                                   float radius )
 {
   int x, y, z, index;
 
@@ -261,23 +261,27 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
     {
       for (x=0; x<controlPointGrid->nx; x++)
       {
-	  
-	// The final control point position:
-	//    controlPointPtrX[index], controlPointPtrY[index], controlPointPtrZ[index];
+          
+        // The final control point position:
+        //    controlPointPtrX[index], controlPointPtrY[index], controlPointPtrZ[index];
 
-	sphere->SetCenter( -controlPointPtrX[index], 
-			   -controlPointPtrY[index],
-			   controlPointPtrZ[index] );
+        sphere->SetCenter( -controlPointPtrX[index], 
+                           -controlPointPtrY[index],
+                           controlPointPtrZ[index] );
 
-	sphere->Update();
+        sphere->Update();
 
-	vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
-	polydataCopy->DeepCopy( sphere->GetOutput() );
-	
-	appendFilter->AddInput( polydataCopy );
-	appendFilter->Update();
+        vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
+        polydataCopy->DeepCopy( sphere->GetOutput() );
 
-	index++;
+#if VTK_MAJOR_VERSION <= 5        
+        appendFilter->AddInput( polydataCopy );
+#else
+        appendFilter->AddInputData( polydataCopy );
+#endif
+        appendFilter->Update();
+
+        index++;
       }
     }
   }
@@ -291,9 +295,9 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
 // ---------------------------------------------------------------------------
 
 vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *controlPointGrid,
-								  int xSkip,
-								  int ySkip,
-								  int zSkip )
+                                                                  int xSkip,
+                                                                  int ySkip,
+                                                                  int zSkip )
 {
   int x, y, z, index;
   float xInit, yInit, zInit;
@@ -316,10 +320,10 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 
 
   reg_spline_getDeformationField( controlPointGrid,
-				  deformation,
-				  NULL, // mask
-				  true, //composition
-				  true // bspline
+                                  deformation,
+                                  NULL, // mask
+                                  true, //composition
+                                  true // bspline
     );
 
   nifti_image_free( referenceImage );
@@ -358,43 +362,43 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
     {
 
       index = z*deformation->nx*deformation->ny 
-	+ y*deformation->nx + 1;
+        + y*deformation->nx + 1;
 
       nxPoints = 0;
       for ( x=1; x<deformation->nx; x += xSkip )
       {
-	xInit =
-	  splineMatrix->m[0][0]*static_cast<float>(x) +
-	  splineMatrix->m[0][1]*static_cast<float>(y) +
-	  splineMatrix->m[0][2]*static_cast<float>(z) +
-	  splineMatrix->m[0][3];
-	yInit =
-	  splineMatrix->m[1][0]*static_cast<float>(x) +
-	  splineMatrix->m[1][1]*static_cast<float>(y) +
-	  splineMatrix->m[1][2]*static_cast<float>(z) +
-	  splineMatrix->m[1][3];
-	zInit =
-	  splineMatrix->m[2][0]*static_cast<float>(x) +
-	  splineMatrix->m[2][1]*static_cast<float>(y) +
-	  splineMatrix->m[2][2]*static_cast<float>(z) +
-	  splineMatrix->m[2][3];
+        xInit =
+          splineMatrix->m[0][0]*static_cast<float>(x) +
+          splineMatrix->m[0][1]*static_cast<float>(y) +
+          splineMatrix->m[0][2]*static_cast<float>(z) +
+          splineMatrix->m[0][3];
+        yInit =
+          splineMatrix->m[1][0]*static_cast<float>(x) +
+          splineMatrix->m[1][1]*static_cast<float>(y) +
+          splineMatrix->m[1][2]*static_cast<float>(z) +
+          splineMatrix->m[1][3];
+        zInit =
+          splineMatrix->m[2][0]*static_cast<float>(x) +
+          splineMatrix->m[2][1]*static_cast<float>(y) +
+          splineMatrix->m[2][2]*static_cast<float>(z) +
+          splineMatrix->m[2][3];
 
-	// The final control point position:
-	//    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
+        // The final control point position:
+        //    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
 
-	points->InsertNextPoint( -xInit, 
-	    	      -yInit,
-		       zInit );
+        points->InsertNextPoint( -xInit, 
+                          -yInit,
+                       zInit );
 
-	v[0] = -( deformationPtrX[index] - xInit ); 
-	v[1] = -( deformationPtrY[index] - yInit );
-	v[2] =    deformationPtrZ[index] - zInit;
+        v[0] = -( deformationPtrX[index] - xInit ); 
+        v[1] = -( deformationPtrY[index] - yInit );
+        v[2] =    deformationPtrZ[index] - zInit;
 
-	displacements->InsertNextTuple( v );
+        displacements->InsertNextTuple( v );
 
-	index += xSkip;
+        index += xSkip;
 
-	nxPoints++;
+        nxPoints++;
       }
       nyPoints++;
     }
@@ -407,7 +411,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 
 
   vtkSmartPointer<vtkHedgeHog> hedgehog = vtkSmartPointer<vtkHedgeHog>::New();
+#if VTK_MAJOR_VERSION <= 5
   hedgehog->SetInput( sgrid );
+#else
+  hedgehog->SetInputData( sgrid );
+#endif
   hedgehog->SetScaleFactor( 1. );
 
   vtkSmartPointer<vtkPolyData> polyData = hedgehog->GetOutput();
@@ -420,9 +428,9 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 // ---------------------------------------------------------------------------
 
 vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image *controlPointGrid,
-								     int xSkip,
-								     int ySkip,
-								     int zSkip )
+                                                                     int xSkip,
+                                                                     int ySkip,
+                                                                     int zSkip )
 {
   int x, y, z, index;
   float xInit, yInit, zInit;
@@ -445,10 +453,10 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 
 
   reg_spline_getDeformationField( controlPointGrid,
-				  deformation,
-				  NULL, // mask
-				  true, //composition
-				  true // bspline
+                                  deformation,
+                                  NULL, // mask
+                                  true, //composition
+                                  true // bspline
     );
 
   nifti_image_free( referenceImage );
@@ -500,43 +508,43 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
     {
 
       index = z*deformation->nx*deformation->ny 
-	+ y*deformation->nx + 1;
+        + y*deformation->nx + 1;
 
       nxPoints = 0;
       for ( x=1; x<deformation->nx; x += xSkip )
       {
-	xInit =
-	  splineMatrix->m[0][0]*static_cast<float>(x) +
-	  splineMatrix->m[0][1]*static_cast<float>(y) +
-	  splineMatrix->m[0][2]*static_cast<float>(z) +
-	  splineMatrix->m[0][3];
-	yInit =
-	  splineMatrix->m[1][0]*static_cast<float>(x) +
-	  splineMatrix->m[1][1]*static_cast<float>(y) +
-	  splineMatrix->m[1][2]*static_cast<float>(z) +
-	  splineMatrix->m[1][3];
-	zInit =
-	  splineMatrix->m[2][0]*static_cast<float>(x) +
-	  splineMatrix->m[2][1]*static_cast<float>(y) +
-	  splineMatrix->m[2][2]*static_cast<float>(z) +
-	  splineMatrix->m[2][3];
+        xInit =
+          splineMatrix->m[0][0]*static_cast<float>(x) +
+          splineMatrix->m[0][1]*static_cast<float>(y) +
+          splineMatrix->m[0][2]*static_cast<float>(z) +
+          splineMatrix->m[0][3];
+        yInit =
+          splineMatrix->m[1][0]*static_cast<float>(x) +
+          splineMatrix->m[1][1]*static_cast<float>(y) +
+          splineMatrix->m[1][2]*static_cast<float>(z) +
+          splineMatrix->m[1][3];
+        zInit =
+          splineMatrix->m[2][0]*static_cast<float>(x) +
+          splineMatrix->m[2][1]*static_cast<float>(y) +
+          splineMatrix->m[2][2]*static_cast<float>(z) +
+          splineMatrix->m[2][3];
 
-	// The final control point position:
-	//    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
+        // The final control point position:
+        //    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
 
-	points->InsertNextPoint( -xInit, 
-			      -yInit,
-			       zInit );
+        points->InsertNextPoint( -xInit, 
+                              -yInit,
+                               zInit );
 
-	v[0] = -( deformationPtrX[index] - xInit ); 
-	v[1] = -( deformationPtrY[index] - yInit );
-	v[2] =    deformationPtrZ[index] - zInit;
+        v[0] = -( deformationPtrX[index] - xInit ); 
+        v[1] = -( deformationPtrY[index] - yInit );
+        v[2] =    deformationPtrZ[index] - zInit;
 
-	displacements->InsertNextTuple( v );
+        displacements->InsertNextTuple( v );
 
-	index += xSkip;
+        index += xSkip;
 
-	nxPoints++;
+        nxPoints++;
       }
       nyPoints++;
     }
@@ -550,7 +558,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
   sgrid->GetPointData()->SetVectors( displacements );
 
 
+#if VTK_MAJOR_VERSION <= 5
   glyphFilter->SetInputConnection( sgrid->GetProducerPort() );
+#else
+  glyphFilter->SetInputData( sgrid );
+#endif
   glyphFilter->Update();
 
   vtkSmartPointer<vtkPolyData> polyData = glyphFilter->GetOutput();
@@ -563,35 +575,35 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 // ---------------------------------------------------------------------------
 
 void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
-					  nifti_image *referenceImage,
-					  int controlGridSkipFactor,
-					  vtkSmartPointer<vtkPolyData> &xyDeformation,
-					  vtkSmartPointer<vtkPolyData> &xzDeformation,
-					  vtkSmartPointer<vtkPolyData> &yzDeformation )
+                                          nifti_image *referenceImage,
+                                          int controlGridSkipFactor,
+                                          vtkSmartPointer<vtkPolyData> &xyDeformation,
+                                          vtkSmartPointer<vtkPolyData> &xzDeformation,
+                                          vtkSmartPointer<vtkPolyData> &yzDeformation )
 {
   nifti_image *refinedGrid = nifti_copy_nim_info( controlPointGrid );
 
   refinedGrid->data = (void *) malloc( refinedGrid->nvox * refinedGrid->nbyper);
 
   memcpy( refinedGrid->data, controlPointGrid->data,
-	  refinedGrid->nvox * refinedGrid->nbyper);
+          refinedGrid->nvox * refinedGrid->nbyper);
 
   reg_spline_refineControlPointGrid( referenceImage, refinedGrid );
 
   xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, refinedGrid, 
-						      controlGridSkipFactor, 
-						      controlGridSkipFactor, 
-						      2*controlGridSkipFactor );
+                                                      controlGridSkipFactor, 
+                                                      controlGridSkipFactor, 
+                                                      2*controlGridSkipFactor );
 
   xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, refinedGrid, 
-						      2*controlGridSkipFactor, 
-						      controlGridSkipFactor, 
-						      controlGridSkipFactor );
+                                                      2*controlGridSkipFactor, 
+                                                      controlGridSkipFactor, 
+                                                      controlGridSkipFactor );
 
   yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, refinedGrid, 
-						      controlGridSkipFactor, 
-						      2*controlGridSkipFactor, 
-						      controlGridSkipFactor );
+                                                      controlGridSkipFactor, 
+                                                      2*controlGridSkipFactor, 
+                                                      controlGridSkipFactor );
 
   nifti_image_free( refinedGrid );
 }
@@ -602,10 +614,10 @@ void F3DControlGridToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 // ---------------------------------------------------------------------------
 
 vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane,
-								 nifti_image *deformation,
-								 int xSkip,
-								 int ySkip,
-								 int zSkip )
+                                                                 nifti_image *deformation,
+                                                                 int xSkip,
+                                                                 int ySkip,
+                                                                 int zSkip )
 {
   int i, j, k;
   int x, y, z, index;
@@ -641,25 +653,25 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
     {
 
       index = z*deformation->nx*deformation->ny 
-	+ y*deformation->nx + 1;
+        + y*deformation->nx + 1;
 
       nxPoints = 0;
       for ( x=1; x<deformation->nx; x += xSkip )
       {
 
-	// The final control point position:
-	//    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
+        // The final control point position:
+        //    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
 
-	id = points->InsertNextPoint( -deformationPtrX[index], 
-				      -deformationPtrY[index],
-				      deformationPtrZ[index] );
+        id = points->InsertNextPoint( -deformationPtrX[index], 
+                                      -deformationPtrY[index],
+                                      deformationPtrZ[index] );
 
-	cells->InsertNextCell( 1 );
-	cells->InsertCellPoint( id );
+        cells->InsertNextCell( 1 );
+        cells->InsertCellPoint( id );
 
-	index += xSkip;
+        index += xSkip;
 
-	nxPoints++;
+        nxPoints++;
       }
       nyPoints++;
     }
@@ -677,7 +689,11 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
 
   vtkSmartPointer<vtkStructuredGridGeometryFilter> structuredGridFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
 
+#if VTK_MAJOR_VERSION <= 5 
   structuredGridFilter->SetInput( sgrid );
+#else
+  structuredGridFilter->SetInputData( sgrid );
+#endif
 
   switch (plane )
   {
@@ -688,13 +704,17 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
       
       structuredGridFilter->SetExtent( 0, nxPoints-1, 
-				       0, nyPoints-1, 
-				       k, k );
+                                       0, nyPoints-1, 
+                                       k, k );
 
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
     
@@ -708,12 +728,16 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
       
       structuredGridFilter->SetExtent( 0, nxPoints-1, 
-				       j, j,
-				       0, nzPoints-1 );
+                                       j, j,
+                                       0, nzPoints-1 );
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
     
@@ -727,12 +751,16 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
       
       structuredGridFilter->SetExtent( i, i,
-				       0, nyPoints-1, 
-				       0, nzPoints-1 );
+                                       0, nyPoints-1, 
+                                       0, nzPoints-1 );
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
   }
@@ -748,18 +776,18 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
 // ---------------------------------------------------------------------------
 
 void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
-					  nifti_image *targetImage, 
-					  int controlGridSkipFactor,
-					  vtkSmartPointer<vtkPolyData> &xyDeformation,
-					  vtkSmartPointer<vtkPolyData> &xzDeformation,
-					  vtkSmartPointer<vtkPolyData> &yzDeformation )
+                                          nifti_image *targetImage, 
+                                          int controlGridSkipFactor,
+                                          vtkSmartPointer<vtkPolyData> &xyDeformation,
+                                          vtkSmartPointer<vtkPolyData> &xzDeformation,
+                                          vtkSmartPointer<vtkPolyData> &yzDeformation )
 {
   nifti_image *refinedGrid = nifti_copy_nim_info( controlPointGrid );
 
   refinedGrid->data = (void *) malloc( refinedGrid->nvox * refinedGrid->nbyper);
 
   memcpy( refinedGrid->data, controlPointGrid->data,
-	  refinedGrid->nvox * refinedGrid->nbyper);
+          refinedGrid->nvox * refinedGrid->nbyper);
   
   reg_spline_refineControlPointGrid( targetImage, refinedGrid );
 
@@ -775,27 +803,27 @@ void F3DDeformationToVTKPolyDataSurfaces( nifti_image *controlPointGrid,
 
 
   reg_spline_getDeformationField( refinedGrid,
-				  deformationFieldImage,
-				  NULL, // mask
-				  true, //composition
-				  true // bspline
+                                  deformationFieldImage,
+                                  NULL, // mask
+                                  true, //composition
+                                  true // bspline
     );
 
 
   xyDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XY, deformationFieldImage, 
-						      controlGridSkipFactor, 
-						      controlGridSkipFactor, 
-						      2*controlGridSkipFactor );
+                                                      controlGridSkipFactor, 
+                                                      controlGridSkipFactor, 
+                                                      2*controlGridSkipFactor );
 
   xzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_YZ, deformationFieldImage, 
-						      2*controlGridSkipFactor, 
-						      controlGridSkipFactor, 
-						      controlGridSkipFactor );
+                                                      2*controlGridSkipFactor, 
+                                                      controlGridSkipFactor, 
+                                                      controlGridSkipFactor );
 
   yzDeformation = F3DDeformationToVTKPolyDataSurface( PLANE_XZ, deformationFieldImage, 
-						      controlGridSkipFactor, 
-						      2*controlGridSkipFactor, 
-						      controlGridSkipFactor );
+                                                      controlGridSkipFactor, 
+                                                      2*controlGridSkipFactor, 
+                                                      controlGridSkipFactor );
 
   nifti_image_free( referenceImage );
   nifti_image_free( deformationFieldImage );

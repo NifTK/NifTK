@@ -64,31 +64,40 @@ if(BUILD_IGI)
   endif()
 endif()
 
-  ########################################################
-  # st: Not very nice, the following are dependencies of
-  # niftkIGI but don't get pulled into the include path 
-  # properly, so I've done them one by one 
-  ##########################################################
- 
-include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
-include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+########################################################
+# st: Not very nice, the following are dependencies of
+# niftkIGI but don't get pulled into the include path 
+# properly, so I've done them one by one 
+##########################################################
 include (${MITK_DIR}/MITKConfig.cmake)
+include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+include (${MITK_DIR}/modulesConf/mbilogConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkCoreConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkTestingHelperConfig.cmake)
+include (${CppUnit_DIR}/CppUnitConfig.cmake)
 include (${tinyxml_DIR}/tinyxmlConfig.cmake)
 
-# FIXME
-# Temporary workaround until the QuaZip lib directory is not exposed properly to
-# projects depending on CTK. Should be removed as soon as this is fixed in CTK.
-if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
-  include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
-  list(APPEND HELPER_APP_LINK_DIRECTORIES ${qRestAPI_LIBRARY_DIRS})
-endif()
-if(EXISTS "${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake")
-  include(${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake)
-  list(APPEND HELPER_APP_LINK_DIRECTORIES ${QUAZIP_LIBRARY_DIRS})
-endif()
+list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  
+  ${MITK_INCLUDE_DIRS} 
+  ${MitkCore_INCLUDE_DIRS} 
+  ${MitkExt_INCLUDE_DIRS} 
+  ${MitkTestingHelper_INCLUDE_DIRS} 
+  ${CppMicroServices_INCLUDE_DIRS} 
+  ${CppUnit_INCLUDE_DIRS}
+  ${mbilog_INCLUDE_DIRS} 
+  ${tinyxml_INCLUDE_DIRS}   
+  ${${PROJECT_NAME}_MODULES_CONF_DIR}
+)
 
-list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${MitkExt_INCLUDE_DIRS} ${CppMicroServices_INCLUDE_DIRS} ${tinyxml_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
-list(APPEND HELPER_APP_LINK_DIRECTORIES     ${MITK_LIBRARY_DIRS} )
+list(APPEND HELPER_APP_LINK_DIRECTORIES     
+)
+
+list(APPEND HELPER_APP_LIBRARIES
+  niftkcommon 
+  niftkOpenCV 
+  niftkIGIGui
+)
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
 list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
@@ -123,7 +132,6 @@ if(SlicerExecutionModel_FOUND)
       niftkHandeyeCalibrationUsingRegistration
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
-      niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkPickPointsOnStereoVideo
       niftkSplitVideo

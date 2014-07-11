@@ -52,7 +52,7 @@ private slots:
 private:
   void createConnections();
   void collectImageFiles(const QDir& tempWorkDirectory, QStringList& fileList);
-  bool holdsFiles(const ctkXnatObject::Pointer xnatObject) const;
+  bool holdsFiles(const ctkXnatObject* xnatObject) const;
 
   /// \brief All the controls for the main view part.
   Ui::XnatBrowserWidget* ui;

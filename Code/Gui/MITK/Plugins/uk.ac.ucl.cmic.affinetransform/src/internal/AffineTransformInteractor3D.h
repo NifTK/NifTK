@@ -115,11 +115,11 @@ private:
 
   mitk::Point3D              m_InitialPickedWorldPoint;
   mitk::Point2D              m_InitialPickedDisplayPoint;
-  vtkFloatingPointType       m_InitialPickedPointWorld[4];
+  double                     m_InitialPickedPointWorld[4];
 
   mitk::Point3D              m_CurrentlyPickedWorldPoint;
   mitk::Point2D              m_CurrentlyPickedDisplayPoint;
-  vtkFloatingPointType       m_CurrentlyPickedPointWorld[4];
+  double                     m_CurrentlyPickedPointWorld[4];
 
   mitk::Geometry3D::Pointer  m_Geometry;
 

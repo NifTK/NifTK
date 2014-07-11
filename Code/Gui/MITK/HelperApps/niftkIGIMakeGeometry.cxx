@@ -139,8 +139,8 @@ int main(int argc, char** argv)
   {
     vtkSmartPointer<vtkPolyData> vtkSurface = surface->GetVtkPolyData();
     vtkSmartPointer<vtkPolyDataMapper> sourceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-   // sourceMapper->SetInputData(vtkSurface);
-    sourceMapper->SetInputConnection(vtkSurface->GetProducerPort());
+    sourceMapper->SetInputData(vtkSurface);
+    //sourceMapper->SetInputConnection(vtkSurface->GetProducerPort());
     vtkSmartPointer<vtkActor> sourceActor = vtkSmartPointer<vtkActor>::New();
     sourceActor->SetMapper(sourceMapper);
     sourceActor->GetProperty()->SetColor(1,1,1);

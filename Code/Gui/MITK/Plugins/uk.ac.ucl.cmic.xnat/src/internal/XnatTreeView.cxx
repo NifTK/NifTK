@@ -4,7 +4,7 @@
 #include <QModelIndex>
 #include <QMessageBox>
 
-#include <ctkXnatConnection.h>
+#include <ctkXnatSession.h>
 #include <ctkXnatException.h>
 #include <ctkXnatObject.h>
 #include <ctkXnatTreeModel.h>
@@ -39,7 +39,7 @@ XnatTreeView::~XnatTreeView()
 //  }
 }
 
-void XnatTreeView::initialize(ctkXnatConnection* connection)
+void XnatTreeView::initialize(ctkXnatSession* connection)
 {
   ctkXnatTreeModel* xnatModel = this->xnatModel();
   if (xnatModel)
@@ -47,8 +47,8 @@ void XnatTreeView::initialize(ctkXnatConnection* connection)
     delete xnatModel;
   }
   xnatModel = new ctkXnatTreeModel();
-  ctkXnatServer::Pointer server = connection->server();
-  xnatModel->addServer (server);
+  ctkXnatDataModel* server = connection->dataModel();
+  xnatModel->addDataModel(server);
 
   this->setModel(xnatModel);
 
@@ -65,12 +65,12 @@ ctkXnatTreeModel* XnatTreeView::xnatModel()
   return dynamic_cast<ctkXnatTreeModel*>(model());
 }
 
-const ctkXnatObject::Pointer XnatTreeView::currentObject()
+const ctkXnatObject* XnatTreeView::currentObject()
 {
-  return this->getObject(this->selectionModel()->currentIndex());
+  return this->xnatObject(this->selectionModel()->currentIndex());
 }
 
-const ctkXnatObject::Pointer XnatTreeView::getObject(const QModelIndex& index)
+const ctkXnatObject* XnatTreeView::xnatObject(const QModelIndex& index)
 {
   return this->xnatModel()->xnatObject(index);
 }

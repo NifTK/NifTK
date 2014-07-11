@@ -25,14 +25,14 @@ if(NIFTYSEG_FOUND)
   MACRO_CREATE_MITK_CTK_PLUGIN(
     EXPORT_DIRECTIVE BREASTSEGMENTATION_EXPORT
     EXPORTED_INCLUDE_SUFFIXES src
-    MODULE_DEPENDENCIES CTK QmitkExt niftkCore niftkCoreGui
+    MODULE_DEPENDS MitkQtWidgetsExt niftkCore niftkCoreGui
     )
 
   target_link_libraries(${PROJECT_NAME}
-    niftkITK    
+    niftkITK
     ${NIFTYSEG_LIBRARIES}
     )
-    
+
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
     cotire(uk_ac_ucl_cmic_breastsegmentation)
   endif()

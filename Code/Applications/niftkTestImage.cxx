@@ -449,8 +449,8 @@ int main(int argc, char** argv)
                 index[2] = z;
 
 
-                if ( x%2 == 0 && y%2 == 0
-                     || x%2 == 1 && y%2 == 1)
+                if ( (x%2 == 0 && y%2 == 0)
+                     || (x%2 == 1 && y%2 == 1))
                 {
                   testImage->SetPixel(index, 0);
                 }

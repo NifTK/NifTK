@@ -157,7 +157,7 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
     if (cameranode.IsNull())
     {
       vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkTransformPolyDataFilter::New();
-      transformFilter->SetInput(polytemp);
+      transformFilter->SetInputDataObject(polytemp);
       transformFilter->SetOutput(&polyOut);
       transformFilter->SetTransform(transform);
       transformFilter->Update();
@@ -166,14 +166,14 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
     {
       vtkSmartPointer<vtkPolyData> transformedpoly = vtkPolyData::New();
       vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkTransformPolyDataFilter::New();
-      transformFilter->SetInput(polytemp);
+      transformFilter->SetInputDataObject(polytemp);
       transformFilter->SetOutput(transformedpoly);
       transformFilter->SetTransform(transform);
       transformFilter->Update();
 
       vtkSmartPointer<vtkPolyData> normalspoly = vtkPolyData::New();
       vtkSmartPointer<vtkPolyDataNormals>   normalfilter = vtkPolyDataNormals::New();
-      normalfilter->SetInput(transformedpoly);
+      normalfilter->SetInputDataObject(transformedpoly);
       normalfilter->SetOutput(normalspoly);
       normalfilter->ComputeCellNormalsOn();
       normalfilter->ComputePointNormalsOn();
@@ -186,7 +186,7 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
       mitk::GetCurrentTransformFromNode(cameranode, *camtxf);
 
       vtkSmartPointer<niftk::BackfaceCullingFilter>   backfacecullingfilter = niftk::BackfaceCullingFilter::New();
-      backfacecullingfilter->SetInput(normalspoly);
+      backfacecullingfilter->SetInputDataObject(normalspoly);
       backfacecullingfilter->SetOutput(&polyOut);
       backfacecullingfilter->SetCameraPosition(camtxf);
       backfacecullingfilter->Update();

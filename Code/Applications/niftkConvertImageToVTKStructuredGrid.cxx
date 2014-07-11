@@ -182,7 +182,7 @@ int DoMain(arguments args)
     
     // Write VTK Structured Grid
     vtkStructuredGridWriter *writer = vtkStructuredGridWriter::New();
-    writer->SetInput(grid);
+    writer->SetInputDataObject(grid);
     writer->SetFileName(args.outputFile.c_str());
     writer->SetFileTypeToASCII();
     writer->Update();

@@ -18,8 +18,7 @@ MITK_CREATE_MODULE(niftkNVidiaGui
   EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
   INCLUDE_DIRS DataSources
   DEPENDS niftkIGIGui niftkNVidia
-  PACKAGE_DEPENDS QT
-  QT_MODULE 
+  PACKAGE_DEPENDS Qt4|QtCore
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
@@ -29,7 +28,7 @@ include_directories(${CUDA_TOOLKIT_INCLUDE})
 # stuffing this into DEPENDS above doesnt work for some reason
 target_link_libraries(niftkNVidiaGui
   niftknvapi
-  mitkOpenCVVideoSupport
+  MitkOpenCVVideoSupport
   Winmm.lib
   ${CUDA_CUDA_LIBRARY}
   ${CUDA_CUDART_LIBRARY}

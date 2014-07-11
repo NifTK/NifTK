@@ -41,4 +41,14 @@ set(CPP_FILES
 set(RESOURCE_FILES
   Interactions/DisplayConfigMIDASTool.xml
   Interactions/DisplayConfigMIDASPaintbrushTool.xml
+  Interactions/MIDASDrawToolConfig.xml
+  Interactions/MIDASDrawToolStateMachine.xml
+  Interactions/MIDASPolyToolConfig.xml
+  Interactions/MIDASPolyToolStateMachine.xml
+  Interactions/MIDASPaintbrushToolConfig.xml
+  Interactions/MIDASPaintbrushToolStateMachine.xml
+  Interactions/MIDASSeedDropperConfig.xml
+  Interactions/MIDASSeedDropperStateMachine.xml
+  Interactions/MIDASSeedToolConfig.xml
+  Interactions/MIDASSeedToolStateMachine.xml
 )

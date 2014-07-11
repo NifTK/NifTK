@@ -153,7 +153,8 @@ int DoMain(arguments args)
           image->SetSpacing(spacing[0], spacing[1], spacing[2]);
           numberOfVectors = size[0]*size[1]*size[2];
         }
-      image->SetScalarTypeToFloat();
+
+      //image->SetScalarTypeToFloat(); // This is incompatible with VTK 6 - unsure of implications of commenting this out, fix isn't obvious
       
       vectors->SetNumberOfComponents(3);
       vectors->Allocate(numberOfVectors);
@@ -177,7 +178,7 @@ int DoMain(arguments args)
       image->GetPointData()->SetVectors(vectors);
       
       writer->SetFileName(args.outputImage.c_str());
-      writer->SetInput(image);
+      writer->SetInputData(image);
       writer->SetFileTypeToASCII();
       writer->Update();
     }

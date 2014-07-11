@@ -142,7 +142,7 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
     writer->SetFileName( fileOutputControlPoints.c_str() );
-    writer->SetInput( vtkControlPoints );
+    writer->SetInputData( vtkControlPoints );
     writer->SetFileType( VTK_BINARY );
     
     std::cout << "Writing control points: " << fileOutputControlPoints << std::endl;
@@ -164,7 +164,7 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
     writer->SetFileName( fileOutputControlSpheres.c_str() );
-    writer->SetInput( vtkControlPointSpheres );
+    writer->SetInputData( vtkControlPointSpheres );
     writer->SetFileType( VTK_BINARY );
     
     std::cout << "Writing control point spheres: " << fileOutputControlSpheres << std::endl;
@@ -189,7 +189,7 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
     writer->SetFileName( fileOutputHedghog.c_str() );
-    writer->SetInput( vtkDeformationHedgehog );
+    writer->SetInputData( vtkDeformationHedgehog );
     writer->SetFileType( VTK_BINARY );
     
     std::cout << "Writing deformation hedgehog: " << fileOutputHedghog << std::endl;
@@ -215,7 +215,7 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
     writer->SetFileName( fileOutputDeformationVectorField.c_str() );
-    writer->SetInput( vtkDeformationVectorField );
+    writer->SetInputData( vtkDeformationVectorField );
     writer->SetFileType( VTK_BINARY );
     
     std::cout << "Writing deformation vector field: " 
@@ -246,7 +246,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputControlGridPlaneXY.c_str() );
-      writer->SetInput( xyControlGrid );
+      writer->SetInputData( xyControlGrid );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing xy visualisation: " << fileOutputControlGridPlaneXY << std::endl;
@@ -258,7 +258,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputControlGridPlaneXZ.c_str() );
-      writer->SetInput( xzControlGrid );
+      writer->SetInputData( xzControlGrid );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing xz visualisation: " << fileOutputControlGridPlaneXZ << std::endl;
@@ -270,7 +270,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputControlGridPlaneYZ.c_str() );
-      writer->SetInput( yzControlGrid );
+      writer->SetInputData( yzControlGrid );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing yz visualisation: " << fileOutputControlGridPlaneYZ << std::endl;
@@ -301,7 +301,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputDeformationPlaneXY.c_str() );
-      writer->SetInput( xyDeformation );
+      writer->SetInputData( xyDeformation );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing xy visualisation: " << fileOutputDeformationPlaneXY << std::endl;
@@ -313,7 +313,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputDeformationPlaneXZ.c_str() );
-      writer->SetInput( xzDeformation );
+      writer->SetInputData( xzDeformation );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing xz visualisation: " << fileOutputDeformationPlaneXZ << std::endl;
@@ -325,7 +325,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
 
       writer->SetFileName( fileOutputDeformationPlaneYZ.c_str() );
-      writer->SetInput( yzDeformation );
+      writer->SetInputData( yzDeformation );
       writer->SetFileType( VTK_BINARY );
     
       std::cout << "Writing yz visualisation: " << fileOutputDeformationPlaneYZ << std::endl;

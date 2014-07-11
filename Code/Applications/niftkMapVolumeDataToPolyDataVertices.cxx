@@ -211,6 +211,6 @@ int main(int argc, char** argv)
  
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
   writer->SetFileName(args.outputPolyData.c_str());
-  writer->SetInput(surfaceReader->GetOutput());
+  writer->SetInputDataObject(surfaceReader->GetOutput());
   writer->Update();
 }

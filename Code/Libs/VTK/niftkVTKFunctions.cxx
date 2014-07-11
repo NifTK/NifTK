@@ -25,6 +25,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 #include <vtkGenericCell.h>
+#include <vtkVersion.h>
 
 namespace niftk {
 

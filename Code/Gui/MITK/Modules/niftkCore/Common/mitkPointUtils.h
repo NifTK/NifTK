@@ -17,7 +17,6 @@
 
 #include "niftkCoreExports.h"
 #include <mitkVector.h>
-#include <mitkPositionEvent.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
 #include <mitkCoordinateAxesData.h>

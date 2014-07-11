@@ -353,8 +353,10 @@ private:
   /// \brief Called from the QRadioButtons to set the layout.
   void SetWindowLayout(WindowLayout windowLayout);
 
-  /// \brief Creates a new viewer.
-  niftkSingleViewerWidget* CreateViewer();
+  /// \brief Creates a new viewer with the given name.
+  /// The name is used to construct the name of the renderers, since the renderers must
+  /// have a unique name.
+  niftkSingleViewerWidget* CreateViewer(const QString& name);
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();

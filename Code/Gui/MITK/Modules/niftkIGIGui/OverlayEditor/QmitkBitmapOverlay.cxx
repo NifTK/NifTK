@@ -213,8 +213,8 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL)
     {
-      m_FrontActor->SetInput(image->GetVtkImageData());
-      m_BackActor->SetInput(image->GetVtkImageData());
+      m_FrontActor->SetInputData(image->GetVtkImageData());
+      m_BackActor->SetInputData(image->GetVtkImageData());
       image->GetVtkImageData()->Modified();
 
       this->Modified();
@@ -249,8 +249,8 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 
     if (node == NULL)
     {
-      m_FrontActor->SetInput(NULL);
-      m_BackActor->SetInput(NULL);
+      m_FrontActor->SetInputData(NULL);
+      m_BackActor->SetInputData(NULL);
       m_ImageDataNode = NULL;
       wasSuccessful = true;
     }
@@ -259,8 +259,8 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
       mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
       if (image != NULL)
       {
-        m_FrontActor->SetInput(image->GetVtkImageData());
-        m_BackActor->SetInput(image->GetVtkImageData());
+        m_FrontActor->SetInputData(image->GetVtkImageData());
+        m_BackActor->SetInputData(image->GetVtkImageData());
 
         m_BackRenderer->AddActor( m_BackActor );
         m_FrontRenderer->AddActor( m_FrontActor );
