@@ -57,9 +57,12 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                          name = 'dwi_squarer')
     dwi_sqr.inputs.operation = 'mul'
     
-    dwi_tmean = pe.Node(interface= niftyseg.maths.UnaryMaths(), 
-                           name = 'dwi_meaner')
-    dwi_tmean.inputs.operation = 'tmean'
+    # We need to resample the parcellation for each of the simulated DWI images
+    resample_parc = pe.MapNode(interface=niftyreg.RegResample(), name = 'resample_atlas', iterfield = 'trans_file')
+    resample_parc.inputs.inter_val = 'NN'
+
+    # We need to merge the resampled parcellations before calculating the statistics    
+    merge_parc = pe.Node(interface = fsl.Merge(dimension = 't'), name = 'merge_parc')
     
     calculate_affine_distance = pe.Node(interface=CalculateAffineDistances(), name="calculate_affine_distance")
     array_affine_writer = pe.Node(interface=WriteArrayToCsv(),name='affine_stat_writer')
@@ -100,13 +103,18 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     workflow.connect(input_node, 'estimated_dwis',  dwi_subtracter, 'operand_file')
     workflow.connect(dwi_subtracter, 'out_file', dwi_sqr, 'in_file')
     workflow.connect(dwi_subtracter, 'out_file', dwi_sqr, 'operand_file')
-    workflow.connect(dwi_sqr, 'out_file', dwi_tmean,'in_file')
     
     workflow.connect(tensor_tmean, 'out_file', roi_tensor_stats, 'in_file')
     workflow.connect(input_node, 'labels_file', roi_tensor_stats, 'roi_file')
     
-    workflow.connect(dwi_tmean, 'out_file', roi_dwi_stats, 'in_file')
-    workflow.connect(input_node, 'labels_file', roi_dwi_stats, 'roi_file')
+    
+    workflow.connect(input_node, 'labels_file', resample_parc, 'flo_file')
+    workflow.connect(input_node, 'estimated_affines', resample_parc, 'trans_file')
+    workflow.connect(input_node, 'labels_file', resample_parc, 'ref_file')
+    
+    workflow.connect(resample_parc, 'res_file', merge_parc, 'in_files')
+    workflow.connect(dwi_sqr, 'out_file', roi_dwi_stats, 'in_file')
+    workflow.connect(merge_parc, 'merged_file', roi_dwi_stats, 'roi_file')
     
     
     workflow.connect(roi_tensor_stats, 'out_array', array_tensor_writer, 'in_array')
