@@ -760,6 +760,8 @@ void QmitkIGIDataSourceManager::UpdateSourceView(const int& sourceIdentifier, bo
 
   std::vector<std::string> fields;
   fields.push_back(status);
+  fields.push_back("0");    // rate
+  fields.push_back("0");    // lag
   fields.push_back(type);
   fields.push_back(device);
   fields.push_back(description);
@@ -927,13 +929,13 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
       frameRateItem->setTextAlignment(Qt::AlignCenter);
       frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 5, frameRateItem);
+      m_TableWidget->setItem(rowNumber, 2, frameRateItem);
 
       // Update the lag number.
       QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
       lagItem->setTextAlignment(Qt::AlignCenter);
       lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 6, lagItem);
+      m_TableWidget->setItem(rowNumber, 3, lagItem);
 
       // Update the status icon.
       QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
