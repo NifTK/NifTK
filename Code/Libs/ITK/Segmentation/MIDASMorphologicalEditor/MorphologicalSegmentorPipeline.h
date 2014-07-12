@@ -82,6 +82,14 @@ public:
   /// \param editingFlags array of 4 booleans to say which images are being editted.
   typename SegmentationImageType::Pointer GetOutput(const std::vector<bool>& editingFlags);
 
+  enum Stage
+  {
+    THRESHOLDING,
+    EROSION,
+    DILATION,
+    RETHRESHOLDING
+  };
+
   int                                                          m_Stage;
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;

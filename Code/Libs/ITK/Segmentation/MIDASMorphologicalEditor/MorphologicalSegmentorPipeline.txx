@@ -217,7 +217,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   // End Trac 1131.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  if (m_Stage == 0)
+  if (m_Stage == THRESHOLDING)
   {
     m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
     m_ThresholdingFilter->SetUpperThreshold((TPixel)p.m_UpperIntensityThreshold);
@@ -225,7 +225,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
     m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
   }
-  else if (m_Stage == 1)
+  else if (m_Stage == EROSION)
   {
     typename SegmentationImageType::Pointer thresholdingImage = m_ThresholdingConnectedComponentFilter->GetOutput();
     m_ErosionFilter->SetBinaryImageInput(thresholdingImage);
@@ -236,7 +236,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
     m_ErosionConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
   }
-  else if (m_Stage == 2)
+  else if (m_Stage == DILATION)
   {
     m_DilationFilter->SetBinaryImageInput(m_ErosionConnectedComponentFilter->GetOutput());
     m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
@@ -247,7 +247,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
     m_DilationConnectedComponentFilter->SetInput(m_DilationMaskFilter->GetOutput());
   }
-  else if (m_Stage == 3)
+  else if (m_Stage == RETHRESHOLDING)
   {
     m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
     m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
@@ -263,27 +263,27 @@ void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion)
 {
-  if (m_Stage == 0)
+  if (m_Stage == THRESHOLDING)
   {
     m_ThresholdingMaskFilter->GetInput()->Modified();
     m_ThresholdingMaskFilter->Modified();
     m_ThresholdingConnectedComponentFilter->Modified();
     m_ThresholdingConnectedComponentFilter->UpdateLargestPossibleRegion();
   }
-  else if (m_Stage == 1 || m_Stage == 2)
+  else if (m_Stage == EROSION || m_Stage == DILATION)
   {
     // Simple case first - no editing.
     
     if (!editingFlags[0] && !editingFlags[1] && !editingFlags[2] && !editingFlags[3])
     {
-      if (m_Stage == 1)
+      if (m_Stage == EROSION)
       {
         m_ErosionMaskFilter->GetInput()->Modified();
         m_ErosionMaskFilter->Modified();
         m_ErosionConnectedComponentFilter->Modified();
         m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
-      else if (m_Stage == 2)
+      else if (m_Stage == DILATION)
       {
         m_DilationMaskFilter->GetInput()->Modified();
         m_DilationMaskFilter->Modified();
@@ -317,7 +317,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       editingRegionOfInterest.SetIndex(editingRegionStartIndex);
       editingRegionOfInterest.SetSize(editingRegionSize);
   
-      // If Either of these are set, we must be in erosions tab, so m_Stage == 1.
+      // If Either of these are set, we must be in erosions tab, so m_Stage == EROSION.
       if (editingFlags[0] || editingFlags[1])
       {
         if (editingFlags[0])
@@ -333,7 +333,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
           updateMethod = 2;
         }
       }
-      else // We are on dilations tab, so m_Stage == 2.
+      else // We are on dilations tab, so m_Stage == DILATION.
       {
         if (editingFlags[2])
         {
@@ -385,7 +385,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       }
     }
   }
-  else if (m_Stage == 3)
+  else if (m_Stage == RETHRESHOLDING)
   {  
     m_RethresholdingFilter->Modified();
     m_RethresholdingFilter->UpdateLargestPossibleRegion();
@@ -399,19 +399,19 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   typename SegmentationImageType::Pointer result;
 
-  if (m_Stage == 0)
+  if (m_Stage == THRESHOLDING)
   {
     result = m_ThresholdingMaskFilter->GetOutput();
   }
-  else if (m_Stage == 1)
+  else if (m_Stage == EROSION)
   {
     result = m_ErosionConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == 2)
+  else if (m_Stage == DILATION)
   {
     result = m_DilationConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == 3)
+  else if (m_Stage == RETHRESHOLDING)
   {
     result = m_RethresholdingFilter->GetOutput();
   }
