@@ -131,18 +131,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   m_Stage = p.m_Stage;
 
-  // Connect input images.
-  m_ThresholdingFilter->SetInput(referenceImage);
-  m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
-  m_DilationFilter->SetGreyScaleImageInput(referenceImage);
-  m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
-
-  m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
-  m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
-  m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
-  m_DilationMaskFilter->SetInput(2, dilationsEditsImage);
-  m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
-
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,11 +175,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   regionOfInterest.SetIndex(regionOfInterestIndex);
   regionOfInterest.SetSize(regionOfInterestSize);
 
-  m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
-  m_ErosionFilter->SetRegion(regionOfInterest);
-  m_ErosionMaskFilter->SetRegion(regionOfInterest);
-  m_DilationMaskFilter->SetRegion(regionOfInterest);
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 998, setting region of interest, on Mask filters
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,10 +184,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   unsigned long int expectedSize = regionOfInterest.GetNumberOfPixels() / 8;
-
-  m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
-  m_ErosionConnectedComponentFilter->SetCapacity(expectedSize);
-  m_DilationConnectedComponentFilter->SetCapacity(expectedSize);
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 1131.
@@ -212,42 +191,86 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   
   if (m_Stage == THRESHOLDING)
   {
+    m_ThresholdingFilter->SetInput(referenceImage);
     m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
     m_ThresholdingFilter->SetUpperThreshold((TPixel)p.m_UpperIntensityThreshold);
 
     m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
+    m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
+
     m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
+    m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
   }
   else if (m_Stage == EROSION)
   {
+    m_ThresholdingFilter->SetInput(referenceImage);
+
     typename SegmentationImageType::Pointer thresholdingImage = m_ThresholdingConnectedComponentFilter->GetOutput();
+
     m_ErosionFilter->SetBinaryImageInput(thresholdingImage);
     m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+    m_ErosionFilter->SetRegion(regionOfInterest);
     m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
     m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
+    m_ErosionFilter->SetRegion(regionOfInterest);
 
     m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+    m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
+    m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
+    m_ErosionMaskFilter->SetRegion(regionOfInterest);
+
     m_ErosionConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
+    m_ErosionConnectedComponentFilter->SetCapacity(expectedSize);
   }
   else if (m_Stage == DILATION)
   {
-    m_DilationFilter->SetBinaryImageInput(m_ErosionConnectedComponentFilter->GetOutput());
+    m_ThresholdingFilter->SetInput(referenceImage);
+    m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+    m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
+    m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
+
+    typename SegmentationImageType::Pointer erosionImage = m_ErosionConnectedComponentFilter->GetOutput();
+
+    m_DilationFilter->SetBinaryImageInput(erosionImage);
     m_DilationFilter->SetGreyScaleImageInput(referenceImage);
+    m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
     m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
     m_DilationFilter->SetNumberOfIterations((int)(p.m_NumberOfDilations));
+    m_DilationFilter->SetRegion(regionOfInterest);
 
     m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
+    m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
+    m_DilationMaskFilter->SetInput(2, dilationsEditsImage);
+    m_DilationMaskFilter->SetRegion(regionOfInterest);
+
     m_DilationConnectedComponentFilter->SetInput(m_DilationMaskFilter->GetOutput());
+    m_DilationConnectedComponentFilter->SetCapacity(expectedSize);
   }
   else if (m_Stage == RETHRESHOLDING)
   {
-    m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
+    m_ThresholdingFilter->SetInput(referenceImage);
+    m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+    m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
+    m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
+    m_DilationFilter->SetGreyScaleImageInput(referenceImage);
+    m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
+    m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
+    m_DilationMaskFilter->SetInput(2, dilationsEditsImage);
+
+    typename SegmentationImageType::Pointer dilationImage = m_DilationConnectedComponentFilter->GetOutput();
+    typename SegmentationImageType::Pointer thresholdingMask = m_ThresholdingMaskFilter->GetOutput();
+
+    m_RethresholdingFilter->SetBinaryImageInput(dilationImage);
     m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
-    m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
+    m_RethresholdingFilter->SetThresholdedImageInput(thresholdingMask);
     m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
     m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
     m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));
+  }
+  else
+  {
+    assert(false);
   }
 }
 
