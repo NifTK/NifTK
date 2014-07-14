@@ -78,7 +78,7 @@ namespace itk
   MIDASConditionalErosionFilter<TInputImage1, TInputImage2, TOutputImage>
   ::DoFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out)
   {
-    std::cout << "MIDASConditionalErosionFilter::DoFilter()";
+    std::cout << "MIDASConditionalErosionFilter::DoFilter() " << ((void*)this) << std::endl;
 
     /** NOTE: inGrey may be NULL as it is an optional image. */
     

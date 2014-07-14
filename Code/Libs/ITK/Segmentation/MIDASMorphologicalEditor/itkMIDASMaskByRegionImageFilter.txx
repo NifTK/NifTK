@@ -80,7 +80,7 @@ void
 MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>
 ::BeforeThreadedGenerateData()
 {
-  std::cout << "MIDASMaskByRegionImageFilter::BeforeThreadedGenerateData() this: " << this;
+  std::cout << "MIDASMaskByRegionImageFilter::BeforeThreadedGenerateData() this: " << ((void*)this) << std::endl;
   // Get the input and output pointers, check same size image
   typename TInputImage::Pointer inputPtr = static_cast<TInputImage*>(this->ProcessObject::GetInput(0));
   typename TOutputImage::Pointer outputPtr = static_cast<TOutputImage*>(this->ProcessObject::GetOutput(0));

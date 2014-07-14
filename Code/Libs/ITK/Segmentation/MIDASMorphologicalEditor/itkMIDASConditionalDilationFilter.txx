@@ -58,7 +58,7 @@ namespace itk
   MIDASConditionalDilationFilter<TInputImage1, TInputImage2, TOutputImage>
   ::DoFilter(InputMainImageType* inGrey, OutputImageType* inMask, OutputImageType *out)
   {
-    std::cout << "MIDASConditionalDilationFilter::DoFilter()";
+    std::cout << "MIDASConditionalDilationFilter::DoFilter() " << ((void*) this) << std::endl;
     double mean = 0;
     double actualLowerThreshold = m_LowerThreshold;
     double actualUpperThreshold = m_UpperThreshold;
