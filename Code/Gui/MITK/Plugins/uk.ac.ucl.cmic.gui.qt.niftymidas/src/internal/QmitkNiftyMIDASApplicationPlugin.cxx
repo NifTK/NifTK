@@ -48,9 +48,13 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   this->RegisterHelpSystem();
   /// Note:
   /// By default there is a global reinit after file open what reinitialises the global
-  /// rendering manager. Instead of suppressing this, we should make sure that the MIDAS
-  /// components do not use the global rendering manager, but their own one.
-//  this->SetFileOpenTriggersReinit(false);
+  /// rendering manager. The ideal would be if the DnD Display could use its own rendering
+  /// manager (RM), not the global one. This, however, does not work now because many MITK
+  /// views have hard coded reference to the global RM, and they call RequestUpdate on that,
+  /// not on the RM of the focused renderer. Until this is fixed in MITK, we have to suppress
+  /// the global reinit after file open, and should not use the MITK Display and the DnD Display
+  /// together in the same application.
+  this->SetFileOpenTriggersReinit(false);
 }
 
 
