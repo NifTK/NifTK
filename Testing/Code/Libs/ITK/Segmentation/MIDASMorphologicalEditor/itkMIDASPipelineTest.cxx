@@ -68,6 +68,8 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   reader->SetFileName(argv[1]);
   reader->Update();
 
+  OutputImageType::Pointer segmentationImage;
+
   // Not used in this test. This test is only for when not editing.
   std::vector<bool> editingFlags;
   editingFlags.push_back(false);
@@ -137,6 +139,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   {
     params.m_Stage = i;
     pipeline->SetParam(reader->GetOutput(),
+                       segmentationImage,
                        erodeAdds,
                        erodeEdits,
                        dilateAdds,

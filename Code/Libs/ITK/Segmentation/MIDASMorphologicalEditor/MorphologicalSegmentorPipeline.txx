@@ -125,6 +125,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GreyScaleImageType* referenceImage,
+    SegmentationImageType* segmentationImage,
     SegmentationImageType* erosionsAdditionsImage,
     SegmentationImageType* erosionEditsImage,
     SegmentationImageType* dilationsAditionsImage,

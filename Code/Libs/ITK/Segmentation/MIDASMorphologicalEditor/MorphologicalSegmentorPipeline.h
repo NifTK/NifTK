@@ -57,6 +57,7 @@ public:
 
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
   void SetParam(GreyScaleImageType* referenceImage,
+                SegmentationImageType* segmentationImage,
                 SegmentationImageType* erosionsAdditionsImage,
                 SegmentationImageType* erosionEditsImage,
                 SegmentationImageType* dilationsAditionsImage,

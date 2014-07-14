@@ -583,7 +583,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 MIDASMorphologicalSegmentorPipelineManager
 ::InvokeITKPipeline(
-    itk::Image<TPixel, VImageDimension>* itkImage,
+    itk::Image<TPixel, VImageDimension>* referenceImage,
     MorphologicalSegmentorPipelineParams& params,
     std::vector< mitk::Image* >& workingData,
     const std::vector<bool>& editingFlags,
@@ -595,6 +595,8 @@ MIDASMorphologicalSegmentorPipelineManager
 
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
+
+  typename ImageType::Pointer segmentationImage;
 
   typename ImageToItkType::Pointer erosionsAdditionsToItk = ImageToItkType::New();
   erosionsAdditionsToItk->SetInput(workingData[0]);
@@ -631,7 +633,8 @@ MIDASMorphologicalSegmentorPipelineManager
   }
 
   // Set most of the parameters on the pipeline.
-  pipeline->SetParam(itkImage,
+  pipeline->SetParam(referenceImage,
+                     segmentationImage,
                      erosionsAdditionsToItk->GetOutput(),
                      erosionEditsToItk->GetOutput(),
                      dilationsAditionsToItk->GetOutput(),
@@ -645,7 +648,8 @@ MIDASMorphologicalSegmentorPipelineManager
     {
       params.m_Stage = i;
 
-      pipeline->SetParam(itkImage,
+      pipeline->SetParam(referenceImage,
+          segmentationImage,
           erosionsAdditionsToItk->GetOutput(),
           erosionEditsToItk->GetOutput(),
           dilationsAditionsToItk->GetOutput(),
