@@ -29,9 +29,12 @@ if (BUILD_TESTING)
   set(NifTKData_DEPENDS ${proj})
 
   # Supported values: git, tar
-  set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
   if (NOT DEFINED ${proj}_archtype)
-    set(${proj}_archtype "git")
+    if (DEFINED ${NIFTK_ARCHTYPE_DATA})
+      set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
+    else()
+      set(${proj}_archtype "git")
+    endif()
   endif()
 
   if (NOT DEFINED NIFTK_DATA_DIR)
