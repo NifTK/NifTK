@@ -125,12 +125,20 @@ QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate()
 , m_RenderingManagerInterface(0)
 {
   /// Note:
-  /// The DnD Display must use its own rendering manager, not the global one
+  /// The DnD Display should use its own rendering manager, not the global one
   /// returned by mitk::RenderingManager::GetInstance(). The reason is that
   /// the global rendering manager is reinitialised by its InitializeViewsByBoundingObjects
   /// function whenever a new file is opened, recalculating a new bounding box
   /// based on all the globally visible nodes in the data storage.
-  m_RenderingManager = mitk::RenderingManager::New();
+  /// However, many MITK modules and plugins call RequestUpdate on the global
+  /// rendering manager (RM), not on that of the focused renderer. This causes that
+  /// if the DnD Display uses its own RM, it won't be updated by those plugins.
+  /// An example is the Volume Visualization view. Therefore, until this is fixed
+  /// in MITK, we need to use the global rendering manager, suppress the reinitialisation
+  /// after file open by a preference, and should not use the MITK display and
+  /// the DnD Display together in the same application.
+//  m_RenderingManager = mitk::RenderingManager::New();
+  m_RenderingManager = mitk::RenderingManager::GetInstance();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
   m_RenderingManagerInterface = mitk::MakeRenderingManagerInterface(m_RenderingManager);
 }
