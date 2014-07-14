@@ -200,12 +200,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   // Start Trac 1131, calculate a rough size to help LargestConnectedComponents allocate memory.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  unsigned long int expectedSize = 1;
-  for (unsigned int i = 0; i < VImageDimension; i++)
-  {
-    expectedSize *= regionOfInterestSize[i];
-  }
-  expectedSize /= 8;
+  unsigned long int expectedSize = regionOfInterest.GetNumberOfPixels() / 8;
 
   m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
   m_ErosionConnectedComponentFilter->SetCapacity(expectedSize);
