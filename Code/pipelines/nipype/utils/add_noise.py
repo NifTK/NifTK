@@ -19,7 +19,12 @@ from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, Output
 
 from nipype.utils.filemanip import split_filename
 
-
+def sample_rice(v, s):
+    r = ss.norm.rvs(size=v.size) 
+    output = (s * r + v)**2 + (s*r)**2
+    output = np.sqrt(output)
+    return output
+    
 def apply_noise(original_image, mask, noise_type, sigma_val):
     # Load the original image
     nib_image = nib.load(original_image)
@@ -28,14 +33,19 @@ def apply_noise(original_image, mask, noise_type, sigma_val):
     mask_data = np.ones(data.shape)
     if isdefined(mask):
         nib_mask = nib.load(mask)
-        mask_data = nib_mask.get_data()
+        if len(data.shape) > 3:
+            for i in range(data.shape[3]):
+                mask_data[:,:,:,i] = nib_mask.get_data()
+        else:
+            mask_data = nib_mask.get_data()
     
     data[data<0] = 0
     mask_inds  = mask_data>0
+
     if noise_type == "gaussian":
         output_data[mask_inds] = ss.norm.rvs(loc=data[mask_inds],scale=sigma_val,size=(mask_inds>0).sum())
     elif noise_type == "rician":
-        output_data[mask_inds] = ss.rice.rvs(data[mask_inds],loc=data[mask_inds],scale=sigma_val,size=(mask_inds>0).sum())
+        output_data[mask_inds] = sample_rice(data[mask_inds], sigma_val)
     
     nib_output = nib.Nifti1Image(output_data, nib_image.get_affine())
     return nib_output

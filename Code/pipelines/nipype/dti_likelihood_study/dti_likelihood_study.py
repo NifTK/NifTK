@@ -72,14 +72,18 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     b0_resampling = pe.MapNode(interface=niftyreg.RegResample(),
                                name = 'b0_resampling',
                                iterfield = ['trans_file'])
+    mask_resampling = pe.MapNode(interface=niftyreg.RegResample(),
+                               name = 'mask_resampling',
+                               iterfield = ['trans_file'])
+    mask_resampling.inputs.inter_val = 'NN'
     
     tensor_2_dwi = pe.MapNode(interface = niftyfit.DwiTool(dti_flag2 = True), 
                               name = 'tensor_2_dwi', 
                               iterfield = ['source_file', 'b0_file', 'bval_file', 'bvec_file'])
 
-    noise_adder = pe.MapNode(interface=add_noise.NoiseAdder(noise_type='gaussian'), 
+    noise_adder = pe.MapNode(interface=add_noise.NoiseAdder(noise_type='rician'), 
                              name='noise_adder', 
-                             iterfield = ['in_file'])
+                             iterfield = ['in_file','mask_file'])
     
     merge_dwis = pe.Node(interface = fsl.Merge(dimension = 't'), 
                          direction = 't',
@@ -147,9 +151,14 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     workflow.connect(distortion_generator, 'bvec_files', tensor_2_dwi, 'bvec_file')
     workflow.connect(b0_resampling, 'res_file', tensor_2_dwi, 'b0_file')
     
+    workflow.connect(input_node, 'in_mask_file', mask_resampling, 'flo_file')
+    workflow.connect(input_node, 'in_mask_file', mask_resampling, 'ref_file')
+    workflow.connect(distortion_generator, 'aff_files', mask_resampling, 'trans_file')
+    
     # Add noise
     workflow.connect(input_node, 'in_noise_sigma', noise_adder, 'sigma_val')
     workflow.connect(tensor_2_dwi, 'syn_file', noise_adder, 'in_file')
+    workflow.connect(mask_resampling, 'res_file', noise_adder, 'mask_file')
     
     # Merge noisy distorted DWI
     workflow.connect(noise_adder, 'out_file', merge_dwis, 'in_files')

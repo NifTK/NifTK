@@ -46,7 +46,7 @@ for i in range(number_of_repeats):
             r.inputs.input_node.in_stddev_translation = 0.75
             r.inputs.input_node.in_stddev_rotation = 0.5*math.pi/180
             r.inputs.input_node.in_stddev_shear = 0.04
-            r.inputs.input_node.in_noise_sigma = 10.0
+            r.inputs.input_node.in_noise_sigma = 53.0
 
             #r.write_graph(graph2use = 'colored')
 

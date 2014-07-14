@@ -51,7 +51,7 @@ result_dir = os.getcwd()+'/results/'
 #os.mkdir(result_dir)
 
 inter_types = ['LIN', 'CUB']
-log_data_values = [True,False]
+log_data_values = [False]
 number_of_repeats = 1
 for i in range(number_of_repeats):
     for log in log_data_values:
@@ -74,7 +74,8 @@ for i in range(number_of_repeats):
             r.inputs.input_node.in_stddev_translation = 0.75
             r.inputs.input_node.in_stddev_rotation = 0.5*math.pi/180
             r.inputs.input_node.in_stddev_shear = 0.04
-            r.inputs.input_node.in_noise_sigma = 10.0
+            # SNR of 15, based on the mean b0 in the JHU parcellation region
+            r.inputs.input_node.in_noise_sigma = 53.0
 
             r.write_graph(graph2use = 'colored')
 
@@ -83,5 +84,5 @@ for i in range(number_of_repeats):
             #r.run()
             #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
             #r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
-            r.run(plugin='MultiProc')
+            r.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
 
