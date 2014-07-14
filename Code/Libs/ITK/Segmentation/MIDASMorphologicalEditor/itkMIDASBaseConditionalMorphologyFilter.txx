@@ -130,6 +130,7 @@ namespace itk
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   void MIDASBaseConditionalMorphologyFilter<TInputImage1, TInputImage2, TOutputImage>::GenerateData()
   {    
+    std::cout << "MIDASBaseConditionalMorphologyFilter::GenerateData() this: " << this;
     this->AllocateOutputs();
 
     // Check input binary mask is set.

@@ -25,6 +25,7 @@ template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::BeforeThreadedGenerateData()
 {
+  std::cout << "MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter::BeforeThreadedGenerateData() this: " << this;
   m_NumberOfLabelledPixelsPerThread.resize(this->GetNumberOfThreads());
 }
 
