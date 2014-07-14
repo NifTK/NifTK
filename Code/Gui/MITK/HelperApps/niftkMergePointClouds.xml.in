@@ -19,7 +19,7 @@
       <label>Directory</label>
     </directory>
  
-    <file fileExtensions="*.mps">
+    <file fileExtensions=".mps">
       <name>output</name>
       <longflag>output</longflag>
       <description>Output file for the merged point cloud.</description>

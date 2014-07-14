@@ -12,21 +12,21 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/Output file parameters]]></description>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>modelForVisualisation</name>
       <longflag>modelForVisualisation</longflag>
       <description>Input VTK file (vtkPolyData) for rendering.</description>
       <label>Visualisation Model</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>modelForTracking</name>
       <longflag>modelForTracking</longflag>
       <description>Input VTK file (vtkPolyData) for rendering.</description>
       <label>Tracking Model</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.png">
+    <file fileExtensions=".png">
       <name>texture</name>
       <longflag>texture</longflag>
       <description>Input image file (.png) containing textures.</description>

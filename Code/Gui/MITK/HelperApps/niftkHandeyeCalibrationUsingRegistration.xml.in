@@ -13,7 +13,7 @@
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
 
-    <file fileExtensions="mps">
+    <file fileExtensions=".mps">
       <name>modelInputFile</name>
       <longflag>modelInputFile</longflag>
       <description>The model of the calibration object (e.g. chessboard).</description>
@@ -40,7 +40,7 @@
       <description>The directory containing sets of reconstructed model points as viewed by the camera.</description>
       <label>Camera points</label>
     </directory>    
-    <file fileExtensions="txt">
+    <file fileExtensions=".txt">
       <name>output</name>
       <longflag>output</longflag>
       <description>Output hand-eye calibration as 4x4 matrix, as .txt file.</description>
