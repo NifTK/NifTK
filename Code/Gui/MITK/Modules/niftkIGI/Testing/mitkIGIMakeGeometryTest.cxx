@@ -18,6 +18,7 @@
 
 #include <niftkVTKFunctions.h>
 #include <vtkSmartPointer.h>
+#include <mitkIOUtil.h>
 
 namespace mitk
 {
@@ -75,7 +76,6 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       baseDirectory + "calib.left.handeye.txt",
       baseDirectory + "calib.left.handeye.txt",
       baseDirectory + "calib.left.handeye.txt", false);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1708 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 960 ) ,
@@ -86,7 +86,7 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 360 ) ,
       ".. Testing make pointer");
-  
+
   surface = MakeReference ( baseDirectory + "reference.rig", "" );
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
@@ -99,23 +99,23 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 472 ) ,
       ".. Testing make referencePolaris");
 
-
   surface = MakeXAxes();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make XAxis");
+
   surface = MakeYAxes();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make YAxis");
+
   surface = MakeZAxes();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make ZAxis");
-
 
   surface = MakeLapLensAxes();
   MITK_TEST_CONDITION_REQUIRED(
@@ -134,5 +134,6 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 3127 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 1887 ) ,
       ".. Testing make trans rectal US Probe");
+
   return EXIT_SUCCESS;
 }
