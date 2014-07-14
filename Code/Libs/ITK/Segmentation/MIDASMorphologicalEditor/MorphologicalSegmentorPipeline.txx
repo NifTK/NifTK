@@ -181,16 +181,16 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       regionOfInterestIndex[axialAxis] = 0;
       regionOfInterestSize[axialAxis] = p.m_AxialCutoffSlice + 1;
     }
-
-    // 5. Set region on both filters
-    regionOfInterest.SetIndex(regionOfInterestIndex);
-    regionOfInterest.SetSize(regionOfInterestSize);
-
-    m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
-    m_ErosionFilter->SetRegion(regionOfInterest);
-    m_ErosionMaskFilter->SetRegion(regionOfInterest);
-    m_DilationMaskFilter->SetRegion(regionOfInterest);
   }
+
+  // 5. Set region on both filters
+  regionOfInterest.SetIndex(regionOfInterestIndex);
+  regionOfInterest.SetSize(regionOfInterestSize);
+
+  m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
+  m_ErosionFilter->SetRegion(regionOfInterest);
+  m_ErosionMaskFilter->SetRegion(regionOfInterest);
+  m_DilationMaskFilter->SetRegion(regionOfInterest);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 998, setting region of interest, on Mask filters
