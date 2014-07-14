@@ -288,9 +288,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   if (m_Stage == THRESHOLDING)
   {
-    m_ThresholdingMaskFilter->GetInput()->Modified();
-    m_ThresholdingMaskFilter->Modified();
-    m_ThresholdingConnectedComponentFilter->Modified();
     m_ThresholdingConnectedComponentFilter->UpdateLargestPossibleRegion();
   }
   else if (m_Stage == EROSION || m_Stage == DILATION)
@@ -301,16 +298,10 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     {
       if (m_Stage == EROSION)
       {
-        m_ErosionMaskFilter->GetInput()->Modified();
-        m_ErosionMaskFilter->Modified();
-        m_ErosionConnectedComponentFilter->Modified();
         m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
       else if (m_Stage == DILATION)
       {
-        m_DilationMaskFilter->GetInput()->Modified();
-        m_DilationMaskFilter->Modified();
-        m_DilationConnectedComponentFilter->Modified();
         m_DilationConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
     }
@@ -410,7 +401,6 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == RETHRESHOLDING)
   {  
-    m_RethresholdingFilter->Modified();
     m_RethresholdingFilter->UpdateLargestPossibleRegion();
   }
 }
