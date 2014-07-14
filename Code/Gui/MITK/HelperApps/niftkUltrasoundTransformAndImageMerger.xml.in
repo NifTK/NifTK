@@ -24,7 +24,7 @@
       <description>Directory containing ultrasound images as .nii files.</description>
       <label>Input Image Directory</label>
     </directory>
-    <file fileExtensions="*.mhd">
+    <file fileExtensions=".mhd">
       <name>outputImageFile</name>
       <longflag>outputImageFile</longflag>
       <description>Output merged image</description>

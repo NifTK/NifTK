@@ -27,7 +27,7 @@
       <label>calibration Input directory.</label>
     </directory>    
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input3D</name>
       <longflag>input3D</longflag>
       <description>Input 3D points</description>
@@ -35,7 +35,7 @@
       <channel>input</channel>
     </file>
     
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input3DWithScalars</name>
       <longflag>input3DWithScalars</longflag>
       <description>Input 3D points and their scalar values</description>
@@ -43,7 +43,7 @@
       <channel>input</channel>
     </file>
     
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input2D</name>
       <longflag>input2D</longflag>
       <description>Input 2D points</description>
@@ -67,7 +67,7 @@
       <channel>input</channel>
     </file>
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>classifier3D</name>
       <longflag>classifier3D</longflag>
       <description>3D points used for classifing GS points during error calculation</description>

@@ -27,7 +27,7 @@
       <label>Right Camera Input Directory</label>
     </directory>
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>intrinsicLeft</name>
       <longflag>intrinsicLeft</longflag>
       <description>Left camera intrinsic parameters file as plain text file.</description>
@@ -35,7 +35,7 @@
       <channel>input</channel>
     </file>
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>intrinsicRight</name>
       <longflag>intrinsicRight</longflag>
       <description>Right camera intrinsic parameters file as plain text file.</description>
@@ -43,7 +43,7 @@
       <channel>input</channel>
     </file>
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>rightToLeftExtrinsics</name>
       <longflag>rightToLeftExtrinsics</longflag>
       <description>Right to left camera transformation as plain text file.</description>
@@ -51,7 +51,7 @@
       <channel>input</channel>
     </file>
 
-    <file fileExtensions="*.mps,*.txt">
+    <file fileExtensions=".mps,.txt">
       <name>outputPoints</name>
       <longflag>outputPoints</longflag>
       <description>Output point set.</description>

@@ -31,7 +31,7 @@
       <description>The directory containing the corresponding tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
     </directory>    
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>outputCalibrationData</name>
       <longflag>output</longflag>
       <description>Output file for calibration data</description>

@@ -42,7 +42,7 @@ std::string xml_octvolumeconstructor=
 "   <parameters>\n"
 "      <label>Inputs</label>\n"
 "      <description>Input and output images</description>\n"
-"      <file fileExtensions=\"*.xml\">\n"
+"      <file fileExtensions=\".xml\">\n"
 "          <name>inputxml</name>\n"
 "          <flag>i</flag>\n"
 "          <description>XML descriptor</description>\n"

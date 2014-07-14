@@ -24,7 +24,7 @@
       <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
-    <file fileExtensions="*.txt,*.4x4">
+    <file fileExtensions=".txt,.4x4">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
       <description>Output matrix filename.</description>
@@ -85,7 +85,7 @@
       <default>-32767,-32767,-32767</default>
       <channel>input</channel>
     </point>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
       <description>Guess of calibration transformation, stored as a 4x4 matrix.</description>

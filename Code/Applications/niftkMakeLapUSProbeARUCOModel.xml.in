@@ -12,21 +12,21 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/Output file parameters]]></description>
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>inputPointIDs</name>
       <longflag>inputPointIDs</longflag>
       <description>Input generated point IDs.</description>
       <label>Input Point IDs</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputTrackingModel</name>
       <longflag>outputTrackingModel</longflag>
       <description>Output VTK file (vtkPolyData) for matching/tracking.</description>
       <label>Output Tracking Model</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputVisualisationModel</name>
       <longflag>outputVisualisationModel</longflag>
       <description>Output VTK file (vtkPolyData) for visualisation.</description>

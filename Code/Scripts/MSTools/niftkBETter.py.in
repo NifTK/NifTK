@@ -283,35 +283,35 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <parameters advanced="false">
       <label>Mandatory arguments</label>
       <description>Input image to be segmented and the name of output image</description>
-      <image fileExtensions="nii,nii.gz,img">
+      <image fileExtensions=".nii,.nii.gz,.img">
           <name>inputImageName</name>
           <longflag>in</longflag>
 	  <description>Input image name</description>
 	  <label>Input image</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="nii,nii.gz,img">
+      <image fileExtensions=".nii,.nii.gz,.img">
           <name>inputHead</name>
           <longflag>atlas</longflag>
 	  <description>Input atlas data</description>
 	  <label>Input atlas data</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="nii,nii.gz,img">
+      <image fileExtensions=".nii,.nii.gz,.img">
           <name>inputIHeadMask</name>
           <longflag>headmask</longflag>
 	  <description>Input atlas head mask</description>
 	  <label>Input atlas head mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="nii,nii.gz,img">
+      <image fileExtensions=".nii,.nii.gz,.img">
           <name>inputMask</name>
           <longflag>mask</longflag>
 	  <description>Input atlas mask</description>
 	  <label>Input atlas mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="nii,nii.gz,img">
+      <image fileExtensions=".nii,.nii.gz,.img">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>Output image name</description>

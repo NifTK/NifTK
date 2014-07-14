@@ -12,28 +12,28 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/Output file parameters]]></description>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputTrackingModel</name>
       <longflag>outputTrackingModel</longflag>
       <description>Output VTK file (vtkPolyData) for matching/tracking.</description>
       <label>Output Tracking Model</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputVisualisationModel</name>
       <longflag>outputVisualisationModel</longflag>
       <description>Output VTK file (vtkPolyData) for visualisation.</description>
       <label>Output Visualisation Model</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputPhotoConsistencyModel</name>
       <longflag>outputPhotoConsistencyModel</longflag>
       <description>Output VTK file (vtkPolyData) for photo-consistency.</description>
       <label>Output Photoconsistency Model</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions="*.png,*.jpg">
+    <file fileExtensions=".png,.jpg">
       <name>textureMap</name>
       <longflag>textureMap</longflag>
       <description>Optional texture map image.</description>
