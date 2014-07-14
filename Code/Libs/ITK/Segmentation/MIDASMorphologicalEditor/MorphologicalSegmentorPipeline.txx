@@ -105,6 +105,8 @@ void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::DisconnectPipeline()
 {
+  std::cout << "MorphologicalSegmentorPipeline::DisconnectPipeline()" << std::endl;
+
   // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
   m_ThresholdingFilter->SetInput(NULL);
   m_ErosionFilter->SetGreyScaleImageInput(NULL);
@@ -129,6 +131,11 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     SegmentationImageType* dilationsEditsImage,
     MorphologicalSegmentorPipelineParams& p)
 {
+  std::cout << "MorphologicalSegmentorPipeline::SetParam() stage: " << p.m_Stage
+            << " thresholding filter: " << ((void*) m_ThresholdingFilter) << " thresholding mask filter: " << ((void*) m_ThresholdingMaskFilter) << " thresh. conn. comp. filter: " << ((void*) m_ThresholdingConnectedComponentFilter)
+            << " erosion filter: " << ((void*) m_ErosionFilter) << " erosion mask filter: " << ((void*) m_ErosionMaskFilter) << " erosion. conn. comp. filter: " << ((void*) m_ErosionConnectedComponentFilter)
+            << std::endl;
+
   m_Stage = p.m_Stage;
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
