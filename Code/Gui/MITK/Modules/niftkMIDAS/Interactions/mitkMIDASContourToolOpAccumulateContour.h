@@ -40,7 +40,7 @@ public:
       int dataSetNumber,
       mitk::ContourModelSet::Pointer contourSet
       );
-  ~MIDASContourToolOpAccumulateContour() {};
+  ~MIDASContourToolOpAccumulateContour() {}
   bool IsRedo() const { return m_Redo; }
   int GetDataSetNumber() const { return m_DataSetNumber; }
   mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet;}

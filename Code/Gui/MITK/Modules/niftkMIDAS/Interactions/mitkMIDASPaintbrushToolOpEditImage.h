@@ -44,7 +44,7 @@ public:
       mitk::DataNode* nodeToEdit,
       ProcessorType* processor
       );
-  ~MIDASPaintbrushToolOpEditImage() {};
+  ~MIDASPaintbrushToolOpEditImage() {}
   bool IsRedo() const { return m_Redo; }
   int GetImageNumber() const { return m_ImageNumber; }
   unsigned char GetValueToWrite() const { return m_ValueToWrite; }
