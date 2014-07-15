@@ -98,30 +98,30 @@ public:
   bool HasSegmentationNode() const;
 
   /// \brief Used to retrieve the reference image from the tool manager, where imageNumber should always be 0 for Morphological Editor.
-  mitk::Image::Pointer GetReferenceImageFromToolManager(unsigned int imageNumber) const;
+  mitk::Image::Pointer GetReferenceImage(unsigned int dataIndex) const;
 
   /// \brief Used to retrieve the working image from the tool manager.
-  mitk::Image::Pointer GetWorkingImageFromToolManager(unsigned int imageNumber) const;
+  mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
 
   /// \brief Used to retrieve the actual node of the image being segmented.
-  mitk::DataNode::Pointer GetSegmentationNodeFromToolManager() const;
+  mitk::DataNode::Pointer GetSegmentationNode() const;
 
   /// \brief Used to retrieve the segmentation image.
-  mitk::Image::Pointer GetSegmentationImageUsingToolManager() const;
+  mitk::Image::Pointer GetSegmentationImage() const;
 
   /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
   void GetParameterValuesFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
 
-  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
+  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_NAME and ADDITIONS_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const;
 
-  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
+  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_NAME and ADDITIONS_NAME, and have a binary image parent.
   virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const;
 
   /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) const;
 
-  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
+  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.

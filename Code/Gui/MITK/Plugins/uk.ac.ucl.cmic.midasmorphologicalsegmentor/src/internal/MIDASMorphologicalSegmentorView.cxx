@@ -93,7 +93,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
   bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImageFromToolManager(0);
+  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImage(0);
   if (image.IsNotNull())
   {
 
@@ -313,7 +313,7 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
   m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
 
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::Geometry3D* geometry = referenceImage->GetGeometry();
 
@@ -358,7 +358,7 @@ void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     if (tabIndex == 1 || tabIndex == 2)
@@ -423,7 +423,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
@@ -447,7 +447,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
@@ -485,7 +485,7 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
@@ -632,7 +632,7 @@ void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
   {
     this->OnToolSelected(-1);
@@ -659,8 +659,8 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
   if (nodes.size() == 1)
   {
-    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImageFromToolManager(0);
-    mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImageUsingToolManager();
+    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage(0);
+    mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImage();
 
     if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
     {
@@ -689,7 +689,7 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 {
-  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImageFromToolManager(0);
+  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage(0);
   if (referenceImage.IsNotNull())
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
@@ -718,7 +718,7 @@ void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 4)
