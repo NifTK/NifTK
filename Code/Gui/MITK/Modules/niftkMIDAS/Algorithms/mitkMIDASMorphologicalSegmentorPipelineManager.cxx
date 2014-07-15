@@ -216,7 +216,7 @@ void MIDASMorphologicalSegmentorPipelineManager::GetParameterValuesFromSegmentat
     segmentationNode->GetIntProperty("midas.morph.stage", params.m_Stage);
     segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", params.m_LowerIntensityThreshold);
     segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", params.m_UpperIntensityThreshold);
-    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutoffSlice);
+    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutOffSlice);
     segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", params.m_UpperErosionsThreshold);
     segmentationNode->GetIntProperty("midas.morph.erosion.iterations", params.m_NumberOfErosions);
     segmentationNode->GetFloatProperty("midas.morph.dilation.lower", params.m_LowerPercentageThresholdForDilations);

@@ -71,7 +71,7 @@ protected slots:
 
   void OnThresholdLowerValueChanged();
   void OnThresholdUpperValueChanged();
-  void OnAxialCuttoffSliderChanged();
+  void OnAxialCutOffSliderChanged();
   void OnBackButtonClicked();
   void OnNextButtonClicked();
   void OnErosionsUpperThresholdChanged();

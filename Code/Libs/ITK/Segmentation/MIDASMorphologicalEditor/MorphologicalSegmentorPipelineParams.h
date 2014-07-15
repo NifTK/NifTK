@@ -30,7 +30,7 @@ struct MorphologicalSegmentorPipelineParams
   , m_Stage(0)
   , m_LowerIntensityThreshold(0.0f)
   , m_UpperIntensityThreshold(0.0f)
-  , m_AxialCutoffSlice(0)
+  , m_AxialCutOffSlice(0)
   , m_UpperErosionsThreshold(0.0f)
   , m_NumberOfErosions(0)
   , m_LowerPercentageThresholdForDilations(0.0f)
@@ -53,8 +53,8 @@ struct MorphologicalSegmentorPipelineParams
   /// \brief Contains the upper threshold on thresholding tab.
   float m_UpperIntensityThreshold;
 
-  /// \brief Contains the Axial cutoff on thresholding tab.
-  int m_AxialCutoffSlice;
+  /// \brief Contains the axial cut-off on thresholding tab.
+  int m_AxialCutOffSlice;
 
   /// \brief Contains the upper threshold on erosions tab.
   float m_UpperErosionsThreshold;

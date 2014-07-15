@@ -36,7 +36,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
 
   if (argc != 13)
   {
-    std::cerr << "Usage: itkMIDASPipelineTest inImage.img outImage.img stage lowThreshold upperThreshold axialCutoff upperErosionThreshold numberErosions lowDilationsPercentage highDilationsPercentage numberDilations rethresholdingBox" << std::endl;
+    std::cerr << "Usage: itkMIDASPipelineTest inImage.img outImage.img stage lowThreshold upperThreshold axialCutOff upperErosionThreshold numberErosions lowDilationsPercentage highDilationsPercentage numberDilations rethresholdingBox" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -45,7 +45,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   int stage = atoi(argv[3]);
   int lowThreshold = atoi(argv[4]);
   int upperThreshold = atoi(argv[5]);
-  int axialCutoff = atoi(argv[6]);
+  int axialCutOff = atoi(argv[6]);
   int upperErosions = atoi(argv[7]);
   int numberErosions = atoi(argv[8]);
   int lowDilationsPercentage = atoi(argv[9]);
@@ -122,7 +122,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   MorphologicalSegmentorPipelineParams params;
   params.m_LowerIntensityThreshold = lowThreshold;
   params.m_UpperIntensityThreshold = upperThreshold;
-  params.m_AxialCutoffSlice = axialCutoff;
+  params.m_AxialCutOffSlice = axialCutOff;
   params.m_UpperErosionsThreshold = upperErosions;
   params.m_NumberOfErosions = numberErosions;
   params.m_LowerPercentageThresholdForDilations = lowDilationsPercentage;

@@ -51,14 +51,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_ThresholdingUpperThresholdSlider->setMinimum(0.0);
   m_ThresholdingUpperThresholdSlider->setMaximum(0.0);
 
-  m_ThresholdingAxialCutoffSlider->layout()->setSpacing(2);
-  m_ThresholdingAxialCutoffSlider->setSpinBoxAlignment(Qt::AlignRight);
-  m_ThresholdingAxialCutoffSlider->setSingleStep(1.0);
-  m_ThresholdingAxialCutoffSlider->setPageStep(2.0);
-  m_ThresholdingAxialCutoffSlider->setDecimals(0);
+  m_ThresholdingAxialCutOffSlider->layout()->setSpacing(2);
+  m_ThresholdingAxialCutOffSlider->setSpinBoxAlignment(Qt::AlignRight);
+  m_ThresholdingAxialCutOffSlider->setSingleStep(1.0);
+  m_ThresholdingAxialCutOffSlider->setPageStep(2.0);
+  m_ThresholdingAxialCutOffSlider->setDecimals(0);
   // Trick alert!
   // So that the width of the spinbox is equal to the other spinboxes:
-  m_ThresholdingAxialCutoffSlider->setMaximum(100.0);
+  m_ThresholdingAxialCutOffSlider->setMaximum(100.0);
 
   m_ErosionsUpperThresholdSlider->setTracking(false);
   m_ErosionsUpperThresholdSlider->layout()->setSpacing(2);
@@ -118,7 +118,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 
   this->connect(m_ThresholdingLowerThresholdSlider, SIGNAL(valueChanged(double)), SLOT(OnThresholdLowerValueChanged()));
   this->connect(m_ThresholdingUpperThresholdSlider, SIGNAL(valueChanged(double)), SLOT(OnThresholdUpperValueChanged()));
-  this->connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(double)), SLOT(OnAxialCuttoffSliderChanged()));
+  this->connect(m_ThresholdingAxialCutOffSlider, SIGNAL(valueChanged(double)), SLOT(OnAxialCutOffSliderChanged()));
   this->connect(m_BackButton, SIGNAL(clicked()), SLOT(OnBackButtonClicked()));
   this->connect(m_NextButton, SIGNAL(clicked()), SLOT(OnNextButtonClicked()));
   this->connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), SLOT(OnErosionsUpperThresholdChanged()));
@@ -136,7 +136,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab1Thresholding(bool enable)
 {
-  m_ThresholdingAxialCutoffSlider->setEnabled(enable);
+  m_ThresholdingAxialCutOffSlider->setEnabled(enable);
   m_ThresholdingLowerThresholdSlider->setEnabled(enable);
   m_ThresholdingUpperThresholdSlider->setEnabled(enable);
 }
@@ -284,19 +284,19 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ThresholdingUpperThresholdSlider->setPageStep(pageSize);
   m_ThresholdingUpperThresholdSlider->setValue(lowestValue); // Intentionally set to lowest values, as this is what MIDAS does.
 
-  m_ThresholdingAxialCutoffSlider->setMinimum(0);
-  m_ThresholdingAxialCutoffSlider->setMaximum(numberOfAxialSlices - 1);
+  m_ThresholdingAxialCutOffSlider->setMinimum(0);
+  m_ThresholdingAxialCutOffSlider->setMaximum(numberOfAxialSlices - 1);
   if (upDirection > 0)
   {
-    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(false);
-    m_ThresholdingAxialCutoffSlider->setInvertedControls(false);
-    m_ThresholdingAxialCutoffSlider->setValue(0);
+    m_ThresholdingAxialCutOffSlider->setInvertedAppearance(false);
+    m_ThresholdingAxialCutOffSlider->setInvertedControls(false);
+    m_ThresholdingAxialCutOffSlider->setValue(0);
   }
   else
   {
-    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(true);
-    m_ThresholdingAxialCutoffSlider->setInvertedControls(true);
-    m_ThresholdingAxialCutoffSlider->setValue(numberOfAxialSlices - 1);
+    m_ThresholdingAxialCutOffSlider->setInvertedAppearance(true);
+    m_ThresholdingAxialCutOffSlider->setInvertedControls(true);
+    m_ThresholdingAxialCutOffSlider->setValue(numberOfAxialSlices - 1);
   }
 
   m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
@@ -324,7 +324,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
 
   m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
   m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
-  m_ThresholdingAxialCutoffSlider->setValue(params.m_AxialCutoffSlice);
+  m_ThresholdingAxialCutOffSlider->setValue(params.m_AxialCutOffSlice);
   m_ErosionsUpperThresholdSlider->setValue(params.m_UpperErosionsThreshold);
   m_ErosionsIterationsSlider->setValue(params.m_NumberOfErosions);
   m_DilationsLowerThresholdSlider->setValue(params.m_LowerPercentageThresholdForDilations);
@@ -368,7 +368,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
          m_ThresholdingUpperThresholdSlider->value(),
-         static_cast<int>(m_ThresholdingAxialCutoffSlider->value())
+         static_cast<int>(m_ThresholdingAxialCutOffSlider->value())
        );
 }
 
@@ -434,7 +434,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCuttoffSliderChanged()
+void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCutOffSliderChanged()
 {
   this->EmitThresholdingValues();
 }
