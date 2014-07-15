@@ -137,6 +137,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
             << " erosion filter: " << ((void*) m_ErosionFilter) << " erosion mask filter: " << ((void*) m_ErosionMaskFilter) << " erosion. conn. comp. filter: " << ((void*) m_ErosionConnectedComponentFilter)
             << std::endl;
 
+  m_StartStage = params.m_StartStage;
   m_Stage = params.m_Stage;
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.

@@ -46,6 +46,14 @@ public:
   typedef itk::MIDASConditionalDilationFilter<SegmentationImageType, GreyScaleImageType, SegmentationImageType> DilationFilterType;
   typedef itk::MIDASRethresholdingFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> RethresholdingFilterType;
 
+  enum
+  {
+    THRESHOLDING,
+    EROSION,
+    DILATION,
+    RETHRESHOLDING
+  };
+
   /// \brief Default constructor, creating all pipeline elements, where filters are held with smart pointers for automatic destruction.
   MorphologicalSegmentorPipeline();
 
@@ -80,15 +88,13 @@ public:
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
   typename SegmentationImageType::Pointer GetOutput();
 
-  enum Stage
-  {
-    THRESHOLDING,
-    EROSION,
-    DILATION,
-    RETHRESHOLDING
-  };
 
-  int                                                          m_Stage;
+  /// \brief The stage from which we want to run the pipeline.
+  int m_StartStage;
+
+  /// \brief The stage until which we want to run the pipeline.
+  int m_Stage;
+
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_ThresholdingConnectedComponentFilter;
