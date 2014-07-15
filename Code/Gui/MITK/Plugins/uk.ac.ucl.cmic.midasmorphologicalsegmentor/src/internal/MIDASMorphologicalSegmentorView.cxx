@@ -637,9 +637,9 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    bool wasBlocked = m_MorphologicalControls->m_TabWidget->blockSignals(true);
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
     m_PipelineManager->DestroyPipeline();
 //    this->GetDataStorage()->Remove(segmentationNode);

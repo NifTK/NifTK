@@ -262,7 +262,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool enabled)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
-  this->blockSignals(true);
+  bool wasBlocked = this->blockSignals(true);
 
   double stepSize = 1;
   double pageSize = 10;
@@ -313,14 +313,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_DilationsIterationsSlider->setSingleStep(1.0);
   m_DilationsIterationsSlider->setPageStep(1.0);
 
-  this->blockSignals(false);
+  this->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(MorphologicalSegmentorPipelineParams &params)
 {
-  this->blockSignals(true);
+  bool wasBlocked = this->blockSignals(true);
 
   m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
   m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
@@ -332,7 +332,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
   m_DilationsIterationsSlider->setValue(params.m_NumberOfDilations);
   m_RethresholdingBoxSizeSlider->setValue(params.m_BoxSize);
 
-  this->blockSignals(false);
+  this->blockSignals(wasBlocked);
 
   this->SetTabIndex(params.m_Stage);
 }
