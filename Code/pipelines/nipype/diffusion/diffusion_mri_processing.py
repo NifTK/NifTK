@@ -346,7 +346,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(tensor_fitting, 'rgbmap_file', output_node, 'COL_FA')
         workflow.connect(tensor_fitting, 'v1map_file', output_node, 'V1')
         workflow.connect(tensor_fitting, 'res_file', output_node, 'residual_image')
-        
+        workflow.connect(tensor_fitting, 'syn_file', output_node, 'predicted_image')       
     
     workflow.connect(merge_dwis, 'merged_file', output_node, 'dwis')
     if correct_susceptibility == True:
