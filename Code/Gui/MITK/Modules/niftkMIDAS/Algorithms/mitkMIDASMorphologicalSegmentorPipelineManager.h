@@ -48,6 +48,13 @@ class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk:
 
 public:
 
+  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
+  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
+
+  /// \brief The output of the previous stage of the segmentation pipeline.
+  static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
+
+
   mitkClassMacro(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
   itkNewMacro(MIDASMorphologicalSegmentorPipelineManager);
 
@@ -62,9 +69,6 @@ public:
 
   /// \brief Gets the mitk::ToolManager from this object.
   mitk::ToolManager::Pointer GetToolManager() const;
-
-  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
-  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
 
   /// \brief Sets the thresholding parameters.
   ///
