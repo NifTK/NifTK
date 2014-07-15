@@ -74,16 +74,16 @@ mitk::ToolManager::Pointer MIDASMorphologicalSegmentorPipelineManager::GetToolMa
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetReferenceImage(unsigned int dataIndex) const
+mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetReferenceImage() const
 {
-  mitk::Image::Pointer result = NULL;
+  mitk::Image::Pointer referenceImage = NULL;
 
   mitk::ToolManager::DataVectorType referenceData = this->GetToolManager()->GetReferenceData();
-  if (referenceData.size() > dataIndex)
+  if (referenceData.size() > 0)
   {
-    result = dynamic_cast<mitk::Image*>(referenceData[dataIndex]->GetData());
+    referenceImage = dynamic_cast<mitk::Image*>(referenceData[0]->GetData());
   }
-  return result;
+  return referenceImage;
 }
 
 
@@ -204,19 +204,19 @@ void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNod
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::GetParameterValuesFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const
 {
-  mitk::DataNode::Pointer segmentationDataNode = this->GetSegmentationNode();
-  if (segmentationDataNode.IsNotNull())
+  mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
+  if (segmentationNode.IsNotNull())
   {
-    segmentationDataNode->GetIntProperty("midas.morph.stage", params.m_Stage);
-    segmentationDataNode->GetFloatProperty("midas.morph.thresholding.lower", params.m_LowerIntensityThreshold);
-    segmentationDataNode->GetFloatProperty("midas.morph.thresholding.upper", params.m_UpperIntensityThreshold);
-    segmentationDataNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutoffSlice);
-    segmentationDataNode->GetFloatProperty("midas.morph.erosion.threshold", params.m_UpperErosionsThreshold);
-    segmentationDataNode->GetIntProperty("midas.morph.erosion.iterations", params.m_NumberOfErosions);
-    segmentationDataNode->GetFloatProperty("midas.morph.dilation.lower", params.m_LowerPercentageThresholdForDilations);
-    segmentationDataNode->GetFloatProperty("midas.morph.dilation.upper", params.m_UpperPercentageThresholdForDilations);
-    segmentationDataNode->GetIntProperty("midas.morph.dilation.iterations", params.m_NumberOfDilations);
-    segmentationDataNode->GetIntProperty("midas.morph.rethresholding.box", params.m_BoxSize);
+    segmentationNode->GetIntProperty("midas.morph.stage", params.m_Stage);
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", params.m_LowerIntensityThreshold);
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", params.m_UpperIntensityThreshold);
+    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutoffSlice);
+    segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", params.m_UpperErosionsThreshold);
+    segmentationNode->GetIntProperty("midas.morph.erosion.iterations", params.m_NumberOfErosions);
+    segmentationNode->GetFloatProperty("midas.morph.dilation.lower", params.m_LowerPercentageThresholdForDilations);
+    segmentationNode->GetFloatProperty("midas.morph.dilation.upper", params.m_UpperPercentageThresholdForDilations);
+    segmentationNode->GetIntProperty("midas.morph.dilation.iterations", params.m_NumberOfDilations);
+    segmentationNode->GetIntProperty("midas.morph.rethresholding.box", params.m_BoxSize);
   }
 }
 
@@ -226,10 +226,10 @@ mitk::Image::Pointer MIDASMorphologicalSegmentorPipelineManager::GetSegmentation
 {
   mitk::Image::Pointer result = NULL;
 
-  mitk::DataNode::Pointer node = this->GetSegmentationNode();
-  if (node.IsNotNull())
+  mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
+  if (segmentationNode.IsNotNull())
   {
-    result = dynamic_cast<mitk::Image*>(node->GetData());
+    result = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
   }
   return result;
 
@@ -350,18 +350,18 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::Ge
 mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const
 {
   assert(node);
-  mitk::DataNode* result = NULL;
+  mitk::DataNode* segmentationNode = NULL;
 
   if (mitk::IsNodeABinaryImage(node))
   {
     mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
-      result = parent;
+      segmentationNode = parent;
     }
   }
 
-  return result;
+  return segmentationNode;
 }
 
 
@@ -369,7 +369,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeF
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetDefaultParameterValuesFromReferenceImage()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage(0);
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
 
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
 
@@ -402,7 +402,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
 {
   mitk::DataNode::Pointer referenceNode = this->GetToolManager()->GetReferenceData(0);
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage(0);  // The grey scale image.
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();  // The grey scale image.
   mitk::Image::Pointer segmentationImage = this->GetSegmentationImage(); // The output image.
   mitk::Image::Pointer erosionAdditions   = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS);
   mitk::Image::Pointer erosionSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
@@ -493,7 +493,7 @@ void MIDASMorphologicalSegmentorPipelineManager::FinalizeSegmentation()
     if (segmentationNode.IsNotNull())
     {
       mitk::Image::Pointer segmentationImage = mitk::Image::New();
-      mitk::Image::Pointer referenceImage = this->GetReferenceImage(0);
+      mitk::Image::Pointer referenceImage = this->GetReferenceImage();
 
       try
       {
@@ -563,7 +563,7 @@ void MIDASMorphologicalSegmentorPipelineManager::RemoveWorkingData()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::DestroyPipeline()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage(0);
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     try
@@ -633,7 +633,7 @@ MIDASMorphologicalSegmentorPipelineManager
   }
 
   // Set most of the parameters on the pipeline.
-  pipeline->SetParam(referenceImage,
+  pipeline->SetParams(referenceImage,
                      segmentationImage,
                      erosionsAdditionsToItk->GetOutput(),
                      erosionSubtractionsToItk->GetOutput(),
@@ -648,7 +648,7 @@ MIDASMorphologicalSegmentorPipelineManager
     {
       params.m_Stage = i;
 
-      pipeline->SetParam(referenceImage,
+      pipeline->SetParams(referenceImage,
           segmentationImage,
           erosionsAdditionsToItk->GetOutput(),
           erosionSubtractionsToItk->GetOutput(),

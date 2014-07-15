@@ -124,20 +124,20 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GreyScaleImageType* referenceImage,
+::SetParams(GreyScaleImageType* referenceImage,
     SegmentationImageType* segmentationImage,
     SegmentationImageType* erosionsAdditionsImage,
     SegmentationImageType* erosionEditsImage,
     SegmentationImageType* dilationsAditionsImage,
     SegmentationImageType* dilationsEditsImage,
-    MorphologicalSegmentorPipelineParams& p)
+    MorphologicalSegmentorPipelineParams& params)
 {
-  std::cout << "MorphologicalSegmentorPipeline::SetParam() stage: " << p.m_Stage
+  std::cout << "MorphologicalSegmentorPipeline::SetParam() stage: " << params.m_Stage
             << " thresholding filter: " << ((void*) m_ThresholdingFilter) << " thresholding mask filter: " << ((void*) m_ThresholdingMaskFilter) << " thresh. conn. comp. filter: " << ((void*) m_ThresholdingConnectedComponentFilter)
             << " erosion filter: " << ((void*) m_ErosionFilter) << " erosion mask filter: " << ((void*) m_ErosionMaskFilter) << " erosion. conn. comp. filter: " << ((void*) m_ErosionConnectedComponentFilter)
             << std::endl;
 
-  m_Stage = p.m_Stage;
+  m_Stage = params.m_Stage;
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
 
@@ -169,13 +169,13 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     // 4. Calculate size of region of interest in that axis
     if (orientationString[axialAxis] == 'I')
     {
-      regionOfInterestIndex[axialAxis] = p.m_AxialCutoffSlice;
-      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
+      regionOfInterestIndex[axialAxis] = params.m_AxialCutoffSlice;
+      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - params.m_AxialCutoffSlice;
     }
     else
     {
       regionOfInterestIndex[axialAxis] = 0;
-      regionOfInterestSize[axialAxis] = p.m_AxialCutoffSlice + 1;
+      regionOfInterestSize[axialAxis] = params.m_AxialCutoffSlice + 1;
     }
   }
 
@@ -200,8 +200,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   if (m_Stage == THRESHOLDING)
   {
     m_ThresholdingFilter->SetInput(referenceImage);
-    m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
-    m_ThresholdingFilter->SetUpperThreshold((TPixel)p.m_UpperIntensityThreshold);
+    m_ThresholdingFilter->SetLowerThreshold((TPixel)params.m_LowerIntensityThreshold);
+    m_ThresholdingFilter->SetUpperThreshold((TPixel)params.m_UpperIntensityThreshold);
 
     m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
     m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
@@ -218,8 +218,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_ErosionFilter->SetBinaryImageInput(thresholdingImage);
     m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
     m_ErosionFilter->SetRegion(regionOfInterest);
-    m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
-    m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
+    m_ErosionFilter->SetUpperThreshold((TPixel)params.m_UpperErosionsThreshold);
+    m_ErosionFilter->SetNumberOfIterations(params.m_NumberOfErosions);
     m_ErosionFilter->SetRegion(regionOfInterest);
 
     m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
@@ -242,9 +242,9 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_DilationFilter->SetBinaryImageInput(erosionImage);
     m_DilationFilter->SetGreyScaleImageInput(referenceImage);
     m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
-    m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
-    m_DilationFilter->SetNumberOfIterations((int)(p.m_NumberOfDilations));
+    m_DilationFilter->SetLowerThreshold((int)(params.m_LowerPercentageThresholdForDilations));
+    m_DilationFilter->SetUpperThreshold((int)(params.m_UpperPercentageThresholdForDilations));
+    m_DilationFilter->SetNumberOfIterations((int)(params.m_NumberOfDilations));
     m_DilationFilter->SetRegion(regionOfInterest);
 
     m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
@@ -272,9 +272,9 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     m_RethresholdingFilter->SetBinaryImageInput(dilationImage);
     m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
     m_RethresholdingFilter->SetThresholdedImageInput(thresholdingMask);
-    m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
-    m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));
+    m_RethresholdingFilter->SetDownSamplingFactor(params.m_BoxSize);
+    m_RethresholdingFilter->SetLowPercentageThreshold((int)(params.m_LowerPercentageThresholdForDilations));
+    m_RethresholdingFilter->SetHighPercentageThreshold((int)(params.m_UpperPercentageThresholdForDilations));
   }
   else
   {

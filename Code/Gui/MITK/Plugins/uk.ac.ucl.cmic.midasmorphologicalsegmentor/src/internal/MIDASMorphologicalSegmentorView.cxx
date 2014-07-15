@@ -93,7 +93,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
   bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImage(0);
+  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImage();
   if (image.IsNotNull())
   {
 
@@ -556,16 +556,16 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
 
   if (m_MorphologicalControls != NULL)
   {
-    connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
-    connect(m_ToolSelector, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
-    connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), this, SLOT(OnThresholdingValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), this, SLOT(OnErosionsValuesChanged(double, int)));
-    connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), this, SLOT(OnDilationValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), this, SLOT(OnRethresholdingValuesChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), this, SLOT(OnTabChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
-//    connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
-    connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), this, SLOT(OnRestartButtonClicked()));
+    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+    this->connect(m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), SLOT(OnDilationValuesChanged(double, double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+//    this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+    this->connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
   }
 }
 
@@ -659,7 +659,7 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
   if (nodes.size() == 1)
   {
-    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage(0);
+    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
     mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImage();
 
     if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
@@ -689,7 +689,7 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 {
-  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage(0);
+  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     int axialAxis = this->GetReferenceImageAxialAxis();

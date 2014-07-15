@@ -138,7 +138,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   for (int i = 0; i <= stage; i++)
   {
     params.m_Stage = i;
-    pipeline->SetParam(reader->GetOutput(),
+    pipeline->SetParams(reader->GetOutput(),
                        segmentationImage,
                        erodeAdds,
                        erodeEdits,

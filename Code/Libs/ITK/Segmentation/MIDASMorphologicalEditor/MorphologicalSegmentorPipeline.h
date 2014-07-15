@@ -56,13 +56,13 @@ public:
   void DisconnectPipeline();
 
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
-  void SetParam(GreyScaleImageType* referenceImage,
+  void SetParams(GreyScaleImageType* referenceImage,
                 SegmentationImageType* segmentationImage,
                 SegmentationImageType* erosionsAdditionsImage,
                 SegmentationImageType* erosionEditsImage,
                 SegmentationImageType* dilationsAditionsImage,
                 SegmentationImageType* dilationsEditsImage,
-                MorphologicalSegmentorPipelineParams& p);
+                MorphologicalSegmentorPipelineParams& params);
 
   /// \brief Sets the value to use throughout the binary pipeline for foreground (defaults to 1).
   void SetForegroundValue(unsigned char foregroundValue);

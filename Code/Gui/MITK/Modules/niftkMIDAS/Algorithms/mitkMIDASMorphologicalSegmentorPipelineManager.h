@@ -97,8 +97,8 @@ public:
   /// \brief Returns true if the segmentation node can be found which implicitly means we are "in progress".
   bool HasSegmentationNode() const;
 
-  /// \brief Used to retrieve the reference image from the tool manager, where imageNumber should always be 0 for Morphological Editor.
-  mitk::Image::Pointer GetReferenceImage(unsigned int dataIndex) const;
+  /// \brief Retrieves the reference image from the tool manager.
+  mitk::Image::Pointer GetReferenceImage() const;
 
   /// \brief Used to retrieve the working image from the tool manager.
   mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
