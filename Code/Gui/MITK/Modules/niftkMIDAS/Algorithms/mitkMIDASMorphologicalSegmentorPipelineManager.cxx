@@ -613,8 +613,6 @@ MIDASMorphologicalSegmentorPipelineManager
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
-  typename ImageType::Pointer segmentationImage;
-
   typename ImageToItkType::Pointer erosionsAdditionsToItk = ImageToItkType::New();
   erosionsAdditionsToItk->SetInput(workingData[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]);
   erosionsAdditionsToItk->Update();
@@ -630,6 +628,24 @@ MIDASMorphologicalSegmentorPipelineManager
   typename ImageToItkType::Pointer dilationsSubtractionsToItk = ImageToItkType::New();
   dilationsSubtractionsToItk->SetInput(workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]);
   dilationsSubtractionsToItk->Update();
+
+  typename ImageType::Pointer segmentationInput;
+  if (workingData.size() > 4)
+  {
+    typename ImageToItkType::Pointer segmentationInputToItk = ImageToItkType::New();
+    segmentationInputToItk->SetInput(workingData[4]);
+    segmentationInputToItk->Update();
+    segmentationInput = segmentationInputToItk->GetOutput();
+  }
+
+  typename ImageType::Pointer thresholdingMask;
+  if (workingData.size() > 5)
+  {
+    typename ImageToItkType::Pointer thresholdingMaskToItk = ImageToItkType::New();
+    thresholdingMaskToItk->SetInput(workingData[5]);
+    thresholdingMaskToItk->Update();
+    thresholdingMask = thresholdingMaskToItk->GetOutput();
+  }
 
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
@@ -651,12 +667,13 @@ MIDASMorphologicalSegmentorPipelineManager
 
   // Set most of the parameters on the pipeline.
   pipeline->SetParams(referenceImage,
-                     segmentationImage,
-                     erosionsAdditionsToItk->GetOutput(),
-                     erosionSubtractionsToItk->GetOutput(),
-                     dilationsAdditionsToItk->GetOutput(),
-                     dilationsSubtractionsToItk->GetOutput(),
-                     params);
+                      erosionsAdditionsToItk->GetOutput(),
+                      erosionSubtractionsToItk->GetOutput(),
+                      dilationsAdditionsToItk->GetOutput(),
+                      dilationsSubtractionsToItk->GetOutput(),
+                      segmentationInput,
+                      thresholdingMask,
+                      params);
 
   // Do the update.
   if (isRestarting)
@@ -666,11 +683,12 @@ MIDASMorphologicalSegmentorPipelineManager
       params.m_Stage = i;
 
       pipeline->SetParams(referenceImage,
-          segmentationImage,
           erosionsAdditionsToItk->GetOutput(),
           erosionSubtractionsToItk->GetOutput(),
           dilationsAdditionsToItk->GetOutput(),
           dilationsSubtractionsToItk->GetOutput(),
+          segmentationInput,
+          thresholdingMask,
           params);
 
       pipeline->Update(editingFlags, editingRegion);

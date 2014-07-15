@@ -65,12 +65,13 @@ public:
 
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
   void SetParams(GreyScaleImageType* referenceImage,
-                SegmentationImageType* segmentationImage,
-                SegmentationImageType* erosionsAdditionsImage,
-                SegmentationImageType* erosionEditsImage,
-                SegmentationImageType* dilationsAditionsImage,
-                SegmentationImageType* dilationsEditsImage,
-                MorphologicalSegmentorPipelineParams& params);
+                 SegmentationImageType* erosionsAdditionsImage,
+                 SegmentationImageType* erosionsSubtractionsImage,
+                 SegmentationImageType* dilationsAditionsImage,
+                 SegmentationImageType* dilationsSubtractionsImage,
+                 SegmentationImageType* segmentationInputImage,
+                 SegmentationImageType* thresholdingMaskImage,
+                 const MorphologicalSegmentorPipelineParams& params);
 
   /// \brief Sets the value to use throughout the binary pipeline for foreground (defaults to 1).
   void SetForegroundValue(unsigned char foregroundValue);
@@ -88,9 +89,6 @@ public:
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
   typename SegmentationImageType::Pointer GetOutput();
 
-
-  /// \brief The stage from which we want to run the pipeline.
-  int m_StartStage;
 
   /// \brief The stage until which we want to run the pipeline.
   int m_Stage;
