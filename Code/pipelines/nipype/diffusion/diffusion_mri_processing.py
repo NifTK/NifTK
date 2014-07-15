@@ -227,12 +227,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # rather than the split dwi into the dwi_to_b0_registration
     if log_data == True:
         # Make a log images node
-        log_ims = pe.MapNode(interface = niftyseg.UnaryMaths(operation = 'log', output_datatype = 'float'),
+        log_ims = pe.MapNode(interface = fsl.UnaryMaths(operation = 'log', output_datatype = 'float'),
                              name = 'log_ims', iterfield=['in_file'])
-        log_b0 = pe.Node(interface = niftyseg.UnaryMaths(operation = 'log'), name = 'log_b0')
+        log_b0 = pe.Node(interface = fsl.UnaryMaths(operation = 'log'), name = 'log_b0')
         # The amount to smooth the logged diffusion weighted images by (in voxels)        
         smooth_log_sigma = 0.75
-        
+
         smooth_ims = pe.MapNode(interface = niftyseg.BinaryMaths(operation = 'smo',operand_value = smooth_log_sigma),
                                 name = 'smooth_ims', iterfield=['in_file'])
         smooth_b0 = pe.Node(interface = niftyseg.BinaryMaths(operation = 'smo',operand_value = smooth_log_sigma),
@@ -313,23 +313,40 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(susceptibility_correction, 'output_node.out_jac', divide_dwis, 'operand_file')
         workflow.connect(divide_dwis,'out_file',  tensor_fitting, 'source_file')
     else:
-        workflow.connect(merge_dwis, 'merged_file', tensor_fitting, 'source_file')
-    
+        workflow.connect(merge_dwis, 'merged_file', tensor_fitting, 'source_file')    
     
     workflow.connect(input_node, 'in_bvec_file', tensor_fitting, 'bvec_file')
     workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bval_file')    
     
-    workflow.connect(tensor_fitting, 'tenmap_file', output_node, 'tensor')
-    if resample_in_t1 == False:
-        workflow.connect(tensor_fitting, 'famap_file', output_node, 'FA')
+    if resample_in_t1 == True:
+
+        rig_reg = pe.Node(niftyreg.RegAladin(), name = 'b0_to_T1_registration')
+        rig_reg.inputs.rig_only_flag = True
+        resamp_tensors = pe.Node(niftyreg.RegResample(), name='resamp_tensors')
+        resamp_tensors.inputs.tensor_flag = True        
+        dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')
+
+        workflow.connect(input_node, 'in_t1_file', rig_reg, 'ref_file')
+        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', rig_reg, 'flo_file')
+        workflow.connect(input_node, 'in_t1_file', resamp_tensors, 'ref_file')
+        workflow.connect(tensor_fitting, 'tenmap_file', resamp_tensors, 'flo_file')
+        workflow.connect(rig_reg, 'aff_file', resamp_tensors, 'trans_file')
+        workflow.connect(resamp_tensors, 'res_file', dwi_tool, 'source_file')
+        workflow.connect(resamp_tensors, 'res_file', output_node, 'tensor')
+        workflow.connect(dwi_tool, 'famap_file', output_node, 'FA')
+        workflow.connect(dwi_tool, 'mdmap_file', output_node, 'MD')
+        workflow.connect(dwi_tool, 'rgbmap_file', output_node, 'COL_FA')
+        workflow.connect(dwi_tool, 'v1map_file', output_node, 'V1')
+
+    else:
         
-    workflow.connect(tensor_fitting, 'mdmap_file', output_node, 'MD')
-    workflow.connect(tensor_fitting, 'rgbmap_file', output_node, 'COL_FA')
-    workflow.connect(tensor_fitting, 'v1map_file', output_node, 'V1')
-    workflow.connect(tensor_fitting, 'syn_file', output_node, 'predicted_image')
-    workflow.connect(tensor_fitting, 'res_file', output_node, 'residual_image')
-    workflow.connect(tensor_fitting, 'error_file', output_node, 'parameter_uncertainty_image')
-    
+        workflow.connect(tensor_fitting, 'tenmap_file', output_node, 'tensor')
+        workflow.connect(tensor_fitting, 'mdmap_file', output_node, 'MD')
+        workflow.connect(tensor_fitting, 'famap_file', output_node, 'FA')
+        workflow.connect(tensor_fitting, 'rgbmap_file', output_node, 'COL_FA')
+        workflow.connect(tensor_fitting, 'v1map_file', output_node, 'V1')
+        workflow.connect(tensor_fitting, 'res_file', output_node, 'residual_image')
+        
     
     if correct_susceptibility == True:
         workflow.connect(transformation_composition, 'out_file', output_node, 'transformations')
@@ -338,19 +355,6 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')
     
-    if resample_in_t1 == True:
-        rig_reg = pe.Node(niftyreg.RegAladin(), name = 'b0_to_T1_registration')
-        rig_reg.inputs.rig_only_flag = True
-        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', rig_reg, 'flo_file')
-        workflow.connect(input_node, 'in_t1_file', rig_reg, 'ref_file')
-        resamp_fa = pe.Node(niftyreg.RegResample(), name='resamp_fa')
-        resamp_fa.inputs.inter_val = 'LIN'
-        resamp_fa.inputs.pad_val = -10
-        workflow.connect(rig_reg, 'aff_file', resamp_fa, 'trans_file')
-        workflow.connect(tensor_fitting, 'famap_file', resamp_fa, 'flo_file')
-        workflow.connect(input_node, 'in_t1_file', resamp_fa, 'ref_file')
-        workflow.connect(resamp_fa, 'res_file', output_node, 'FA')
-
     
     return workflow
     
