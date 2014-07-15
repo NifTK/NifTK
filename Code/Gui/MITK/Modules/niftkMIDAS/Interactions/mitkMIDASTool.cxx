@@ -28,18 +28,14 @@
 
 #include "mitkMIDASEventFilter.h"
 
-const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = "MIDAS_SEEDS";
-const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
+const std::string mitk::MIDASTool::SEEDS_NAME = "MIDAS_SEEDS";
+const std::string mitk::MIDASTool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
 const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
 const std::string mitk::MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
-const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = "MIDAS_REGION_GROWING_IMAGE";
-const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_IMAGE_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
+const std::string mitk::MIDASTool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
+const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
 const std::string mitk::MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = "MIDAS_EDITS_EROSIONS_ADDITIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS = "MIDAS_EDITS_DILATIONS_ADDITIONS";
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
@@ -304,20 +300,20 @@ void mitk::MIDASTool::RenderAllWindows()
 void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode)
 {
   // Get the current segmented volume
-  mitk::DataNode::Pointer workingData = m_ToolManager->GetWorkingData(0);
+  mitk::DataNode::Pointer segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
 
   // Get reference to point set (Seeds). Here we look at derived nodes, that are called SEED_POINT_SET_NAME
-  if (workingData.IsNotNull())
+  if (segmentationNode.IsNotNull())
   {
     // Find children of the segmented image that are point sets and called POINT_SET_NAME.
     mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
-    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( workingData, isPointSet );
+    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( segmentationNode, isPointSet );
 
     if (possibleChildren->size() > 0)
     {
       for(unsigned int i = 0; i < possibleChildren->size(); ++i)
       {
-        if ((*possibleChildren)[i]->GetName() == SEED_POINT_SET_NAME)
+        if ((*possibleChildren)[i]->GetName() == SEEDS_NAME)
         {
           pointSetNode = (*possibleChildren)[i];
           pointSet = dynamic_cast<mitk::PointSet*>((*possibleChildren)[i]->GetData());
@@ -330,14 +326,14 @@ void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& p
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASTool::UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value)
+void mitk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
 {
   assert(m_ToolManager);
 
-  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(workingDataNodeNumber) );
+  mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   assert(workingNode);
 
-  workingNode->ReplaceProperty(name.c_str(), mitk::BoolProperty::New(value));
+  workingNode->SetBoolProperty(name.c_str(), value);
 }
 
 

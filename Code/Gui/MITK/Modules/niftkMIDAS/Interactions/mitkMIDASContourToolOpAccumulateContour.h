@@ -37,20 +37,26 @@ public:
   MIDASContourToolOpAccumulateContour(
       mitk::OperationType type,
       bool redo,
-      int dataSetNumber,
+      int dataIndex,
       mitk::ContourModelSet::Pointer contourSet
       );
-  ~MIDASContourToolOpAccumulateContour() {}
-  bool IsRedo() const { return m_Redo; }
-  int GetDataSetNumber() const { return m_DataSetNumber; }
-  mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet;}
+
+  ~MIDASContourToolOpAccumulateContour();
+
+  bool IsRedo() const;
+
+  int GetDataIndex() const;
+
+  mitk::ContourModelSet::Pointer GetContourSet() const;
 
 private:
+
   bool m_Redo;
-  int  m_DataSetNumber;
+  int  m_DataIndex;
   mitk::ContourModelSet::Pointer m_ContourSet;
+
 };
 
-} // end namespace
+}
 
 #endif

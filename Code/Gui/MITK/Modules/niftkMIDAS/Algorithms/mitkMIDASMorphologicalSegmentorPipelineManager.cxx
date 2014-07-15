@@ -258,10 +258,10 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
         set.insert(name);
       }
       if (set.size() == 4
-          && set.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS) != set.end()
-          && set.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS) != set.end()
-          && set.find(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS) != set.end()
-          && set.find(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS) != set.end()
+          && set.find(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
+          && set.find(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end()
           )
       {
         result = true;
@@ -286,10 +286,10 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk:
       std::string name;
       if (node->GetStringProperty("name", name))
       {
-        if (   name == mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS
-            || name == mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS
-            || name == mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS
-            || name == mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS
+        if (   name == mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
+            || name == mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME
+            || name == mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
+            || name == mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME
             )
         {
           result = true;
@@ -317,7 +317,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::CanStartSegmentationForBinaryNo
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node) const
+mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const
 {
   assert(node);
   mitk::ToolManager::DataVectorType result;
@@ -328,10 +328,10 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::Ge
   {
     std::string name;
     (*children)[i]->GetStringProperty("name", name);
-    if (   name == mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS
-        || name == mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS
-        || name == mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS
-        || name == mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS
+    if (   name == mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
+        || name == mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME
+        || name == mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
+        || name == mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME
         )
     {
       result.push_back((*children)[i]);
@@ -347,7 +347,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::Ge
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node) const
+mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const
 {
   assert(node);
   mitk::DataNode* result = NULL;

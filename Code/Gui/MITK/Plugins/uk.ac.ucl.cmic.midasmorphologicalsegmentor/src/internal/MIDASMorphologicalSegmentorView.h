@@ -121,10 +121,10 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node);
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
   /// \brief Method to enable this and derived classes to turn widgets off/on
   virtual void EnableSegmentationWidgets(bool b);

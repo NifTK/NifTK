@@ -152,16 +152,16 @@ void mitk::MIDASPolyTool::Activated()
 {
   MIDASTool::Activated();
 
-  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
-  if (!workingNode) return;
+  DataNode* segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
+  if (!segmentationNode) return;
 
   // Store these for later (in base class), as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
-  m_WorkingImage = dynamic_cast<Image*>(workingNode->GetData());
-  m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
+  m_SegmentationImage = dynamic_cast<Image*>(segmentationNode->GetData());
+  m_SegmentationImageGeometry = m_SegmentationImage->GetGeometry();
 
   // If these are not set, something is fundamentally wrong.
-  assert(m_WorkingImage);
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImage);
+  assert(m_SegmentationImageGeometry);
 
   // Initialize data which sets the contours to zero length, and set properties.
   this->ClearData();
@@ -187,10 +187,9 @@ void mitk::MIDASPolyTool::Deactivated()
 
   if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
   {
-    int workingDataNodeNumber = 2;
-    if (m_ToolManager->GetWorkingData(workingDataNodeNumber))
+    if (m_ToolManager->GetWorkingData(CONTOURS))
     {
-      this->AccumulateContourInWorkingData(*feedbackContour, workingDataNodeNumber);
+      this->AccumulateContourInWorkingData(*feedbackContour, CONTOURS);
     }
   }
 
@@ -255,8 +254,8 @@ void mitk::MIDASPolyTool::DrawWholeContour(
     )
 {
   // If these are not set, something is fundamentally wrong.
-  assert(m_WorkingImage);
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImage);
+  assert(m_SegmentationImageGeometry);
 
   // Reset the contours, as we are redrawing the whole thing.
   feedbackContour.Initialize();
@@ -272,8 +271,8 @@ void mitk::MIDASPolyTool::DrawWholeContour(
       const mitk::ContourModel::VertexType* v2 = contourReferencePointsInput.GetVertexAt(i);
 
       this->DrawLineAroundVoxelEdges(
-        *m_WorkingImage,
-        *m_WorkingImageGeometry,
+        *m_SegmentationImage,
+        *m_SegmentationImageGeometry,
         planeGeometry,
         v2->Coordinates,
         v1->Coordinates,
@@ -357,8 +356,8 @@ void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk:
     MIDASContourTool::OnMousePressed(action, positionEvent);
 
     // If these are not set, something is fundamentally wrong.
-    assert(m_WorkingImage);
-    assert(m_WorkingImageGeometry);
+    assert(m_SegmentationImage);
+    assert(m_SegmentationImageGeometry);
 
     // Make sure we have valid contours, otherwise no point continuing.
     mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
@@ -399,8 +398,8 @@ bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Intera
   MIDASContourTool::OnMousePressed(action, event);
 
   // If these are not set, something is fundamentally wrong.
-  assert(m_WorkingImage);
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImage);
+  assert(m_SegmentationImageGeometry);
 
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -450,7 +449,7 @@ bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Intera
   ExecuteOperation(doOp);
 
   // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
@@ -464,7 +463,7 @@ bool mitk::MIDASPolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::In
 
   this->CopyContour(*(m_ReferencePoints), *(m_PreviousContourReferencePoints));
   this->UpdateContours(action, positionEvent, false, true);
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
@@ -478,7 +477,7 @@ bool mitk::MIDASPolyTool::MovePoint(mitk::StateMachineAction* action, mitk::Inte
 
   this->SetPreviousContourVisible(true);
   this->UpdateContours(action, positionEvent, false, false);
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
@@ -491,7 +490,7 @@ bool mitk::MIDASPolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::
   }
   this->SetPreviousContourVisible(false);
   this->UpdateContours(action, positionEvent, true, false);
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 

@@ -41,8 +41,8 @@ mitk::MIDASContourTool::MIDASContourTool()
 , m_ContourWidth(1)
 , m_ContourClosed(false)
 , m_Tolerance(0.01)
-, m_WorkingImageGeometry(NULL)
-, m_WorkingImage(NULL)
+, m_SegmentationImageGeometry(NULL)
+, m_SegmentationImage(NULL)
 , m_ReferenceImage(NULL)
 , m_BackgroundContourVisible(false)
 {
@@ -163,15 +163,18 @@ void mitk::MIDASContourTool::SetFeedbackContourVisible(bool b)
 
 bool mitk::MIDASContourTool::OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  DataNode* referenceNode( m_ToolManager->GetReferenceData(0) );
+  DataNode* referenceNode = m_ToolManager->GetReferenceData(0);
   if (!referenceNode) return false;
 
-  DataNode* workingNode( m_ToolManager->GetWorkingData(0) );
-  if (!workingNode) return false;
+  DataNode* segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
+  if (!segmentationNode)
+  {
+    return false;
+  }
 
   // Store these for later, as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
-  m_WorkingImage = dynamic_cast<Image*>(workingNode->GetData());
-  m_WorkingImageGeometry = m_WorkingImage->GetGeometry();
+  m_SegmentationImage = dynamic_cast<Image*>(segmentationNode->GetData());
+  m_SegmentationImageGeometry = m_SegmentationImage->GetGeometry();
   m_ReferenceImage = dynamic_cast<Image*>(referenceNode->GetData());
 
   return true;
@@ -181,9 +184,9 @@ void mitk::MIDASContourTool::ConvertPointInMmToVx(
     const mitk::Point3D& pointInMm,
     mitk::Point3D& pointInVx)
 {
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImageGeometry);
 
-  m_WorkingImageGeometry->WorldToIndex(pointInMm, pointInVx);
+  m_SegmentationImageGeometry->WorldToIndex(pointInMm, pointInVx);
 }
 
 void mitk::MIDASContourTool::ConvertPointToNearestVoxelCentreInVx(
@@ -202,11 +205,11 @@ void mitk::MIDASContourTool::ConvertPointToNearestVoxelCentreInMm(
     const mitk::Point3D& pointInMm,
     mitk::Point3D& nearestVoxelCentreInMm)
 {
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImageGeometry);
 
   mitk::Point3D pointInVx;
   this->ConvertPointToNearestVoxelCentreInVx(pointInMm, pointInVx);
-  m_WorkingImageGeometry->IndexToWorld(pointInVx, nearestVoxelCentreInMm);
+  m_SegmentationImageGeometry->IndexToWorld(pointInVx, nearestVoxelCentreInMm);
 }
 
 void mitk::MIDASContourTool::GetClosestCornerPoint2D(
@@ -214,7 +217,7 @@ void mitk::MIDASContourTool::GetClosestCornerPoint2D(
     int* whichTwoAxesInVx,
     mitk::Point3D& cornerPointBetweenVoxelsInTrueMm)
 {
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImageGeometry);
 
   mitk::Point3D pointInVx;
   this->ConvertPointToNearestVoxelCentreInVx(pointInTrueMm, pointInVx);
@@ -239,7 +242,7 @@ void mitk::MIDASContourTool::GetClosestCornerPoint2D(
       testCornerPointInVx[whichTwoAxesInVx[0]] = pointInVx[whichTwoAxesInVx[0]] + i/2.0;
       testCornerPointInVx[whichTwoAxesInVx[1]] = pointInVx[whichTwoAxesInVx[1]] + j/2.0;
 
-      m_WorkingImageGeometry->IndexToWorld(testCornerPointInVx, testCornerPointInMm);
+      m_SegmentationImageGeometry->IndexToWorld(testCornerPointInVx, testCornerPointInMm);
 
       testSquaredDistance = mitk::GetSquaredDistanceBetweenPoints(testCornerPointInMm, pointInTrueMm);
 
@@ -285,7 +288,7 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
     int* whichTwoAxesInVx,
     mitk::Point3D& cornerPointInMm)
 {
-  assert(m_WorkingImageGeometry);
+  assert(m_SegmentationImageGeometry);
 
   mitk::Point3D c1InVx;
   mitk::Point3D c2InVx;
@@ -309,11 +312,11 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
   if (mitk::GetSquaredDistanceBetweenPoints(c3InVx, p2InVx)
       < mitk::GetSquaredDistanceBetweenPoints(c4InVx, p2InVx))
   {
-    m_WorkingImageGeometry->IndexToWorld(c3InVx, cornerPointInMm);
+    m_SegmentationImageGeometry->IndexToWorld(c3InVx, cornerPointInMm);
   }
   else
   {
-    m_WorkingImageGeometry->IndexToWorld(c4InVx, cornerPointInMm);
+    m_SegmentationImageGeometry->IndexToWorld(c4InVx, cornerPointInMm);
   }
 }
 
@@ -536,14 +539,14 @@ void mitk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Cont
   }
 }
 
-void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& contour, int dataSetNumber)
+void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& contour, int contourIndex)
 {
   assert(m_ToolManager);
 
-  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(dataSetNumber) );
-  assert(workingNode);
+  mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(contourIndex);
+  assert(contourNode);
 
-  mitk::ContourModelSet* inputContourSet = dynamic_cast<mitk::ContourModelSet*>(workingNode->GetData());
+  mitk::ContourModelSet* inputContourSet = dynamic_cast<mitk::ContourModelSet*>(contourNode->GetData());
   assert(inputContourSet);
 
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
@@ -560,7 +563,7 @@ void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& 
   mitk::MIDASContourToolOpAccumulateContour *doOp = new mitk::MIDASContourToolOpAccumulateContour(
       MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
       true,
-      dataSetNumber,
+      contourIndex,
       newContourSet
       );
 
@@ -568,7 +571,7 @@ void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& 
   mitk::MIDASContourToolOpAccumulateContour *undoOp = new mitk::MIDASContourToolOpAccumulateContour(
       MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
       false,
-      dataSetNumber,
+      contourIndex,
       copyOfInputContourSet
       );
 
@@ -590,19 +593,19 @@ void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)
       {
         assert(m_ToolManager);
 
-        int dataSetNumber = op->GetDataSetNumber();
+        int dataIndex = op->GetDataIndex();
 
         mitk::ContourModelSet* newContours = op->GetContourSet();
         assert(newContours);
 
-        mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>((m_ToolManager->GetWorkingData(dataSetNumber))->GetData());
+        mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>((m_ToolManager->GetWorkingData(dataIndex))->GetData());
         assert(contoursToReplace);
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
 
         contoursToReplace->UpdateOutputInformation();
         contoursToReplace->Modified();
-        m_ToolManager->GetWorkingData(dataSetNumber)->Modified();
+        m_ToolManager->GetWorkingData(dataIndex)->Modified();
 
         // Signal that something has happened, and that it may be worth updating.
         ContoursHaveChanged.Send();
