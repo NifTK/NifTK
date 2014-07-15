@@ -115,7 +115,10 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     
     merge_dwis_2 = pe.Node(interface = fsl.Merge(dimension = 't'), 
                           direction = 't',
-                          name = 'merge_dwis_2')                          
+                          name = 'merge_dwis_2')
+
+    calculate_proc_residual = pe.Node(interface=niftyseg.BinaryMaths(), name = 'proc_residual_subtracter')
+    calculate_proc_residual.inputs.operation = 'sub'                        
 
     postproc = dmripostproc.create_dti_likelihood_post_proc_workflow(name = 'postproc')
 
@@ -125,7 +128,8 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
                 'tensor_metric_ROI_statistics',
                 'dwi_metric_map',
                 'dwi_metric_ROI_statistics',
-                'affine_distances']),
+                'affine_distances',
+                'proc_residual_metric_ROI_statistics']),
                            name="output_node" )
     
     # Generate Distortions
@@ -192,12 +196,17 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     
     # Merge back the predicted DWI
     workflow.connect(tensor_2_dwi_2, 'syn_file', merge_dwis_2, 'in_files')
+    
+    # Calculate proper residual of the tensor fitting on the processed data
+    workflow.connect(r, 'output_node.predicted_image', calculate_proc_residual, 'in_file')
+    workflow.connect(r, 'output_node.dwis', calculate_proc_residual, 'operand_file')
 
     # Perform Post Processing Measurements
     workflow.connect(merge_dwis,'merged_file', postproc, 'input_node.simulated_dwis')
     workflow.connect(merge_dwis_2, 'merged_file', postproc, 'input_node.estimated_dwis')
     workflow.connect(input_node, 'in_tensors_file', postproc, 'input_node.simulated_tensors')
     workflow.connect(r, 'output_node.tensor', postproc, 'input_node.estimated_tensors')
+    workflow.connect(calculate_proc_residual, 'out_file', postproc, 'input_node.proc_residual_image')
     workflow.connect(input_node, 'in_labels_file', postproc, 'input_node.labels_file')
     
     
@@ -210,6 +219,7 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
     workflow.connect(postproc, 'output_node.dwi_metric_map', output_node, 'dwi_metric_map')
     workflow.connect(postproc, 'output_node.dwi_metric_ROI_statistics', output_node, 'dwi_metric_ROI_statistics')
     workflow.connect(postproc, 'output_node.affine_distances', output_node, 'affine_distances')
+    workflow.connect(postproc, 'output_node.proc_residual_metric_ROI_statistics', output_node, 'proc_residual_metric_ROI_statistics')
     
     if result_dir != None:
         ds = pe.Node(nio.DataSink(), name='sinker')
@@ -220,5 +230,6 @@ def create_dti_likelihood_study_workflow(name='create_dti_reproducibility_study'
         workflow.connect(output_node, 'dwi_metric_ROI_statistics',ds, '@dwi_stats')
         workflow.connect(output_node, 'dwi_metric_map', ds, '@dwi_residual')
         workflow.connect(output_node, 'affine_distances', ds, '@affine_distances')
+        workflow.connect(output_node, 'proc_residual_metric_ROI_statistics',ds, '@proc_residual_stats')
     return workflow
     

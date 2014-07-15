@@ -51,8 +51,8 @@ result_dir = os.getcwd()+'/results/'
 #os.mkdir(result_dir)
 
 inter_types = ['LIN', 'CUB']
-log_data_values = [False]
-number_of_repeats = 1
+log_data_values = [True,False]
+number_of_repeats = 3
 for i in range(number_of_repeats):
     for log in log_data_values:
         for inter in inter_types:
@@ -84,5 +84,5 @@ for i in range(number_of_repeats):
             #r.run()
             #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
             #r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
-            r.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
+            r.run(plugin='MultiProc', plugin_args={'n_procs' : 4})
 

@@ -27,7 +27,8 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'estimated_tensors',
                     'labels_file',
                     'simulated_affines',
-                    'estimated_affines']),
+                    'estimated_affines',
+                    'proc_residual_image']),
         name='input_node')
 
     # TODO: Compare estimated transformation matrices!
@@ -57,6 +58,10 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                          name = 'dwi_squarer')
     dwi_sqr.inputs.operation = 'mul'
     
+    residual_sqr = pe.Node(interface=niftyseg.maths.BinaryMaths(),
+                         name = 'residual_squarer')
+    residual_sqr.inputs.operation = 'mul'
+    
     # We need to resample the parcellation for each of the simulated DWI images
     resample_parc = pe.MapNode(interface=niftyreg.RegResample(), name = 'resample_atlas', iterfield = 'trans_file')
     resample_parc.inputs.inter_val = 'NN'
@@ -74,10 +79,16 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     array_dwi_writer = pe.Node(interface=WriteArrayToCsv(),name='dwi_stat_writer')
     array_dwi_writer.inputs.in_name = 'dwi_stats'
     
+    array_residual_writer = pe.Node(interface=WriteArrayToCsv(),name='residual_stat_writer')
+    array_residual_writer.inputs.in_name = 'proc_residual_stats'
+    
     
     
     roi_tensor_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_tensor_stats')
-    roi_dwi_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_dwi_stats')  
+    roi_dwi_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_dwi_stats')
+    roi_residual_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_residual_stats')  
+    array_dwi_writer = pe.Node(interface=WriteArrayToCsv(),name='dwi_stat_writer')
+    array_dwi_writer.inputs.in_name = 'dwi_stats'
     
     output_node = pe.Node(
         niu.IdentityInterface(
@@ -86,7 +97,8 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
                     'dwi_metric_map',
                     'dwi_metric_ROI_statistics',
                     'dwi_likelihood',
-                    'affine_distances']),
+                    'affine_distances',
+                    'proc_residual_metric_ROI_statistics']),
         name='output_node')
     
     workflow.connect(input_node, 'simulated_tensors', logger1, 'source_file')
@@ -104,6 +116,13 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     workflow.connect(dwi_subtracter, 'out_file', dwi_sqr, 'in_file')
     workflow.connect(dwi_subtracter, 'out_file', dwi_sqr, 'operand_file')
     
+    # Square the residual of the processed image
+    workflow.connect(input_node, 'proc_residual_image', residual_sqr, 'in_file')
+    workflow.connect(input_node, 'proc_residual_image', residual_sqr, 'operand_file')
+    # Calculate the statistics of the processed residual image based on the atlas
+    workflow.connect(residual_sqr, 'out_file', roi_residual_stats, 'in_file')
+    workflow.connect(input_node, 'labels_file', roi_residual_stats, 'roi_file')
+    
     workflow.connect(tensor_tmean, 'out_file', roi_tensor_stats, 'in_file')
     workflow.connect(input_node, 'labels_file', roi_tensor_stats, 'roi_file')
     
@@ -119,12 +138,14 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     
     workflow.connect(roi_tensor_stats, 'out_array', array_tensor_writer, 'in_array')
     workflow.connect(roi_dwi_stats, 'out_array', array_dwi_writer, 'in_array')
+    workflow.connect(roi_residual_stats, 'out_array', array_residual_writer, 'in_array')
     
     workflow.connect( tensor_subtracter, 'out_file', output_node, 'tensor_metric_map')
     workflow.connect(array_tensor_writer, 'out_file', output_node, 'tensor_metric_ROI_statistics')
     
     workflow.connect(dwi_subtracter, 'out_file', output_node, 'dwi_metric_map')
     workflow.connect(array_dwi_writer, 'out_file', output_node, 'dwi_metric_ROI_statistics')
+    workflow.connect(array_residual_writer, 'out_file', output_node, 'proc_residual_metric_ROI_statistics')
     
     workflow.connect(input_node, 'simulated_affines', calculate_affine_distance,'transformation1_list')
     workflow.connect(input_node, 'estimated_affines', calculate_affine_distance,'transformation2_list')
