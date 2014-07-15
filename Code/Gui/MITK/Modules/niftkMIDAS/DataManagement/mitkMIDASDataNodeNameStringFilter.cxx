@@ -15,6 +15,7 @@
 #include "mitkMIDASDataNodeNameStringFilter.h"
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPaintbrushTool.h>
+#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
 #include <mitkMIDASPolyTool.h>
 
 namespace mitk
@@ -35,6 +36,7 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
   this->AddToList(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
   this->AddToList(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
   this->AddToList(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
+  this->AddToList(mitk::MIDASMorphologicalSegmentorPipelineManager::SEGMENTATION_OF_LAST_STAGE_NAME);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   this->AddToList("Paintbrush_Node");
