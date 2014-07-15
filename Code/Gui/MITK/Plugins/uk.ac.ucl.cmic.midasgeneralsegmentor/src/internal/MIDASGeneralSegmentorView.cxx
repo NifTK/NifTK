@@ -2092,7 +2092,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               mitk::OpThresholdApply *undoThresholdOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
               mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-              ExecuteOperation(doThresholdOp);
+              this->ExecuteOperation(doThresholdOp);
 
               drawTool->ClearWorkingData();
               this->UpdateCurrentSliceContours();
@@ -2105,8 +2105,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
             mitk::OpRetainMarks *undoOp = new mitk::OpRetainMarks(OP_RETAIN_MARKS, false, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, processor);
             mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-            ExecuteOperation(doOp);
-
+            this->ExecuteOperation(doOp);
           }
           else // so, "Retain Marks" is Off.
           {
@@ -2131,7 +2130,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
               mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-              ExecuteOperation(doApplyOp);
+              this->ExecuteOperation(doApplyOp);
 
               drawTool->ClearWorkingData();
               this->UpdateCurrentSliceContours();
@@ -2147,7 +2146,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 mitk::OpWipe *undoWipeOp = new mitk::OpWipe(OP_WIPE, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
                 mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doWipeOp, undoWipeOp, "Wipe command");
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-                ExecuteOperation(doWipeOp);
+                this->ExecuteOperation(doWipeOp);
               }
               else // so, we don't have unenclosed seeds
               {
@@ -2166,7 +2165,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
                 mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-                ExecuteOperation(doApplyOp);
+                this->ExecuteOperation(doApplyOp);
 
                 drawTool->ClearWorkingData();
 
@@ -2443,7 +2442,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonClicked()
           mitk::OpClean *undoOp = new mitk::OpClean(OP_CLEAN, false, copyOfInputContourSet);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Clean: Filtering contours");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doOp);
+          this->ExecuteOperation(doOp);
 
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
@@ -2456,7 +2455,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonClicked()
             mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-            ExecuteOperation(doApplyOp);
+            this->ExecuteOperation(doApplyOp);
 
             // We should update the current slice contours, as the green contours
             // are the current segmentation that will be applied when we change slice.
@@ -2672,7 +2671,7 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
           mitk::OpWipe *undoOp = new mitk::OpWipe(OP_WIPE, false, sliceNumber, axisNumber, outputRegion, copyOfInputSeeds, processor);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Wipe command");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doOp);
+          this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
           this->UpdateCurrentSliceContours();
@@ -2882,14 +2881,14 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
           mitk::OpPropagate *undoPropOp = new mitk::OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doPropOp);
+          this->ExecuteOperation(doPropOp);
 
           message = tr("Propagate: copy seeds");
           mitk::OpPropagateSeeds *doPropSeedsOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceNumber, axisNumber, outputSeeds);
           mitk::OpPropagateSeeds *undoPropSeedsOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceNumber, axisNumber, copyOfInputSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent( m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          ExecuteOperation(doPropOp);
+          this->ExecuteOperation(doPropOp);
 
           drawTool->ClearWorkingData();
           this->UpdateCurrentSliceContours(false);

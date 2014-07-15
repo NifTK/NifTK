@@ -338,7 +338,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
 
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Update PolyLine");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-    ExecuteOperation(doOp);
+    this->ExecuteOperation(doOp);
   }
   else
   {
@@ -446,7 +446,7 @@ bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Intera
 
   mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Add to PolyLine");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-  ExecuteOperation(doOp);
+  this->ExecuteOperation(doOp);
 
   // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
   this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);

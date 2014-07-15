@@ -542,7 +542,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAct
 
   mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Erase Contour");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-  ExecuteOperation(doOp);
+  this->ExecuteOperation(doOp);
   return true;
 }
 
@@ -596,8 +596,7 @@ void mitk::MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
 
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Clean Contour");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-    ExecuteOperation(doOp);
-
+    this->ExecuteOperation(doOp);
   }
   catch(const mitk::AccessByItkException& e)
   {

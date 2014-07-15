@@ -577,7 +577,7 @@ void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& 
 
   mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Add Contour");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-  ExecuteOperation(doOp);
+  this->ExecuteOperation(doOp);
 }
 
 void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)

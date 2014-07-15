@@ -391,8 +391,7 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, m
       mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Edit Image");
       mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
 
-      ExecuteOperation(doOp);
-
+      this->ExecuteOperation(doOp);
     }
     catch( itk::ExceptionObject & err )
     {
