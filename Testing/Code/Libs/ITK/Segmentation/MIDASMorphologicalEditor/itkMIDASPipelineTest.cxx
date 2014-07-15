@@ -149,7 +149,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   }
 
   ImageFileWriterType::Pointer writer = ImageFileWriterType::New();
-  writer->SetInput(pipeline->GetOutput(editingFlags).GetPointer());
+  writer->SetInput(pipeline->GetOutput().GetPointer());
   writer->SetFileName(outputFileName);
   writer->Update();
 

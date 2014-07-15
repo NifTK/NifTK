@@ -409,7 +409,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::GetOutput(const std::vector<bool>& editingFlags)
+::GetOutput()
 {
   typename SegmentationImageType::Pointer result;
 

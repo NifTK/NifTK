@@ -78,10 +78,7 @@ public:
   void Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion);
 
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
-  ///
-  /// The parameters editingImageBeingEdited and additionsImageBeingEdited should be the same as when Update was called.
-  /// \param editingFlags array of 4 booleans to say which images are being editted.
-  typename SegmentationImageType::Pointer GetOutput(const std::vector<bool>& editingFlags);
+  typename SegmentationImageType::Pointer GetOutput();
 
   enum Stage
   {

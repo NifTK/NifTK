@@ -685,8 +685,8 @@ MIDASMorphologicalSegmentorPipelineManager
   pipeline->DisconnectPipeline();
 
   // Get hold of the output, and make sure we don't re-allocate memory.
-  output->InitializeByItk< ImageType >(pipeline->GetOutput(editingFlags).GetPointer());
-  output->SetImportChannel(pipeline->GetOutput(editingFlags)->GetBufferPointer(), 0, mitk::Image::ReferenceMemory);
+  output->InitializeByItk< ImageType >(pipeline->GetOutput().GetPointer());
+  output->SetImportChannel(pipeline->GetOutput()->GetBufferPointer(), 0, mitk::Image::ReferenceMemory);
 }
 
 
@@ -714,14 +714,8 @@ MIDASMorphologicalSegmentorPipelineManager
   myPipeline = iter->second;
   pipeline = static_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
 
-  std::vector<bool> editingFlags;
-  editingFlags.push_back(false);
-  editingFlags.push_back(false);
-  editingFlags.push_back(false);
-  editingFlags.push_back(false);
-
   // This deliberately re-allocates the memory
-  mitk::CastToMitkImage(pipeline->GetOutput(editingFlags), output);
+  mitk::CastToMitkImage(pipeline->GetOutput(), output);
 }
 
 
