@@ -89,9 +89,12 @@ public:
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
   typename SegmentationImageType::Pointer GetOutput();
 
+  /// \brief Gets the output image of a specific stage of the pipeline.
+  /// Used to copy back into MITK world.
+  /// This function assumes that Update() has been called for that stage (see SetParams)
+  /// and DisconnectPipeline() has not been called since then.
+  typename SegmentationImageType::Pointer GetOutput(int stage);
 
-  /// \brief The stage until which we want to run the pipeline.
-  int m_Stage;
 
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;
@@ -117,6 +120,10 @@ private:
 
   /// \brief The background value for the segmentation, equal to 0, set in constructor.
   unsigned char m_BackgroundValue;
+
+  /// \brief The stage until which we want to run the pipeline.
+  int m_Stage;
+
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

@@ -16,6 +16,8 @@
 #include <itkConversionUtils.h>
 #include <itkMIDASHelper.h>
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::MorphologicalSegmentorPipeline()
@@ -41,12 +43,16 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   this->SetBackgroundValue((unsigned char)0);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::~MorphologicalSegmentorPipeline()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void 
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -57,6 +63,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 }
 
 
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void 
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -66,6 +73,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   this->UpdateBackgroundValues();
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension> 
@@ -80,7 +89,9 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_RethresholdingFilter->SetInValue(m_ForegroundValue);
 }
 
-template<typename TPixel, unsigned int VImageDimension>  
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>  
 ::UpdateBackgroundValues()
@@ -100,6 +111,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_RethresholdingFilter->SetOutValue(m_BackgroundValue);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -121,6 +134,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 }
 
 
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -292,6 +306,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -416,29 +432,41 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::GetOutput()
 {
+  return this->GetOutput(m_Stage);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::GetOutput(int stage)
+{
   typename SegmentationImageType::Pointer result;
 
-  if (m_Stage == THRESHOLDING)
+  if (stage == THRESHOLDING)
   {
     result = m_ThresholdingMaskFilter->GetOutput();
   }
-  else if (m_Stage == EROSION)
+  else if (stage == EROSION)
   {
     result = m_ErosionConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == DILATION)
+  else if (stage == DILATION)
   {
     result = m_DilationConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == RETHRESHOLDING)
+  else if (stage == RETHRESHOLDING)
   {
     result = m_RethresholdingFilter->GetOutput();
   }
+
   return result;
 }
-
