@@ -124,9 +124,9 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
 
         reg_f3d = pe.Node(interface = RegF3D(**{'nox_flag' : True, 'noz_flag' : True}),
                           name='reg_refine_fm_correction')
-        reg_f3d.inputs.lncc_val  = -2
+        reg_f3d.inputs.lncc_val  = -3
         reg_f3d.inputs.maxit_val = 150
-        reg_f3d.inputs.be_val    = 0.010      
+        reg_f3d.inputs.be_val    = 0.075
 
         comp_def = pe.Node(interface = RegTransform(),
                            name = 'comp_def')
