@@ -29,7 +29,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
         input_node.rot - The read out time in msec (34.56 msec for standard DRC acquisitions)
         input_node.ped - The phase encode direction (-y for standard DRC acquisition)
         input_node.mask_image - Mask image in the epi_image space (only used where mask_exists = True)
-        input_node.downsampled_t1 - A downsampled t1 image in the epi image space (only used when reg_to_t1 = True)
+        input_node.in_t1_file - A downsampled t1 image in the epi image space (only used when reg_to_t1 = True)
         
         
     Outputs::
@@ -50,7 +50,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
 
     """
     input_node =  pe.Node(niu.IdentityInterface(
-                fields=['epi_image','phase_image', 'mag_image', 'etd', 'ped', 'rot','mask_image','downsampled_t1']),
+                fields=['epi_image','phase_image', 'mag_image', 'etd', 'ped', 'rot','mask_image','t1']),
                             name='input_node')
     
     # create nodes to estimate the defomrartion field from the field map images
@@ -68,7 +68,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     reg_jacobian = pe.Node(interface=RegJacobian(), name='calc_transform_jac')
     thr_jac = pe.Node(interface=BinaryMaths(operation='thr', operand_value = 0.1), name='thr_jac')
     div_jac = pe.Node(interface=BinaryMaths(operation= 'div'), name='div_jac')
-    
+        
     output_node = pe.Node(niu.IdentityInterface(
                 fields=['out_field','out_epi', 'out_jac']),
                             name='output_node')
@@ -120,25 +120,50 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     pipeline.connect(input_node, 'epi_image', resample_epi,'ref_file')
     pipeline.connect(transform_def_to_b0, 'out_file', resample_epi,'trans_file')
     
-    # TODO: If we're using the T1 to refine the transformation
-    if reg_to_t1:    
-        reg_f3d = pe.Node(interface=RegF3D({'nox' : True, 'noz' : True}),name='reg_refine_fm_correction')
-        pipeline.connect(input_node, 'downsampled_t1', reg_f3d, 'ref_file')
+    if reg_to_t1:
+
+        reg_f3d = pe.Node(interface = RegF3D(**{'nox_flag' : True, 'noz_flag' : True}),
+                          name='reg_refine_fm_correction')
+        reg_f3d.inputs.lncc_val  = 4
+        reg_f3d.inputs.maxit_val = 100
+        reg_f3d.inputs.be_val    = 0.05        
+
+        comp_def = pe.Node(interface = RegTransform(),
+                           name = 'comp_def')
+        resample_epi_2 = pe.Node(interface=RegResample(), name='resample_epi_2')
+
+
+        pipeline.connect(input_node, 't1', reg_f3d, 'ref_file')
         pipeline.connect(resample_epi, 'res_file', reg_f3d, 'flo_file')
-    
-    # Measure the Jacobian determinant of the transformation
-    pipeline.connect(transform_def_to_b0, 'out_file', reg_jacobian, 'trans_file')
+        if mask_exists == True:
+            pipeline.connect(input_node, 'mask_image', reg_f3d, 'rmask_file')
+            
+        pipeline.connect(reg_f3d, 'cpp_file', comp_def, 'comp_input')
+        pipeline.connect(transform_def_to_b0, 'out_file', comp_def, 'comp_input2')
+        pipeline.connect(input_node, 't1', comp_def, 'ref1_file')
+
+        pipeline.connect(input_node, 'epi_image',resample_epi_2,'flo_file')
+        pipeline.connect(input_node, 'epi_image', resample_epi_2,'ref_file')
+        pipeline.connect(comp_def, 'out_file', resample_epi_2,'trans_file')
+
+        pipeline.connect(comp_def, 'out_file', reg_jacobian, 'trans_file')
+        pipeline.connect(comp_def, 'out_file', output_node, 'out_field')
+        pipeline.connect(resample_epi_2, 'res_file', div_jac, 'in_file')
+
+    else:
+        pipeline.connect(transform_def_to_b0, 'out_file', output_node, 'out_field')
+        pipeline.connect(transform_def_to_b0, 'out_file', reg_jacobian, 'trans_file')
+        pipeline.connect(resample_epi, 'res_file', div_jac, 'in_file')    
+
+    # Measure the Jacobian determinant of the transformation    
     pipeline.connect(reg_jacobian, 'jac_det_file', thr_jac, 'in_file')
     
     # Divide the resampled epi image by the Jacobian image
-    pipeline.connect(resample_epi, 'res_file', div_jac, 'in_file')
     pipeline.connect(thr_jac, 'out_file', div_jac, 'operand_file')
     
     # Fill out the information in the output node
-    pipeline.connect(transform_def_to_b0, 'out_file', output_node, 'out_field')
     pipeline.connect(div_jac, 'out_file', output_node, 'out_epi')
-    pipeline.connect(thr_jac, 'out_file', output_node, 'out_jac')
-   
+    pipeline.connect(thr_jac, 'out_file', output_node, 'out_jac')   
     
     return pipeline
 
