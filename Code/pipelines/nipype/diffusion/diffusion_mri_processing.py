@@ -188,7 +188,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     divide_dwis = pe.Node(interface = niftyseg.BinaryMaths(operation='div'), name = 'divide_dwis')
     
     # The masks in T1 mask needs to be rigidly registered to the B0 space
-    T1_to_b0_registration = pe.Node(niftyreg.RegAladin(), name='T1_to_b0_registration')
+    T1_to_b0_registration = pe.Node(niftyreg.RegAladin(rig_only_flag = True, nac_flag = True), 
+                                    name='T1_to_b0_registration')
     T1_to_b0_registration.inputs.rig_only_flag = True
     # Use resampling for the T1 image
     T1_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_resampling')
