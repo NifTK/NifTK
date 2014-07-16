@@ -158,15 +158,15 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
     # Passing empty strings are not valid filenames, and undefined fields can not be iterated over.
     # Current simple solution, as this is not generally required, is to use a flag which specifies wherther to iterate
     if initial_affines == True:
-        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
+        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3D(**nonlinear_options_hash), 
                                 name="nonlin_reg", 
                                 iterfield=['flo_file','aff_file'])
     elif initial_cpps == True:
-        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
+        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3D(**nonlinear_options_hash), 
                                 name="nonlin_reg", 
                                 iterfield=['flo_file','incpp_file'])
     else:
-        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
+        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3D(**nonlinear_options_hash), 
                                 name="nonlin_reg",
                                 iterfield=['flo_file'])
             
@@ -293,7 +293,7 @@ def create_atlas(name="atlas_creation",
         if i == 0:
             if (len(lin_workflows)):
                 # Take the final linear registration results and use them to initialise the NR
-                pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.aff_files', w, 'input_node.in_trans_files' )
+                pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.trans_files', w, 'input_node.in_trans_files' )
         else:
             pipeline.connect(nonlin_workflows[i-1], 'output_node.average_image', w, 'input_node.ref_file' )
             pipeline.connect(nonlin_workflows[i-1], 'output_node.trans_files', w, 'input_node.in_trans_files' )

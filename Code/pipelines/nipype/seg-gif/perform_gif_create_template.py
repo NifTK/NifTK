@@ -12,7 +12,7 @@ import os
 import nipype.interfaces.niftyreg as niftyreg
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
-mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
+mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
 
 parser = argparse.ArgumentParser(description='GIF Template Creation')
 parser.add_argument('-i', '--inputs',
@@ -40,7 +40,7 @@ if not os.path.exists(result_dir):
 basedir = os.getcwd()
 
 r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', 
-                                                            number_of_iterations = 3, 
+                                                            number_of_iterations = 0, 
                                                             ref_file = mni_template, 
                                                             ref_mask = mni_template_mask)
 
@@ -50,4 +50,6 @@ r.inputs.input_node.in_initial_labels_directory = os.path.abspath(args.labels)
 r.inputs.input_node.out_database_directory = result_dir
 
 r.write_graph(graph2use='hierarchical')
-r.run('MultiProc')
+
+qsubargs='-l h_rt=01:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+r.run(plugin='SGE', plugin_args={'qsub_args': qsubargs})
