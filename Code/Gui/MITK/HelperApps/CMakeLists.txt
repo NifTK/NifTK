@@ -150,6 +150,7 @@ if(SlicerExecutionModel_FOUND)
       niftkMergePointClouds
       niftkAverageTrackingMatrices
       niftkAverageStationaryChessboards
+      niftkEvaluateIntrinsicParametersOnNumberOfFrames
     )
     
     if(BUILD_PCL)
