@@ -327,15 +327,11 @@ bool MIDASMorphologicalSegmentorPipelineManager::CanStartSegmentationForBinaryNo
 mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const
 {
   assert(node);
+
   mitk::ToolManager::DataVectorType workingData(4);
+  std::fill(workingData.begin(), workingData.end(), (mitk::DataNode*) 0);
 
   mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true );
-
-  if (children->size() < 4)
-  {
-    MITK_INFO << "Incorrect number of working data nodes for the morphological segmentation pipeline.";
-    return workingData;
-  }
 
   for (std::size_t i = 0; i < children->size(); i++)
   {
@@ -357,11 +353,12 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::Ge
     {
       workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = node;
     }
-    else
-    {
-      workingData.clear();
-      break;
-    }
+  }
+
+  if (std::count(workingData.begin(), workingData.end(), (mitk::DataNode*) 0) != 0)
+  {
+    MITK_INFO << "Working data nodes missing for the morphological segmentation pipeline.";
+    workingData.clear();
   }
 
   return workingData;
@@ -475,7 +472,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     MorphologicalSegmentorPipelineParams params;
     this->GetParameterValuesFromSegmentationNode(params);
 
-    bool isRestarting(false);
+    bool isRestarting = false;
     bool foundRestartingFlag = segmentationNode->GetBoolProperty("midas.morph.restarting", isRestarting);
 
     try
@@ -497,7 +494,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
 
     if (foundRestartingFlag)
     {
-      referenceNode->ReplaceProperty("midas.morph.restarting", mitk::BoolProperty::New(false));
+      referenceNode->SetBoolProperty("midas.morph.restarting", false);
     }
 
     segmentationImage->Modified();
