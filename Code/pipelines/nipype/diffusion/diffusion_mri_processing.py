@@ -149,7 +149,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                                initial_ref = ref_b0_provided, 
                                                itr_rigid = 2, 
                                                itr_affine = 0, 
-                                               itr_non_lin=0)
+                                               itr_non_lin = 0)
     
     # Perform susceptibility correction, where we already have a mask in the b0 space
     susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction',
@@ -161,13 +161,15 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     # As we're trying to estimate an affine transformation, and rotations and shears are confounded
     # easier just to optimise an affine directly for the DWI 
-    dwi_to_B0_registration = pe.MapNode(niftyreg.RegAladin(), name = 'dwi_to_B0_registration',
-                                        iterfield=['flo_file'], aff_direct_flag = True)
-
-    #Node using niu.Merge() to put back together the list of B0s and DWIs
-    function_reorder_files = niu.Function(input_names=['B0s', 'DWIs', 'bvals', 'bvecs'], output_names=['out'])
-    function_reorder_files.inputs.function_str = str(inspect.getsource(reorder_list_from_bval_bvecs))
-    reorder_transformations = pe.Node(interface = function_reorder_files, name = 'reorder_transformations')
+    dwi_to_B0_registration = pe.MapNode(niftyreg.RegAladin(aff_direct_flag = True), 
+                                        name = 'dwi_to_B0_registration',
+                                        iterfield=['flo_file'])
+    
+    reorder_transformations = pe.Node(interface = niu.Function(
+        input_names = ['B0s', 'DWIs', 'bvals', 'bvecs'], 
+        output_names = ['out'],
+        function = reorder_list_from_bval_bvecs), 
+                                      name = 'reorder_transformations')
     
     #TODO: do the node for the gradient reorientation
     #gradient_reorientation = pe.Node()
@@ -315,7 +317,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # Reorder the B0 and DWIs transformations to match the bval #
     #############################################################
     
-    workflow.connect(groupwise_B0_coregistration, 'output_node.aff_files', reorder_transformations, 'B0s')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.trans_files', reorder_transformations, 'B0s')
     workflow.connect(dwi_to_B0_registration, 'aff_file', reorder_transformations, 'DWIs')
     workflow.connect(input_node, 'in_bval_file', reorder_transformations, 'bvals')
     workflow.connect(input_node, 'in_bvec_file', reorder_transformations, 'bvecs')
