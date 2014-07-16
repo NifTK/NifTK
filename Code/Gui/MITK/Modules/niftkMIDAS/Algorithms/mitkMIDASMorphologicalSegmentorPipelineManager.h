@@ -16,16 +16,19 @@
 #define mitkMIDASMorphologicalSegmentorPipelineManager_h
 
 #include "niftkMIDASExports.h"
-#include <itkObject.h>
+
+#include <itkLightObject.h>
+
 #include <mitkDataStorage.h>
 #include <mitkToolManager.h>
 #include <mitkImage.h>
 
-#include <MorphologicalSegmentorPipelineParams.h>
-#include <MorphologicalSegmentorPipelineInterface.h>
 #include <MorphologicalSegmentorPipeline.h>
+#include <MorphologicalSegmentorPipelineInterface.h>
+#include <MorphologicalSegmentorPipelineParams.h>
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \brief Class to contain all the ITK/MITK logic for the MIDAS Morphological Segmentor
@@ -43,7 +46,7 @@ namespace mitk {
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk::Object
+class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk::LightObject
 {
 
 public:
@@ -200,8 +203,8 @@ private:
   /// \brief This class needs a ToolManager to work.
   mitk::ToolManager::Pointer m_ToolManager;
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

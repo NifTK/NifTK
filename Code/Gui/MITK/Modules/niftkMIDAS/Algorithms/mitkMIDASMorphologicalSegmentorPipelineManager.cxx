@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkMIDASMorphologicalSegmentorPipelineManager.h"
+
 #include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
@@ -48,8 +49,10 @@ MIDASMorphologicalSegmentorPipelineManager::~MIDASMorphologicalSegmentorPipeline
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
-  m_DataStorage = dataStorage;
-  this->Modified();
+  if (dataStorage != m_DataStorage)
+  {
+    m_DataStorage = dataStorage;
+  }
 }
 
 
@@ -63,8 +66,10 @@ mitk::DataStorage::Pointer MIDASMorphologicalSegmentorPipelineManager::GetDataSt
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetToolManager(mitk::ToolManager::Pointer toolManager)
 {
-  m_ToolManager = toolManager;
-  this->Modified();
+  if (toolManager != m_ToolManager)
+  {
+    m_ToolManager = toolManager;
+  }
 }
 
 
@@ -773,4 +778,4 @@ MIDASMorphologicalSegmentorPipelineManager
 }
 
 
-} // end namespace
+}
