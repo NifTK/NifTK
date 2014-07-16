@@ -207,23 +207,23 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
     m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
     m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
-
-    m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
-    m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
   }
 
   if (startStage <= EROSION && m_Stage >= EROSION)
   {
     if (startStage <= THRESHOLDING)
     {
-      m_ErosionFilter->SetBinaryImageInput(m_ThresholdingConnectedComponentFilter->GetOutput());
+      m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
     }
     else
     {
-      m_ErosionFilter->SetBinaryImageInput(segmentationInputImage);
+      m_ThresholdingConnectedComponentFilter->SetInput(segmentationInputImage);
     }
 
+    m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
+
     m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
+    m_ErosionFilter->SetBinaryImageInput(m_ThresholdingConnectedComponentFilter->GetOutput());
     m_ErosionFilter->SetRegion(regionOfInterest);
     m_ErosionFilter->SetUpperThreshold((TPixel)params.m_UpperErosionsThreshold);
     m_ErosionFilter->SetNumberOfIterations(params.m_NumberOfErosions);
@@ -299,7 +299,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 {
   if (m_Stage == THRESHOLDING)
   {
-    m_ThresholdingConnectedComponentFilter->UpdateLargestPossibleRegion();
+    m_ThresholdingMaskFilter->UpdateLargestPossibleRegion();
   }
   else if (m_Stage == EROSION || m_Stage == DILATION)
   {
@@ -425,7 +425,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
   if (m_Stage == THRESHOLDING)
   {
-    result = m_ThresholdingConnectedComponentFilter->GetOutput();
+    result = m_ThresholdingMaskFilter->GetOutput();
   }
   else if (m_Stage == EROSION)
   {
