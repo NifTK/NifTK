@@ -134,7 +134,7 @@ r.connect(r.get_node('output_node'), 'predicted_image', ds, '@img')
 r.connect(r.get_node('output_node'), 'residual_image', ds, '@res')
 r.connect(r.get_node('output_node'), 'parameter_uncertainty_image', ds, '@unc')
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
-r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
+#r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 
 r.write_graph(graph2use = 'colored')

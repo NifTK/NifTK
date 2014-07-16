@@ -153,7 +153,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     # Perform susceptibility correction, where we already have a mask in the b0 space
     susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction',
-                                                                        mask_exists = True)
+                                                                        mask_exists = True,
+                                                                        reg_to_t1 = True)
     susceptibility_correction.inputs.input_node.etd = 2.46
     susceptibility_correction.inputs.input_node.rot = 34.56
     susceptibility_correction.inputs.input_node.ped = '-y'
@@ -187,6 +188,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # The masks in T1 mask needs to be rigidly registered to the B0 space
     T1_to_b0_registration = pe.Node(niftyreg.RegAladin(), name='T1_to_b0_registration')
     T1_to_b0_registration.inputs.rig_only_flag = True
+    # Use resampling for the T1 image
+    T1_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_resampling')
     # Use nearest neighbour resampling for the mask image
     T1_mask_resampling = pe.Node(niftyreg.RegResample(inter_val = 'NN'), name = 'T1_mask_resampling')
     # Fit the tensors    
@@ -205,7 +208,11 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                 'transformations',
                 'average_b0']),
                            name="output_node" )
-    
+
+    #############################################################
+    # Find the Diffusion data and separate between DWIs and B0s #
+    #############################################################
+
     workflow.connect(input_node, 'in_dwi_4d_file', split_dwis, 'in_file')
     workflow.connect(input_node, 'in_bval_file', find_B0s,  'bvals')
     workflow.connect(input_node, 'in_bvec_file', find_B0s,  'bvecs')
@@ -217,15 +224,44 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     workflow.connect(split_dwis, 'out_files', select_B0s, 'inlist')
     workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
-    # Use the B0s to define a groupwise atlas
+
+    #############################################################
+    #             groupwise atlas of B0 images                  #
+    #############################################################
     workflow.connect(select_B0s, 'out', groupwise_B0_coregistration, 'input_node.in_files')
     
     if ref_b0_provided == True:
         workflow.connect(input_node, 'in_ref_b0', groupwise_B0_coregistration, 'input_node.ref_file')
+
+
+    #############################################################
+    #    T1 to B0 rigid registration and resampling             #
+    #############################################################
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image',T1_to_b0_registration, 'ref_file')
+    workflow.connect(input_node, 'in_t1_file',T1_to_b0_registration, 'flo_file')
+
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_resampling, 'ref_file')
+    workflow.connect(input_node, 'in_t1_file', T1_resampling, 'flo_file')
+    workflow.connect(T1_to_b0_registration, 'aff_file', T1_resampling, 'trans_file')
     
-    # If we're logging the DWI before registration, need to connect the logged images
-    # rather than the split dwi into the dwi_to_b0_registration
+    workflow.connect(T1_to_b0_registration, 'aff_file', T1_mask_resampling, 'trans_file')
+    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_mask_resampling, 'ref_file')
+
+    # If we have a proper T1 mask, we can use that, otherwise make one using BET
+    if t1_mask_provided == True:
+        workflow.connect(input_node, 'in_t1_mask', T1_mask_resampling, 'flo_file')
+    else:
+        T1_mask = pe.Node(interface=fsl.BET(mask=True), name='T1_mask')
+        workflow.connect(input_node, 'in_t1_file', T1_mask, 'in_file')
+        workflow.connect(T1_mask, 'mask_file', T1_mask_resampling, 'flo_file')
+
+    #############################################################
+    #             DWI to B0 affine registration                 #
+    #############################################################
+
     if log_data == True:
+        # If we're logging the DWI before registration, need to connect the logged images
+        # rather than the split dwi into the dwi_to_b0_registration
         # Make a log images node
         log_ims = pe.MapNode(interface = fsl.UnaryMaths(operation = 'log', output_datatype = 'float'),
                              name = 'log_ims', iterfield=['in_file'])
@@ -254,83 +290,80 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', dwi_to_B0_registration, 'ref_file')
         workflow.connect(select_DWIs,                 'out',                       dwi_to_B0_registration, 'flo_file')
 
-    # If we have a proper T1 mask, we can use that, otherwise make one using BET
-    if t1_mask_provided == True:
-        workflow.connect(input_node, 'in_t1_mask', T1_mask_resampling, 'flo_file')
-    else:
-        T1_mask = pe.Node(interface=fsl.BET(mask=True), name='T1_mask')
-        workflow.connect(input_node, 'in_t1_file', T1_mask, 'in_file')
-        workflow.connect(T1_mask, 'mask_file', T1_mask_resampling, 'flo_file')    
+    # Once we have a resampled mask from the T1 space, this can be used as a ref mask for the B0 registration
+    # the susceptibility correction and for the tensor fitting    
+    workflow.connect(T1_mask_resampling, 'res_file', dwi_to_B0_registration, 'rmask_file')
+    
+
+    #############################################################
+    #             Susceptibility Correction                     #
+    #############################################################
     
     if correct_susceptibility == True:
-        # Need to insert an fslsplit
         workflow.connect(input_node, 'in_fm_magnitude_file', split_fm_mag,'in_file')
         workflow.connect(split_fm_mag, 'out_files', select_first_fm_mag, 'inlist')
         workflow.connect(select_first_fm_mag, 'out', susceptibility_correction, 'input_node.mag_image')
         workflow.connect(input_node, 'in_fm_phase_file', susceptibility_correction, 'input_node.phase_image')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', susceptibility_correction, 'input_node.epi_image')
-        #workflow.connect(input_node, 'in_t1_file', susceptibility_correction, 'input_node.in_t1_file')
+        workflow.connect(T1_resampling, 'res_file', susceptibility_correction, 'input_node.t1')
         workflow.connect(susceptibility_correction, 'output_node.out_field', transformation_composition, 'comp_input')
         workflow.connect(reorder_transformations, 'out', transformation_composition, 'comp_input2')
+        workflow.connect(T1_mask_resampling, 'res_file', susceptibility_correction, 'input_node.mask_image')
+
+    
+    #############################################################
+    # Reorder the B0 and DWIs transformations to match the bval #
+    #############################################################
     
     workflow.connect(groupwise_B0_coregistration, 'output_node.aff_files', reorder_transformations, 'B0s')
     workflow.connect(dwi_to_B0_registration, 'aff_file', reorder_transformations, 'DWIs')
     workflow.connect(input_node, 'in_bval_file', reorder_transformations, 'bvals')
-    workflow.connect(input_node, 'in_bvec_file', reorder_transformations, 'bvecs')        
+    workflow.connect(input_node, 'in_bvec_file', reorder_transformations, 'bvecs')
 
+    #############################################################
+    #   Resample the DWIs with affine (+susceptibility)         #
+    #   transformations and merge bacj into a 4D image          #
+    #############################################################
+    
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', resampling, 'ref_file')
     workflow.connect(split_dwis, 'out_files', resampling, 'flo_file')
     
     if correct_susceptibility ==True:
         workflow.connect(transformation_composition, 'out_file', resampling, 'trans_file')
     else:
-        workflow.connect(reorder_transformations, 'out', resampling, 'trans_file')
+        workflow.connect(reorder_transformations, 'out', resampling, 'trans_file')        
     
-    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image',T1_to_b0_registration, 'ref_file')
-    workflow.connect(input_node, 'in_t1_file',T1_to_b0_registration, 'flo_file')
-    
-    # We can now resample a mask in T1 space into the B0 space
-    workflow.connect(T1_to_b0_registration, 'aff_file', T1_mask_resampling, 'trans_file')
-    workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_mask_resampling, 'ref_file')
-    
-    # Once we have a resampled mask from the T1 space, this can be used as a ref mask for the B0 registration
-    # the susceptibility correction and for the tensor fitting    
-    workflow.connect(T1_mask_resampling, 'res_file', dwi_to_B0_registration, 'rmask_file')
-    
-    if correct_susceptibility == True:
-        workflow.connect(T1_mask_resampling, 'res_file',  susceptibility_correction, 'input_node.mask_image')
-
-    workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask_file')
-    
-    # Merge the DWI into a file for tensor fitting etc.
     workflow.connect(resampling, 'res_file',   merge_dwis, 'in_files')
+
+    #############################################################
+    #         Fit the tensor model from the DWI data            #
+    #############################################################
     
-    # If we're correcting for susceptibility distortions, need to divide by the
-    # jacobian of the distortion field
-    # Connect up the correct image to the tensor fitting software
     if correct_susceptibility == True:
+        # If we're correcting for susceptibility distortions, need to divide by the
+        # jacobian of the distortion field
+        # Connect up the correct image to the tensor fitting software
         workflow.connect(merge_dwis, 'merged_file', divide_dwis, 'in_file')
         workflow.connect(susceptibility_correction, 'output_node.out_jac', divide_dwis, 'operand_file')
         workflow.connect(divide_dwis,'out_file',  tensor_fitting, 'source_file')
     else:
         workflow.connect(merge_dwis, 'merged_file', tensor_fitting, 'source_file')    
-    
+
+    workflow.connect(T1_mask_resampling, 'res_file', tensor_fitting, 'mask_file')    
     workflow.connect(input_node, 'in_bvec_file', tensor_fitting, 'bvec_file')
-    workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bval_file')    
-    
+    workflow.connect(input_node, 'in_bval_file', tensor_fitting, 'bval_file')        
+
     if resample_in_t1 == True:
 
-        rig_reg = pe.Node(niftyreg.RegAladin(), name = 'b0_to_T1_registration')
-        rig_reg.inputs.rig_only_flag = True
+        inv_T1_aff = pe.Node(niftyreg.RegTransform(), name = 'inv_T1_aff')
         resamp_tensors = pe.Node(niftyreg.RegResample(), name='resamp_tensors')
         resamp_tensors.inputs.tensor_flag = True        
         dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')
-
-        workflow.connect(input_node, 'in_t1_file', rig_reg, 'ref_file')
-        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', rig_reg, 'flo_file')
+        
+        workflow.connect(T1_to_b0_registration, 'aff_file', inv_T1_aff, 'inv_aff_input')
         workflow.connect(input_node, 'in_t1_file', resamp_tensors, 'ref_file')
         workflow.connect(tensor_fitting, 'tenmap_file', resamp_tensors, 'flo_file')
-        workflow.connect(rig_reg, 'aff_file', resamp_tensors, 'trans_file')
+        workflow.connect(inv_T1_aff, 'out_file', resamp_tensors, 'trans_file')
         workflow.connect(resamp_tensors, 'res_file', dwi_tool, 'source_file')
         workflow.connect(resamp_tensors, 'res_file', output_node, 'tensor')
         workflow.connect(dwi_tool, 'famap_file', output_node, 'FA')
@@ -354,11 +387,9 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(susceptibility_correction, 'output_node.out_epi', output_node, 'average_b0')
     else:
         workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
-        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')
+        workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')    
     
-    
-    return workflow
-    
+    return workflow    
 
     # node explanation:
     
