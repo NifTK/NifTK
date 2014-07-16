@@ -48,7 +48,7 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
 , m_PipelineManager(NULL)
-, m_TabCounter(-1)
+, m_TabIndex(-1)
 {
 }
 
@@ -131,7 +131,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
-    newSegmentation->SetProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));
+    newSegmentation->SetBoolProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
 
     try
     {
@@ -227,14 +227,16 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       if (isRestarting)
       {
         newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+        this->SetControlsFromSegmentationNodeProps();
+        m_PipelineManager->UpdateSegmentation();
       }
       else
       {
-        this->SetDefaultParameterValuesFromReferenceImage();
-        this->SetControlsByImageData();
+        this->SetSegmentationNodePropsFromReferenceImage();
+        this->SetControlsFromReferenceImage();
+        this->SetControlsFromSegmentationNodeProps();
+        m_PipelineManager->UpdateSegmentation();
       }
-      this->SetControlsByParameterValues();
-      m_PipelineManager->UpdateSegmentation();
     }
     catch (std::bad_alloc&)
     {
@@ -378,7 +380,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(false);
 
         // Only if we are switching from tab 2 to 1.
-        if (m_TabCounter == 2)
+        if (m_TabIndex == 2)
         {
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
@@ -395,7 +397,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(true);
 
         // Only if we are switching from tab 1 to 2.
-        if (m_TabCounter == 1)
+        if (m_TabIndex == 1)
         {
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
@@ -412,11 +414,12 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
-    segmentationNode->SetIntProperty("midas.morph.stage", tabIndex);
-    m_PipelineManager->UpdateSegmentation();
+    m_PipelineManager->OnTabChanged(tabIndex);
+
     this->RequestRenderWindowUpdate();
   }
-  m_TabCounter = tabIndex;
+
+  m_TabIndex = tabIndex;
 }
 
 
@@ -452,9 +455,9 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
   {
     this->OnToolSelected(-1);
     m_PipelineManager->ClearWorkingData();
-    this->SetDefaultParameterValuesFromReferenceImage();
-    this->SetControlsByImageData();
-    this->SetControlsByParameterValues();
+    this->SetSegmentationNodePropsFromReferenceImage();
+    this->SetControlsFromReferenceImage();
+    this->SetControlsFromSegmentationNodeProps();
     m_PipelineManager->UpdateSegmentation();
 
     /// Reset the axial cut-off plane to the bottom of the image.
@@ -664,7 +667,7 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
     if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
     {
-      this->SetControlsByParameterValues();
+      this->SetControlsFromSegmentationNodeProps();
     }
 
     bool isAlreadyFinished = true;
@@ -680,14 +683,14 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImage()
+void MIDASMorphologicalSegmentorView::SetSegmentationNodePropsFromReferenceImage()
 {
-  m_PipelineManager->SetDefaultParameterValuesFromReferenceImage();
+  m_PipelineManager->SetSegmentationNodePropsFromReferenceImage();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsByImageData()
+void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
 {
   mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
@@ -696,7 +699,7 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
     int upDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
-    m_MorphologicalControls->SetControlsByImageData(    
+    m_MorphologicalControls->SetControlsByReferenceImage(
         referenceImage->GetStatistics()->GetScalarValueMin(),
         referenceImage->GetStatistics()->GetScalarValueMax(),
         numberOfAxialSlices,
@@ -706,12 +709,12 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
+void MIDASMorphologicalSegmentorView::SetControlsFromSegmentationNodeProps()
 {
   MorphologicalSegmentorPipelineParams params;
-  m_PipelineManager->GetParameterValuesFromSegmentationNode(params);
+  m_PipelineManager->GetPipelineParamsFromSegmentationNode(params);
 
-  m_MorphologicalControls->SetControlsByParameterValues(params);
+  m_MorphologicalControls->SetControlsByPipelineParams(params);
 }
 
 

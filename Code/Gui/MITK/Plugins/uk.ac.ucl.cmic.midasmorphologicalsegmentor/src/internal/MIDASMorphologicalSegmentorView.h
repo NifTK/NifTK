@@ -149,13 +149,13 @@ private:
   mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(mitk::Image* referenceImage);
 
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
-  void SetDefaultParameterValuesFromReferenceImage();
+  void SetSegmentationNodePropsFromReferenceImage();
 
   /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
-  void SetControlsByImageData();
+  void SetControlsFromReferenceImage();
 
   /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
-  void SetControlsByParameterValues();
+  void SetControlsFromSegmentationNodeProps();
 
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
@@ -170,7 +170,7 @@ private:
   mitk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
-  int m_TabCounter;
+  int m_TabIndex;
 };
 
 #endif

@@ -188,19 +188,34 @@ void MIDASMorphologicalSegmentorPipelineManager::OnRethresholdingValuesChanged(i
 
 
 //-----------------------------------------------------------------------------
+void MIDASMorphologicalSegmentorPipelineManager::OnTabChanged(int tabIndex)
+{
+  mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
+  if (segmentationNode.IsNotNull())
+  {
+    segmentationNode->SetIntProperty("midas.morph.stage", tabIndex);
+    this->UpdateSegmentation();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNode* node)
 {
-  bool found = false;
-  for (int i = 0; i < 4; i++)
+  int stage = -1;
+
+  if (node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS)
+      || node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS))
   {
-    if (node == m_ToolManager->GetWorkingData(i))
-    {
-      found = true;
-      break;
-    }
+    stage = MorphologicalSegmentorPipeline::EROSION;
+  }
+  else if (node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS)
+      || node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS))
+  {
+    stage = MorphologicalSegmentorPipeline::DILATION;
   }
 
-  if (found)
+  if (stage == MorphologicalSegmentorPipeline::EROSION || stage == MorphologicalSegmentorPipeline::DILATION)
   {
     mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
         dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
@@ -213,7 +228,7 @@ void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNod
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::GetParameterValuesFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const
+void MIDASMorphologicalSegmentorPipelineManager::GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
@@ -386,7 +401,7 @@ mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeF
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::SetDefaultParameterValuesFromReferenceImage()
+void MIDASMorphologicalSegmentorPipelineManager::SetSegmentationNodePropsFromReferenceImage()
 {
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();
 
@@ -423,10 +438,10 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();  // The grey scale image.
   mitk::Image::Pointer segmentationImage = this->GetSegmentationImage(); // The output image.
-  mitk::Image::Pointer erosionAdditions   = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS);
+  mitk::Image::Pointer erosionAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS);
   mitk::Image::Pointer erosionSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
-  mitk::Image::Pointer dilationAdditions     = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS);
-  mitk::Image::Pointer dilationSubtractions   = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
+  mitk::Image::Pointer dilationAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS);
+  mitk::Image::Pointer dilationSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
 
   if (referenceNode.IsNotNull()
       && segmentationNode.IsNotNull()
@@ -470,7 +485,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     }
 
     MorphologicalSegmentorPipelineParams params;
-    this->GetParameterValuesFromSegmentationNode(params);
+    this->GetPipelineParamsFromSegmentationNode(params);
 
     bool isRestarting = false;
     bool foundRestartingFlag = segmentationNode->GetBoolProperty("midas.morph.restarting", isRestarting);

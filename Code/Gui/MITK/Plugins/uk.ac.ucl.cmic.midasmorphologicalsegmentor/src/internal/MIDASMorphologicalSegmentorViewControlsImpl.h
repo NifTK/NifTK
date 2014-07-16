@@ -51,10 +51,10 @@ public:
   void EnableControls(bool b);
 
   /// \brief Set the dialog according to relevant image data.
-  void SetControlsByImageData(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
+  void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
-  void SetControlsByParameterValues(MorphologicalSegmentorPipelineParams &params);
+  void SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params);
 
 signals:
 
@@ -62,7 +62,7 @@ signals:
   void ErosionsValuesChanged(double upperThreshold, int numberOfErosions);
   void DilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
-  void TabChanged(int tabNumber);
+  void TabChanged(int tabIndex);
   void OKButtonClicked();
   void CancelButtonClicked();
   void RestartButtonClicked();

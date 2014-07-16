@@ -98,6 +98,11 @@ public:
   /// \param boxSize the size of the re-thresholding box (see paper).
   void OnRethresholdingValuesChanged(int boxSize);
 
+  /// \brief Called when we step to another stage of the pipeline, either fore or backwards.
+  ///
+  /// \param stage the new stage where we stepped to
+  void OnTabChanged(int tabIndex);
+
   /// \brief Called when a node changed.
   void NodeChanged(const mitk::DataNode* node);
 
@@ -117,7 +122,7 @@ public:
   mitk::Image::Pointer GetSegmentationImage() const;
 
   /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
-  void GetParameterValuesFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
+  void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
 
   /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_NAME and ADDITIONS_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const;
@@ -135,7 +140,7 @@ public:
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const;
 
   /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
-  void SetDefaultParameterValuesFromReferenceImage();
+  void SetSegmentationNodePropsFromReferenceImage();
 
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();

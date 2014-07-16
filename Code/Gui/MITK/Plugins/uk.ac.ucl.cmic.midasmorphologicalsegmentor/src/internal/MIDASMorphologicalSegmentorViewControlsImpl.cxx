@@ -260,7 +260,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
+void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -318,7 +318,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(MorphologicalSegmentorPipelineParams &params)
+void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
 {
   bool wasBlocked = this->blockSignals(true);
 
