@@ -37,6 +37,7 @@ set(CPP_FILES
   CameraCalibration/mitkHandeyeCalibrateUsingRegistration.cxx
   CameraCalibration/Undistortion.cxx
   CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
+  CameraCalibration/mitkEvaluateIntrinsicParametersOnNumberOfFrames.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx

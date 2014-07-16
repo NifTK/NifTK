@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Get Matched Tracking Matrix</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, uses the video data to perform and intrinsic calibration and the tracking data to perform a handeye calibration.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <directory>
+      <name>outputDirectory</name>
+      <longflag>outputDirectory</longflag>
+      <description>Output the calibration results</description>
+      <label>Output results</label>
+      <channel>ouput</channel>
+    </directory>
+		
+		<directory>
+      <name>inputMatrixDirectory</name>
+      <longflag>inputMatrixDirectory</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+    
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+   
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>50</default>
+    </integer>
+   
+    <integer>
+      <name>MaxTimingError</name>
+      <longflag>MaxTimingError</longflag>
+      <description>The maximum allowable timing error when choosing video and tracking pairs</description>
+      <label>The maxium allowable timing error when choosing video and tracking pairs</label>
+      <default>40e6</default>
+    </integer>
+
+    <integer>
+      <name>FramesToUse</name>
+      <longflag>FramesToUse</longflag>
+      <description>The target number of randomly selected video frames to use</description>
+      <label>The target number of randomly selected video frames to use</label>
+      <default>30</default>
+    </integer>
+    
+    <integer>
+      <name>NumberCornerWidth</name>
+      <longflag>NumberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis</description>
+      <label>The number of internal chessboard corners along the width axis</label>
+      <default>14</default>
+    </integer>
+    
+    <integer>
+      <name>NumberCornerHeight</name>
+      <longflag>NumberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis</description>
+      <label>The number of internal chessboard corners along the height axis</label>
+      <default>10</default>
+    </integer>
+
+    <boolean>
+      <name>DontSortByDistance</name>
+      <longflag>DontSortByDistance</longflag>
+      <description>Dont Sort the tracking matrices by distance when doing the handeye</description>
+      <label>Dont Sort the tracking matrices by distance when doing the handeye</label>
+      <default>0</default>
+    </boolean>
+   
+    <integer-vector>
+      <name>pixelScaleFactors</name>
+      <longflag>pixelScaleFactors</longflag>
+      <description>A vector of integers representing scale factors to multiply the number of pixels by.</description>
+      <label>Pixel Scale Factors</label>
+      <default>1,2</default>
+    </integer-vector>
+	
+    <boolean>
+      <name>swapVideoChannels</name>
+      <longflag>swapVideoChannels</longflag>
+      <description>Swap left and right video channel.</description>
+      <label>Swap video channels</label>
+      <default>false</default>
+    </boolean>
+
+    <directory>
+      <name>existingIntrinsicsDirectory</name>
+      <longflag>existingIntrinsicsDirectory</longflag>
+      <description>For stereo calibration, use an existing intrinsic calibration.</description>
+      <label>Existing intrinsics directory</label>
+      <channel>input</channel>
+    </directory>
+
+    <directory>
+      <name>existingRightToLeftDirectory</name>
+      <longflag>existingRightToLeftDirectory</longflag>
+      <description>For stereo calibration, use an existing right-to-left calibration.</description>
+      <label>Existing right-to-left directory</label>
+      <channel>input</channel>
+    </directory>
+
+  </parameters>
+  
+</executable>
