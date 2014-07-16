@@ -46,14 +46,6 @@ public:
   typedef itk::MIDASConditionalDilationFilter<SegmentationImageType, GreyScaleImageType, SegmentationImageType> DilationFilterType;
   typedef itk::MIDASRethresholdingFilter<GreyScaleImageType, SegmentationImageType, SegmentationImageType> RethresholdingFilterType;
 
-  enum
-  {
-    THRESHOLDING,
-    EROSION,
-    DILATION,
-    RETHRESHOLDING
-  };
-
   /// \brief Default constructor, creating all pipeline elements, where filters are held with smart pointers for automatic destruction.
   MorphologicalSegmentorPipeline();
 

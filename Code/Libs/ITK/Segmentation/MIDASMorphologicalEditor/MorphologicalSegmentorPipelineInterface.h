@@ -27,6 +27,14 @@ class MorphologicalSegmentorPipelineInterface
 {
 public:
 
+  enum
+  {
+    THRESHOLDING,
+    EROSION,
+    DILATION,
+    RETHRESHOLDING
+  };
+
   /// \brief Default no-op constructor.
   MorphologicalSegmentorPipelineInterface() {}
 
