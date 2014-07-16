@@ -294,6 +294,7 @@ def create_atlas(name="atlas_creation",
             if (len(lin_workflows)):
                 # Take the final linear registration results and use them to initialise the NR
                 pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.trans_files', w, 'input_node.in_trans_files' )
+                pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.average_image', w, 'input_node.ref_file' )
         else:
             pipeline.connect(nonlin_workflows[i-1], 'output_node.average_image', w, 'input_node.ref_file' )
             pipeline.connect(nonlin_workflows[i-1], 'output_node.trans_files', w, 'input_node.in_trans_files' )
