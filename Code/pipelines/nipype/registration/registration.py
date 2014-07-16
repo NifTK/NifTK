@@ -11,7 +11,10 @@ and non-linear image co-registration '''
 # Do a single iteration of an average b0 image from rigid registration and averaging
 # Options include rig_only 
 # TODO:Aladin options hash?
-def create_linear_coregistration_workflow(name="linear_registration_niftyreg", demean=True, linear_options_hash = dict(), initial_affines = False):
+def create_linear_coregistration_workflow(name="linear_registration_niftyreg", 
+                                          demean=True, 
+                                          linear_options_hash = dict(), 
+                                          initial_affines = False):
     """Creates a workflow that perform linear co-registration of a set of images using RegAladin, 
     producing an affine average image and a set of affine transformation matrices linking each
     of the floating images to the average.
@@ -47,7 +50,10 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
     """
     # We need to create an input node for the workflow    
     input_node = pe.Node(niu.IdentityInterface(
-            fields=['in_files', 'ref_file', 'rmask_file', 'in_aff_files']),
+            fields=['in_files', 
+                    'ref_file', 
+                    'rmask_file', 
+                    'in_aff_files']),
                         name='input_node')
     
     # Rigidly register each of the images to the average
@@ -67,11 +73,11 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
     
     # We have a new centered average image, the resampled original images and the affine 
     # transformations, which are returned as an output node. 
-    output_node = pe.Node(
-        niu.IdentityInterface(
-            fields=['average_image', 'aff_files']),
-                        name='output_node')
-
+    output_node = pe.Node(niu.IdentityInterface(
+        fields=['average_image', 
+                'trans_files']),
+                          name='output_node')
+    
     pipeline = pe.Workflow(name=name)
     pipeline.base_output_dir=name
 
@@ -95,13 +101,17 @@ def create_linear_coregistration_workflow(name="linear_registration_niftyreg", d
     pipeline.connect(lin_reg, 'avg_output',ave_ims, 'demean_files')
                     
     # Connect up the output node
-    pipeline.connect([(lin_reg, output_node,[('aff_file', 'aff_files')]),
+    pipeline.connect([(lin_reg, output_node,[('aff_file', 'trans_files')]),
                       (ave_ims, output_node,[('out_file', 'average_image')])
                       ])
     return pipeline
 
 
-def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyreg", demean=True, nonlinear_options_hash = dict(), initial_affines = False):
+def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyreg", 
+                                             demean=True, 
+                                             nonlinear_options_hash = dict(), 
+                                             initial_affines = False, 
+                                             initial_cpps = False):
     """Creates a workflow that perform non-linear co-registration of a set of images using RegF3d, 
     producing an non-linear average image and a set of cpp transformation linking each
     of the floating images to the average.
@@ -119,7 +129,7 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
         input_node.in_files - The input files to be registered
         input_node.ref_file - The initial reference image that the input files are registered to
         input_node.rmask_file - Mask of the reference image
-        input_node.in_aff_files - Initial affine transformation files
+        input_node.in_trans_files - Initial transformation files (affine or cpps)
         
 
     Outputs::
@@ -139,7 +149,7 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
         fields=['in_files', 
                 'ref_file', 
                 'rmask_file', 
-                'in_aff_files']),
+                'in_trans_files']),
                          name='input_node')
     
     # Rigidly register each of the images to the average
@@ -147,19 +157,18 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
     # Need to be able to iterate over input affine files, but what about the cases where we have no input affine files?
     # Passing empty strings are not valid filenames, and undefined fields can not be iterated over.
     # Current simple solution, as this is not generally required, is to use a flag which specifies wherther to iterate
-    if initial_affines == False:
+    if initial_affines == True:
         nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
                                 name="nonlin_reg", 
-                                iterfield=['flo_file'])
+                                iterfield=['flo_file','aff_file'])
+    elif initial_cpps == True:
+        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
+                                name="nonlin_reg", 
+                                iterfield=['flo_file','incpp_file'])
     else:
-        if initial_affines == True:
-            nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
-                                    name="nonlin_reg", 
-                                    iterfield=['flo_file','in_aff_file'])
-        else:
-            nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
-                                    name="nonlin_reg",
-                                    iterfield=['flo_file'])
+        nonlin_reg = pe.MapNode(interface=niftyreg.RegF3d(**nonlinear_options_hash), 
+                                name="nonlin_reg",
+                                iterfield=['flo_file'])
             
     # Average the images
     ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims")
@@ -168,7 +177,7 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
     # transformations, which are returned as an output node. 
     output_node = pe.Node( niu.IdentityInterface(
         fields=['average_image', 
-                'cpp_files']),
+                'trans_files']),
                            name='output_node')
 
     pipeline = pe.Workflow(name=name)
@@ -181,7 +190,9 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
     
     # If we have initial affine transforms, we need to connect them in
     if initial_affines == True:
-        pipeline.connect(input_node, 'in_aff_files', nonlin_reg,'in_aff_file')
+        pipeline.connect(input_node, 'in_trans_files', nonlin_reg,'aff_file')
+    elif initial_cpps == True:
+        pipeline.connect(input_node, 'in_trans_files', nonlin_reg,'incpp_file')
     
     if demean == True:   
         pipeline.connect(input_node, 'ref_file', ave_ims, 'demean2_ref_file')
@@ -194,7 +205,7 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
     pipeline.connect(nonlin_reg, 'avg_output',ave_ims, 'demean_files')
     
     # Connect up the output node
-    pipeline.connect([(nonlin_reg, output_node,[('aff_file', 'aff_files')]),
+    pipeline.connect([(nonlin_reg, output_node,[('cpp_file', 'trans_files')]),
                       (ave_ims, output_node,[('out_file', 'average_image')])
                       ])
     return pipeline
@@ -202,17 +213,25 @@ def create_nonlinear_coregistration_workflow(name="nonlinear_registration_niftyr
 
 # Creates an atlas image by iterative registration. An initial reference image can be provided, otherwise one will be made. 
 #
-def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_lin = 1, initial_ref = True, linear_options_hash=dict(), nonlinear_options_hash=dict()):
+def create_atlas(name="atlas_creation", 
+                 itr_rigid = 1, 
+                 itr_affine = 1, 
+                 itr_non_lin = 1, 
+                 initial_ref = True, 
+                 linear_options_hash=dict(), 
+                 nonlinear_options_hash=dict()):
+
     pipeline = pe.Workflow(name=name)
 
     input_node = pe.Node(niu.IdentityInterface(
-            fields=['in_files', 'ref_file']),
+            fields=['in_files', 
+                    'ref_file']),
                         name='input_node')
     
-    output_node = pe.Node(
-        niu.IdentityInterface(
-            fields=['average_image', 'aff_files']),
-                        name='output_node')
+    output_node = pe.Node(niu.IdentityInterface(
+        fields=['average_image', 
+                'trans_files']),
+                          name='output_node')
                         
     lin_workflows = []
     nonlin_workflows = []
@@ -243,7 +262,7 @@ def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_l
         
         if i > 0:
             pipeline.connect(lin_workflows[i-1], 'output_node.average_image', w, 'input_node.ref_file' )
-            pipeline.connect(lin_workflows[i-1], 'output_node.aff_files', w, 'input_node.in_aff_files' )
+            pipeline.connect(lin_workflows[i-1], 'output_node.trans_files', w, 'input_node.in_aff_files' )
             
     
     demean_arg = True
@@ -274,26 +293,35 @@ def create_atlas(name="atlas_creation", itr_rigid = 1, itr_affine = 1, itr_non_l
         if i == 0:
             if (len(lin_workflows)):
                 # Take the final linear registration results and use them to initialise the NR
-                pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.aff_files', w, 'input_node.aff_files' )
+                pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.aff_files', w, 'input_node.in_trans_files' )
         else:
             pipeline.connect(nonlin_workflows[i-1], 'output_node.average_image', w, 'input_node.ref_file' )
-            pipeline.connect(nonlin_workflows[i-1], 'output_node.cpp_files', w, 'input_node.in_aff_files' )
+            pipeline.connect(nonlin_workflows[i-1], 'output_node.trans_files', w, 'input_node.in_trans_files' )
 
         nonlin_workflows.append(w)
-
        
-    # Set the reference image if we have one, else make a node to generate
-    # it and connect it up
-    if initial_ref == False:
+
+    first_workflow = None
+    if len(lin_workflows) > 0:
+        first_workflow = lin_workflows[0]
+    elif len(nonlin_workflows) > 0:
+        first_workflow = nonlin_workflows[0]
+
+    last_workflow = None
+    if len(nonlin_workflows) > 0:
+        last_workflow = nonlin_workflows[len(nonlin_workflows)-1]
+    elif len(lin_workflows) > 0:
+        last_workflow = lin_workflows[len(lin_workflows)-1]
+    
+    if initial_ref == True:
+        pipeline.connect(input_node, 'ref_file', first_workflow, 'input_node.ref_file')
+    else:
         ave_ims = pe.Node(interface=niftyreg.RegAverage(), name="ave_ims_initial")
         pipeline.connect(input_node, 'in_files', ave_ims, 'in_files')
-        pipeline.connect(ave_ims, 'out_file', lin_workflows[0], 'input_node.ref_file')
-    else:
-        pipeline.connect(input_node, 'ref_file', lin_workflows[0], 'input_node.ref_file')
+        pipeline.connect(ave_ims, 'out_file', first_workflow, 'input_node.ref_file')
         
-    pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.aff_files', output_node, 'aff_files')
-    pipeline.connect(lin_workflows[len(lin_workflows)-1], 'output_node.average_image', output_node, 'average_image')
-            
+    pipeline.connect(last_workflow, 'output_node.trans_files', output_node, 'trans_files')
+    pipeline.connect(last_workflow, 'output_node.average_image', output_node, 'average_image')
     
     return pipeline
 
