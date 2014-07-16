@@ -36,10 +36,10 @@ public:
   MIDASMorphologicalSegmentorViewControlsImpl();
 
   /// \brief Destructor.
-  ~MIDASMorphologicalSegmentorViewControlsImpl();
+  virtual ~MIDASMorphologicalSegmentorViewControlsImpl();
 
   /// \brief Creates the GUI, initialising everything to off.
-  void setupUi(QWidget*);
+  void setupUi(QWidget* parent);
 
   /// \brief Get the current tab number.
   int GetTabNumber();
@@ -48,7 +48,7 @@ public:
   void SetTabIndex(int i);
 
   /// \brief Enables/disables all controls.
-  void EnableControls(bool b);
+  void SetControlsEnabled(bool enabled);
 
   /// \brief Set the dialog according to relevant image data.
   void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
@@ -60,7 +60,7 @@ signals:
 
   void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
   void ErosionsValuesChanged(double upperThreshold, int numberOfErosions);
-  void DilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+  void DilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
   void TabChanged(int tabIndex);
   void OKButtonClicked();
@@ -82,17 +82,15 @@ protected slots:
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
 
-protected:
-
 private:
 
-  void EnableTab1Thresholding(bool enable);
-  void EnableTab2Erosions(bool enable);
-  void EnableTab3Dilations(bool enable);
-  void EnableTab4ReThresholding(bool enable);
-  void EnableCancelButton(bool enable);
-  void EnableRestartButton(bool enable);
-  void EnableByTabIndex(int i);
+  void SetThresholdingTabEnabled(bool enabled);
+  void SetErosionsTabEnabled(bool enabled);
+  void SetDilationsTabEnabled(bool enabled);
+  void SetRethresholdingTabEnabled(bool enabled);
+  void SetCancelButtonEnabled(bool enabled);
+  void SetRestartButtonEnabled(bool enabled);
+  void EnableByTabIndex(int tabIndex);
 
   void EmitThresholdingValues();
   void EmitErosionValues();
