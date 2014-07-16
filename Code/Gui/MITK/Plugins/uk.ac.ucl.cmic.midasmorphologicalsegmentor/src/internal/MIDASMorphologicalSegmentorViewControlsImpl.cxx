@@ -241,7 +241,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsEnabled(bool enable
 {
   if (enabled)
   {
-    this->EnableByTabIndex(this->GetTabNumber());
+    this->EnableByTabIndex(this->GetTabIndex());
   }
   else
   {
@@ -338,7 +338,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByPipelineParams(Mo
 
 
 //-----------------------------------------------------------------------------
-int MIDASMorphologicalSegmentorViewControlsImpl::GetTabNumber()
+int MIDASMorphologicalSegmentorViewControlsImpl::GetTabIndex()
 {
   return m_TabWidget->currentIndex();
 }
@@ -442,7 +442,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCutOffSliderChanged()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
 {
-  int tabNumber = this->GetTabNumber();
+  int tabNumber = this->GetTabIndex();
   this->SetTabIndex(tabNumber - 1);
 }
 
@@ -450,7 +450,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::OnNextButtonClicked()
 {
-  int tabNumber = this->GetTabNumber();
+  int tabNumber = this->GetTabIndex();
   if (tabNumber < 3)
   {
     this->SetTabIndex(tabNumber + 1);

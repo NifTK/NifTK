@@ -611,8 +611,8 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingD
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
-  int tabNumber = m_MorphologicalControls->GetTabNumber();
-  if (enabled && (tabNumber == 1 || tabNumber == 2))
+  int tabIndex = m_MorphologicalControls->GetTabIndex();
+  if (enabled && (tabIndex == 1 || tabIndex == 2))
   {
     m_ToolSelector->SetEnabled(true);
   }

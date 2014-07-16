@@ -27,7 +27,6 @@ class QAbstractButton;
  */
 class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MIDASMorphologicalSegmentorViewControls
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
@@ -41,11 +40,8 @@ public:
   /// \brief Creates the GUI, initialising everything to off.
   void setupUi(QWidget* parent);
 
-  /// \brief Get the current tab number.
-  int GetTabNumber();
-
-  /// \brief Set the current tab number, which enables and disables widgets appropriately.
-  void SetTabIndex(int i);
+  /// \brief Get the current tab index.
+  int GetTabIndex();
 
   /// \brief Enables/disables all controls.
   void SetControlsEnabled(bool enabled);
@@ -91,6 +87,9 @@ private:
   void SetCancelButtonEnabled(bool enabled);
   void SetRestartButtonEnabled(bool enabled);
   void EnableByTabIndex(int tabIndex);
+
+  /// \brief Set the current tab number, which enables and disables widgets appropriately.
+  void SetTabIndex(int tabIndex);
 
   void EmitThresholdingValues();
   void EmitErosionValues();
