@@ -83,7 +83,7 @@ protected slots:
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when dilation sliders or spin boxes changed.
-  void OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when re-thresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);

@@ -91,7 +91,7 @@ public:
   /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param numberOfDilations the number of dilation iterations to perform
-  void OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
   /// \brief Sets the re-thresholding parameters.
   ///

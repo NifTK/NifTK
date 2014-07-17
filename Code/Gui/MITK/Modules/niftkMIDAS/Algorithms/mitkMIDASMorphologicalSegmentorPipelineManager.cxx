@@ -162,7 +162,7 @@ void MIDASMorphologicalSegmentorPipelineManager::OnErosionsValuesChanged(double 
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
+void MIDASMorphologicalSegmentorPipelineManager::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
   if (segmentationNode.IsNotNull())

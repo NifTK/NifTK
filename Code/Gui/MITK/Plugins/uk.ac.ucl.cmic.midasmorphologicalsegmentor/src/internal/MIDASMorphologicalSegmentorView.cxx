@@ -342,9 +342,9 @@ void MIDASMorphologicalSegmentorView::OnErosionsValuesChanged(double upperThresh
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
+void MIDASMorphologicalSegmentorView::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
-  m_PipelineManager->OnDilationValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
+  m_PipelineManager->OnDilationsValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
   this->RequestRenderWindowUpdate();
 }
 
@@ -563,7 +563,7 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
     this->connect(m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
     this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
     this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
-    this->connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), SLOT(OnDilationValuesChanged(double, double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
     this->connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
     this->connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
     this->connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
