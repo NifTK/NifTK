@@ -80,6 +80,14 @@
       <label>The number of internal chessboard corners along the height axis</label>
       <default>10</default>
     </integer>
+    
+    <integer>
+      <name>stepIndicator</name>
+      <longflag>stepIndicator</longflag>
+      <description>1 2 3 indicates doing chessboard corner detection, testing impact of the number of frames, reporting result respectively</description>
+      <label>1 2 3 indicates doing chessboard corner detection, testing impact of the number of frames, reporting result respectively</label>
+      <default>2</default>
+    </integer>
 
     <boolean>
       <name>DontSortByDistance</name>

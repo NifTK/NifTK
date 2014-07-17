@@ -41,9 +41,20 @@ int main(int argc, char** argv)
     evaluator->SetNumberCornersHeight(NumberCornerHeight);
     evaluator->InitialiseOutputDirectory();
 		
-    //evaluator->InitialiseVideo(); // only do once to detect the chessboard corners.
-    //evaluator->RunExperiment();   // calling as many as required with different "FramesToUse". Currently number of repetition is fixed in the programe as 20.
-    evaluator->Report();            // summary of the experiments.
+    if ( stepIndicator == 1 ) // only do once to detect the chessboard corners.
+    {
+      evaluator->InitialiseVideo(); 
+    }
+
+    if ( stepIndicator == 2 ) // calling as many as required with different "FramesToUse". Currently number of repetition is fixed in the programe as 20.
+    {
+      evaluator->RunExperiment();   
+    }
+
+    if ( stepIndicator == 3 ) // summary of the experiments.
+    {
+      evaluator->Report();            
+    }
 
     returnStatus = EXIT_SUCCESS;
   }
