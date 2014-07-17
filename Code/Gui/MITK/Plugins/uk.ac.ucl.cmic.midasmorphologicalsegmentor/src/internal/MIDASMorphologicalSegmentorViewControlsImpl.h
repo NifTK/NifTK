@@ -44,7 +44,7 @@ public:
   int GetTabIndex();
 
   /// \brief Enables/disables all controls.
-  void SetControlsEnabled(bool enabled);
+  void SetEnabled(bool enabled);
 
   /// \brief Set the dialog according to relevant image data.
   void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
@@ -80,21 +80,11 @@ protected slots:
 
 private:
 
-  void SetThresholdingTabEnabled(bool enabled);
-  void SetErosionsTabEnabled(bool enabled);
-  void SetDilationsTabEnabled(bool enabled);
-  void SetRethresholdingTabEnabled(bool enabled);
-  void SetCancelButtonEnabled(bool enabled);
-  void SetRestartButtonEnabled(bool enabled);
-  void EnableByTabIndex(int tabIndex);
-
-  /// \brief Set the current tab number, which enables and disables widgets appropriately.
-  void SetTabIndex(int tabIndex);
-
   void EmitThresholdingValues();
   void EmitErosionValues();
   void EmitDilationValues();
   void EmitRethresholdingValues();
+
 };
 
 #endif

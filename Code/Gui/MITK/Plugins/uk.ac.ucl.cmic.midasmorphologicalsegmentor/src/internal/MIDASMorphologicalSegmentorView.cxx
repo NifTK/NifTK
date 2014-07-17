@@ -621,7 +621,7 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
     m_ToolSelector->SetEnabled(false);
   }
 
-  m_MorphologicalControls->SetControlsEnabled(enabled);
+  m_MorphologicalControls->SetEnabled(enabled);
 }
 
 
