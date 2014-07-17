@@ -221,7 +221,14 @@ void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNod
         dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
     if (prop.IsNotNull() && prop->HasVolume())
     {
-      this->UpdateSegmentation();
+      /// Note:
+      /// The node can change for several reason, e.g. when its "selected" or "visible"
+      /// property changes. We are not interested about the property changes, but only
+      /// whether the data has changed.
+      if (node->GetData()->GetMTime() > this->GetSegmentationImage()->GetMTime())
+      {
+        this->UpdateSegmentation();
+      }
     }
   }
 }
