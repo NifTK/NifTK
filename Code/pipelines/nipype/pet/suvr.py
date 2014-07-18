@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 
-import nipype.interfaces.utility        as niu         # utility
-import nipype.interfaces.io             as nio
-import nipype.pipeline.engine           as pe          # pypeline engine
-import nipype.interfaces.niftyseg       as niftyseg
-import nipype.interfaces.niftyreg       as niftyreg
-from extract_roi_statistics import ExtractRoiStatistics
-from normalise_uptake_values import NormaliseUptakeValues
+import nipype.interfaces.utility        as niu          # utility
+import nipype.interfaces.io             as nio          # Input Output
+import nipype.pipeline.engine           as pe           # pypeline engine
+import nipype.interfaces.niftyseg       as niftyseg     # NiftySeg
+import nipype.interfaces.niftyreg       as niftyreg     # NiftyReg
+from nipype                             import config, logging
+from extract_roi_statistics             import ExtractRoiStatistics
+from normalise_uptake_values            import NormaliseUptakeValues
 
 import sys
 import glob
@@ -16,24 +17,15 @@ import argparse
 
 def get_all_images_in_directory(path):
     list_of_images=[]
-    list_of_images=glob.glob(path+'.nii')+glob.glob(path+'.nii.gz')+ \
-        glob.glob(path+'.hdr')+glob.glob(path+'.img')+glob.glob(path+'.img.gz')
+    list_of_images=list_of_images+glob.glob(path+'/*.nii')
+    list_of_images=list_of_images+glob.glob(path+'/*.nii.gz')
+    list_of_images=list_of_images+glob.glob(path+'/*.hdr')
     list_of_images.sort()
     return list_of_images;
 
 class SUVR_variables():
     def __init__(self):
         self.roi_choices=['cereb','gm_cereb','pons']
-        self.predefinedRegion=[[24,31,76,77,101,102,103,104,105,106,107,108,\
-            113,114,119,120,121,122,125,126,133,134,139,140,141,142,143,144,\
-            147,148,153,154,155,156,163,164,165,166,167,168,169,170,173,174,\
-            175,176,179,180,181,182,185,186,187,188,191,192,195,196,199,200,\
-            201,202,203,204,205,206,207,208],
-            [24,31,32,33,48,49,76,77,101,102,103,104,105,106,107,108,113,114,\
-            117,118,119,120,121,122,123,124,125,126,133,134,139,140,141,142,\
-            143,144,147,148,153,154,155,156,163,164,165,166,167,168,169,170,\
-            171,172,173,174,175,176,179,180,181,182,185,186,187,188,191,192,\
-            195,196,199,200,201,202,203,204,205,206,207,208]]
         self.parser=None
         self.SUVR_create_parser()
     def SUVR_create_parser(self):
@@ -115,7 +107,7 @@ class SUVR_variables():
         self.input_par=[]
         if args.input_pet:
             self.input_pet=args.input_pet
-        elif args.inputpet_dir:
+        elif args.input_pet_dir:
             self.input_pet=get_all_images_in_directory(args.input_pet_dir)
         if args.input_mri:
             self.input_mri=args.input_mri
@@ -261,7 +253,24 @@ def extract_roi(in_file, roi_list):
     out_img.set_filename(out_file)
     out_img.to_filename(out_file)
     return out_file
-    
+
+
+def gen_substitutions(pet_files, mri_files, roi, prefix, suffix):    
+    from nipype.utils.filemanip import split_filename
+    subs = []
+    for i in range(0,len(pet_files)):
+        pet_file=pet_files[i]
+        mri_file=mri_files[i]
+        _, pet_bn, _ = split_filename(pet_file)
+        _, mri_bn, _ = split_filename(mri_file)
+        subs.append(('norm_'+roi+'_'+pet_bn, \
+                     prefix+'norm_'+roi+'_'+pet_bn+suffix))
+        subs.append(('suvr_'+roi+'_'+pet_bn, \
+                     prefix+'suvr_'+roi+'_'+pet_bn+suffix))
+        subs.append((mri_bn+'_aff', \
+                     prefix+'ref_'+pet_bn+'_flo_'+mri_bn+'_aff'+suffix))
+    return subs
+
 def create_suvr_pipeline(suvr_var):
     workflow = pe.Workflow(name='suvr_pipeline')
     workflow.base_dir = os.getcwd()
@@ -290,22 +299,34 @@ def create_suvr_pipeline(suvr_var):
         iterfield=['ref_file', 'flo_file', 'rmask_file', 'fmask_file'])
     if suvr_var.pet_mri_use_affine==False:
         aladin.inputs.rig_only_flag=True
+    aladin.inputs.verbosity_off_flag=True
+    aladin.inputs.v_val=80
+    aladin.inputs.nosym_flag=False
     # Connections
     workflow.connect(input_node, 'pet_files', aladin, 'ref_file')
     workflow.connect(input_node, 'mri_files', aladin, 'flo_file')
     workflow.connect(pet_mask, 'output_node.mask_files', aladin, 'rmask_file')
     workflow.connect(mri_mask, 'output_node.mask_files', aladin, 'fmask_file')
-    # The parcelation is resampled in the space of pet images
+    # The grey matter segmentation is exracted
+    extract_timepoint=pe.MapNode(interface = niftyseg.BinaryMaths(), \
+        name='extract_timepoint', iterfield=['in_file'])
+    extract_timepoint.inputs.operation='tp'
+    extract_timepoint.inputs.operand_value=int(2)
+    # Connections
+    workflow.connect(input_node, 'seg_files', extract_timepoint, 'in_file')
+    # The segmentation is resampled in the space of pet images
     resample_seg=pe.MapNode(interface = niftyreg.RegResample(), name='resample_seg', \
         iterfield=['ref_file', 'flo_file', 'trans_file'])
     resample_seg.inputs.inter_val='LIN'
+    resample_seg.inputs.verbosity_off_flag=True
     workflow.connect(input_node, 'pet_files', resample_seg, 'ref_file')
-    workflow.connect(input_node, 'seg_files', resample_seg, 'flo_file')
+    workflow.connect(extract_timepoint, 'out_file', resample_seg, 'flo_file')
     workflow.connect(aladin, 'aff_file', resample_seg, 'trans_file')
     # The parcelation is resampled in the space of pet images
     resample_par=pe.MapNode(interface = niftyreg.RegResample(), name='resample_par', \
         iterfield=['ref_file', 'flo_file', 'trans_file'])
     resample_par.inputs.inter_val='NN'
+    resample_par.inputs.verbosity_off_flag=True
     workflow.connect(input_node, 'pet_files', resample_par, 'ref_file')
     workflow.connect(input_node, 'par_files', resample_par, 'flo_file')
     workflow.connect(aladin, 'aff_file', resample_par, 'trans_file')
@@ -316,7 +337,7 @@ def create_suvr_pipeline(suvr_var):
     workflow.connect(resample_par, 'res_file', extract_uptakes, 'roi_file')
     # The ROI used for normalisation is extracted if required
     if suvr_var.roi=='gm_cereb':
-        # Create an empty image
+        # Extract the cerebellum information
         extract_cerebellum = pe.MapNode(interface = 
                                             niu.Function(input_names = ['in_file',
                                                                         'roi_list'],
@@ -326,18 +347,12 @@ def create_suvr_pipeline(suvr_var):
                                         iterfield=['in_file'])
         extract_cerebellum.inputs.roi_list=[39,40,41,42,72,73,74]
         workflow.connect(resample_par, 'res_file', extract_cerebellum, 'in_file')
-        # Extract the grey matter segmentation if required
-        extract_gm_seg=pe.MapNode(interface = niftyseg.BinaryMaths(), \
-            name='extract_gm_seg', iterfield=['in_file'])
-        extract_gm_seg.inputs.operation='tp'
-        extract_gm_seg.inputs.operand_value=2
-        workflow.connect(resample_seg, 'res_file', extract_gm_seg, 'in_file')
         # Binarise the grey matter segmentation
         binarise_gm_seg=pe.MapNode(interface = niftyseg.BinaryMaths(), \
             name='binarise_gm_seg', iterfield=['in_file'])
         binarise_gm_seg.inputs.operation='thr'
         binarise_gm_seg.inputs.operand_value=suvr_var.seg_threshold
-        workflow.connect(extract_gm_seg, 'out_file', binarise_gm_seg, 'in_file')
+        workflow.connect(resample_seg, 'res_file', binarise_gm_seg, 'in_file')
         # Extract the interaction between cerebellum and grey matter segmentation
         get_gm_cereb=pe.MapNode(interface = niftyseg.BinaryMaths(), \
             name='get_gm_cereb', iterfield=['in_file', 'operand_file'])
@@ -369,11 +384,13 @@ def create_suvr_pipeline(suvr_var):
     output_node = pe.Node(
         interface = niu.IdentityInterface(
             fields=['suvr_files',
-                    'norm_files']),
+                    'norm_files',
+                    'aff_files']),
             name='output_node')
     # Fake connections for testing
     workflow.connect(norm_uptakes, 'out_csv_file', output_node, 'suvr_files')
     workflow.connect(norm_uptakes, 'out_file', output_node, 'norm_files')
+    workflow.connect(aladin, 'aff_file', output_node, 'aff_files')
     
     # Return the created workflow
     return workflow
@@ -385,31 +402,46 @@ def main():
     suvr_var = SUVR_variables()
     # Parse the input arguments
     suvr_var.SUVR_parse_arguments()
+
     # Create the workflow
     workflow = pe.Workflow(name='SUVR')
-    workflow.base_dir = os.getcwd()
+    workflow.base_dir = suvr_var.output_folder
     workflow.base_output_dir='suvr'
+
+    # Create the output folder if it does not exists    
+    if not os.path.exists(os.path.abspath(suvr_var.output_folder)):
+        os.mkdir(os.path.abspath(suvr_var.output_folder))
+
+    # Specify how and where to save the log files
+    config.update_config({'logging': {'log_directory': os.path.abspath(suvr_var.output_folder),
+                                      'log_to_file': True}})
+    logging.update_logging(config)
+    config.enable_debug_mode()
+    
     # Create the input node interface
     suvr_pipeline=create_suvr_pipeline(suvr_var)
+        
+    # Create a node to add the suffix and prefix if required
+    subsgen = pe.Node(interface = niu.Function(input_names = ['pet_files', \
+        'mri_files', 'roi', 'prefix','suffix'], output_names = ['substitutions'], \
+        function = gen_substitutions), name = 'subsgen')
+    workflow.connect(suvr_pipeline, 'input_node.pet_files', subsgen, 'pet_files')
+    workflow.connect(suvr_pipeline, 'input_node.mri_files', subsgen, 'mri_files')
+    subsgen.inputs.roi=suvr_var.roi
+    subsgen.inputs.prefix=suvr_var.output_prefix
+    subsgen.inputs.suffix=suvr_var.output_suffix
     
     # Create a data sink    
-    ds = pe.Node(nio.DataSink(parameterization=True), name='data_sink')
-    ds.inputs.base_directory = os.path.abspath(suvr_var.output_folder)
-    
+    ds = pe.Node(nio.DataSink(parameterization=False), name='data_sink')
+    ds.inputs.base_directory = os.path.abspath(os.path.abspath(suvr_var.output_folder))
+    workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
     workflow.connect(suvr_pipeline, 'output_node.suvr_files', ds, '@suvr')
     workflow.connect(suvr_pipeline, 'output_node.norm_files', ds, '@norm')
-    
-#    output_node = pe.Node(
-#        interface = niu.IdentityInterface(
-#            fields=['suvr_files',
-#                    'norm_files']),
-#            name='output_node')
-#    workflow.connect(suvr_pipeline, 'output_node.suvr_files', output_node, 'suvr_files')
-#    workflow.connect(suvr_pipeline, 'output_node.norm_files', output_node, 'norm_files')
+    workflow.connect(suvr_pipeline, 'output_node.aff_files', ds, '@aff')
     
     # Run the overall workflow
 #    workflow.write_graph(graph2use='colored')
-    workflow.run(plugin='Linear')
+    workflow.run(plugin='MultiProc')
     
 if __name__ == "__main__":
     main()

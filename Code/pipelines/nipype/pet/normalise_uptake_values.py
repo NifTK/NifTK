@@ -6,18 +6,21 @@ from nipype.utils.filemanip         import split_filename
 import nipype.interfaces.niftyseg   as niftyseg
 
 import numpy                        as np
+import nibabel                      as nib
 import os.path
 
 class NormaliseUptakeValuesInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True,
-                        desc="Input image to extract the uptake values")
+                   desc="Input image to extract the uptake values")
     in_array = traits.Array(argstr="%s", exists=True, mandatory=True,
-                        desc="Array containing the uptake statistics")
+                            desc="Array containing the uptake statistics. "+ \
+                            "Array order=[Label, mean, std, vol]")
     roi = traits.String(argstr="%s", exists=True, mandatory=True,
                         desc="Name of the roi needed for normalisation")
     cereb_array = traits.Array(argstr="%s", exists=True, mandatory=False,
-                        desc="Array containing the grey matter cerebellum statistics")
+                               desc="Array containing the grey matter cerebellum "+ \
+                               "statistics. Array order=[Label, mean, std, vol]")
 
     
 class NormaliseUptakeValuesOutputSpec(TraitedSpec):
@@ -25,6 +28,9 @@ class NormaliseUptakeValuesOutputSpec(TraitedSpec):
         "label index, mean value, std value, roi volume in mm")
     out_file = File(desc="Output array organised as follow: "+ \
         "label index, mean value, std value, roi volume in mm")
+    test_roi1=File()
+    test_roi2=File()
+    test_roi3=File()
 
 
 class NormaliseUptakeValues(BaseInterface):
@@ -66,6 +72,7 @@ class NormaliseUptakeValues(BaseInterface):
         _, base, _ = split_filename(in_file)
         self.norm_file=os.path.abspath('norm_'+norm_roi+'_'+base+'.nii.gz')
         self.suvr_file=os.path.abspath('suvr_'+norm_roi+'_'+base+'.csv')
+        
         # Create csv file to save the data
         out=open(self.suvr_file,'w')
         out.write('Input PET,'+str(in_file)+'\n')
@@ -75,7 +82,7 @@ class NormaliseUptakeValues(BaseInterface):
             i=np.where(in_array[:,0]==35)[0]
             normalisation_value=in_array[i,1]
         elif norm_roi=='cereb':
-            total_volume=0
+            total_volume=0.0
             for label in [39,40,41,42,72,73,74]:
                 i=np.where(in_array[:,0]==label)[0]
                 normalisation_value=normalisation_value+in_array[i,1]*in_array[i,3]
@@ -94,7 +101,7 @@ class NormaliseUptakeValues(BaseInterface):
         norm_file.inputs.out_file=self.norm_file
         norm_file.run()       
         # Normalise all the SUVR
-        norm_array=in_array[:,0]/np.float(normalisation_value)
+        norm_array=in_array[:,1]/np.float(normalisation_value)
         for i in range(0,len(norm_array)):
             out.write(str(in_array[i,0])+','+str(in_array[i,1])+','+ \
             str(norm_array[i])+','+str(in_array[i,3])+'\n')
@@ -111,8 +118,8 @@ class NormaliseUptakeValues(BaseInterface):
         roi2_volume=0
         for label in self.roi2_list:
             i=np.where(in_array[:,0]==label)[0]
-            roi2_uptake=roi2_uptake+norm_array[i]*in_array[i,1]
-            roi2_volume=roi2_volume+in_array[i,1]
+            roi2_uptake=roi2_uptake+norm_array[i]*in_array[i,3]
+            roi2_volume=roi2_volume+in_array[i,3]
         roi2_uptake=np.float(roi2_uptake)/np.float(roi2_volume)
         out.write('region2,,'+str(roi2_uptake)+','+str(roi2_volume)+'\n')
         out.close()
