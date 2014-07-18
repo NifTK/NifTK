@@ -445,19 +445,19 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();  // The grey scale image.
   mitk::Image::Pointer segmentationImage = this->GetSegmentationImage(); // The output image.
-  mitk::Image::Pointer erosionAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS);
-  mitk::Image::Pointer erosionSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
-  mitk::Image::Pointer dilationAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS);
-  mitk::Image::Pointer dilationSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
+  mitk::Image::Pointer erosionsAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS);
+  mitk::Image::Pointer erosionsSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
+  mitk::Image::Pointer dilationsAdditions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS);
+  mitk::Image::Pointer dilationsSubtractions = this->GetWorkingImage(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
 
   if (referenceNode.IsNotNull()
       && segmentationNode.IsNotNull()
       && referenceImage.IsNotNull()
       && segmentationImage.IsNotNull()
-      && erosionAdditions.IsNotNull()
-      && erosionSubtractions.IsNotNull()
-      && dilationAdditions.IsNotNull()
-      && dilationSubtractions.IsNotNull()
+      && erosionsAdditions.IsNotNull()
+      && erosionsSubtractions.IsNotNull()
+      && dilationsAdditions.IsNotNull()
+      && dilationsSubtractions.IsNotNull()
       )
   {
     MorphologicalSegmentorPipelineParams params;
@@ -467,24 +467,24 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     typedef mitk::ImageToItk<SegmentationImageType> ImageToItkType;
 
     ImageToItkType::Pointer erosionsAdditionsToItk = ImageToItkType::New();
-    erosionsAdditionsToItk->SetInput(erosionAdditions);
+    erosionsAdditionsToItk->SetInput(erosionsAdditions);
     erosionsAdditionsToItk->Update();
 
-    ImageToItkType::Pointer erosionSubtractionsToItk = ImageToItkType::New();
-    erosionSubtractionsToItk->SetInput(erosionSubtractions);
-    erosionSubtractionsToItk->Update();
+    ImageToItkType::Pointer erosionsSubtractionsToItk = ImageToItkType::New();
+    erosionsSubtractionsToItk->SetInput(erosionsSubtractions);
+    erosionsSubtractionsToItk->Update();
 
     ImageToItkType::Pointer dilationsAdditionsToItk = ImageToItkType::New();
-    dilationsAdditionsToItk->SetInput(dilationAdditions);
+    dilationsAdditionsToItk->SetInput(dilationsAdditions);
     dilationsAdditionsToItk->Update();
 
     ImageToItkType::Pointer dilationsSubtractionsToItk = ImageToItkType::New();
-    dilationsSubtractionsToItk->SetInput(dilationSubtractions);
+    dilationsSubtractionsToItk->SetInput(dilationsSubtractions);
     dilationsSubtractionsToItk->Update();
 
     std::vector<SegmentationImageType*> workingImages(4);
     workingImages[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erosionsAdditionsToItk->GetOutput();
-    workingImages[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erosionSubtractionsToItk->GetOutput();
+    workingImages[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erosionsSubtractionsToItk->GetOutput();
     workingImages[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilationsAdditionsToItk->GetOutput();
     workingImages[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilationsSubtractionsToItk->GetOutput();
 
