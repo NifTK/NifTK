@@ -624,11 +624,12 @@ void MIDASMorphologicalSegmentorPipelineManager::RemoveWorkingData()
 void MIDASMorphologicalSegmentorPipelineManager::DestroyPipeline()
 {
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();
+  mitk::Image::Pointer segmentationImage = this->GetSegmentationImage();
   if (referenceImage.IsNotNull())
   {
     try
     {
-      AccessFixedDimensionByItk(referenceImage, DestroyITKPipeline, 3);
+      AccessFixedDimensionByItk_n(referenceImage, DestroyITKPipeline, 3, (segmentationImage));
     }
     catch (const mitk::AccessByItkException& e)
     {
@@ -649,7 +650,7 @@ MIDASMorphologicalSegmentorPipelineManager
     const std::vector<int>& editingRegion,
     const std::vector<bool>& editingFlags,
     bool isRestarting,
-    mitk::Image::Pointer& output
+    mitk::Image::Pointer segmentation
     )
 {
   typedef itk::Image<unsigned char, VImageDimension> SegmentationImageType;
@@ -661,22 +662,13 @@ MIDASMorphologicalSegmentorPipelineManager
   SegmentationImageType* segmentationInput = workingData.size() > 4 ? workingData[4] : 0;
   SegmentationImageType* thresholdingMask = workingData.size() > 5 ? workingData[5] : 0;
 
-  std::stringstream key;
-  key << typeid(TPixel).name() << VImageDimension;
+  typedef MorphologicalSegmentorPipeline<TPixel, VImageDimension> Pipeline;
+  Pipeline* pipeline = dynamic_cast<Pipeline*>(m_Pipelines[segmentation]);
 
-  MorphologicalSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-
-  std::map<std::string, MorphologicalSegmentorPipelineInterface*>::iterator iter;
-  iter = m_TypeToPipelineMap.find(key.str());
-
-  if (iter == m_TypeToPipelineMap.end())
+  if (!pipeline)
   {
-    pipeline = new MorphologicalSegmentorPipeline<TPixel, VImageDimension>();
-    m_TypeToPipelineMap[key.str()] = pipeline;
-  }
-  else
-  {
-    pipeline = dynamic_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
+    pipeline = new Pipeline();
+    m_Pipelines[segmentation] = pipeline;
   }
 
   // Set most of the parameters on the pipeline.
@@ -719,8 +711,8 @@ MIDASMorphologicalSegmentorPipelineManager
   pipeline->DisconnectPipeline();
 
   // Get hold of the output, and make sure we don't re-allocate memory.
-  output->InitializeByItk<SegmentationImageType>(pipeline->GetOutput().GetPointer());
-  output->SetImportChannel(pipeline->GetOutput()->GetBufferPointer(), 0, mitk::Image::ReferenceMemory);
+  segmentation->InitializeByItk<SegmentationImageType>(pipeline->GetOutput().GetPointer());
+  segmentation->SetImportChannel(pipeline->GetOutput()->GetBufferPointer(), 0, mitk::Image::ReferenceMemory);
 }
 
 
@@ -730,26 +722,19 @@ void
 MIDASMorphologicalSegmentorPipelineManager
 ::FinalizeITKPipeline(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    mitk::Image::Pointer& output
+    mitk::Image::Pointer segmentation
     )
 {
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
+  typedef MorphologicalSegmentorPipeline<TPixel, VImageDimension> Pipeline;
 
-  std::stringstream key;
-  key << typeid(TPixel).name() << VImageDimension;
-
-  MorphologicalSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-  MorphologicalSegmentorPipelineInterface* myPipeline = NULL;
-
-  std::map<std::string, MorphologicalSegmentorPipelineInterface*>::iterator iter;
-  iter = m_TypeToPipelineMap.find(key.str());
+  Pipeline* pipeline = dynamic_cast<Pipeline*>(m_Pipelines[segmentation]);
 
   // By the time this method is called, the pipeline MUST exist.
-  myPipeline = iter->second;
-  pipeline = static_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
+  assert(pipeline);
 
   // This deliberately re-allocates the memory
-  mitk::CastToMitkImage(pipeline->GetOutput(), output);
+  mitk::CastToMitkImage(pipeline->GetOutput(), segmentation);
 }
 
 
@@ -757,25 +742,17 @@ MIDASMorphologicalSegmentorPipelineManager
 template<typename TPixel, unsigned int VImageDimension>
 void
 MIDASMorphologicalSegmentorPipelineManager
-::DestroyITKPipeline(itk::Image<TPixel, VImageDimension>* itkImage)
+::DestroyITKPipeline(itk::Image<TPixel, VImageDimension>* itkImage, mitk::Image::Pointer segmentation)
 {
+  std::map<mitk::Image::Pointer, MorphologicalSegmentorPipelineInterface*>::iterator iter = m_Pipelines.find(segmentation);
 
-  std::stringstream key;
-  key << typeid(TPixel).name() << VImageDimension;
+  // By the time this method is called, the pipeline MUST exist.
+  assert(iter != m_Pipelines.end());
+  assert(iter->second);
 
-  std::map<std::string, MorphologicalSegmentorPipelineInterface*>::iterator iter;
-  iter = m_TypeToPipelineMap.find(key.str());
+  delete iter->second;
 
-  MorphologicalSegmentorPipeline<TPixel, VImageDimension> *pipeline = dynamic_cast<MorphologicalSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
-  if (pipeline != NULL)
-  {
-    delete pipeline;
-  }
-  else
-  {
-    MITK_ERROR << "MIDASMorphologicalSegmentorPipelineManager::DestroyITKPipeline(..), failed to delete pipeline" << std::endl;
-  }
-  m_TypeToPipelineMap.clear();
+  m_Pipelines.erase(iter);
 }
 
 

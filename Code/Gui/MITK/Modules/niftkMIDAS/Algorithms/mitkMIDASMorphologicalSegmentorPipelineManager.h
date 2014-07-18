@@ -176,20 +176,21 @@ private:
       const std::vector<int>& editingRegion,
       const std::vector<bool>& editingFlags,
       bool isRestarting,
-      mitk::Image::Pointer& outputImage
+      mitk::Image::Pointer outputImage
       );
 
   /// \brief ITK method that actually does the work of finalizing the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void FinalizeITKPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::Image::Pointer& outputImage
+      mitk::Image::Pointer segmentation
       );
 
   /// \brief ITK method that completely removes the current pipeline, destroying it from the m_TypeToPipelineMap.
   template<typename TPixel, unsigned int VImageDimension>
   void DestroyITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage
+      itk::Image<TPixel, VImageDimension>* itkImage,
+      mitk::Image::Pointer segmentation
       );
 
   /// \brief ITK method to clear a single ITK image.
@@ -198,9 +199,8 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
-  /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
-  /// as a key, and the object containing the whole pipeline.
-  std::map<std::string, MorphologicalSegmentorPipelineInterface*> m_TypeToPipelineMap;
+  /// \brief Holds a pipeline for a given segmentation.
+  std::map<mitk::Image::Pointer, MorphologicalSegmentorPipelineInterface*> m_Pipelines;
 
   /// \brief This class needs a DataStorage to work.
   mitk::DataStorage::Pointer m_DataStorage;
