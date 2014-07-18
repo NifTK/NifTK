@@ -172,7 +172,7 @@ private:
   void InvokeITKPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage,
       MorphologicalSegmentorPipelineParams& params,
-      std::vector<mitk::Image*>& workingData,
+      const std::vector<itk::Image<unsigned char, VImageDimension>*>& workingData,
       const std::vector<int>& editingRegion,
       const std::vector<bool>& editingFlags,
       bool isRestarting,
