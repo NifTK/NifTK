@@ -255,11 +255,23 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
+    if ( outputTriangulatedPoints.length() != 0 )
+    {
+      projector->SetTriangulatedPointsOutName(outputTriangulatedPoints);
+    }
     if ( outputErrors.length() != 0 ) 
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       projector->CalculateProjectionErrors(outputErrors);
       projector->CalculateTriangulationErrors(outputErrors, matcher);
+    }
+    else
+    {
+      if ( outputTriangulatedPoints.length() != 0 )
+      {
+        projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
+        projector->CalculateTriangulationErrors(outputErrors, matcher);
+      }
     }
    
 

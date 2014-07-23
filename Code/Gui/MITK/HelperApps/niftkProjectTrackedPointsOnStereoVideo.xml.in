@@ -113,6 +113,14 @@
       <label>Write out the projection / reprojection errors</label>
       <channel>output</channel>
     </file>
+
+    <file>
+      <name>outputTriangulatedPoints</name>
+      <longflag>outputTriangulatedPoints</longflag>
+      <description>Output Trianguled 3D points</description>
+      <label>Output Triangulated 3D points</label>
+      <channel>ouput</channel>
+    </file>
  
     <integer>
       <name>videoLag</name>
