@@ -56,6 +56,7 @@ int mitkPointBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
   mitk::Point3D m4;
   mitk::Point3D m5;
   mitk::Point3D m6;
+  mitk::Point3D m7;
 
   f1[0] = 0; f1[1] = 0; f1[2] = 0;
   f2[0] = 1; f2[1] = 0; f2[2] = 0;
@@ -97,10 +98,19 @@ int mitkPointBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
   movingPoints->InsertPoint(7, m5); // We just need a different ID for each of these points
   registration->SetUseICPInitialisation(false);
   registration->SetUsePointIDToMatchPoints(true);
+  registration->SetStripNaNFromInput(false);
   registration->Update(fixedPoints, movingPoints, *matrix, fre2);
 
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, fre2),".. Testing fre==fre2,and fre=" << fre << ", fre2=" << fre2);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing x translation=-1 and it equals:" << matrix->GetElement(0,3));
+
+  m7[0] = std::numeric_limits<double>::quiet_NaN(); m7[1] = 0 ; m7[2] = 0;
+  movingPoints->InsertPoint(6, m7); // moving data has one NaN point
+
+  registration->SetStripNaNFromInput(true);
+  registration->Update(fixedPoints, movingPoints, *matrix, fre2);
+  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, fre2),".. Testing (NaN moving value) fre==fre2,and fre=" << fre << ", fre2=" << fre2);
+  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing (NaN moving value) x translation=-1 and it equals:" << matrix->GetElement(0,3));
 
   MITK_TEST_OUTPUT(<< "Finished mitkPointBasedRegistrationTest...");
 
