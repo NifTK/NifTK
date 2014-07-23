@@ -27,6 +27,8 @@
 #include <mitkMIDASImageUtils.h>
 #include <mitkMIDASOrientationUtils.h>
 
+#include <itkImageDuplicator.h>
+
 namespace mitk
 {
 
@@ -227,6 +229,7 @@ void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNod
       /// whether the data has changed.
       if (node->GetData()->GetMTime() > this->GetSegmentationImage()->GetMTime())
       {
+        MITK_INFO << "MIDASMorphologicalSegmentorPipelineManager::NodeChanged() HAS CHANGED !!!";
         this->UpdateSegmentation();
       }
     }
@@ -464,29 +467,42 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     this->GetPipelineParamsFromSegmentationNode(params);
 
     typedef itk::Image<unsigned char, 3> SegmentationImageType;
-    typedef mitk::ImageToItk<SegmentationImageType> ImageToItkType;
+    typedef mitk::ImageToItk<const SegmentationImageType> ImageToItkType;
 
-    ImageToItkType::Pointer erosionsAdditionsToItk = ImageToItkType::New();
-    erosionsAdditionsToItk->SetInput(erosionsAdditions);
-    erosionsAdditionsToItk->Update();
+    /// Note:
+    /// We pass NULLs to the pipeline for the inputs that have not been changed.
+    /// This is to avoid unnecessary conversions.
 
-    ImageToItkType::Pointer erosionsSubtractionsToItk = ImageToItkType::New();
-    erosionsSubtractionsToItk->SetInput(erosionsSubtractions);
-    erosionsSubtractionsToItk->Update();
+    std::vector<SegmentationImageType::ConstPointer> workingImages(4);
+    std::fill(workingImages.begin(), workingImages.end(), (SegmentationImageType*)0);
 
-    ImageToItkType::Pointer dilationsAdditionsToItk = ImageToItkType::New();
-    dilationsAdditionsToItk->SetInput(dilationsAdditions);
-    dilationsAdditionsToItk->Update();
+    if (!m_Pipelines[segmentationImage])
+    {
+      ImageToItkType::Pointer mitkToItk;
 
-    ImageToItkType::Pointer dilationsSubtractionsToItk = ImageToItkType::New();
-    dilationsSubtractionsToItk->SetInput(dilationsSubtractions);
-    dilationsSubtractionsToItk->Update();
+      mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
+      mitkToItk->SetInput(erosionsAdditions);
+      mitkToItk->Update();
+      workingImages[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = mitkToItk->GetOutput();
 
-    std::vector<SegmentationImageType*> workingImages(4);
-    workingImages[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erosionsAdditionsToItk->GetOutput();
-    workingImages[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erosionsSubtractionsToItk->GetOutput();
-    workingImages[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilationsAdditionsToItk->GetOutput();
-    workingImages[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilationsSubtractionsToItk->GetOutput();
+      mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
+      mitkToItk->SetInput(erosionsSubtractions);
+      mitkToItk->Update();
+      workingImages[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
+
+      mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
+      mitkToItk->SetInput(dilationsAdditions);
+      mitkToItk->Update();
+      workingImages[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = mitkToItk->GetOutput();
+
+      mitkToItk = ImageToItkType::New();
+      mitkToItk->SetInput(dilationsSubtractions);
+      mitkToItk->Update();
+      workingImages[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
+    }
 
     std::vector<int> region(6);
     std::vector<bool> editingFlags;
@@ -522,7 +538,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
           referenceImage.GetPointer(),
           InvokeITKPipeline,
           3,
-          (params, workingImages, region, editingFlags, isRestarting, segmentationImage));
+          (workingImages, params, region, editingFlags, isRestarting, segmentationImage));
     }
     catch (const mitk::AccessByItkException& e)
     {
@@ -644,23 +660,22 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 MIDASMorphologicalSegmentorPipelineManager
 ::InvokeITKPipeline(
-    itk::Image<TPixel, VImageDimension>* referenceImage,
+    const itk::Image<TPixel, VImageDimension>* referenceImage,
+    const std::vector<typename itk::Image<unsigned char, VImageDimension>::ConstPointer>& workingImages,
     MorphologicalSegmentorPipelineParams& params,
-    const std::vector<itk::Image<unsigned char, VImageDimension>*>& workingData,
     const std::vector<int>& editingRegion,
     const std::vector<bool>& editingFlags,
     bool isRestarting,
     mitk::Image::Pointer segmentation
     )
 {
+  typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef itk::Image<unsigned char, VImageDimension> SegmentationImageType;
 
-  SegmentationImageType* erosionsAdditions = workingData[0];
-  SegmentationImageType* erosionsSubtractions = workingData[1];
-  SegmentationImageType* dilationsAdditions = workingData[2];
-  SegmentationImageType* dilationsSubtractions = workingData[3];
-  SegmentationImageType* segmentationInput = workingData.size() > 4 ? workingData[4] : 0;
-  SegmentationImageType* thresholdingMask = workingData.size() > 5 ? workingData[5] : 0;
+  const SegmentationImageType* erosionsAdditions = workingImages[0];
+  const SegmentationImageType* erosionsSubtractions = workingImages[1];
+  const SegmentationImageType* dilationsAdditions = workingImages[2];
+  const SegmentationImageType* dilationsSubtractions = workingImages[3];
 
   typedef MorphologicalSegmentorPipeline<TPixel, VImageDimension> Pipeline;
   Pipeline* pipeline = dynamic_cast<Pipeline*>(m_Pipelines[segmentation]);
@@ -669,17 +684,39 @@ MIDASMorphologicalSegmentorPipelineManager
   {
     pipeline = new Pipeline();
     m_Pipelines[segmentation] = pipeline;
+
+    typename GreyScaleImageType::Pointer refImage = 0;
+
+    /// Note:
+    /// The reference image that is passed to this function has been created by the MITK
+    /// 'access' macros. These macros implement a locking mechanism that checks if all the
+    /// pointers have been released to the converted image when the function returns.
+    /// Therefore, if we used 'the original 'referenceImage' directly, we would need
+    /// to release all the pointers to it before this function returns, by calling SetInput(NULL)
+    /// on each filter of the pipeline whose input is the reference image.
+    /// Although this would definitely work, this would cause that next time when we set the same
+    /// reference image to the filters, they would notice that they have been modified (their
+    /// MTime would change) and the whole pipeline would start from the beginning, even if no
+    /// filters have really changed.
+    /// Here we clone the image so that the lock to 'referenceImage' can be released when
+    /// this function returns.
+
+    typedef itk::ImageDuplicator<GreyScaleImageType> Duplicator;
+    typename Duplicator::Pointer duplicator = Duplicator::New();
+    duplicator->SetInputImage(referenceImage);
+    duplicator->Update();
+    refImage = duplicator->GetOutput();
+
+    // Set most of the parameters on the pipeline.
+    pipeline->SetInputs(refImage,
+                        erosionsAdditions,
+                        erosionsSubtractions,
+                        dilationsAdditions,
+                        dilationsSubtractions);
   }
 
   // Set most of the parameters on the pipeline.
-  pipeline->SetParams(referenceImage,
-                      erosionsAdditions,
-                      erosionsSubtractions,
-                      dilationsAdditions,
-                      dilationsSubtractions,
-                      segmentationInput,
-                      thresholdingMask,
-                      params);
+  pipeline->SetParams(params);
 
   // Do the update.
   pipeline->Update(editingFlags, editingRegion);
@@ -690,14 +727,7 @@ MIDASMorphologicalSegmentorPipelineManager
     {
       params.m_Stage = i;
 
-      pipeline->SetParams(referenceImage,
-                          erosionsAdditions,
-                          erosionsSubtractions,
-                          dilationsAdditions,
-                          dilationsSubtractions,
-                          segmentationInput,
-                          thresholdingMask,
-                          params);
+      pipeline->SetParams(params);
 
       pipeline->Update(editingFlags, editingRegion);
     }
@@ -706,9 +736,6 @@ MIDASMorphologicalSegmentorPipelineManager
   {
     pipeline->Update(editingFlags, editingRegion);
   }
-
-  // To make sure we release all smart pointers.
-  pipeline->DisconnectPipeline();
 
   // Get hold of the output, and make sure we don't re-allocate memory.
   segmentation->InitializeByItk<SegmentationImageType>(pipeline->GetOutput().GetPointer());

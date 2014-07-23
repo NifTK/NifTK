@@ -170,9 +170,9 @@ private:
   /// \brief ITK method that updates the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void InvokeITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage,
+      const itk::Image<TPixel, VImageDimension>* referenceImage,
+      const std::vector<typename itk::Image<unsigned char, VImageDimension>::ConstPointer>& workingImages,
       MorphologicalSegmentorPipelineParams& params,
-      const std::vector<itk::Image<unsigned char, VImageDimension>*>& workingData,
       const std::vector<int>& editingRegion,
       const std::vector<bool>& editingFlags,
       bool isRestarting,

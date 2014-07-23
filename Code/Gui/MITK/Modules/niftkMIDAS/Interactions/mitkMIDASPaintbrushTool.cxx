@@ -551,8 +551,11 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
 
       RunITKProcessor<mitk::Tool::DefaultSegmentationDataType, 3>(imageToEditToItk->GetOutput(), processor, redo, valueToWrite);
 
+      imageToEditToItk = 0;
+
+      imageToEdit->Modified();
+
       imageToEdit = NULL;
-      imageToEditToItk = NULL;
 
       nodeToEdit->Modified();
 

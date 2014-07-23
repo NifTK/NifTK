@@ -136,17 +136,15 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   pipeline->SetForegroundValue((unsigned char)255);
   pipeline->SetBackgroundValue((unsigned char)0);
 
+  pipeline->SetInputs(reader->GetOutput(),
+                      erosionsAdditions,
+                      erosionsSubtractions,
+                      dilationsAdditions,
+                      dilationSubtractions);
   for (int i = 0; i <= stage; i++)
   {
     params.m_Stage = i;
-    pipeline->SetParams(reader->GetOutput(),
-                        erosionsAdditions,
-                        erosionsSubtractions,
-                        dilationsAdditions,
-                        dilationSubtractions,
-                        segmentationInput,
-                        thresholdingMask,
-                        params);
+    pipeline->SetParams(params);
     pipeline->Update(editingFlags, editingRegion);
   }
 
