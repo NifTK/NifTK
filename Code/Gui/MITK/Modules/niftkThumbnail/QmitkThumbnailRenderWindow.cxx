@@ -93,6 +93,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
   m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");

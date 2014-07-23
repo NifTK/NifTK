@@ -44,10 +44,10 @@ public:
       )
   : mitk::Operation(type)
   , m_Redo(redo)
-  { };
+  { }
 
   ~OpGeneralSegmentorBaseCommand()
-  { };
+  { }
   bool IsRedo() const { return m_Redo; }
 
 protected:
@@ -78,7 +78,7 @@ public:
   , m_AfterSlice(afterSlice)
   , m_BeforePoint(beforePoint)
   , m_AfterPoint(afterPoint)
-  { };
+  { }
   int GetBeforeSlice() const { return m_BeforeSlice; }
   int GetAfterSlice() const { return m_AfterSlice; }
   mitk::Point3D GetBeforePoint() const { return m_BeforePoint; }
@@ -114,9 +114,9 @@ public:
   , m_AxisNumber(axisNumber)
   , m_Seeds(seeds)
   {
-  };
+  }
   ~OpPropagateSeeds()
-  { };
+  { }
   int GetSliceNumber() const { return m_SliceNumber; }
   int GetAxisNumber() const { return m_AxisNumber; }
   mitk::PointSet::Pointer GetSeeds() const { return m_Seeds; }
@@ -158,9 +158,9 @@ public:
   , m_Region(region)
   , m_Processor(processor)
   {
-  };
+  }
   ~OpRetainMarks()
-  { };
+  { }
   int GetFromSlice() const { return m_FromSlice; }
   int GetToSlice() const { return m_ToSlice; }
   int GetAxisNumber() const { return m_AxisNumber; }
@@ -201,10 +201,10 @@ public:
   : mitk::OpGeneralSegmentorBaseCommand(type, redo)
   , m_Region(region)
   , m_Processor(processor)
-  { };
+  { }
 
   ~OpPropagate()
-  { };
+  { }
   std::vector<int> GetRegion() const { return m_Region; }
   ProcessorPointer GetProcessor() const { return m_Processor; }
 private:
@@ -236,10 +236,10 @@ public:
       )
   : mitk::OpPropagate(type, redo, region, processor)
   , m_ThresholdFlag(thresholdFlag)
-  { };
+  { }
 
   ~OpThresholdApply()
-  { };
+  { }
   bool GetThresholdFlag() const { return m_ThresholdFlag; }
 private:
   bool m_ThresholdFlag;
@@ -264,7 +264,7 @@ public:
   : mitk::OpGeneralSegmentorBaseCommand(type, redo)
   , m_ContourSet(contourSet)
   {
-  };
+  }
   ~OpClean() {}
   mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet; }
 private:
@@ -302,9 +302,9 @@ public:
   , m_Seeds(seeds)
   , m_Processor(processor)
   {
-  };
+  }
   ~OpWipe()
-  { };
+  { }
   int GetSliceNumber() const { return m_SliceNumber; }
   int GetAxisNumber() const { return m_AxisNumber; }
   std::vector<int> GetRegion() const { return m_Region; }

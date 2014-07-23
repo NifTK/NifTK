@@ -29,44 +29,44 @@ class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer {
 
 public:
 
-	/** Constructor that takes a lookup table. */
+  /** Constructor that takes a lookup table. */
   QmitkLookupTableContainer(const vtkLookupTable* lut);
 
-	/** Destructor. */
+  /** Destructor. */
   virtual ~QmitkLookupTableContainer();
 
-	/** Get the vtkLookupTable. */
-	const vtkLookupTable* GetLookupTable() const { return m_LookupTable; }
+  /** Get the vtkLookupTable. */
+  const vtkLookupTable* GetLookupTable() const { return m_LookupTable; }
 
-	/** Set the order that determines which order this vtkLookupTable will be displayed in GUI. */
-	void SetOrder(int i) { m_Order = i;}
+  /** Set the order that determines which order this vtkLookupTable will be displayed in GUI. */
+  void SetOrder(int i) { m_Order = i;}
 
-	/** Get the order that this lookup table will be displayed in GUI. */
-	int GetOrder() const { return m_Order; }
+  /** Get the order that this lookup table will be displayed in GUI. */
+  int GetOrder() const { return m_Order; }
 
-	/** Set the display name. */
-	void SetDisplayName(const QString s) { m_DisplayName = s; }
+  /** Set the display name. */
+  void SetDisplayName(const QString s) { m_DisplayName = s; }
 
-	/** Get the display name. */
-	QString GetDisplayName() const { return m_DisplayName; }
+  /** Get the display name. */
+  QString GetDisplayName() const { return m_DisplayName; }
 
 protected:
 
 private:
 
   /** Deliberately prohibit copy constructor. */
-  QmitkLookupTableContainer(const QmitkLookupTableContainer&) {};
+  QmitkLookupTableContainer(const QmitkLookupTableContainer&) {}
 
-	/** Deliberately prohibit assignment. */
-  void operator=(const QmitkLookupTableContainer&) {};
+  /** Deliberately prohibit assignment. */
+  void operator=(const QmitkLookupTableContainer&) {}
 
-	/** This is it! */
-	const vtkLookupTable* m_LookupTable;
+  /** This is it! */
+  const vtkLookupTable* m_LookupTable;
 
-	/** Display name for display in GUI. */
-	QString m_DisplayName;
+  /** Display name for display in GUI. */
+  QString m_DisplayName;
 
-	/** Store the order that it is to be displayed in GUI. */
-	int m_Order;
+  /** Store the order that it is to be displayed in GUI. */
+  int m_Order;
 };
 #endif

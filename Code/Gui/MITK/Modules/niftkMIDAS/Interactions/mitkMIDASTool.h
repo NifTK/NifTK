@@ -73,14 +73,29 @@ public:
 
   const char* GetGroup() const;
 
+  /// \brief Constants that identify the data needed for the irregular edit tools.
+  /// They should be used to index the vector of working data.
+  enum
+  {
+    SEGMENTATION,
+    SEEDS,
+    CONTOURS,
+    DRAW_CONTOURS,
+    PRIOR_CONTOURS,
+    NEXT_CONTOURS,
+    REGION_GROWING,
+    INITIAL_SEGMENTATION,
+    INITIAL_SEEDS
+  };
+
   /// \brief Stores a seed point set name, so all classes have access to the name.
-  static const std::string SEED_POINT_SET_NAME;
+  static const std::string SEEDS_NAME;
 
   /// \brief Stores the name of the current slice contours, so all classes have access to the name.
-  static const std::string CURRENT_CONTOURS_NAME;
+  static const std::string CONTOURS_NAME;
 
-  /// \brief Stores the name of the region growing image, so all classes have access to the name.
-  static const std::string REGION_GROWING_IMAGE_NAME;
+  /// \brief Stores the name of the draw tool contours, so all classes have access to the name.
+  static const std::string DRAW_CONTOURS_NAME;
 
   /// \brief Stores the name of the prior contours, so all classes have access to the name.
   static const std::string PRIOR_CONTOURS_NAME;
@@ -88,26 +103,14 @@ public:
   /// \brief Stores the name of the next contours, so all classes have access to the name.
   static const std::string NEXT_CONTOURS_NAME;
 
-  /// \brief Stores the name of the draw tool contours, so all classes have access to the name.
-  static const std::string DRAW_CONTOURS_NAME;
+  /// \brief Stores the name of the region growing image, so all classes have access to the name.
+  static const std::string REGION_GROWING_NAME;
 
   /// \brief Stores the name of the initial segmentation image, so all classes have access to the name.
-  static const std::string INITIAL_SEGMENTATION_IMAGE_NAME;
+  static const std::string INITIAL_SEGMENTATION_NAME;
 
   /// \brief Stores the name of the initial set of seeds, so all classes have access to the name.
   static const std::string INITIAL_SEEDS_NAME;
-
-  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_EROSIONS_SUBTRACTIONS;
-
-  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_EROSIONS_ADDITIONS;
-
-  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_DILATIONS_SUBTRACTIONS;
-
-  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_DILATIONS_ADDITIONS;
 
   /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
   virtual void Activated();
@@ -159,7 +162,7 @@ protected:
   virtual void FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode);
 
   /// \brief Helper method to update a boolean property on a given working data node.
-  virtual void UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value);
+  virtual void UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value);
 
 private:
 

@@ -24,7 +24,8 @@
 
 #include "mitkMIDASStateMachine.h"
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \class MIDASToolPressStateMachine

@@ -40,8 +40,8 @@ public:
 
 protected:
 
-  DataNodeFilter() {};
-  virtual ~DataNodeFilter() {};
+  DataNodeFilter() {}
+  virtual ~DataNodeFilter() {}
 
   DataNodeFilter(const DataNodeFilter&); // Purposefully not implemented.
   DataNodeFilter& operator=(const DataNodeFilter&); // Purposefully not implemented.

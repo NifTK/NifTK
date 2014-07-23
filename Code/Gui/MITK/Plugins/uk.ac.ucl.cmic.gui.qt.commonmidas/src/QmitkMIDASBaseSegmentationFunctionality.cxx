@@ -302,7 +302,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
 
       if (this->IsNodeASegmentationImage(node))
       {
-        workingDataNodes = this->GetWorkingNodesFromSegmentationNode(segmentedData);
+        workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentedData);
         valid = true;
       }
     }
@@ -330,22 +330,11 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodesFromToolManager()
-{
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::ToolManager::DataVectorType result = toolManager->GetWorkingData();
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetWorkingImageFromToolManager(int i)
 {
   mitk::Image* result = NULL;
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingNodesFromToolManager();
+  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
   if (workingData.size() > 0 && i >= 0 && i < (int)workingData.size())
   {
     mitk::DataNode::Pointer node = workingData[i];
@@ -400,10 +389,12 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSeg
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodes()
+mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingData()
 {
-  mitk::ToolManager::DataVectorType result = this->GetWorkingNodesFromToolManager();
-  return result;
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  return toolManager->GetWorkingData();
 }
 
 
@@ -435,18 +426,18 @@ bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAWorkingImage(const mitk::Da
   return mitk::IsNodeABinaryImage(node);
 }
 
-mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
-  mitk::ToolManager::DataVectorType result;
-  result.push_back(node);
+  mitk::ToolManager::DataVectorType result(1);
+  result[0] = node;
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node)
+mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
@@ -580,7 +571,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
     else
     {
       mitk::DataNode::Pointer node = workingDataNodes[0];
-      mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingNode(node);
+      mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
       assert(segmentationImage);
 
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);

@@ -80,7 +80,7 @@ namespace itk
 
   protected:
     MIDASConditionalErosionFilter();
-    virtual ~MIDASConditionalErosionFilter() {};
+    virtual ~MIDASConditionalErosionFilter() {}
     void PrintSelf(std::ostream& os, Indent indent) const;
 
     /** Called by GenerateData() in MIDASBaseConditionalMorphologyFilter. */

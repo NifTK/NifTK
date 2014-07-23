@@ -52,16 +52,15 @@ public:
   /// \brief No-op destructor, as all objects will be destroyed by smart pointers.
   virtual ~MorphologicalSegmentorPipeline();
 
-  /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.
-  void DisconnectPipeline();
+  /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
+  void SetInputs(const GreyScaleImageType* referenceImage,
+                 const SegmentationImageType* erosionsAdditionsImage,
+                 const SegmentationImageType* erosionsSubtractionsImage,
+                 const SegmentationImageType* dilationsAdditionsImage,
+                 const SegmentationImageType* dilationsSubtractionsImage);
 
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
-  void SetParam(GreyScaleImageType* referenceImage,
-                SegmentationImageType* erosionsAdditionsImage,
-                SegmentationImageType* erosionEditsImage,
-                SegmentationImageType* dilationsAditionsImage,
-                SegmentationImageType* dilationsEditsImage,
-                MorphologicalSegmentorPipelineParams& p);
+  void SetParams(const MorphologicalSegmentorPipelineParams& params);
 
   /// \brief Sets the value to use throughout the binary pipeline for foreground (defaults to 1).
   void SetForegroundValue(unsigned char foregroundValue);
@@ -77,12 +76,15 @@ public:
   void Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion);
 
   /// \brief Gets the output image from the pipeline, used to copy back into MITK world.
-  ///
-  /// The parameters editingImageBeingEdited and additionsImageBeingEdited should be the same as when Update was called.
-  /// \param editingFlags array of 4 booleans to say which images are being editted.
-  typename SegmentationImageType::Pointer GetOutput(const std::vector<bool>& editingFlags);
+  typename SegmentationImageType::Pointer GetOutput();
 
-  int                                                          m_Stage;
+  /// \brief Gets the output image of a specific stage of the pipeline.
+  /// Used to copy back into MITK world.
+  /// This function assumes that Update() has been called for that stage (see SetParams)
+  /// and DisconnectPipeline() has not been called since then.
+  typename SegmentationImageType::Pointer GetOutput(int stage);
+
+
   typename ThresholdingFilterType::Pointer                     m_ThresholdingFilter;
   typename MaskByRegionFilterType::Pointer                     m_ThresholdingMaskFilter;
   typename LargestConnectedComponentFilterType::Pointer        m_ThresholdingConnectedComponentFilter;
@@ -107,6 +109,10 @@ private:
 
   /// \brief The background value for the segmentation, equal to 0, set in constructor.
   unsigned char m_BackgroundValue;
+
+  /// \brief The stage until which we want to run the pipeline.
+  int m_Stage;
+
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

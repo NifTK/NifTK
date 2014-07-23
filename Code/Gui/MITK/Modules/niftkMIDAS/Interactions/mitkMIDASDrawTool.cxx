@@ -122,7 +122,7 @@ void mitk::MIDASDrawTool::ClearWorkingData()
   assert(m_ToolManager);
 
   // Retrieve the correct contour set.
-  mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(3);
+  mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(DRAW_CONTOURS);
   mitk::ContourModelSet* contours = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
 
   // Delete all contours.
@@ -186,7 +186,7 @@ bool mitk::MIDASDrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::I
 */
 bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  if (m_WorkingImage == NULL || m_WorkingImageGeometry == NULL) return false;
+  if (m_SegmentationImage == NULL || m_SegmentationImageGeometry == NULL) return false;
 
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -201,7 +201,7 @@ bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::In
   }
 
   // Set this flag to indicate that we are editing, which will block the update of the region growing.
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
 
   // Retrieve the contour that we will add points to.
   mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
@@ -209,8 +209,8 @@ bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::In
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
   bool contourAugmented = this->DrawLineAroundVoxelEdges(
-                               *m_WorkingImage,
-                               *m_WorkingImageGeometry,
+                               *m_SegmentationImage,
+                               *m_SegmentationImageGeometry,
                                *planeGeometry,
                                 positionEvent->GetPositionInWorld(),
                                 m_MostRecentPointInMm,
@@ -253,7 +253,7 @@ bool mitk::MIDASDrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::In
     return true;
   }
 
-  this->AccumulateContourInWorkingData(*feedbackContour, 3);
+  this->AccumulateContourInWorkingData(*feedbackContour, DRAW_CONTOURS);
 
   // Re-initialize contours to zero length.
   this->ClearData();
@@ -261,7 +261,7 @@ bool mitk::MIDASDrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::In
   MIDASContourTool::SetBackgroundContourVisible(false);
 
   // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
@@ -304,8 +304,8 @@ bool mitk::MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::I
   renderer->RequestUpdate();
 
   bool result = true;
-  result = result && this->DeleteFromContour(2, action, event);
-  result = result && this->DeleteFromContour(3, action, event);
+  result = result && this->DeleteFromContour(CONTOURS, action, event);
+  result = result && this->DeleteFromContour(DRAW_CONTOURS, action, event);
   return result;
 }
 
@@ -327,8 +327,8 @@ bool mitk::MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::In
   renderer->RequestUpdate();
 
   bool result = true;
-  result = result && this->DeleteFromContour(2, action, event);
-  result = result && this->DeleteFromContour(3, action, event);
+  result = result && this->DeleteFromContour(CONTOURS, action, event);
+  result = result && this->DeleteFromContour(DRAW_CONTOURS, action, event);
   return result;
 }
 
@@ -345,7 +345,7 @@ bool mitk::MIDASDrawTool::StopErasing(mitk::StateMachineAction* action, mitk::In
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASDrawTool::DeleteFromContour(int workingDataNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool mitk::MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -359,7 +359,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(int workingDataNumber, mitk::StateMa
 
   // Retrieve the correct contour set.
   assert(m_ToolManager);
-  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(workingDataNumber);
+  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(dataIndex);
 
   if (contourNode.IsNull())
   {
@@ -531,18 +531,18 @@ bool mitk::MIDASDrawTool::DeleteFromContour(int workingDataNumber, mitk::StateMa
   mitk::MIDASDrawToolOpEraseContour *doOp = new mitk::MIDASDrawToolOpEraseContour(
       MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR,
       outputContourSet,
-      workingDataNumber
+      dataIndex
       );
 
   mitk::MIDASDrawToolOpEraseContour *undoOp = new mitk::MIDASDrawToolOpEraseContour(
       MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR,
       copyOfInputContourSet,
-      workingDataNumber
+      dataIndex
       );
 
   mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Erase Contour");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-  ExecuteOperation(doOp);
+  this->ExecuteOperation(doOp);
   return true;
 }
 
@@ -550,34 +550,31 @@ bool mitk::MIDASDrawTool::DeleteFromContour(int workingDataNumber, mitk::StateMa
 //-----------------------------------------------------------------------------
 void mitk::MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
 {
-  int workingNodeToClean = 3;
-  int regionGrowingNodeNumber = 6;
+  mitk::DataNode::Pointer drawContourNode = m_ToolManager->GetWorkingData(DRAW_CONTOURS);
+  mitk::ContourModelSet::Pointer drawContourSet = dynamic_cast<mitk::ContourModelSet*>(drawContourNode->GetData());
 
-  mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(workingNodeToClean);
-  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(contourNode->GetData());
-
-  mitk::DataNode::Pointer regionGrowingNode = m_ToolManager->GetWorkingData(regionGrowingNodeNumber);
+  mitk::DataNode::Pointer regionGrowingNode = m_ToolManager->GetWorkingData(REGION_GROWING);
   mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
 
   // If empty, nothing to do.
-  if (contourSet->GetSize() == 0)
+  if (drawContourSet->GetSize() == 0)
   {
     return;
   }
 
   // First take a copy of input contours, for Undo/Redo purposes.
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
-  mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
+  mitk::MIDASContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // For each contour point ... if it is not near the region growing image, we delete it.
   mitk::ContourModelSet::Pointer filteredContourSet = mitk::ContourModelSet::New();
-  mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(filteredContourSet.GetPointer()));
+  mitk::MIDASContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(filteredContourSet.GetPointer()));
 
   try
   {
     AccessFixedDimensionByItk_n(regionGrowingImage,
         ITKCleanContours, 3,
-        (*contourSet,
+        (*drawContourSet,
          *filteredContourSet,
          axisNumber,
          sliceNumber
@@ -588,19 +585,18 @@ void mitk::MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
     mitk::MIDASDrawToolOpEraseContour *doOp = new mitk::MIDASDrawToolOpEraseContour(
         MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR,
         filteredContourSet,
-        workingNodeToClean
+        DRAW_CONTOURS
         );
 
     mitk::MIDASDrawToolOpEraseContour *undoOp = new mitk::MIDASDrawToolOpEraseContour(
         MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR,
         copyOfInputContourSet,
-        workingNodeToClean
+        DRAW_CONTOURS
         );
 
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Clean Contour");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-    ExecuteOperation(doOp);
-
+    this->ExecuteOperation(doOp);
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -746,9 +742,9 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
       {
         assert(m_ToolManager);
 
-        int workingNode = op->GetWorkingNode();
+        int dataIndex = op->GetDataIndex();
 
-        mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(workingNode);
+        mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(dataIndex);
         assert(contourNode);
 
         mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>(contourNode->GetData());

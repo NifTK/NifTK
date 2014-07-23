@@ -134,9 +134,6 @@ protected:
    */
   virtual void Hidden();
 
-  /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
-  mitk::ToolManager::DataVectorType GetWorkingNodesFromToolManager();
-
   /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
   mitk::Image* GetWorkingImageFromToolManager(int i);
 
@@ -195,13 +192,13 @@ protected:
   virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node);
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
-  /// \brief Gets all binary images registered with the tool manager, (ie. those that are currently being edited), but subclasses can override this if they wish, or empty list if this can't be found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodes();
+  /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
+  virtual mitk::ToolManager::DataVectorType GetWorkingData();
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool b) {}

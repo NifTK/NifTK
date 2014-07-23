@@ -44,15 +44,23 @@ public:
       mitk::DataNode* nodeToEdit,
       ProcessorType* processor
       );
-  ~MIDASPaintbrushToolOpEditImage() {};
-  bool IsRedo() const { return m_Redo; }
-  int GetImageNumber() const { return m_ImageNumber; }
-  unsigned char GetValueToWrite() const { return m_ValueToWrite; }
-  mitk::Image* GetImageToEdit() const { return m_ImageToEdit; }
-  mitk::DataNode* GetNodeToEdit() const { return m_NodeToEdit; }
-  ProcessorType::Pointer GetProcessor() const { return m_Processor; }
+
+  ~MIDASPaintbrushToolOpEditImage();
+
+  bool IsRedo() const;
+
+  int GetImageNumber() const;
+
+  unsigned char GetValueToWrite() const;
+
+  mitk::Image* GetImageToEdit() const;
+
+  mitk::DataNode* GetNodeToEdit() const;
+
+  ProcessorType::Pointer GetProcessor() const;
 
 private:
+
   bool m_Redo;
   int m_ImageNumber;
   unsigned char m_ValueToWrite;
@@ -62,6 +70,6 @@ private:
 
 };
 
-} // end namespace
+}
 
 #endif

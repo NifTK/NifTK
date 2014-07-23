@@ -24,7 +24,7 @@ namespace itk
  * \class MIDASMaskByRegionImageFilter
  * \brief Class, developed for MIDAS migration, that outputs an image the same size as the input,
  * but you can specify a region, and that region is kept, and anything outside that region, set
- * to a single background value. Used for Axial Cutoff.
+ * to a single background value. Used for axial cut-off.
  *
  * Within the region, the spec is:
  * <pre>
