@@ -315,4 +315,49 @@ int mitk::FilterMatchingPoints(
   return matchedPoints;
 }
 
+//-----------------------------------------------------------------------------
+int mitk::RemoveNaNPoints(
+    const mitk::PointSet& pointsIn,
+    mitk::PointSet& pointsOut
+    )
+{
+  int removedPoints = 0;
+  pointsOut.Clear();
+
+  mitk::PointSet::DataType* pointSet = pointsIn.GetPointSet(0);
+  mitk::PointSet::PointsContainer* points = pointSet->GetPoints();
+
+  mitk::PointSet::PointsIterator pointsIt;
+
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType point;
+
+  for (pointsIt = points->Begin(); pointsIt != points->End(); ++pointsIt)
+  {
+    pointID = pointsIt->Index();
+    point = pointsIt->Value();
+
+        
+    if ( mitk::CheckForNaNPoint(point) )
+    {
+      removedPoints++;
+    }
+    else
+    {
+      pointsOut.InsertPoint(pointID, point);
+    }
+  }
+  return removedPoints;
+}
+
+//-----------------------------------------------------------------------------
+bool mitk::CheckForNaNPoint( const mitk::PointSet::PointType& point )
+{
+  if ( boost::math::isnan( point[0] ) || boost::math::isnan( point[1] ) || boost::math::isnan( point[2] ))
+  {
+    return true;
+  }
+  return false;
+}
+
 
