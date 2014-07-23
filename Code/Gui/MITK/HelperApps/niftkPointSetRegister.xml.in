@@ -55,7 +55,7 @@
       <description>If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature</description>
       <label>If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature</label>
       <channel>input</channel>
-      <default>0</default>
+      <default>false</default>
     </boolean>
    
     <boolean>
@@ -64,7 +64,7 @@
       <description>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</description>
       <label>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</label>
       <channel>input</channel>
-      <default>1</default>
+      <default>true</default>
     </boolean>
     
     <boolean>
@@ -73,7 +73,7 @@
       <description>If true, points are assumed to be unordered, and so an closest point search is used. Not relevant if you are doing SVD.</description>
       <label>If true, points are assumed to be unordered, and so an closest point search is used. Not relevant if you are doing SVD</label>
       <channel>input</channel>
-      <default>0</default>
+      <default>false</default>
     </boolean>
 
     <float>
