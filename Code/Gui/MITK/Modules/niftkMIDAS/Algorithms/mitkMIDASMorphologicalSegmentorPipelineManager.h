@@ -182,14 +182,7 @@ private:
   /// \brief ITK method that actually does the work of finalizing the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void FinalizeITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::Image::Pointer segmentation
-      );
-
-  /// \brief ITK method that completely removes the current pipeline, destroying it from the m_TypeToPipelineMap.
-  template<typename TPixel, unsigned int VImageDimension>
-  void DestroyITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage,
+      itk::Image<TPixel, VImageDimension>* referenceImage,
       mitk::Image::Pointer segmentation
       );
 

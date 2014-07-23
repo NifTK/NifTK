@@ -639,19 +639,16 @@ void MIDASMorphologicalSegmentorPipelineManager::RemoveWorkingData()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::DestroyPipeline()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  mitk::Image::Pointer segmentationImage = this->GetSegmentationImage();
-  if (referenceImage.IsNotNull())
-  {
-    try
-    {
-      AccessFixedDimensionByItk_n(referenceImage, DestroyITKPipeline, 3, (segmentationImage));
-    }
-    catch (const mitk::AccessByItkException& e)
-    {
-      MITK_ERROR << "MIDASMorphologicalSegmentorPipelineManager::DestroyPipeline: Caught exception, so abandoning clearing the segmentation image:" << e.what();
-    }
-  }
+  mitk::Image::Pointer segmentation = this->GetSegmentationImage();
+  std::map<mitk::Image::Pointer, MorphologicalSegmentorPipelineInterface*>::iterator iter = m_Pipelines.find(segmentation);
+
+  // By the time this method is called, the pipeline MUST exist.
+  assert(iter != m_Pipelines.end());
+  assert(iter->second);
+
+  delete iter->second;
+
+  m_Pipelines.erase(iter);
 }
 
 
@@ -748,7 +745,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 MIDASMorphologicalSegmentorPipelineManager
 ::FinalizeITKPipeline(
-    itk::Image<TPixel, VImageDimension>* itkImage,
+    itk::Image<TPixel, VImageDimension>* referenceImage,
     mitk::Image::Pointer segmentation
     )
 {
@@ -762,24 +759,6 @@ MIDASMorphologicalSegmentorPipelineManager
 
   // This deliberately re-allocates the memory
   mitk::CastToMitkImage(pipeline->GetOutput(), segmentation);
-}
-
-
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-void
-MIDASMorphologicalSegmentorPipelineManager
-::DestroyITKPipeline(itk::Image<TPixel, VImageDimension>* itkImage, mitk::Image::Pointer segmentation)
-{
-  std::map<mitk::Image::Pointer, MorphologicalSegmentorPipelineInterface*>::iterator iter = m_Pipelines.find(segmentation);
-
-  // By the time this method is called, the pipeline MUST exist.
-  assert(iter != m_Pipelines.end());
-  assert(iter->second);
-
-  delete iter->second;
-
-  m_Pipelines.erase(iter);
 }
 
 
