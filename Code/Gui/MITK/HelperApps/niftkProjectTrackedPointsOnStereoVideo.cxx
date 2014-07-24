@@ -15,6 +15,8 @@
 #include <cstdlib>
 #include <limits>
 #include <mitkProjectPointsOnStereoVideo.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkPointSetReader.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 
 #include <fstream>
@@ -108,16 +110,30 @@ int main(int argc, char** argv)
     }
     if ( input3D.length() != 0 ) 
     {
-      std::ifstream fin(input3D.c_str());
-      double x;
-      double y;
-      double z;
-      while ( fin >> x >> y >> z  )
+      //try reading it as a mitk point set first
+      mitk::PointSetReader::Pointer reader = mitk::PointSetReader::New();
+      reader->SetFileName(input3D);
+      mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+      reader->Update();
+      pointSet = reader->GetOutput();
+      if ( pointSet->GetSize() == 0 ) 
       {
-        worldPoints.push_back(cv::Point3d(x,y,z));
+        //try reading a stream of points instead
+        std::ifstream fin(input3D.c_str());
+        double x;
+        double y;
+        double z;
+        while ( fin >> x >> y >> z  )
+        {
+          worldPoints.push_back(cv::Point3d(x,y,z));
+        }
+        fin.close();
+      }
+      else
+      {
+        worldPoints = mitk::PointSetToVector ( pointSet );
       }
       projector->SetWorldPoints(worldPoints);
-      fin.close();
     }
    
     if ( classifier3D.length() != 0 ) 
