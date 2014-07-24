@@ -15,6 +15,7 @@
 #include "mitkProjectPointsOnStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkPointSetWriter.h>
 #include <cv.h>
 //#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
@@ -32,6 +33,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoOut("")
 , m_Directory("")
 , m_VideoOutPrefix("")
+, m_TriangulatedPointsOutName("")
 , m_TrackerIndex(0)
 , m_ReferenceIndex(-1)
 , m_DrawLines(false)
@@ -713,15 +715,28 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
     {
       MITK_WARN << "Rejecting triangulation error at frame " << frameNumber << " due to high timing error " << m_PointsInLeftLensCS[frameNumber].first << " > "  << m_AllowableTimingError ;
     }
-  } 
+  }
+  mitk::PointSet::Pointer triangulatedPoints = mitk::PointSet::New();
   for ( unsigned int i = 0 ; i < classifiedPoints.size() ; i ++ ) 
   {
     cv::Point3d centroid;
     cv::Point3d stdDev;
     centroid = mitk::GetCentroid (classifiedPoints[i],true, & stdDev);
+
+    mitk::Point3D point;
+    point[0] = centroid.x;
+    point[1] = centroid.y;
+    point[2] = centroid.z;
+    triangulatedPoints->InsertPoint(i,point);
     MITK_INFO << "Point " << i << " triangulated mean " << centroid << " SD " << stdDev;
   }
-
+  if ( m_TriangulatedPointsOutName != "" )
+  {
+    mitk::PointSetWriter::Pointer tpWriter = mitk::PointSetWriter::New();
+    tpWriter->SetFileName(m_TriangulatedPointsOutName);
+    tpWriter->SetInput( triangulatedPoints );
+    tpWriter->Update();
+  }
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
   tout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_TriangulationErrors.size() ; i ++ )

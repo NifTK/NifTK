@@ -170,6 +170,7 @@ public:
   itkSetMacro ( ProjectorScreenBuffer, double);
 
   itkSetMacro ( ClassifierScreenBuffer, double);
+  itkSetMacro ( TriangulatedPointsOutName, std::string );
 protected:
 
   ProjectPointsOnStereoVideo();
@@ -185,6 +186,7 @@ private:
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
   std::string                   m_VideoOutPrefix; //where to write out any video
+  std::string                   m_TriangulatedPointsOutName; //where to write the triangulated points out to
   std::vector< std::pair < cv::Point3d, cv::Scalar > >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 

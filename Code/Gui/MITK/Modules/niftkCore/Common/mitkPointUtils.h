@@ -101,6 +101,23 @@ NIFTKCORE_EXPORT int FilterMatchingPoints(
     );
 
 /**
+ * \brief Takes a point set and scans for matching NaN's and returns a point set with
+ * the offending points removed
+ * \return the number of points removed
+ */
+NIFTKCORE_EXPORT int RemoveNaNPoints(
+    const mitk::PointSet& pointsIn,
+    mitk::PointSet& pointsOut
+    );
+
+/**
+ * \brief Checks if the point contains a NaN value
+ * \return true if NaN
+ */
+NIFTKCORE_EXPORT bool CheckForNaNPoint(
+    const mitk::PointSet::PointType& point);
+
+/**
  * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if the matrix is not NULL,
  * and otherwise if matrix is NULL, will simply leave the point un-altered.
  * \param isNormal if true, will transform the mitk::Point3D as if it was a surface normal.
