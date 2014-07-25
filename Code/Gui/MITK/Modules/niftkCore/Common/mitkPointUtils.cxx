@@ -14,6 +14,7 @@
 
 #include "mitkPointUtils.h"
 #include <mitkCommon.h>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 //-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)
