@@ -52,6 +52,7 @@ if(BUILD_IGI AND BUILD_PCL)
           -DEIGEN_ROOT:PATH=${Eigen_DIR}
           -DFLANN_ROOT:PATH=${FLANN_DIR}
           -DVTK_DIR:PATH=${VTK_DIR}
+          -DBUILD_tools:BOOL=OFF
        DEPENDS ${proj_DEPENDENCIES}
       )
     if(WIN32)
