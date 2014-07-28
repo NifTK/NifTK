@@ -89,6 +89,7 @@ if(SlicerExecutionModel_FOUND)
     niftkExtract2DSliceFrom3DImage
     niftkExtrudeMaskToVolume
     niftkHistogramEqualization
+    niftkHistogramMatchingImageFilter
     niftkInvertImage
     niftkLogInvertImage
     #niftkMammogramMaskSegmentation
