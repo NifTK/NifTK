@@ -128,7 +128,7 @@ public:
     return;
   }
 
-  MeasureType GetValue( const InputImagePointType &pecInterceptInMM );
+  MeasureType GetValueAtPecIntercept( const InputImagePointType &pecInterceptInMM );
 
   MeasureType GetValue( const ParametersType &parameters ) const;
 

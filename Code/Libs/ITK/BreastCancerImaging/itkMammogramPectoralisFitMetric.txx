@@ -583,7 +583,7 @@ MammogramPectoralisFitMetric<TInputImage>
 template <typename TInputImage>
 typename MammogramPectoralisFitMetric<TInputImage>::MeasureType 
 MammogramPectoralisFitMetric<TInputImage>
-::GetValue( const  InputImagePointType &pecInterceptInMM )
+::GetValueAtPecIntercept( const  InputImagePointType &pecInterceptInMM )
 {
   ParametersType parameters;
 
