@@ -220,6 +220,7 @@ endforeach()
 # Add new programs to this list.
 ##############################################################
 set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
+  niftk2DImagesTo3DVolume
   niftkAbsImageFilter
   niftkAnd
   niftkAtlasStatistics
