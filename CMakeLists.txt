@@ -780,7 +780,7 @@ set(Boost_NO_SYSTEM_PATHS ON)
 # off is the default, but our optional pcl dependency will try to use static libs if we dont define it explicitly.
 set(Boost_USE_STATIC_LIBS OFF)
 
-find_package( Boost 1.54 COMPONENTS filesystem system date_time regex REQUIRED)
+find_package( Boost 1.54 COMPONENTS filesystem system date_time regex thread REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})

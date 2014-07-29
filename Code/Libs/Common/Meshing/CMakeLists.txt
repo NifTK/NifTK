@@ -22,8 +22,18 @@ else(CGAL_FOUND)
    "This program requires the CGAL library, and will not be compiled.")
 endif(CGAL_FOUND)
 
+
+if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    # remember https://cmicdev.cs.ucl.ac.uk/trac/ticket/3647
+    add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
+  endif(WIN32)
+endif(BUILD_SHARED_LIBS)
+
+
 #### Build CGAL meshing module
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  # NOTE: NIFTK_CGAL_CXX_FLAGS only applies to non-windows
   set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG};-frounding-math;-fPIC")
 else ()
   if (${CMAKE_BUILD_TYPE} STREQUAL "Release")

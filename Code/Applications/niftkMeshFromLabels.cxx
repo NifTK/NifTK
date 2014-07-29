@@ -82,7 +82,7 @@ static bool _WriteMesh(vtkSmartPointer<vtkUnstructuredGrid> sp_grid, const std::
 
   sp_writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
   sp_writer->SetFileName(path.c_str());
-  sp_writer->SetInput(sp_grid);
+  sp_writer->SetInputData(sp_grid);
   sp_writer->Update();
 
   if (sp_writer->GetErrorCode() != 0) {
