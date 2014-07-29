@@ -96,6 +96,13 @@
     </image>
 
     <boolean>
+      <name>flgSSD</name>
+      <longflag>ssd</longflag>
+      <description>Optimise the sum of squared differences [normalised cross-correlation].</description>
+      <label>SSD</label>
+    </boolean>
+
+    <boolean>
       <name>flgDebug</name>
       <longflag>dbg</longflag>
       <description>Generate debugging output.</description>

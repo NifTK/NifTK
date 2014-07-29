@@ -42,7 +42,7 @@
 namespace itk
 {
 
-template < class TOptimizer >
+  template < class TOptimizer, class TMetric >
 class PecFitIterationCallback : public itk::Command
 {
 public:
@@ -54,10 +54,17 @@ public:
   itkTypeMacro( PecFitIterationCallback, Superclass );
   itkNewMacro( Self );
   typedef    TOptimizer     OptimizerType;
+  typedef    TMetric        MetricType;
 
-  void SetOptimizer( OptimizerType * optimizer ) {
+  typedef typename TMetric::TemplateImageType TemplateImageType;
+
+  void SetOptimizer( OptimizerType *optimizer ) {
     m_Optimizer = optimizer;
     m_Optimizer->AddObserver( itk::IterationEvent(), this );
+  }
+
+  void SetMetric( MetricType *metric ) {
+    m_Metric = metric;
   }
 
   void Execute(itk::Object *caller, const itk::EventObject & event) {
@@ -75,6 +82,14 @@ public:
       std::cout << m_Optimizer->GetCurrentIteration() << "   ";
       std::cout << m_Optimizer->GetValue() << "   ";
       std::cout << m_Optimizer->GetCurrentPosition() << std::endl;
+
+      std::ostringstream fname;
+      fname << "Template" << m_iIteration << ".nii.gz";
+      WriteImageToFile< TemplateImageType >( fname.str().c_str(), 
+                                          "template image", 
+                                          m_Metric->GetTemplate() ); 
+
+      m_iIteration++;      
     }
     else if( typeid( event ) == typeid( itk::EndEvent ) )
     {
@@ -87,8 +102,10 @@ public:
   }
   
 protected:
-  PecFitIterationCallback() {};
+  PecFitIterationCallback() {m_iIteration = 0;};
+  unsigned int m_iIteration;
   itk::WeakPointer<OptimizerType>   m_Optimizer;
+  itk::WeakPointer<MetricType>      m_Metric;
 };
 
 
@@ -101,6 +118,8 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 ::MammogramPectoralisSegmentationImageFilter()
 {
   m_flgVerbose = false;
+  m_flgOptimiseSSD = false;
+
   m_BreastSide = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
 
   this->SetNumberOfRequiredInputs( 1 );
@@ -252,7 +271,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 {
   bool flgFirstIteration = true;
 
-  double ncc = -1., bestNCC = -1.;
+  double cost = -1., bestCost = -1.;
 
   InputImageIndexType pecIntercept;
   InputImagePointType pecInterceptInMM;
@@ -279,14 +298,14 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
       imPipelineConnector->TransformIndexToPhysicalPoint( pecIntercept,
                                                           pecInterceptInMM );
 
-      // Compute the cross correlation
+      // Compute the cost function
 
-      ncc = metric->GetValueAtPecIntercept( pecInterceptInMM );
+      cost = metric->GetValueAtPecIntercept( pecInterceptInMM );
 
-      if ( flgFirstIteration || ( ncc > bestNCC ) )
+      if ( flgFirstIteration || ( cost > bestCost ) )
       {
         bestPecInterceptInMM = pecInterceptInMM;
-        bestNCC = ncc;
+        bestCost = cost;
         flgFirstIteration = false;
       }
 
@@ -294,8 +313,8 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
       {
         std::cout << "Pec intercept: " << std::setw(12) 
                   << std::left << pecInterceptInMM << std::right
-                  << " NCC: " << std::setw(12) << ncc 
-                  << " Best NCC: " << std::setw(12) << bestNCC 
+                  << " Cost: " << std::setw(12) << cost 
+                  << " Best cost: " << std::setw(12) << bestCost 
                   << ", " << std::setw(18) << std::left << bestPecInterceptInMM
                   << std::right << std::endl;
       }
@@ -306,7 +325,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   metric->GetParameters( bestPecInterceptInMM, bestParameters );
 
   std::cout << std::endl
-            << " Best NCC: " << std::setw(12) << bestNCC 
+            << " Best cost: " << std::setw(12) << bestCost 
             << ", " << std::setw(18) << bestPecInterceptInMM
             << ", " << bestParameters << std::endl;
 }
@@ -714,6 +733,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   typename FitMetricType::Pointer metric = FitMetricType::New();
   
   metric->SetDebug( this->GetDebug() );
+  metric->SetSSD( m_flgOptimiseSSD );
 
   typename FitMetricType::ParametersType bestParameters;
   bestParameters.SetSize( metric->GetNumberOfParameters() );
@@ -795,7 +815,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   double nPixels, nPecPixels;
   double tMean, tStdDev;        // The mean and standard deviation of the template image
 
-  double ncc = -1., bestNCC = -1.;
+  double cost = -1., bestCost = -1.;
 
 
 #if 0
@@ -972,10 +992,11 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   optimiser->MaximizeOn();
   optimiser->SetScales( parameterScales );
 
-  typedef PecFitIterationCallback< OptimizerType >   IterationCallbackType;
-  IterationCallbackType::Pointer callback = IterationCallbackType::New();
+  typedef PecFitIterationCallback< OptimizerType, FitMetricType > IterationCallbackType;
+  typename IterationCallbackType::Pointer callback = IterationCallbackType::New();
 
   callback->SetOptimizer( optimiser );
+  callback->SetMetric( metric );
   
   std::cout << "Starting optimisation at position: " 
             << bestParameters << std::endl;

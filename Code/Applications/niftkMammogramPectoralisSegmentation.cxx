@@ -51,6 +51,7 @@ struct arguments
   bool flgVerbose;
   bool flgDebug;
   bool flgIgnoreView;
+  bool flgSSD;
 
   std::string inputImage;
   std::string maskImage;
@@ -62,6 +63,7 @@ struct arguments
     flgVerbose = false;
     flgDebug = false;
     flgIgnoreView = false;
+    flgSSD = false;
   }
 };
 
@@ -268,6 +270,7 @@ int DoMain(arguments args)
 
   pecFilter->SetVerbose( args.flgVerbose );
   pecFilter->SetDebug( args.flgDebug );
+  pecFilter->SetSSD( args.flgSSD );
 
   pecFilter->SetMask( mask );
   
@@ -398,6 +401,7 @@ int main(int argc, char** argv)
   args.flgVerbose          = flgVerbose;
   args.flgDebug            = flgDebug;
   args.flgIgnoreView       = flgIgnoreView;
+  args.flgSSD              = flgSSD;
 
   args.inputImage     = inputImage;
   args.maskImage      = maskImage;

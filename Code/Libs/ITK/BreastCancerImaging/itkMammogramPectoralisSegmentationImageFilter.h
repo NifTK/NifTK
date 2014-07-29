@@ -100,6 +100,9 @@ public:
   /// Set the optional mask image
   void SetMask( const MaskImageType *imMask );
 
+  /// Optimise SSD rather than normalised cross-correlation
+  void SetSSD( bool flag ) { m_flgOptimiseSSD = flag; }
+
   typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
   typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;
   typedef typename itk::ImageLinearIteratorWithIndex< MaskImageType > MaskLineIteratorType;
@@ -140,6 +143,8 @@ protected:
   void PrintSelf(std::ostream& os, Indent indent) const;
 
   bool m_flgVerbose;
+  bool m_flgOptimiseSSD;
+
   BreastSideType m_BreastSide;
 
   InputImagePointer m_Image;

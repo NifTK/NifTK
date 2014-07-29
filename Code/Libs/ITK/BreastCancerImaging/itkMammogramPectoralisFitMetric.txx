@@ -35,6 +35,8 @@ template <class TInputImage>
 MammogramPectoralisFitMetric<TInputImage>
 ::MammogramPectoralisFitMetric()
 {
+  m_flgOptimiseSSD = false;
+
   m_InputImage = 0;
   m_Mask = 0;
   m_ImTemplate = 0;
@@ -500,7 +502,7 @@ MammogramPectoralisFitMetric<TInputImage>
   // Compute the mean image intensity for this region
   
   tMean = 0;
-  
+
   for ( itTemplate.GoToBegin();
         ! itTemplate.IsAtEnd();
         ++itTemplate )
@@ -509,7 +511,7 @@ MammogramPectoralisFitMetric<TInputImage>
     {
       tMean += itTemplate.Get();
     }
-
+    
     if ( itMask )
     {
       ++(*itMask);
@@ -526,7 +528,7 @@ MammogramPectoralisFitMetric<TInputImage>
   }
 
   tStdDev = 0;
-       
+
   for ( itTemplate.GoToBegin();
         ! itTemplate.IsAtEnd();
         ++itTemplate )
@@ -536,13 +538,13 @@ MammogramPectoralisFitMetric<TInputImage>
       value = static_cast<double>( itTemplate.Get() ) - tMean;
       tStdDev += value*value;
     }
-
+      
     if ( itMask )
     {
       ++(*itMask);
     }
   }
-
+    
   if ( tStdDev == 0 )
   {
     if ( this->GetDebug() )
@@ -555,6 +557,8 @@ MammogramPectoralisFitMetric<TInputImage>
   {
     tStdDev = sqrt( tStdDev/nPixels );
   }
+
+
 
   if ( itMask )
   {
@@ -612,6 +616,26 @@ template <typename TInputImage>
 typename MammogramPectoralisFitMetric<TInputImage>::MeasureType 
 MammogramPectoralisFitMetric<TInputImage>
 ::GetValue( const ParametersType &parameters ) const
+{
+  if (  m_flgOptimiseSSD )
+  {
+    return GetValueSSD( parameters );
+  }
+  else
+  {
+    return GetValueNCC( parameters );
+  }
+}
+
+
+/* -----------------------------------------------------------------------
+   GetValueNCC()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+typename MammogramPectoralisFitMetric<TInputImage>::MeasureType 
+MammogramPectoralisFitMetric<TInputImage>
+::GetValueNCC( const ParametersType &parameters ) const
 {
   if ( ! m_InputImage )
   {
@@ -710,7 +734,7 @@ MammogramPectoralisFitMetric<TInputImage>
   // Compute the mean image intensity for this region
   
   imMean = 0;
-  
+ 
   for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
         ! itPecRegion.IsAtEnd();
         ++itPecRegion, ++itTemplate )
@@ -722,13 +746,13 @@ MammogramPectoralisFitMetric<TInputImage>
         imMean += itPecRegion.Get();
       }
     }
-
+      
     if ( itMask )
     {
       ++(*itMask);
     }
   }
-  
+    
   imMean /= nPixels;
 
   // Compute the standard deviation for this region
@@ -739,7 +763,7 @@ MammogramPectoralisFitMetric<TInputImage>
   }
 
   imStdDev = 0;
-       
+   
   for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
         ! itPecRegion.IsAtEnd();
         ++itPecRegion, ++itTemplate )
@@ -752,13 +776,13 @@ MammogramPectoralisFitMetric<TInputImage>
         imStdDev += value*value;
       }
     }
-
+      
     if ( itMask )
     {
       ++(*itMask);
     }
   }
-
+    
   if ( imStdDev == 0 )
   {
     if ( this->GetDebug() )
@@ -768,8 +792,9 @@ MammogramPectoralisFitMetric<TInputImage>
     }
     return -1.;
   }
-  
+    
   imStdDev = sqrt( imStdDev/nPixels );
+
 
   // Compute the cross correlation
 
@@ -818,6 +843,187 @@ MammogramPectoralisFitMetric<TInputImage>
   }
 
   return ncc;
+}
+
+
+/* -----------------------------------------------------------------------
+   GetValueSSD()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+typename MammogramPectoralisFitMetric<TInputImage>::MeasureType 
+MammogramPectoralisFitMetric<TInputImage>
+::GetValueSSD( const ParametersType &parameters ) const
+{
+  if ( ! m_InputImage )
+  {
+    itkExceptionMacro( << "ERROR: Input image not set." );
+    return -1.;
+  }
+
+  if ( m_Mask )
+  {
+    MaskImageSizeType maskSize = m_Mask->GetLargestPossibleRegion().GetSize();
+    
+    if ( ( maskSize[0] != m_ImSize[0] ) || ( maskSize[1] != m_ImSize[1] ) )
+    {
+      itkExceptionMacro( << "ERROR: Mask dimensions, " << maskSize 
+                         << ", do not match input image, " << m_ImSize );
+      return -1.;
+    }
+  } 
+
+  // Only permit muscle boundaries with slopes greater than 45 degrees
+
+  if ( this->GradientAtMidpoint( parameters ) < 1. )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: Slope of muscle boundary is less than 1, skipping: " 
+                << parameters << std::endl;
+    }
+    return -1.;
+  }
+    
+
+  double value;
+  double nPixels, nPecPixels;
+  double imMax;
+  double tMean, tStdDev;
+
+  MeasureType ssd = 0., difference;
+
+
+  // Create the template
+
+  TemplateImageRegionType templateRegion;
+
+  const_cast< MammogramPectoralisFitMetric<TInputImage>* >(this)->GenerateTemplate( parameters, 
+                                                                                    tMean, tStdDev, 
+                                                                                    nPecPixels, nPixels,
+                                                                                    templateRegion );
+  
+
+  if ( nPixels == 0 )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: No pixels in template, skipping: " 
+                << parameters << std::endl;
+    }
+    return -1.;
+  }
+
+  if ( ( tMean < -0.5 ) || ( tMean > 0.5 ) )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: Insufficient pixels in template (mean = " 
+                << tMean << ", nPixels = " << nPixels << "), skipping: " << parameters << std::endl;
+    }
+    return -1.;
+  }
+
+
+  if ( tStdDev == 0 )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: Template standard deviation is zero, skipping: " 
+                << parameters << std::endl;
+    }
+    return -1.;
+  }
+
+
+  // Create the image region iterator
+
+  MaskIteratorType *itMask = 0;
+
+  if ( m_Mask )
+  {
+    itMask = new MaskIteratorType( m_Mask, m_MaskRegion );
+    itMask->GoToBegin();
+  }
+
+  IteratorConstType itPecRegion(   m_InputImage, templateRegion );
+  TemplateIteratorType itTemplate( m_ImTemplate, templateRegion );
+
+  // Compute the mean image intensity for this region
+  
+  imMax = 0;
+ 
+  for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
+        ! itPecRegion.IsAtEnd();
+        ++itPecRegion, ++itTemplate )
+  {
+    if ( ( (! itMask) || itMask->Get() ) &&
+         itTemplate.Get() &&
+         ( itPecRegion.Get() > imMax ) )
+    {
+      imMax = itPecRegion.Get();
+    }
+      
+    if ( itMask )
+    {
+      ++(*itMask);
+    }
+  }
+    
+
+  // Compute the sum of square differences
+
+  if ( m_Mask )
+  {
+    itMask->GoToBegin();
+  }
+
+  ssd = 0;
+
+  for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
+        ! itPecRegion.IsAtEnd();
+        ++itPecRegion, ++itTemplate )
+  {
+    if ( (! itMask) || itMask->Get() )
+    {
+      if ( itTemplate.Get() > 0. )
+      {
+        difference = ((double) itPecRegion.Get()) - ((double) itTemplate.Get())*imMax;
+      }
+      else if ( itTemplate.Get() < 0. )
+      {
+        difference = itPecRegion.Get();
+      }
+      else
+      {
+        difference = 0.;
+      }
+
+      ssd += difference*difference;
+    }
+
+    if ( itMask )
+    {
+      ++(*itMask);
+    }
+  }
+
+  if ( itMask )
+  {
+    delete itMask;
+  }
+
+  ssd /= nPixels;
+
+  if ( 0 && this->GetDebug() )
+  {
+    std::cout << "SSD: "           << std::setw(12) << ssd 
+              << " Parameters: "   << std::setw(12) << parameters
+              << " Region start: " << std::setw(12) << templateRegion.GetIndex() 
+              << ", size: "        << std::setw(12) << templateRegion.GetSize() << std::endl;
+  }
+
+  return -ssd;
 }
 
 

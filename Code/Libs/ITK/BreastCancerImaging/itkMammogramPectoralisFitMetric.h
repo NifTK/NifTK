@@ -105,6 +105,9 @@ public:
   /// Set the optional mask image
   void SetMask( const MaskImageType *imMask );
 
+  /// Optimise SSD rather than normalised cross-correlation
+  void SetSSD( bool flag ) { m_flgOptimiseSSD = flag; }
+
   /** Get the template image. */
   itkGetObjectMacro( ImTemplate, TemplateImageType );
 
@@ -132,6 +135,9 @@ public:
 
   MeasureType GetValue( const ParametersType &parameters ) const;
 
+  MeasureType GetValueNCC( const ParametersType &parameters ) const;
+  MeasureType GetValueSSD( const ParametersType &parameters ) const;
+
   void GetValueAndDerivative( const ParametersType &parameters,
                               MeasureType &Value, 
                               DerivativeType &Derivative ) const
@@ -140,11 +146,14 @@ public:
     this->GetDerivative( parameters, Derivative );
   }
 
+  TemplateImagePointer GetTemplate( void ) { return m_ImTemplate; }
+
   void ClearTemplate( void );
 
   void GenerateTemplate( const ParametersType &parameters,
                          double &tMean, double &tStdDev, double &nInside, double &nPixels,
                          TemplateImageRegionType &templateRegion );
+
 
 protected:
 
@@ -153,6 +162,8 @@ protected:
   MammogramPectoralisFitMetric(const Self &) {}
   void operator=(const Self &) {}
   void PrintSelf(std::ostream & os, Indent indent) const;
+
+  bool m_flgOptimiseSSD;
 
   InputImageRegionType   m_ImRegion;
   InputImageSpacingType  m_ImSpacing;
