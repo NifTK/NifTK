@@ -520,7 +520,8 @@ protected:
                                              unsigned int nParameters );
 
   void RegisterTheImages();
-  void RegisterTheImages( MammogramType mammoType );
+  void RegisterTheImages( MammogramType mammoType,
+                          typename FactoryType::EulerAffineTransformType::Pointer &transform );
 
   typename LabelImageType::IndexType
     TransformTumourPositionIntoImage( typename LabelImageType::IndexType &idxTumourCenter,
