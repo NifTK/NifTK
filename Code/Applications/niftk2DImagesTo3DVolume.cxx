@@ -145,20 +145,20 @@ int main( int argc, char * argv[] )
   outputStart[2] = 0;
   outputRegion.SetIndex( outputStart );
   
-  itk::Size<3> size;
+  OutputImageType::SizeType size;
   size[0] = images2D[0]->GetLargestPossibleRegion().GetSize()[0];
   size[1] = images2D[0]->GetLargestPossibleRegion().GetSize()[1];
   size[2] = NUMINPUTIMAGES;
   outputRegion.SetSize( size );   
   outputImage->SetRegions( outputRegion );
 
-  itk::Point< float, 3 > origin;
+  OutputImageType::PointType origin;
   origin[0] = 0.;
   origin[1] = 0.;
   origin[2] = 0.;
   outputImage->SetOrigin( origin ); 
   
-  itk::Vector< float, 3 > spacing;
+  OutputImageType::SpacingType spacing;
   spacing[0] = images2D[0]->GetSpacing()[0];
   spacing[1] = images2D[0]->GetSpacing()[1];
   spacing[2] = spacingZ;//5;
