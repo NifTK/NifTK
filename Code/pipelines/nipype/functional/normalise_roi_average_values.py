@@ -6,10 +6,9 @@ from nipype.utils.filemanip         import split_filename
 import nipype.interfaces.niftyseg   as niftyseg
 
 import numpy                        as np
-import nibabel                      as nib
 import os.path
 
-class NormaliseUptakeValuesInputSpec(BaseInterfaceInputSpec):
+class NormaliseRoiAverageValuesInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True,
                    desc="Input image to extract the uptake values")
@@ -23,7 +22,7 @@ class NormaliseUptakeValuesInputSpec(BaseInterfaceInputSpec):
                                "statistics. Array order=[Label, mean, std, vol]")
 
     
-class NormaliseUptakeValuesOutputSpec(TraitedSpec):
+class NormaliseRoiAverageValuesOutputSpec(TraitedSpec):
     out_csv_file = File(desc="Output array organised as follow: "+ \
         "label index, mean value, std value, roi volume in mm")
     out_file = File(desc="Output array organised as follow: "+ \
@@ -33,10 +32,10 @@ class NormaliseUptakeValuesOutputSpec(TraitedSpec):
     test_roi3=File()
 
 
-class NormaliseUptakeValues(BaseInterface):
+class NormaliseRoiAverageValues(BaseInterface):
     
-    input_spec = NormaliseUptakeValuesInputSpec  
-    output_spec = NormaliseUptakeValuesOutputSpec
+    input_spec = NormaliseRoiAverageValuesInputSpec  
+    output_spec = NormaliseRoiAverageValuesOutputSpec
     
     roi1_list=[24,31,76,77,101,102,103,104,105,106,107,108,\
             113,114,119,120,121,122,125,126,133,134,139,140,141,142,143,144,\
@@ -75,7 +74,7 @@ class NormaliseUptakeValues(BaseInterface):
         
         # Create csv file to save the data
         out=open(self.suvr_file,'w')
-        out.write('Input PET,'+str(in_file)+'\n')
+        out.write('Input Functional image,'+str(in_file)+'\n')
         # Extract the normalisation value
         normalisation_value=0.0
         if norm_roi=='pons':
@@ -90,6 +89,8 @@ class NormaliseUptakeValues(BaseInterface):
             normalisation_value=normalisation_value/total_volume
         elif norm_roi=='gm_cereb' and not cereb_array==None:
             normalisation_value=cereb_array[1,1]
+        elif norm_roi=='none':
+            normalisation_value=1.0
         # Write down the normalisation value
         out.write('Normalisation,'+str(norm_roi)+',value,'+str(normalisation_value)+'\n')
         out.write('Label index,Initial mean, normalised mean, volume\n')

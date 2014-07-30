@@ -7,7 +7,7 @@ import nipype.interfaces.niftyseg       as niftyseg     # NiftySeg
 import nipype.interfaces.niftyreg       as niftyreg     # NiftyReg
 from nipype                             import config, logging
 from extract_roi_statistics             import ExtractRoiStatistics
-from normalise_uptake_values            import NormaliseUptakeValues
+from normalise_roi_average_values       import NormaliseRoiAverageValues
 
 import sys
 import glob
@@ -23,20 +23,27 @@ def get_all_images_in_directory(path):
     list_of_images.sort()
     return list_of_images;
 
-class SUVR_variables():
+class reg_avg_value_variables():
     def __init__(self):
-        self.roi_choices=['cereb','gm_cereb','pons']
+        self.roi_choices=['cereb','gm_cereb','pons','none']
         self.parser=None
-        self.SUVR_create_parser()
-    def SUVR_create_parser(self):
-        suvrDescription=textwrap.dedent('''\
-            blabla
+        self.reg_avg_value_create_parser()
+    def reg_avg_value_create_parser(self):
+        pipelineDescription=textwrap.dedent('''\
+            Regional noramlised average value (SUVR) computation.
+            Based on MRI scan (--mri) and its associated parcelation (--par)
+            and tissus segmentation (--seg), a functional scan (--img) intensities are
+            normalised (pons, grey matter of the cerebellum, full cerebellum or none)
+            and average over multiple pre-defined region of interest. The user can
+            also specify to perform the average computation without normalisation.
+            This pipeline can be used for example to compute SUVR based on PET image
+            or regional average instensity of ASL derived data.
         ''')
         self.parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, \
-            description=suvrDescription)
+            description=pipelineDescription)
         """ Input images """
-        self.parser.add_argument('--input_pet_dir',dest='input_pet_dir', type=str, \
-            metavar='directory', help='Input directory containing PET images', \
+        self.parser.add_argument('--input_img_dir',dest='input_img_dir', type=str, \
+            metavar='directory', help='Input directory containing functional images', \
             required=False)
         self.parser.add_argument('--input_mri_dir',dest='input_mri_dir', type=str, \
             metavar='directory', help='Input directory containing MRI images', \
@@ -47,8 +54,8 @@ class SUVR_variables():
         self.parser.add_argument('--input_par_dir',dest='input_par_dir', type=str, \
             metavar='directory', help='Input directory containing parcelation images', \
             required=False)
-        self.parser.add_argument('--pet',dest='input_pet', type=str, nargs='+', \
-            metavar='image', help='PET image or list of PET images', \
+        self.parser.add_argument('--img',dest='input_img', type=str, nargs='+', \
+            metavar='image', help='Function image or list of function images', \
             required=False)
         self.parser.add_argument('--mri',dest='input_mri', type=str, nargs='+', \
             metavar='image', help='MRI image or list of MRI images', \
@@ -58,6 +65,19 @@ class SUVR_variables():
             required=False)
         self.parser.add_argument('--par',dest='input_par', type=str, nargs='+', \
             metavar='image', help='Parcelation image or list of parcelation images', \
+            required=False)
+        """ Other input """
+        self.parser.add_argument('--input_trans_dir',dest='input_trans_dir', type=str, \
+            metavar='directory', help='Input directory containing input transformations '+ \
+            'parametrising a warping where the functional image is used as a floating'+ \
+            'image and the MRI image as a reference image. The registration is performed'+ \
+            'in the pipeline if no transformations are specified.', \
+            required=False)
+        self.parser.add_argument('--trans',dest='input_trans', type=str, \
+            metavar='file', help='Input transformations or list of transformations'+ \
+            'parametrising a warping where the functional image is used as a floating'+ \
+            'image and the MRI image as a reference image. The registration is performed'+ \
+            'in the pipeline if no transformations are specified.', \
             required=False)
         """ Output argument """
         self.parser.add_argument('--output_dir',dest='output_dir', type=str, \
@@ -72,10 +92,12 @@ class SUVR_variables():
         """ Processing options"""
         self.parser.add_argument('--use_aff',dest='affine_flag', action='store_const', \
             default=False, const=True, help='use an affine registration '+ \
-            'between the PET and MRI. Rigid is used by default.', required=False)        
+            'between the function image and MRI. Rigid is used by default. This'+ \
+            'option is only used when no input transformations are specified', \
+            required=False)        
         self.parser.add_argument('--roi', metavar='roi', nargs=1, type=str, \
             choices=self.roi_choices, default=self.roi_choices[0], \
-            help='ROI to use to perform the SUVR normalisation. ' + \
+            help='ROI to use to perform the function image intensities normalisation. ' + \
             'Choices are: '+str(self.roi_choices)+' without quotes.' + \
             'The default value is ' + str(self.roi_choices[0]));
         self.parser.add_argument('--thr', metavar='float', type=float, \
@@ -85,30 +107,30 @@ class SUVR_variables():
             'The default value is set to 0.95')
         self.parser.add_argument('--smoo', metavar='value', type=float, \
             default=0, help='FWHM of the Gaussian kernel to apply to the '+ \
-            'input PET images. No Smoothing is applied by default.')
-    def SUVR_parse_arguments(self):
+            'input functional images. No Smoothing is applied by default.')
+    def reg_avg_value_parse_arguments(self):
         args=self.parser.parse_args()
         # Perform some checks
-        if args.input_pet==None and args.input_pet_dir==None:
-            print('No input PET images have been specified. Exit.')
+        if args.input_img==None and args.input_img_dir==None:
+            print('No input functional images have been specified. Exit.')
             sys.exit(1)
-        if args.input_mri==None and args.input_pet_dir==None:
-            print('No input PET images have been specified. Exit.')
+        if args.input_mri==None and args.input_img_dir==None:
+            print('No input MRI images have been specified. Exit.')
             sys.exit(1)
-        if args.input_pet==None and args.input_pet_dir==None:
-            print('No input PET images have been specified. Exit.')
+        if args.input_seg==None and args.input_img_seg==None:
+            print('No input segmentation images have been specified. Exit.')
             sys.exit(1)
-        if args.input_pet==None and args.input_pet_dir==None:
-            print('No input PET images have been specified. Exit.')
+        if args.input_par==None and args.input_img_par==None:
+            print('No input parcelation images have been specified. Exit.')
             sys.exit(1)
-        self.input_pet=[]
+        self.input_img=[]
         self.input_mri=[]
         self.input_seg=[]
         self.input_par=[]
-        if args.input_pet:
-            self.input_pet=args.input_pet
-        elif args.input_pet_dir:
-            self.input_pet=get_all_images_in_directory(args.input_pet_dir)
+        if args.input_img:
+            self.input_img=args.input_img
+        elif args.input_img_dir:
+            self.input_img=get_all_images_in_directory(args.input_img_dir)
         if args.input_mri:
             self.input_mri=args.input_mri
         elif args.input_mri_dir:
@@ -121,19 +143,23 @@ class SUVR_variables():
             self.input_par=args.input_par
         elif args.input_par_dir:
             self.input_par=get_all_images_in_directory(args.input_par_dir)
+        if args.input_trans:
+            self.input_trans=args.input_trans
+        elif args.input_trans_dir:
+            self.input_trans=glob.glob(args.input_trans_dir).sort()
         self.output_folder=args.output_dir
         self.output_prefix=args.output_pre
         self.output_suffix=args.output_suf
-        self.pet_mri_use_affine=args.affine_flag        
+        self.func_mri_use_affine=args.affine_flag        
         self.roi=args.roi[0]
         self.seg_threshold=args.thr[0]
         self.fwhm=args.smoo
-        if len(self.input_pet)==0:
+        if len(self.input_img)==0:
             print('No input image has been specified')
             sys.exit(1)        
-        if not len(self.input_pet)==len(self.input_mri):
-            print('The number of specified PET and MRI images are expected ' + \
-            'to be identical ('+str(len(self.input_pet))+' vs '+ \
+        if not len(self.input_img)==len(self.input_mri):
+            print('The number of specified functional and MRI images are expected ' + \
+            'to be identical ('+str(len(self.input_img))+' vs '+ \
             str(len(self.input_mri))+')')
             sys.exit(1)
         if not len(self.input_mri)==len(self.input_par):
@@ -143,18 +169,23 @@ class SUVR_variables():
             sys.exit(1)
         if not len(self.input_mri)==len(self.input_seg):
             print('The number of segmentation is expected ' + \
-            'to be identical to the number of PET/MRI images (' + \
+            'to be identical to the number of functional/MRI images (' + \
             str(len(self.input_mri))+' vs '+str(len(self.input_seg))+')')
             sys.exit(1)
+        if not len(self.input_img)==len(self.input_trans) and len(self.input_trans) > 0:
+            print('The number of transformation is expected ' + \
+            'to be identical to the number of functional/MRI images (' + \
+            str(len(self.input_mri))+' vs '+str(len(self.input_trans))+')')
+            sys.exit(1)
 
-def create_mask_from_pet():
-    workflow = pe.Workflow(name='mask_pet')
+def create_mask_from_functional():
+    workflow = pe.Workflow(name='mask_func')
     workflow.base_dir = os.getcwd()
-    workflow.base_output_dir='mask_pet'
+    workflow.base_output_dir='mask_func'
     # Create all the required nodes
     input_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['pet_files']),
+            fields=['functional_files']),
             name='input_node')
     otsu_filter = pe.MapNode(interface = niftyseg.UnaryMaths(), \
         name='otsu_filter', iterfield=['in_file'])
@@ -180,7 +211,7 @@ def create_mask_from_pet():
     fill_filter.inputs.operation='fill'
     fill_filter.inputs.output_datatype='char'
     # Create the connections
-    workflow.connect(input_node, 'pet_files', otsu_filter, 'in_file')
+    workflow.connect(input_node, 'functional_files', otsu_filter, 'in_file')
     workflow.connect(otsu_filter, 'out_file', erosion_filter, 'in_file')
     workflow.connect(erosion_filter, 'out_file', lconcomp_filter, 'in_file')
     workflow.connect(lconcomp_filter, 'out_file', dilation_filter, 'in_file')
@@ -231,7 +262,7 @@ def create_mask_from_parcelation():
     
     return workflow
     
-def extract_roi(in_file, roi_list):
+def regroup_roi(in_file, roi_list):
     import nibabel as nib
     import numpy as np
     import os
@@ -255,58 +286,65 @@ def extract_roi(in_file, roi_list):
     return out_file
 
 
-def gen_substitutions(pet_files, mri_files, roi, prefix, suffix):    
+def gen_substitutions(functional_files, mri_files, roi, prefix, suffix):    
     from nipype.utils.filemanip import split_filename
     subs = []
-    for i in range(0,len(pet_files)):
-        pet_file=pet_files[i]
+    for i in range(0,len(functional_files)):
+        functional_file=functional_files[i]
         mri_file=mri_files[i]
-        _, pet_bn, _ = split_filename(pet_file)
+        _, func_bn, _ = split_filename(functional_file)
         _, mri_bn, _ = split_filename(mri_file)
-        subs.append(('norm_'+roi+'_'+pet_bn, \
-                     prefix+'norm_'+roi+'_'+pet_bn+suffix))
-        subs.append(('suvr_'+roi+'_'+pet_bn, \
-                     prefix+'suvr_'+roi+'_'+pet_bn+suffix))
+        subs.append(('norm_'+roi+'_'+func_bn, \
+                     prefix+'norm_'+roi+'_'+func_bn+suffix))
+        subs.append(('suvr_'+roi+'_'+func_bn, \
+                     prefix+'suvr_'+roi+'_'+func_bn+suffix))
         subs.append((mri_bn+'_aff', \
-                     prefix+'ref_'+pet_bn+'_flo_'+mri_bn+'_aff'+suffix))
+                     prefix+'ref_'+func_bn+'_flo_'+mri_bn+'_aff'+suffix))
     return subs
 
-def create_suvr_pipeline(suvr_var):
-    workflow = pe.Workflow(name='suvr_pipeline')
+def create_reg_avg_value_pipeline(reg_avg_value_var):
+    workflow = pe.Workflow(name='reg_avg_value_pipeline')
     workflow.base_dir = os.getcwd()
-    workflow.base_output_dir='suvr'
+    workflow.base_output_dir='reg_avg_value'
     # Create the input node interface
     input_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['pet_files',
+            fields=['functional_files',
                     'mri_files',
                     'par_files',
-                    'seg_files']),
+                    'seg_files',
+                    'trans_files']),
             name='input_node')
-    input_node.inputs.pet_files=suvr_var.input_pet
-    input_node.inputs.mri_files=suvr_var.input_mri
-    input_node.inputs.par_files=suvr_var.input_par
-    input_node.inputs.seg_files=suvr_var.input_seg
-
-    # First step is to generate quick masks for both MRI and PET images
-    pet_mask = create_mask_from_pet()
-    mri_mask = create_mask_from_parcelation()
-    # Connections
-    workflow.connect(input_node, 'pet_files', pet_mask, 'input_node.pet_files')
-    workflow.connect(input_node, 'par_files', mri_mask, 'input_node.par_files')
-    # The MRI and PET images are globally registered
-    aladin=pe.MapNode(interface = niftyreg.RegAladin(), name='aladin', \
-        iterfield=['ref_file', 'flo_file', 'rmask_file', 'fmask_file'])
-    if suvr_var.pet_mri_use_affine==False:
-        aladin.inputs.rig_only_flag=True
-    aladin.inputs.verbosity_off_flag=True
-    aladin.inputs.v_val=80
-    aladin.inputs.nosym_flag=False
-    # Connections
-    workflow.connect(input_node, 'pet_files', aladin, 'ref_file')
-    workflow.connect(input_node, 'mri_files', aladin, 'flo_file')
-    workflow.connect(pet_mask, 'output_node.mask_files', aladin, 'rmask_file')
-    workflow.connect(mri_mask, 'output_node.mask_files', aladin, 'fmask_file')
+    input_node.inputs.functional_files=reg_avg_value_var.input_img
+    input_node.inputs.mri_files=reg_avg_value_var.input_mri
+    input_node.inputs.par_files=reg_avg_value_var.input_par
+    input_node.inputs.seg_files=reg_avg_value_var.input_seg
+    if len(reg_avg_value_var.input_trans) > 0:
+        input_node.inputs.trans_files=reg_avg_value_var.input_trans
+        # The input transformations are inverted
+        invert_affine=pe.MapNode(interface = niftyreg.RegTransform(), \
+            name='invert_affine', iterfield=['inv_aff_input'])
+        workflow.connect(input_node, 'trans_files', invert_affine, 'inv_aff_input')
+    else:
+        # First step is to generate quick masks for both MRI and functional images
+        func_mask = create_mask_from_functional()
+        mri_mask = create_mask_from_parcelation()
+        # Connections
+        workflow.connect(input_node, 'functional_files', func_mask, 'input_node.functional_files')
+        workflow.connect(input_node, 'par_files', mri_mask, 'input_node.par_files')
+        # The MRI and functional images are globally registered
+        aladin=pe.MapNode(interface = niftyreg.RegAladin(), name='aladin', \
+            iterfield=['ref_file', 'flo_file', 'rmask_file', 'fmask_file'])
+        if reg_avg_value_var.func_mri_use_affine==False:
+            aladin.inputs.rig_only_flag=True
+        aladin.inputs.verbosity_off_flag=True
+        aladin.inputs.v_val=80
+        aladin.inputs.nosym_flag=False
+        # Connections
+        workflow.connect(input_node, 'functional_files', aladin, 'ref_file')
+        workflow.connect(input_node, 'mri_files', aladin, 'flo_file')
+        workflow.connect(func_mask, 'output_node.mask_files', aladin, 'rmask_file')
+        workflow.connect(mri_mask, 'output_node.mask_files', aladin, 'fmask_file')
     # The grey matter segmentation is exracted
     extract_timepoint=pe.MapNode(interface = niftyseg.BinaryMaths(), \
         name='extract_timepoint', iterfield=['in_file'])
@@ -314,35 +352,38 @@ def create_suvr_pipeline(suvr_var):
     extract_timepoint.inputs.operand_value=int(2)
     # Connections
     workflow.connect(input_node, 'seg_files', extract_timepoint, 'in_file')
-    # The segmentation is resampled in the space of pet images
+    # The segmentation is resampled in the space of functional images
     resample_seg=pe.MapNode(interface = niftyreg.RegResample(), name='resample_seg', \
         iterfield=['ref_file', 'flo_file', 'trans_file'])
     resample_seg.inputs.inter_val='LIN'
     resample_seg.inputs.verbosity_off_flag=True
-    workflow.connect(input_node, 'pet_files', resample_seg, 'ref_file')
+    workflow.connect(input_node, 'functional_files', resample_seg, 'ref_file')
     workflow.connect(extract_timepoint, 'out_file', resample_seg, 'flo_file')
     workflow.connect(aladin, 'aff_file', resample_seg, 'trans_file')
-    # The parcelation is resampled in the space of pet images
+    # The parcelation is resampled in the space of functional images
     resample_par=pe.MapNode(interface = niftyreg.RegResample(), name='resample_par', \
         iterfield=['ref_file', 'flo_file', 'trans_file'])
     resample_par.inputs.inter_val='NN'
     resample_par.inputs.verbosity_off_flag=True
-    workflow.connect(input_node, 'pet_files', resample_par, 'ref_file')
+    workflow.connect(input_node, 'functional_files', resample_par, 'ref_file')
     workflow.connect(input_node, 'par_files', resample_par, 'flo_file')
-    workflow.connect(aladin, 'aff_file', resample_par, 'trans_file')
+    if len(reg_avg_value_var.input_trans) > 0:
+        workflow.connect(invert_affine, 'out_file', resample_par, 'trans_file')
+    else:
+        workflow.connect(aladin, 'aff_file', resample_par, 'trans_file')
     # Extract all the regional update values
     extract_uptakes = pe.MapNode(interface = ExtractRoiStatistics(), name='extract_uptakes',
         iterfield=['in_file','roi_file'])
-    workflow.connect(input_node, 'pet_files', extract_uptakes, 'in_file')
+    workflow.connect(input_node, 'functional_files', extract_uptakes, 'in_file')
     workflow.connect(resample_par, 'res_file', extract_uptakes, 'roi_file')
     # The ROI used for normalisation is extracted if required
-    if suvr_var.roi=='gm_cereb':
+    if reg_avg_value_var.roi=='gm_cereb':
         # Extract the cerebellum information
         extract_cerebellum = pe.MapNode(interface = 
                                             niu.Function(input_names = ['in_file',
                                                                         'roi_list'],
                                            output_names = ['out_file'],
-                                           function=extract_roi),
+                                           function=regroup_roi),
                                         name='extract_cerebellum',
                                         iterfield=['in_file'])
         extract_cerebellum.inputs.roi_list=[39,40,41,42,72,73,74]
@@ -351,7 +392,7 @@ def create_suvr_pipeline(suvr_var):
         binarise_gm_seg=pe.MapNode(interface = niftyseg.BinaryMaths(), \
             name='binarise_gm_seg', iterfield=['in_file'])
         binarise_gm_seg.inputs.operation='thr'
-        binarise_gm_seg.inputs.operand_value=suvr_var.seg_threshold
+        binarise_gm_seg.inputs.operand_value=reg_avg_value_var.seg_threshold
         workflow.connect(resample_seg, 'res_file', binarise_gm_seg, 'in_file')
         # Extract the interaction between cerebellum and grey matter segmentation
         get_gm_cereb=pe.MapNode(interface = niftyseg.BinaryMaths(), \
@@ -362,35 +403,38 @@ def create_suvr_pipeline(suvr_var):
         
         extract_cereb_uptake = pe.MapNode(interface = ExtractRoiStatistics(), \
             name='extract_cereb_uptake', iterfield=['in_file','roi_file'])
-        workflow.connect(input_node, 'pet_files', extract_cereb_uptake, 'in_file')
+        workflow.connect(input_node, 'functional_files', extract_cereb_uptake, 'in_file')
         workflow.connect(get_gm_cereb, 'out_file', extract_cereb_uptake, 'roi_file')
         
         # Normalise the uptake values
-        norm_uptakes = pe.MapNode(interface = NormaliseUptakeValues(), name='norm_uptakes',
+        norm_uptakes = pe.MapNode(interface = NormaliseRoiAverageValues(), name='norm_uptakes',
             iterfield=['in_file','in_array', 'cereb_array'])
-        workflow.connect(input_node, 'pet_files', norm_uptakes, 'in_file')
+        workflow.connect(input_node, 'functional_files', norm_uptakes, 'in_file')
         workflow.connect(extract_uptakes, 'out_array', norm_uptakes, 'in_array')
         workflow.connect(extract_cereb_uptake, 'out_array', norm_uptakes, 'cereb_array')
-        norm_uptakes.inputs.roi=suvr_var.roi
+        norm_uptakes.inputs.roi=reg_avg_value_var.roi
     else:
         # Normalise the uptake values
-        norm_uptakes = pe.MapNode(interface = NormaliseUptakeValues(), name='norm_uptakes',
+        norm_uptakes = pe.MapNode(interface = NormaliseRoiAverageValues(), name='norm_uptakes',
             iterfield=['in_file','in_array'])
-        workflow.connect(input_node, 'pet_files', norm_uptakes, 'in_file')
+        workflow.connect(input_node, 'functional_files', norm_uptakes, 'in_file')
         workflow.connect(extract_uptakes, 'out_array', norm_uptakes, 'in_array')
-        norm_uptakes.inputs.roi=suvr_var.roi
+        norm_uptakes.inputs.roi=reg_avg_value_var.roi
 
     # Create the output node interface
     output_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['suvr_files',
+            fields=['out_files',
                     'norm_files',
                     'aff_files']),
             name='output_node')
     # Fake connections for testing
-    workflow.connect(norm_uptakes, 'out_csv_file', output_node, 'suvr_files')
+    workflow.connect(norm_uptakes, 'out_csv_file', output_node, 'out_files')
     workflow.connect(norm_uptakes, 'out_file', output_node, 'norm_files')
-    workflow.connect(aladin, 'aff_file', output_node, 'aff_files')
+    if len(reg_avg_value_var.input_trans) > 0:
+        workflow.connect(invert_affine, 'out_file', output_node, 'aff_files')
+    else:
+        workflow.connect(aladin, 'aff_file', output_node, 'aff_files')
     
     # Return the created workflow
     return workflow
@@ -399,45 +443,45 @@ Main
 """
 def main():
     # Initialise the pipeline variables and the argument parsing
-    suvr_var = SUVR_variables()
+    reg_avg_value_var = reg_avg_value_variables()
     # Parse the input arguments
-    suvr_var.SUVR_parse_arguments()
+    reg_avg_value_var.reg_avg_value_parse_arguments()
 
     # Create the workflow
-    workflow = pe.Workflow(name='SUVR')
-    workflow.base_dir = suvr_var.output_folder
-    workflow.base_output_dir='suvr'
+    workflow = pe.Workflow(name='reg_avg_value')
+    workflow.base_dir = reg_avg_value_var.output_folder
+    workflow.base_output_dir='reg_avg_value'
 
     # Create the output folder if it does not exists    
-    if not os.path.exists(os.path.abspath(suvr_var.output_folder)):
-        os.mkdir(os.path.abspath(suvr_var.output_folder))
+    if not os.path.exists(os.path.abspath(reg_avg_value_var.output_folder)):
+        os.mkdir(os.path.abspath(reg_avg_value_var.output_folder))
 
     # Specify how and where to save the log files
-    config.update_config({'logging': {'log_directory': os.path.abspath(suvr_var.output_folder),
+    config.update_config({'logging': {'log_directory': os.path.abspath(reg_avg_value_var.output_folder),
                                       'log_to_file': True}})
     logging.update_logging(config)
     config.enable_debug_mode()
     
     # Create the input node interface
-    suvr_pipeline=create_suvr_pipeline(suvr_var)
+    reg_avg_value_pipeline=create_reg_avg_value_pipeline(reg_avg_value_var)
         
     # Create a node to add the suffix and prefix if required
-    subsgen = pe.Node(interface = niu.Function(input_names = ['pet_files', \
+    subsgen = pe.Node(interface = niu.Function(input_names = ['functional_files', \
         'mri_files', 'roi', 'prefix','suffix'], output_names = ['substitutions'], \
         function = gen_substitutions), name = 'subsgen')
-    workflow.connect(suvr_pipeline, 'input_node.pet_files', subsgen, 'pet_files')
-    workflow.connect(suvr_pipeline, 'input_node.mri_files', subsgen, 'mri_files')
-    subsgen.inputs.roi=suvr_var.roi
-    subsgen.inputs.prefix=suvr_var.output_prefix
-    subsgen.inputs.suffix=suvr_var.output_suffix
+    workflow.connect(reg_avg_value_pipeline, 'input_node.functional_files', subsgen, 'functional_files')
+    workflow.connect(reg_avg_value_pipeline, 'input_node.mri_files', subsgen, 'mri_files')
+    subsgen.inputs.roi=reg_avg_value_var.roi
+    subsgen.inputs.prefix=reg_avg_value_var.output_prefix
+    subsgen.inputs.suffix=reg_avg_value_var.output_suffix
     
     # Create a data sink    
     ds = pe.Node(nio.DataSink(parameterization=False), name='data_sink')
-    ds.inputs.base_directory = os.path.abspath(os.path.abspath(suvr_var.output_folder))
+    ds.inputs.base_directory = os.path.abspath(os.path.abspath(reg_avg_value_var.output_folder))
     workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
-    workflow.connect(suvr_pipeline, 'output_node.suvr_files', ds, '@suvr')
-    workflow.connect(suvr_pipeline, 'output_node.norm_files', ds, '@norm')
-    workflow.connect(suvr_pipeline, 'output_node.aff_files', ds, '@aff')
+    workflow.connect(reg_avg_value_pipeline, 'output_node.out_files', ds, '@out')
+    workflow.connect(reg_avg_value_pipeline, 'output_node.norm_files', ds, '@norm')
+    workflow.connect(reg_avg_value_pipeline, 'output_node.aff_files', ds, '@aff')
     
     # Run the overall workflow
 #    workflow.write_graph(graph2use='colored')
