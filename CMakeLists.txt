@@ -247,7 +247,7 @@ set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
-set(NIFTK_VERSION_PCL "378afeecb0" CACHE STRING "Version of PCL" FORCE) 
+set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
 set(NIFTK_VERSION_qRestAPI "e0f498dfac" CACHE STRING "Version of qRestAPI" FORCE) 
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git")
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
@@ -777,7 +777,10 @@ endif()
 # Find Boost.
 ######################################################################
 set(Boost_NO_SYSTEM_PATHS ON)
-find_package( Boost 1.54 COMPONENTS filesystem system date_time regex REQUIRED)
+# off is the default, but our optional pcl dependency will try to use static libs if we dont define it explicitly.
+set(Boost_USE_STATIC_LIBS OFF)
+
+find_package( Boost 1.54 COMPONENTS filesystem system date_time regex thread REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})
