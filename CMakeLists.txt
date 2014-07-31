@@ -1208,7 +1208,7 @@ endif()
 #############################################################################################
 
 set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL)
-set(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
+set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISupportQtSQL vtkGUISupportQtWebkit)
 
 ######################################################################
 # Install commands for things like README, licenses etc.
