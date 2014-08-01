@@ -32,21 +32,31 @@ parser.add_argument('-m','--fieldmapmag',
                     dest='fieldmapmag',
                     metavar='fieldmapmag',
                     help='Field Map Magnitude image file to be associated with the DWIs',
-                    required=True)
+                    required=False)
 parser.add_argument('-p','--fieldmapphase',
                     dest='fieldmapphase',
                     metavar='fieldmapphase',
                     help='Field Map Phase image file to be associated with the DWIs',
-                    required=True)
+                    required=False)
 
 args = parser.parse_args()
 
 result_dir = os.path.join(os.getcwd(),'results')
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
-r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow', 
+
+do_susceptibility_correction = False
+if os.path.exists(os.path.abspath(parser.fieldmapmag)) and os.path.exists(os.path.abspath(parser.fieldmapphase)):
+    do_susceptibility_correction = True
+
+r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                   resample_in_t1 = True, 
-                                                  log_data = True)
+                                                  log_data = True,
+                                                  correct_susceptibility = do_susceptibility_correction,
+                                                  dwi_interp_type = 'CUB',
+                                                  t1_mask_provided = False,
+                                                  ref_b0_provided = False)
+
 r.base_dir = os.getcwd()
 
 r.inputs.input_node.in_dwi_4d_file = os.path.abspath(args.dwis)
