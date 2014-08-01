@@ -80,12 +80,29 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
 
     return dwis, bvals, bvecs, fmmag, fmph, t1
 
-parser = argparse.ArgumentParser(description='Diffusion usage example')
+
+help_message = \
+'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
+'Mandatory Input is the DICOM directory from which the DWIs, bval bvecs \n' + \
+'as well as a T1 image are extracted for reference space. \n\n' + \
+'The Field maps are provided so susceptibility correction is applied. \n' + \
+'Use the --model option to control which diffusion model to use (tensor or noddi)' 
+
+model_choices = ['tensor', 'noddi']
+
+parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-i', '--dicoms',
                     dest='dicoms',
                     metavar='dicoms',
                     help='DICOM directory where the files are stored',
                     required=True)
+parser.add_argument('--model',
+                    dest='model',
+                    metavar='model',
+                    help='Diffusion Model to use, choices are ' + str(model_choices) + ' default: tensor',
+                    required=False,
+                    choices = model_choices,
+                    default = model_choices[0])
 parser.add_argument('-o', '--output',
                     dest='output',
                     metavar='output',
@@ -109,10 +126,15 @@ input_dir = os.path.join(result_dir, 'inputs')
 if not os.path.exists(input_dir):
     os.mkdir(input_dir)
 
-r = dmri.create_diffusion_mri_processing_workflow('dmri_workflow',
+r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                   resample_in_t1 = True, 
+                                                  log_data = True,
+                                                  correct_susceptibility = True,
+                                                  dwi_interp_type = 'CUB',
                                                   t1_mask_provided = True,
-                                                  log_data = True)
+                                                  ref_b0_provided = False,
+                                                  model = args.model)
+
 r.base_dir = os.getcwd()
 
 dg = pe.Node(nio.DataGrabber(outfields = ['dicom_files']), name='dg')
@@ -199,6 +221,7 @@ r.connect(r.get_node('output_node'), 'parameter_uncertainty_image', ds, '@unc')
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
 #r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
+r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
 
 r.write_graph(graph2use = 'colored')
 
