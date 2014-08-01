@@ -7,7 +7,16 @@ import diffusion_mri_processing         as dmri
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description='Diffusion usage example')
+help_message = \
+'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
+'Mandatory Inputs are the Diffusion Weighted Images and the bval/bvec pair. \n' + \
+'as well as a T1 image for reference space. \n\n' + \
+'If the Field maps are provided then Susceptibility correction is applied. \n' + \
+'Use the --model option to control which diffusion model to use (tensor or noddi)' 
+
+model_choices = ['tensor', 'noddi']
+
+parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-i', '--dwis',
                     dest='dwis',
                     metavar='dwis',
@@ -38,6 +47,13 @@ parser.add_argument('-p','--fieldmapphase',
                     metavar='fieldmapphase',
                     help='Field Map Phase image file to be associated with the DWIs',
                     required=False)
+parser.add_argument('--model',
+                    dest='model',
+                    metavar='model',
+                    help='Diffusion Model to use, choices are ' + str(model_choices) + ' default: tensor',
+                    required=False,
+                    choices = model_choices,
+                    default = model_choices[0])
 
 args = parser.parse_args()
 
@@ -55,7 +71,8 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   correct_susceptibility = do_susceptibility_correction,
                                                   dwi_interp_type = 'CUB',
                                                   t1_mask_provided = False,
-                                                  ref_b0_provided = False)
+                                                  ref_b0_provided = False,
+                                                  model = args.model)
 
 r.base_dir = os.getcwd()
 
@@ -81,6 +98,10 @@ r.connect(r.get_node('output_node'), 'parameter_uncertainty_image', ds, '@unc')
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
 r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
+r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+
+if (args.model == 'noddi'):
+    r.connect(r.get_node('output_node'), 'mcmap', ds, '@mcmap')
 
 r.write_graph(graph2use = 'colored')
 
