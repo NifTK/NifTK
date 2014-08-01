@@ -197,6 +197,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     T1_mask_resampling = pe.Node(niftyreg.RegResample(inter_val = 'NN'), name = 'T1_mask_resampling')
     # Fit the tensors    
     tensor_fitting = pe.Node(interface=niftyfit.FitDwi(),name='tensor_fitting')
+    tensor_fitting.inputs.rotsform_flag = 1
+    
     # Output node
     output_node = pe.Node( interface=niu.IdentityInterface(
         fields=['tensor',
@@ -227,7 +229,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     workflow.connect(split_dwis, 'out_files', select_B0s, 'inlist')
     workflow.connect(split_dwis, 'out_files', select_DWIs,'inlist')
-
+    
     #############################################################
     #             groupwise atlas of B0 images                  #
     #############################################################
@@ -235,21 +237,21 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     if ref_b0_provided == True:
         workflow.connect(input_node, 'in_ref_b0', groupwise_B0_coregistration, 'input_node.ref_file')
-
-
+    
+    
     #############################################################
     #    T1 to B0 rigid registration and resampling             #
     #############################################################
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image',T1_to_b0_registration, 'ref_file')
     workflow.connect(input_node, 'in_t1_file',T1_to_b0_registration, 'flo_file')
-
+    
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_resampling, 'ref_file')
     workflow.connect(input_node, 'in_t1_file', T1_resampling, 'flo_file')
     workflow.connect(T1_to_b0_registration, 'aff_file', T1_resampling, 'trans_file')
     
     workflow.connect(T1_to_b0_registration, 'aff_file', T1_mask_resampling, 'trans_file')
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', T1_mask_resampling, 'ref_file')
-
+    
     # If we have a proper T1 mask, we can use that, otherwise make one using BET
     if t1_mask_provided == True:
         workflow.connect(input_node, 'in_t1_mask', T1_mask_resampling, 'flo_file')
