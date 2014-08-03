@@ -206,7 +206,7 @@ private:
       double& stdDev,
       unsigned long& counter,
       TPixel* imagePixelsCopy,
-      double median
+      double& median
       );
 
   /// \brief Calculates the statistics of a greyscale image with a mask.
