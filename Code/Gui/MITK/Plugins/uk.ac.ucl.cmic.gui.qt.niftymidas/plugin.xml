@@ -10,18 +10,18 @@
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftymidas.midasperspective"
-      name="MIDAS Perspective"
-      class="QmitkCommonAppsMIDASPerspective"
+      id="uk.ac.ucl.cmic.gui.qt.niftymidas.segmentation_perspective"
+      name="MIDAS Segmentation"
+      class="QmitkMIDASSegmentationPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.gui.qt.niftymidas.qcperspective"
-      name="QC Perspective"
-      class="QmitkQCPerspective"
+      id="uk.ac.ucl.cmic.gui.qt.niftymidas.qc_perspective"
+      name="MIDAS QC"
+      class="QmitkMIDASQCPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
