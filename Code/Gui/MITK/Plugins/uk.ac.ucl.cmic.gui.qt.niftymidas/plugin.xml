@@ -17,4 +17,13 @@
     </perspective>
   </extension>
 
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.gui.qt.niftymidas.qcperspective"
+      name="QC Perspective"
+      class="QmitkQCPerspective"
+      icon="resources/icon_ion.xpm">
+    </perspective>
+  </extension>
+
 </plugin>
