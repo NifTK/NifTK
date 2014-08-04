@@ -88,7 +88,7 @@ help_message = \
 'The Field maps are provided so susceptibility correction is applied. \n' + \
 'Use the --model option to control which diffusion model to use (tensor or noddi)' 
 
-model_choices = ['tensor', 'noddi']
+model_choices = ['tensor', 'noddi', 'both']
 
 parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-i', '--dicoms',
@@ -109,6 +109,13 @@ parser.add_argument('-o', '--output',
                     help='Result directory where the output data is to be stored',
                     required=False,
                     default='results')
+parser.add_argument('-r', '--resample-t1',
+                    dest='resample_t1',
+                    metavar='resample_t1',
+                    help='Resample the outputs in the T1 space',
+                    required=False,
+                    type=int,
+                    default=0)
 parser.add_argument('-p', '--prefix',
                     dest='prefix',
                     metavar='prefix',
@@ -127,7 +134,7 @@ if not os.path.exists(input_dir):
     os.mkdir(input_dir)
 
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
-                                                  resample_in_t1 = True, 
+                                                  resample_in_t1 = args.resample_t1, 
                                                   log_data = True,
                                                   correct_susceptibility = True,
                                                   dwi_interp_type = 'CUB',
@@ -182,46 +189,55 @@ mask_eroder = pe.Node(interface = niftyseg.BinaryMaths(),
                       name = 'mask_eroder')
 mask_eroder.inputs.operation = 'ero'
 mask_eroder.inputs.operand_value = 3
-
-multiplicater_fa = pe.Node(interface = niftyseg.BinaryMaths(), 
-                           name = 'multiplicater_fa')
-multiplicater_fa.inputs.operation = 'mul'
-multiplicater_md = pe.Node(interface = niftyseg.BinaryMaths(), 
-                           name = 'multiplicater_md')
-multiplicater_md.inputs.operation = 'mul'
-multiplicater_v1 = pe.Node(interface = niftyseg.BinaryMaths(), 
-                           name = 'multiplicater_v1')
-multiplicater_v1.inputs.operation = 'mul'
-multiplicater_colfa = pe.Node(interface = niftyseg.BinaryMaths(), 
-                           name = 'multiplicater_colfa')
-multiplicater_colfa.inputs.operation = 'mul'
-
 r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
-r.connect(mask_eroder, 'out_file', multiplicater_fa, 'operand_file')
-r.connect(mask_eroder, 'out_file', multiplicater_md, 'operand_file')
-r.connect(mask_eroder, 'out_file', multiplicater_v1, 'operand_file')
-r.connect(mask_eroder, 'out_file', multiplicater_colfa, 'operand_file')
-r.connect(r.get_node('output_node'), 'FA', multiplicater_fa, 'in_file')
-r.connect(r.get_node('output_node'), 'MD', multiplicater_md, 'in_file')
-r.connect(r.get_node('output_node'), 'V1', multiplicater_v1, 'in_file')
-r.connect(r.get_node('output_node'), 'COL_FA', multiplicater_colfa, 'in_file')
 
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
 
-r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
-r.connect(multiplicater_fa, 'out_file', ds, '@fa')
-r.connect(multiplicater_md, 'out_file', ds, '@md')
-r.connect(multiplicater_colfa, 'out_file', ds, '@colfa')
-r.connect(multiplicater_v1, 'out_file', ds, '@v1')
-r.connect(r.get_node('output_node'), 'predicted_image', ds, '@img')
-r.connect(r.get_node('output_node'), 'residual_image', ds, '@res')
-r.connect(r.get_node('output_node'), 'parameter_uncertainty_image', ds, '@unc')
+if (args.model == 'tensor' or args.model == 'both'):
+    
+    multiplicater_fa = pe.Node(interface = niftyseg.BinaryMaths(), 
+                               name = 'multiplicater_fa')
+    multiplicater_fa.inputs.operation = 'mul'
+    multiplicater_md = pe.Node(interface = niftyseg.BinaryMaths(), 
+                               name = 'multiplicater_md')
+    multiplicater_md.inputs.operation = 'mul'
+    multiplicater_v1 = pe.Node(interface = niftyseg.BinaryMaths(), 
+                               name = 'multiplicater_v1')
+    multiplicater_v1.inputs.operation = 'mul'
+    multiplicater_colfa = pe.Node(interface = niftyseg.BinaryMaths(), 
+                                  name = 'multiplicater_colfa')
+    multiplicater_colfa.inputs.operation = 'mul'
+    
+    r.connect(mask_eroder, 'out_file', multiplicater_fa, 'operand_file')
+    r.connect(mask_eroder, 'out_file', multiplicater_md, 'operand_file')
+    r.connect(mask_eroder, 'out_file', multiplicater_v1, 'operand_file')
+    r.connect(mask_eroder, 'out_file', multiplicater_colfa, 'operand_file')
+    r.connect(r.get_node('output_node'), 'FA', multiplicater_fa, 'in_file')
+    r.connect(r.get_node('output_node'), 'MD', multiplicater_md, 'in_file')
+    r.connect(r.get_node('output_node'), 'V1', multiplicater_v1, 'in_file')
+    r.connect(r.get_node('output_node'), 'COL_FA', multiplicater_colfa, 'in_file')
+    
+    r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
+    r.connect(multiplicater_fa, 'out_file', ds, '@fa')
+    r.connect(multiplicater_md, 'out_file', ds, '@md')
+    r.connect(multiplicater_colfa, 'out_file', ds, '@colfa')
+    r.connect(multiplicater_v1, 'out_file', ds, '@v1')
+    r.connect(r.get_node('output_node'), 'predicted_image_tensor', ds, '@img_tensor')
+    r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res_tensor')
+
+if (args.model == 'noddi' or args.model == 'both'):
+    r.connect(r.get_node('output_node'), 'mcmap', ds, '@mcmap')
+    r.connect(r.get_node('output_node'), 'predicted_image_noddi', ds, '@img_noddi')
+    r.connect(r.get_node('output_node'), 'residual_image_noddi', ds, '@res_noddi')
+
+
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
-#r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
-r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
+
+#r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 
 r.write_graph(graph2use = 'colored')
 
