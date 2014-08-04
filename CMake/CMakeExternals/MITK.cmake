@@ -44,7 +44,7 @@ endif(WIN32)
 
 # there are additional warnings in boost headers in Release mode with special gcc versions
 if(CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_BUILD_TYPE STREQUAL "Release" AND ${GCC_VERSION} VERSION_EQUAL "4.4.7")
+  if (CMAKE_BUILD_TYPE STREQUAL "Release" AND (${GCC_VERSION} VERSION_EQUAL "4.4" OR ${GCC_VERSION} VERSION_GREATER "4.4") AND ${GCC_VERSION} VERSION_LESS "4.5")
     set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-Wno-error=uninitialized")
   endif()
 endif()
