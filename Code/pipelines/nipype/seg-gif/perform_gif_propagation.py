@@ -36,6 +36,7 @@ parser.add_argument('-s','--simple',
                     required=False,
                     type=int,
                     default=0)
+
 parser.add_argument('-o','--output',
                     dest='output',
                     metavar='output',

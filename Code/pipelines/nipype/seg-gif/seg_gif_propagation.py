@@ -72,7 +72,7 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
 
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
-
+    
     input_node = pe.Node(
         interface = niu.IdentityInterface(
             fields=['in_file',

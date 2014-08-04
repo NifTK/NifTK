@@ -12,7 +12,6 @@ import argparse
 import os, sys
 import pyxnat
 
-
 parser = argparse.ArgumentParser(description='Diffusion usage example')
 parser.add_argument('-i', '--server',
                     dest='server',
@@ -108,8 +107,7 @@ for subject in args.subjects:
 
     bet = pe.MapNode(interface = fsl.BET(mask=True), name = 'bet', iterfield = ['in_file'])
 
-    dsx = pe.Node(interface = nio.XNATSink(infields=['project','subject'],
-                                            outfields = ['struct']),
+    dsx = pe.Node(interface = nio.XNATSink(),
                  name = 'dsx')
     dsx.inputs.user = args.username
     dsx.inputs.pwd = args.password
@@ -117,15 +115,11 @@ for subject in args.subjects:
     dsx.inputs.project_id = args.project
     dsx.inputs.subject_id = subject
     dsx.inputs.experiment_id = first_mr_experiment.label()
-    dsx.inputs.assessor_id = 'BET_MASK'
+    dsx.inputs.assessor_id = 'BET_MASK_2'
 
-    assessor = xnat.select('/project/' + args.project + '/subjects/' + subject + '/experiments/' + first_mr_experiment.label() + '/assessors/BET_MASK')
+    assessor = first_mr_experiment.assessor('BET_MASK_2')
     if not assessor.exists():
         assessor.create()
-    
-#    subs = []
-#    subs.append (('.*', result_dir + os.sep + subject + '_mask.nii.gz'))
-#    dsx.inputs.regexp_substitutions = subs
 
     r.connect(dg, 'struct', dcm2nii, 'source_names')
     r.connect(dcm2nii, 'converted_files', bet, 'in_file')
