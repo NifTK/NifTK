@@ -397,6 +397,7 @@ set(CMAKE_MODULE_PATH
 ######################################################################
 include(mitkMacroEmptyExternalProject)
 include(mitkFunctionGetVersion)
+include(mitkFunctionGetGccVersion)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroGetGitBranch)
 include(niftkMacroBuildCLI)
@@ -472,6 +473,12 @@ message("NifTK branch=${NIFTK_BRANCH_NAME}")
 message("NifTK version=${NIFTK_REVISION_SHORTID}")
 message("NifTK date=${NIFTK_DATE_TIME}")
 message("NifTK build=${CTEST_BUILD_NAME}")
+
+# Putting this here, so all subfolders have access to it.
+if(CMAKE_COMPILER_IS_GNUCXX)
+  mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
+  message("NifTK gcc=${GCC_VERSION}")
+endif()
 
 ######################################################################
 # Configure Dart testing support.  This should be done before any
