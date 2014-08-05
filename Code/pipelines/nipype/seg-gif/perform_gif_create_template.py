@@ -40,7 +40,7 @@ if not os.path.exists(result_dir):
 basedir = os.getcwd()
 
 r = seggif.create_seg_gif_create_template_database_workflow(name = 'gif_create_template', 
-                                                            number_of_iterations = 0, 
+                                                            number_of_iterations = 5,
                                                             ref_file = mni_template, 
                                                             ref_mask = mni_template_mask)
 
