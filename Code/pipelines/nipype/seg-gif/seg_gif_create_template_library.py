@@ -307,7 +307,7 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     workflow.connect(input_node,               'in_files',                  biascorrect_pre,          'in_file')
     workflow.connect(biascorrect_pre,          'out_file',                  groupwise_coregistration, 'input_node.in_files')
     workflow.connect(input_node,               'in_files',                  sformupdate,              'upd_s_form_input')
-    workflow.connect(groupwise_coregistration, 'output_node.aff_files',     sformupdate,              'upd_s_form_input2')
+    workflow.connect(groupwise_coregistration, 'output_node.trans_files',     sformupdate,              'upd_s_form_input2')
     if ref_mask == None:
         workflow.connect(groupwise_coregistration, 'output_node.average_image', average_mask,             'in_file')
         workflow.connect(average_mask,             'mask_file',                 average_mask_dil,         'in_file')
@@ -335,7 +335,7 @@ def prepare_inputs(name='prepare_inputs', ref_file = None, ref_mask = None):
     else:
         workflow.connect(crop,                 'out_file',                  output_node,              'out_files')
 
-    workflow.connect(groupwise_coregistration, 'output_node.aff_files',     output_node,              'out_affs')
+    workflow.connect(groupwise_coregistration, 'output_node.trans_files',     output_node,              'out_affs')
     workflow.connect(average_mask_res,         'res_file',                  output_node,              'out_masks')
 
     return workflow
@@ -519,9 +519,9 @@ def create_seg_gif_create_template_database_workflow(name='gif_create_template_l
                              name='crop_labels', 
                              iterfield = ['in_file', 'mask_file'])
     sink_labels = pe.Node(nio.DataSink(), name='sink_labels')
+    sink_labels.inputs.parameterization = False
     subs = []
-    subs.append (('_crop_labels[0-9]+'+os.sep, ''))
-    subs.append (('_reg_transform_crop_image', ''))
+    subs.append (('_corrected_aff_reg_transform_crop_image', ''))
     sink_labels.inputs.regexp_substitutions = subs
 
     workflow.connect(grabber, 'out_files',     sformupdate_labels, 'upd_s_form_input')
