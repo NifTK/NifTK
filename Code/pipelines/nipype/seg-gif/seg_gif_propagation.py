@@ -48,7 +48,6 @@ def get_subs1(paths_to_use, paths_to_replace):
     return subs
 
 def get_subs2(outputfile):
-    import os
     subs = []
     subs.append(('_crop_image_labels_Parcellation_res',''))
     subs.append(('_crop_image_labels_geo_res',''))
@@ -65,6 +64,19 @@ def get_common_directory(in_files):
     commonpath = os.path.commonprefix(list(in_files))    
     return commonpath
 
+def find_database_fname_function(in_db_file):
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(in_db_file)
+    root = tree.getroot()
+    return root.findall('info')[0].findall('fname')[0].text
+
+def gif_post_sink_substitutions_function(in_fname):
+    subs = []
+    subs.append(('_'+in_fname+'_Parcellation', ''))
+    subs.append(('_'+in_fname+'_prior', ''))
+    subs.append(('_'+in_fname+'_geo', ''))
+    subs.append(('_'+in_fname+'_Sinth', ''))
+    return subs
 
 def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagation'):
     """
@@ -89,20 +101,23 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
                                   name = 'create_aff_files',
                                   iterfield = ['basedir'])
 
+    # find the database fname
+    find_database_fname = pe.Node(interface = niu.Function(input_names = ['in_db_file'],
+                                                           output_names = ['out_fname'],
+                                                              function=find_database_fname_function),
+                                  name = 'find_database_fname')
+
+    gif_post_sink_substitutions = pe.Node(interface = niu.Function(input_names = ['in_fname'],
+                                                           output_names = ['out_substitutions'],
+                                                                      function=gif_post_sink_substitutions_function),
+                                  name = 'gif_post_sink_substitutions')
+
     gif = pe.MapNode(interface=niftyseg.Gif(), 
                      name='gif',
                      iterfield=['in_file', 'mask_file', 'cpp_dir'])
 
     gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
-    subs = []
-    subs.append (('_gif[0-9]+'+os.sep, ''))
-    suffixes = [
-        '_labels_Parcellation',
-        '_labels_geo',
-        '_labels_prior']
-    for suffix in suffixes:
-        subs.append((suffix, ''))
-    gif_post_sink.inputs.regexp_substitutions = subs
+    gif_post_sink.inputs.parameterization = False
 
     workflow.connect(input_node, 'cpp_directory',     create_aff_files, 'basedir')
 
@@ -111,6 +126,10 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
     workflow.connect(input_node, 'template_db_file',  gif, 'database_file')
     workflow.connect(create_aff_files, 'out_dir',     gif, 'cpp_dir')
     
+    
+    workflow.connect(input_node, 'template_db_file', find_database_fname, 'in_db_file')
+    workflow.connect(find_database_fname, 'out_fname', gif_post_sink_substitutions, 'in_fname')
+    workflow.connect(gif_post_sink_substitutions, 'out_substitutions', gif_post_sink, 'regexp_substitutions')
     workflow.connect(input_node, 'out_directory',  gif_post_sink, 'base_directory')
     workflow.connect(gif,        'parc_file',      gif_post_sink, 'labels')  
     workflow.connect(gif,        'geo_file',       gif_post_sink, 'labels_geo')
