@@ -116,7 +116,7 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     m_VideoIn = videoFiles[0];
    
     m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-    m_VideoWidth = (int)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
+    m_VideoWidth = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
     m_VideoHeight = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_HEIGHT);
     
     MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
@@ -192,12 +192,12 @@ void FindAndTriangulateCrossHair::Triangulate()
     rightFrame = videoImage.clone();
 
     std::pair <cv::Point2d, cv::Point2d> screenPoints;
-    screenPoints.first = cv::Point2d(-100.0, -100.0);
-    screenPoints.second = cv::Point2d(-100.0, -100.0);
+    screenPoints.first = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+    screenPoints.second = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
     //check data 
     //
-    if ( ( leftFrame.cols != m_VideoWidth ) || ( leftFrame.rows != m_VideoHeight )
-        || ( rightFrame.cols != m_VideoWidth ) || (rightFrame.rows != m_VideoHeight ) )
+  //  if ( ( leftFrame.cols != m_VideoWidth ) || ( leftFrame.rows != m_VideoHeight )
+   //     || ( rightFrame.cols != m_VideoWidth ) || (rightFrame.rows != m_VideoHeight ) )
     if ( ( leftFrame.cols == 0  ) || ( leftFrame.rows == 0 )
         || ( rightFrame.cols == 0 ) || (rightFrame.rows == 0  ) )
     {
