@@ -117,7 +117,8 @@ private:
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenPoints; // the projected points
 
-  CvCapture*                    m_Capture;
+ // CvCapture*                    m_Capture;
+  cv::VideoCapture*             m_Capture;
   CvVideoWriter*                m_Writer;
 
   cv::Size                      m_BlurKernel; //for blurring

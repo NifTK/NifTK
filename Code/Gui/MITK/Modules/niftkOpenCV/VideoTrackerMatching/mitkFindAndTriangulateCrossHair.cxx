@@ -115,9 +115,10 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     }
     m_VideoIn = videoFiles[0];
    
-    m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-    m_VideoWidth = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
-    m_VideoHeight = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_HEIGHT);
+  //  m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
+    m_Capture = new  cv::VideoCapture(m_VideoIn.c_str()); 
+   // m_VideoWidth = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
+   // m_VideoHeight = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_HEIGHT);
     
     MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
     if ( ! m_Capture )
@@ -186,9 +187,10 @@ void FindAndTriangulateCrossHair::Triangulate()
   }
   while ( framenumber < terminator && key != 'q')
   {
-    cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+    cv::Mat videoImage;
+    bool leftSuccess = m_Capture->read(videoImage);
     leftFrame = videoImage.clone();
-    videoImage = cvQueryFrame ( m_Capture ) ;
+    bool rightSuccess = m_Capture->read(videoImage);
     rightFrame = videoImage.clone();
 
     std::pair <cv::Point2d, cv::Point2d> screenPoints;
