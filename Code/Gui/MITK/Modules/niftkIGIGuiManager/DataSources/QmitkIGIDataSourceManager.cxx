@@ -131,7 +131,7 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
     assert(ok);
-    ok = QObject::disconnect(m_GuiControlsTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+    ok = QObject::disconnect(m_GuiControlsTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGuiControls()));
     assert(ok);
     ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
     assert(ok);
