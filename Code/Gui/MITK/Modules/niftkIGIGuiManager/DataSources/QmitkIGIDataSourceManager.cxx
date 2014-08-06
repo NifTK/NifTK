@@ -24,11 +24,14 @@
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
+#include <mitkMathsUtils.h>
 #include <QmitkIGINiftyLinkDataSource.h>
 #include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
+#include <QmitkRenderingManager.h>
+
 #include <stdexcept>
 #include <vtkWindowToImageFilter.h>
 #include <vtkJPEGWriter.h>
@@ -56,7 +59,12 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_GridLayoutClientControls(NULL)
 , m_NextSourceIdentifier(0)
 , m_GuiUpdateTimer(NULL)
+, m_GuiControlsTimer(NULL)
 , m_ClearDownTimer(NULL)
+, m_StatsTimer(NULL)
+, m_RequestedFrameRate(0)
+, m_NumberOfTimesRenderingLoopCalled(0)
+, m_NumberOfTimesRenderingIsActuallyCalled(0)
 , m_PlaybackSliderBase(0)
 , m_PlaybackSliderFactor(1)
 , m_CurrentSourceGUI(NULL)
@@ -73,6 +81,15 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
   m_PickLatestData = DEFAULT_PICK_LATEST_DATA;
+
+  m_StatsTimerStart = igtl::TimeStamp::New();
+  m_StatsTimerEnd = igtl::TimeStamp::New();
+
+  QmitkRenderingManager *renderingManager = dynamic_cast<QmitkRenderingManager*>(mitk::RenderingManager::GetInstance());
+  if (renderingManager != NULL)
+  {
+    renderingManager->installEventFilter(this);
+  }
 }
 
 
@@ -83,6 +100,11 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
   if (m_GuiUpdateTimer != NULL)
   {
     m_GuiUpdateTimer->stop();
+  }
+
+  if (m_GuiControlsTimer != NULL)
+  {
+    m_GuiControlsTimer->stop();
   }
 
   if (m_ClearDownTimer != NULL)
@@ -109,6 +131,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
     assert(ok);
+    ok = QObject::disconnect(m_GuiControlsTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+    assert(ok);
     ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
     assert(ok);
     ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
@@ -119,6 +143,21 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 
   this->DeleteCurrentGuiWidget();
   m_Sources.clear();
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIDataSourceManager::eventFilter(QObject *obj, QEvent *event )
+{
+  QmitkRenderingManager *renderingManager = dynamic_cast<QmitkRenderingManager*>(mitk::RenderingManager::GetInstance());
+  if (renderingManager != NULL && obj == renderingManager)
+  {
+    if (event->type() == QEvent::Type(QEvent::MaxUser - 1024))
+    {
+      m_NumberOfTimesRenderingIsActuallyCalled++;
+    }
+  }
+  return false;
 }
 
 
@@ -308,6 +347,12 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
 
+  m_GuiControlsTimer = new QTimer(this);
+  m_GuiControlsTimer->setInterval(500);
+
+  m_StatsTimer = new QTimer(this);
+  m_StatsTimer->setInterval(30000);
+
   m_ClearDownTimer = new QTimer(this);
   m_ClearDownTimer->setInterval(1000*(int)DEFAULT_CLEAR_RATE);
 
@@ -356,12 +401,15 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   assert(ok);
   ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
+  ok = QObject::connect(m_GuiControlsTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGuiControls()));
+  assert(ok);
   ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
   assert(ok);
   ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
   ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
   assert(ok);
+  ok = QObject::connect(m_StatsTimer, SIGNAL(timeout()), this, SLOT(OnComputeStats()));
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 
@@ -471,9 +519,17 @@ void QmitkIGIDataSourceManager::OnAddSource()
   {
     m_GuiUpdateTimer->start();
   }
+  if (!m_GuiControlsTimer->isActive())
+  {
+    m_GuiControlsTimer->start();
+  }
   if (!m_ClearDownTimer->isActive())
   {
     m_ClearDownTimer->start();
+  }
+  if (!m_StatsTimer->isActive())
+  { 
+    m_StatsTimer->start();
   }
 }
 
@@ -538,8 +594,10 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   // Stop the timers to make sure they don't trigger.
   bool guiTimerWasOn = m_GuiUpdateTimer->isActive();
+  bool guiControlsTimerWasOn = m_GuiControlsTimer->isActive();
   bool clearDownTimerWasOn = m_ClearDownTimer->isActive();
   m_GuiUpdateTimer->stop();
+  m_GuiControlsTimer->stop();
   m_ClearDownTimer->stop();
 
   // Get a valid row number, or delete the last item in the table.
@@ -630,6 +688,10 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
     if (guiTimerWasOn)
     {
       m_GuiUpdateTimer->start();
+    }
+    if (guiControlsTimerWasOn)
+    {
+      m_GuiControlsTimer->start();
     }
     if (clearDownTimerWasOn)
     {
@@ -855,8 +917,69 @@ void QmitkIGIDataSourceManager::AdvancePlaybackTime()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnUpdateGuiControls()
+{
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  igtlUint64 idNow = timeNow->GetTimeInNanoSeconds();
+
+  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+  {
+    // Work out the sourceNumber == rowNumber.
+    int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
+    bool  shouldUpdate = m_TableWidget->item(rowNumber, 0)->checkState() == Qt::Checked;
+    float rate = source->UpdateFrameRate();
+    double lag = source->GetCurrentTimeLag(idNow);
+
+    // Update the frame rate number.
+    QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
+    frameRateItem->setTextAlignment(Qt::AlignCenter);
+    frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 2, frameRateItem);
+
+    // Update the lag number.
+    QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+    lagItem->setTextAlignment(Qt::AlignCenter);
+    lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(rowNumber, 3, lagItem);
+
+    // Update the status icon.
+    QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
+    if (!shouldUpdate)
+    {
+      QPixmap pix(22, 22);
+      pix.fill(m_SuspendedColour);
+      tItem->setIcon(pix);
+    }
+    else
+    {
+      if (lag > m_TimingTolerance/1000000000) // lag is in seconds, timing tolerance in nanoseconds.
+      {
+        // Highlight that current row is in error.
+        QPixmap pix(22, 22);
+        pix.fill(m_ErrorColour);
+        tItem->setIcon(pix);
+      }
+      else
+      {
+        // Highlight that current row is OK.
+        QPixmap pix(22, 22);
+        pix.fill(m_OKColour);
+        tItem->setIcon(pix);
+      }
+    }
+    // Update the status text.
+    tItem->setText(QString::fromStdString(source->GetStatus()));
+
+    QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
+    activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
 
   // whether we are currently grabbing live data or playing back canned bits
   // depends solely on the state of the play-button.
@@ -875,7 +998,6 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   }
   else
   {
-    igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
@@ -901,6 +1023,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
   if (m_Sources.size() > 0)
   {
+    m_NumberOfTimesRenderingLoopCalled++;
+
     // Iterate over all sources, so where we have linked sources,
     // such as a tracker, tracking multiple tools, we have one row for
     // each tool. So each tool is a separate source.
@@ -918,56 +1042,11 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       // First tell each source to update data.
       // For example, sources could copy to data storage.
       bool isValid = false;
-      float rate = 0;
-      double lag = 0;
-
       isValid = source->ProcessData(idNow);
-      rate = source->UpdateFrameRate();
-      lag = source->GetCurrentTimeLag(idNow);
-
-      // Update the frame rate number.
-      QTableWidgetItem *frameRateItem = new QTableWidgetItem(QString::number(rate));
-      frameRateItem->setTextAlignment(Qt::AlignCenter);
-      frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 2, frameRateItem);
-
-      // Update the lag number.
-      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-      lagItem->setTextAlignment(Qt::AlignCenter);
-      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 3, lagItem);
-
-      // Update the status icon.
-      QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
-      if (!shouldUpdate)
-      {
-        QPixmap pix(22, 22);
-        pix.fill(m_SuspendedColour);
-        tItem->setIcon(pix);
-      }
-      else
-      {
-        if (!isValid || lag > m_TimingTolerance/1000000000) // lag is in seconds, timing tolerance in nanoseconds.
-        {
-          // Highlight that current row is in error.
-          QPixmap pix(22, 22);
-          pix.fill(m_ErrorColour);
-          tItem->setIcon(pix);
-        }
-        else
-        {
-          // Highlight that current row is OK.
-          QPixmap pix(22, 22);
-          pix.fill(m_OKColour);
-          tItem->setIcon(pix);
-        }
-      }
-      // Update the status text.
-      tItem->setText(QString::fromStdString(source->GetStatus()));
-
-      QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
-      activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
+
+    timeNow->Update();
+    igtlUint64 idEndDataSources = timeNow->GetTimeInNanoSeconds();
 
     emit UpdateGuiFinishedDataSources(idNow);
 
@@ -982,6 +1061,15 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     // Make sure scene rendered.
     mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
     renderer->ForceImmediateUpdateAll();
+
+    timeNow->Update();
+    igtlUint64 idEndRendering = timeNow->GetTimeInNanoSeconds();
+
+    double timeToFetch = (idEndDataSources - idNow)/static_cast<double>(1000000);
+    double timeToRender = (idEndRendering - idEndDataSources)/static_cast<double>(1000000);
+
+    m_ListRenderingTimes.push_back(timeToRender);
+    m_ListDataFetchTimes.push_back(timeToFetch);
 
     emit UpdateGuiFinishedFinishedRendering(idNow);
 
@@ -1417,4 +1505,23 @@ void QmitkIGIDataSourceManager::PrintStatusMessage(const QString& message) const
 {
   m_ToolManagerConsole->appendPlainText(message + "\n");
   MITK_INFO << "QmitkIGIDataSourceManager:" << message.toStdString() << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnComputeStats()
+{
+  m_StatsTimerEnd->Update();
+  m_RequestedFrameRate = 1000 / m_GuiUpdateTimer->interval();
+  double meanRendering = mitk::Mean(m_ListRenderingTimes);
+  double meanFetch = mitk::Mean(m_ListDataFetchTimes);
+
+  QString output = QObject::tr("STATS: rate=%1 fps, req=%2, act=%3, fetch=%4, render=%5.").arg(m_RequestedFrameRate).arg(m_NumberOfTimesRenderingLoopCalled).arg(m_NumberOfTimesRenderingIsActuallyCalled).arg(meanFetch).arg(meanRendering);
+  this->PrintStatusMessage(output);
+
+  m_NumberOfTimesRenderingLoopCalled = 0;
+  m_NumberOfTimesRenderingIsActuallyCalled = 0;
+  m_ListRenderingTimes.clear();
+  m_ListDataFetchTimes.clear();
+  m_StatsTimerStart->Update();
 }

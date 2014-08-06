@@ -272,8 +272,23 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
           
           // End of important bit.
           
+          // Try to get the display to always track the image, WITHOUT calling this (as I want to avoid rendering all screens):
           mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
-          
+
+          // So I try this instead.
+/*
+          mitk::ProportionalTimeGeometry::Pointer propTimeGeometry = mitk::ProportionalTimeGeometry::New();
+          propTimeGeometry->Initialize(dynamic_cast<mitk::Geometry3D *>(image->GetGeometry()->Clone().GetPointer()), 1);
+          mitk::BaseRenderer *baseRenderer = mitk::BaseRenderer::GetInstance( m_Controls->m_RenderWindow->GetRenderWindow() );
+          int id = baseRenderer->GetMapperID();
+          mitk::SliceNavigationController *nc = baseRenderer->GetSliceNavigationController();
+          nc->SetViewDirectionToDefault();
+          nc->SetInputWorldTimeGeometry( propTimeGeometry );
+          nc->Update(); // Unfortunately ... this also triggers an update and hence re-rendering of all 2D views.
+          nc->GetSlice()->SetPos( nc->GetSlice()->GetSteps() / 2 );
+          baseRenderer->GetDisplayGeometry()->Fit();
+          baseRenderer->GetCameraController()->SetViewToAnterior();
+*/
         } // if modified times suggest we need an update
       } // end if input is valid
     } // if got an image

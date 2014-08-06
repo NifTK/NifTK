@@ -31,6 +31,7 @@
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
 #include <QmitkIGIDataSource.h>
+#include <igtlTimeStamp.h>
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
@@ -192,6 +193,8 @@ protected:
   QmitkIGIDataSourceManager(const QmitkIGIDataSourceManager&); // Purposefully not implemented.
   QmitkIGIDataSourceManager& operator=(const QmitkIGIDataSourceManager&); // Purposefully not implemented.
 
+  bool eventFilter(QObject *obj,  QEvent *event );
+
 private slots:
 
   /**
@@ -267,6 +270,10 @@ private slots:
 
   void AdvancePlaybackTime();
 
+  void OnComputeStats();
+
+  void OnUpdateGuiControls();
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;
@@ -288,7 +295,17 @@ private:
   bool                                      m_SaveInBackground;
   bool                                      m_PickLatestData;
   QTimer                                   *m_GuiUpdateTimer;
+  QTimer                                   *m_GuiControlsTimer;
   QTimer                                   *m_ClearDownTimer;
+
+  QTimer                                   *m_StatsTimer;
+  igtlUint64                                m_RequestedFrameRate;
+  igtlUint64                                m_NumberOfTimesRenderingLoopCalled;
+  igtlUint64                                m_NumberOfTimesRenderingIsActuallyCalled;
+  igtl::TimeStamp::Pointer                  m_StatsTimerStart;
+  igtl::TimeStamp::Pointer                  m_StatsTimerEnd;
+  std::vector<double>                       m_ListRenderingTimes;
+  std::vector<double>                       m_ListDataFetchTimes;
 
   // either real wallclock time or slider-determined playback time
   igtlUint64                                m_CurrentTime;
