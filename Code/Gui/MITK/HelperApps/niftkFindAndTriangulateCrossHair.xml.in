@@ -81,6 +81,14 @@
 	<default>0</default>
     </integer>
 
+    <integer>
+	<name>framesToUse</name>
+	<longflag>framesToUse</longflag>
+	<description>If zero or greater, stop processing after n frames</description>
+	<label>If zero or greater, stop processing after n frames</label>
+	<default>-1</default>
+    </integer>
+ 
 
   
   </parameters>
