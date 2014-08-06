@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include <gl/glew.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
 #include <iostream>
 #include <cuda_runtime_api.h>
@@ -52,6 +53,17 @@ static bool CUDADelayLoadCheck()
 
   // unreachable
   assert(false);
+}
+
+
+//-----------------------------------------------------------------------------
+static void check_oglerror(const std::string& detailedmsg)
+{
+  GLenum ec = glGetError();
+  if (ec != GL_NO_ERROR)
+  {
+    throw std::runtime_error("OpenGL failed: " + detailedmsg);
+  }
 }
 
 
@@ -154,6 +166,8 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
     delete sdiin;
     // we do not own sdidev!
     sdidev = 0;
+
+    // FIXME: clear out m_ReadbackPBOs
     
     if (ctx)
       ctx->makeCurrent();
@@ -231,7 +245,44 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
 
     if (format.format != video::StreamFormat::PF_NONE)
     {
-      sdiin = new video::SDIInput(sdidev, m_FieldMode, format.get_refreshrate());
+      // we have one second worth of ringbuffer.
+      int   ringbufferslots = format.get_refreshrate();
+      sdiin = new video::SDIInput(sdidev, m_FieldMode, ringbufferslots);
+
+      // allocate a bunch of pbos that we can copy the incoming video frames into.
+      // we do that during the capture loop (OnTimeoutImpl), so that when there's a request for a frame
+      // copy has finished and we can map the pbo straight in.
+      try
+      {
+        // width * height * pixelsize * channelcount
+        std::size_t   pbosize = sdiin->get_width() * 4 * sdiin->get_height() * streamcount;
+        for (int i = 0; i < ringbufferslots; ++i)
+        {
+          GLuint id = 0;
+          glGenBuffers(1, &id);
+          check_oglerror("Cannot create new buffer object.");
+
+          glBindBuffer(GL_PIXEL_PACK_BUFFER, id);
+          check_oglerror("Cannot bind newly created buffer object.");
+
+          // GL_STREAM_READ is a hint to the driver that we want to read back from the gpu.
+          glBufferData(GL_PIXEL_PACK_BUFFER, pbosize, 0, GL_STREAM_READ);
+          check_oglerror("Cannot initialise newly created buffer object.");
+
+          m_ReadbackPBOs.push_back(id);
+        }
+      }
+      catch (...)
+      {
+        for (int i = m_ReadbackPBOs.size() - 1; i >= 0; --i)
+        {
+          glDeleteBuffers(1, (GLuint*) &m_ReadbackPBOs[i]);
+        }
+        m_ReadbackPBOs.clear();
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        throw;
+      }
+      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
       m_Cookie = (unsigned int) ((((std::size_t) ((void*) sdiin)) >> 4) & 0xFFFFFFFF);
     }
@@ -256,6 +307,7 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t buffer
 
   // fortunately we have 4 bytes per pixel
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  // row length is in pixels
   assert((bufferpitch % 4) == 0);
   glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 4);
 
@@ -606,7 +658,8 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
         m_LastSuccessfulFrame = timeGetTime();
 
         // keep the most recent set of texture ids around
-        // this is mainly for the preview window
+        // this is mainly for the preview window.
+        // and for the pbo bits below.
         for (int i = 0; i < 4; ++i)
         {
           textureids[i] = sdiin->get_texture_id(i, -1);
@@ -629,6 +682,15 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
         }
         slot2sn_map[newest_slot] = fi;
         sn2slot_map[fi] = newest_slot;
+
+        // queue a copy to pbo (that we can map later on).
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[newest_slot]);
+        check_oglerror("Failed binding readback PBO");
+
+        // each stream/channel has its own texture, but we copy all into one giant pbo.
+        // the address is relative to the bound pbo (if there is a pbo bound, that is).
+        ReadbackRGBA((char*) 0, sdiin->get_width() * 4, sdiin->get_width(), sdiin->get_height() * streamcount, newest_slot);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
         state_message = "Grabbing";
       }
@@ -658,6 +720,8 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     // if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
     sn2slot_map.clear();
     slot2sn_map.clear();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
     emit SignalFatalError(QString("SDI capture setup failed! Try to remove and add it again."));
     return;
@@ -745,7 +809,7 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   fi.sequence_number = sequencenumber;
 
   BOOST_AUTO(sni, sn2slot_map.lower_bound(fi));
-  // we need to check whether the request sequence number is still valid.
+  // we need to check whether the requested sequence number is still valid.
   // there may have been a capture reset.
   if (sni == sn2slot_map.end())
   {

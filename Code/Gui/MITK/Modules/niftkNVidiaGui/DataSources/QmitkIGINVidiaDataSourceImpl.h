@@ -128,6 +128,12 @@ signals:
 private:
   // has to be called with lock held!
   void InitVideo();
+
+  /**
+   * @param bufferpitch in bytes
+   * @param width in pixels
+   * @param height in lines (equiv to pixels) of the full receiving image (i.e. with all channels stacked)
+   */
   void ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
   void DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg);
 
@@ -197,6 +203,11 @@ private:
 
 
   std::string         m_CompressionOutputFilename;
+
+  // pixel buffer objects used for async readback of the video frames.
+  // some perf testing and profiling revealed that we spend a lot of time in the driver
+  // for synchronously reading a texture image.
+  std::vector<int>    m_ReadbackPBOs;
 };
 
 
