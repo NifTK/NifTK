@@ -23,6 +23,7 @@ def gen_substitutions(ref_files, flo_files, prefix, suffix):
                      prefix+'ref_'+ref_bn+'_flo_'+flo_bn+'_aff'+suffix))
         subs.append((flo_bn+'_res', \
                      prefix+'ref_'+ref_bn+'_flo_'+flo_bn+'_res'+suffix))
+        subs.append(('_reg_transform', ''))
     return subs
     
 """
