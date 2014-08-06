@@ -115,10 +115,10 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     }
     m_VideoIn = videoFiles[0];
    
-  //  m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
     m_Capture = new  cv::VideoCapture(m_VideoIn.c_str()); 
-   // m_VideoWidth = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
-   // m_VideoHeight = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_HEIGHT);
+    //the following don't seem to work unless opencv is built with ffmpeg
+    m_VideoWidth = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_WIDTH));
+    m_VideoHeight = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_HEIGHT));
     
     MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
     if ( ! m_Capture )
@@ -196,15 +196,11 @@ void FindAndTriangulateCrossHair::Triangulate()
     std::pair <cv::Point2d, cv::Point2d> screenPoints;
     screenPoints.first = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
     screenPoints.second = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
-    //check data 
-    //
-  //  if ( ( leftFrame.cols != m_VideoWidth ) || ( leftFrame.rows != m_VideoHeight )
-   //     || ( rightFrame.cols != m_VideoWidth ) || (rightFrame.rows != m_VideoHeight ) )
-    if ( ( leftFrame.cols == 0  ) || ( leftFrame.rows == 0 )
-        || ( rightFrame.cols == 0 ) || (rightFrame.rows == 0  ) )
+    
+    if ( ( ! leftSuccess ) || ( ! rightSuccess ) )
     {
       m_ScreenPoints.push_back(screenPoints);
-      MITK_WARN << "Failed to read video at frame " << m_VideoWidth << m_VideoHeight << leftFrame.cols << leftFrame.rows << framenumber;
+      MITK_WARN << "Failed to read video at frame " << framenumber;
     }
     else
     {
