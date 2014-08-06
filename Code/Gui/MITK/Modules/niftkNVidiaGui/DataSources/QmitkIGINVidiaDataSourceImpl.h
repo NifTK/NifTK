@@ -130,11 +130,15 @@ private:
   void InitVideo();
 
   /**
+   * Reads from GPU-side textures into CPU-side memory, or a PBO (if one is bound to pixelpack).
    * @param bufferpitch in bytes
    * @param width in pixels
    * @param height in lines (equiv to pixels) of the full receiving image (i.e. with all channels stacked)
    */
   void ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
+
+  void ReadbackViaPBO(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
+
   void DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg);
 
   // any access to members needs to be locked

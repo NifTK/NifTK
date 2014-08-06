@@ -294,6 +294,45 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::ReadbackViaPBO(char* buffer, std::size_t bufferpitch, int width, int height, int slot)
+{
+  assert(sdiin != 0);
+  assert(bufferpitch >= width * 4);
+
+  int w = sdiin->get_width();
+  int h = sdiin->get_height();
+
+  assert(w <= width);
+  assert(h <= height);
+  assert(slot < m_ReadbackPBOs.size());
+
+  glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[slot]);
+  check_oglerror("Cannot bind buffer object to be mapped.");
+
+  const char* data = (const char*) glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+  check_oglerror("Cannot map buffer object.");
+  assert(data != 0);
+
+  // if pbo and cpu-side buffer have the same pitch then we can do a straight-forward memcopy.
+  if (bufferpitch == (w * 4))
+  {
+    std::memcpy(buffer, data, bufferpitch * std::min(h, height));
+  }
+  else
+  {
+    // "slow" path: copy line by line
+    for (int y = 0; y < std::min(h, height); ++y)
+    {
+      std::memcpy(&((buffer)[y * bufferpitch]), &(data[y * (w * 4)]), std::min((std::size_t) w * 4, bufferpitch));
+    }
+  }
+
+  glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+  glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot)
 {
   assert(sdiin != 0);
@@ -834,7 +873,8 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   // mark layout as rgba instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
-  ReadbackRGBA(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
+  //ReadbackRGBA(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
+  ReadbackViaPBO(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
 
   *img = frame;
   *streamcountinimg = streamcount;
