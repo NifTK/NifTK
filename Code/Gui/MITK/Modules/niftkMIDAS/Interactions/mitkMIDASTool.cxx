@@ -108,7 +108,12 @@ bool mitk::MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* mod
 //-----------------------------------------------------------------------------
 bool mitk::MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  return MIDASStateMachine::CanHandleEvent(event);
+  bool canHandleIt = MIDASStateMachine::CanHandleEvent(event);
+  if (canHandleIt)
+  {
+    m_LastEventSender = event->GetSender();
+  }
+  return canHandleIt;
 }
 
 
