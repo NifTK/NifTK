@@ -42,6 +42,7 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_VideoWidth (0.0)
 , m_VideoHeight (0.0)
+, m_FramesToProcess (-1)
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
@@ -178,7 +179,12 @@ void FindAndTriangulateCrossHair::Triangulate()
   cv::Mat leftHough;
   cv::Mat rightHough;
   m_ScreenPoints.clear();
-  while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
+  int terminator = m_TrackerMatcher->GetNumberOfFrames();
+  if ( m_FramesToProcess >= 0 ) 
+  {
+    terminator = m_FramesToProcess;
+  }
+  while ( framenumber < terminator && key != 'q')
   {
     cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
     leftFrame = videoImage.clone();
@@ -253,7 +259,7 @@ void FindAndTriangulateCrossHair::Triangulate()
     framenumber ++;
     framenumber ++;
   }
-  if ( m_ScreenPoints.size() !=  (unsigned int)m_TrackerMatcher->GetNumberOfFrames()/2 )
+  if ( m_ScreenPoints.size() !=  (unsigned int)terminator/2 )
   {
     MITK_ERROR << "Got the wrong number of screen point pairs " << m_ScreenPoints.size() 
       << " != " << m_TrackerMatcher->GetNumberOfFrames()/2;

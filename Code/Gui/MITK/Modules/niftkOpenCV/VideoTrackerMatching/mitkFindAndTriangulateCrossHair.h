@@ -60,6 +60,7 @@ public:
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
+  itkSetMacro ( FramesToProcess, int);
   itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3d> );
   itkGetMacro ( WorldPoints, std::vector<cv::Point3d> );
   itkGetMacro ( InitOK, bool);
@@ -98,6 +99,8 @@ private:
  
   bool                          m_InitOK;
   bool                          m_TriangulateOK;
+
+  int                           m_FramesToProcess; //can stop early, if negative it runs to the end
 
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
