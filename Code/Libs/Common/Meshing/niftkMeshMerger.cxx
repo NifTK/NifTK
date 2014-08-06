@@ -88,7 +88,7 @@ void niftk::MeshMerger::Update() throw (niftk::InvalidArgumentException) {
     if (*ic_label < 0 || *ic_label >= (int)(*mpp_SubMeshes)->GetNumberOfBlocks()) 
       throw InvalidArgumentException(__FILE__": Invalid label");
     else
-      p_appender->AddInput((*mpp_SubMeshes)->GetBlock(*ic_label));
+      p_appender->AddInputData((*mpp_SubMeshes)->GetBlock(*ic_label));
   } /* for labels */
   p_appender->Update();
 

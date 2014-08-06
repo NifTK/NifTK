@@ -62,12 +62,12 @@ target_link_libraries(niftknvapi
   ${cudaencoderpath}/nvcuvid.lib
 )
 
-if(MSVC)
+if(MSVC AND NIFTK_DELAYLOAD_CUDA)
   # all of the nvidia-driver/cuda dependencies should be delay-loaded
   #  so this library would at least load on a machine that doesnt have nv hardware
   set_target_properties(niftknvapi PROPERTIES LINK_FLAGS 
     "/DELAYLOAD:nvcuvenc.dll /DELAYLOAD:nvcuvid.dll /DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
-endif(MSVC)
+endif()
 
 # don't cotire this one!
 # cmake will barf with some policy violation or whatever

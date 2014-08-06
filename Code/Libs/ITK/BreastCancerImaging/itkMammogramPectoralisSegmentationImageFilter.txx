@@ -281,7 +281,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
       // Compute the cross correlation
 
-      ncc = metric->GetValue( pecInterceptInMM );
+      ncc = metric->GetValueAtPecIntercept( pecInterceptInMM );
 
       if ( flgFirstIteration || ( ncc > bestNCC ) )
       {

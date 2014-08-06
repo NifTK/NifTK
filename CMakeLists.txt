@@ -179,6 +179,7 @@ option(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OF
 option(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK does" OFF)
 option(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
+option(NIFTK_DELAYLOAD_CUDA "(Windows only) If enabled the CUDA DLLs will be a soft delay-load dependency and NifTK can run without them." OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
 
@@ -246,7 +247,7 @@ set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
-set(NIFTK_VERSION_PCL "378afeecb0" CACHE STRING "Version of PCL" FORCE) 
+set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
 set(NIFTK_VERSION_qRestAPI "e0f498dfac" CACHE STRING "Version of qRestAPI" FORCE) 
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git")
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
@@ -345,6 +346,7 @@ mark_as_advanced(NIFTK_LOCATION_ARUCO)
 mark_as_advanced(NIFTK_LOCATION_qRestAPI)
 mark_as_advanced(NIFTK_USE_FFTW)
 mark_as_advanced(NIFTK_USE_CUDA)
+mark_as_advanced(NIFTK_DELAYLOAD_CUDA)
 mark_as_advanced(BUILD_SLS_TESTING)
 mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
@@ -395,6 +397,7 @@ set(CMAKE_MODULE_PATH
 ######################################################################
 include(mitkMacroEmptyExternalProject)
 include(mitkFunctionGetVersion)
+include(mitkFunctionGetGccVersion)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroGetGitBranch)
 include(niftkMacroBuildCLI)
@@ -470,6 +473,12 @@ message("NifTK branch=${NIFTK_BRANCH_NAME}")
 message("NifTK version=${NIFTK_REVISION_SHORTID}")
 message("NifTK date=${NIFTK_DATE_TIME}")
 message("NifTK build=${CTEST_BUILD_NAME}")
+
+# Putting this here, so all subfolders have access to it.
+if(CMAKE_COMPILER_IS_GNUCXX)
+  mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
+  message("NifTK gcc=${GCC_VERSION}")
+endif()
 
 ######################################################################
 # Configure Dart testing support.  This should be done before any
@@ -775,7 +784,10 @@ endif()
 # Find Boost.
 ######################################################################
 set(Boost_NO_SYSTEM_PATHS ON)
-find_package( Boost 1.54 COMPONENTS filesystem system date_time regex REQUIRED)
+# off is the default, but our optional pcl dependency will try to use static libs if we dont define it explicitly.
+set(Boost_USE_STATIC_LIBS OFF)
+
+find_package( Boost 1.54 COMPONENTS filesystem system date_time regex thread REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})
@@ -1203,7 +1215,7 @@ endif()
 #############################################################################################
 
 set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL)
-set(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
+set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISupportQtSQL vtkGUISupportQtWebkit)
 
 ######################################################################
 # Install commands for things like README, licenses etc.
