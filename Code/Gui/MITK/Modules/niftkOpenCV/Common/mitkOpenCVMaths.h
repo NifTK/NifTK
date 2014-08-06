@@ -16,6 +16,7 @@
 #define mitkOpenCVMaths_h
 
 #include "niftkOpenCVExports.h"
+#include "mitkOpenCVPointTypes.h"
 #include <cv.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -169,16 +170,15 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, c
 /**
  * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
-    const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > operator*(cv::Mat M, 
+    const std::vector< mitk::WorldPoint >& p);
 
 
 /**
  * \brief multiplies a point and corresponding scalar value by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Scalar >  operator*(cv::Mat M, 
-    const std::pair < cv::Point3d, cv::Scalar > & p);
-
+extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(cv::Mat M, 
+    const mitk::WorldPoint & p);
 
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix

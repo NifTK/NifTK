@@ -16,6 +16,7 @@
 #define mitkProjectPointsOnStereoVideo_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
 #include <string>
 #include <fstream>
 #include <itkObject.h>
@@ -26,29 +27,6 @@
 #include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
-
-class NIFTKOPENCV_EXPORT GoldStandardPoint
-{
-  /**
-   * \class contains the gold standard points
-   * consisting of the frame number, the point and optionally the point index
-   */
-  public:
-    GoldStandardPoint();
-    GoldStandardPoint(unsigned int , int, cv::Point2d);
-    GoldStandardPoint(std::istream& is);
-    unsigned int m_FrameNumber;
-    int m_Index;
-    cv::Point2d  m_Point;
-   
-    /** 
-     * \brief an input operator
-     */
-    friend std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
-
-    friend bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
-
-};
 
 /**
  * \class Project points on stereo video
@@ -127,7 +105,7 @@ public:
   /**
    * \brief sets the world points and corresponding vectors
    */
-  void SetWorldPoints ( std::vector<  std::pair < cv::Point3d, cv::Scalar >  > points );
+  void SetWorldPoints ( std::vector< mitk::WorldPoint > points );
   /** 
    * \brief set only the world points, the corresponding scalars get set to a default value
    */
@@ -187,7 +165,7 @@ private:
   std::string                   m_Directory; //the directory containing the data
   std::string                   m_VideoOutPrefix; //where to write out any video
   std::string                   m_TriangulatedPointsOutName; //where to write the triangulated points out to
-  std::vector< std::pair < cv::Point3d, cv::Scalar > >     
+  std::vector< mitk::WorldPoint >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
@@ -224,7 +202,7 @@ private:
   /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::pair < long long , std::vector < std::pair <cv::Point3d, cv::Scalar> > > >    
+  std::vector < std::pair < long long , std::vector < mitk::WorldPoint > > >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points

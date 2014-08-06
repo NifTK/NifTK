@@ -328,46 +328,46 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output)
 
 
 //-----------------------------------------------------------------------------
-std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const std::vector< std::pair < cv::Point3d, cv::Scalar > > & p)
+std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::WorldPoint > & p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
-    src.at<double>(0,i) = p[i].first.x;
-    src.at<double>(1,i) = p[i].first.y;
-    src.at<double>(2,i) = p[i].first.z;
+    src.at<double>(0,i) = p[i].m_Point.x;
+    src.at<double>(1,i) = p[i].m_Point.y;
+    src.at<double>(2,i) = p[i].m_Point.z;
     src.at<double>(3,i) = 1.0;
   }
   cv::Mat dst = M*src;
-  std::vector < std::pair <cv::Point3d, cv::Scalar > > returnPoints;
+  std::vector < mitk::WorldPoint > returnPoints;
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
     cv::Point3d point;
     point.x = dst.at<double>(0,i);
     point.y = dst.at<double>(1,i);
     point.z = dst.at<double>(2,i);
-    returnPoints.push_back(std::pair<cv::Point3d, cv::Scalar> (point, p[i].second));
+    returnPoints.push_back(mitk::WorldPoint (point, p[i].m_Scalar));
   }
   return returnPoints;
 }
 
 //-----------------------------------------------------------------------------
-std::pair <cv::Point3d, cv::Scalar>  operator*(cv::Mat M, const  std::pair < cv::Point3d, cv::Scalar >  & p)
+mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
 {
   cv::Mat src ( 4, 1 , CV_64F );
-  src.at<double>(0,0) = p.first.x;
-  src.at<double>(1,0) = p.first.y;
-  src.at<double>(2,0) = p.first.z;
+  src.at<double>(0,0) = p.m_Point.x;
+  src.at<double>(1,0) = p.m_Point.y;
+  src.at<double>(2,0) = p.m_Point.z;
   src.at<double>(3,0) = 1.0;
 
   cv::Mat dst = M*src;
-  std::pair <cv::Point3d, cv::Scalar >  returnPoint;
+  mitk::WorldPoint  returnPoint;
    
   cv::Point3d point;
   point.x = dst.at<double>(0,0);
   point.y = dst.at<double>(1,0);
   point.z = dst.at<double>(2,0);
-  returnPoint = std::pair<cv::Point3d, cv::Scalar> (point, p.second);
+  returnPoint = mitk::WorldPoint (point, p.m_Scalar);
   
   return returnPoint;
 }
