@@ -18,7 +18,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
-bool CheckTransformedPointVector (std::vector < std::vector <cv::Point3d> > points)
+bool CheckTransformedPointVector (std::vector <mitk::WorldPointsWithTimingError> points)
 {
   double Error = 0.0;
   //here are some points calculated indepenently
@@ -35,13 +35,13 @@ bool CheckTransformedPointVector (std::vector < std::vector <cv::Point3d> > poin
   frame1155points.push_back(cv::Point3d( 21.62069  , -24.75377 ,  126.98338));
   for ( int i = 0 ; i < 4 ; i ++ ) 
   {
-    Error += fabs ( points[0][i].x - frame0000points[i].x);
-    Error += fabs ( points[0][i].y - frame0000points[i].y);
-    Error += fabs ( points[0][i].z - frame0000points[i].z);
+    Error += fabs ( points[0].m_Points[i].m_Point.x - frame0000points[i].x);
+    Error += fabs ( points[0].m_Points[i].m_Point.y - frame0000points[i].y);
+    Error += fabs ( points[0].m_Points[i].m_Point.z - frame0000points[i].z);
 
-    Error += fabs ( points[1155][i].x - frame1155points[i].x);
-    Error += fabs ( points[1155][i].y - frame1155points[i].y);
-    Error += fabs ( points[1155][i].z - frame1155points[i].z);
+    Error += fabs ( points[1155].m_Points[i].m_Point.x - frame1155points[i].x);
+    Error += fabs ( points[1155].m_Points[i].m_Point.y - frame1155points[i].y);
+    Error += fabs ( points[1155].m_Points[i].m_Point.z - frame1155points[i].z);
   }
 
   if ( Error < 2e-3 ) 

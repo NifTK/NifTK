@@ -372,9 +372,6 @@ mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
   return returnPoint;
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
 {
@@ -398,7 +395,6 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
   }
   return returnPoints;
 }
-
 
 //-----------------------------------------------------------------------------
 cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)

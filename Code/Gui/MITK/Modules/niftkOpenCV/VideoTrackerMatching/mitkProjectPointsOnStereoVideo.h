@@ -111,7 +111,7 @@ public:
    */
   void ClearWorldPoints ();
 
-  std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
+  itkGetMacro ( PointsInLeftLensCS, std::vector <mitk::WorldPointsWithTimingError> );
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
@@ -193,7 +193,7 @@ private:
   /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::pair < long long , std::vector < mitk::WorldPoint > > >    
+  std::vector < mitk::WorldPointsWithTimingError >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points
