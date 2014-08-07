@@ -16,6 +16,7 @@
 #include <limits>
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
 #include <mitkPointSetReader.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 
@@ -91,7 +92,7 @@ int main(int argc, char** argv)
     std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < cv::Point3d > worldPoints;
     std::vector < cv::Point3d > classifierWorldPoints;
-    std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
+    std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
         g=atoi(in[4].c_str());
         r=atoi(in[5].c_str());
 
-        worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
+        worldPointsWithScalars.push_back(mitk::WorldPoint 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
       projector->SetWorldPoints(worldPointsWithScalars);
