@@ -145,5 +145,23 @@ WorldPoint::WorldPoint(cv::Point3d point)
 , m_Scalar (cv::Scalar(255,0,0))
 {}
 
+//-----------------------------------------------------------------------------
+WorldPointsWithTimingError::WorldPointsWithTimingError()
+: m_Points ()
+, m_TimingError ( 0 )
+{}
+
+//-----------------------------------------------------------------------------
+WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldPoint> points,
+    long long timingError)
+: m_Points ( points )
+, m_TimingError ( timingError )
+{}
+
+//-----------------------------------------------------------------------------
+WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldPoint> points)
+: m_Points ( points )
+, m_TimingError (0)
+{}
 
 } // end namespace

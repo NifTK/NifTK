@@ -61,6 +61,21 @@ class NIFTKOPENCV_EXPORT WorldPoint
      cv::Scalar   m_Scalar;
 };
 
+class NIFTKOPENCV_EXPORT WorldPointsWithTimingError
+{
+  /**
+   * \class contains a vector of world points and a corresponding long long timing error
+   */
+   public:
+     WorldPointsWithTimingError();
+     WorldPointsWithTimingError(std::vector <mitk::WorldPoint>, long long);
+     WorldPointsWithTimingError(std::vector <mitk::WorldPoint>);
+
+     std::vector <mitk::WorldPoint> m_Points;
+     long long                      m_TimingError;
+};
+
+
 } // end namespace
 
 #endif
