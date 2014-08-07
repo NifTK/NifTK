@@ -177,6 +177,32 @@ ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
 {}
 
 //-----------------------------------------------------------------------------
+ProjectedPointPair::LeftNaN()
+{
+  if ( (boost::math::isnan(m_Left.x)) || (boost::math::isnan(m_Left.y)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }    
+}
+
+//-----------------------------------------------------------------------------
+ProjectedPointPair::RightNaN()
+{
+  if ( (boost::math::isnan(m_Right.x)) || (boost::math::isnan(m_Right.y)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }    
+}
+
+//-----------------------------------------------------------------------------
 ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError()
 : m_Points()
 , m_TimingError(0)

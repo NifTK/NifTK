@@ -201,6 +201,11 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator-(const cv::Point2d& p1, con
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator/(const cv::Point2d& p, const int& n);
 
 /**
+ * \brief Multiplies the components of a 2d point by an integer (x=x1*x2, y=y1*y2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2);
+
+/**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);

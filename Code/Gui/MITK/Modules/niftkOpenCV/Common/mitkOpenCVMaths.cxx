@@ -432,6 +432,13 @@ cv::Point2d operator/(const cv::Point2d& p1, const int& n)
 {
   return cv::Point2d ( p1.x / static_cast<double>(n) , p1.y / static_cast<double>(n) );
 }
+
+//-----------------------------------------------------------------------------
+cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2)
+{
+  return cv::Point2d ( p1.x * p2.x , p1.y * p2.y );
+}
+
 //-----------------------------------------------------------------------------
 cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
@@ -1091,19 +1098,13 @@ mitk::ProjectedPointPair MeanError (
     {
       if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
-        if ( ! ( boost::math::isnan(measured[frame*2].m_Points[index].m_Left.x) || 
-              boost::math::isnan(measured[frame*2].m_Points[index].m_Left.y) ||
-              boost::math::isnan(actual[frame].m_Points[index].m_Left.x) || 
-              boost::math::isnan(actual[frame].m_Points[index].m_Left.y) ) )
+        if ( ! ( measured[frame*2].m_Points[index].LeftNaN() ) || actual[frame].m_Points[index].LeftNaN() ) 
         {
           meanError.m_Left += 
             actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left ;
           count.first ++;
         }
-        if ( ! ( boost::math::isnan(measured[frame*2].m_Points[index].m_Right.x) ||
-              boost::math::isnan(measured[frame*2].m_Points[index].m_Right.y) ||
-            boost::math::isnan(actual[frame].m_Points[index].m_Right.x) ||
-            boost::math::isnan(actual[frame].m_Points[index].m_Right.y) ) )
+        if ( ! ( measured[frame*2].m_Points[index].RightNaN() ) || actual[frame].m_Points[index].RightNaN() ) 
         {
           meanError.m_Right += 
             actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right ;
@@ -1121,13 +1122,11 @@ mitk::ProjectedPointPair MeanError (
   }
   if ( count.first > 0 ) 
   {
-    meanError.first.x =  meanError.first.x / count.first ;
-    meanError.first.y =  meanError.first.y / count.first ;
+    meanError.m_Left =  meanError.m_Left / count.first ;
   }
   if ( count.second > 0 ) 
   {
-    meanError.second.x =  meanError.second.x / count.second ;
-    meanError.second.y =  meanError.second.y / count.second ;
+    meanError.m_Right =  meanError.m_Right / count.second ;
   }
   if ( StandardDeviations == NULL ) 
   {
@@ -1135,48 +1134,46 @@ mitk::ProjectedPointPair MeanError (
   }
   else
   {
-    StandardDeviations->first.x = 0.0;
-    StandardDeviations->first.y = 0.0;
-    StandardDeviations->second.x = 0.0;
-    StandardDeviations->second.y = 0.0;
+    StandardDeviations->m_Left.x = 0.0;
+    StandardDeviations->m_Left.y = 0.0;
+    StandardDeviations->m_Right.x = 0.0;
+    StandardDeviations->m_Right.y = 0.0;
     for ( int index = lowIndex; index < highIndex ; index ++ ) 
     {
-      for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+      for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
       {
-        if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
-            boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+        if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
         {
-          double xerror = actual[i][index].first.x - measured[i*2][index].first.x - meanError.first.x;
-          double yerror = actual[i][index].first.y - measured[i*2][index].first.y - meanError.first.y;
-          StandardDeviations->first.x += xerror * xerror;
-          StandardDeviations->first.y += yerror * yerror;
-          count.first ++;
-        }
-        if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
-            boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
-        {
-          double xerror = actual[i][index].second.x - measured[i*2][index].second.x - meanError.second.x;
-          double yerror = actual[i][index].second.y - measured[i*2][index].second.y - meanError.second.y;
-          StandardDeviations->second.x += xerror * xerror;
-          StandardDeviations->second.y += yerror * yerror;
-          count.second ++;
+          if ( ! ( measured[frame*2].m_Points[index].LeftNaN() ) || actual[frame].m_Points[index].LeftNaN() ) 
+          {
+            cv::Point2D error = 
+              actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left - meanError.m_Left;
+            StandardDeviations->m_Left += error * error;
+            count.first ++;
+          }
+          if ( ! ( measured[frame*2].m_Points[index].RightNaN() ) || actual[frame].m_Points[index].RightNaN() ) 
+          {
+            cv::Point2D error = 
+              actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right - meanError.m_Right;
+            StandardDeviations->m_Right += error * error;
+            count.second ++;
+          }
         }
       }
     }
     if ( count.first > 0 ) 
     {
-      StandardDeviations->first.x =  sqrt(StandardDeviations->first.x / count.first);
-      StandardDeviations->first.y =  sqrt(StandardDeviations->first.y / count.first) ;
+      StandardDeviations->m_Left.x =  sqrt(StandardDeviations->m_Left.x / count.first);
+      StandardDeviations->m_Left.y =  sqrt(StandardDeviations->m_Left.y / count.first) ;
     }
     if ( count.second > 0 ) 
     {
-      StandardDeviations->second.x = sqrt( StandardDeviations->second.x / count.second) ;
-      StandardDeviations->second.y = sqrt( StandardDeviations->second.y / count.second) ;
+      StandardDeviations->m_Right.x = sqrt( StandardDeviations->m_Right.x / count.second) ;
+      StandardDeviations->m_Right.y = sqrt( StandardDeviations->m_Right.y / count.second) ;
     }
 
   }
   return meanError;
-
 }
 
 //-----------------------------------------------------------------------------
