@@ -76,6 +76,33 @@ class NIFTKOPENCV_EXPORT WorldPointsWithTimingError
 };
 
 
+class NIFTKOPENCV_EXPORT ProjectedPointPair
+{
+  /**
+   * \class contains a left and right projected point
+   */
+
+  ProjectedPointPair();
+  ProjectedPointPair(cv::Point2d, cv::Point2d);
+
+  cv::Point2d m_Left;
+  cv::Point2d m_Right;
+};
+
+class NIFTKOPENCV_EXPORT ProjectedPointPairsWithTimingError
+{
+  /**
+   * \class contains a vector of left and right projected points and a timing error
+   */
+  public:
+    ProjectedPointPairsWithTimingError();
+    ProjectedPointPairsWithTimingError(std::vector <mitk::ProjectedPointPair>, long long);
+    ProjectedPointPairsWithTimingError(std::vector <mitk::ProjectedPointPair>);
+
+    std::vector <mitk::ProjectedPointPair> m_Points;
+    long long                              m_TimingError; 
+};
+
 } // end namespace
 
 #endif

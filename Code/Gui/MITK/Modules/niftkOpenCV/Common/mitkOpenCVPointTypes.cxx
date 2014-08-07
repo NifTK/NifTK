@@ -164,4 +164,36 @@ WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldP
 , m_TimingError (0)
 {}
 
+//-----------------------------------------------------------------------------
+ProjectedPointPair::ProjectedPointPair()
+: m_Left (cv::Point2d(std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN()))
+, m_Right (cv::Point2d(std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN()))
+{}
+
+//-----------------------------------------------------------------------------
+ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
+: m_Left (left)
+, m_Right (right)
+{}
+
+//-----------------------------------------------------------------------------
+ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError()
+: m_Points()
+, m_TimingError(0)
+{}
+
+//-----------------------------------------------------------------------------
+ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
+    std::vector <mitk::ProjectedPointPair> points, long long timingError)
+: m_Points(points)
+, m_TimingError(timingError)
+{}
+
+//-----------------------------------------------------------------------------
+ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
+    std::vector <mitk::ProjectedPointPair> points)
+: m_Points(points)
+, m_TimingError(0)
+{}
+
 } // end namespace
