@@ -213,6 +213,13 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   // note: do not kill off decompressor here.
   // see description in SetPlayback() as for why.
 
+  // clear these off, we'll allocate new ones below.
+  for (int i = m_ReadbackPBOs.size() - 1; i >= 0; --i)
+  {
+    glDeleteBuffers(1, (GLuint*) &m_ReadbackPBOs[i]);
+  }
+  m_ReadbackPBOs.clear();
+
   // find our capture card
   for (int i = 0; ; ++i)
   {
