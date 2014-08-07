@@ -33,9 +33,6 @@
 // note the trailing space
 const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 
-const char*    QmitkIGINVidiaDataSource::s_SDISequenceNumberPropertyName      = "niftk.SDISequenceNumber";
-const char*    QmitkIGINVidiaDataSource::s_SDIFieldModePropertyName           = "niftk.SDIFieldMode";
-
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
@@ -433,11 +430,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             }
           }
 
-          // copy the node properties to its image too.
           imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
           assert(imageInNode.IsNotNull());
-          imageInNode->SetProperty(s_SDISequenceNumberPropertyName, mitk::IntProperty::New(dataType->GetSequenceNumber()));
-          imageInNode->SetProperty(s_SDIFieldModePropertyName, mitk::IntProperty::New(currentFieldMode));
 
           // this is internal field mode, which might have the obsolete stack configured (i.e. during playback).
           switch (currentFieldMode)
@@ -463,8 +457,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             }
           }
 
-          node->SetIntProperty(s_SDISequenceNumberPropertyName, dataType->GetSequenceNumber());
-          node->SetIntProperty(s_SDIFieldModePropertyName, currentFieldMode);
           node->Modified();
         } // for
 
