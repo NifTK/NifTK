@@ -112,7 +112,7 @@ public:
   void ClearWorldPoints ();
 
   itkGetMacro ( PointsInLeftLensCS, std::vector <mitk::WorldPointsWithTimingError> );
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
+  itkGetMacro ( ProjectedPoints, std::vector <mitk::ProjectedPointPairsWithTimingError>);
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -191,11 +191,11 @@ private:
   double   m_VideoHeight;
 
   /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
+  std::vector < mitk::ProjectedPointPairsWithTimingError >
                                 m_ProjectedPoints; // the projected points
   std::vector < mitk::WorldPointsWithTimingError >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
-  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
+  mitk::ProjectedPointPairsWithTimingError 
                                 m_ScreenAxesPoints; // the projected axes points
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
@@ -206,7 +206,7 @@ private:
   std::vector < mitk::GoldStandardPoint >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
   std::vector<mitk::WorldPoint> m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
+  std::vector < mitk::ProjectedPointPairsWithTimingError >
                                 m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
 
   std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels

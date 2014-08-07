@@ -81,12 +81,12 @@ class NIFTKOPENCV_EXPORT ProjectedPointPair
   /**
    * \class contains a left and right projected point
    */
+  public:
+    ProjectedPointPair();
+    ProjectedPointPair(cv::Point2d, cv::Point2d);
 
-  ProjectedPointPair();
-  ProjectedPointPair(cv::Point2d, cv::Point2d);
-
-  cv::Point2d m_Left;
-  cv::Point2d m_Right;
+    cv::Point2d m_Left;
+    cv::Point2d m_Right;
 };
 
 class NIFTKOPENCV_EXPORT ProjectedPointPairsWithTimingError

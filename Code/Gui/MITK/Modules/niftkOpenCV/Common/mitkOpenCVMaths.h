@@ -185,6 +185,20 @@ extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(cv::Mat M,
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
 
+/**
+ * \brief adds a 2d point (x=x1+x2, y=y1+y2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator+(const cv::Point2d& p1, const cv::Point2d& p2);
+
+/**
+ * \brief Subtracts a 2d point (x=x1-x2, y=y1-y2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator-(const cv::Point2d& p1, const cv::Point2d& p2);
+
+/**
+ * \brief Divides a 2d point by an integer (x=x1/n, y=y1/2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator/(const cv::Point2d& p, const int& n);
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
@@ -293,10 +307,14 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
-
-extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
-    std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
+/**
+ * \brief Returns the mean pixel errors for the right and left sets of projected points
+ */
+extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError ( 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, 
+    mitk::ProjectedPointPair * StandardDeviations = NULL , int index = -1,
+    long long allowableTimingError = 30e6 );
 
 
 /** 

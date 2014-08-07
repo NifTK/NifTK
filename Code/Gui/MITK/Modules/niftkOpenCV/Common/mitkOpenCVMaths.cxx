@@ -415,7 +415,23 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
   return returnPoint;
 }
 
+//-----------------------------------------------------------------------------
+cv::Point2d operator+(const cv::Point2d& p1, const cv::Point2d& p2)
+{
+  return cv::Point2d ( p1.x + p2.x , p1.y + p2.y );
+}
 
+//-----------------------------------------------------------------------------
+cv::Point2d operatorr-(const cv::Point2d& p1, const cv::Point2d& p2)
+{
+  return cv::Point2d ( p1.x - p2.x , p1.y - p2.y );
+}
+
+//-----------------------------------------------------------------------------
+cv::Point2d operator/(const cv::Point2d& p1, const int& n)
+{
+  return cv::Point2d ( p1.x / static_cast<double>(n) , p1.y / static_cast<double>(n) );
+}
 //-----------------------------------------------------------------------------
 cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
@@ -1018,12 +1034,15 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   return RMSError;
 }
 //-----------------------------------------------------------------------------
-std::pair < double, double >  RMSError (std::vector < std::pair < long long , std::vector < std::pair <cv::Point2d, cv::Point2d> > > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+std::pair < double, double >  RMSError (
+    std::vector < mitk::ProjectedPointPairsWithTimingError >  measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
     int indexToUse , double outlierSD, long long allowableTimingError )
 {
   assert ( measured.size() == actual.size() * 2 );
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > culledMeasured;
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > culledActual;
+  std::vector < mitk::ProjectedPointPairsWithTimingError > culledMeasured;
+  std::vector < mitk::ProjectedPointPairsWithTimingError > culledActual;
+
   for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
   {
     if ( measured[i*2].first < abs (allowableTimingError) )
@@ -1041,25 +1060,26 @@ std::pair < double, double >  RMSError (std::vector < std::pair < long long , st
 }
 
 //-----------------------------------------------------------------------------
-std::pair < cv::Point2d, cv::Point2d >  MeanError (
-    std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , 
-    std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
-    std::pair < cv::Point2d, cv::Point2d >* StandardDeviations, int indexToUse)
+mitk::ProjectedPointPair MeanError (
+    std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
+    mitk::ProjectedPointPair * StandardDeviations, int indexToUse,
+    long long allowableTimingError)
 {
   assert ( measured.size() == actual.size() * 2 );
 
-  std::pair < cv::Point2d, cv::Point2d>  meanError;
+  mitk::ProjectedPointPair meanError;
   
-  meanError.first.x = 0.0 ;
-  meanError.first.y = 0.0 ;
-  meanError.second.x = 0.0 ;
-  meanError.second.y = 0.0 ;
+  meanError.m_Left.x = 0.0;
+  meanError.m_Left.y = 0.0;
+  meanError.m_Right.x = 0.0;
+  meanError.m_Right.y = 0.0;
   
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
   int lowIndex = 0;
-  int highIndex = measured[0].size();
+  int highIndex = measured[0].m_Points.size();
   if ( indexToUse != -1 )
   {
     lowIndex = indexToUse; 
@@ -1067,21 +1087,35 @@ std::pair < cv::Point2d, cv::Point2d >  MeanError (
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
     {
-      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
-          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+      if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
-        meanError.first.x +=  actual[i][index].first.x - measured[i*2][index].first.x ;
-        meanError.first.y +=  actual[i][index].first.y - measured[i*2][index].first.y ;
-        count.first ++;
+        if ( ! ( boost::math::isnan(measured[frame*2].m_Points[index].m_Left.x) || 
+              boost::math::isnan(measured[frame*2].m_Points[index].m_Left.y) ||
+              boost::math::isnan(actual[frame].m_Points[index].m_Left.x) || 
+              boost::math::isnan(actual[frame].m_Points[index].m_Left.y) ) )
+        {
+          meanError.m_Left += 
+            actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left ;
+          count.first ++;
+        }
+        if ( ! ( boost::math::isnan(measured[frame*2].m_Points[index].m_Right.x) ||
+              boost::math::isnan(measured[frame*2].m_Points[index].m_Right.y) ||
+            boost::math::isnan(actual[frame].m_Points[index].m_Right.x) ||
+            boost::math::isnan(actual[frame].m_Points[index].m_Right.y) ) )
+        {
+          meanError.m_Right += 
+            actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right ;
+          count.second ++;
+        }
       }
-      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
-          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+      else
       {
-        meanError.second.x +=  actual[i][index].second.x - measured[i*2][index].second.x ;
-        meanError.second.y +=  actual[i][index].second.y - measured[i*2][index].second.y ;
-        count.second ++;
+        if ( index == lowIndex )
+        {
+          MITK_WARN << "mitk::MeanError Dropping point pair " << frame*2 << "," << (frame*2)+1  << " due to high timing error " << measured[frame*2].m_TimingError << " > " << allowableTimingError;
+        }
       }
     }
   }
