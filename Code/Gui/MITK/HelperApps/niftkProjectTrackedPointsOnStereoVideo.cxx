@@ -242,7 +242,7 @@ int main(int argc, char** argv)
     if ( output3D.length() !=0 )
     {
       std::ofstream fout (output3D.c_str());
-      mitk::WorldPointsWithTimingErrors leftLensPoints = 
+      std::vector <mitk::WorldPointsWithTimingError> leftLensPoints = 
         projector->GetPointsInLeftLensCS();
       fout << "#Frame Number " ;
       for ( unsigned int i = 0 ; i < leftLensPoints[0].m_Points.size() ; i ++ ) 
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
         fout << i << " ";
         for ( unsigned int j = 0 ; j < leftLensPoints[i].m_Points.size() ; j ++ )
         {
-          fout << leftLensPoints[i].m_Points[j]m_Point.x << " " <<  
+          fout << leftLensPoints[i].m_Points[j].m_Point.x << " " <<  
             leftLensPoints[i].m_Points[j].m_Point.y <<
              " " << leftLensPoints[i].m_Points[j].m_Point.z << " " ;
         }
