@@ -450,7 +450,15 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
               s[0] = 1;
               s[1] = 2;
               s[2] = 1;
-              imageInNode->GetGeometry()->SetSpacing(s);
+              mitk::Vector3D    c = imageInNode->GetGeometry()->GetSpacing();
+              // only update spacing if necessary. it has a huge overhead because mitk keeps
+              // allocating itk objects everytime we do this.
+              if ((std::abs(c[0] - s[0]) > 0.01) ||
+                  (std::abs(c[1] - s[1]) > 0.01) ||
+                  (std::abs(c[2] - s[2]) > 0.01))
+              {
+                imageInNode->GetGeometry()->SetSpacing(s);
+              }
               break;
             }
           }
