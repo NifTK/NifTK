@@ -326,18 +326,23 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackViaPBO(char* buffer, std::size_t buff
   check_oglerror("Cannot map buffer object.");
   assert(data != 0);
 
-  // if pbo and cpu-side buffer have the same pitch then we can do a straight-forward memcopy.
-  if (bufferpitch == (m_CaptureWidth * 4))
+  // note: this would not work with fieldmode set the STACK_FIELDS.
+  // but we dont support that anymore, so no problem.
+  IplImage  subimgInput;
+  cvInitImageHeader(&subimgInput, cvSize(std::min(m_CaptureWidth, width), m_CaptureHeight), IPL_DEPTH_8U, 4);
+  IplImage  subimgOutput;
+  cvInitImageHeader(&subimgOutput, cvSize(std::min(m_CaptureWidth, width), m_CaptureHeight), IPL_DEPTH_8U, 4);
+
+  for (int i = 0; i < streamcount; ++i)
   {
-    std::memcpy(buffer, data, bufferpitch * std::min(m_CaptureHeight, height));
-  }
-  else
-  {
-    // "slow" path: copy line by line
-    for (int y = 0; y < std::min(m_CaptureHeight, height); ++y)
-    {
-      std::memcpy(&((buffer)[y * bufferpitch]), &(data[y * (m_CaptureWidth * 4)]), std::min((std::size_t) m_CaptureWidth * 4, bufferpitch));
-    }
+    // remaining buffer too small?
+    if (height - (i * m_CaptureHeight) < m_CaptureHeight)
+      break;
+
+    cvSetData(&subimgInput,  (void*) &(data[m_CaptureHeight * (m_CaptureWidth * 4) * i]),   m_CaptureWidth * 4);
+    cvSetData(&subimgOutput, (void*) &(buffer[m_CaptureHeight * (m_CaptureWidth * 4) * i]), bufferpitch);
+
+    cvFlip(&subimgInput, &subimgOutput);
   }
 
   glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -358,6 +363,9 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t buffer
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
   // row length is in pixels
   assert((bufferpitch % 4) == 0);
+  // specifying a negative row-length would allow us to flip the texture
+  // from bottom-left to top-left orientation on the fly.
+  // but negative row-length is specifically mentioned in the spec as an error.
   glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 4);
 
   for (int i = 0; i < 4; ++i)
@@ -538,6 +546,9 @@ void QmitkIGINVidiaDataSourceImpl::setCompressionOutputFilename(const std::strin
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::run()
 {
+  // reset the libvideo cookie so that in-flight IGINVidiaDataType get rejected early
+  m_Cookie = 0;
+
   // make sure the correct opengl context is active.
   // in OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
   oglwin->makeCurrent();
@@ -576,6 +587,9 @@ void QmitkIGINVidiaDataSourceImpl::run()
 
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
+
+  // reset the libvideo cookie so that in-flight IGINVidiaDataType get rejected early
+  m_Cookie = 0;
 
   ok = disconnect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()));
   assert(ok);
