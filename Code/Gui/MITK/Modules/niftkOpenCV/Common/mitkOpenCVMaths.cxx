@@ -422,7 +422,7 @@ cv::Point2d operator+(const cv::Point2d& p1, const cv::Point2d& p2)
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d operatorr-(const cv::Point2d& p1, const cv::Point2d& p2)
+cv::Point2d operator-(const cv::Point2d& p1, const cv::Point2d& p2)
 {
   return cv::Point2d ( p1.x - p2.x , p1.y - p2.y );
 }
@@ -966,8 +966,10 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
 }  
 
 //-----------------------------------------------------------------------------
-std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
-    int indexToUse , double outlierSD)
+std::pair < double, double >  RMSError (
+    std::vector < mitk::ProjectedPointPairsWithTimingError >  measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
+    int indexToUse , cv::Point2d outlierSD, long long allowableTimingError)
 {
   assert ( measured.size() == actual.size() * 2 );
 
@@ -976,25 +978,22 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   RMSError.first = 0.0 ;
   RMSError.second = 0.0 ;
  
-  std::pair < cv::Point2d, cv::Point2d > errorStandardDeviations;
-  std::pair < cv::Point2d, cv::Point2d > errorMeans;
-  errorMeans = mitk::MeanError (measured, actual, &errorStandardDeviations, indexToUse);
-  std::pair < cv::Point2d , cv::Point2d > lowLimit;
-  std::pair < cv::Point2d , cv::Point2d > highLimit;
-  lowLimit.first.x = errorMeans.first.x - outlierSD * errorStandardDeviations.first.x; 
-  lowLimit.first.y = errorMeans.first.y - outlierSD * errorStandardDeviations.first.y; 
-  lowLimit.second.x = errorMeans.second.x - outlierSD * errorStandardDeviations.second.x; 
-  lowLimit.second.y = errorMeans.second.y - outlierSD * errorStandardDeviations.second.y; 
-  highLimit.first.x = errorMeans.first.x + outlierSD * errorStandardDeviations.first.x; 
-  highLimit.first.y = errorMeans.first.y + outlierSD * errorStandardDeviations.first.y; 
-  highLimit.second.x = errorMeans.second.x + outlierSD * errorStandardDeviations.second.x; 
-  highLimit.second.y = errorMeans.second.y + outlierSD * errorStandardDeviations.second.y; 
+  mitk::ProjectedPointPair errorStandardDeviations;
+  mitk::ProjectedPointPair  errorMeans;
+  errorMeans = mitk::MeanError (measured, actual, &errorStandardDeviations,
+      indexToUse, allowableTimingError);
+  mitk::ProjectedPointPair lowLimit;
+  mitk::ProjectedPointPair highLimit;
+  lowLimit.m_Left = errorMeans.m_Left - (outlierSD * errorStandardDeviations.m_Left); 
+  lowLimit.m_Right = errorMeans.m_Right - (outlierSD * errorStandardDeviations.m_Right); 
+  highLimit.m_Left = errorMeans.m_Left + (outlierSD * errorStandardDeviations.m_Left); 
+  highLimit.m_Right = errorMeans.m_Right + (outlierSD * errorStandardDeviations.m_Right); 
 
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
   int lowIndex = 0;
-  int highIndex = measured[0].size();
+  int highIndex = measured[0].m_Points.size();
   if ( indexToUse != -1 )
   {
     lowIndex = indexToUse; 
@@ -1002,30 +1001,41 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
     {
-      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
-          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+      if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
-        double xerror = actual[i][index].first.x - measured[i*2][index].first.x;
-        double yerror = actual[i][index].first.y - measured[i*2][index].first.y;
-        if ( ( xerror > lowLimit.first.x ) && ( xerror < highLimit.first.x ) &&
-             ( yerror > lowLimit.first.y ) && ( yerror < highLimit.first.y ) )
+        if ( ! ( measured[frame*2].m_Points[index].LeftNaN() ) || actual[frame].m_Points[index].LeftNaN() ) 
         {
-          RMSError.first += ( xerror * xerror ) + ( yerror * yerror );
-          count.first ++;
+          cv::Point2d error = 
+            actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left;
+          
+          if ( ( error.x > lowLimit.m_Left.x ) && ( error.x < highLimit.m_Left.x ) &&
+             ( error.y > lowLimit.m_Left.y ) && ( error.y < highLimit.m_Left.y ) )
+          {
+            RMSError.first += ( error.x * error.x ) + ( error.y * error.y );
+            count.first ++;
+          }
+        }
+      
+        if ( ! ( measured[frame*2].m_Points[index].RightNaN() ) || actual[frame].m_Points[index].RightNaN() ) 
+        {
+          cv::Point2d error = 
+            actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right;
+          
+          if ( ( error.x > lowLimit.m_Right.x ) && ( error.x < highLimit.m_Right.x ) &&
+             ( error.y > lowLimit.m_Right.y ) && ( error.y < highLimit.m_Right.y ) )
+          {
+            RMSError.second += ( error.x * error.x ) + ( error.y * error.y );
+            count.second ++;
+          }
         }
       }
-      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
-          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+      else
       {
-        double xerror = actual[i][index].second.x - measured[i*2][index].second.x;
-        double yerror = actual[i][index].second.y - measured[i*2][index].second.y;
-        if ( ( xerror > lowLimit.second.x ) && ( xerror < highLimit.second.x ) &&
-             ( yerror > lowLimit.second.y ) && ( yerror < highLimit.second.y ) )
+        if ( index == lowIndex )
         {
-          RMSError.second += ( xerror * xerror ) + ( yerror * yerror );
-          count.second ++;
+          MITK_WARN << "mitk::RMSError Dropping point pair " << frame*2 << "," << (frame*2)+1  << " due to high timing error " << measured[frame*2].m_TimingError << " > " << allowableTimingError;
         }
       }
     }
@@ -1039,31 +1049,6 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
     RMSError.second = sqrt ( RMSError.second / count.second );
   }
   return RMSError;
-}
-//-----------------------------------------------------------------------------
-std::pair < double, double >  RMSError (
-    std::vector < mitk::ProjectedPointPairsWithTimingError >  measured , 
-    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
-    int indexToUse , double outlierSD, long long allowableTimingError )
-{
-  assert ( measured.size() == actual.size() * 2 );
-  std::vector < mitk::ProjectedPointPairsWithTimingError > culledMeasured;
-  std::vector < mitk::ProjectedPointPairsWithTimingError > culledActual;
-
-  for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
-  {
-    if ( measured[i*2].first < abs (allowableTimingError) )
-    {
-      culledMeasured.push_back( measured[i*2].second );
-      culledMeasured.push_back( measured[(i*2)+1].second );
-      culledActual.push_back( actual[i] );
-    }
-    else 
-    {
-      MITK_WARN << "Dropping point pair " << i*2 << "," << (i*2)+1  << " due to high timing error " << measured[i].first << " > " << allowableTimingError;
-    }
-  }
-  return mitk::RMSError ( culledMeasured, culledActual, indexToUse, outlierSD );
 }
 
 //-----------------------------------------------------------------------------
@@ -1146,14 +1131,14 @@ mitk::ProjectedPointPair MeanError (
         {
           if ( ! ( measured[frame*2].m_Points[index].LeftNaN() ) || actual[frame].m_Points[index].LeftNaN() ) 
           {
-            cv::Point2D error = 
+            cv::Point2d error = 
               actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left - meanError.m_Left;
             StandardDeviations->m_Left += error * error;
             count.first ++;
           }
           if ( ! ( measured[frame*2].m_Points[index].RightNaN() ) || actual[frame].m_Points[index].RightNaN() ) 
           {
-            cv::Point2D error = 
+            cv::Point2d error = 
               actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right - meanError.m_Right;
             StandardDeviations->m_Right += error * error;
             count.second ++;

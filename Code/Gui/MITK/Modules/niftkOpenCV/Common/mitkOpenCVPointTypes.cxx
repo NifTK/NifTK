@@ -177,7 +177,7 @@ ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
 {}
 
 //-----------------------------------------------------------------------------
-ProjectedPointPair::LeftNaN()
+bool ProjectedPointPair::LeftNaN()
 {
   if ( (boost::math::isnan(m_Left.x)) || (boost::math::isnan(m_Left.y)) )
   {
@@ -190,7 +190,7 @@ ProjectedPointPair::LeftNaN()
 }
 
 //-----------------------------------------------------------------------------
-ProjectedPointPair::RightNaN()
+bool ProjectedPointPair::RightNaN()
 {
   if ( (boost::math::isnan(m_Right.x)) || (boost::math::isnan(m_Right.y)) )
   {

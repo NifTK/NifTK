@@ -323,21 +323,12 @@ extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError (
 
 
 /** 
- * \brief Returns the RMS error between two point vectors
+ * \brief Returns the RMS error between two projected point vectors
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0 );
-
-
-/** 
- * \brief Returns the RMS error between two point vectors, with the measured values containing 
- * a measure of the timing error
- */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0, long long allowableTimingError = 30e6 );
-
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError
+  (std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, int index = -1 ,
+    cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6 );
 
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
@@ -347,7 +338,6 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const cv::Mat transformIn,
     const double tx, const double ty, const double tz, 
     const double rx, const double ry, const double rz );
-
 
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)
