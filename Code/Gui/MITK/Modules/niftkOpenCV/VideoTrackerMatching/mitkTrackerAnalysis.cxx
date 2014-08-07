@@ -105,8 +105,8 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
 
       reconstructedPointSD[trackerIndex].push_back(pointSpread);
-      std::vector <cv::Point3d > worldPoint(1);
-      worldPoint[0] = worldCentre;
+      std::vector <mitk::WorldPoint > worldPoint(1);
+      worldPoint[0] = mitk::WorldPoint (worldCentre);
       projector->SetWorldPoints(worldPoint);
       projector->SetTrackerIndex(trackerIndex);
       projector->Project(this);
@@ -316,8 +316,8 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
                 cv::Point3d pointSpread;
                 cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
                 reconstructedPointSD[trackerIndex].push_back(pointSpread);
-                std::vector <cv::Point3d > worldPoint(1);
-                worldPoint[0] = worldCentre;
+                std::vector < mitk::WorldPoint > worldPoint(1);
+                worldPoint[0] = mitk::WorldPoint(worldCentre);
                 projector->SetWorldPoints(worldPoint);
                 projector->SetTrackerIndex(trackerIndex);
                 projector->Project(this, &state);

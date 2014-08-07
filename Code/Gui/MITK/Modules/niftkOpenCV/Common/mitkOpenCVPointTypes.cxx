@@ -132,12 +132,17 @@ WorldPoint::WorldPoint()
 : m_Point ( cv::Point3d(std::numeric_limits<double>::infinity(),
                         std::numeric_limits<double>::infinity(),
                         std::numeric_limits<double>::infinity()) )
-, m_Scalar (cv::Scalar(0,0,0))
+, m_Scalar (cv::Scalar(255,0,0))
 {}
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint(cv::Point3d point, cv::Scalar scalar)
 : m_Point ( point )
 , m_Scalar ( scalar )
+{}
+//-----------------------------------------------------------------------------
+WorldPoint::WorldPoint(cv::Point3d point)
+: m_Point ( point )
+, m_Scalar (cv::Scalar(255,0,0))
 {}
 
 

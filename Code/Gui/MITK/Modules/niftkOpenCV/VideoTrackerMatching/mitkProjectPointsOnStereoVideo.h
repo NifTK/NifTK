@@ -78,11 +78,6 @@ public:
   void SavePointsInLeftLensCoordinates (std::string filename);
 
   /**
-   * \brief Set the world points directly
-   */
- // void SetWorldPoints (std::vector<cv::Point3d> worldPoints);
-
-  /**
    * \brief Set the world points by triangulating their position from the
    * on screen coordinates for the specified frame
    */
@@ -106,15 +101,11 @@ public:
    * \brief sets the world points and corresponding vectors
    */
   void SetWorldPoints ( std::vector< mitk::WorldPoint > points );
-  /** 
-   * \brief set only the world points, the corresponding scalars get set to a default value
-   */
-  void SetWorldPoints ( std::vector< cv::Point3d > points );
  
   /** 
    * \brief set only the classifier world points
    */
-  void SetClassifierWorldPoints ( std::vector < cv::Point3d > points );
+  void SetClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
   /** 
    * \brief clear the list of world points
    */
@@ -214,7 +205,7 @@ private:
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
   std::vector < mitk::GoldStandardPoint >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
-  std::vector< cv::Point3d >    m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector<mitk::WorldPoint> m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
 

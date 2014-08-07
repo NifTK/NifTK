@@ -236,7 +236,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
       std::pair < long long , std::vector < mitk::WorldPoint > > pointsInLeftLensCS = std::pair < long long , std::vector < mitk::WorldPoint > > ( timingError , WorldToLeftCamera * m_WorldPoints); 
       
-      std::pair < long long , std::vector < cv::Point3d > >  classifierPointsInLeftLensCS = std::pair < long long , std::vector < cv::Point3d > > ( timingError , WorldToLeftCamera * m_ClassifierWorldPoints); 
+      std::pair < long long , std::vector < mitk::WorldPoint > >  classifierPointsInLeftLensCS = std::pair < long long , std::vector < mitk::WorldPoint > > ( timingError , WorldToLeftCamera * m_ClassifierWorldPoints); 
       m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
 
       //project onto screen
@@ -267,9 +267,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       }
       for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.second.size() ; i ++ ) 
       {
-        classifierLeftCameraWorldPoints.at<double>(i,0) = classifierPointsInLeftLensCS.second[i].x;
-        classifierLeftCameraWorldPoints.at<double>(i,1) = classifierPointsInLeftLensCS.second[i].y;
-        classifierLeftCameraWorldPoints.at<double>(i,2) = classifierPointsInLeftLensCS.second[i].z;
+        classifierLeftCameraWorldPoints.at<double>(i,0) = classifierPointsInLeftLensCS.second[i].m_Point.x;
+        classifierLeftCameraWorldPoints.at<double>(i,1) = classifierPointsInLeftLensCS.second[i].m_Point.y;
+        classifierLeftCameraWorldPoints.at<double>(i,2) = classifierPointsInLeftLensCS.second[i].m_Point.z;
         classifierLeftCameraWorldNormals.at<double>(i,0) = 0.0;
         classifierLeftCameraWorldNormals.at<double>(i,1) = 0.0;
         classifierLeftCameraWorldNormals.at<double>(i,2) = -1.0;
@@ -1092,22 +1092,11 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
 }
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetClassifierWorldPoints ( 
-    std::vector < cv::Point3d > points )
+    std::vector < mitk::WorldPoint > points )
 {
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
     m_ClassifierWorldPoints.push_back(points[i]);
-  }
-  m_ProjectOK = false;
-}
-//-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetWorldPoints ( 
-    std::vector < cv::Point3d > points )
-{
-  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
-  {
-    mitk::WorldPoint point = mitk::WorldPoint ( points[i], cv::Scalar (255,0,0) );
-    m_WorldPoints.push_back(point);
   }
   m_ProjectOK = false;
 }

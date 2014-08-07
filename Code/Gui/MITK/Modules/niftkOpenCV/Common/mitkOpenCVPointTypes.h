@@ -55,7 +55,7 @@ class NIFTKOPENCV_EXPORT WorldPoint
    public:
      WorldPoint();
      WorldPoint(cv::Point3d, cv::Scalar);
-     WorldPoint(std::istream& is);
+     WorldPoint(cv::Point3d);
 
      cv::Point3d  m_Point;
      cv::Scalar   m_Scalar;

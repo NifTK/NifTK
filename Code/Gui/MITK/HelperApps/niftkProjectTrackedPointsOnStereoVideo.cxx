@@ -90,8 +90,8 @@ int main(int argc, char** argv)
     
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
-    std::vector < cv::Point3d > worldPoints;
-    std::vector < cv::Point3d > classifierWorldPoints;
+    std::vector < mitk::WorldPoint > worldPoints;
+    std::vector < mitk::WorldPoint > classifierWorldPoints;
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
@@ -126,13 +126,17 @@ int main(int argc, char** argv)
         double z;
         while ( fin >> x >> y >> z  )
         {
-          worldPoints.push_back(cv::Point3d(x,y,z));
+          worldPoints.push_back(mitk::WorldPoint(cv::Point3d(x,y,z)));
         }
         fin.close();
       }
       else
       {
-        worldPoints = mitk::PointSetToVector ( pointSet );
+        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
+        for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ ) 
+        {
+          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
+        }
       }
       projector->SetWorldPoints(worldPoints);
     }

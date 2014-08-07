@@ -213,12 +213,12 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
     frame1400framenumbers.push_back(1400);
   }
 
-  std::vector <cv::Point3d> WorldGridPoints;
+  std::vector <mitk::WorldPoint > WorldGridPoints;
   //these are the corners of the grid according to the handeye calibration of the certus
-  WorldGridPoints.push_back ( cv::Point3d(-826.2,-207.2,-2010.6));
-  WorldGridPoints.push_back ( cv::Point3d(-820.3,-205.0,-2036.9));
-  WorldGridPoints.push_back ( cv::Point3d(-820.8,-166.1,-2033.7));
-  WorldGridPoints.push_back ( cv::Point3d(-826.8,-168.4,-2007.0));
+  WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-826.2,-207.2,-2010.6)));
+  WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-820.3,-205.0,-2036.9)));
+  WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-820.8,-166.1,-2033.7)));
+  WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-826.8,-168.4,-2007.0)));
 
   Projector->SetWorldPoints(WorldGridPoints);
  
@@ -236,10 +236,10 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   //these are perturbed world points that should yield the following errors for frame 1155
   Projector->ClearWorldPoints();
   WorldGridPoints.clear();
-  WorldGridPoints.push_back(cv::Point3d (-826.2000 ,  -207.2000 ,-2010.6000 ));
-  WorldGridPoints.push_back(cv::Point3d (-820.4406 ,  -202.5256 , -2036.5725 ));
-  WorldGridPoints.push_back(cv::Point3d (-820.5379 ,  -165.6142 , -2037.2575 ));
-  WorldGridPoints.push_back(cv::Point3d (-826.7656 ,  -167.0234 , -2008.2263 ));
+  WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-826.2000 ,  -207.2000 ,-2010.6000 )));
+  WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-820.4406 ,  -202.5256 , -2036.5725 )));
+  WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-820.5379 ,  -165.6142 , -2037.2575 )));
+  WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-826.7656 ,  -167.0234 , -2008.2263 )));
   Projector->SetWorldPoints(WorldGridPoints);
   Projector->SetClassifierWorldPoints(WorldGridPoints);
   Projector->Project(matcher);
