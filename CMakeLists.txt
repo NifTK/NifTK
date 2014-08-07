@@ -134,13 +134,13 @@ foreach(NIFTK_APP ${NIFTK_APPS})
     endif()
 
     if (${app_name} STREQUAL "NiftyView")
-      set(BUILD_MIDAS ON)
-      set(BUILD_IGI ON)
+#     set(BUILD_MIDAS ON)
+#     set(BUILD_IGI ON)
     endif()
 
-#    if (${app_name} STREQUAL "NiftyMIDAS")
+    if (${app_name} STREQUAL "NiftyMIDAS")
 #      set(BUILD_MIDAS ON)
-#    endif()
+    endif()
 
   endif()
 
