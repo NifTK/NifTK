@@ -73,6 +73,7 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), decompressor(0),
     lock(QMutex::Recursive), 
     current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
+    m_CaptureWidth(0), m_CaptureHeight(0),
     m_Cookie(0),
     state_message("Starting up")
 {
@@ -167,7 +168,11 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
     // we do not own sdidev!
     sdidev = 0;
 
-    // FIXME: clear out m_ReadbackPBOs
+    for (int i = m_ReadbackPBOs.size() - 1; i >= 0; --i)
+    {
+      glDeleteBuffers(1, (GLuint*) &m_ReadbackPBOs[i]);
+    }
+    m_ReadbackPBOs.clear();
     
     if (ctx)
       ctx->makeCurrent();
@@ -256,13 +261,16 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
       int   ringbufferslots = format.get_refreshrate();
       sdiin = new video::SDIInput(sdidev, m_FieldMode, ringbufferslots);
 
+      m_CaptureWidth  = sdiin->get_width();
+      m_CaptureHeight = sdiin->get_height();
+
       // allocate a bunch of pbos that we can copy the incoming video frames into.
       // we do that during the capture loop (OnTimeoutImpl), so that when there's a request for a frame
       // copy has finished and we can map the pbo straight in.
       try
       {
         // width * height * pixelsize * channelcount
-        std::size_t   pbosize = sdiin->get_width() * 4 * sdiin->get_height() * streamcount;
+        std::size_t   pbosize = m_CaptureWidth * 4 * m_CaptureHeight * streamcount;
         for (int i = 0; i < ringbufferslots; ++i)
         {
           GLuint id = 0;
@@ -292,6 +300,7 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
       glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
       m_Cookie = (unsigned int) ((((std::size_t) ((void*) sdiin)) >> 4) & 0xFFFFFFFF);
+
     }
   }
 
@@ -306,11 +315,8 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackViaPBO(char* buffer, std::size_t buff
   assert(sdiin != 0);
   assert(bufferpitch >= width * 4);
 
-  int w = sdiin->get_width();
-  int h = sdiin->get_height();
-
-  assert(w <= width);
-  assert(h <= height);
+  assert(m_CaptureWidth <= width);
+  assert(m_CaptureHeight <= height);
   assert(slot < m_ReadbackPBOs.size());
 
   glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[slot]);
@@ -321,16 +327,16 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackViaPBO(char* buffer, std::size_t buff
   assert(data != 0);
 
   // if pbo and cpu-side buffer have the same pitch then we can do a straight-forward memcopy.
-  if (bufferpitch == (w * 4))
+  if (bufferpitch == (m_CaptureWidth * 4))
   {
-    std::memcpy(buffer, data, bufferpitch * std::min(h, height));
+    std::memcpy(buffer, data, bufferpitch * std::min(m_CaptureHeight, height));
   }
   else
   {
     // "slow" path: copy line by line
-    for (int y = 0; y < std::min(h, height); ++y)
+    for (int y = 0; y < std::min(m_CaptureHeight, height); ++y)
     {
-      std::memcpy(&((buffer)[y * bufferpitch]), &(data[y * (w * 4)]), std::min((std::size_t) w * 4, bufferpitch));
+      std::memcpy(&((buffer)[y * bufferpitch]), &(data[y * (m_CaptureWidth * 4)]), std::min((std::size_t) m_CaptureWidth * 4, bufferpitch));
     }
   }
 
@@ -345,10 +351,7 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t buffer
   assert(sdiin != 0);
   assert(bufferpitch >= width * 4);
 
-  int w = sdiin->get_width();
-  int h = sdiin->get_height();
-
-  assert(w <= width);
+  assert(m_CaptureWidth <= width);
 
 
   // fortunately we have 4 bytes per pixel
@@ -366,10 +369,10 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t buffer
     // while we have the lock, texture dimensions are not going to change
 
     // remaining buffer too small?
-    if (height - (i * h) < h)
+    if (height - (i * m_CaptureHeight) < m_CaptureHeight)
       return;
 
-    char*   subbuf = &buffer[i * h * bufferpitch];
+    char*   subbuf = &buffer[i * m_CaptureHeight * bufferpitch];
 
     glBindTexture(GL_TEXTURE_2D, texid);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, subbuf);
@@ -453,6 +456,14 @@ QGLWidget* QmitkIGINVidiaDataSourceImpl::GetCaptureContext()
   QMutexLocker    l(&lock);
   assert(oglshare != 0);
   return oglshare;
+}
+
+
+//-----------------------------------------------------------------------------
+std::pair<int, int> QmitkIGINVidiaDataSourceImpl::GetCaptureFormat() const
+{
+  QMutexLocker    l(&lock);
+  return std::make_pair(m_CaptureWidth, m_CaptureHeight);
 }
 
 
@@ -735,7 +746,7 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
 
         // each stream/channel has its own texture, but we copy all into one giant pbo.
         // the address is relative to the bound pbo (if there is a pbo bound, that is).
-        ReadbackRGBA((char*) 0, sdiin->get_width() * 4, sdiin->get_width(), sdiin->get_height() * streamcount, newest_slot);
+        ReadbackRGBA((char*) 0, m_CaptureWidth * 4, m_CaptureWidth, m_CaptureHeight * streamcount, newest_slot);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
         state_message = "Grabbing";
@@ -824,6 +835,10 @@ void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, I
 
   if (ok)
   {
+    if (*img)
+    {
+      cvReleaseImage(img);
+    }
     *img = frame;
     *streamcountinimg = streamcount;
   }
@@ -876,7 +891,11 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   int w = sdiin->get_width();
   int h = sdiin->get_height();
 
-  IplImage* frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
+  IplImage* frame = *img;
+  if (frame == 0)
+  {
+    frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
+  }
   // mark layout as rgba instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
@@ -897,6 +916,18 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned in
   emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
 
   return std::make_pair(img, streamcount);
+}
+
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned int sequencenumber, IplImage* targetbuffer)
+{
+  IplImage*     img = targetbuffer;
+  unsigned int  streamcount = 0;
+  // this will block on the sdi thread. so no locking in this method!
+  emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
+
+  return streamcount;
 }
 
 

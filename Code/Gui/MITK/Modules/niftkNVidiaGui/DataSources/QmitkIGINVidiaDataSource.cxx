@@ -315,14 +315,33 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       // at the GUI refresh rate, even if no new timestamp has been selected.
       if (m_MostRecentlyUpdatedTimeStamp != dataType->GetTimeStampInNanoSeconds())
       {
-        cvReleaseImage(&m_CachedUpdate.first);
+        std::pair<int, int> captureformat = m_Pimpl->GetCaptureFormat();
+        int                 numstreams    = m_Pimpl->GetStreamCount();
+
+        bool  neednewcacheimg = false;
+        if (m_CachedUpdate.first)
+        {
+          neednewcacheimg |=  captureformat.first                != m_CachedUpdate.first->width;
+          neednewcacheimg |= (captureformat.second * numstreams) != m_CachedUpdate.first->height;
+        }
+        else
+          neednewcacheimg = true;
+
+        if (neednewcacheimg)
+        {
+          if (m_CachedUpdate.first)
+          {
+            cvReleaseImage(&m_CachedUpdate.first);
+          }
+          m_CachedUpdate.first = cvCreateImage(cvSize(captureformat.first, captureformat.second * numstreams), IPL_DEPTH_8U, 4);
+        }
 
         // one massive image, with all streams stacked in
-        m_CachedUpdate = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
+        m_CachedUpdate.second = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber(), m_CachedUpdate.first);
       }
 
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-      if (m_CachedUpdate.first)
+      if (m_CachedUpdate.second)
       {
         const video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
 
