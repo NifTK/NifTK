@@ -190,6 +190,20 @@ bool ProjectedPointPair::LeftNaN()
 }
 
 //-----------------------------------------------------------------------------
+bool WorldPoint::IsNaN()
+{
+  if ( (boost::math::isnan(m_Point.x)) ||
+      (boost::math::isnan(m_Point.y)) ||
+      (boost::math::isnan(m_Point.z)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }    
+}
+//-----------------------------------------------------------------------------
 bool ProjectedPointPair::RightNaN()
 {
   if ( (boost::math::isnan(m_Right.x)) || (boost::math::isnan(m_Right.y)) )

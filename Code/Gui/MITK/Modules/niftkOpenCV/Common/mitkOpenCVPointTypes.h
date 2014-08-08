@@ -59,6 +59,8 @@ class NIFTKOPENCV_EXPORT WorldPoint
 
      cv::Point3d  m_Point;
      cv::Scalar   m_Scalar;
+     
+     bool IsNaN ();
 };
 
 class NIFTKOPENCV_EXPORT WorldPointsWithTimingError

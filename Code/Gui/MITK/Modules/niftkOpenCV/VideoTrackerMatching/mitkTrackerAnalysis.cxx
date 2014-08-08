@@ -62,7 +62,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     }
   }
 
-  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError >  pointsInLensCS;
   pointsInLensCS.clear();
   std::vector < mitk::ProjectedPointPairsWithTimingError> onScreenPoints;
   onScreenPoints.clear();
@@ -98,7 +98,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       {
         int framenumber = frame * 2;
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
-            pointsInLensCS[frame][0]);
+            pointsInLensCS[frame].m_Points[0].m_Point);
       }
       
       cv::Point3d pointSpread;
@@ -169,9 +169,9 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
     }
   }
 
-  std::vector < std::vector <cv::Point3d> > pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError > pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > >* onScreenPoints = new std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > >;
+  std::vector < mitk::ProjectedPointPairsWithTimingError >* onScreenPoints;
   onScreenPoints->clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1, onScreenPoints);
 
@@ -188,7 +188,7 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
     for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
     {
       int framenumber = frame * 2;
-      if ( ! ( boost::math::isnan(pointsInLensCS[frame][0].x) || boost::math::isnan(pointsInLensCS[frame][0].y) || boost::math::isnan(pointsInLensCS[frame][0].z) ) )
+      if ( ! ( pointsInLensCS[frame].m_Points[0].IsNaN() ))
       {
         cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
       }
@@ -261,9 +261,9 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
     }
   }
 
-  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError >  pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > onScreenPoints;
+  std::vector < mitk::ProjectedPointPairsWithTimingError > onScreenPoints;
   onScreenPoints.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
@@ -310,7 +310,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
                 {
                   int framenumber = frame * 2;
                   worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
-                      pointsInLensCS[frame][0]);
+                      pointsInLensCS[frame].m_Points[0].m_Point);
                 }
                 
                 cv::Point3d pointSpread;
