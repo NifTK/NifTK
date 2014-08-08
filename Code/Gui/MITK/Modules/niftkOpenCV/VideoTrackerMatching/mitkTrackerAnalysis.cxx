@@ -322,7 +322,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
                 projector->SetTrackerIndex(trackerIndex);
                 projector->Project(this, &state);
                 std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
-                projector->GetProjectedPoints();
+                  projector->GetProjectedPoints();
                 
                 std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints, onScreenPoints );
                 projectedErrorRMS[trackerIndex].push_back(projectedRMS);
