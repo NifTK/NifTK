@@ -229,7 +229,6 @@ void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNod
       /// whether the data has changed.
       if (node->GetData()->GetMTime() > this->GetSegmentationImage()->GetMTime())
       {
-        MITK_INFO << "MIDASMorphologicalSegmentorPipelineManager::NodeChanged() HAS CHANGED !!!";
         this->UpdateSegmentation();
       }
     }
