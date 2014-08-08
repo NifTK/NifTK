@@ -61,6 +61,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( FramesToProcess, int);
+  itkSetMacro ( HaltOnVideoReadFail, bool);
   itkGetMacro ( PointsInLeftLensCS, std::vector<mitk::WorldPoint> );
   itkGetMacro ( WorldPoints, std::vector<mitk::WorldPoint> );
   itkGetMacro ( ScreenPoints, std::vector<mitk::ProjectedPointPair> );
@@ -113,12 +114,14 @@ private:
   //the video screen dimensions
   double   m_VideoWidth;
   double   m_VideoHeight;
+  double   m_DefaultVideoWidth;
+  double   m_DefaultVideoHeight;
 
   std::vector < mitk::ProjectedPointPair > 
                                 m_ScreenPoints; // the projected points
 
- // CvCapture*                    m_Capture;
   cv::VideoCapture*             m_Capture;
+  bool                          m_HaltOnVideoReadFail;
   CvVideoWriter*                m_Writer;
 
   cv::Size                      m_BlurKernel; //for blurring

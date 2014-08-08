@@ -42,9 +42,12 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_VideoWidth (0.0)
 , m_VideoHeight (0.0)
+, m_DefaultVideoWidth (1920)
+, m_DefaultVideoHeight (540)
 , m_FramesToProcess (-1)
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
+, m_HaltOnVideoReadFail(true)
 , m_Writer(NULL)
 , m_BlurKernel (cv::Size (3,3))
 , m_HoughRho (1.0)
@@ -119,7 +122,22 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     //the following don't seem to work unless opencv is built with ffmpeg
     m_VideoWidth = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_WIDTH));
     m_VideoHeight = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_HEIGHT));
-    
+   
+    if ( m_VideoWidth == 0.0 || m_VideoHeight == 0.0 )
+    {
+      if ( m_HaltOnVideoReadFail ) 
+      {
+        MITK_ERROR << "Failed to open " << m_VideoIn.c_str() << " correctly and m_HaltOnVideoReadFail true, so halting mitkFindAndTriangulateCrossHair." ;
+        m_InitOK = false;
+        return;
+      }
+      else
+      {
+        MITK_WARN << "Failed to open " << m_VideoIn.c_str() << " correctly and m_HaltOnVideoReadFail false, attempting to continue with m_VideoWidth = " << m_DefaultVideoWidth << " and m_VideoHeight =  " << m_DefaultVideoHeight;
+        m_VideoWidth = m_DefaultVideoWidth;
+        m_VideoHeight = m_DefaultVideoHeight;
+      }
+    }
     MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
     if ( ! m_Capture )
     {
@@ -284,77 +302,19 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
     MITK_WARN << "Need to call triangulate before triangulate points";
     return;
   }
-  cv::Mat * twoDPointsLeft = new cv::Mat(m_ScreenPoints.size()/2,2,CV_64FC1);
-  cv::Mat * twoDPointsRight = new cv::Mat(m_ScreenPoints.size()/2,2,CV_64FC1);
-
-  for ( unsigned int i = 0 ; i < m_ScreenPoints.size()/2 ; i ++ ) 
-  {
-    twoDPointsLeft->at<double>( i, 0) = m_ScreenPoints[i*2].m_Left.x;
-    twoDPointsLeft->at<double> ( i , 1 ) = m_ScreenPoints[i*2].m_Left.y;
-    twoDPointsRight->at<double>( i , 0 ) = m_ScreenPoints[i*2].m_Right.x;
-    twoDPointsRight->at<double>( i , 1 ) = m_ScreenPoints[i*2].m_Right.y;
-  }
-  cv::Mat leftScreenPoints = cv::Mat (m_ScreenPoints.size()/2,2,CV_64FC1);
-  cv::Mat rightScreenPoints = cv::Mat (m_ScreenPoints.size()/2,2,CV_64FC1);
   
   bool cropUndistortedPoints = true;
   double cropValue = std::numeric_limits<double>::quiet_NaN();
-  mitk::UndistortPoints(*twoDPointsLeft,
-             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints,
-             cropUndistortedPoints, 
-             0.0 , m_VideoWidth, 0.0, m_VideoHeight, cropValue);
-
-  mitk::UndistortPoints(*twoDPointsRight,
-             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints,
-             cropUndistortedPoints, 
-             0.0 , m_VideoWidth, 0.0, m_VideoHeight, cropValue);
-  
-  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-
-  for ( int i = 0 ; i < 3 ; i ++ )
-  {
-    leftCameraTranslationVector.at<double>(i,0) = 0.0;
-    leftCameraRotationVector.at<double>(i,0) = 0.0;
-  }
-  rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
-  cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
-
-  CvMat leftScreenPointsMat = leftScreenPoints;
-  CvMat rightScreenPointsMat= rightScreenPoints;
-  CvMat leftCameraIntrinsicMat= *m_LeftIntrinsicMatrix;
-  CvMat leftCameraRotationVectorMat= leftCameraRotationVector;
-  CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
-  CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
-  CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
-  CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
-  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (m_ScreenPoints.size()/2,3,CV_64FC1);
-
-  mitk::CStyleTriangulatePointPairsUsingSVD(
-    leftScreenPointsMat,
-    rightScreenPointsMat,
-    leftCameraIntrinsicMat,
-    leftCameraRotationVectorMat,
-    leftCameraTranslationVectorMat,
-    rightCameraIntrinsicMat,
-    rightCameraRotationVectorMat,
-    rightCameraTranslationVectorMat,
-    *leftCameraTriangulatedWorldPoints);
-
-  for ( unsigned int i = 0 ; i < m_ScreenPoints.size()/2 ; i ++ ) 
-  {
-    m_PointsInLeftLensCS.push_back(mitk::WorldPoint(cv::Point3d (
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) )) ;
-    m_PointsInLeftLensCS.push_back(mitk::WorldPoint(cv::Point3d (
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) )) ;
-  }
-
+  m_PointsInLeftLensCS = mitk::Triangulate (
+       m_ScreenPoints,
+       *m_LeftIntrinsicMatrix, 
+       *m_LeftDistortionVector, 
+       *m_RightIntrinsicMatrix, 
+       *m_RightDistortionVector,
+       *m_RightToLeftRotationMatrix,
+       *m_RightToLeftTranslationVector,
+       cropUndistortedPoints,
+       0.0, m_VideoWidth, 0.0, m_VideoHeight, cropValue );
 }
 
 //-----------------------------------------------------------------------------
