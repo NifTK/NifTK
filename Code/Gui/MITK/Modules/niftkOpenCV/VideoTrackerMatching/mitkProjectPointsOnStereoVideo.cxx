@@ -1058,7 +1058,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoi
     }
     else
     {
-      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Left );
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Right );
     }
   }
   unsigned int myIndex;
@@ -1074,7 +1074,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoi
     }
     else
     {
-      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Left;
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Right;
     }
   }
   else
