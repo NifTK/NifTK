@@ -170,44 +170,44 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   MITK_TEST_CONDITION_REQUIRED (Projector->GetInitOK() , "Testing mitkProjectPointsOnStereoVideo Initialised OK"); 
 
   //here are the on screen points manually found in frames 0 and 1155
-  std::vector < std::pair < cv::Point2d, cv::Point2d > > frame0000ScreenPoints;
-  std::vector < std::pair < cv::Point2d, cv::Point2d > > frame1155ScreenPoints;
-  std::vector < std::pair < cv::Point2d, cv::Point2d > > frame1400ScreenPoints;
+  std::vector < mitk::ProjectedPointPair > frame0000ScreenPoints;
+  std::vector < mitk::ProjectedPointPair > frame1155ScreenPoints;
+  std::vector < mitk::ProjectedPointPair > frame1400ScreenPoints;
   std::vector < unsigned int > frame0000framenumbers;
   std::vector < unsigned int > frame1155framenumbers;
   std::vector < unsigned int > frame1400framenumbers;
-  frame0000ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(756,72), cv::Point(852,84 )) );
-  frame0000ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(1426,78), cv::Point(1524,90 )) );
-  frame0000ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(1406,328), cv::Point(1506,342 )) );
-  frame0000ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(702,306), cv::Point(798,320 )) );
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(756,72), cv::Point2d(852,84 )) );
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(1426,78), cv::Point2d(1524,90 )) );
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(1406,328), cv::Point2d(1506,342 )) );
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(702,306), cv::Point2d(798,320 )) );
   for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
   {
     frame0000framenumbers.push_back(2);
   }
- frame1155ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(668,34), cv::Point(762,52 )) );
-  frame1155ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(1378,50), cv::Point(1474,62 )) );
-  frame1155ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(1372,308), cv::Point(1468,324)) );
-  frame1155ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(628,296), cv::Point( 714,308)) );
+ frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(668,34), cv::Point2d(762,52 )) );
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(1378,50), cv::Point2d(1474,62 )) );
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(1372,308), cv::Point2d(1468,324)) );
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(628,296), cv::Point2d( 714,308)) );
   for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
   {
     frame1155framenumbers.push_back(1155);
   }
-  frame1400ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(438,32), cv::Point(340,10 )) );
-  frame1400ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(1016,162), cv::Point(930,142 )) );
-  frame1400ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(798,386), cv::Point(714,368)) );
-  frame1400ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
-      ( cv::Point2d(216,240), cv::Point( 122,220)) );
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(438,32), cv::Point2d(340,10 )) );
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(1016,162), cv::Point2d(930,142 )) );
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(798,386), cv::Point2d(714,368)) );
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+      ( cv::Point2d(216,240), cv::Point2d( 122,220)) );
   for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
   {
     frame1400framenumbers.push_back(1400);

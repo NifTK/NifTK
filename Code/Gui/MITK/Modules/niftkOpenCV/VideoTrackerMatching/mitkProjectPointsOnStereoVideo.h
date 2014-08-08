@@ -82,7 +82,7 @@ public:
    * on screen coordinates for the specified frame
    */
   void SetWorldPointsByTriangulation 
-    (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
+    (std::vector< mitk::ProjectedPointPair > onScreenPointPairs, 
      std::vector < unsigned int>  frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
      std::vector <double> * perturbation = NULL);
 

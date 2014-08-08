@@ -1106,8 +1106,9 @@ void ProjectPointsOnStereoVideo::SetClassifierWorldPoints (
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
-    (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
-     std::vector< unsigned int > framenumber  , mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+    (std::vector< mitk::ProjectedPointPair > onScreenPointPairs,
+     std::vector< unsigned int > framenumber  , 
+     mitk::VideoTrackerMatching::Pointer trackerMatcher, 
      std::vector<double> * perturbation)
 {
   assert ( framenumber.size() == onScreenPointPairs.size() );
@@ -1118,91 +1119,38 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     return;
   }
   
-  cv::Mat * twoDPointsLeft = new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
-  cv::Mat * twoDPointsRight =new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
+  std::vector < mitk::WorldPoint > leftLensPoints = 
+    mitk::Triangulate ( onScreenPointPairs, 
+      *m_LeftIntrinsicMatrix,
+      *m_LeftDistortionVector,
+      *m_RightIntrinsicMatrix,
+      *m_RightDistortionVector,
+      *m_RightToLeftRotationMatrix,
+      *m_RightToLeftTranslationVector,
+      true,
+      0.0, m_VideoWidth, 0.0 , m_VideoHeight, 
+      std::numeric_limits<double>::quiet_NaN());
 
-  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
-  {
-    twoDPointsLeft->at<double>( i, 0) = onScreenPointPairs[i].first.x;
-    twoDPointsLeft->at<double> ( i , 1 ) = onScreenPointPairs[i].first.y;
-    twoDPointsRight->at<double>( i , 0 ) = onScreenPointPairs[i].second.x;
-    twoDPointsRight->at<double>( i , 1 ) = onScreenPointPairs[i].second.y;
-  }
-  cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
-  cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
-
-  bool cropUndistortedPointsToScreen = true;
-  double cropValue = std::numeric_limits<double>::quiet_NaN();
-  mitk::UndistortPoints(*twoDPointsLeft,
-             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints,
-             cropUndistortedPointsToScreen , 
-             0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
-
-  mitk::UndistortPoints(*twoDPointsRight,
-             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints,
-             cropUndistortedPointsToScreen , 
-             0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
-  
-  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-
-  for ( int i = 0 ; i < 3 ; i ++ )
-  {
-    leftCameraTranslationVector.at<double>(i,0) = 0.0;
-    leftCameraRotationVector.at<double>(i,0) = 0.0;
-  }
-  rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
-  cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
-
-  CvMat leftScreenPointsMat = leftScreenPoints;
-  CvMat rightScreenPointsMat= rightScreenPoints;
-  CvMat leftCameraIntrinsicMat= *m_LeftIntrinsicMatrix;
-  CvMat leftCameraRotationVectorMat= leftCameraRotationVector;
-  CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
-  CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
-  CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
-  CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
-  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (onScreenPointPairs.size(),3,CV_64FC1);
-
-  mitk::CStyleTriangulatePointPairsUsingSVD(
-    leftScreenPointsMat,
-    rightScreenPointsMat,
-    leftCameraIntrinsicMat,
-    leftCameraRotationVectorMat,
-    leftCameraTranslationVectorMat,
-    rightCameraIntrinsicMat,
-    rightCameraRotationVectorMat,
-    rightCameraTranslationVectorMat,
-    *leftCameraTriangulatedWorldPoints);
-
-  mitk::WorldPoint point;
-  unsigned int wpSize=m_WorldPoints.size();
-  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
-  {
-    point = mitk::WorldPoint (
-          cv::Point3d (
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ),
-          cv::Scalar(255,0,0)) ;
-    long long timingError;
-    point =  trackerMatcher->GetCameraTrackingMatrix(framenumber[i] , &timingError , m_TrackerIndex, perturbation, m_ReferenceIndex) * point;
+    mitk::WorldPoint point;
+    unsigned int wpSize=m_WorldPoints.size();
+    for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
+    {
+      point = leftLensPoints[i];
+      long long timingError;
+      point =  trackerMatcher->GetCameraTrackingMatrix(
+          framenumber[i] , &timingError , m_TrackerIndex, perturbation, m_ReferenceIndex) * point;
     if ( abs(timingError) < m_AllowableTimingError )
     {
       m_WorldPoints.push_back ( point );
-      MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
-        << onScreenPointPairs[i].second << " => " << point.m_Point << " => " << m_WorldPoints[i+wpSize].m_Point;
+      MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].m_Left << ","
+        << onScreenPointPairs[i].m_Right << " => " << point.m_Point << " => " << m_WorldPoints[i+wpSize].m_Point;
     }
     else
     {
       MITK_WARN << framenumber[i] << "Point rejected due to excessive timing error: " << timingError << " > " << m_AllowableTimingError;
     }
 
-
   }
-  cvReleaseMat (&leftCameraTriangulatedWorldPoints);
   m_ProjectOK = false;
 }
 
