@@ -219,10 +219,10 @@ int main(int argc, char** argv)
     if ( output2D.length() != 0 ) 
     {
       std::ofstream fout (output2D.c_str());
-      std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > > projectedPoints = 
+      std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
         projector->GetProjectedPoints();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < projectedPoints[0].second.size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < projectedPoints[0].m_Points.size() ; i ++ ) 
       {
         fout << "P" << i << "[lx,ly,rx,ry]" << " ";
       }
@@ -230,10 +230,10 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < projectedPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < projectedPoints[i].second.size() ; j ++ )
+        for ( unsigned int j = 0 ; j < projectedPoints[i].m_Points.size() ; j ++ )
         {
-          fout << projectedPoints[i].second[j].first.x << " " <<  projectedPoints[i].second[j].first.y <<
-             " " << projectedPoints[i].second[j].second.x << " " << projectedPoints[i].second[j].second.y << " ";
+          fout << projectedPoints[i].m_Points[j].m_Left.x << " " <<  projectedPoints[i].m_Points[j].m_Left.y <<
+             " " << projectedPoints[i].m_Points[j].m_Right.x << " " << projectedPoints[i].m_Points[j].m_Right.y << " ";
         }
         fout << std::endl;
       }
