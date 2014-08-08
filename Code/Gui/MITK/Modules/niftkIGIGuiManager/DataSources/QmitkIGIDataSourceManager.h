@@ -32,6 +32,7 @@
 #include <NiftyLinkSocketObject.h>
 #include <QmitkIGIDataSource.h>
 #include <igtlTimeStamp.h>
+#include <map>
 
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
@@ -261,8 +262,6 @@ private slots:
 
   void OnComputeStats();
 
-  void OnUpdateGuiControls();
-
 private:
 
   mitk::DataStorage                        *m_DataStorage;
@@ -283,9 +282,11 @@ private:
   bool                                      m_SaveInBackground;
   bool                                      m_PickLatestData;
   QTimer                                   *m_GuiUpdateTimer;
-  QTimer                                   *m_GuiControlsTimer;
   QTimer                                   *m_ClearDownTimer;
 
+  // These all pertain to stats. These are being "investigated".
+  // i.e. we don't know the functional requirements.
+  // So lets "give it a go", and see what seems useful.
   QTimer                                   *m_StatsTimer;
   igtlUint64                                m_RequestedFrameRate;
   igtlUint64                                m_NumberOfTimesRenderingLoopCalled;
@@ -294,6 +295,8 @@ private:
   igtl::TimeStamp::Pointer                  m_StatsTimerEnd;
   std::vector<double>                       m_ListRenderingTimes;
   std::vector<double>                       m_ListDataFetchTimes;
+  std::vector<double>                       m_ListLagTimes;
+  std::map<int, std::vector<double> >       m_MapLagTiming;
 
   // either real wallclock time or slider-determined playback time
   igtlUint64                                m_CurrentTime;
