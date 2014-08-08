@@ -193,9 +193,9 @@ void FindAndTriangulateCrossHair::Triangulate()
     bool rightSuccess = m_Capture->read(videoImage);
     rightFrame = videoImage.clone();
 
-    std::pair <cv::Point2d, cv::Point2d> screenPoints;
-    screenPoints.first = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
-    screenPoints.second = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+    mitk::ProjectedPointPair screenPoints;
+    screenPoints.m_Left = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+    screenPoints.m_Right = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
     
     if ( ( ! leftSuccess ) || ( ! rightSuccess ) )
     {
@@ -219,8 +219,8 @@ void FindAndTriangulateCrossHair::Triangulate()
       cv::HoughLinesP (rightCanny, linesright,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
           std::vector <cv::Point2d> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
       std::vector <cv::Point2d> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
-      screenPoints.first = mitk::GetCentroid(leftIntersectionPoints,true);
-      screenPoints.second = mitk::GetCentroid(rightIntersectionPoints,true);
+      screenPoints.m_Left = mitk::GetCentroid(leftIntersectionPoints,true);
+      screenPoints.m_Right = mitk::GetCentroid(rightIntersectionPoints,true);
       //push_back twice because we're jumping two frames
       m_ScreenPoints.push_back(screenPoints);
       m_ScreenPoints.push_back(screenPoints);
@@ -237,8 +237,8 @@ void FindAndTriangulateCrossHair::Triangulate()
             cvPoint(linesright[i][2],linesright[i][3]),cvScalar(255,0,0));
         }
 
-        cv::circle(leftFrame , screenPoints.first,10, cvScalar(0,0,255),2,8,0);
-        cv::circle(rightFrame , screenPoints.second,10, cvScalar(0,255,0),2,8,0);
+        cv::circle(leftFrame , screenPoints.m_Left,10, cvScalar(0,0,255),2,8,0);
+        cv::circle(rightFrame , screenPoints.m_Right,10, cvScalar(0,255,0),2,8,0);
 
         IplImage leftIpl(leftFrame);
         IplImage rightIpl(rightFrame);
@@ -289,10 +289,10 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
 
   for ( unsigned int i = 0 ; i < m_ScreenPoints.size()/2 ; i ++ ) 
   {
-    twoDPointsLeft->at<double>( i, 0) = m_ScreenPoints[i*2].first.x;
-    twoDPointsLeft->at<double> ( i , 1 ) = m_ScreenPoints[i*2].first.y;
-    twoDPointsRight->at<double>( i , 0 ) = m_ScreenPoints[i*2].second.x;
-    twoDPointsRight->at<double>( i , 1 ) = m_ScreenPoints[i*2].second.y;
+    twoDPointsLeft->at<double>( i, 0) = m_ScreenPoints[i*2].m_Left.x;
+    twoDPointsLeft->at<double> ( i , 1 ) = m_ScreenPoints[i*2].m_Left.y;
+    twoDPointsRight->at<double>( i , 0 ) = m_ScreenPoints[i*2].m_Right.x;
+    twoDPointsRight->at<double>( i , 1 ) = m_ScreenPoints[i*2].m_Right.y;
   }
   cv::Mat leftScreenPoints = cv::Mat (m_ScreenPoints.size()/2,2,CV_64FC1);
   cv::Mat rightScreenPoints = cv::Mat (m_ScreenPoints.size()/2,2,CV_64FC1);
@@ -345,14 +345,14 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
 
   for ( unsigned int i = 0 ; i < m_ScreenPoints.size()/2 ; i ++ ) 
   {
-    m_PointsInLeftLensCS.push_back(cv::Point3d (
+    m_PointsInLeftLensCS.push_back(mitk::WorldPoint(cv::Point3d (
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
-    m_PointsInLeftLensCS.push_back(cv::Point3d (
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) )) ;
+    m_PointsInLeftLensCS.push_back(mitk::WorldPoint(cv::Point3d (
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) )) ;
   }
 
 }
@@ -393,12 +393,6 @@ void FindAndTriangulateCrossHair::SetVideoLagMilliseconds ( unsigned long long V
     return;
   }
   m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
-}
-
-//-----------------------------------------------------------------------------
-std::vector < std::pair < cv::Point2d , cv::Point2d > > FindAndTriangulateCrossHair::GetScreenPoints () 
-{
-  return m_ScreenPoints;
 }
 
 } // end namespace
