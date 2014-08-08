@@ -14,7 +14,6 @@
 
 #include "QmitkIGIDataSourceManager.h"
 #include <QMessageBox>
-#include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
 #include <QDateTime>
 #include <QFile>
@@ -55,7 +54,6 @@ const bool   QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA = false;
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 : m_DataStorage(NULL)
-, m_StdMultiWidget(NULL)
 , m_GridLayoutClientControls(NULL)
 , m_NextSourceIdentifier(0)
 , m_GuiUpdateTimer(NULL)

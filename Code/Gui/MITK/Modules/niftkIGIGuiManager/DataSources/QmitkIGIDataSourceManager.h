@@ -33,7 +33,6 @@
 #include <QmitkIGIDataSource.h>
 #include <igtlTimeStamp.h>
 
-class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
 class QGridLayout;
@@ -86,16 +85,6 @@ public:
    * \brief Get the Data Storage that this tool manager is currently connected to.
    */
   itkGetConstMacro(DataStorage, mitk::DataStorage*);
-
-  /**
-   * \brief Sets the StdMultiWidget.
-   */
-  itkSetObjectMacro(StdMultiWidget, QmitkStdMultiWidget);
-
-  /**
-   * \brief Gets the StdMultiWidget.
-   */
-  itkGetConstMacro(StdMultiWidget, QmitkStdMultiWidget*);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -277,7 +266,6 @@ private slots:
 private:
 
   mitk::DataStorage                        *m_DataStorage;
-  QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
   QSet<int>                                 m_PortsInUse;
   std::vector<QmitkIGIDataSource::Pointer>  m_Sources;
