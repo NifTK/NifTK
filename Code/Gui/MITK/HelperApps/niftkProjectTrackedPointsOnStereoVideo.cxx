@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
-    std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
+    std::vector < mitk::ProjectedPointPair > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < mitk::WorldPoint > worldPoints;
     std::vector < mitk::WorldPoint > classifierWorldPoints;
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
       double y2;
       while ( fin >> frameNumber >> x1 >> y1 >> x2 >> y2 )
       {
-        screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
+        screenPoints.push_back( mitk::ProjectedPointPair (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
         screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
