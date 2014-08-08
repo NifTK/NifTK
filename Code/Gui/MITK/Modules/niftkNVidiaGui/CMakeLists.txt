@@ -22,6 +22,7 @@ MITK_CREATE_MODULE(niftkNVidiaGui
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
 include_directories(${QT_QTOPENGL_INCLUDE_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
@@ -43,7 +44,7 @@ if(MSVC AND NIFTK_DELAYLOAD_CUDA)
 endif()
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkNVidiaGui)
+  # cotire(niftkNVidiaGui)
 endif()
 
 if(BUILD_TESTING)
