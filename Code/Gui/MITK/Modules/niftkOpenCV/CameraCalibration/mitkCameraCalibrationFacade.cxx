@@ -14,6 +14,7 @@
 
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
 #include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
@@ -1888,6 +1889,76 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingSVD(
   }
 
   return outputPoints;
+}
+
+
+std::vector < mitk::WorldPoint > Triangulate (
+    const std::vector < mitk::ProjectedPointPair >& onScreenPointPairs,
+    const cv::Mat& leftIntrinsicMatrix,
+    const cv::Mat& leftDistortionVector,
+    const cv::Mat& rightIntrinsicMatrix,
+    const cv::Mat& rightDistortionVector,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
+    )
+{
+  std::vector < mitk::WorldPoint > worldPoints;
+  cv::Mat * twoDPointsLeft = new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
+  cv::Mat * twoDPointsRight = new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
+  
+  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ )
+  {
+    twoDPointsLeft->at<double>( i, 0) = onScreenPointPairs[i].m_Left.x;
+    twoDPointsLeft->at<double> ( i , 1 ) = onScreenPointPairs[i].m_Left.y;
+    twoDPointsRight->at<double>( i , 0 ) = onScreenPointPairs[i].m_Right.x;
+    twoDPointsRight->at<double>( i , 1 ) = onScreenPointPairs[i].m_Right.y;
+  }
+ 
+  cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
+  cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
+   
+  mitk::UndistortPoints(*twoDPointsLeft,
+     leftIntrinsicMatrix,leftDistortionVector,leftScreenPoints,
+     cropPointsToScreen ,
+     xLow, xHigh, xLow, xHigh,cropValue);
+
+  mitk::UndistortPoints(*twoDPointsRight,
+     rightIntrinsicMatrix,rightDistortionVector,rightScreenPoints,
+     cropPointsToScreen ,
+     xLow, xHigh, xLow, xHigh,cropValue);
+
+  std::vector < std::pair < cv::Point2d, cv::Point2d > > inputUndistortedPoints;
+
+  for ( unsigned int i = 0 ; i <  onScreenPointPairs.size() ; i++ )
+  {
+    std::pair < cv::Point2d, cv::Point2d > pointPair;
+    pointPair.first.x = leftScreenPoints.at<double>(i,0);
+    pointPair.first.y = leftScreenPoints.at<double>(i,1);
+    pointPair.second.x = rightScreenPoints.at<double>(i,0);
+    pointPair.second.y = rightScreenPoints.at<double>(i,1);
+    inputUndistortedPoints.push_back(pointPair);
+  }
+
+  std::vector < cv::Point3d > worldPoints_p = mitk::TriangulatePointPairsUsingGeometry(
+    inputUndistortedPoints,
+    leftIntrinsicMatrix,
+    rightIntrinsicMatrix,
+    rightToLeftRotationMatrix,
+    rightToLeftTranslationVector,
+    100.0 // don't know tolerance allowable yet.
+    );
+
+
+  for ( unsigned int i = 0 ; i < worldPoints_p.size() ; i ++ ) 
+  {
+    worldPoints.push_back(mitk::WorldPoint(worldPoints_p[i]));
+  }  
+
+  return worldPoints;
+
 }
 
 

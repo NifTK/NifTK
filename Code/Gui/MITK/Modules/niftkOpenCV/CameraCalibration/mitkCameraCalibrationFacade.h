@@ -16,6 +16,7 @@
 #define mitkCameraCalibrationFacade_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
@@ -576,6 +577,23 @@ extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& rightCameraTranslationVector,
   CvMat& output3DPoints
   );
+
+/**
+ * \brief Wrapper to triangulate vector of mitk::ProjectedPointPair to vector of mitk::WorldPoint
+ */
+
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > Triangulate (
+    const std::vector < mitk::ProjectedPointPair >& onScreenPoints,
+    const cv::Mat& leftIntrinsicMatrix,
+    const cv::Mat& leftDistortionVector,
+    const cv::Mat& rightIntrinsicMatrix,
+    const cv::Mat& rightDistorionVector,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const bool& cropPointsToScreen = false,
+    const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+    const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
+    );
 
 /** 
  * \brief Reprojects undistorted  screen points to normalised points (x/z, y/z, 1.0) in lens coordinates.
