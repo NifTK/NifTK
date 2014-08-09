@@ -47,38 +47,36 @@ set(PROJECT_PLUGINS
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
-  Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
-  Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.xnat:ON
-  Plugins/uk.ac.ucl.cmic.niftyreg:ON                      # Must be after the xnat plugin
-  Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
-  Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF           # Under development
 
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
-  Plugins/it.unito.cim.intensityprofile:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
-
 # ---------------------------------------------------------------------------------------------------
 # MIDAS Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
+set(MIDAS_PLUGINS
+  Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
+  Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
+  Plugins/uk.ac.ucl.cmic.sideviewer:ON
+  Plugins/uk.ac.ucl.cmic.thumbnail:ON
+  Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
+  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+  Plugins/uk.ac.ucl.cmic.dnddisplay:ON
+)
+
 if(BUILD_MIDAS)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.sideviewer:ON
-    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
-    Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
-    Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
-    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+    ${MIDAS_PLUGINS}
   )
 endif(BUILD_MIDAS)
-
 
 # ---------------------------------------------------------------------------------------------------
 # IGI Specific Plugins
@@ -103,3 +101,13 @@ if(BUILD_IGI)
     ${IGI_PLUGINS}
   )
 endif()
+
+# ---------------------------------------------------------------------------------------------------
+# OBSOLETE, Unsupported plugins.
+# ---------------------------------------------------------------------------------------------------
+set(OBSOLETE_PLUGINS
+  Plugins/uk.ac.ucl.cmic.niftyseg:OFF
+  Plugins/uk.ac.ucl.cmic.niftyreg:OFF # If turned on, must be listed after the xnat plugin.
+  Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF
+  Plugins/it.unito.cim.intensityprofile:OFF
+)

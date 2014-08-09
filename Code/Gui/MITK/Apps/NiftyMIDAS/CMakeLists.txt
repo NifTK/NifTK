@@ -15,28 +15,47 @@
 project(NiftyMIDAS)
 set(MY_APP_NAME NiftyMIDAS)
 
+###########################################################
+# Note: You need to explicitly turn OFF MITK/CTK plugins.
+#
+# i.e. they are assumed to be well tested/safe.
+# So, turn them OFF if you DON'T want them in your app.
+###########################################################
 set(_exclude_plugins
-  org.mitk.gui.qt.common.legacy
+  org.mitk.gui.qt.volumevisualization
   org.mitk.gui.qt.pointsetinteraction
   org.mitk.gui.qt.stdmultiwidgeteditor
-  it.unito.cim.intensityprofile
-  uk.ac.ucl.cmic.breastsegmentation
-  uk.ac.ucl.cmic.gui.qt.niftyview
-  uk.ac.ucl.cmic.gui.qt.niftyigi
-  uk.ac.ucl.cmic.niftyseg
-  uk.ac.ucl.cmic.igidatasources
-  uk.ac.ucl.cmic.igioverlayeditor
-  uk.ac.ucl.cmic.igipointreg
-  uk.ac.ucl.cmic.igirmserror
-  uk.ac.ucl.cmic.igisurfacerecon
-  uk.ac.ucl.cmic.igisurfacereg
-  uk.ac.ucl.cmic.igitagtracker
-  uk.ac.ucl.cmic.igitrackedimage
-  uk.ac.ucl.cmic.igitrackedpointer
-  uk.ac.ucl.cmic.igiundistort
+  org.mitk.gui.qt.segmentation
+  org.mitk.gui.qt.measurementtoolbox
+  org.mitk.gui.qt.moviemaker
+)
+
+###########################################################
+# Note: You need to explicitly turn ON NifTK plugins.
+#
+# i.e. YOU are explicitly stating (via the git commit log)
+# that YOU have tested them on Windows, Linux and Mac,
+# and are convinced that they work with this applications
+# set of Editors and Views/Plugins.
+###########################################################
+set(_include_plugins
+  uk.ac.ucl.cmic.gui.qt.commonapps
+  uk.ac.ucl.cmic.gui.qt.commonmidas
+  uk.ac.ucl.cmic.gui.qt.niftymidas
+  uk.ac.ucl.cmic.gui.qt.common
+  uk.ac.ucl.cmic.imagelookuptables
+  uk.ac.ucl.cmic.snapshot
+  uk.ac.ucl.cmic.imagestatistics
+  uk.ac.ucl.cmic.xnat
+  uk.ac.ucl.cmic.sideviewer
+  uk.ac.ucl.cmic.thumbnail
+  uk.ac.ucl.cmic.midasmorphologicalsegmentor
+  uk.ac.ucl.cmic.midasgeneralsegmentor
+  uk.ac.ucl.cmic.dnddisplay
 )
 
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyMIDAS
+  INCLUDE_PLUGINS ${_include_plugins}
   EXCLUDE_PLUGINS ${_exclude_plugins}
 )
