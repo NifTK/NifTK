@@ -220,11 +220,11 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-820.8,-166.1,-2033.7)));
   WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-826.8,-168.4,-2007.0)));
 
-  Projector->SetWorldPoints(WorldGridPoints);
+  Projector->AppendWorldPoints(WorldGridPoints);
  
 //  Projector->SetWorldPointsByTriangulation(frame1155ScreenPoints,1155);
-  Projector->SetWorldPointsByTriangulation(frame0000ScreenPoints,frame0000framenumbers, matcher);
-  Projector->SetWorldPointsByTriangulation(frame1400ScreenPoints,frame1400framenumbers, matcher);
+  Projector->AppendWorldPointsByTriangulation(frame0000ScreenPoints,frame0000framenumbers, matcher);
+  Projector->AppendWorldPointsByTriangulation(frame1400ScreenPoints,frame1400framenumbers, matcher);
 
  Projector->Project(matcher);
   MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK"); 
@@ -240,8 +240,8 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-820.4406 ,  -202.5256 , -2036.5725 )));
   WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-820.5379 ,  -165.6142 , -2037.2575 )));
   WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-826.7656 ,  -167.0234 , -2008.2263 )));
-  Projector->SetWorldPoints(WorldGridPoints);
-  Projector->SetClassifierWorldPoints(WorldGridPoints);
+  Projector->AppendWorldPoints(WorldGridPoints);
+  Projector->AppendClassifierWorldPoints(WorldGridPoints);
   Projector->Project(matcher);
 
   std::vector < mitk::GoldStandardPoint> leftGS;
