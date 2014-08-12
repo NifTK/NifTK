@@ -41,17 +41,17 @@ int mitkOpenCVPointTypesTest(int argc, char * argv[])
             cv::Point2d ( 1.0, 0.0),
             cv::Point2d ( 0.0, 0.0));
 
-  MITK_TEST_CONDITION ( point1.LeftNaN() == true, "Testing leftNaN handling 1" ) ;
-  MITK_TEST_CONDITION ( point1.RightNaN() == false, "Testing rightNaN handling 1" ) ;
+  MITK_TEST_CONDITION ( point1.LeftNaNOrInf() == true, "Testing leftNaN handling 1" ) ;
+  MITK_TEST_CONDITION ( point1.RightNaNOrInf() == false, "Testing rightNaN handling 1" ) ;
 
-  MITK_TEST_CONDITION ( point2.LeftNaN() == true, "Testing leftNaN handling 2" ) ;
-  MITK_TEST_CONDITION ( point2.RightNaN() == true, "Testing rightNaN handling 2" ) ;
+  MITK_TEST_CONDITION ( point2.LeftNaNOrInf() == true, "Testing leftNaN handling 2" ) ;
+  MITK_TEST_CONDITION ( point2.RightNaNOrInf() == true, "Testing rightNaN handling 2" ) ;
 
-  MITK_TEST_CONDITION ( point3.LeftNaN() == false, "Testing leftNaN handling 3" ) ;
-  MITK_TEST_CONDITION ( point3.RightNaN() == true, "Testing rightNaN handling 3" ) ;
+  MITK_TEST_CONDITION ( point3.LeftNaNOrInf() == true, "Testing leftNaN handling 3" ) ;
+  MITK_TEST_CONDITION ( point3.RightNaNOrInf() == true, "Testing rightNaN handling 3" ) ;
 
-  MITK_TEST_CONDITION ( point4.LeftNaN() == false, "Testing leftNaN handling 4" ) ;
-  MITK_TEST_CONDITION ( point4.RightNaN() == false, "Testing rightNaN handling 4" ) ;
+  MITK_TEST_CONDITION ( point4.LeftNaNOrInf() == false, "Testing leftNaN handling 4" ) ;
+  MITK_TEST_CONDITION ( point4.RightNaNOrInf() == false, "Testing rightNaN handling 4" ) ;
 
   mitk::WorldPoint x;
   MITK_TEST_END();
