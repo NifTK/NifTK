@@ -1520,7 +1520,8 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const cv::Mat& rightCameraIntrinsicParams,
     const cv::Mat& rightToLeftRotationMatrix,
     const cv::Mat& rightToLeftTranslationVector,
-    const double& tolerance
+    const double& tolerance,
+    const bool& preserveVectorSize
     )
 {
   std::vector< cv::Point3d > outputPoints;
@@ -1698,13 +1699,24 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
                           +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
                           +(Psc.z - Qtc.z)*(Psc.z - Qtc.z)
                           );
-    if (distance < twiceTolerance)
+    if ( distance < twiceTolerance )
     {
       midPoint.x = (Psc.x + Qtc.x)/2.0;
       midPoint.y = (Psc.y + Qtc.y)/2.0;
       midPoint.z = (Psc.z + Qtc.z)/2.0;
 
       outputPoints.push_back(midPoint);
+    }
+    else 
+    {
+      if ( preserveVectorSize )
+      {
+        midPoint.x = std::numeric_limits<double>::quiet_NaN();
+        midPoint.y = std::numeric_limits<double>::quiet_NaN();
+        midPoint.z = std::numeric_limits<double>::quiet_NaN();
+
+        outputPoints.push_back(midPoint);
+      }
     }
   }
   
@@ -1942,13 +1954,15 @@ std::vector < mitk::WorldPoint > Triangulate (
     inputUndistortedPoints.push_back(pointPair);
   }
 
+  bool preserveVectorSize = true;
   std::vector < cv::Point3d > worldPoints_p = mitk::TriangulatePointPairsUsingGeometry(
     inputUndistortedPoints,
     leftIntrinsicMatrix,
     rightIntrinsicMatrix,
     rightToLeftRotationMatrix,
     rightToLeftTranslationVector,
-    100.0 // don't know tolerance allowable yet.
+    std::numeric_limits<double>::infinity(),
+    preserveVectorSize
     );
 
 

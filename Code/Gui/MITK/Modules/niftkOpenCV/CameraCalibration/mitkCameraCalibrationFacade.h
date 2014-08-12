@@ -537,6 +537,8 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObse
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
  * greater than the tolerance, the point is rejected.
+ * \param preserveVectorSize if true will fill any output points outside tolerance with NaN, to
+ * preserve correspondance between input and output vectors
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
@@ -544,7 +546,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
   const cv::Mat& rightCameraIntrinsicParams,
   const cv::Mat& rightToLeftRotationMatrix,
   const cv::Mat& rightToLeftTranslationVector,
-  const double& tolerance
+  const double& tolerance,
+  const bool& preserveVectorSize = false
   );
 
 
