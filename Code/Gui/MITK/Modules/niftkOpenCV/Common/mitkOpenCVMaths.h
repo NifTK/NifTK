@@ -314,21 +314,37 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv
 
 /**
  * \brief Returns the mean pixel errors for the right and left sets of projected points
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optional pointer to return standard deviations
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
  */
 extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError ( 
     std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
     std::vector < mitk::ProjectedPointPairsWithTimingError > actual, 
     mitk::ProjectedPointPair * StandardDeviations = NULL , int index = -1,
-    long long allowableTimingError = 30e6 );
-
+    long long allowableTimingError = 30e6, bool duplicateLines = true );
 
 /** 
  * \brief Returns the RMS error between two projected point vectors
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs where the error is above the mean error +/- n standard deviations.
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError
   (std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
     std::vector < mitk::ProjectedPointPairsWithTimingError > actual, int index = -1 ,
-    cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6 );
+    cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6,
+    bool duplicateLines = true);
 
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is

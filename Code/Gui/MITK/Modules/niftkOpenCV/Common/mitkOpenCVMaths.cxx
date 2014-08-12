@@ -969,7 +969,8 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
 std::pair < double, double >  RMSError (
     std::vector < mitk::ProjectedPointPairsWithTimingError >  measured , 
     std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
-    int indexToUse , cv::Point2d outlierSD, long long allowableTimingError)
+    int indexToUse , cv::Point2d outlierSD, long long allowableTimingError,
+    bool duplicateLines )
 {
   assert ( measured.size() == actual.size() * 2 );
 
@@ -1001,7 +1002,12 @@ std::pair < double, double >  RMSError (
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
+    unsigned int increment=1;
+    if ( duplicateLines )
+    {
+      increment = 2;
+    }
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
       if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
@@ -1056,7 +1062,7 @@ mitk::ProjectedPointPair MeanError (
     std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
     std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
     mitk::ProjectedPointPair * StandardDeviations, int indexToUse,
-    long long allowableTimingError)
+    long long allowableTimingError, bool duplicateLines)
 {
   assert ( measured.size() == actual.size() * 2 );
 
@@ -1079,7 +1085,12 @@ mitk::ProjectedPointPair MeanError (
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
+    unsigned int increment=1;
+    if ( duplicateLines )
+    {
+      increment = 2;
+    }
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
       if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
