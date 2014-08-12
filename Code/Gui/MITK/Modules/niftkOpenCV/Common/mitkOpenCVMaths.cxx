@@ -973,7 +973,7 @@ std::pair < double, double >  RMSError (
     int indexToUse , cv::Point2d outlierSD, long long allowableTimingError,
     bool duplicateLines )
 {
-  assert ( measured.size() == actual.size() * 2 );
+  assert ( measured.size() == actual.size() );
 
   std::pair < double, double>  RMSError;
   
@@ -1015,28 +1015,25 @@ std::pair < double, double >  RMSError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
+        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
         {
           cv::Point2d error = 
-            actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left;
+            actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left;
           
           if ( ( error.x > lowLimit.m_Left.x ) && ( error.x < highLimit.m_Left.x ) &&
              ( error.y > lowLimit.m_Left.y ) && ( error.y < highLimit.m_Left.y ) )
           {
             RMSError.first += ( error.x * error.x ) + ( error.y * error.y );
-            MITK_INFO << "Frame " << frame << " Error " << RMSError.first;
             count.first ++;
           }
-       //   MITK_INFO << "Frame " << frame << " Error out of limit " << error;
-
         }
       
-        if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() ) || actual[frame].m_Points[index].RightNaNOrInf() ) 
+        if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() ) || actual[frame].m_Points[index].RightNaNOrInf() ) 
         {
           cv::Point2d error = 
-            actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right;
+            actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right;
           
           if ( ( error.x > lowLimit.m_Right.x ) && ( error.x < highLimit.m_Right.x ) &&
              ( error.y > lowLimit.m_Right.y ) && ( error.y < highLimit.m_Right.y ) )
@@ -1050,7 +1047,7 @@ std::pair < double, double >  RMSError (
       {
         if ( index == lowIndex )
         {
-          MITK_WARN << "mitk::RMSError Dropping point pair " << frame*2 << "," << (frame*2)+1  << " due to high timing error " << measured[frame*2].m_TimingError << " > " << allowableTimingError;
+          MITK_WARN << "mitk::RMSError Dropping point pair " << frame << "," << (frame)+1  << " due to high timing error " << measured[frame].m_TimingError << " > " << allowableTimingError;
         }
       }
     }
@@ -1073,7 +1070,7 @@ mitk::ProjectedPointPair MeanError (
     mitk::ProjectedPointPair * StandardDeviations, int indexToUse,
     long long allowableTimingError, bool duplicateLines)
 {
-  assert ( measured.size() == actual.size() * 2 );
+  assert ( measured.size() == actual.size() );
 
   mitk::ProjectedPointPair meanError;
   
@@ -1102,18 +1099,18 @@ mitk::ProjectedPointPair MeanError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
+        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
         {
           meanError.m_Left += 
-            actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left ;
+            actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left ;
           count.first ++;
         }
-        if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
+        if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
         {
           meanError.m_Right += 
-            actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right ;
+            actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right ;
           count.second ++;
         }
       }
@@ -1121,7 +1118,7 @@ mitk::ProjectedPointPair MeanError (
       {
         if ( index == lowIndex )
         {
-          MITK_WARN << "mitk::MeanError Dropping point pair " << frame*2 << "," << (frame*2)+1  << " due to high timing error " << measured[frame*2].m_TimingError << " > " << allowableTimingError;
+          MITK_WARN << "mitk::MeanError Dropping point pair " << frame << "," << (frame)+1  << " due to high timing error " << measured[frame].m_TimingError << " > " << allowableTimingError;
         }
       }
     }
@@ -1148,19 +1145,19 @@ mitk::ProjectedPointPair MeanError (
     {
       for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
       {
-        if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
+        if ( measured[frame].m_TimingError < abs (allowableTimingError) )
         {
-          if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
+          if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
           {
             cv::Point2d error = 
-              actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left - meanError.m_Left;
+              actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left - meanError.m_Left;
             StandardDeviations->m_Left += error * error;
             count.first ++;
           }
-          if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
+          if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
           {
             cv::Point2d error = 
-              actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right - meanError.m_Right;
+              actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right - meanError.m_Right;
             StandardDeviations->m_Right += error * error;
             count.second ++;
           }
