@@ -28,7 +28,7 @@
 
 bool PointsEqual ( std::pair<double,double> p1, std::pair<double,double> p2 ) 
 {
-  if ( ( ( ( p1.first - p2.first ) + ( p1.second - p2.second ) ) ) < 1e-6 )
+  if ( fabs ( ( ( p1.first - p2.first ) + ( p1.second - p2.second ) ) ) < 1e-4 )
   {
     return true;
   }
@@ -71,7 +71,7 @@ bool RMSTest()
   mitk::ProjectedPointPairsWithTimingError actual_0;
   actual_0.m_Points.push_back(
       mitk::ProjectedPointPair (cv::Point2d ( -0.1, 0.7 ),cv::Point2d (1.1 , 0.9)));
-  measured.push_back(actual_0);
+  actual.push_back(actual_0);
 
   int index = -1;
   cv::Point2d outlierSD = cv::Point2d(2.0, 2.0);
@@ -81,6 +81,53 @@ bool RMSTest()
       index, outlierSD, allowableTimingError , duplicateLines );
 
   MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.0, 0.0)) , "Testing RMSError returns 0.0 when no error" );
+
+  mitk::ProjectedPointPairsWithTimingError actual_1;
+  actual_1.m_Points.push_back(
+      mitk::ProjectedPointPair (cv::Point2d ( -0.2, 0.5 ),cv::Point2d (1.2 , 0.3)));
+
+  measured.push_back(measured_0);
+  actual.push_back(actual_1);
+
+  duplicateLines=false;
+  rmsError = mitk::RMSError ( measured , actual ,
+      index, outlierSD, allowableTimingError , duplicateLines );
+  
+  MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.15811, 0.43012)) , "Testing RMSError returns right value for a real error" );
+ 
+  duplicateLines=true;
+  rmsError = mitk::RMSError ( measured , actual ,
+      index, outlierSD, allowableTimingError , duplicateLines );
+  
+  MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.0, 0.0)) , "Testing duplicate lines parameter has the desired effect" );
+
+  mitk::ProjectedPointPairsWithTimingError measured_1;
+  measured_1.m_Points.push_back(
+      mitk::ProjectedPointPair (cv::Point2d ( -0.1, 0.7 ),cv::Point2d (1.1 , 0.9)));
+  measured_1.m_TimingError = 30e7;
+  measured.push_back(measured_1);
+  actual.push_back(actual_0);
+
+  duplicateLines=false;
+  rmsError = mitk::RMSError ( measured , actual ,
+      index, outlierSD, allowableTimingError , duplicateLines );
+  
+  MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.15811, 0.43012)) , "Testing RMSError rejects high timing error points" );
+ 
+  allowableTimingError = 31e7;
+
+  outlierSD = cv::Point2d(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+  rmsError = mitk::RMSError ( measured , actual ,
+      index, outlierSD, allowableTimingError , duplicateLines );
+  
+  MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.12910, 0.35119)) , "Testing RMSError accepts when allowable timing error increased" );
+ 
+  outlierSD = cv::Point2d(2.0, 2.0);
+  rmsError = mitk::RMSError ( measured , actual ,
+      index, outlierSD, allowableTimingError , duplicateLines );
+  
+  MITK_TEST_CONDITION ( PointsEqual ( rmsError , std::pair <double,double> ( 0.0, 0.0)) , "Testing RMSError culls outliers" );
+
   MITK_TEST_END();
 }
 
@@ -90,8 +137,10 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   // always start with this!
   MITK_TEST_BEGIN("mitkOpenCVMathTests");
 
-  MITK_TEST_CONDITION ( ArithmaticTests() , "Testing basic arithmetic");
-  MITK_TEST_CONDITION ( RMSTest(), "Testing RMSError" );
+  //MITK_TEST_CONDITION ( ArithmaticTests() , "Testing basic arithmetic");
+  //MITK_TEST_CONDITION ( RMSTest(), "Testing RMSError" );
+  ArithmaticTests();
+  RMSTest();
   MITK_TEST_END();
 }
 
