@@ -77,9 +77,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 : QmitkStdMultiWidget(parent, flags, renderingManager, renderingMode, name)
 , m_RenderWindows(4)
 , m_GridLayout(NULL)
-, m_AxialSliceTag(0ul)
-, m_SagittalSliceTag(0ul)
-, m_CoronalSliceTag(0ul)
+, m_AxialSliceObserverTag(0ul)
+, m_SagittalSliceObserverTag(0ul)
+, m_CoronalSliceObserverTag(0ul)
+, m_TimeStepObserverTag(0ul)
 , m_IsFocused(false)
 , m_LinkedNavigationEnabled(false)
 , m_Enabled(false)
@@ -88,6 +89,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorVisibility(true)
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
+, m_TimeStep(0)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_WorldGeometries(3)
@@ -199,17 +201,23 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onAxialSliceChangedCommand =
     itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
   onAxialSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnAxialSliceChanged);
-  m_AxialSliceTag = mitkWidget1->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onAxialSliceChangedCommand);
+  m_AxialSliceObserverTag = mitkWidget1->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onAxialSliceChangedCommand);
 
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onSagittalSliceChangedCommand =
     itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
   onSagittalSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnSagittalSliceChanged);
-  m_SagittalSliceTag = mitkWidget2->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSagittalSliceChangedCommand);
+  m_SagittalSliceObserverTag = mitkWidget2->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSagittalSliceChangedCommand);
 
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onCoronalSliceChangedCommand =
     itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
   onCoronalSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnCoronalSliceChanged);
-  m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
+  m_CoronalSliceObserverTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
+
+  itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onTimeStepChangedCommand =
+    itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
+  onTimeStepChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnTimeStepChanged);
+//  m_TimeStepObserverTag = m_TimeNavigationController->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeStepChangedCommand);
+  m_TimeStepObserverTag = m_RenderWindows[AXIAL]->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeStepChangedCommand);
 
   // The world position is unknown until the geometry is set. These values are invalid,
   // but still better then having undefined values.
@@ -270,17 +278,22 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
 
-  if (mitkWidget1 != NULL && m_AxialSliceTag != 0)
+  if (mitkWidget1 != NULL && m_AxialSliceObserverTag != 0)
   {
-    mitkWidget1->GetSliceNavigationController()->RemoveObserver(m_AxialSliceTag);
+    mitkWidget1->GetSliceNavigationController()->RemoveObserver(m_AxialSliceObserverTag);
   }
-  if (mitkWidget2 != NULL && m_SagittalSliceTag != 0)
+  if (mitkWidget2 != NULL && m_SagittalSliceObserverTag != 0)
   {
-    mitkWidget2->GetSliceNavigationController()->RemoveObserver(m_SagittalSliceTag);
+    mitkWidget2->GetSliceNavigationController()->RemoveObserver(m_SagittalSliceObserverTag);
   }
-  if (mitkWidget3 != NULL && m_CoronalSliceTag != 0)
+  if (mitkWidget3 != NULL && m_CoronalSliceObserverTag != 0)
   {
-    mitkWidget3->GetSliceNavigationController()->RemoveObserver(m_CoronalSliceTag);
+    mitkWidget3->GetSliceNavigationController()->RemoveObserver(m_CoronalSliceObserverTag);
+  }
+  if (m_RenderingManager != NULL && m_TimeStepObserverTag != 0)
+  {
+//    m_TimeNavigationController->RemoveObserver(m_TimeStepObserverTag);
+    m_RenderWindows[AXIAL]->GetSliceNavigationController()->RemoveObserver(m_TimeStepObserverTag);
   }
 
   // Stop listening to the display geometry changes so we raise an event when
@@ -338,29 +351,41 @@ void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(int windo
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockSncEvents)
-  {
-    this->OnSelectedPositionChanged(AXIAL);
-  }
+  this->OnSelectedPositionChanged(AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockSncEvents)
-  {
-    this->OnSelectedPositionChanged(SAGITTAL);
-  }
+  this->OnSelectedPositionChanged(SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockSncEvents)
+  this->OnSelectedPositionChanged(CORONAL);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)
+{
+  MITK_INFO << "niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)";
+  if (!m_BlockSncEvents && m_Geometry != NULL)
   {
-    this->OnSelectedPositionChanged(CORONAL);
+    bool updateWasBlocked = this->BlockUpdate(true);
+
+//    int timeStep = m_TimeNavigationController->GetTime()->GetPos();
+    int timeStep = m_RenderWindows[AXIAL]->GetSliceNavigationController()->GetTime()->GetPos();
+    if (timeStep != m_TimeStep)
+    {
+      m_TimeStep = timeStep;
+      m_TimeStepHasChanged = true;
+    }
+
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -1334,12 +1359,15 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
     m_GeometryHasChanged = true;
-    m_TimeStepHasChanged = true;
+
     m_SelectedPosition = this->GetCrossPosition();
     for (int i = 0; i < 3; ++i)
     {
       m_SelectedSliceHasChanged[i] = true;
     }
+
+    m_TimeStep = 0;
+    m_TimeStepHasChanged = true;
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -1612,17 +1640,8 @@ int niftkMultiWindowWidget::GetMaxSlice(int windowIndex) const
 //-----------------------------------------------------------------------------
 int niftkMultiWindowWidget::GetMaxTimeStep() const
 {
-  int maxTimeStep = 0;
-
-  mitk::SliceNavigationController* snc = m_RenderWindows[AXIAL]->GetSliceNavigationController();
-  assert(snc);
-
-  if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
-  {
-    maxTimeStep = snc->GetTime()->GetSteps() - 1;
-  }
-
-  return maxTimeStep;
+//  return m_TimeNavigationController->GetTime()->GetSteps() - 1;
+  return m_RenderWindows[AXIAL]->GetSliceNavigationController()->GetTime()->GetSteps() - 1;
 }
 
 
@@ -1916,7 +1935,7 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleF
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
 {
-  if (m_Geometry != NULL)
+  if (!m_BlockSncEvents && m_Geometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2021,29 +2040,6 @@ void niftkMultiWindowWidget::MoveAnteriorOrPosterior(int windowIndex, int slices
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeStep(int timeStep)
-{
-  mitk::SliceNavigationController* snc = m_RenderWindows[AXIAL]->GetSliceNavigationController();
-  snc->GetTime()->SetPos(timeStep);
-
-  snc = m_RenderWindows[SAGITTAL]->GetSliceNavigationController();
-  snc->GetTime()->SetPos(timeStep);
-
-  snc = m_RenderWindows[CORONAL]->GetSliceNavigationController();
-  snc->GetTime()->SetPos(timeStep);
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetTimeStep() const
-{
-  mitk::SliceNavigationController* snc = m_RenderWindows[AXIAL]->GetSliceNavigationController();
-
-  return snc->GetTime()->GetPos();
-}
-
-
-//-----------------------------------------------------------------------------
 const mitk::Point3D& niftkMultiWindowWidget::GetSelectedPosition() const
 {
   return m_SelectedPosition;
@@ -2099,6 +2095,28 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
       }
       this->SynchroniseCursorPositions(windowIndex);
     }
+
+    this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+int niftkMultiWindowWidget::GetTimeStep() const
+{
+  return m_TimeStep;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetTimeStep(int timeStep)
+{
+  if (timeStep != m_TimeStep)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
+
+    m_TimeStep = timeStep;
+    m_TimeStepHasChanged = true;
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2723,6 +2741,14 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         }
       }
 
+      if (m_TimeStepHasChanged)
+      {
+//        m_TimeNavigationController->GetTime()->SetPos(m_TimeStep);
+        m_RenderWindows[AXIAL]->GetSliceNavigationController()->GetTime()->SetPos(m_TimeStep);
+        m_RenderWindows[SAGITTAL]->GetSliceNavigationController()->GetTime()->SetPos(m_TimeStep);
+        m_RenderWindows[CORONAL]->GetSliceNavigationController()->GetTime()->SetPos(m_TimeStep);
+      }
+
       for (unsigned i = 0; i < 3; ++i)
       {
         if (m_CursorPositionHasChanged[i])
@@ -2785,19 +2811,6 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         }
       }
 
-      if (m_TimeStepHasChanged)
-      {
-        m_TimeStepHasChanged = false;
-        for (unsigned i = 0; i < 4; ++i)
-        {
-          m_BlockSncEvents = true;
-          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-          m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
-          this->BlockDisplayEvents(displayEventsWereBlocked);
-          m_BlockSncEvents = false;
-        }
-      }
-
       bool selectedPositionHasChanged = false;
       for (unsigned i = 0; i < 3; ++i)
       {
@@ -2812,9 +2825,30 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
           m_BlockSncEvents = false;
         }
       }
+
+      if (m_TimeStepHasChanged)
+      {
+//          m_RenderWindows[AXIAL]->GetSliceNavigationController()->SendTime();
+//        m_TimeNavigationController->SendTime();
+        for (unsigned i = 0; i < 3; ++i)
+        {
+          m_BlockSncEvents = true;
+          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+          m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
+          this->BlockDisplayEvents(displayEventsWereBlocked);
+          m_BlockSncEvents = false;
+        }
+      }
+
       if (selectedPositionHasChanged)
       {
         emit SelectedPositionChanged(m_SelectedPosition);
+      }
+
+      if (m_TimeStepHasChanged)
+      {
+        m_TimeStepHasChanged = false;
+        emit TimeStepChanged(m_TimeStep);
       }
 
       if (m_WindowLayoutHasChanged)

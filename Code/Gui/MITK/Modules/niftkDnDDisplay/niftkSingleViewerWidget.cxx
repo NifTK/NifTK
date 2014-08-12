@@ -77,6 +77,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
+  this->connect(m_MultiWidget, SIGNAL(TimeStepChanged(int)), SIGNAL(TimeStepChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
@@ -951,6 +952,34 @@ bool niftkSingleViewerWidget::MovePosterior()
 {
   m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), -1);
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkSingleViewerWidget::SelectPreviousTimeStep()
+{
+  int timeStep = m_MultiWidget->GetTimeStep() - 1;
+
+  if (timeStep >= 0)
+  {
+    m_MultiWidget->SetTimeStep(timeStep);
+  }
+
+  return timeStep == m_MultiWidget->GetTimeStep();
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkSingleViewerWidget::SelectNextTimeStep()
+{
+  int timeStep = m_MultiWidget->GetTimeStep() + 1;
+
+  if (timeStep <= m_MultiWidget->GetMaxTimeStep())
+  {
+    m_MultiWidget->SetTimeStep(timeStep);
+  }
+
+  return timeStep == m_MultiWidget->GetTimeStep();
 }
 
 

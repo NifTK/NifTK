@@ -46,6 +46,12 @@ const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "    <transition NAME=\"keyPressX\" EVENT_ID=\"4017\" NEXT_STATE_ID=\"1\">"
     "      <action ID=\"350014\"/>"
     "    </transition>"
+    "    <transition NAME=\"keyPressK\" EVENT_ID=\"4009\" NEXT_STATE_ID=\"1\">"
+    "      <action ID=\"350015\"/>"
+    "    </transition>"
+    "    <transition NAME=\"keyPressL\" EVENT_ID=\"4010\" NEXT_STATE_ID=\"1\">"
+    "      <action ID=\"350016\"/>"
+    "    </transition>"
     "  </state>"
     "</stateMachine>";
 
@@ -69,6 +75,8 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
   CONNECT_ACTION(350005, SwitchToCoronal);
   CONNECT_ACTION(350013, ToggleMultiWindowLayout);
   CONNECT_ACTION(350014, ToggleCursorVisibility);
+  CONNECT_ACTION(350015, SelectPreviousTimeStep);
+  CONNECT_ACTION(350016, SelectNextTimeStep);
 }
 
 
@@ -153,6 +161,8 @@ float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
           || event->GetId() == 19   // E
           || event->GetId() == 8    // left mouse button double click
           || event->GetId() == 4017 // X
+          || event->GetId() == 4009 // K
+          || event->GetId() == 4010 // L
           )
       )
   {
@@ -174,6 +184,20 @@ bool DnDDisplayStateMachine::MoveAnterior(Action*, const StateEvent*)
 bool DnDDisplayStateMachine::MovePosterior(Action*, const StateEvent*)
 {
   return m_Responder->MovePosterior();
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayStateMachine::SelectPreviousTimeStep(Action*, const StateEvent*)
+{
+  return m_Responder->SelectPreviousTimeStep();
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayStateMachine::SelectNextTimeStep(Action*, const StateEvent*)
+{
+  return m_Responder->SelectNextTimeStep();
 }
 
 

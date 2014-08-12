@@ -246,7 +246,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
 
   this->connect(viewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
-  this->connect(viewer, SIGNAL(SelectedTimeStepChanged(int)), SLOT(OnSelectedTimeStepChanged(int)));
+  this->connect(viewer, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(WindowOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(WindowOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
@@ -758,8 +758,9 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sele
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSelectedTimeStepChanged(int timeStep)
+void niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)
 {
+  MITK_INFO << "niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)";
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
   // If the viewer is not found, we do not do anything.
@@ -1032,12 +1033,12 @@ void niftkMultiViewerWidget::OnMagnificationControlChanged(double magnification)
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnTimeStepControlChanged(int timeStep)
 {
-  this->SetSelectedTimeStep(timeStep);
+  this->SetTimeStep(timeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
+void niftkMultiViewerWidget::SetTimeStep(int timeStep)
 {
   DnDDisplayDropType dropType = m_ControlPanel->GetDropType();
 
