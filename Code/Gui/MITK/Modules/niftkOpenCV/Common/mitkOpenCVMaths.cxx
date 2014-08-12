@@ -991,11 +991,6 @@ std::pair < double, double >  RMSError (
   highLimit.m_Left = errorMeans.m_Left + (outlierSD * errorStandardDeviations.m_Left); 
   highLimit.m_Right = errorMeans.m_Right + (outlierSD * errorStandardDeviations.m_Right); 
 
-  MITK_INFO << "Left Mean Error " << errorMeans.m_Left;
-  MITK_INFO << "Right Mean Error " << errorMeans.m_Right;
-  MITK_INFO << "Left SD " << errorStandardDeviations.m_Left;
-  MITK_INFO << "Right SD " << errorStandardDeviations.m_Right;
-
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
