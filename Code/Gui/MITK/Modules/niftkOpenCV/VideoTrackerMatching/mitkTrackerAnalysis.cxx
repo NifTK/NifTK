@@ -68,9 +68,9 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   onScreenPoints.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size() != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size()  << " != " << m_FrameNumbers.size() ;
     return;
   }
 
@@ -96,7 +96,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       worldPoints.clear();
       for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
       {
-        int framenumber = frame * 2;
+        int framenumber = frame;
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
             pointsInLensCS[frame].m_Points[0].m_Point);
       }
@@ -176,9 +176,9 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
   onScreenPoints->clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1, onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size() != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size()  << " != " << m_FrameNumbers.size() ;
     return;
   }
 
@@ -188,7 +188,7 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
     cameraMatrices.clear();
     for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
     {
-      int framenumber = frame * 2;
+      int framenumber = frame ;
       if ( ! ( pointsInLensCS[frame].m_Points[0].IsNaN() ))
       {
         cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
@@ -268,9 +268,9 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
   onScreenPoints.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size()  != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Handeye sensitivity file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Handeye sensitivity file has wrong number of frames, " << pointsInLensCS.size() << " != " << m_FrameNumbers.size() ;
     return;
   }
 
@@ -309,7 +309,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
                 worldPoints.clear();
                 for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
                 {
-                  int framenumber = frame * 2;
+                  int framenumber = frame ;
                   worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
                       pointsInLensCS[frame].m_Points[0].m_Point);
                 }
