@@ -168,7 +168,7 @@ public:
   void SetMagnificationTracking(bool tracking);
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
-  void SetSelectedTimeStep(int timeStep);
+  void SetTimeStep(int timeStep);
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
@@ -296,7 +296,7 @@ protected slots:
 
   /// \brief Called when the selected time step has changed in a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedTimeStepChanged(int selectedTimeStep);
+  void OnTimeStepChanged(int timeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
   void OnCursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);

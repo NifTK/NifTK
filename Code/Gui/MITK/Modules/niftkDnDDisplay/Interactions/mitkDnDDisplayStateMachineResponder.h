@@ -40,6 +40,12 @@ public:
   /// \brief Move posterior a slice.
   virtual bool MovePosterior() = 0;
 
+  /// \brief Moves back a time step.
+  virtual bool SelectPreviousTimeStep() = 0;
+
+  /// \brief Moves forward a time step.
+  virtual bool SelectNextTimeStep() = 0;
+
   /// \brief Switch to Axial.
   virtual bool SwitchToAxial() = 0;
 

@@ -364,6 +364,11 @@ signals:
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
+  /// \brief Emitted when the selected time step has changed in the rendering manager.
+  /// Note that the time navigation controller is unique for the rendering manager,
+  /// not only for this viewer.
+  void TimeStepChanged(int timeStep);
+
   /// \brief Emitted when the cursor position has changed in a render window.
   void CursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition);
 
@@ -406,6 +411,9 @@ private:
 
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject& geometrySliceEvent);
+
+  /// \brief Callback from the time navigation controller of the rendering manager
+  void OnTimeStepChanged(const itk::EventObject& geometryTimeEvent);
 
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged.
   /// The parameter describes which coordinate of the selected position has changed.
@@ -452,9 +460,10 @@ private:
 
   QColor m_BackgroundColour;
   QGridLayout* m_GridLayout;
-  unsigned long m_AxialSliceTag;
-  unsigned long m_SagittalSliceTag;
-  unsigned long m_CoronalSliceTag;
+  unsigned long m_AxialSliceObserverTag;
+  unsigned long m_SagittalSliceObserverTag;
+  unsigned long m_CoronalSliceObserverTag;
+  unsigned long m_TimeStepObserverTag;
   bool m_IsFocused;
   bool m_LinkedNavigationEnabled;
   bool m_Enabled;
@@ -463,7 +472,11 @@ private:
   bool m_CursorVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
+
   mitk::Point3D m_SelectedPosition;
+
+  int m_TimeStep;
+
   std::vector<mitk::Vector2D> m_CursorPositions;
 
   std::vector<const mitk::Geometry2D*> m_WorldGeometries;
@@ -550,8 +563,8 @@ private:
   bool m_FocusHasChanged;
   bool m_GeometryHasChanged;
   bool m_WindowLayoutHasChanged;
-  bool m_TimeStepHasChanged;
   std::vector<bool> m_SelectedSliceHasChanged;
+  bool m_TimeStepHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
   std::vector<bool> m_ScaleFactorHasChanged;
   bool m_CursorPositionBindingHasChanged;

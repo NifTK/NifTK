@@ -70,6 +70,12 @@ protected:
   /// \brief Move in the posterior direction, simply passing method onto the DnDDisplayResponder
   bool MovePosterior(Action*, const StateEvent*);
 
+  /// \brief Move one time step back, simply passing method onto the DnDDisplayResponder
+  bool SelectPreviousTimeStep(Action*, const StateEvent*);
+
+  /// \brief Move one time step forward, simply passing method onto the DnDDisplayResponder
+  bool SelectNextTimeStep(Action*, const StateEvent*);
+
   /// \brief Switch the current view to Axial, simply passing method onto the DnDDisplayResponder
   bool SwitchToAxial(Action*, const StateEvent*);
 

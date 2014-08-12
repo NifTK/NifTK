@@ -299,6 +299,12 @@ public:
   /// \brief Move posterior a slice.
   bool MovePosterior();
 
+  /// \brief Selects the previous time step.
+  bool SelectPreviousTimeStep();
+
+  /// \brief Selects the next time step.
+  bool SelectNextTimeStep();
+
   /// \brief Switch to Axial.
   bool SwitchToAxial();
 
@@ -345,7 +351,7 @@ signals:
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the selected time step has changed in this viewer.
-  void SelectedTimeStepChanged(int timeStep);
+  void TimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
   void CursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
