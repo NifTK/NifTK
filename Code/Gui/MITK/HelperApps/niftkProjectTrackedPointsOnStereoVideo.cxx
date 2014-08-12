@@ -107,7 +107,7 @@ int main(int argc, char** argv)
         screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
+      projector->AppendWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
     }
     if ( input3D.length() != 0 ) 
     {
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
           worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
         }
       }
-      projector->SetWorldPoints(worldPoints);
+      projector->AppendWorldPoints(worldPoints);
     }
    
     if ( classifier3D.length() != 0 ) 
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
       {
         classifierWorldPoints.push_back(cv::Point3d(x,y,z));
       }
-      projector->SetClassifierWorldPoints(classifierWorldPoints);
+      projector->AppendClassifierWorldPoints(classifierWorldPoints);
       fin.close();
     }
    
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
         worldPointsWithScalars.push_back(mitk::WorldPoint 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
-      projector->SetWorldPoints(worldPointsWithScalars);
+      projector->AppendWorldPoints(worldPointsWithScalars);
       fin.close();
     }
     
