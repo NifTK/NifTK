@@ -22,8 +22,6 @@
 #include <QmitkRenderWindow.h>
 #include <QGridLayout>
 
-#include <usGetModuleContext.h>
-#include <usModuleRegistry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkVtkLayerController.h>
 
@@ -275,9 +273,6 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   focusManager->RemoveObserver(m_FocusManagerObserverTag);
 
-  // Release the display interactor.
-  this->SetDisplayInteractionsEnabled(false);
-
   if (mitkWidget1 != NULL && m_AxialSliceObserverTag != 0)
   {
     mitkWidget1->GetSliceNavigationController()->RemoveObserver(m_AxialSliceObserverTag);
@@ -372,7 +367,6 @@ void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geo
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)
 {
-  MITK_INFO << "niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)";
   if (!m_BlockSncEvents && m_Geometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
@@ -2555,48 +2549,6 @@ void niftkMultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEna
     m_LinkedNavigationEnabled = linkedNavigationEnabled;
     this->SetWidgetPlanesLocked(!linkedNavigationEnabled || !m_IsFocused || !m_Geometry);
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
-{
-  if (enabled == this->AreDisplayInteractionsEnabled())
-  {
-    // Already enabled/disabled.
-    return;
-  }
-
-  if (enabled)
-  {
-    // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(this);
-
-    us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
-    m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
-    m_DisplayInteractor->SetEventConfig("DnDDisplayConfig.xml", niftkDnDDisplayModule);
-
-    // ... and register it as listener via the micro services.
-    us::ServiceProperties props;
-    props["name"] = std::string("DisplayInteractor");
-
-    us::ModuleContext* moduleContext = us::GetModuleContext();
-    m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
-  }
-  else
-  {
-    // Unregister the display interactor service.
-    m_DisplayInteractorService.Unregister();
-    // Release the display interactor to let it be desctructed.
-    m_DisplayInteractor = 0;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::AreDisplayInteractionsEnabled() const
-{
-  return m_DisplayInteractor.IsNotNull();
 }
 
 

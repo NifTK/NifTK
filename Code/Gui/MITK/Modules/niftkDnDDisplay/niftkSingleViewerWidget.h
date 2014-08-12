@@ -29,6 +29,7 @@
 #include <QWidget>
 
 #include "niftkDnDDisplayEnums.h"
+#include "Interactions/mitkDnDDisplayInteractor.h"
 #include "Interactions/mitkDnDDisplayStateMachineResponder.h"
 #include "Interactions/mitkDnDDisplayStateMachine.h"
 
@@ -501,6 +502,14 @@ private:
 
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
+
+  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  us::ServiceRegistrationU m_DisplayInteractorService;
 
   mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
 };

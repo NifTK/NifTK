@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+#include "niftkSingleViewerWidget.h"
+
 #include <QStackedLayout>
 #include <QDebug>
 #include <QmitkRenderWindow.h>
@@ -19,9 +21,12 @@
 #include <itkSpatialOrientationAdapter.h>
 
 #include <itkConversionUtils.h>
+
+#include <usGetModuleContext.h>
+#include <usModuleRegistry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkPointUtils.h>
-#include "niftkSingleViewerWidget.h"
+
 #include "niftkMultiWindowWidget_p.h"
 
 
@@ -98,6 +103,9 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::~niftkSingleViewerWidget()
 {
+  // Release the display interactor.
+  this->SetDisplayInteractionsEnabled(false);
+
   mitk::GlobalInteraction::GetInstance()->RemoveListener(m_DnDDisplayStateMachine);
 }
 
@@ -406,14 +414,42 @@ void niftkSingleViewerWidget::SetLinkedNavigationEnabled(bool linkedNavigationEn
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
-  m_MultiWidget->SetDisplayInteractionsEnabled(enabled);
+  if (enabled == this->AreDisplayInteractionsEnabled())
+  {
+    // Already enabled/disabled.
+    return;
+  }
+
+  if (enabled)
+  {
+    // Here we create our own display interactor...
+    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(m_MultiWidget);
+
+    us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
+    m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
+    m_DisplayInteractor->SetEventConfig("DnDDisplayConfig.xml", niftkDnDDisplayModule);
+
+    // ... and register it as listener via the micro services.
+    us::ServiceProperties props;
+    props["name"] = std::string("DisplayInteractor");
+
+    us::ModuleContext* moduleContext = us::GetModuleContext();
+    m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
+  }
+  else
+  {
+    // Unregister the display interactor service.
+    m_DisplayInteractorService.Unregister();
+    // Release the display interactor to let it be desctructed.
+    m_DisplayInteractor = 0;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::AreDisplayInteractionsEnabled() const
 {
-  return m_MultiWidget->AreDisplayInteractionsEnabled();
+  return m_DisplayInteractor.IsNotNull();
 }
 
 
