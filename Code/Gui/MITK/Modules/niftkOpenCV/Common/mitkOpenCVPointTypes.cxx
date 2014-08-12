@@ -177,9 +177,12 @@ ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
 {}
 
 //-----------------------------------------------------------------------------
-bool ProjectedPointPair::LeftNaN()
+bool ProjectedPointPair::LeftNaNOrInf()
 {
-  if ( (boost::math::isnan(m_Left.x)) || (boost::math::isnan(m_Left.y)) )
+  if ( (boost::math::isnan(m_Left.x)) || 
+      (boost::math::isnan(m_Left.y)) || 
+      (boost::math::isinf(m_Left.x)) || 
+      (boost::math::isinf(m_Left.y)))
   {
     return true;
   }
@@ -204,9 +207,12 @@ bool WorldPoint::IsNaN()
   }    
 }
 //-----------------------------------------------------------------------------
-bool ProjectedPointPair::RightNaN()
+bool ProjectedPointPair::RightNaNOrInf()
 {
-  if ( (boost::math::isnan(m_Right.x)) || (boost::math::isnan(m_Right.y)) )
+  if ( (boost::math::isnan(m_Right.x)) ||
+      (boost::math::isnan(m_Right.y)) ||
+      (boost::math::isinf(m_Right.x)) ||
+      (boost::math::isinf(m_Right.y)))
   {
     return true;
   }

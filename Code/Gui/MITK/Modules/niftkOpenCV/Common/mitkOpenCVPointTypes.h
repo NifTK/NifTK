@@ -90,8 +90,8 @@ class NIFTKOPENCV_EXPORT ProjectedPointPair
     cv::Point2d m_Left;
     cv::Point2d m_Right;
 
-    bool LeftNaN ();
-    bool RightNaN ();
+    bool LeftNaNOrInf ();
+    bool RightNaNOrInf ();
 };
 
 class NIFTKOPENCV_EXPORT ProjectedPointPairsWithTimingError
