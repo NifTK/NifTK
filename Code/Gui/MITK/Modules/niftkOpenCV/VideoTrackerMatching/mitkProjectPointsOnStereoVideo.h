@@ -78,10 +78,10 @@ public:
   void SavePointsInLeftLensCoordinates (std::string filename);
 
   /**
-   * \brief Set the world points by triangulating their position from the
+   * \brief Append to world points by triangulating their position from the
    * on screen coordinates for the specified frame
    */
-  void SetWorldPointsByTriangulation 
+  void AppendWorldPointsByTriangulation 
     (std::vector< mitk::ProjectedPointPair > onScreenPointPairs, 
      std::vector < unsigned int>  frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
      std::vector <double> * perturbation = NULL);
@@ -98,14 +98,14 @@ public:
   void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points );
 
   /**
-   * \brief sets the world points and corresponding vectors
+   * \brief appends points to  world points and corresponding vectors
    */
-  void SetWorldPoints ( std::vector< mitk::WorldPoint > points );
+  void AppendWorldPoints ( std::vector< mitk::WorldPoint > points );
  
   /** 
-   * \brief set only the classifier world points
+   * \brief appends point to classifier world points
    */
-  void SetClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
+  void AppendClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
   /** 
    * \brief clear the list of world points
    */

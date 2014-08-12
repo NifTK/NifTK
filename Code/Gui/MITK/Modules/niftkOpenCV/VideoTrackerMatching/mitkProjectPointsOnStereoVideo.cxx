@@ -182,7 +182,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     MITK_WARN << "Called project before initialise.";
     return;
   }
-    
+ 
   m_ProjectOK = false;
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
@@ -317,7 +317,10 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
       std::vector < mitk::ProjectedPointPair > screenPoints;
       std::vector < mitk::ProjectedPointPair > classifierScreenPoints;
-      
+     
+      screenPoints.clear();
+      classifierScreenPoints.clear();
+
       for ( unsigned int i = 0 ; i < pointsInLeftLensCS.m_Points.size() ; i ++ ) 
       {
         mitk::ProjectedPointPair pointPair;
@@ -1084,7 +1087,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoi
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetWorldPoints ( 
+void ProjectPointsOnStereoVideo::AppendWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
@@ -1094,7 +1097,7 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
   m_ProjectOK = false;
 }
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetClassifierWorldPoints ( 
+void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
@@ -1105,7 +1108,7 @@ void ProjectPointsOnStereoVideo::SetClassifierWorldPoints (
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
+void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
     (std::vector< mitk::ProjectedPointPair > onScreenPointPairs,
      std::vector< unsigned int > framenumber  , 
      mitk::VideoTrackerMatching::Pointer trackerMatcher, 
