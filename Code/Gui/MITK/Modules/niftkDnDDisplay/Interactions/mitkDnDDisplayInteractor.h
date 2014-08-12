@@ -21,7 +21,7 @@
 
 #include <vector>
 
-class niftkMultiWindowWidget;
+class niftkSingleViewerWidget;
 class QmitkRenderWindow;
 
 namespace mitk
@@ -46,7 +46,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public mitk::DisplayInteracto
 {
 public:
   mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
-  mitkNewMacro1Param(Self, niftkMultiWindowWidget*);
+  mitkNewMacro1Param(Self, niftkSingleViewerWidget*);
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -57,7 +57,7 @@ public:
   virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
 
 protected:
-  DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget);
+  DnDDisplayInteractor(niftkSingleViewerWidget* multiWindowWidget);
   virtual ~DnDDisplayInteractor();
 
   virtual void ConnectActionsAndFunctions();
@@ -85,7 +85,7 @@ private:
 
   int GetOrientation(mitk::BaseRenderer* renderer);
 
-  niftkMultiWindowWidget* m_MultiWindowWidget;
+  niftkSingleViewerWidget* m_MultiWindowWidget;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
 

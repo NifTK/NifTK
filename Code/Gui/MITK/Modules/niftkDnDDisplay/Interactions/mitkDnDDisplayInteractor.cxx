@@ -16,7 +16,7 @@
 
 #include <string.h>
 
-#include "../niftkMultiWindowWidget_p.h"
+#include "../niftkSingleViewerWidget.h"
 
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionPositionEvent.h>
@@ -26,7 +26,7 @@
 
 
 //-----------------------------------------------------------------------------
-mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget)
+mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* multiWindowWidget)
 : mitk::DisplayInteractor()
 , m_MultiWindowWidget(multiWindowWidget)
 , m_Renderers(3)
@@ -150,9 +150,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
 
 //  bool result = Superclass::ScrollOneUp(action, interactionEvent);
 
-  int orientation = this->GetOrientation(renderer);
-
-  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, +1);
+  m_MultiWindowWidget->MoveAnterior();
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
@@ -183,9 +181,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
 
 //  bool result = Superclass::ScrollOneDown(action, interactionEvent);
 
-  int orientation = this->GetOrientation(renderer);
-
-  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, -1);
+  m_MultiWindowWidget->MovePosterior();
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
