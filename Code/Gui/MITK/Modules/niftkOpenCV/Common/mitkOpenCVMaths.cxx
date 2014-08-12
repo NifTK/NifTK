@@ -1017,7 +1017,7 @@ std::pair < double, double >  RMSError (
     {
       if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame*2].m_Points[index].LeftNaN() ) || actual[frame].m_Points[index].LeftNaN() ) 
+        if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
         {
           cv::Point2d error = 
             actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left;
@@ -1033,7 +1033,7 @@ std::pair < double, double >  RMSError (
 
         }
       
-        if ( ! ( measured[frame*2].m_Points[index].RightNaN() ) || actual[frame].m_Points[index].RightNaN() ) 
+        if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() ) || actual[frame].m_Points[index].RightNaNOrInf() ) 
         {
           cv::Point2d error = 
             actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right;
@@ -1092,6 +1092,7 @@ mitk::ProjectedPointPair MeanError (
     lowIndex = indexToUse; 
     highIndex = indexToUse;
   }
+  
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
     unsigned int increment=1;
@@ -1103,15 +1104,13 @@ mitk::ProjectedPointPair MeanError (
     {
       if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame*2].m_Points[index].LeftNaN()  || actual[frame].m_Points[index].LeftNaN() ) ) 
+        if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
         {
           meanError.m_Left += 
             actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left ;
           count.first ++;
-          MITK_INFO << "frame " << frame << " error " << meanError.m_Left << " : " <<
-            actual[frame].m_Points[index].m_Left << " : " <<  measured[frame*2].m_Points[index].m_Left;
         }
-        if ( ! ( measured[frame*2].m_Points[index].RightNaN() || actual[frame].m_Points[index].RightNaN() ) )
+        if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
         {
           meanError.m_Right += 
             actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right ;
@@ -1151,14 +1150,14 @@ mitk::ProjectedPointPair MeanError (
       {
         if ( measured[frame*2].m_TimingError < abs (allowableTimingError) )
         {
-          if ( ! ( measured[frame*2].m_Points[index].LeftNaN() || actual[frame].m_Points[index].LeftNaN() ) ) 
+          if ( ! ( measured[frame*2].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
           {
             cv::Point2d error = 
               actual[frame].m_Points[index].m_Left - measured[frame*2].m_Points[index].m_Left - meanError.m_Left;
             StandardDeviations->m_Left += error * error;
             count.first ++;
           }
-          if ( ! ( measured[frame*2].m_Points[index].RightNaN() || actual[frame].m_Points[index].RightNaN() ) )
+          if ( ! ( measured[frame*2].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
           {
             cv::Point2d error = 
               actual[frame].m_Points[index].m_Right - measured[frame*2].m_Points[index].m_Right - meanError.m_Right;
