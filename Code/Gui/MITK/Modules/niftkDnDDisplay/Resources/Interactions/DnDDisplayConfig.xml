@@ -11,38 +11,42 @@
   <param name="zoomDirection" value="updown"/>
   <!-- react to an event, even tough is was already processed by a DataInteractor-->
   <param name="alwaysReact" value="false"/>
+
   <!-- Select position -->
   <event_variant class="MousePressEvent" name="StartSelectPosition">
-    <attribute name="EventButton" value="LeftMouseButton"/>
-  </event_variant>
-  <event_variant class="MouseReleaseEvent" name="EndSelectPosition">
     <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
   <event_variant class="MouseMoveEvent" name="SelectPosition">
     <attribute name="ButtonState" value="LeftMouseButton"/>
   </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndSelectPosition">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+
   <!-- Moving -->
   <event_variant class="MousePressEvent" name="StartMove">
-    <attribute name="EventButton" value="MiddleMouseButton"/>
-  </event_variant>
-  <event_variant class="MouseReleaseEvent" name="EndMoving">
     <attribute name="EventButton" value="MiddleMouseButton"/>
   </event_variant>
   <event_variant class="MouseMoveEvent" name="Moving">
     <attribute name="ButtonState" value="MiddleMouseButton"/>
   </event_variant>
-  <event_variant class="MousePressEvent" name="StartMoveWithShift">
+  <event_variant class="MouseReleaseEvent" name="EndMoving">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
+  </event_variant>
+
+  <event_variant class="MousePressEvent" name="StartMove">
     <attribute name="EventButton" value="LeftMouseButton"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="MouseMoveEvent" name="MovingWithShift">
+  <event_variant class="MouseMoveEvent" name="Moving">
     <attribute name="ButtonState" value="LeftMouseButton"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="MouseReleaseEvent" name="EndMovingWithShift">
+  <event_variant class="MouseReleaseEvent" name="EndMoving">
     <attribute name="EventButton" value="LeftMouseButton"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
+
   <!-- Zooming -->
   <event_variant class="MousePressEvent" name="StartZoom">
     <attribute name="EventButton" value="RightMouseButton"/>
@@ -53,11 +57,19 @@
   <event_variant class="MouseReleaseEvent" name="EndZooming">
     <attribute name="EventButton" value="RightMouseButton"/>
   </event_variant>
-  <!-- Scrolling through planes -->
+
+  <!-- Scrolling through slices -->
   <event_variant class="MouseWheelEvent" name="PlaneUP">
     <attribute name="ScrollDirection" value="up"/>
   </event_variant>
   <event_variant class="MouseWheelEvent" name="PlaneDown">
     <attribute name="ScrollDirection" value="down"/>
   </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PlaneUP">
+    <attribute name="Key" value="A"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PlaneDown">
+    <attribute name="Key" value="Z"/>
+  </event_variant>
+
 </config>

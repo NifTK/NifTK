@@ -25,12 +25,6 @@ namespace mitk
 const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "<stateMachine NAME=\"DnDDisplayStateMachine\">"
     "  <state NAME=\"stateStart\" ID=\"1\" START_STATE=\"TRUE\">"
-    "    <transition NAME=\"keyPressA\" EVENT_ID=\"4001\" NEXT_STATE_ID=\"1\">"
-    "      <action ID=\"350001\"/>"
-    "    </transition>"
-    "    <transition NAME=\"keyPressZ\" EVENT_ID=\"4019\" NEXT_STATE_ID=\"1\">"
-    "      <action ID=\"350002\"/>"
-    "    </transition>"
     "    <transition NAME=\"keyPressQ\" EVENT_ID=\"4013\" NEXT_STATE_ID=\"1\">"
     "      <action ID=\"350003\"/>"
     "    </transition>"
@@ -68,8 +62,6 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
 
   m_Responder = responder;
 
-  CONNECT_ACTION(350001, MoveAnterior);
-  CONNECT_ACTION(350002, MovePosterior);
   CONNECT_ACTION(350003, SwitchToAxial);
   CONNECT_ACTION(350004, SwitchToSagittal);
   CONNECT_ACTION(350005, SwitchToCoronal);
@@ -154,9 +146,7 @@ float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
   // See StateMachine.xml for event Ids.
   if (event != NULL
       && event->GetEvent() != NULL
-      && (   event->GetId() == 4001 // A
-          || event->GetId() == 4019 // Z
-          || event->GetId() == 4013 // Q
+      && (   event->GetId() == 4013 // Q
           || event->GetId() == 4016 // W
           || event->GetId() == 19   // E
           || event->GetId() == 8    // left mouse button double click
