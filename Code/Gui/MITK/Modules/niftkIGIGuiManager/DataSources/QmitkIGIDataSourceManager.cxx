@@ -937,6 +937,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
 
+  QMap<int, double> mapOfLagTimingPerRow;
+
   if (m_Sources.size() > 0)
   {
     m_NumberOfTimesRenderingLoopCalled++;
@@ -960,6 +962,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       bool isValid = source->ProcessData(idNow);
       float rate = source->UpdateFrameRate();
       double lag = source->GetCurrentTimeLag(idNow);
+      mapOfLagTimingPerRow.insert(rowNumber, lag);
       if (isValid)
       {
         m_MapLagTiming[rowNumber].push_back(lag);
@@ -970,12 +973,6 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       frameRateItem->setTextAlignment(Qt::AlignCenter);
       frameRateItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(rowNumber, 2, frameRateItem);
-
-      // Update the lag number.
-      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
-      lagItem->setTextAlignment(Qt::AlignCenter);
-      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      m_TableWidget->setItem(rowNumber, 3, lagItem);
 
       // Update the status icon.
       QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 1);
@@ -1013,14 +1010,6 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
     emit UpdateGuiFinishedDataSources(idNow);
 
-    // Make sure widgets local to this QmitkIGIDataSourceManager are updating.
-    if (m_CurrentSourceGUI != NULL)
-    {
-      m_CurrentSourceGUI->Update();
-      m_CurrentSourceGUI->update();
-    }
-    m_TableWidget->update();
-
     // Make sure scene rendered.
     mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
     renderer->ForceImmediateUpdateAll();
@@ -1033,6 +1022,25 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
     m_ListRenderingTimes.push_back(timeToRender);
     m_ListDataFetchTimes.push_back(timeToFetch);
+
+    // Update lag number on screen to include the rendering time.
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
+      double lag = mapOfLagTimingPerRow.value(rowNumber) + timeToFetch/1000 + timeToRender/1000;
+      QTableWidgetItem *lagItem = new QTableWidgetItem(QString::number(lag));
+      lagItem->setTextAlignment(Qt::AlignCenter);
+      lagItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(rowNumber, 3, lagItem);
+    }
+
+    // Make sure widgets local to this QmitkIGIDataSourceManager are updating.
+    if (m_CurrentSourceGUI != NULL)
+    {
+      m_CurrentSourceGUI->Update();
+      m_CurrentSourceGUI->update();
+    }
+    m_TableWidget->update();
 
     emit UpdateGuiFinishedFinishedRendering(idNow);
   }
@@ -1476,7 +1484,7 @@ void QmitkIGIDataSourceManager::OnComputeStats()
   double meanRendering = mitk::Mean(m_ListRenderingTimes);
   double meanFetch = mitk::Mean(m_ListDataFetchTimes);
 
-  QString output = QObject::tr("STATS: rate=%1 fps, req=%2, act=%3, fetch=%4, render=%5.").arg(m_RequestedFrameRate).arg(m_NumberOfTimesRenderingLoopCalled).arg(m_NumberOfTimesRenderingIsActuallyCalled).arg(meanFetch).arg(meanRendering);
+  QString output = QObject::tr("STATS: rate=%1 fps, forced=%2, requested=%3, fetch=%4 (msec), render=%5 (msec).").arg(m_RequestedFrameRate).arg(m_NumberOfTimesRenderingLoopCalled).arg(m_NumberOfTimesRenderingIsActuallyCalled).arg(meanFetch).arg(meanRendering);
   this->PrintStatusMessage(output);
 
   std::map<int, std::vector<double> >::iterator i;
