@@ -57,7 +57,7 @@ public:
   virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
 
 protected:
-  DnDDisplayInteractor(niftkSingleViewerWidget* multiWindowWidget);
+  DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
   virtual void ConnectActionsAndFunctions();
@@ -79,13 +79,31 @@ protected:
   /// It also changes the selected position to the middle of the focused voxel.
   virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
+  /// \brief Switches to axial window layout.
+  virtual bool SetWindowLayoutToAxial(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to sagittal window layout.
+  virtual bool SetWindowLayoutToSagittal(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to coronal window layout.
+  virtual bool SetWindowLayoutToCoronal(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to 3D window layout.
+  virtual bool SetWindowLayoutTo3D(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to multi window layout.
+  virtual bool SetWindowLayoutToMulti(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Toggles between single and multi window layout.
+  virtual bool ToggleMultiWindowLayout(StateMachineAction*, InteractionEvent*);
+
 private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
 
   int GetOrientation(mitk::BaseRenderer* renderer);
 
-  niftkSingleViewerWidget* m_MultiWindowWidget;
+  niftkSingleViewerWidget* m_Viewer;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
 

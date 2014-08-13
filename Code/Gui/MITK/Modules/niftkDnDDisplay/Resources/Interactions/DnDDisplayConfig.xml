@@ -72,4 +72,24 @@
     <attribute name="Key" value="Z"/>
   </event_variant>
 
+  <!-- Switch window layout -->
+  <event_variant class="InteractionKeyEvent" name="AxialWindowLayout">
+    <attribute name="Key" value="Q"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SagittalWindowLayout">
+    <attribute name="Key" value="W"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="CoronalWindowLayout">
+    <attribute name="Key" value="E"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="3DWindowLayout">
+    <attribute name="Key" value="R"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="MultiWindowLayout">
+    <attribute name="Key" value="T"/>
+  </event_variant>
+  <event_variant class="MouseDoubleClickEvent" name="MultiWindowLayout">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+
 </config>

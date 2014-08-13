@@ -26,13 +26,13 @@
 
 
 //-----------------------------------------------------------------------------
-mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* multiWindowWidget)
+mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
 : mitk::DisplayInteractor()
-, m_MultiWindowWidget(multiWindowWidget)
+, m_Viewer(viewer)
 , m_Renderers(3)
 , m_FocusManager(mitk::GlobalInteraction::GetInstance()->GetFocusManager())
 {
-  const std::vector<QmitkRenderWindow*>& renderWindows = m_MultiWindowWidget->GetRenderWindows();
+  const std::vector<QmitkRenderWindow*>& renderWindows = m_Viewer->GetRenderWindows();
   m_Renderers[0] = renderWindows[0]->GetRenderer();
   m_Renderers[1] = renderWindows[1]->GetRenderer();
   m_Renderers[2] = renderWindows[2]->GetRenderer();
@@ -63,6 +63,12 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("selectPosition", SelectPosition);
   CONNECT_FUNCTION("initMove", InitMove);
   CONNECT_FUNCTION("initZoom", InitZoom);
+  CONNECT_FUNCTION("setWindowLayoutToAxial", SetWindowLayoutToAxial);
+  CONNECT_FUNCTION("setWindowLayoutToSagittal", SetWindowLayoutToSagittal);
+  CONNECT_FUNCTION("setWindowLayoutToCoronal", SetWindowLayoutToCoronal);
+  CONNECT_FUNCTION("setWindowLayoutTo3D", SetWindowLayoutTo3D);
+  CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
+  CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
 }
 
 
@@ -75,7 +81,7 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
 
   if (i < 3)
   {
-    renderWindow = m_MultiWindowWidget->GetRenderWindows()[i];
+    renderWindow = m_Viewer->GetRenderWindows()[i];
   }
 
   return renderWindow;
@@ -106,23 +112,23 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     return false;
   }
 
-  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-    m_MultiWindowWidget->SetFocused();
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
   }
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
-  m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
+  m_Viewer->SetSelectedPosition(positionInWorld);
 
-  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+  m_Viewer->BlockUpdate(updateWasBlocked);
 
   return true;
 }
@@ -131,14 +137,14 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-    m_MultiWindowWidget->SetFocused();
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
   }
 
   /// Note:
@@ -150,9 +156,9 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
 
 //  bool result = Superclass::ScrollOneUp(action, interactionEvent);
 
-  m_MultiWindowWidget->MoveAnterior();
+  m_Viewer->MoveAnterior();
 
-  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+  m_Viewer->BlockUpdate(updateWasBlocked);
 
 //  return result;
   return true;
@@ -162,14 +168,14 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-    m_MultiWindowWidget->SetFocused();
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
   }
 
   /// Note:
@@ -181,9 +187,9 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
 
 //  bool result = Superclass::ScrollOneDown(action, interactionEvent);
 
-  m_MultiWindowWidget->MovePosterior();
+  m_Viewer->MovePosterior();
 
-  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+  m_Viewer->BlockUpdate(updateWasBlocked);
 
 //  return result;
   return true;
@@ -207,19 +213,19 @@ bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, Interactio
     return false;
   }
 
-  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-    m_MultiWindowWidget->SetFocused();
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
   }
 
   bool result = this->Init(action, interactionEvent);
 
-  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+  m_Viewer->BlockUpdate(updateWasBlocked);
 
   return result;
 }
@@ -242,19 +248,19 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
     return false;
   }
 
-  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-    m_MultiWindowWidget->SetFocused();
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
   }
 
   /// Note that the zoom focus must always be the selected position,
   /// i.e. the position at the cursor (crosshair).
-  mitk::Point3D focusPoint3DInMm = m_MultiWindowWidget->GetSelectedPosition();
+  mitk::Point3D focusPoint3DInMm = m_Viewer->GetSelectedPosition();
 
   mitk::Point2D focusPoint2DInMm;
   mitk::Point2D focusPoint2DInPx;
@@ -270,7 +276,55 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
 
   bool result = this->Init(action, positionEvent2);
 
-  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+  m_Viewer->BlockUpdate(updateWasBlocked);
 
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SetWindowLayoutToAxial(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SetWindowLayoutToSagittal(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SetWindowLayoutToCoronal(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SetWindowLayoutTo3D(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SetWindowLayoutToMulti(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->ToggleMultiWindowLayout();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::ToggleMultiWindowLayout(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->ToggleMultiWindowLayout();
+  return true;
 }
