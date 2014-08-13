@@ -242,4 +242,75 @@ ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
 , m_TimingError(0)
 {}
 
+//-----------------------------------------------------------------------------
+VideoFrame::VideoFrame()
+{}
+
+//-----------------------------------------------------------------------------
+VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream frameMapLogFile)
+{
+  if ( ! capture )
+  {
+    MITK_ERROR << "mitk::VideoFrame, passed null video capture.";
+    return;
+  }
+  if ( ! frameMapLogFile )
+  {
+    MITK_ERROR << "mitk::VideoFrame, passed null frame map log file.";
+    return;
+  }
+  bool success = capture->read(m_VideoData);
+  if ( ! success )
+  {
+    MITK_ERROR << "mitk::VideoFrame, error reading video file";
+    return;
+  }
+  
+  std::string line;
+
+  if ( ! getline (frameMapLogFile, line) )
+  {
+    MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+    return;
+  }
+
+  while ( line[0] == '#' )
+  {
+    if ( ! ( getline (frameMapLogFile, line)));
+    {
+      MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+      return;
+    }
+  }
+  
+  std::stringstream linestream(line);
+  bool parseSuccess = linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
+  if ( ! parseSuccess )
+  {
+    MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+    return;
+  }
+
+  if ( m_Channel == 0 )
+  {
+    m_Left = true;
+  }
+  else
+  {
+    m_Left = false;
+  }
+  return;
+}
+
+//-----------------------------------------------------------------------------
+bool VideoFrame::WriteToFile ( std::string prefix )
+{
+  std::string filename;
+  cv::imwrite( "my_bitmap.bmp", m_VideoData);
+return true;
+}
+
+//-----------------------------------------------------------------------------
+void VideoFrame::OutputVideoInformation (cv::VideoCapture * capture)
+{}
 } // end namespace
