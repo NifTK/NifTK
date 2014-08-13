@@ -16,6 +16,7 @@
 #include <limits>
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
 #include <mitkPointSetReader.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 
@@ -87,11 +88,11 @@ int main(int argc, char** argv)
     projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
-    std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
+    std::vector < mitk::ProjectedPointPair > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
-    std::vector < cv::Point3d > worldPoints;
-    std::vector < cv::Point3d > classifierWorldPoints;
-    std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
+    std::vector < mitk::WorldPoint > worldPoints;
+    std::vector < mitk::WorldPoint > classifierWorldPoints;
+    std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -102,11 +103,11 @@ int main(int argc, char** argv)
       double y2;
       while ( fin >> frameNumber >> x1 >> y1 >> x2 >> y2 )
       {
-        screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
+        screenPoints.push_back( mitk::ProjectedPointPair (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
         screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
+      projector->AppendWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
     }
     if ( input3D.length() != 0 ) 
     {
@@ -125,15 +126,19 @@ int main(int argc, char** argv)
         double z;
         while ( fin >> x >> y >> z  )
         {
-          worldPoints.push_back(cv::Point3d(x,y,z));
+          worldPoints.push_back(mitk::WorldPoint(cv::Point3d(x,y,z)));
         }
         fin.close();
       }
       else
       {
-        worldPoints = mitk::PointSetToVector ( pointSet );
+        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
+        for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ ) 
+        {
+          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
+        }
       }
-      projector->SetWorldPoints(worldPoints);
+      projector->AppendWorldPoints(worldPoints);
     }
    
     if ( classifier3D.length() != 0 ) 
@@ -146,7 +151,7 @@ int main(int argc, char** argv)
       {
         classifierWorldPoints.push_back(cv::Point3d(x,y,z));
       }
-      projector->SetClassifierWorldPoints(classifierWorldPoints);
+      projector->AppendClassifierWorldPoints(classifierWorldPoints);
       fin.close();
     }
    
@@ -171,10 +176,10 @@ int main(int argc, char** argv)
         g=atoi(in[4].c_str());
         r=atoi(in[5].c_str());
 
-        worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
+        worldPointsWithScalars.push_back(mitk::WorldPoint 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
-      projector->SetWorldPoints(worldPointsWithScalars);
+      projector->AppendWorldPoints(worldPointsWithScalars);
       fin.close();
     }
     
@@ -214,10 +219,10 @@ int main(int argc, char** argv)
     if ( output2D.length() != 0 ) 
     {
       std::ofstream fout (output2D.c_str());
-      std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > > projectedPoints = 
+      std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
         projector->GetProjectedPoints();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < projectedPoints[0].second.size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < projectedPoints[0].m_Points.size() ; i ++ ) 
       {
         fout << "P" << i << "[lx,ly,rx,ry]" << " ";
       }
@@ -225,10 +230,10 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < projectedPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < projectedPoints[i].second.size() ; j ++ )
+        for ( unsigned int j = 0 ; j < projectedPoints[i].m_Points.size() ; j ++ )
         {
-          fout << projectedPoints[i].second[j].first.x << " " <<  projectedPoints[i].second[j].first.y <<
-             " " << projectedPoints[i].second[j].second.x << " " << projectedPoints[i].second[j].second.y << " ";
+          fout << projectedPoints[i].m_Points[j].m_Left.x << " " <<  projectedPoints[i].m_Points[j].m_Left.y <<
+             " " << projectedPoints[i].m_Points[j].m_Right.x << " " << projectedPoints[i].m_Points[j].m_Right.y << " ";
         }
         fout << std::endl;
       }
@@ -237,10 +242,10 @@ int main(int argc, char** argv)
     if ( output3D.length() !=0 )
     {
       std::ofstream fout (output3D.c_str());
-      std::vector < std::vector < cv::Point3d > > leftLensPoints = 
+      std::vector <mitk::WorldPointsWithTimingError> leftLensPoints = 
         projector->GetPointsInLeftLensCS();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < leftLensPoints[0].size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < leftLensPoints[0].m_Points.size() ; i ++ ) 
       {
         fout << "P" << i << "[x,y,z]" << " ";
       }
@@ -248,10 +253,11 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < leftLensPoints[i].size() ; j ++ )
+        for ( unsigned int j = 0 ; j < leftLensPoints[i].m_Points.size() ; j ++ )
         {
-          fout << leftLensPoints[i][j].x << " " <<  leftLensPoints[i][j].y <<
-             " " << leftLensPoints[i][j].z << " " ;
+          fout << leftLensPoints[i].m_Points[j].m_Point.x << " " <<  
+            leftLensPoints[i].m_Points[j].m_Point.y <<
+             " " << leftLensPoints[i].m_Points[j].m_Point.z << " " ;
         }
         fout << std::endl;
       }

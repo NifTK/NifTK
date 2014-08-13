@@ -15,6 +15,7 @@
 set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
   Common/mitkOpenCVFileIOUtils.cxx
+  Common/mitkOpenCVPointTypes.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
