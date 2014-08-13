@@ -16,6 +16,7 @@
 #define mitkOpenCVMaths_h
 
 #include "niftkOpenCVExports.h"
+#include "mitkOpenCVPointTypes.h"
 #include <cv.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -169,22 +170,36 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, c
 /**
  * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
-    const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > operator*(cv::Mat M, 
+    const std::vector< mitk::WorldPoint >& p);
 
 
 /**
  * \brief multiplies a point and corresponding scalar value by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Scalar >  operator*(cv::Mat M, 
-    const std::pair < cv::Point3d, cv::Scalar > & p);
-
+extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(cv::Mat M, 
+    const mitk::WorldPoint & p);
 
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
 
+/**
+ * \brief Tests equality of 2 2d points. The openCV == operator struggles on floating points, 
+ * this uses a tolerance of 1e-
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2);
+
+/**
+ * \brief Divides a 2d point by an integer (x=x1/n, y=y1/2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator/(const cv::Point2d& p, const int& n);
+
+/**
+ * \brief Multiplies the components of a 2d point by an integer (x=x1*x2, y=y1*y2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2);
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
@@ -293,28 +308,39 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
-
-extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
-    std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
-
+/**
+ * \brief Returns the mean pixel errors for the right and left sets of projected points
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optional pointer to return standard deviations
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
+ */
+extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError ( 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, 
+    mitk::ProjectedPointPair * StandardDeviations = NULL , int index = -1,
+    long long allowableTimingError = 30e6, bool duplicateLines = true );
 
 /** 
- * \brief Returns the RMS error between two point vectors
+ * \brief Returns the RMS error between two projected point vectors
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs where the error is above the mean error +/- n standard deviations.
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0 );
-
-
-/** 
- * \brief Returns the RMS error between two point vectors, with the measured values containing 
- * a measure of the timing error
- */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0, long long allowableTimingError = 30e6 );
-
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError
+  (std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, int index = -1 ,
+    cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6,
+    bool duplicateLines = true);
 
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
@@ -324,7 +350,6 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const cv::Mat transformIn,
     const double tx, const double ty, const double tz, 
     const double rx, const double ry, const double rz );
-
 
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)

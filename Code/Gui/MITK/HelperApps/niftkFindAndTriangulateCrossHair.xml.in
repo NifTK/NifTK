@@ -49,6 +49,14 @@
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
+   
+    <boolean>
+      <name>ignoreVideoReadFail</name>
+      <longflag>ignoreVideoReadFail</longflag>
+      <description>If set will attempt to continue in spite of errors reading the video file</description>
+      <label>If set will attempt to continue in spite of errors reading the video file</label>
+      <default>0</default>
+    </boolean>
     
     <boolean>
       <name>FlipTracking</name>
@@ -81,6 +89,14 @@
 	<default>0</default>
     </integer>
 
+    <integer>
+	<name>framesToUse</name>
+	<longflag>framesToUse</longflag>
+	<description>If zero or greater, stop processing after n frames</description>
+	<label>If zero or greater, stop processing after n frames</label>
+	<default>-1</default>
+    </integer>
+ 
 
   
   </parameters>

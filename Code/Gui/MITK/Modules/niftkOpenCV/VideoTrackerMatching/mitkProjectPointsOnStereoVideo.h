@@ -16,6 +16,7 @@
 #define mitkProjectPointsOnStereoVideo_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
 #include <string>
 #include <fstream>
 #include <itkObject.h>
@@ -26,29 +27,6 @@
 #include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
-
-class NIFTKOPENCV_EXPORT GoldStandardPoint
-{
-  /**
-   * \class contains the gold standard points
-   * consisting of the frame number, the point and optionally the point index
-   */
-  public:
-    GoldStandardPoint();
-    GoldStandardPoint(unsigned int , int, cv::Point2d);
-    GoldStandardPoint(std::istream& is);
-    unsigned int m_FrameNumber;
-    int m_Index;
-    cv::Point2d  m_Point;
-   
-    /** 
-     * \brief an input operator
-     */
-    friend std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
-
-    friend bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
-
-};
 
 /**
  * \class Project points on stereo video
@@ -100,16 +78,11 @@ public:
   void SavePointsInLeftLensCoordinates (std::string filename);
 
   /**
-   * \brief Set the world points directly
-   */
- // void SetWorldPoints (std::vector<cv::Point3d> worldPoints);
-
-  /**
-   * \brief Set the world points by triangulating their position from the
+   * \brief Append to world points by triangulating their position from the
    * on screen coordinates for the specified frame
    */
-  void SetWorldPointsByTriangulation 
-    (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
+  void AppendWorldPointsByTriangulation 
+    (std::vector< mitk::ProjectedPointPair > onScreenPointPairs, 
      std::vector < unsigned int>  frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
      std::vector <double> * perturbation = NULL);
 
@@ -125,25 +98,21 @@ public:
   void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points );
 
   /**
-   * \brief sets the world points and corresponding vectors
+   * \brief appends points to  world points and corresponding vectors
    */
-  void SetWorldPoints ( std::vector<  std::pair < cv::Point3d, cv::Scalar >  > points );
-  /** 
-   * \brief set only the world points, the corresponding scalars get set to a default value
-   */
-  void SetWorldPoints ( std::vector< cv::Point3d > points );
+  void AppendWorldPoints ( std::vector< mitk::WorldPoint > points );
  
   /** 
-   * \brief set only the classifier world points
+   * \brief appends point to classifier world points
    */
-  void SetClassifierWorldPoints ( std::vector < cv::Point3d > points );
+  void AppendClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
   /** 
    * \brief clear the list of world points
    */
   void ClearWorldPoints ();
 
-  std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
+  itkGetMacro ( PointsInLeftLensCS, std::vector <mitk::WorldPointsWithTimingError> );
+  itkGetMacro ( ProjectedPoints, std::vector <mitk::ProjectedPointPairsWithTimingError>);
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -187,7 +156,7 @@ private:
   std::string                   m_Directory; //the directory containing the data
   std::string                   m_VideoOutPrefix; //where to write out any video
   std::string                   m_TriangulatedPointsOutName; //where to write the triangulated points out to
-  std::vector< std::pair < cv::Point3d, cv::Scalar > >     
+  std::vector< mitk::WorldPoint >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
@@ -222,11 +191,11 @@ private:
   double   m_VideoHeight;
 
   /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
+  std::vector < mitk::ProjectedPointPairsWithTimingError >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::pair < long long , std::vector < std::pair <cv::Point3d, cv::Scalar> > > >    
+  std::vector < mitk::WorldPointsWithTimingError >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
-  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
+  mitk::ProjectedPointPairsWithTimingError 
                                 m_ScreenAxesPoints; // the projected axes points
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
@@ -236,8 +205,8 @@ private:
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
   std::vector < mitk::GoldStandardPoint >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
-  std::vector< cv::Point3d >    m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
-  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
+  std::vector<mitk::WorldPoint> m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector < mitk::ProjectedPointPairsWithTimingError >
                                 m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
 
   std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels

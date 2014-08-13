@@ -60,11 +60,13 @@ public:
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
-  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3d> );
-  itkGetMacro ( WorldPoints, std::vector<cv::Point3d> );
+  itkSetMacro ( FramesToProcess, int);
+  itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkGetMacro ( PointsInLeftLensCS, std::vector<mitk::WorldPoint> );
+  itkGetMacro ( WorldPoints, std::vector<mitk::WorldPoint> );
+  itkGetMacro ( ScreenPoints, std::vector<mitk::ProjectedPointPair> );
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( TriangulateOK, bool);
-  std::vector< std::pair <cv::Point2d , cv::Point2d> > GetScreenPoints ();
 
   /**
    * \brief Set the matrix flip state for the VideoTracker matcher
@@ -90,14 +92,16 @@ private:
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
 
-  std::vector<cv::Point3d>      m_WorldPoints;  //the triangulated points in world coordinates
-  std::vector<cv::Point3d>      m_PointsInLeftLensCS;  //the triangulated points in world coordinates
+  std::vector<mitk::WorldPoint> m_WorldPoints;  //the triangulated points in world coordinates
+  std::vector<mitk::WorldPoint> m_PointsInLeftLensCS;  //the triangulated points in world coordinates
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   mitk::VideoTrackerMatching::Pointer
                                 m_TrackerMatcher; //the tracker matcher
  
   bool                          m_InitOK;
   bool                          m_TriangulateOK;
+
+  int                           m_FramesToProcess; //can stop early, if negative it runs to the end
 
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
@@ -110,11 +114,14 @@ private:
   //the video screen dimensions
   double   m_VideoWidth;
   double   m_VideoHeight;
+  double   m_DefaultVideoWidth;
+  double   m_DefaultVideoHeight;
 
-  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
+  std::vector < mitk::ProjectedPointPair > 
                                 m_ScreenPoints; // the projected points
 
-  CvCapture*                    m_Capture;
+  cv::VideoCapture*             m_Capture;
+  bool                          m_HaltOnVideoReadFail;
   CvVideoWriter*                m_Writer;
 
   cv::Size                      m_BlurKernel; //for blurring
