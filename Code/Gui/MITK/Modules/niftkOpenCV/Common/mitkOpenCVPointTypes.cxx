@@ -306,7 +306,15 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream frameMapLogFile
 bool VideoFrame::WriteToFile ( std::string prefix )
 {
   std::string filename;
-  cv::imwrite( "my_bitmap.bmp", m_VideoData);
+  if ( m_Left ) 
+  {
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_left.bmp";
+  }
+  else
+  {
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_right.bmp";
+  }
+  cv::imwrite( filename, m_VideoData);
 return true;
 }
 

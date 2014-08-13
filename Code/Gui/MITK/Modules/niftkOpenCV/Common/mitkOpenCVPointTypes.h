@@ -16,7 +16,10 @@
 #define mitkOpenCVPointTypes_h
 
 #include "niftkOpenCVExports.h"
+#include <opencv2/opencv.hpp> 
 #include <cv.h>
+#include <itkObject.h>
+#include <itkObjectFactory.h>
 
 /**
  * \file mitkOpenCVPointTypes.h
