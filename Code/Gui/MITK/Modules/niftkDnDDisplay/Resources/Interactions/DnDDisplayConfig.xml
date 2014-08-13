@@ -88,7 +88,7 @@
   <event_variant class="InteractionKeyEvent" name="MultiWindowLayout">
     <attribute name="Key" value="T"/>
   </event_variant>
-  <event_variant class="MouseDoubleClickEvent" name="MultiWindowLayout">
+  <event_variant class="MouseDoubleClickEvent" name="ToggleMultiWindowLayout">
     <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
 

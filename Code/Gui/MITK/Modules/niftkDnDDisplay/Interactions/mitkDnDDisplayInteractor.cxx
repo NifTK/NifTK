@@ -19,23 +19,24 @@
 #include "../niftkSingleViewerWidget.h"
 
 #include <mitkBaseRenderer.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkInteractionPositionEvent.h>
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
-#include <mitkGlobalInteraction.h>
 
 
 //-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
 : mitk::DisplayInteractor()
 , m_Viewer(viewer)
-, m_Renderers(3)
+, m_Renderers(4)
 , m_FocusManager(mitk::GlobalInteraction::GetInstance()->GetFocusManager())
 {
   const std::vector<QmitkRenderWindow*>& renderWindows = m_Viewer->GetRenderWindows();
   m_Renderers[0] = renderWindows[0]->GetRenderer();
   m_Renderers[1] = renderWindows[1]->GetRenderer();
   m_Renderers[2] = renderWindows[2]->GetRenderer();
+  m_Renderers[3] = renderWindows[3]->GetRenderer();
 }
 
 
@@ -59,7 +60,7 @@ void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool
 //-----------------------------------------------------------------------------
 void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 {
-  mitk::DisplayInteractor::ConnectActionsAndFunctions();
+  Superclass::ConnectActionsAndFunctions();
   CONNECT_FUNCTION("selectPosition", SelectPosition);
   CONNECT_FUNCTION("initMove", InitMove);
   CONNECT_FUNCTION("initZoom", InitZoom);
@@ -79,7 +80,7 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
 
   std::size_t i = std::find(m_Renderers.begin(), m_Renderers.end(), renderer) - m_Renderers.begin();
 
-  if (i < 3)
+  if (i < 4)
   {
     renderWindow = m_Viewer->GetRenderWindows()[i];
   }
@@ -89,15 +90,17 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
 
 
 //-----------------------------------------------------------------------------
-int mitk::DnDDisplayInteractor::GetOrientation(mitk::BaseRenderer* renderer)
+bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  return std::find(m_Renderers.begin(), m_Renderers.end(), renderer) - m_Renderers.begin();
-}
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
 
+  /// Note:
+  /// We do not re-implement position selection for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return false;
+  }
 
-//-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, InteractionEvent* interactionEvent)
-{
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
   {
@@ -114,7 +117,6 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
   bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
@@ -137,9 +139,17 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not implement scrolling for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
   bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
@@ -168,9 +178,17 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not implement scrolling for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
   bool updateWasBlocked = m_Viewer->BlockUpdate(true);
 
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (renderer != m_FocusManager->GetFocused())
   {
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);

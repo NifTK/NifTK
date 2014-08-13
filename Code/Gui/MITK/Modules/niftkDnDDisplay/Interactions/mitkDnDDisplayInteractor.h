@@ -101,8 +101,6 @@ private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
 
-  int GetOrientation(mitk::BaseRenderer* renderer);
-
   niftkSingleViewerWidget* m_Viewer;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
