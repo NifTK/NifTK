@@ -88,9 +88,9 @@ int main(int argc, char** argv)
         frame = mitk::VideoFrame(capture, fin);
         MITK_INFO << "Writing frame " << framecount;
       }
-      catch (...)
+      catch (std::exception& e)
       {
-        MITK_ERROR << "Caught exception:";
+        MITK_ERROR << "Caught exception:" << e.what();
         break;
       }
       frame.WriteToFile(outputPrefix);
