@@ -247,7 +247,7 @@ VideoFrame::VideoFrame()
 {}
 
 //-----------------------------------------------------------------------------
-VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream frameMapLogFile)
+VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFile)
 {
   if ( ! capture )
   {
@@ -268,7 +268,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream frameMapLogFile
   
   std::string line;
 
-  if ( ! getline (frameMapLogFile, line) )
+  if ( ! getline (*frameMapLogFile, line) )
   {
     MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
     return;
@@ -276,7 +276,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream frameMapLogFile
 
   while ( line[0] == '#' )
   {
-    if ( ! ( getline (frameMapLogFile, line)));
+    if ( ! ( getline (*frameMapLogFile, line)));
     {
       MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
       return;
@@ -314,11 +314,17 @@ bool VideoFrame::WriteToFile ( std::string prefix )
   {
     filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_right.bmp";
   }
-  cv::imwrite( filename, m_VideoData);
-return true;
+  return cv::imwrite( filename, m_VideoData);
 }
 
 //-----------------------------------------------------------------------------
 void VideoFrame::OutputVideoInformation (cv::VideoCapture * capture)
-{}
+{
+   //output types capture and matrix types
+   //
+   MITK_INFO << "Video Capture: Frame Width : " << capture->get(CV_CAP_PROP_FRAME_WIDTH);
+   MITK_INFO << "Video Capture: Frame Height : " << capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+
+
+}
 } // end namespace

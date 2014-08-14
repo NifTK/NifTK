@@ -120,7 +120,7 @@ class NIFTKOPENCV_EXPORT VideoFrame
 
   public:
     VideoFrame();
-    VideoFrame(cv::VideoCapture* capture, std::ifstream frameMapLogFile);
+    VideoFrame(cv::VideoCapture* capture, std::ifstream* frameMapLogFile);
 
     itkGetMacro   (VideoData, cv::Mat);
     itkGetMacro   (TimeStamp, unsigned long long);
