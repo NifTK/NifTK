@@ -25,9 +25,6 @@ namespace mitk
 const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "<stateMachine NAME=\"DnDDisplayStateMachine\">"
     "  <state NAME=\"stateStart\" ID=\"1\" START_STATE=\"TRUE\">"
-    "    <transition NAME=\"keyPressX\" EVENT_ID=\"4017\" NEXT_STATE_ID=\"1\">"
-    "      <action ID=\"350014\"/>"
-    "    </transition>"
     "    <transition NAME=\"keyPressK\" EVENT_ID=\"4009\" NEXT_STATE_ID=\"1\">"
     "      <action ID=\"350015\"/>"
     "    </transition>"
@@ -50,7 +47,6 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
 
   m_Responder = responder;
 
-  CONNECT_ACTION(350014, ToggleCursorVisibility);
   CONNECT_ACTION(350015, SelectPreviousTimeStep);
   CONNECT_ACTION(350016, SelectNextTimeStep);
 }
@@ -130,8 +126,7 @@ float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
   // See StateMachine.xml for event Ids.
   if (event != NULL
       && event->GetEvent() != NULL
-      && (   event->GetId() == 4017 // X
-          || event->GetId() == 4009 // K
+      && (   event->GetId() == 4009 // K
           || event->GetId() == 4010 // L
           )
       )

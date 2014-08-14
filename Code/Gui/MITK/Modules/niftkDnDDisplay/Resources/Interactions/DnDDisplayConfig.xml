@@ -92,4 +92,9 @@
     <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
 
+  <!-- Toggle cursor visibility -->
+  <event_variant class="InteractionKeyEvent" name="ToggleCursorVisibility">
+    <attribute name="Key" value="X"/>
+  </event_variant>
+
 </config>

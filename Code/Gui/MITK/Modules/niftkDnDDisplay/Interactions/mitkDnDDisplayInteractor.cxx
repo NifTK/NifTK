@@ -70,6 +70,7 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutTo3D", SetWindowLayoutTo3D);
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
+  CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
 }
 
 
@@ -344,5 +345,13 @@ bool mitk::DnDDisplayInteractor::SetWindowLayoutToMulti(StateMachineAction* acti
 bool mitk::DnDDisplayInteractor::ToggleMultiWindowLayout(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   m_Viewer->ToggleMultiWindowLayout();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->ToggleCursorVisibility();
   return true;
 }

@@ -97,6 +97,9 @@ protected:
   /// \brief Toggles between single and multi window layout.
   virtual bool ToggleMultiWindowLayout(StateMachineAction*, InteractionEvent*);
 
+  /// \brief Toggles the visibility of the cursor.
+  virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
+
 private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
