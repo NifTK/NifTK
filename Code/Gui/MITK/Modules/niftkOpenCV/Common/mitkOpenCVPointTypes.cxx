@@ -267,8 +267,8 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   }
   
   std::string line;
-
-  if ( ! getline (*frameMapLogFile, line) )
+  bool ok = getline (*frameMapLogFile, line);
+  if ( ! ok )
   {
     mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file";
     return;
@@ -276,7 +276,8 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 
   while ( line[0] == '#' )
   {
-    if ( ! ( getline (*frameMapLogFile, line)));
+    ok = getline (*frameMapLogFile, line);
+    if ( ! ok )
     {
       mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file while skipping comments";
       return;
