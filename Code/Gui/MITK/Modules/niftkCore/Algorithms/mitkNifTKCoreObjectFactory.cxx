@@ -34,13 +34,13 @@
 #include <mitkPointSetVtkMapper3D.h>
 
 //-----------------------------------------------------------------------------
-mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
+mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
   {
-    MITK_INFO << "NifTKCoreObjectFactory c'tor" << std::endl;
+    MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
 
     // At this point in this constructor, the main MITK CoreObjectFactory has been created,
     // (because in RegisterNifTKCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
@@ -72,7 +72,7 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     // Carry on as per normal.
     CreateFileExtensionsMap();
     alreadyDone = true;
-    MITK_INFO << "NifTKCoreObjectFactory c'tor finished" << std::endl;
+    MITK_DEBUG << "NifTKCoreObjectFactory c'tor finished" << std::endl;
   }
 
 }
@@ -143,7 +143,7 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
-  MITK_INFO << "Registering additional file extensions." << std::endl;
+  MITK_DEBUG << "Registering additional file extensions." << std::endl;
 
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
@@ -179,7 +179,7 @@ const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
   std::string fileExtension;
   this->CreateFileExtensions(m_FileExtensionsMap, fileExtension);
   return fileExtension.c_str();
-};
+}
 
 
 //-----------------------------------------------------------------------------
@@ -192,13 +192,24 @@ const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
 
 
 //-----------------------------------------------------------------------------
-void RegisterNifTKCoreObjectFactory()
-{
-  static bool oneNifTKCoreObjectFactoryRegistered = false;
-  if ( ! oneNifTKCoreObjectFactoryRegistered )
+struct RegisterNifTKCoreObjectFactory{
+  RegisterNifTKCoreObjectFactory()
+    : m_Factory( mitk::NifTKCoreObjectFactory::New() )
   {
-    MITK_INFO << "Registering NifTKCoreObjectFactory..." << std::endl;
-    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory(mitk::NifTKCoreObjectFactory::New());
-    oneNifTKCoreObjectFactoryRegistered = true;
+    MITK_DEBUG << "Registering NifTKCoreObjectFactory..." << std::endl;
+    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory( m_Factory );
   }
-}
+
+  ~RegisterNifTKCoreObjectFactory()
+  {
+    MITK_DEBUG << "Un-Registering NifTKCoreObjectFactory..." << std::endl;
+    mitk::CoreObjectFactory::GetInstance()->UnRegisterExtraFactory( m_Factory );
+  }
+
+  mitk::NifTKCoreObjectFactory::Pointer m_Factory;
+};
+
+
+//-----------------------------------------------------------------------------
+static RegisterNifTKCoreObjectFactory registerNifTKCoreObjectFactory;
+

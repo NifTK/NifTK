@@ -55,16 +55,13 @@ class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
     virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
 
   protected:
-    NifTKCoreObjectFactory(bool registerSelf = true);
+    NifTKCoreObjectFactory();
     void CreateFileExtensionsMap();
     MultimapType m_FileExtensionsMap;
     MultimapType m_SaveFileExtensionsMap;
 };
 
 } // end namespace
-
-// global declaration for simple call by applications
-void NIFTKCORE_EXPORT RegisterNifTKCoreObjectFactory();
 
 #endif
 
