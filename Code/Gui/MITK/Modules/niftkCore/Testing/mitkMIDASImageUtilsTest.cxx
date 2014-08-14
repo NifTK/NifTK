@@ -44,8 +44,6 @@ public:
   {
     std::string fileName = file;
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
     mitk::DataStorage::Pointer dataStorage;
     dataStorage = mitk::StandaloneDataStorage::New();
 
