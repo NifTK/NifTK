@@ -27,7 +27,7 @@
 #include <mitkCommon.h>
 #include <mitkException.h>
 
-#include <mitkNifTKCoreObjectFactory.h>
+#include <vtkObject.h>
 
 /**
  * \file NifTKApplication.h
@@ -219,12 +219,6 @@ int ApplicationMain(int argc, char** argv,
   // We get VTK errors from the Thumbnail widget, as it switches orientation (axial, coronal, sagittal).
   // So, for now we block them completely.  This could be command line driven, or just done on Windows.
   vtkObject::GlobalWarningDisplayOff();
-
-  // This is a NifTK specific override (could make it controlled by command line params).
-  // It takes care of registering the default MITK core object factories, which includes
-  // the ITK based file reader. It then hunts down the ITK based file reader, and kills
-  // it, and replaces it with a more NifTK suitable one.
-  RegisterNifTKCoreObjectFactory();
 
   int returnStatus = -1;
 
