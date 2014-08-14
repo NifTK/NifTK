@@ -46,7 +46,26 @@ int main(int argc, char** argv)
       exit(1);
     }
 
-    cv::VideoCapture* capture = new cv::VideoCapture (videoFiles[0]);
+    cv::VideoCapture* capture;
+    
+    try 
+    {
+      capture = mitk::InitialiseVideoCapture(videoFiles[0], ignoreVideoReadFail);
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught std::exception:" << e.what();
+      returnStatus = -1;
+      return returnStatus;
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Caught unknown exception:";
+      returnStatus = -2;
+      return returnStatus;
+    }
+
+
     std::ifstream* fin = new std::ifstream(frameMapFiles[0].c_str());
 
     if ( (! capture) || (!fin) )

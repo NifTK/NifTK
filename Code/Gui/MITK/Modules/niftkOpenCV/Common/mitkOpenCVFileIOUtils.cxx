@@ -182,5 +182,32 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   return isSuccessful;
 }
 
+//---------------------------------------------------------------------------
+cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErrors )
+{
+  cv::VideoCapture* capture = new cv::VideoCapture (filename);
+  if ( ! capture )
+  {
+    mitkThrow() << "Failed to open " << filename << " for video capture" << std::endl;
+  }
+  //try and get some information about the capture, if these calls fail it may be that 
+  //the capture may still work but will exhibit undesirable behaviour, see trac 3718
+  int m_VideoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  int m_VideoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+
+  if ( m_VideoWidth == 0 || m_VideoHeight == 0 )
+  {
+    if ( ! ignoreErrors )
+    {
+      mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+    }
+    else 
+    {
+      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+    }
+  }
+
+  return capture;
+}
 
 } // end namespace
