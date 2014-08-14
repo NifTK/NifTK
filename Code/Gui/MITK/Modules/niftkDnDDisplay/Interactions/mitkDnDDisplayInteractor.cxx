@@ -71,6 +71,8 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
+  CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
+  CONNECT_FUNCTION("selectNextTimeStep", SelectNextTimeStep);
 }
 
 
@@ -354,4 +356,32 @@ bool mitk::DnDDisplayInteractor::ToggleCursorVisibility(StateMachineAction* acti
 {
   m_Viewer->ToggleCursorVisibility();
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  int timeStep = m_Viewer->GetTimeStep() - 1;
+
+  if (timeStep >= 0)
+  {
+    m_Viewer->SetTimeStep(timeStep);
+  }
+
+  return timeStep == m_Viewer->GetTimeStep();
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  int timeStep = m_Viewer->GetTimeStep() + 1;
+
+  if (timeStep <= m_Viewer->GetMaxTimeStep())
+  {
+    m_Viewer->SetTimeStep(timeStep);
+  }
+
+  return timeStep == m_Viewer->GetTimeStep();
 }

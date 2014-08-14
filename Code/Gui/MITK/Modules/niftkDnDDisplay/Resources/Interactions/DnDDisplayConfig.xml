@@ -72,6 +72,24 @@
     <attribute name="Key" value="Z"/>
   </event_variant>
 
+  <!-- Scrolling through time steps -->
+  <event_variant class="MouseWheelEvent" name="SelectPreviousTimeStep">
+    <attribute name="ScrollDirection" value="up"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="MouseWheelEvent" name="SelectNextTimeStep">
+    <attribute name="ScrollDirection" value="down"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
+    <attribute name="Key" value="A"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectNextTimeStep">
+    <attribute name="Key" value="Z"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+
   <!-- Switch window layout -->
   <event_variant class="InteractionKeyEvent" name="AxialWindowLayout">
     <attribute name="Key" value="Q"/>

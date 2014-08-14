@@ -46,9 +46,6 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
   assert(responder);
 
   m_Responder = responder;
-
-  CONNECT_ACTION(350015, SelectPreviousTimeStep);
-  CONNECT_ACTION(350016, SelectNextTimeStep);
 }
 
 
@@ -126,9 +123,6 @@ float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
   // See StateMachine.xml for event Ids.
   if (event != NULL
       && event->GetEvent() != NULL
-      && (   event->GetId() == 4009 // K
-          || event->GetId() == 4010 // L
-          )
       )
   {
     return 1.0f;

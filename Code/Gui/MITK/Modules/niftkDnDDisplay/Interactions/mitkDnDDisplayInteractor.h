@@ -100,6 +100,12 @@ protected:
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
 
+  /// \brief Selects the previous time step.
+  virtual bool SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next time step.
+  virtual bool SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+
 private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
