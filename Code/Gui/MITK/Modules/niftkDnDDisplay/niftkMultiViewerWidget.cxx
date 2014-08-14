@@ -760,7 +760,6 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sele
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)
 {
-  MITK_INFO << "niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)";
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
   // If the viewer is not found, we do not do anything.

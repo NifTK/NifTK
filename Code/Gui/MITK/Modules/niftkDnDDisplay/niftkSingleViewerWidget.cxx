@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+#include "niftkSingleViewerWidget.h"
+
 #include <QStackedLayout>
 #include <QDebug>
 #include <QmitkRenderWindow.h>
@@ -19,9 +21,11 @@
 #include <itkSpatialOrientationAdapter.h>
 
 #include <itkConversionUtils.h>
-#include <mitkGlobalInteraction.h>
+
+#include <usGetModuleContext.h>
+#include <usModuleRegistry.h>
 #include <mitkPointUtils.h>
-#include "niftkSingleViewerWidget.h"
+
 #include "niftkMultiWindowWidget_p.h"
 
 
@@ -40,7 +44,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
-, m_DnDDisplayStateMachine(0)
 {
   if (renderingManager == NULL)
   {
@@ -82,23 +85,14 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorBindingChanged()), SLOT(OnScaleFactorBindingChanged()));
-
-  // Create/Connect the state machine
-  mitk::DnDDisplayStateMachine::LoadBehaviourString();
-  m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (std::size_t j = 0; j < renderWindows.size(); ++j)
-  {
-    m_DnDDisplayStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
-  }
-  mitk::GlobalInteraction::GetInstance()->AddListener(m_DnDDisplayStateMachine);
 }
 
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::~niftkSingleViewerWidget()
 {
-  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_DnDDisplayStateMachine);
+  // Release the display interactor.
+  this->SetDisplayInteractionsEnabled(false);
 }
 
 
@@ -406,14 +400,42 @@ void niftkSingleViewerWidget::SetLinkedNavigationEnabled(bool linkedNavigationEn
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
-  m_MultiWidget->SetDisplayInteractionsEnabled(enabled);
+  if (enabled == this->AreDisplayInteractionsEnabled())
+  {
+    // Already enabled/disabled.
+    return;
+  }
+
+  if (enabled)
+  {
+    // Here we create our own display interactor...
+    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(this);
+
+    us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
+    m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
+    m_DisplayInteractor->SetEventConfig("DnDDisplayConfig.xml", niftkDnDDisplayModule);
+
+    // ... and register it as listener via the micro services.
+    us::ServiceProperties props;
+    props["name"] = std::string("DisplayInteractor");
+
+    us::ModuleContext* moduleContext = us::GetModuleContext();
+    m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
+  }
+  else
+  {
+    // Unregister the display interactor service.
+    m_DisplayInteractorService.Unregister();
+    // Release the display interactor to let it be desctructed.
+    m_DisplayInteractor = 0;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::AreDisplayInteractionsEnabled() const
 {
-  return m_MultiWidget->AreDisplayInteractionsEnabled();
+  return m_DisplayInteractor.IsNotNull();
 }
 
 

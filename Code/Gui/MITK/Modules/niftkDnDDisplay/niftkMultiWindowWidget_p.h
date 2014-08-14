@@ -23,8 +23,6 @@
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
-#include "Interactions/mitkDnDDisplayInteractor.h"
-
 #include <niftkDnDDisplayEnums.h>
 
 class QGridLayout;
@@ -317,12 +315,6 @@ public:
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   int GetSliceUpDirection(WindowOrientation orientation) const;
 
-  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
-  void SetDisplayInteractionsEnabled(bool enabled);
-
-  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
-  bool AreDisplayInteractionsEnabled() const;
-
   /// \brief Gets the flag that controls whether the cursor position is bound between the 2D render windows.
   bool GetCursorPositionBinding() const;
 
@@ -572,13 +564,6 @@ private:
 
   friend class DisplayGeometryModificationCommand;
 
-  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
-
-  /**
-   * Reference to the service registration of the display interactor.
-   * It is needed to unregister the observer on unload.
-   */
-  us::ServiceRegistrationU m_DisplayInteractorService;
 };
 
 #endif

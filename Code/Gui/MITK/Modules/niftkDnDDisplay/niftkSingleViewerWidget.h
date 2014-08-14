@@ -29,8 +29,7 @@
 #include <QWidget>
 
 #include "niftkDnDDisplayEnums.h"
-#include "Interactions/mitkDnDDisplayStateMachineResponder.h"
-#include "Interactions/mitkDnDDisplayStateMachine.h"
+#include "Interactions/mitkDnDDisplayInteractor.h"
 
 class QGridLayout;
 class niftkMultiWindowWidget;
@@ -70,7 +69,7 @@ class niftkMultiWindowWidget;
  * \sa QmitkRenderWindow
  * \sa niftkMultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::DnDDisplayStateMachineResponder
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget
 {
 
   Q_OBJECT;
@@ -502,7 +501,13 @@ private:
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
-  mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
+  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  us::ServiceRegistrationU m_DisplayInteractorService;
 };
 
 #endif

@@ -716,9 +716,6 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
   {
     QTest::qWarn("Drop event not accepted by receiving widget.");
   }
-
-  d->VisibilityManager->OnNodesDropped(nodes);
-//  d->Viewer->OnNodesDropped(nodes);
 }
 
 

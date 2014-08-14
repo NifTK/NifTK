@@ -21,7 +21,7 @@
 
 #include <vector>
 
-class niftkMultiWindowWidget;
+class niftkSingleViewerWidget;
 class QmitkRenderWindow;
 
 namespace mitk
@@ -46,7 +46,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public mitk::DisplayInteracto
 {
 public:
   mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
-  mitkNewMacro1Param(Self, niftkMultiWindowWidget*);
+  mitkNewMacro1Param(Self, niftkSingleViewerWidget*);
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -57,7 +57,7 @@ public:
   virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
 
 protected:
-  DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget);
+  DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
   virtual void ConnectActionsAndFunctions();
@@ -79,13 +79,38 @@ protected:
   /// It also changes the selected position to the middle of the focused voxel.
   virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
+  /// \brief Switches to axial window layout.
+  virtual bool SetWindowLayoutToAxial(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to sagittal window layout.
+  virtual bool SetWindowLayoutToSagittal(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to coronal window layout.
+  virtual bool SetWindowLayoutToCoronal(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to 3D window layout.
+  virtual bool SetWindowLayoutTo3D(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Switches to multi window layout.
+  virtual bool SetWindowLayoutToMulti(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Toggles between single and multi window layout.
+  virtual bool ToggleMultiWindowLayout(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Toggles the visibility of the cursor.
+  virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Selects the previous time step.
+  virtual bool SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next time step.
+  virtual bool SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+
 private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
 
-  int GetOrientation(mitk::BaseRenderer* renderer);
-
-  niftkMultiWindowWidget* m_MultiWindowWidget;
+  niftkSingleViewerWidget* m_Viewer;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
 
