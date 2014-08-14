@@ -82,8 +82,17 @@ int main(int argc, char** argv)
 
     while(framecount < framesToUse )
     {
-      mitk::VideoFrame frame = mitk::VideoFrame(capture, fin);
-      MITK_INFO << "Writing frame " << framecount;
+      mitk::VideoFrame frame;
+      try
+      {
+        frame = mitk::VideoFrame(capture, fin);
+        MITK_INFO << "Writing frame " << framecount;
+      }
+      catch (...)
+      {
+        MITK_ERROR << "Caught exception:";
+        break;
+      }
       frame.WriteToFile(outputPrefix);
       
       framecount ++;

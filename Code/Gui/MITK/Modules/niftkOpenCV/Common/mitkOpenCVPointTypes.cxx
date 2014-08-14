@@ -251,18 +251,18 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 {
   if ( ! capture )
   {
-    MITK_ERROR << "mitk::VideoFrame, passed null video capture.";
+    mitkThrow() << "mitk::VideoFrame, passed null video capture.";
     return;
   }
   if ( ! frameMapLogFile )
   {
-    MITK_ERROR << "mitk::VideoFrame, passed null frame map log file.";
+    mitkThrow() << "mitk::VideoFrame, passed null frame map log file.";
     return;
   }
   bool success = capture->read(m_VideoData);
   if ( ! success )
   {
-    MITK_ERROR << "mitk::VideoFrame, error reading video file";
+    mitkThrow() << "mitk::VideoFrame, error reading video file";
     return;
   }
   
@@ -270,7 +270,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 
   if ( ! getline (*frameMapLogFile, line) )
   {
-    MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+    mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file";
     return;
   }
 
@@ -278,7 +278,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   {
     if ( ! ( getline (*frameMapLogFile, line)));
     {
-      MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+      mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file while skipping comments";
       return;
     }
   }
@@ -287,7 +287,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   bool parseSuccess = linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
   if ( ! parseSuccess )
   {
-    MITK_ERROR << "mitk::VideoFrame, error reading frame map log file";
+    mitkThrow() << "mitk::VideoFrame, error parsing line from frame map log file";
     return;
   }
 
