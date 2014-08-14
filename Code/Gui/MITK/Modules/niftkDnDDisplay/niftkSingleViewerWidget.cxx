@@ -24,7 +24,6 @@
 
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
-#include <mitkGlobalInteraction.h>
 #include <mitkPointUtils.h>
 
 #include "niftkMultiWindowWidget_p.h"
@@ -45,7 +44,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
-, m_DnDDisplayStateMachine(0)
 {
   if (renderingManager == NULL)
   {
@@ -87,16 +85,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorBindingChanged()), SLOT(OnScaleFactorBindingChanged()));
-
-  // Create/Connect the state machine
-  mitk::DnDDisplayStateMachine::LoadBehaviourString();
-  m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (std::size_t j = 0; j < renderWindows.size(); ++j)
-  {
-    m_DnDDisplayStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
-  }
-  mitk::GlobalInteraction::GetInstance()->AddListener(m_DnDDisplayStateMachine);
 }
 
 
@@ -105,8 +93,6 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 {
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
-
-  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_DnDDisplayStateMachine);
 }
 
 
