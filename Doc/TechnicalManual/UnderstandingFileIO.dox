@@ -284,14 +284,16 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
 }
 \endcode
 which can be seen to remove the mitk::ItkImageFileIOFactory and insert mitk::NifTKItkImageFileIOFactory.
-This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts be calling 
-RegisterNifTKCoreObjectFactory found in mitkNifTKCoreObjectFactory.h, as can be seen in the main NiftyView application
-\verbatim
-NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cxx
-\endverbatim
+This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts because the first 
+thing that loads the niftkCore library will call
+\code
+static RegisterNifTKCoreObjectFactory registerNifTKCoreObjectFactory;
+\endcode
+found in mitkNifTKCoreObjectFactory.cpp.
+
 To summarise, we create a factory called mitk::NifTKItkImageFileIOFactory to load all ITK image types, using the standard ITK mechanism,
 except for Analyze and Nifti files where we provide modified readers. This factory is registered with the ITK ObjectFactory
-at application startup, replacing the default MITK class. This process is not done for command line applications.
+at application startup, replacing the default MITK class.
 
 \section UnderstandingFileIODicomITK Loading DICOM files in ITK
 
