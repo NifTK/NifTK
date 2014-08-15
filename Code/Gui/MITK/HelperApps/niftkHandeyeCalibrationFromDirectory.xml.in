@@ -25,7 +25,7 @@
       <longflag>outputDirectory</longflag>
       <description>Output the calibration results</description>
       <label>Output results</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </directory>
     
   </parameters>

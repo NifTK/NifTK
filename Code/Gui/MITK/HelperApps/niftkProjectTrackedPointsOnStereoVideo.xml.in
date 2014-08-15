@@ -80,7 +80,7 @@
       <longflag>output3D</longflag>
       <description>Output 3D points</description>
       <label>Output 3D points</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </file>
     
     <file>
@@ -119,7 +119,7 @@
       <longflag>outputTriangulatedPoints</longflag>
       <description>Output Trianguled 3D points</description>
       <label>Output Triangulated 3D points</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </file>
  
     <integer>
