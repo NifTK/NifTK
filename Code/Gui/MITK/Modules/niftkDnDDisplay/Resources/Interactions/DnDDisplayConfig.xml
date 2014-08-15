@@ -82,10 +82,12 @@
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectNextTimeStep">
-    <attribute name="Key" value="L"/>
+    <attribute name="Key" value="A"/>
+    <attribute name="Modifiers" value="alt"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
-    <attribute name="Key" value="K"/>
+    <attribute name="Key" value="Z"/>
+    <attribute name="Modifiers" value="alt"/>
   </event_variant>
 
   <!-- Autoscroll through slices -->
@@ -107,19 +109,19 @@
   </event_variant>
 
   <!-- Autoscroll through time steps -->
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepForwardsByKey">
-    <attribute name="Key" value="L"/>
-    <attribute name="Modifiers" value="shift"/>
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsForwardsByKey">
+    <attribute name="Key" value="A"/>
+    <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepBackwardsByKey">
-    <attribute name="Key" value="K"/>
-    <attribute name="Modifiers" value="shift"/>
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsBackwardsByKey">
+    <attribute name="Key" value="Z"/>
+    <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepBackwardsByMouse">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepsBackwardsByMouse">
     <attribute name="ScrollDirection" value="up"/>
     <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepForwardsByMouse">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepsForwardsByMouse">
     <attribute name="ScrollDirection" value="down"/>
     <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
