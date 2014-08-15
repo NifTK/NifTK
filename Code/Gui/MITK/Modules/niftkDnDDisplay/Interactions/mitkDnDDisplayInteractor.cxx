@@ -24,7 +24,8 @@
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QTime>
+#include <QTimer>
+
 
 //-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
@@ -32,12 +33,15 @@ mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer
 , m_Viewer(viewer)
 , m_Renderers(4)
 , m_FocusManager(mitk::GlobalInteraction::GetInstance()->GetFocusManager())
+, m_AutoScrollTimer(new QTimer(this))
 {
   const std::vector<QmitkRenderWindow*>& renderWindows = m_Viewer->GetRenderWindows();
   m_Renderers[0] = renderWindows[0]->GetRenderer();
   m_Renderers[1] = renderWindows[1]->GetRenderer();
   m_Renderers[2] = renderWindows[2]->GetRenderer();
   m_Renderers[3] = renderWindows[3]->GetRenderer();
+
+  m_AutoScrollTimer->setInterval(200);
 }
 
 
@@ -397,7 +401,9 @@ bool mitk::DnDDisplayInteractor::SelectNextTimeStep(StateMachineAction* action, 
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior()";
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneSliceAnterior()));
+  m_AutoScrollTimer->start();
+
   return true;
 }
 
@@ -405,7 +411,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior(StateMachin
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior()";
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneSlicePosterior()));
+  m_AutoScrollTimer->start();
   return true;
 }
 
@@ -413,7 +420,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior(StateMachi
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards()";
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneTimeStepBackwards()));
+  m_AutoScrollTimer->start();
   return true;
 }
 
@@ -421,7 +429,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMa
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards()";
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneTimeStepForwards()));
+  m_AutoScrollTimer->start();
   return true;
 }
 
@@ -429,6 +438,57 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMac
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::StopScrolling()";
+  m_AutoScrollTimer->stop();
+  m_AutoScrollTimer->disconnect(this);
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::DnDDisplayInteractor::StepOneSliceAnterior()
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  int slice = m_Viewer->GetSelectedSlice(orientation) - 1;
+  if (slice < 0)
+  {
+    slice = m_Viewer->GetMaxSlice(orientation);
+  }
+  m_Viewer->SetSelectedSlice(orientation, slice);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::DnDDisplayInteractor::StepOneSlicePosterior()
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  int slice = m_Viewer->GetSelectedSlice(orientation) + 1;
+  if (slice > m_Viewer->GetMaxSlice(orientation))
+  {
+    slice = 0;
+  }
+  m_Viewer->SetSelectedSlice(orientation, slice);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::DnDDisplayInteractor::StepOneTimeStepBackwards()
+{
+  int timeStep = m_Viewer->GetTimeStep() - 1;
+  if (timeStep < 0)
+  {
+    timeStep = m_Viewer->GetMaxTimeStep();
+  }
+  m_Viewer->SetTimeStep(timeStep);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::DnDDisplayInteractor::StepOneTimeStepForwards()
+{
+  int timeStep = m_Viewer->GetTimeStep() + 1;
+  if (timeStep > m_Viewer->GetMaxTimeStep())
+  {
+    timeStep = 0;
+  }
+  m_Viewer->SetTimeStep(timeStep);
 }
