@@ -6,6 +6,7 @@
 \li \ref DragAndDropUsageLaunching
 \li \ref DragAndDropUsageDropping
 \li \ref DragAndDropControls
+\li \ref DragAndDropInteractions
 \li \ref DragAndDropPreferences
 
 \section DragAndDropIntro Introduction
@@ -109,7 +110,29 @@ and 3V (axial, sagittal, coronal displayed vertically).
 so the user can decide whether to drop images cumulatively into a viewer.
 \li Bind type - The Drag and Drop Display can also link or "Bind" viewers together, where there is the option to bind
 just the cursors, the magnification, or the geometry.
- 
+
+\subsection DragAndDropInteractions Interactions
+
+Many features of the display can be controlled by key or mouse interactions.
+
+\li Selecting position: left mouse button
+\li Zooming: dragging with the right mouse button (keep it pressed and move the mouse)
+\li Panning: dragging with middle mouse button or dragging with the left button with Shift
+\li Select anterior slice: 'A' or scrolling up with the mouse wheel
+\li Select posterior slice: 'Z' or scrolling down with the mouse wheel
+\li Select next time step: Alt-A or scrolling up with the mouse wheel with Alt
+\li Select previous time step: Alt-Z or scrolling down with the mouse wheel with Alt
+\li Auto-scroll through slices in anterior direction: Shift-A or start scrolling up with Shift
+\li Auto-scroll through slices in posterior direction: Shift-Z or start scrolling down with Shift
+\li Auto-scroll through time steps forwards: Shift-Alt-A or scrolling up with the mouse wheel with Shift-Alt
+\li Auto-scroll through time steps backwards: Shift-Alt-Z or scrolling down with the mouse wheel with Shift-Alt
+\li Switch to axial window: 'Q'
+\li Switch to sagittal window: 'W'
+\li Switch to coronal window: 'E'
+\li Switch to 3D window: 'R'
+\li Toggle between single and multiple window layout: 'T' or double click in a window
+\li Toggle cursor visibility: 'X'
+
 \subsection DragAndDropPreferences User Preferences for the Drag and Drop Display
 
 The user preferences control important defaults that affect the operation of the Drag and Drop Display when it 
