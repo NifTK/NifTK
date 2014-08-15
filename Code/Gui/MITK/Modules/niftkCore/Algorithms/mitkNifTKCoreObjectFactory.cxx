@@ -43,8 +43,6 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
     MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
 
     // At this point in this constructor, the main MITK CoreObjectFactory has been created,
-    // (because in RegisterNifTKCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
-    // will instantiate the MITK CoreObjectFactory, which will create lots of Core MITK objects),
     // so MITKs file reader for ITK images will already be available. So, now we remove it.
     std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();
     std::list<itk::ObjectFactoryBase*>::iterator iter;
@@ -86,12 +84,7 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
 
   if ( id == mitk::BaseRenderer::Standard3D )
   {
-    if(dynamic_cast<Image*>(data) != NULL)
-    {
-      newMapper = mitk::VolumeDataVtkMapper3D::New();
-      newMapper->SetDataNode(node);
-    }
-    else if (dynamic_cast<PointSet*>(data) != NULL )
+    if (dynamic_cast<PointSet*>(data) != NULL )
     {
       mitk::PointSet* pointSet = dynamic_cast<PointSet*>(data);
       if (pointSet->GetSize() > 1000)
@@ -121,15 +114,6 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
   if(node == NULL)
   {
     return;
-  }
-
-  mitk::DataNode::Pointer nodePointer = node;
-
-  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-  if(image.IsNotNull() && image->IsInitialized())
-  {
-    mitk::ImageVtkMapper2D::SetDefaultProperties(node);
-    mitk::VolumeDataVtkMapper3D::SetDefaultProperties(node);
   }
 
   mitk::CoordinateAxesData::Pointer coordinateAxesData = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
