@@ -37,9 +37,6 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("mitkCoordinateAxesDataRenderingTest");
 
-  // Call this to set up the mapper.
-  RegisterNifTKCoreObjectFactory();
-
   // Create axes node
   mitk::CoordinateAxesData::Pointer axes = mitk::CoordinateAxesData::New();
   mitk::DataNode::Pointer axesNode = mitk::DataNode::New();

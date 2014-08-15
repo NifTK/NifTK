@@ -47,9 +47,6 @@ public:
     std::string fileName = file;
     MITK_TEST_CONDITION_REQUIRED(fileName.size()>0,"check for filename")
 
-    // Need to load images, specifically testing Reader and Writer factories, registered here.
-    RegisterNifTKCoreObjectFactory();
-
     // Create matrix to store. The mitk::CoordinateAxesData only store the 3x3 rotation
     // matrix plus the offset. So the bottom row is always as per Identity matrix.
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
