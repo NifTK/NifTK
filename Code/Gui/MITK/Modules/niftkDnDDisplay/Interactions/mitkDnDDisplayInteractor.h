@@ -106,6 +106,21 @@ protected:
   /// \brief Selects the next time step.
   virtual bool SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
 
+  /// \brief Starts scrolling through slices in a loop in anterior direction.
+  virtual bool StartScrollingThroughSlicesAnterior(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Starts scrolling through slices in a loop in posterior direction.
+  virtual bool StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Starts scrolling through time steps in a loop, backwards.
+  virtual bool StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Starts scrolling through time steps in a loop, forwards.
+  virtual bool StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Stops scrolling through slices.
+  virtual bool StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent);
+
 private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);

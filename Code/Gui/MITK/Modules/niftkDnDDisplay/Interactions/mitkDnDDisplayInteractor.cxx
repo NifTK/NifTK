@@ -24,6 +24,7 @@
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
 
+#include <QTime>
 
 //-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
@@ -73,6 +74,12 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
   CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
   CONNECT_FUNCTION("selectNextTimeStep", SelectNextTimeStep);
+
+  CONNECT_FUNCTION("startScrollingThroughSlicesAnterior", StartScrollingThroughSlicesAnterior);
+  CONNECT_FUNCTION("startScrollingThroughSlicesPosterior", StartScrollingThroughSlicesPosterior);
+  CONNECT_FUNCTION("startScrollingThroughTimeStepsBackwards", StartScrollingThroughTimeStepsBackwards);
+  CONNECT_FUNCTION("startScrollingThroughTimeStepsForwards", StartScrollingThroughTimeStepsForwards);
+  CONNECT_FUNCTION("stopScrolling", StopScrolling);
 }
 
 
@@ -384,4 +391,44 @@ bool mitk::DnDDisplayInteractor::SelectNextTimeStep(StateMachineAction* action, 
   }
 
   return timeStep == m_Viewer->GetTimeStep();
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior()";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior()";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards()";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards()";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::DnDDisplayInteractor::StopScrolling()";
+  return true;
 }
