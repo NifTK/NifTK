@@ -17,6 +17,7 @@
 
 #include "niftkOpenCVExports.h"
 #include <mitkTrackingMatrixTimeStamps.h>
+#include <highgui.h>
 
 /**
  * \file mitkOpenCVFileIOUtils.h

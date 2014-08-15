@@ -14,11 +14,14 @@
 
 #include "mitkOpenCVPointTypes.h"
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <boost/lexical_cast.hpp>
 #include <numeric>
 #include <algorithm>
 #include <functional>
 #include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
+#include <string>
+#include <fstream>
 
 namespace mitk {
 
@@ -267,7 +270,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   }
   
   std::string line;
-  bool ok = getline (*frameMapLogFile, line);
+  bool ok = std::getline (*frameMapLogFile, line);
   if ( ! ok )
   {
     mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file";
@@ -276,7 +279,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 
   while ( line[0] == '#' )
   {
-    ok = getline (*frameMapLogFile, line);
+    ok = std::getline (*frameMapLogFile, line);
     if ( ! ok )
     {
       mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file while skipping comments";
