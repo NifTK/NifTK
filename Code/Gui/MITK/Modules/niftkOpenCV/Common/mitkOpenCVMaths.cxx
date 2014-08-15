@@ -1906,4 +1906,11 @@ void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output)
   output = tmpOutput;
 }
 
+
+//-----------------------------------------------------------------------------
+void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output)
+{
+
+}
+
 } // end namespace
