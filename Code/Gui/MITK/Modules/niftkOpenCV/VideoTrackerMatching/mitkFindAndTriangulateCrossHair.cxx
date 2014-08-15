@@ -15,6 +15,7 @@
 #include "mitkFindAndTriangulateCrossHair.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -118,33 +119,26 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     }
     m_VideoIn = videoFiles[0];
    
-    m_Capture = new  cv::VideoCapture(m_VideoIn.c_str()); 
+    try
+    {
+      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail) ); 
+    }
+    catch ( std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
     //the following don't seem to work unless opencv is built with ffmpeg
     m_VideoWidth = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_WIDTH));
     m_VideoHeight = static_cast<double>(m_Capture->get(CV_CAP_PROP_FRAME_HEIGHT));
    
     if ( m_VideoWidth == 0.0 || m_VideoHeight == 0.0 )
     {
-      if ( m_HaltOnVideoReadFail ) 
-      {
-        MITK_ERROR << "Failed to open " << m_VideoIn.c_str() << " correctly and m_HaltOnVideoReadFail true, so halting mitkFindAndTriangulateCrossHair." ;
-        m_InitOK = false;
-        return;
-      }
-      else
-      {
-        MITK_WARN << "Failed to open " << m_VideoIn.c_str() << " correctly and m_HaltOnVideoReadFail false, attempting to continue with m_VideoWidth = " << m_DefaultVideoWidth << " and m_VideoHeight =  " << m_DefaultVideoHeight;
-        m_VideoWidth = m_DefaultVideoWidth;
-        m_VideoHeight = m_DefaultVideoHeight;
-      }
+      MITK_WARN << "Failed to open " << m_VideoIn.c_str() << " correctly and m_HaltOnVideoReadFail false, attempting to continue with m_VideoWidth = " << m_DefaultVideoWidth << " and m_VideoHeight =  " << m_DefaultVideoHeight;
+      m_VideoWidth = m_DefaultVideoWidth;
+      m_VideoHeight = m_DefaultVideoHeight;
     }
     MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
-    if ( ! m_Capture )
-    {
-      MITK_ERROR << "Failed to open " << m_VideoIn;
-      m_InitOK=false;
-      return;
-    }
   }
 
   m_InitOK = true;

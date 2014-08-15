@@ -92,6 +92,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
+  itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points );
@@ -168,6 +169,7 @@ private:
   bool                          m_DrawAxes;
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
   bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
+  bool                          m_HaltOnVideoReadFail; //stop processing if video read fails
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardIndex; //useful if we're just triangulating gold standard points
 
@@ -215,7 +217,7 @@ private:
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
   std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
-  CvCapture*                    m_Capture;
+  cv::VideoCapture*                  m_Capture;
   CvVideoWriter*                m_LeftWriter;
   CvVideoWriter*                m_RightWriter;
 

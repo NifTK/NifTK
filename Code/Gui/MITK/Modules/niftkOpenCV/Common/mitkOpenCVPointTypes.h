@@ -16,7 +16,10 @@
 #define mitkOpenCVPointTypes_h
 
 #include "niftkOpenCVExports.h"
+#include <opencv2/opencv.hpp> 
 #include <cv.h>
+#include <itkObject.h>
+#include <itkObjectFactory.h>
 
 /**
  * \file mitkOpenCVPointTypes.h
@@ -106,6 +109,33 @@ class NIFTKOPENCV_EXPORT ProjectedPointPairsWithTimingError
 
     std::vector <mitk::ProjectedPointPair> m_Points;
     long long                              m_TimingError; 
+};
+
+class NIFTKOPENCV_EXPORT VideoFrame
+{
+  /** 
+   * \class contains an opencv matrix of video data, a left or right flag and the 
+   * timestamp
+   */
+
+  public:
+    VideoFrame();
+    VideoFrame(cv::VideoCapture* capture, std::ifstream* frameMapLogFile);
+
+    itkGetMacro   (VideoData, cv::Mat);
+    itkGetMacro   (TimeStamp, unsigned long long);
+    
+    bool WriteToFile (std::string prefix);
+    void OutputVideoInformation (cv::VideoCapture* capture);
+
+  private:
+    cv::Mat             m_VideoData;
+    unsigned long long  m_TimeStamp;
+    bool                m_Left;
+
+    unsigned int        m_FrameNumber;
+    unsigned int        m_SequenceNumber;
+    unsigned int        m_Channel;
 };
 
 } // end namespace

@@ -18,6 +18,7 @@
 #include "mitkHandeyeCalibrateFromDirectory.h"
 #include "mitkCameraCalibrationFacade.h"
 #include "mitkHandeyeCalibrate.h"
+#include <mitkExceptionMacro.h>
 
 #include <fstream>
 #include <iostream>
@@ -181,9 +182,19 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::MatchingVideoFramesToTrackingM
 //-----------------------------------------------------------------------------
 void EvaluateIntrinsicParametersOnNumberOfFrames::LoadVideoData(std::string filename)
 {
-  cv::VideoCapture capture = cv::VideoCapture(filename) ; 
+  bool ignoreVideoReadFailure = false;
+  cv::VideoCapture *capture;
+  try 
+  {
+    capture = mitk::InitialiseVideoCapture(filename) ; 
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught exception:" << e.what();
+    exit(1);         
+  }
   
-  if ( ! capture.isOpened() ) 
+  if ( ! capture->isOpened() ) 
   {
     MITK_ERROR << "Failed to open " << filename;
     return;
@@ -212,19 +223,19 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::LoadVideoData(std::string file
 		
 		if ( !find )
     {
-		  capture >> tempFrame;
-			capture >> tempFrame;
+		  *capture >> tempFrame;
+			*capture >> tempFrame;
 			continue;
     }		
 
-    capture >> tempFrame;
+    *capture >> tempFrame;
 		
     if (!m_SwapVideoChannels)
       leftFrame = tempFrame.clone();
     else
       rightFrame = tempFrame.clone();
 
-    capture >> tempFrame;
+    *capture >> tempFrame;
     if (!m_SwapVideoChannels)
       rightFrame = tempFrame.clone();
     else
@@ -332,16 +343,25 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::RunExperiment()
     return;
   }
 
-  cv::VideoCapture capture = cv::VideoCapture(filenames[0]) ; 
-  
-  if ( ! capture.isOpened() ) 
+  cv::VideoCapture *capture;
+  try 
+  {
+    capture = mitk::InitialiseVideoCapture(filenames[0]) ; 
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught exception:" << e.what();
+    exit(1); 
+  }
+
+  if ( ! capture->isOpened() ) 
   {
     MITK_ERROR << "Failed to open " << filenames[0];
     return;
   }
   
-  double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-  double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+  double framewidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  double frameheight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
 
   cv::Size imageSize(framewidth, frameheight);
 

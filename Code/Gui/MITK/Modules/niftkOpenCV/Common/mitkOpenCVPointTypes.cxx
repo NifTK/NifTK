@@ -242,4 +242,90 @@ ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
 , m_TimingError(0)
 {}
 
+//-----------------------------------------------------------------------------
+VideoFrame::VideoFrame()
+{}
+
+//-----------------------------------------------------------------------------
+VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFile)
+{
+  if ( ! capture )
+  {
+    mitkThrow() << "mitk::VideoFrame, passed null video capture.";
+    return;
+  }
+  if ( ! frameMapLogFile )
+  {
+    mitkThrow() << "mitk::VideoFrame, passed null frame map log file.";
+    return;
+  }
+  bool success = capture->read(m_VideoData);
+  if ( ! success )
+  {
+    mitkThrow() << "mitk::VideoFrame, error reading video file";
+    return;
+  }
+  
+  std::string line;
+  bool ok = getline (*frameMapLogFile, line);
+  if ( ! ok )
+  {
+    mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file";
+    return;
+  }
+
+  while ( line[0] == '#' )
+  {
+    ok = getline (*frameMapLogFile, line);
+    if ( ! ok )
+    {
+      mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file while skipping comments";
+      return;
+    }
+  }
+  
+  std::stringstream linestream(line);
+  bool parseSuccess = linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
+  if ( ! parseSuccess )
+  {
+    mitkThrow() << "mitk::VideoFrame, error parsing line from frame map log file";
+    return;
+  }
+
+  if ( m_Channel == 0 )
+  {
+    m_Left = true;
+  }
+  else
+  {
+    m_Left = false;
+  }
+  return;
+}
+
+//-----------------------------------------------------------------------------
+bool VideoFrame::WriteToFile ( std::string prefix )
+{
+  std::string filename;
+  if ( m_Left ) 
+  {
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_left.bmp";
+  }
+  else
+  {
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_right.bmp";
+  }
+  return cv::imwrite( filename, m_VideoData);
+}
+
+//-----------------------------------------------------------------------------
+void VideoFrame::OutputVideoInformation (cv::VideoCapture * capture)
+{
+   //output types capture and matrix types
+   //
+   MITK_INFO << "Video Capture: Frame Width : " << capture->get(CV_CAP_PROP_FRAME_WIDTH);
+   MITK_INFO << "Video Capture: Frame Height : " << capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+
+
+}
 } // end namespace

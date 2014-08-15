@@ -57,6 +57,15 @@ extern "C++" NIFTKOPENCV_EXPORT bool ReadTrackerMatrix(const std::string& filena
  */
 extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
+/**
+ * \brief Attempts to open a video capture and checks for errors. see trac 3718. This 
+ * attempts to avoid problems caused by the subtle decoding errors.
+ * \param the filename
+ * \param ignore errors, false by default
+ * @return the video capture object
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::string filename, bool ignoreErrors = false);
+
 
 } // end namespace
 

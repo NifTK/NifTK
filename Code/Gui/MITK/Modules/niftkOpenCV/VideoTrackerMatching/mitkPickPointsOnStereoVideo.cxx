@@ -15,6 +15,7 @@
 #include "mitkPickPointsOnStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <cv.h>
 //#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
@@ -46,6 +47,7 @@ m_VideoIn("")
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_OrderedPoints(false)
 , m_AskOverWrite(false)
+, m_HaltOnVideoReadFail(true)
 , m_StartFrame(0)
 , m_EndFrame(0)
 , m_Frequency(50)
@@ -106,15 +108,15 @@ void PickPointsOnStereoVideo::Initialise(std::string directory,
       MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
     }
     m_VideoIn = videoFiles[0];
-   
-    m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-  }
-  
-  if ( ! m_Capture )
-  {
-    MITK_ERROR << "Failed to open " << m_VideoIn;
-    m_InitOK=false;
-    return;
+    try
+    {
+      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
   }
 
   m_InitOK = true;
@@ -148,7 +150,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
-      cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+      cv::Mat videoImage;
+      m_Capture->read(videoImage);
       MITK_INFO << "Skipping frame " << framenumber;
       framenumber ++;
     }
@@ -159,9 +162,9 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
       cv::Mat tempMat;
       cv::Mat leftVideoImage;
-      tempMat = cvQueryFrame ( m_Capture );
+      m_Capture->read(tempMat);
       leftVideoImage = tempMat.clone();
-      tempMat = cvQueryFrame ( m_Capture );
+      m_Capture->read(tempMat);
       cv::Mat rightVideoImage = tempMat.clone();
 
       if ( std::abs(timingError) <  m_AllowableTimingError )

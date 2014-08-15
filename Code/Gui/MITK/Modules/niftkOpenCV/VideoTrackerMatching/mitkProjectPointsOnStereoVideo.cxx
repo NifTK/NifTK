@@ -16,6 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkPointSetWriter.h>
 #include <cv.h>
 //#include <opencv2/highgui/highgui.hpp>
@@ -41,6 +42,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
+, m_HaltOnVideoReadFail(true)
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
 , m_MaxGoldStandardIndex(-1)
@@ -124,19 +126,22 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
       }
       m_VideoIn = videoFiles[0];
    
-      m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
+      try
+      {
+        m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, ( ! m_HaltOnVideoReadFail ));
+      }
+      catch (std::exception& e)
+      {
+        MITK_ERROR << "Caught exception " << e.what();
+        m_InitOK=false;
+        return;
+      }
     }
   
-    if ( ! m_Capture )
-    {
-      MITK_ERROR << "Failed to open " << m_VideoIn;
-      m_InitOK=false;
-      return;
-    }
     if ( m_SaveVideo )
     {
       cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
-      double fps = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FPS);
+      double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
       m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
       m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
@@ -219,7 +224,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     {
       if ( m_Visualise || m_SaveVideo ) 
       {
-        cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+        cv::Mat videoImage;
+        m_Capture->read(videoImage);
         MITK_INFO << "Skipping frame " << framenumber;
       }
       framenumber ++;
@@ -351,7 +357,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
       if ( m_Visualise || m_SaveVideo ) 
       {
-        cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+        cv::Mat videoImage;
+        m_Capture->read(videoImage);
         for ( unsigned thing = 0 ; thing < m_WorldPoints.size() ; thing ++ )
         MITK_INFO << framenumber << " " << m_WorldPoints[thing].m_Point << " " << pointsInLeftLensCS.m_Points[thing].m_Point << " => " << screenPoints[thing].m_Left << screenPoints[thing].m_Right;
         if ( drawProjection )

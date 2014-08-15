@@ -15,6 +15,7 @@
 #include "mitkHandeyeCalibrateFromDirectory.h"
 #include "mitkCameraCalibrationFacade.h"
 #include "mitkHandeyeCalibrate.h"
+#include <mitkOpenCVFileIOUtils.h>
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -217,9 +218,19 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     return;
   }
 
-  cv::VideoCapture capture = cv::VideoCapture(filename) ; 
+  cv::VideoCapture *capture;
+  try 
+  {
+    bool ignoreVideoReadFailure = false;
+    capture = mitk::InitialiseVideoCapture(filename, ignoreVideoReadFailure) ; 
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught std::exception:" << e.what();
+    exit(1);
+  }
   
-  if ( ! capture.isOpened() ) 
+  if ( ! capture->isOpened() ) 
   {
     MITK_ERROR << "Failed to open " << filename;
     return;
@@ -235,8 +246,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //raw data get the frame count from the framemap log
   int numberOfFrames = m_Matcher->GetNumberOfFrames();
 
-  double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-  double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+  double framewidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  double frameheight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
   
   double filesize = numberOfFrames * framewidth * frameheight * 4 / 1e9;
   MITK_INFO << numberOfFrames << "frames in video : " << framewidth << "x" << frameheight;;
@@ -302,12 +313,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat RightFrame;
     cv::Mat LeftFrame_orig;
     cv::Mat RightFrame_orig;
-    capture >> TempFrame;
+    *capture >> TempFrame;
     if (!m_SwapVideoChannels)
       LeftFrame = TempFrame.clone();
     else
       RightFrame = TempFrame.clone();
-    capture >> TempFrame;
+    *capture >> TempFrame;
     if (!m_SwapVideoChannels)
       RightFrame = TempFrame.clone();
     else
@@ -341,7 +352,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         if ( LeftOK && RightOK )
         {
 
-          MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
+          MITK_INFO << "Frame " << capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
 
           allLeftImagePoints.push_back(cv::Mat(*leftImageCorners,true));
           allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
@@ -360,7 +371,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         }
         else
         {
-          MITK_INFO << "Frame " <<  capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
+          MITK_INFO << "Frame " <<  capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
           std::vector<int>::iterator newEnd = std::remove(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber);
           LeftFramesToUse.erase(newEnd, LeftFramesToUse.end());
           newEnd = std::remove(RightFramesToUse.begin(), RightFramesToUse.end(), FrameNumber+1);
