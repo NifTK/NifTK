@@ -99,6 +99,7 @@ void DataNodePropertyListener::SetRenderers(const std::vector<const mitk::BaseRe
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 {
+  Superclass::OnNodeAdded(node);
   this->AddObservers(node);
 }
 
@@ -106,6 +107,7 @@ void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 {
+  Superclass::OnNodeAdded(node);
   this->RemoveObservers(node);
 }
 
@@ -113,6 +115,7 @@ void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeDeleted(mitk::DataNode* node)
 {
+  Superclass::OnNodeAdded(node);
   this->RemoveObservers(node);
 }
 
