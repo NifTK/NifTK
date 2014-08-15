@@ -117,12 +117,12 @@ void UltrasoundTransformAndImageMerger::Merge(
   outputImage->FillBuffer(0);
 
   // Fill 3D image, slice by slice. This is slow, but we wont do it often.
-  itk::Index<2> inputImageIndex; 
+  itk::Index<3> inputImageIndex;
   itk::Index<3> outputImageIndex;
 
   for (unsigned int i = 0; i < images.size(); i++)
   {
-    mitk::ImagePixelReadAccessor<unsigned char, 2> readAccess(images[i], images[i]->GetVolumeData(0));
+    mitk::ImagePixelReadAccessor<unsigned char, 3> readAccess(images[i], images[i]->GetVolumeData(0));
 
     for (unsigned int y = 0; y < sizeY; y++)
     {
@@ -130,6 +130,7 @@ void UltrasoundTransformAndImageMerger::Merge(
       {
         inputImageIndex[0] = x;
         inputImageIndex[1] = y;
+        inputImageIndex[2] = 0;
 
         outputImageIndex[0] = x;
         outputImageIndex[1] = y;
