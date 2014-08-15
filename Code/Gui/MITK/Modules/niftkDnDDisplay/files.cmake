@@ -34,6 +34,7 @@ set(MOC_H_FILES
   niftkMultiWindowWidget_p.h
   niftkSingleViewerWidget.h
   niftkMultiViewerVisibilityManager.h
+  Interactions/mitkDnDDisplayInteractor.h
 )
 
 set(UI_FILES

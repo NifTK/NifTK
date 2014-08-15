@@ -72,62 +72,61 @@
     <attribute name="Key" value="Z"/>
   </event_variant>
 
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesAnterior">
-    <attribute name="Key" value="A"/>
-    <attribute name="Modifiers" value="shift"/>
-  </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesPosterior">
-    <attribute name="Key" value="Z"/>
-    <attribute name="Modifiers" value="shift"/>
-  </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StopScrolling">
-    <attribute name="Key" value="Escape"/>
-  </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesAnterior">
-    <attribute name="ScrollDirection" value="up"/>
-    <attribute name="Modifiers" value="shift"/>
-  </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesPosterior">
-    <attribute name="ScrollDirection" value="down"/>
-    <attribute name="Modifiers" value="shift"/>
-  </event_variant>
-
   <!-- Scrolling through time steps -->
-  <event_variant class="MouseWheelEvent" name="SelectPreviousTimeStep">
-    <attribute name="ScrollDirection" value="up"/>
-    <attribute name="Modifiers" value="alt"/>
-  </event_variant>
   <event_variant class="MouseWheelEvent" name="SelectNextTimeStep">
     <attribute name="ScrollDirection" value="down"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
-    <attribute name="Key" value="A"/>
+  <event_variant class="MouseWheelEvent" name="SelectPreviousTimeStep">
+    <attribute name="ScrollDirection" value="up"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectNextTimeStep">
-    <attribute name="Key" value="Z"/>
-    <attribute name="Modifiers" value="alt"/>
+    <attribute name="Key" value="L"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
+    <attribute name="Key" value="K"/>
   </event_variant>
 
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepBackwards">
+  <!-- Autoscroll through slices -->
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesAnteriorByKey">
     <attribute name="Key" value="A"/>
-    <attribute name="Modifiers" value="shift,alt"/>
+    <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepForwards">
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesPosteriorByKey">
     <attribute name="Key" value="Z"/>
-    <attribute name="Modifiers" value="shift,alt"/>
+    <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StopScrolling">
-    <attribute name="Key" value="Escape"/>
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesAnteriorByMouse">
+    <attribute name="ScrollDirection" value="up"/>
+    <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepBackwards">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesPosteriorByMouse">
+    <attribute name="ScrollDirection" value="down"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+
+  <!-- Autoscroll through time steps -->
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepForwardsByKey">
+    <attribute name="Key" value="L"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepBackwardsByKey">
+    <attribute name="Key" value="K"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepBackwardsByMouse">
     <attribute name="ScrollDirection" value="up"/>
     <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepForwards">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughTimeStepForwardsByMouse">
     <attribute name="ScrollDirection" value="down"/>
     <attribute name="Modifiers" value="shift,alt"/>
+  </event_variant>
+
+  <!-- Stop autoscroll -->
+  <event_variant class="InteractionKeyEvent" name="StopScrolling">
+    <attribute name="Key" value="Escape"/>
   </event_variant>
 
   <!-- Switch window layout -->

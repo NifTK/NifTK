@@ -18,11 +18,14 @@
 #include <niftkDnDDisplayExports.h>
 
 #include <mitkDisplayInteractor.h>
+#include <niftkDnDDisplayEnums.h>
 
 #include <vector>
+#include <QObject>
 
 class niftkSingleViewerWidget;
 class QmitkRenderWindow;
+class QTimer;
 
 namespace mitk
 {
@@ -42,8 +45,10 @@ class FocusManager;
  * Inherits from mitk::InteractionEventObserver since it doesn't alter any data (only their representation),
  * and its actions cannot be associated with a DataNode. Also inherits from EventStateMachine
  */
-class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public mitk::DisplayInteractor
+class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public QObject, public mitk::DisplayInteractor
 {
+  Q_OBJECT
+
 public:
   mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
   mitkNewMacro1Param(Self, niftkSingleViewerWidget*);
@@ -112,14 +117,21 @@ protected:
   /// \brief Starts scrolling through slices in a loop in posterior direction.
   virtual bool StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent);
 
-  /// \brief Starts scrolling through time steps in a loop, backwards.
-  virtual bool StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
-
   /// \brief Starts scrolling through time steps in a loop, forwards.
   virtual bool StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
 
+  /// \brief Starts scrolling through time steps in a loop, backwards.
+  virtual bool StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+
   /// \brief Stops scrolling through slices.
   virtual bool StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+private slots:
+
+  void StepOneSliceAnterior();
+  void StepOneSlicePosterior();
+  void StepOneTimeStepForwards();
+  void StepOneTimeStepBackwards();
 
 private:
 
@@ -130,6 +142,8 @@ private:
   std::vector<mitk::BaseRenderer*> m_Renderers;
 
   mitk::FocusManager* m_FocusManager;
+
+  QTimer* m_AutoScrollTimer;
 
 };
 
