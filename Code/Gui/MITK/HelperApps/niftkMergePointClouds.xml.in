@@ -24,8 +24,8 @@
       <longflag>output</longflag>
       <description>Output file for the merged point cloud.</description>
       <label>Output file for the merged point cloud</label>
-      <channel>output</channel>
       <default>merged.mps</default>
+      <channel>output</channel>
     </file>
   </parameters>
 </executable>

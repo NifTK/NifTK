@@ -26,8 +26,8 @@
       <longflag>outputPrefix</longflag>
       <description>The output prefix</description>
       <label>The output prefix</label>
-      <channel>ouput</channel>
       <default>./</default>
+      <channel>output</channel>
     </file>
     
   </parameters>

@@ -34,12 +34,12 @@
       <description>Set the maximum number of points to use.</description>
       <label>Max. #Points.</label>
       <default>50</default>
+      <channel>input</channel>
       <constraints>
         <minimum>3</minimum>
         <maximum>100000</maximum>
         <step>1</step>
       </constraints>
-      <channel>input</channel>
     </integer>
     <integer>
       <name>maxNumberOfIterations</name>
@@ -47,12 +47,12 @@
       <description>Set the maximum iterations to use.</description>
       <label>Max. #Iterations.</label>
       <default>100</default>
+      <channel>input</channel>
       <constraints>
         <minimum>1</minimum>
         <maximum>100000</maximum>
         <step>1</step>
       </constraints>
-      <channel>input</channel>
     </integer>
     <boolean>
       <name>noVisualisation</name>

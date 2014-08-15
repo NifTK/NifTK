@@ -32,7 +32,7 @@
       <longflag>outputLens</longflag>
       <description>Output lens points</description>
       <label>Output lens points</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </file>
     
     <file>
