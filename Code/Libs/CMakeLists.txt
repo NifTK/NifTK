@@ -21,10 +21,6 @@ endif(ITK_FOUND)
 if(VTK_FOUND)
   add_subdirectory(VTK)
 
-  if(NIFTYREG_FOUND)
-    add_subdirectory(VTKNiftyReg)
-  endif(NIFTYREG_FOUND)
-
 endif(VTK_FOUND)
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
