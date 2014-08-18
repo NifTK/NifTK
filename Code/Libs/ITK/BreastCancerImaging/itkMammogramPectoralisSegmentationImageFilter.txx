@@ -42,7 +42,7 @@
 namespace itk
 {
 
-  template < class TOptimizer, class TMetric >
+template < class TOptimizer, class TMetric >
 class PecFitIterationCallback : public itk::Command
 {
 public:
@@ -67,6 +67,10 @@ public:
     m_Metric = metric;
   }
 
+  void SetDebug( bool flgDebug ) {
+    m_Debug = flgDebug;
+  }
+
   void Execute(itk::Object *caller, const itk::EventObject & event) {
     Execute( (const itk::Object *)caller, event);
   }
@@ -83,11 +87,14 @@ public:
       std::cout << m_Optimizer->GetValue() << "   ";
       std::cout << m_Optimizer->GetCurrentPosition() << std::endl;
 
-      std::ostringstream fname;
-      fname << "Template" << m_iIteration << ".nii.gz";
-      WriteImageToFile< TemplateImageType >( fname.str().c_str(), 
-                                          "template image", 
-                                          m_Metric->GetTemplate() ); 
+      if ( m_Debug )
+      {
+        std::ostringstream fname;
+        fname << "Template" << std::setfill('0') << std::setw(3)<< m_iIteration << ".nii.gz";
+        WriteImageToFile< TemplateImageType >( fname.str().c_str(), 
+                                               "template image", 
+                                               m_Metric->GetTemplate() ); 
+      }
 
       m_iIteration++;      
     }
@@ -102,7 +109,12 @@ public:
   }
   
 protected:
-  PecFitIterationCallback() {m_iIteration = 0;};
+  PecFitIterationCallback() {
+    m_iIteration = 0;
+    m_Debug = false;
+  };
+
+  bool m_Debug;
   unsigned int m_iIteration;
   itk::WeakPointer<OptimizerType>   m_Optimizer;
   itk::WeakPointer<MetricType>      m_Metric;
@@ -364,16 +376,20 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Determine if this is the left or right breast
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename LeftOrRightSideCalculatorType::Pointer 
-    sideCalculator = LeftOrRightSideCalculatorType::New();
+  if ( m_BreastSide == LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE )
+  {
 
-  sideCalculator->SetImage( image );
+    typename LeftOrRightSideCalculatorType::Pointer 
+      sideCalculator = LeftOrRightSideCalculatorType::New();
 
-  sideCalculator->SetVerbose( this->GetVerbose() );
+    sideCalculator->SetImage( image );
 
-  sideCalculator->Compute();
+    sideCalculator->SetVerbose( this->GetVerbose() );
 
-  m_BreastSide = sideCalculator->GetBreastSide();
+    sideCalculator->Compute();
+
+    m_BreastSide = sideCalculator->GetBreastSide();
+  }
 
 
   // If this a right breast then flip it 
@@ -415,20 +431,38 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   InputImageIndexType index;
-  InputImagePointType pecInterceptStartPoint, pecInterceptEndPoint;
+  InputImagePointType firstPixelPoint, pecInterceptStartPoint, pecInterceptEndPoint;
 
   index[0] = inStart[0];
   index[1] = inStart[1];
 
-  image->TransformIndexToPhysicalPoint( index, pecInterceptStartPoint );
+  image->TransformIndexToPhysicalPoint( index, firstPixelPoint );
 
-  pecInterceptStartPoint[0] += 10; // ensure smallest pec region isn't too small
-  pecInterceptStartPoint[1] += 10;
+  pecInterceptStartPoint[0] = firstPixelPoint[0] + 10; // ensure smallest pec region isn't too small
+  pecInterceptStartPoint[1] = firstPixelPoint[1] + 10;
 
   index[0] = inStart[0] + 2*inSize[0]/3 - 1;
   index[1] = inStart[1] + 9*inSize[1]/10 - 1;
   
   image->TransformIndexToPhysicalPoint( index, pecInterceptEndPoint );
+
+  // Ensure that pectoral is at least half the width of the region
+
+  if ( pecInterceptStartPoint[0] < pecInterceptEndPoint[0]/2. )
+  {
+    pecInterceptStartPoint[0] = pecInterceptEndPoint[0]/2.;
+  }
+
+  // Ensure that pectoral angle is greater than 45 degrees
+
+  if ( pecInterceptStartPoint[1] < pecInterceptStartPoint[0] )
+  {
+    pecInterceptStartPoint[1] = pecInterceptStartPoint[0];
+  }
+
+  double minPecArea = 
+    ( pecInterceptStartPoint[0] - firstPixelPoint[0] )
+    *( pecInterceptStartPoint[1] - firstPixelPoint[1] )/2.;
 
 
   // Check that the mask image is the same size as the input
@@ -734,6 +768,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   
   metric->SetDebug( this->GetDebug() );
   metric->SetSSD( m_flgOptimiseSSD );
+  metric->SetMinimumPectoralArea( minPecArea );
 
   typename FitMetricType::ParametersType bestParameters;
   bestParameters.SetSize( metric->GetNumberOfParameters() );
@@ -995,6 +1030,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   typedef PecFitIterationCallback< OptimizerType, FitMetricType > IterationCallbackType;
   typename IterationCallbackType::Pointer callback = IterationCallbackType::New();
 
+  callback->SetDebug( this->GetDebug() );
   callback->SetOptimizer( optimiser );
   callback->SetMetric( metric );
   

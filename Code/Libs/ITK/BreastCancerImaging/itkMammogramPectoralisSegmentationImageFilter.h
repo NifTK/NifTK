@@ -134,6 +134,10 @@ public:
   void SetVerboseOn( void ) { m_flgVerbose = true; }
   void SetVerboseOff( void ) { m_flgVerbose = false; }
 
+  void SetBreastSide( BreastSideType breastSide ) {
+    m_BreastSide = breastSide;
+  }
+
   TemplateImagePointer GetTemplateImage( void ) { return m_Template; }
 
 protected:

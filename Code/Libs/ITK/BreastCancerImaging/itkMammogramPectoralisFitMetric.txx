@@ -36,6 +36,8 @@ MammogramPectoralisFitMetric<TInputImage>
 ::MammogramPectoralisFitMetric()
 {
   m_flgOptimiseSSD = false;
+  m_MinimumPectoralArea = 0.;
+  m_TemplatePixelAreaInMM = 1.;
 
   m_InputImage = 0;
   m_Mask = 0;
@@ -84,6 +86,8 @@ MammogramPectoralisFitMetric<TInputImage>
 
   m_ImTemplate->Allocate( );
   m_ImTemplate->FillBuffer( 0 );
+
+  m_TemplatePixelAreaInMM = m_ImSpacing[0]*m_ImSpacing[1];
 
   this->Modified();
 }
@@ -691,6 +695,18 @@ MammogramPectoralisFitMetric<TInputImage>
     if ( this->GetDebug() )
     {
       std::cout << "WARNING: No pixels in template, skipping: " 
+                << parameters << std::endl;
+    }
+    return -1.;
+  }
+
+  if ( m_TemplatePixelAreaInMM*((double) nPixels) < m_MinimumPectoralArea )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "WARNING: Template region (" 
+                << m_TemplatePixelAreaInMM*((double) nPixels) << ") is less than minimum (" 
+                << m_MinimumPectoralArea << "), skipping: " 
                 << parameters << std::endl;
     }
     return -1.;

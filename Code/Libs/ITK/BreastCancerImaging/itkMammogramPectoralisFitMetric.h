@@ -108,6 +108,9 @@ public:
   /// Optimise SSD rather than normalised cross-correlation
   void SetSSD( bool flag ) { m_flgOptimiseSSD = flag; }
 
+  /// Set the minuimum pectoral area in mm^2
+  void SetMinimumPectoralArea( double minPecArea ) { m_MinimumPectoralArea = minPecArea; }
+
   /** Get the template image. */
   itkGetObjectMacro( ImTemplate, TemplateImageType );
 
@@ -164,6 +167,9 @@ protected:
   void PrintSelf(std::ostream & os, Indent indent) const;
 
   bool m_flgOptimiseSSD;
+
+  double m_MinimumPectoralArea;
+  double m_TemplatePixelAreaInMM;
 
   InputImageRegionType   m_ImRegion;
   InputImageSpacingType  m_ImSpacing;
