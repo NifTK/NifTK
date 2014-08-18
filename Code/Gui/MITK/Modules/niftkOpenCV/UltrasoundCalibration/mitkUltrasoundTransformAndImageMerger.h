@@ -41,7 +41,8 @@ public:
   void Merge(
       const std::string& inputMatrixDirectory,
       const std::string& inputImageDirectory,
-      const std::string& outputFileName
+      const std::string& outputImageFileName,
+      const std::string& outputDataFileName
       );
 
 protected:

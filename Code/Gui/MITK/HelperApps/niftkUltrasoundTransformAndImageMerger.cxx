@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   {
 
     mitk::UltrasoundTransformAndImageMerger::Pointer merger = mitk::UltrasoundTransformAndImageMerger::New();
-    merger->Merge(inputMatrixDirectory, inputImageDirectory, outputImageFile);
+    merger->Merge(inputMatrixDirectory, inputImageDirectory, outputImageFile, outputDataFile);
 
     returnStatus = EXIT_SUCCESS;
   }

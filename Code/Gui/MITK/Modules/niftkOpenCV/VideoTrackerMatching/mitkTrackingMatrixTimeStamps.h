@@ -31,6 +31,11 @@ public:
   std::vector<unsigned long long> m_TimeStamps;
 
   /**
+   * \brief Given a timestamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
+   */
+  int GetFrameNumber(const unsigned long long& timeStamp);
+
+  /**
    * \brief Retrieves the timestamps before and after a given point.
    * \param[Input] input timestamp, normally in nano-seconds since Unix Epoch (UTC).
    * \param[Output] before timestamp, normally in nano-seconds since Unix Epoch (UTC).

@@ -32,6 +32,14 @@
       <default>merged.mhd</default>
       <channel>output</channel>
     </file>
+    <file fileExtensions=".txt">
+      <name>outputDataFile</name>
+      <longflag>outputDataFile</longflag>
+      <description>Output meta-data</description>
+      <label>Output Meta-Data</label>
+      <default>merged-meta.txt</default>
+      <channel>output</channel>
+    </file>
   </parameters>
 
 </executable>

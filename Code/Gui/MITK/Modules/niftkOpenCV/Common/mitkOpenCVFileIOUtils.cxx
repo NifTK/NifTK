@@ -178,6 +178,7 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
       fout << std::endl;
     }
   }
+  fout.close();
   isSuccessful = true;
   return isSuccessful;
 }

@@ -18,6 +18,24 @@ namespace mitk {
 
 
 //---------------------------------------------------------------------------
+int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp)
+{
+  int result = -1;
+
+  for (unsigned long int i = 0; i < m_TimeStamps.size(); i++)
+  {
+    if (m_TimeStamps[i] == timeStamp)
+    {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+
+
+//---------------------------------------------------------------------------
 double TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
                                                        unsigned long long& before,
                                                        unsigned long long& after
@@ -44,12 +62,17 @@ double TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long&
     --lower;
   }
 
+  if (*lower >= input && lower != m_TimeStamps.begin())
+  {
+    lower--;
+  }
+
   before = *lower;
   after = *upper;
 
   if (upper != lower)
   {
-    proportion = (input - before)/(after-before);
+    proportion = static_cast<double>(input - before)/static_cast<double>(after-before);
   }
 
   return proportion;
