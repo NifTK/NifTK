@@ -491,7 +491,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
   // Create the fat subtraction fit metric
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename FitMetricType::Pointer metric = FitMetricType::New();
+  typename FitImageMetricType::Pointer metric = FitImageMetricType::New();
   
   metric->SetDebug( this->GetDebug() );
 
@@ -499,7 +499,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
   metric->SetMask( imMask );
 
 
-  typename FitMetricType::ParametersType parameters;
+  typename FitImageMetricType::ParametersType parameters;
   parameters.SetSize( metric->GetNumberOfParameters() );
 
   parameters[0] = metric->GetMaxDistance()/4.;            // Breast edge width (mm)
@@ -512,7 +512,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   // Optimise the fit
 
-  typename FitMetricType::ParametersType parameterScales;
+  typename FitImageMetricType::ParametersType parameterScales;
   parameterScales.SetSize( metric->GetNumberOfParameters() );
 
   parameterScales[0] = 10;
@@ -564,9 +564,6 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   // Save the intensity vs edge distance data and the fit to a text files
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  std::cout << "fileOutputIntensityVsEdgeDist: " << m_fileOutputIntensityVsEdgeDist << std::endl;
-  std::cout << "fileOutputFit: " << m_fileOutputFit << std::endl;
 
   if ( m_fileOutputIntensityVsEdgeDist.length() )
   {
@@ -682,6 +679,9 @@ MammogramFatSubtractionImageFilter<TInputImage>
 ::ComputeMinIntensityVersusDistanceFromEdge(void)
 {
   unsigned int d;
+  unsigned int iDistance;
+
+  float *minIntVsEdgeDistSmooth = 0;
 
   InputImagePointer imPipelineConnector;
 
@@ -736,18 +736,16 @@ MammogramFatSubtractionImageFilter<TInputImage>
   }
 
 
-  // Shrink the image
-  // ~~~~~~~~~~~~~~~~
+  // Calculate the maximum intensity in the image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImageSizeType outSize;
+  typedef itk::MinimumMaximumImageCalculator<InputImageType> MinimumMaximumImageCalculatorType;
 
-  InputImagePointer fatImage = ShrinkTheInputImageViaMinResample<InputImageType>( image, 700, outSize );
+  typename MinimumMaximumImageCalculatorType::Pointer 
+    imageRangeCalculator = MinimumMaximumImageCalculatorType::New();
 
-  if ( this->GetDebug() )
-  {
-    WriteImageToFile< InputImageType >( "ShrunkImage.nii", "shrunk image", 
-                                        fatImage ); 
-  }
+  imageRangeCalculator->SetImage( image );
+  imageRangeCalculator->Compute();  
 
 
   // Compute the distance transform of the image
@@ -783,15 +781,15 @@ MammogramFatSubtractionImageFilter<TInputImage>
   // and hence the maximum distance
 
   typedef itk::MinimumMaximumImageCalculator< DistanceImageType > 
-    MinimumMaximumImageCalculatorType;
+    MinimumMaximumDistanceCalculatorType;
 
-  typename MinimumMaximumImageCalculatorType::Pointer 
-    imageRangeCalculator = MinimumMaximumImageCalculatorType::New();
+  typename MinimumMaximumDistanceCalculatorType::Pointer 
+    distanceRangeCalculator = MinimumMaximumDistanceCalculatorType::New();
 
-  imageRangeCalculator->SetImage( imDistance );
-  imageRangeCalculator->Compute();  
+  distanceRangeCalculator->SetImage( imDistance );
+  distanceRangeCalculator->Compute();  
 
-  maxDistance = imageRangeCalculator->GetMaximum();
+  maxDistance = distanceRangeCalculator->GetMaximum();
 
   if ( this->GetDebug() )
   {
@@ -799,19 +797,39 @@ MammogramFatSubtractionImageFilter<TInputImage>
   }
 
   
-  // Iterate through the distance map computing the minimum intensities
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Iterate through the distance map computing a histogram w.r.t. distance
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  unsigned int iDistance;
   unsigned int nDistances;
 
   nDistances = static_cast<unsigned int>( maxDistance + 0.5 ) + 1;
 
-  float *minIntensityVsEdgeDistance = new float[ nDistances ];
-                                        
-  for ( iDistance=0; iDistance<nDistances; iDistance++)
+  typedef itk::Image< float, 2 > IntensityVsDistanceHistogramType;
+
+  IntensityVsDistanceHistogramType::Pointer imIntVsDistHist = IntensityVsDistanceHistogramType::New();
+
+  IntensityVsDistanceHistogramType::IndexType   start;
+  IntensityVsDistanceHistogramType::SizeType    size;
+
+  size[0]  = nDistances;
+  size[1]  = imageRangeCalculator->GetMaximum() + 1;
+
+  start[0] =   0;  // first index on X
+  start[1] =   0;  // first index on Y
+
+  IntensityVsDistanceHistogramType::RegionType region;
+  region.SetSize( size );
+  region.SetIndex( start );
+  
+  imIntVsDistHist->SetRegions( region );
+
+  imIntVsDistHist->Allocate();
+
+  imIntVsDistHist->FillBuffer( 0 );
+
+  if ( this->GetDebug() )
   {
-    minIntensityVsEdgeDistance[iDistance] = std::numeric_limits<float>::max();
+    imIntVsDistHist->Print( std::cout );
   }
 
   typedef typename itk::ImageRegionIterator< DistanceImageType > DistanceIteratorType;
@@ -821,6 +839,76 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   IteratorConstType itImage( image,
                              image->GetLargestPossibleRegion() );
+
+  IntensityVsDistanceHistogramType::IndexType index;
+
+  float nValues = 0.;
+
+  for ( itDistance.GoToBegin(), itImage.GoToBegin();
+        ! itDistance.IsAtEnd();
+        ++itDistance, ++itImage )
+  {
+    if ( itDistance.Get() >= 0. )
+    {
+      index[0] = static_cast<unsigned int>( itDistance.Get() + 0.5 );
+      index[1] = static_cast<unsigned int>( itImage.Get() + 0.5 );
+
+      imIntVsDistHist->SetPixel( index, imIntVsDistHist->GetPixel( index ) + 1 );
+      nValues++;
+    }
+  }
+
+  // Compute the cummulative histogram
+
+ typedef itk::ImageLinearIteratorWithIndex< IntensityVsDistanceHistogramType > LinearIteratorType;
+
+ LinearIteratorType itHist( imIntVsDistHist, imIntVsDistHist->GetRequestedRegion() );
+
+ itHist.SetDirection( 1 );
+
+ for ( itHist.GoToBegin(); ! itHist.IsAtEnd(); itHist.NextLine() )
+ {
+   float sum = 0.;
+
+   itHist.GoToBeginOfLine();
+   while ( ! itHist.IsAtEndOfLine() )
+   {
+     sum += itHist.Get();
+     itHist.Set( sum );
+     ++itHist;
+   }
+
+   itHist.GoToBeginOfLine();
+   while ( ! itHist.IsAtEndOfLine() )
+   {
+     itHist.Set( itHist.Get() / sum );
+     ++itHist;
+   }
+ }
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< IntensityVsDistanceHistogramType >( "IntensityVsDistanceHistogram.nii",
+                                                          "intensity vs distance histogram", 
+                                                          imIntVsDistHist ); 
+  }
+
+
+  // Iterate through the distance map computing the minimum intensities
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  float *minIntensityVsEdgeDistance = new float[ nDistances ];
+
+#if 0                                        
+
+  // This calculates the absolute minimum
+
+  for ( iDistance=0; iDistance<nDistances; iDistance++)
+  {
+    minIntensityVsEdgeDistance[iDistance] = std::numeric_limits<float>::max();
+  }
+
+  typedef typename itk::ImageRegionIterator< DistanceImageType > DistanceIteratorType;
 
   for ( itDistance.GoToBegin(), itImage.GoToBegin();
         ! itDistance.IsAtEnd();
@@ -837,59 +925,210 @@ MammogramFatSubtractionImageFilter<TInputImage>
     }
   }
 
+#else
 
-  // Smooth the 1D distance vs intensity array
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Calculate the minimum intensities from the nth percentile of the cummulative histogram
 
-  int iSmooth, iStart;
-  int lSmooth;
-  int radius;
-  int n;
+  float pcntDistance = 0.05;
+  float intensity = 0.;
 
-  float *minIntVsEdgeDistSmooth = new float[ nDistances ];
-
-  // First a median smoothing
+  iDistance=0;
   
-  lSmooth = 7;
-  radius = lSmooth/2;
+  itHist.SetDirection( 1 );
 
-  for ( iDistance=0; iDistance<nDistances; iDistance++)
+  for ( itHist.GoToBegin(); ! itHist.IsAtEnd(); itHist.NextLine() )
   {
-    iStart = iDistance - radius;
+    intensity = 0.;
 
-    if ( iStart < 0 )
+    itHist.GoToBeginOfLine();
+    while ( ( ! itHist.IsAtEndOfLine() ) && ( itHist.Get() < pcntDistance ) )
     {
-      n = lSmooth + iStart;
-      iStart = 0;
-    }
-    else if ( iStart + lSmooth > nDistances )
-    {
-      n =  nDistances - iStart;
+      intensity++;
+
+      ++itHist;
     }
 
-    minIntVsEdgeDistSmooth[ iDistance ] = ComputeMedian( & minIntensityVsEdgeDistance[ iStart ], n );
+    minIntensityVsEdgeDistance[ iDistance ] = intensity;
+
+    iDistance++;
   }
 
-  // Then a mean smoothing
-  
-  lSmooth = 21;
-  radius = lSmooth/2;
+#endif
 
-  for ( iDistance=0; iDistance<nDistances; iDistance++)
+  if (  ! m_flgComputeFatEstimationFit )
   {
-    iStart = iDistance - radius;
 
-    if ( iStart < 0 )
+    // Smooth the 1D distance vs intensity array
+
+    int iSmooth, iStart;
+    int lSmooth;
+    int radius;
+    int n;
+
+    float *minIntVsEdgeDistSmooth = new float[ nDistances ];
+
+    // First a median smoothing
+  
+    lSmooth = 7;
+    radius = lSmooth/2;
+
+    for ( iDistance=0; iDistance<nDistances; iDistance++)
     {
-      n = lSmooth + iStart;
-      iStart = 0;
-    }
-    else if ( iStart + lSmooth > nDistances )
-    {
-      n =  nDistances - iStart;
+      iStart = iDistance - radius;
+
+      if ( iStart < 0 )
+      {
+        n = lSmooth + iStart;
+        iStart = 0;
+      }
+      else if ( iStart + lSmooth > nDistances )
+      {
+        n =  nDistances - iStart;
+      }
+
+      minIntVsEdgeDistSmooth[ iDistance ] = ComputeMedian( & minIntensityVsEdgeDistance[ iStart ], n );
     }
 
-    minIntensityVsEdgeDistance[ iDistance ] = ComputeMean( & minIntVsEdgeDistSmooth[ iStart ], n );
+    // Then a mean smoothing
+  
+    lSmooth = 21;
+    radius = lSmooth/2;
+
+    for ( iDistance=0; iDistance<nDistances; iDistance++)
+    {
+      iStart = iDistance - radius;
+
+      if ( iStart < 0 )
+      {
+        n = lSmooth + iStart;
+        iStart = 0;
+      }
+      else if ( iStart + lSmooth > nDistances )
+      {
+        n =  nDistances - iStart;
+      }
+
+      minIntensityVsEdgeDistance[ iDistance ] = ComputeMean( & minIntVsEdgeDistSmooth[ iStart ], n );
+    }
+
+  }
+
+
+  // Save the intensity vs edge distance data
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  std::cout << "fileOutputIntensityVsEdgeDist: " << m_fileOutputIntensityVsEdgeDist << std::endl;
+
+  if ( m_fileOutputIntensityVsEdgeDist.length() )
+  {
+    std::ofstream fout( m_fileOutputIntensityVsEdgeDist.c_str() );
+
+    if ((! fout) || fout.bad()) {
+      std::cerr << "ERROR: Could not open file: " << m_fileOutputIntensityVsEdgeDist << std::endl;
+      return;
+    }
+
+    fout.precision(16);
+    
+    for ( iDistance=0; iDistance<nDistances; iDistance++)
+    {
+      fout << std::setw(12) << iDistance << " "
+           << std::setw(12) << minIntensityVsEdgeDistance[ iDistance ] << std::endl;
+    }
+    
+    fout.close();
+
+    std::cout << "Intensity vs edge distance data (min) written to file: "
+              << m_fileOutputIntensityVsEdgeDist << std::endl;
+  }
+
+
+  // Perform a fit to the minimum intensities?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if (  m_flgComputeFatEstimationFit )
+  {
+
+    // Create the fat subtraction fit metric
+
+    typename FitArrayMetricType::Pointer metric = FitArrayMetricType::New();
+  
+    metric->SetDebug( this->GetDebug() );
+
+    metric->SetMaxDistance( maxDistance );
+
+    metric->SetInputArray( minIntensityVsEdgeDistance );
+    metric->SetNumberOfDistances( nDistances );
+
+    typename FitImageMetricType::ParametersType parameters;
+    parameters.SetSize( metric->GetNumberOfParameters() );
+
+    parameters[0] = metric->GetMaxDistance()/4.;            // Breast edge width (mm)
+    parameters[1] = imageRangeCalculator->GetMaximum();     // Constant thickness of fat
+    parameters[2] = 1.;                                     // Profile of breast edge region
+    parameters[3] = 0.;                                     // Background offset in x
+    parameters[4] = 0.;                                     // Background offset in y
+    parameters[5] = 2.;                                     // Width of skin region
+    parameters[6] = imageRangeCalculator->GetMaximum()/20.; // Thickness of skin
+
+    // Optimise the fit
+
+    typename FitImageMetricType::ParametersType parameterScales;
+    parameterScales.SetSize( metric->GetNumberOfParameters() );
+
+    parameterScales[0] = 10;
+    parameterScales[1] = 1;
+    parameterScales[2] = 100;
+    parameterScales[3] = 100;
+    parameterScales[4] = 100;
+    parameterScales[5] = 100;
+    parameterScales[6] = 10;
+
+    typedef itk::PowellOptimizer OptimizerType;
+    OptimizerType::Pointer optimiser = OptimizerType::New();
+  
+    optimiser->SetCostFunction( metric );
+    optimiser->SetInitialPosition( parameters );
+    optimiser->SetMaximumIteration( 300 );
+    optimiser->SetStepLength( 5 );
+    optimiser->SetStepTolerance( 0.01 );
+    optimiser->SetMaximumLineIteration( 10 );
+    optimiser->SetValueTolerance( 0.000001 );
+    optimiser->MaximizeOff();
+    optimiser->SetScales( parameterScales );
+
+    typedef IterationCallback< OptimizerType >   IterationCallbackType;
+    IterationCallbackType::Pointer callback = IterationCallbackType::New();
+
+    callback->SetOptimizer( optimiser );
+  
+    std::cout << "Starting optimisation at position: " 
+              << parameters << std::endl;
+
+    optimiser->StartOptimization();
+
+    std::cout << "Optimizer stop condition: " 
+              << optimiser->GetStopConditionDescription() << std::endl;
+
+    parameters = optimiser->GetCurrentPosition();
+
+    std::cout << "Final parameters: " << std::endl
+              << "   breast edge width (mm):         " << parameters[0] << std::endl
+              << "   breast thickness (intensity):   " << parameters[1] << std::endl
+              << "   edge profile (2=elliptical):    " << parameters[2] << std::endl
+              << "   plate tilt in 'x':              " << parameters[3] << std::endl
+              << "   plate tilt in 'y':              " << parameters[4] << std::endl
+              << "   width of the skin (mm):         " << parameters[5] << std::endl
+              << "   height of the skin (intensity): " << parameters[6] << std::endl
+              << ", Cost: " << optimiser->GetCurrentCost() << std::endl;
+    
+
+    metric->GenerateFatArray( nDistances, minIntensityVsEdgeDistance, parameters );
+
+    if ( m_fileOutputFit.length() )
+    {
+      metric->WriteFitToFile( m_fileOutputFit, parameters );
+    }
   }
 
 
@@ -920,28 +1159,37 @@ MammogramFatSubtractionImageFilter<TInputImage>
     }
   }
   
-  // Smooth it
-
-  typedef DiscreteGaussianImageFilter<InputImageType, InputImageType> SmootherType;
-  
-  typename SmootherType::Pointer smoother = SmootherType::New();
-
-  smoother->SetUseImageSpacing( false );
-  smoother->SetInput( fatEstImage );
-  smoother->SetMaximumError( 0.1 );
-  smoother->SetVariance( 5 );
-
-  if ( m_flgVerbose )
+  if (  ! m_flgComputeFatEstimationFit )
   {
-    std::cout << "Smoothing the image" << std::endl;
+
+    // Smooth it
+
+    typedef DiscreteGaussianImageFilter<InputImageType, InputImageType> SmootherType;
+  
+    typename SmootherType::Pointer smoother = SmootherType::New();
+
+    smoother->SetUseImageSpacing( false );
+    smoother->SetInput( fatEstImage );
+    smoother->SetMaximumError( 0.1 );
+    smoother->SetVariance( 5 );
+    
+    if ( m_flgVerbose )
+    {
+      std::cout << "Smoothing the image" << std::endl;
+    }
+    
+    smoother->Update();
+    
+    imPipelineConnector = smoother->GetOutput();
+    imPipelineConnector->DisconnectPipeline();
+  }
+  else
+  {
+    imPipelineConnector = fatEstImage;
   }
 
-  smoother->Update();
 
-  imPipelineConnector = smoother->GetOutput();
-  imPipelineConnector->DisconnectPipeline();
-
-  // and expand it back up to the original size
+  // Expand it back up to the original size
 
   typedef itk::IdentityTransform< double, ImageDimension > IdentityTransformType;
 
@@ -1014,8 +1262,8 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   this->GraftNthOutput( 0, fatSubImage );  
 
-  delete[] minIntensityVsEdgeDistance;
-  delete[] minIntVsEdgeDistSmooth;
+  if ( minIntensityVsEdgeDistance ) delete[] minIntensityVsEdgeDistance;
+  if ( minIntVsEdgeDistSmooth     ) delete[] minIntVsEdgeDistSmooth;
 }
 
 
@@ -1057,6 +1305,8 @@ MammogramFatSubtractionImageFilter<TInputImage>
   // Perform the fat estimation
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+#if 0
+
   if (  m_flgComputeFatEstimationFit )
   {
     ComputeFatEstimationFit();
@@ -1065,6 +1315,13 @@ MammogramFatSubtractionImageFilter<TInputImage>
   {
     ComputeMinIntensityVersusDistanceFromEdge();
   }
+
+#else
+
+  ComputeMinIntensityVersusDistanceFromEdge();
+
+#endif
+
 }
 
 

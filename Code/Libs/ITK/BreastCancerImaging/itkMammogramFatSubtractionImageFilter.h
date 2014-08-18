@@ -21,7 +21,9 @@
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageLinearIteratorWithIndex.h>
-#include <itkMammogramFatEstimationFitMetric.h>
+
+#include <itkMammogramFatEstimationFitMetricForArray.h>
+#include <itkMammogramFatEstimationFitMetricForImage.h>
 
 namespace itk {
   
@@ -83,7 +85,8 @@ public:
   typedef typename itk::ImageRegionConstIterator< TInputImage > IteratorConstType;
   typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
 
-  typedef typename itk::MammogramFatEstimationFitMetric< TInputImage > FitMetricType;
+  typedef typename itk::MammogramFatEstimationFitMetricForArray< TInputImage > FitArrayMetricType;
+  typedef typename itk::MammogramFatEstimationFitMetricForImage< TInputImage > FitImageMetricType;
 
 
 #ifdef ITK_USE_CONCEPT_CHECKING
