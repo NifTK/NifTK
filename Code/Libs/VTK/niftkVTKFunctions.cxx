@@ -26,6 +26,8 @@
 #include <vtkPointData.h>
 #include <vtkGenericCell.h>
 #include <vtkVersion.h>
+#include <vtkMath.h>
+#include <sstream>
 
 namespace niftk {
 
@@ -434,6 +436,21 @@ void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 
 
 //-----------------------------------------------------------------------------
+std::string WriteMatrix4x4ToString(const vtkMatrix4x4& matrix)
+{
+  std::stringstream oss;
+  for (int i = 0; i < 4; i++)
+  {
+    oss << matrix.GetElement(i, 0) << " " \
+        << matrix.GetElement(i, 1) << " " \
+        << matrix.GetElement(i, 2) << " " \
+        << matrix.GetElement(i, 3) << std::endl;
+  }
+  return oss.str();
+}
+
+
+//-----------------------------------------------------------------------------
 bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
 {
   bool successful = false;
@@ -441,13 +458,8 @@ bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matri
   ofstream myfile(fileName.c_str());
   if (myfile.is_open())
   {
-    for (int i = 0; i < 4; i++)
-    {
-      myfile << matrix.GetElement(i, 0) << " " \
-             << matrix.GetElement(i, 1) << " " \
-             << matrix.GetElement(i, 2) << " " \
-             << matrix.GetElement(i, 3) << std::endl;
-    }
+    std::string tmp = niftk::WriteMatrix4x4ToString(matrix);
+    myfile << tmp;
     myfile.close();
     successful = true;
   }
@@ -613,6 +625,112 @@ bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
   }
   PolyData->SetPoints(pointsout);
   return true;
+}
+
+
+//-----------------------------------------------------------------------------
+void MatrixToQuaternion(const vtkMatrix4x4& matrix, double* quaternion)
+{
+  double rotation[3][3] = {{0,0,0}, {0,0,0}, {0,0,0}};
+
+  for (unsigned int r = 0; r < 3; r++)
+  {
+    rotation[r][0] = matrix.GetElement(r,0);
+    rotation[r][1] = matrix.GetElement(r,1);
+    rotation[r][2] = matrix.GetElement(r,2);
+  }
+
+  vtkMath::Matrix3x3ToQuaternion(rotation, quaternion);
+}
+
+
+//-----------------------------------------------------------------------------
+void InterpolateRotation(const double* beforeRotation, const double* afterRotation, const double& weight, double* outputRotation, bool adjustSign)
+{
+  double cosTheta = beforeRotation[0]*afterRotation[0]
+                   +beforeRotation[1]*afterRotation[1]
+                   +beforeRotation[2]*afterRotation[2]
+                   +beforeRotation[3]*afterRotation[3];
+
+  double afterRotn[4];
+
+  if (adjustSign && (cosTheta < static_cast<double>(0.0)))
+  {
+    cosTheta = -cosTheta;
+    afterRotn[0] = -afterRotation[0];
+    afterRotn[1] = -afterRotation[1];
+    afterRotn[2] = -afterRotation[2];
+    afterRotn[3] = -afterRotation[3];
+  }
+  else
+  {
+    afterRotn[0] = afterRotation[0];
+    afterRotn[1] = afterRotation[1];
+    afterRotn[2] = afterRotation[2];
+    afterRotn[3] = afterRotation[3];
+  }
+
+  double scaleFactorForBefore, scaleFactorForAfter;
+
+  if (((double)1.0 - cosTheta) > (double)0.0001) // 0.0001 -> some epsillon
+  {
+    double theta, sinTheta;
+    theta = acos( cosTheta );
+    sinTheta = sin( theta );
+    scaleFactorForBefore  = sin( ((double)1.0 - weight) * theta ) / sinTheta;
+    scaleFactorForAfter  = sin( weight * theta ) / sinTheta;
+  }
+  else
+  {
+    // Very close, do linear interp (because it's faster)
+    scaleFactorForBefore = (double)1.0 - weight;
+    scaleFactorForAfter = weight;
+  }
+
+  // Output is some proportion of 'before' and some proportion of 'after'.
+  for (int i = 0; i < 4; i++)
+  {
+    outputRotation[i] = scaleFactorForBefore * beforeRotation[i] + scaleFactorForAfter * afterRotn[i];
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void InterpolateTransformationMatrix(const vtkMatrix4x4& before, const vtkMatrix4x4& after, const double& proportion, vtkMatrix4x4& interpolated)
+{
+  if (proportion == 0)
+  {
+    interpolated.DeepCopy(&before);
+    return;
+  }
+  if (proportion == 1)
+  {
+    interpolated.DeepCopy(&after);
+    return;
+  }
+
+  double beforeRotation[4];
+  niftk::MatrixToQuaternion(before, beforeRotation);
+
+  double afterRotation[4];
+  niftk::MatrixToQuaternion(after, afterRotation);
+
+  double interpolatedRotationQuaternion[4] = {0, 0, 0, 0};
+  niftk::InterpolateRotation(beforeRotation, afterRotation, proportion, interpolatedRotationQuaternion, true);
+
+  double interpolatedRotation[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+  vtkMath::QuaternionToMatrix3x3(interpolatedRotationQuaternion, interpolatedRotation);
+
+  interpolated.Identity();
+  double notProportion = 1.0 - proportion;
+
+  for (int i = 0; i < 3; i++)
+  {
+    interpolated.SetElement(i, 0, interpolatedRotation[i][0]);
+    interpolated.SetElement(i, 1, interpolatedRotation[i][1]);
+    interpolated.SetElement(i, 2, interpolatedRotation[i][2]);
+    interpolated.SetElement(i, 3, (before.GetElement(i, 3)*notProportion + after.GetElement(i, 3)*proportion));
+  }
 }
 
 //-----------------------------------------------------------------------------
