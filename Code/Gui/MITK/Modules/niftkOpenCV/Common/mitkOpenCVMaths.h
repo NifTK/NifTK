@@ -470,7 +470,7 @@ extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, 
  * \param proportion is defined as between [0 and 1], where 0 gives exactly the before matrix,
  * 1 gives exactly the after matrix, and the proportion is a linear proportion between them over which to interpolate.
  */
-extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output);
+extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output);
 
 } // end namespace
 

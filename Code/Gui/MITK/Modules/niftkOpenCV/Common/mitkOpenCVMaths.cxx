@@ -1909,18 +1909,18 @@ void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output)
 
 
 //-----------------------------------------------------------------------------
-void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output)
+void InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output)
 {
   vtkSmartPointer<vtkMatrix4x4> b = vtkMatrix4x4::New();
   vtkSmartPointer<vtkMatrix4x4> a = vtkMatrix4x4::New();
   vtkSmartPointer<vtkMatrix4x4> interp = vtkMatrix4x4::New();
 
-  mitk::CopyToVTK4x4Matrix(before, b);
-  mitk::CopyToVTK4x4Matrix(after, a);
+  mitk::CopyToVTK4x4Matrix(before, *b);
+  mitk::CopyToVTK4x4Matrix(after, *a);
 
-  niftk::InterpolateTransformationMatrix(b, a, proportion, interp);
+  niftk::InterpolateTransformationMatrix(*b, *a, proportion, *interp);
 
-  mitk::CopyToOpenCVMatrix(interp, output);
+  mitk::CopyToOpenCVMatrix(*interp, output);
 }
 
 } // end namespace
