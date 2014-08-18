@@ -48,6 +48,31 @@ WriteImageToFile( const char *fileOutput, const char *description,
   }
 }
 
+//  --------------------------------------------------------------------------
+/// Write an ITK image to a file and print a message
+//  --------------------------------------------------------------------------
+
+template < typename TOutputImage >
+void
+WriteImageToFile( const char *fileOutput, const char *description,
+                  typename TOutputImage::ConstPointer image )
+{
+  if ( fileOutput ) {
+
+    typedef itk::ImageFileWriter< TOutputImage > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutput );
+    writer->SetInput( image );
+
+    std::cout << "Writing " << description << " to file: "
+              << fileOutput << std::endl;
+
+    writer->Update();
+  }
+}
+
 
 
 
