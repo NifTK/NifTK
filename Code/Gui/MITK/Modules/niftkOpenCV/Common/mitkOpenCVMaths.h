@@ -180,10 +180,12 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > operator*(cv::M
 extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(cv::Mat M, 
     const mitk::WorldPoint & p);
 
+
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
+
 
 /**
  * \brief Tests equality of 2 2d points. The openCV == operator struggles on floating points, 
@@ -191,15 +193,18 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point
  */
 extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2);
 
+
 /**
  * \brief Divides a 2d point by an integer (x=x1/n, y=y1/2)
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator/(const cv::Point2d& p, const int& n);
 
+
 /**
  * \brief Multiplies the components of a 2d point by an integer (x=x1*x2, y=y1*y2)
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2);
+
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
@@ -308,6 +313,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
+
 /**
  * \brief Returns the mean pixel errors for the right and left sets of projected points
  * \param the measured projected points
@@ -324,6 +330,7 @@ extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError (
     std::vector < mitk::ProjectedPointPairsWithTimingError > actual, 
     mitk::ProjectedPointPair * StandardDeviations = NULL , int index = -1,
     long long allowableTimingError = 30e6, bool duplicateLines = true );
+
 
 /** 
  * \brief Returns the RMS error between two projected point vectors
@@ -342,6 +349,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError
     cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6,
     bool duplicateLines = true);
 
+
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
  * defined by three translations and 3 rotations, in Degrees
@@ -350,6 +358,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const cv::Mat transformIn,
     const double tx, const double ty, const double tz, 
     const double rx, const double ry, const double rz );
+
 
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)
@@ -454,6 +463,14 @@ extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Matx44d& inp
  * \brief Overloaded invert method that calls the C-looking one.
  */
 extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output);
+
+
+/**
+ * \brief Interpolates between two matrices.
+ * \param proportion is defined as between [0 and 1], where 0 gives exactly the before matrix,
+ * 1 gives exactly the after matrix, and the proportion is a linear proportion between them over which to interpolate.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output);
 
 } // end namespace
 

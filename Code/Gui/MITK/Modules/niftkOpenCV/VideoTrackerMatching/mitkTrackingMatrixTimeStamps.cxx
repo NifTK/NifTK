@@ -16,48 +16,84 @@
 
 namespace mitk {
 
+
 //---------------------------------------------------------------------------
-unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long * Delta)
+double TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
+                                                       unsigned long long& before,
+                                                       unsigned long long& after
+                                                      )
 {
-  std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
-  std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
+  double proportion = 0;
+
+  if (m_TimeStamps.size() == 0)
+  {
+    before = input;
+    after = input;
+    return proportion;
+  }
+
+  std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
+  std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
 
   if (upper == m_TimeStamps.end())
+  {
     --upper;
+  }
   if (lower == m_TimeStamps.end())
+  {
     --lower;
+  }
 
-  long long deltaUpper = *upper - timestamp ;
-  long long deltaLower = timestamp - *lower ;
-  unsigned long long returnValue;
+  before = *lower;
+  after = *upper;
+
+  if (upper != lower)
+  {
+    proportion = (input - before)/(after-before);
+  }
+
+  return proportion;
+}
+
+
+//---------------------------------------------------------------------------
+unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long *error)
+{
+  unsigned long long before, after;
+  this->GetBoundingTimeStamps(timestamp, before, after);
+
+  long long deltaUpper = after - timestamp;
+  long long deltaLower = timestamp - before;
+
+  unsigned long long returnValue = timestamp;
+
   long long delta;
   if ( deltaLower == 0 ) 
   {
-    returnValue = *lower;
+    returnValue = before;
     delta = 0;
   }
   else
   {
-    if (lower != m_TimeStamps.begin())
-      --lower;
-
-    deltaLower = timestamp - *lower;
-    if ( abs(deltaLower) < abs(deltaUpper) ) 
+    if ( abs(deltaLower) <= abs(deltaUpper) )
     {
-      returnValue = *lower;
-      delta = (long long) timestamp - *lower;
+      returnValue = before;
+      delta = (long long) timestamp - before;
     }
     else
     {
-      returnValue = *upper;
-      delta = (long long) timestamp - *upper;
+      returnValue = after;
+      delta = (long long) timestamp - after;
     }
   }
 
-  if ( Delta != NULL ) 
+  // User provided a non-null output variable, so now we write to it.
+  if ( error != NULL )
   {
-    *Delta = delta;
+    *error = delta;
   }
+
+  // Then return the timestamp.
   return returnValue;
 }
 
