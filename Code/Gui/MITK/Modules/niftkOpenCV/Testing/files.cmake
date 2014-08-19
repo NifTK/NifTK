@@ -20,6 +20,7 @@ set(MODULE_TESTS
   mitkMatrixInvertTest.cxx
   mitkOpenCVMathTests.cxx
   mitkOpenCVPointTypesTest.cxx
+  mitkTrackingMatrixTimeStampsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
