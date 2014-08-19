@@ -75,6 +75,17 @@ public:
   typedef typename MaskImageType::PointType                  MaskImagePointType;
   typedef typename MaskImageType::IndexType                  MaskImageIndexType;
 
+  /** Mask image */
+  typedef float                                                  DistancePixelType;
+  typedef typename itk::Image<DistancePixelType, ImageDimension> DistanceImageType;
+  typedef typename DistanceImageType::Pointer                    DistanceImagePointer;
+  typedef typename DistanceImageType::ConstPointer               DistanceImageConstPointer;
+  typedef typename DistanceImageType::RegionType                 DistanceImageRegionType;
+  typedef typename DistanceImageType::SizeType                   DistanceImageSizeType;
+  typedef typename DistanceImageType::SpacingType                DistanceImageSpacingType;
+  typedef typename DistanceImageType::PointType                  DistanceImagePointType;
+  typedef typename DistanceImageType::IndexType                  DistanceImageIndexType;
+
   /// Set the mask image
   void SetMask( const MaskImageType *imMask );
 
@@ -111,6 +122,8 @@ public:
   void SetFileOutputIntensityVsEdgeDist( std::string fn ) { m_fileOutputIntensityVsEdgeDist = fn; }
   void SetFileOutputFit( std::string fn ) { m_fileOutputFit = fn; }
 
+  MaskImagePointer GetMaskOfRegionInsideBreastEdge( void );
+
 
 protected:
 
@@ -126,6 +139,10 @@ protected:
 
   InputImagePointer m_Image;
   MaskImagePointer m_Mask;
+  DistanceImagePointer m_Distance;
+
+  float m_BreastEdgeWidthEstimate;
+  float m_FatThicknessEstimate;
 
   /** Make a DataObject of the correct type to be used as the specified
    * output. */
@@ -159,8 +176,15 @@ protected:
   /// Compute the fat image via the minimum intensity at equal distances from the breast edge
   void ComputeMinIntensityVersusDistanceFromEdge();
 
+  /// Subtract the fat estimation from the original image
+  void SubtractFatEstimation( InputImagePointer &imFatSubtraction,
+                              InputImagePointer &imFatEstimation );
+
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);
+
+  /// Compute a distance transform of the mask image
+  void ComputeDistanceTransform( void );
 
 private:
 
