@@ -39,7 +39,7 @@ std::string xml_vesselextractor=
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 "<executable>\n"
 "   <category>Segmentation</category>\n"
-"   <title>niftkVesselExtractor</title>\n"
+"   <title>Vessel Extractor</title>\n"
 "   <description>Vesselness filter</description>\n"
 "   <version>0.0.1</version>\n"
 "   <documentation-url></documentation-url>\n"

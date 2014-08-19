@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Invariant Point Sorter</title>
+  <title>Ultrasound Invariant Point Sorter</title>
   <description><![CDATA[Sorts data for Ultrasound Pin Calibration]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

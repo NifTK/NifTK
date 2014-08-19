@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Get Matched Tracking Matrix</title>
+  <title>Hand-eye Calibration From Directory</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, uses the video data to perform and intrinsic calibration and the tracking data to perform a handeye calibration.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
