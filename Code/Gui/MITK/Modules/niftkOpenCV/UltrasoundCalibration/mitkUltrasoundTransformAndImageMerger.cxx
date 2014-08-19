@@ -167,6 +167,26 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
 
   std::cout << "Written image data to " << outputImgFile << std::endl;
 
+  // Read .mhd header file.
+  std::vector<std::string> linesFromMhdFile;
+  std::ifstream fin(outputImgFile.c_str());
+  if ( !fin )
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Could not open " << outputImgFile << " for reading!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+  char lineOfText[256];
+  do {
+    fin.getline(lineOfText,256);
+    if (fin.good())
+    {
+      linesFromMhdFile.push_back(std::string(lineOfText));
+      std::cout << "Read:" << lineOfText << std::endl;
+    }
+  } while (fin.good());
+  fin.close();
+
   // Now, re-open file .mhd file to add meta-data.
   std::ofstream fout(outputImgFile.c_str(), std::ios::out | std::ios::app);
   if ( !fout )
@@ -174,6 +194,12 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
     std::ostringstream errorMessage;
     errorMessage << "Could not open " << outputImgFile << " for text output!" << std::endl;
     mitkThrow() << errorMessage.str();
+  }
+
+  // Write everything except the last string of the existing header.
+  for (unsigned int i = 0; i < linesFromMhdFile.size() - 1; i++)
+  {
+    fout << linesFromMhdFile[i] << std::endl;
   }
 
   // Also open other file for additional text.
@@ -198,6 +224,8 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
   boost::cmatch what;
   std::string timeStampAsString;
   unsigned long long timeStamp, before, after;
+  unsigned long long timeStampFirstFrame = 0;
+  double timeStampInSeconds = 0;
   double proportion;
   bool isValid;
   int indexBefore, indexAfter;
@@ -224,19 +252,16 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
     {
       suffix << i;
     }
-    fout << "Seq_Frame" << suffix.str() << "_FrameNumber = " << i << std::endl;
-    fout << "Seq_Frame" << suffix.str() << "_UnfilteredTimestamp = " << i << std::endl;
-    fout << "Seq_Frame" << suffix.str() << "_Timestamp = " << i << std::endl;
-    fout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransform =";
-
-    // So, we may have different number of tracking matrices (normally much larger)
-    // than the corresponding number of images.
 
     std::string nameToMatch = niftk::Basename(imageFiles[i]);
     if ( boost::regex_match( nameToMatch.c_str(), what, timeStampFilter) )
     {
       timeStampAsString = nameToMatch.substr(0, 19);
       timeStamp = boost::lexical_cast<unsigned long long>(timeStampAsString);
+      if (timeStampFirstFrame == 0)
+      {
+        timeStampFirstFrame = timeStamp;
+      }
       isValid = trackingTimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion);
       indexBefore = trackingTimeStamps.GetFrameNumber(before);
       indexAfter = trackingTimeStamps.GetFrameNumber(after);
@@ -244,6 +269,13 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
       if (isValid && indexBefore != -1 && indexAfter != -1)
       {
         mitk::InterpolateTransformationMatrix(matrices[indexBefore], matrices[indexAfter], proportion, interpolatedMatrix);
+
+        timeStampInSeconds = (timeStamp - timeStampFirstFrame)/static_cast<double>(1000000000);
+
+        fout << "Seq_Frame" << suffix.str() << "_FrameNumber = " << i << std::endl;
+        fout << "Seq_Frame" << suffix.str() << "_UnfilteredTimestamp = " << timeStampInSeconds << std::endl;
+        fout << "Seq_Frame" << suffix.str() << "_Timestamp = " << timeStampInSeconds << std::endl;
+        fout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransform =";
 
         for (int r = 0; r < 4; r++)
         {
@@ -297,6 +329,7 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
     }
   }
 
+  fout << linesFromMhdFile[linesFromMhdFile.size() - 1];
   fout.close();
   gout.close();
 

@@ -39,17 +39,19 @@ public:
 
   /**
    * \brief Given a timeStamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
+   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \return vector index number or -1 if not found.
    */
-  int GetFrameNumber(const unsigned long long& timeStamp);
+  int GetFrameNumber(const unsigned long long& timestamp);
 
   /**
    * \brief Retrieves the timestamps before and after a given point.
    *
-   * \param[Input] input timestamp, in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] before timestamp, in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] after timestamp, in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] proportion the fraction from [0 to 1] of what proportion the input timestamp is of the interval between before and after.
-   * \return bool true if valid bounding interval and false otherwise.
+   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[out] before timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[out] after timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[out] proportion the fraction from [0 to 1] of what proportion the input timestamp is of the interval between before and after.
+   * \return true if valid bounding interval and false otherwise.
    *
    * Additional Spec:
    *   - If no timestamps, before = 0, after = 0, proportion = 0, return false.
@@ -58,7 +60,7 @@ public:
    *   - If input exactly matches item in list, before = input, after = input, proportion = 0, return true;
    *   - Otherwise, before is timestamp just before, after is timestamp just after the given input, proportion is linear interpolation between timestamps, return true;
    */
-  bool GetBoundingTimeStamps(const unsigned long long& input,
+  bool GetBoundingTimeStamps(const unsigned long long& timestamp,
                                unsigned long long& before,
                                unsigned long long& after,
                                double& proportion
@@ -67,14 +69,14 @@ public:
   /**
    * \brief Retrieves the closest timestamp, and if delta is non-null, will populate with the error.
    *
-   * \param[Input] input timestamp, in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] delta i.e. the number of nanoseconds between the requested timestamp, and the returned timestamp.
-   * \return timestamp nearest timestamp
+   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[out] delta i.e. the number of nanoseconds between the requested timestamp, and the returned timestamp.
+   * \return nearest timestamp
    *
    * Additional Spec:
    *   - If no timestamps, return 0, delta = 0 if provided
    */
-  unsigned long long GetNearestTimeStamp (const unsigned long long& input , long long * delta = NULL );
+  unsigned long long GetNearestTimeStamp (const unsigned long long& timestamp , long long * delta = NULL );
 };
 
 } // end namespace
