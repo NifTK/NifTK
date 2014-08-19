@@ -24,8 +24,11 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if (inputMatrixDirectory.length() == 0
-      || inputImageDirectory.length() == 0)
+  if (   inputMatrixDirectory.length() == 0
+      || inputImageDirectory.length() == 0
+      || outputImageFile.length() == 0
+      || outputDataFile.length() == 0
+     )
   {
     commandLine.getOutput()->usage(commandLine);
     return returnStatus;
@@ -35,7 +38,7 @@ int main(int argc, char** argv)
   {
 
     mitk::UltrasoundTransformAndImageMerger::Pointer merger = mitk::UltrasoundTransformAndImageMerger::New();
-    merger->Merge(inputMatrixDirectory, inputImageDirectory, outputImageFile, outputDataFile);
+    merger->Merge(inputMatrixDirectory, inputImageDirectory, outputImageFile, outputDataFile, orientation);
 
     returnStatus = EXIT_SUCCESS;
   }

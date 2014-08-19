@@ -43,21 +43,12 @@ UltrasoundTransformAndImageMerger::UltrasoundTransformAndImageMerger()
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundTransformAndImageMerger::Merge(
-    const std::string& inputMatrixDirectory,
+void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDirectory,
     const std::string& inputImageDirectory,
     const std::string& outputImageFileName,
-    const std::string& outputDataFileName
-    )
+    const std::string& outputDataFileName,
+    const std::string& imageOrientation)
 {
-
-  std::ofstream fout(outputDataFileName.c_str());
-  if ( !fout )
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Could not open " << outputDataFileName << " for output!" << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
 
   cv::Matx44d identityMatrix;
   mitk::MakeIdentity(identityMatrix);
@@ -74,15 +65,15 @@ void UltrasoundTransformAndImageMerger::Merge(
 
   matrices = LoadMatricesFromDirectory (inputMatrixDirectory);
 
-  // Load all images.
+  // Load all images. OK, so this will eventually run out of memory, but its ok for now.
   std::vector<mitk::Image::Pointer> images;
   for (int i = 0; i < imageFiles.size(); i++)
   {
     images.push_back(mitk::IOUtil::LoadImage(imageFiles[i]));
   }
 
-  fout << "Number of matrices=" << matrixFiles.size() << std::endl;
-  fout << "Number of images=" << imageFiles.size() << std::endl;
+  std::cout << "Number of matrices=" << matrixFiles.size() << std::endl;
+  std::cout << "Number of images=" << imageFiles.size() << std::endl;
 
   if (matrixFiles.size() < imageFiles.size())
   {
@@ -168,14 +159,33 @@ void UltrasoundTransformAndImageMerger::Merge(
 
   // Now we write a volume. We just output the extra header info required.
   // The user can manually append it to the file if necessary.
+  std::string outputImgFile = outputImageFileName + ".mhd";
   itk::ImageFileWriter<ImageType>::Pointer writer = itk::ImageFileWriter<ImageType>::New();
-  writer->SetFileName(outputImageFileName);
+  writer->SetFileName(outputImgFile);
   writer->SetInput(outputImage);
   writer->Update();
 
-  std::cout << "Written meta-data to " << outputDataFileName << std::endl;
+  std::cout << "Written image data to " << outputImgFile << std::endl;
 
-  fout << "UltrasoundImageOrientation = UF" << std::endl;
+  // Now, re-open file .mhd file to add meta-data.
+  std::ofstream fout(outputImgFile.c_str(), std::ios::out | std::ios::app);
+  if ( !fout )
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Could not open " << outputImgFile << " for text output!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  // Also open other file for additional text.
+  std::ofstream gout(outputDataFileName.c_str());
+  if ( !gout )
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Could not open " << outputDataFileName << " for additional output!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  fout << "UltrasoundImageOrientation = " << imageOrientation << std::endl;
   fout << "UltrasoundImageType = BRIGHTNESS" << std::endl;
 
   std::string oneZero = "0";
@@ -183,15 +193,17 @@ void UltrasoundTransformAndImageMerger::Merge(
   std::string threeZero = "000";
 
   fout.precision(10);
+
   boost::regex timeStampFilter ( "([0-9]{19})(.)*");
   boost::cmatch what;
   std::string timeStampAsString;
   unsigned long long timeStamp, before, after;
   double proportion;
+  bool isValid;
   int indexBefore, indexAfter;
   cv::Mat interpolatedMatrix( 4, 4, CV_64F );
 
-  std::cout << "Index BeforeTimeStamp BeforeIndex AfterTimeStamp AfterIndex x y z " << std::endl;
+  gout << "Index RequestedTimeStamp BeforeTimeStamp BeforeIndex AfterTimeStamp AfterIndex x y z " << std::endl;
 
   for (unsigned int i = 0; i < images.size(); i++)
   {
@@ -216,7 +228,6 @@ void UltrasoundTransformAndImageMerger::Merge(
     fout << "Seq_Frame" << suffix.str() << "_UnfilteredTimestamp = " << i << std::endl;
     fout << "Seq_Frame" << suffix.str() << "_Timestamp = " << i << std::endl;
     fout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransform =";
-    fout << std::endl;
 
     // So, we may have different number of tracking matrices (normally much larger)
     // than the corresponding number of images.
@@ -226,11 +237,11 @@ void UltrasoundTransformAndImageMerger::Merge(
     {
       timeStampAsString = nameToMatch.substr(0, 19);
       timeStamp = boost::lexical_cast<unsigned long long>(timeStampAsString);
-      proportion = trackingTimeStamps.GetBoundingTimeStamps(timeStamp, before, after);
+      isValid = trackingTimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion);
       indexBefore = trackingTimeStamps.GetFrameNumber(before);
       indexAfter = trackingTimeStamps.GetFrameNumber(after);
 
-      if (indexBefore != -1 && indexAfter != -1)
+      if (isValid && indexBefore != -1 && indexAfter != -1)
       {
         mitk::InterpolateTransformationMatrix(matrices[indexBefore], matrices[indexAfter], proportion, interpolatedMatrix);
 
@@ -241,8 +252,9 @@ void UltrasoundTransformAndImageMerger::Merge(
             fout << " " << interpolatedMatrix.at<double>(r, c);
           }
         }
+        fout << std::endl;
 
-        std::cout << i << " " << timeStampAsString << " " << before << " " << indexBefore << " " << after << " " << indexAfter << " " << interpolatedMatrix.at<double>(0, 3) << " " << interpolatedMatrix.at<double>(1, 3) << " " << interpolatedMatrix.at<double>(2, 3) << std::endl;
+        gout << i << " " << timeStampAsString << " " << before << " " << indexBefore << " " << after << " " << indexAfter << " " << interpolatedMatrix.at<double>(0, 3) << " " << interpolatedMatrix.at<double>(1, 3) << " " << interpolatedMatrix.at<double>(2, 3) << std::endl;
 
         fout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransformStatus = OK" << std::endl;
         fout << "Seq_Frame" << suffix.str() << "_ReferenceToTrackerTransform =";
@@ -273,19 +285,22 @@ void UltrasoundTransformAndImageMerger::Merge(
       else
       {
         std::ostringstream errorMessage;
-        errorMessage << "Image[" << i << "], before=" << before << ", after=" << after << ", indexBefore=" << indexBefore << ", indexAfter=" << indexAfter << " and neither should be -1" << std::endl;
+        errorMessage << "Image[" << i << "], isValid=" << isValid << ", before=" << before << ", after=" << after << ", indexBefore=" << indexBefore << ", indexAfter=" << indexAfter << " and neither should be -1" << std::endl;
         mitkThrow() << errorMessage.str();
       }
     }
     else
     {
       std::ostringstream errorMessage;
-      errorMessage << "Image " << imageFiles[i] << " does not look like it contains a time-stamp.";
+      errorMessage << "Image " << imageFiles[i] << " does not look like it contains a time-stamp." << std::endl;
       mitkThrow() << errorMessage.str();
     }
   }
 
   fout.close();
+  gout.close();
+
+  std::cout << "Written meta-data to " << outputImgFile << std::endl;
 }
 
 

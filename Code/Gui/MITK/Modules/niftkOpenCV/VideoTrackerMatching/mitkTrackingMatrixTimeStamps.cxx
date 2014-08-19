@@ -13,8 +13,18 @@
 =============================================================================*/
 
 #include "mitkTrackingMatrixTimeStamps.h"
+#include <algorithm>
+#include <mitkExceptionMacro.h>
+#include <sstream>
 
 namespace mitk {
+
+
+//---------------------------------------------------------------------------
+void TrackingMatrixTimeStamps::Sort()
+{
+  std::sort(m_TimeStamps.begin(), m_TimeStamps.end());
+}
 
 
 //---------------------------------------------------------------------------
@@ -36,88 +46,131 @@ int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp
 
 
 //---------------------------------------------------------------------------
-double TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
-                                                       unsigned long long& before,
-                                                       unsigned long long& after
-                                                      )
+bool TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
+                                                     unsigned long long& before,
+                                                     unsigned long long& after,
+                                                     double& proportion
+                                                    )
 {
-  double proportion = 0;
+  bool isValid = false;
+  before = 0;             // So that even if user fails to check return code,
+  after = 0;              // they will notice a lack of timestamps.
+  proportion = 0;
 
   if (m_TimeStamps.size() == 0)
   {
+    return isValid;
+  }
+
+  std::vector<unsigned long long>::iterator iter = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
+
+  if (iter == m_TimeStamps.end())
+  {
+    --iter;
+    before = *iter;
+    return isValid;
+  }
+
+  if (iter == m_TimeStamps.begin())
+  {
+    after = *iter;
+    return isValid;
+  }
+
+  if (*iter == input)
+  {
     before = input;
     after = input;
-    return proportion;
+    proportion = 0;
+    isValid = true;
+    return isValid;
   }
 
-  std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
-  std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
+  after = *iter;
+  --iter;
+  before = *iter;
+  proportion = static_cast<double>(input - before)/static_cast<double>(after-before);
+  isValid = true;
 
-  if (upper == m_TimeStamps.end())
-  {
-    --upper;
-  }
-  if (lower == m_TimeStamps.end())
-  {
-    --lower;
-  }
-
-  if (*lower >= input && lower != m_TimeStamps.begin())
-  {
-    lower--;
-  }
-
-  before = *lower;
-  after = *upper;
-
-  if (upper != lower)
-  {
-    proportion = static_cast<double>(input - before)/static_cast<double>(after-before);
-  }
-
-  return proportion;
+  return isValid;
 }
 
 
 //---------------------------------------------------------------------------
-unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long *error)
+unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long *delta)
 {
-  unsigned long long before, after;
-  this->GetBoundingTimeStamps(timestamp, before, after);
+  unsigned long long before = 0;
+  unsigned long long after = 0;
+  unsigned long long result = 0;
+  double proportion = 0;
+  bool isValid = false;
+  long long diff = 0;
 
-  long long deltaUpper = after - timestamp;
-  long long deltaLower = timestamp - before;
+  isValid = this->GetBoundingTimeStamps(timestamp, before, after, proportion);
 
-  unsigned long long returnValue = timestamp;
-
-  long long delta;
-  if ( deltaLower == 0 ) 
+  if (!isValid)
   {
-    returnValue = before;
-    delta = 0;
-  }
-  else
-  {
-    if ( abs(deltaLower) <= abs(deltaUpper) )
+    if (before != 0)
     {
-      returnValue = before;
-      delta = (long long) timestamp - before;
+      // Not a valid interval, but before is still the nearest we can find.
+      result = before;
+    }
+    else if (after != 0)
+    {
+      // Not a valid interval, but after is still the nearest we can find.
+      result = after;
     }
     else
     {
-      returnValue = after;
-      delta = (long long) timestamp - after;
+      result = 0;
+    }
+  }
+  else // isValid == true
+  {
+    if (proportion == 0)
+    {
+      // exact match, can pick either.
+      result = before;
+    }
+    else if (proportion > 0 && proportion <= 1)
+    {
+      long long deltaUpper = after - timestamp;
+      long long deltaLower = timestamp - before;
+
+      if ( abs(deltaLower) <= abs(deltaUpper) )
+      {
+        result = before;
+      }
+      else
+      {
+        result = after;
+      }
+    }
+    else
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Programming error:isValid=" << isValid << ", proportion=" << proportion << ", giving up :-(" << std::endl;
+      mitkThrow() << errorMessage.str();
     }
   }
 
-  // User provided a non-null output variable, so now we write to it.
-  if ( error != NULL )
+  if (result == 0)
   {
-    *error = delta;
+    diff = 0;
+  }
+  else
+  {
+    diff = timestamp - result;
+  }
+
+  // User provided a non-null output variable, so now we write to it.
+  if ( delta != NULL )
+  {
+    *delta = diff;
   }
 
   // Then return the timestamp.
-  return returnValue;
+  return result;
 }
 
 } // end namespace

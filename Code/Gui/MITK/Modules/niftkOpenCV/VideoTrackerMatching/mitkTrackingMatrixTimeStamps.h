@@ -23,7 +23,9 @@ namespace mitk
 
 /**
  * \class TrackingMatrixTimeStamps
- * \brief Helper class that contains a vector of timestamps, that is assumed to be strictly increasing.
+ * \brief Helper class that contains a vector of timestamps, that are assumed to be strictly increasing.
+ *
+ * See also mitkTrackingMatrixTimeStampsTest.cxx.
  */
 class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
 {
@@ -31,28 +33,46 @@ public:
   std::vector<unsigned long long> m_TimeStamps;
 
   /**
-   * \brief Given a timestamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
+   * \brief Sorts the list.
+   */
+  void Sort();
+
+  /**
+   * \brief Given a timeStamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
    */
   int GetFrameNumber(const unsigned long long& timeStamp);
 
   /**
    * \brief Retrieves the timestamps before and after a given point.
-   * \param[Input] input timestamp, normally in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] before timestamp, normally in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] after timestamp, normally in nano-seconds since Unix Epoch (UTC).
-   * \return the fraction, from [0 to 1] of what proportion the input timestamp is of the interval between before and after.
-   * If m_TimeStamps is empty, will copy input to both before and after.
+   *
+   * \param[Input] input timestamp, in nano-seconds since Unix Epoch (UTC).
+   * \param[Output] before timestamp, in nano-seconds since Unix Epoch (UTC).
+   * \param[Output] after timestamp, in nano-seconds since Unix Epoch (UTC).
+   * \param[Output] proportion the fraction from [0 to 1] of what proportion the input timestamp is of the interval between before and after.
+   * \return bool true if valid bounding interval and false otherwise.
+   *
+   * Additional Spec:
+   *   - If no timestamps, before = 0, after = 0, proportion = 0, return false.
+   *   - If input > all items in list, before = last item in list (i.e. nearest lower bound), after = 0, (i.e. invalid), proportion = 0, return false.
+   *   - If input < all items in list, after = first item in list (i.e. nearest upper bound), before = 0, (i.e invalid), proportion = 0, return false.
+   *   - If input exactly matches item in list, before = input, after = input, proportion = 0, return true;
+   *   - Otherwise, before is timestamp just before, after is timestamp just after the given input, proportion is linear interpolation between timestamps, return true;
    */
-  double GetBoundingTimeStamps(const unsigned long long& input,
+  bool GetBoundingTimeStamps(const unsigned long long& input,
                                unsigned long long& before,
-                               unsigned long long& after
+                               unsigned long long& after,
+                               double& proportion
                               );
 
   /**
    * \brief Retrieves the closest timestamp, and if delta is non-null, will populate with the error.
-   * \param[Input] input timestamp, normally in nano-seconds since Unix Epoch (UTC).
-   * \param[Output] delta the error, i.e. the number of nanoseconds between the requested timestamp, and the returned timestamp.
-   * \return timestamp
+   *
+   * \param[Input] input timestamp, in nano-seconds since Unix Epoch (UTC).
+   * \param[Output] delta i.e. the number of nanoseconds between the requested timestamp, and the returned timestamp.
+   * \return timestamp nearest timestamp
+   *
+   * Additional Spec:
+   *   - If no timestamps, return 0, delta = 0 if provided
    */
   unsigned long long GetNearestTimeStamp (const unsigned long long& input , long long * delta = NULL );
 };
