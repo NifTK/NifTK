@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Make Grid of Images</title>
+  <title>Make Grid of 2D Images</title>
   <description><![CDATA[Takes filename prefix and suffix, searches for matching images, and tiles them into a grid pattern.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

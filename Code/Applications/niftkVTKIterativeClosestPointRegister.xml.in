@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>ICP</title>
+  <title>VTK Iterative Closest Point (ICP) Registration</title>
   <description><![CDATA[Register two VTK polydata objects using iterative closest points.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

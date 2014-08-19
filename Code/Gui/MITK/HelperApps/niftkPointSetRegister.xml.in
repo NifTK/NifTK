@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>PointSet Register</title>
+  <title>Point Set Registration</title>
   <description><![CDATA[Registers two point sets, either ordered or using ICP]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

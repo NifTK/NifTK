@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Triangulate to 3D</title>
+  <title>Triangulate 2D to 3D</title>
   <description><![CDATA[Takes a file of 2D point pairs (left and right), and triangulates to 3D.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
