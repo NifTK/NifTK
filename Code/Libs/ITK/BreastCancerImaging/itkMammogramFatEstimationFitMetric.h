@@ -51,9 +51,9 @@ public:
   typedef Superclass::DerivativeType DerivativeType;
   typedef Superclass::MeasureType    MeasureType;
 
-  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 0 );
 
-  unsigned int GetNumberOfParameters(void) const  
+  virtual unsigned int GetNumberOfParameters(void) const  
   {
     return ParametricSpaceDimension;
   }

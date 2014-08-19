@@ -446,18 +446,10 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   
   image->TransformIndexToPhysicalPoint( index, pecInterceptEndPoint );
 
-  // Ensure that pectoral is at least half the width of the region
-
-  if ( pecInterceptStartPoint[0] < pecInterceptEndPoint[0]/2. )
+  if ( this->GetDebug() )
   {
-    pecInterceptStartPoint[0] = pecInterceptEndPoint[0]/2.;
-  }
-
-  // Ensure that pectoral angle is greater than 45 degrees
-
-  if ( pecInterceptStartPoint[1] < pecInterceptStartPoint[0] )
-  {
-    pecInterceptStartPoint[1] = pecInterceptStartPoint[0];
+    std::cout << "First pec intercept: " << pecInterceptStartPoint << std::endl
+              << "Last pec intercept:  " << pecInterceptEndPoint << std::endl;
   }
 
   double minPecArea = 
@@ -739,7 +731,13 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     MaskImagePointType firstMaskPoint, lastMaskPoint;
     
     m_Mask->TransformIndexToPhysicalPoint( firstMaskPixel, firstMaskPoint );
-    m_Mask->TransformIndexToPhysicalPoint( lastMaskPixel, lastMaskPoint );
+    m_Mask->TransformIndexToPhysicalPoint(  lastMaskPixel,  lastMaskPoint );
+
+    if ( this->GetDebug() )
+    {
+      std::cout << "First mask point: " << firstMaskPoint << std::endl
+                << "Last mask point:  " << lastMaskPoint << std::endl;
+    }
 
     for ( d=0; d<ImageDimension; d++ )
     {
@@ -751,6 +749,20 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
       {
         pecInterceptEndPoint[d] = lastMaskPoint[d];
       }
+    }
+
+    // Ensure that pectoral is at least half the width of the region
+
+    if ( pecInterceptStartPoint[0] < pecInterceptEndPoint[0]/2. )
+    {
+      pecInterceptStartPoint[0] = pecInterceptEndPoint[0]/2.;
+    }
+    
+    // Ensure that pectoral angle is greater than 45 degrees
+    
+    if ( pecInterceptStartPoint[1] < pecInterceptEndPoint[0] )
+    {
+      pecInterceptStartPoint[1] = pecInterceptEndPoint[0];
     }
   } 
 
@@ -899,7 +911,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptStartPoint, pecInterceptStart );
-  imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptEndPoint,   pecInterceptEnd );
+  imPipelineConnector->TransformPhysicalPointToIndex(  pecInterceptEndPoint,    pecInterceptEnd );
 
   if ( this->GetDebug() )
   {

@@ -55,6 +55,13 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int,
                       TInputImage::ImageDimension);
 
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
+
+  virtual unsigned int GetNumberOfParameters(void) const  
+  {
+    return ParametricSpaceDimension;
+  }
+
   /** Type of the input image */
   typedef TInputImage                           InputImageType;
   typedef typename InputImageType::Pointer      InputImagePointer;
