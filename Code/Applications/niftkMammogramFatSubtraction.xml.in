@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MG . Individual Images</category>
+
+  <title>Mammaogram Fat Subtraction</title>
+
+  <description><![CDATA[Subtracts the fat signal from a mammogram generating an image containing fibroglandular tissue only.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+
+  <contributor>John Hipwell. </contributor>
+
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output fat subtracted image</description>      
+      <label>Output fat subtracted image</label>
+      <default>outputFatSubtracted.nii</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose</label>
+    </boolean>
+
+    <boolean>
+      <name>flgRemovePectoralMuscle</name>
+      <longflag>noPec</longflag>
+      <description>Remove the pectoral muscle from the image.</description>
+      <label>Remove the pectoral muscle?</label>
+    </boolean>
+
+    <image>
+      <name>outputPectoralMask</name>
+      <longflag>oPec</longflag>
+      <description>Compute the pectoral muscle mask, using the initial fat subtraction, and remove this region from the final fat subtracted image saving the mask to a file.</description>      
+      <label>Remove and output the pectoral muscle.</label>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <boolean>
+      <name>flgUseMinimumIntensityFit</name>
+      <longflag>min</longflag>
+      <description>Use the minimum intensities at each distance from the breast edge.</description>
+      <label>Use minimum intensities with distance from breast edge?</label>
+    </boolean>
+
+    <image>
+      <name>maskImage</name>
+      <flag>m</flag>
+      <longflag>im</longflag>
+      <description>Input mask image. If not provided this will be generated automatically (recommended).</description>
+      <label>Mask image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputMask</name>
+      <longflag>oMask</longflag>
+      <description>Output the mask image</description>      
+      <label>Output mask image</label>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>outputFat</name>
+      <longflag>oFat</longflag>
+      <description>Output fat estimation image</description>      
+      <label>Output fat estimation image</label>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>outputPlateRegion</name>
+      <longflag>oPlate</longflag>
+      <description>Output a mask of the region inside the breast edge region and hence in contact with the plates</description>      
+      <label>Output plate region mask</label>
+      <channel>output</channel>
+    </image>
+
+    <file>
+      <name>outputIntensityVsEdgeDist</name>
+      <longflag>oIvsED</longflag>
+      <description>A text file containing the image intensity data (y) vs the distance of the pixel from the edge.</description>
+      <label>Output intensity vs edge distance data</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputFit</name>
+      <longflag>oFit</longflag>
+      <description>A text file containing the fit (y) vs the distance from the breast edge.</description>
+      <label>Output fit vs edge distance data</label>
+      <channel>output</channel>
+    </file>
+
+    <image>
+      <name>outputPectoralTemplate</name>
+      <longflag>oTemplate</longflag>
+      <description>Output the final pectoral muscle template image</description>      
+      <label>Output template image</label>
+      <channel>output</channel>
+    </image>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Mammographic Density Parameters]]></description>
+
+    <image>
+      <name>outputDensityImage</name>
+      <longflag>oImDensity</longflag>
+      <description>Output mammographic density probability image</description>      
+      <label>Output density image</label>
+      <channel>output</channel>
+    </image>
+
+    <float>
+      <name>lowerDensityBound</name>
+      <longflag>lower</longflag>
+      <description>The lower bound (percentile) image intensity considered to be definitely fat.</description>
+      <label>Minimum fat percentile (1%)</label>
+      <default>1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+
+    <float>
+      <name>upperDensityBound</name>
+      <longflag>upper</longflag>
+      <description>The upper bound (percentile) image intensity considered to be definitely dense tissue.</description>
+      <label>Minimum dense tissue percentile (1%)</label>
+      <default>1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
+
+    <file>
+      <name>outputDensityValue</name>
+      <longflag>oDensity</longflag>
+      <description>A text file to write the computed mammographic percent density value to.</description>
+      <label>Output percent density file</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+</executable>

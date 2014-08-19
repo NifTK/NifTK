@@ -38,7 +38,7 @@
 #include <itkImageDuplicator.h>
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkMammogramMaskSegmentationImageFilter.h>
-
+#include <itkMeanImageFilter.h>
 
 
 namespace itk
@@ -170,6 +170,10 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   m_Mask = 0;
   m_Image = 0;
+  m_Distance = 0;
+
+  m_BreastEdgeWidthEstimate = 0.;
+  m_FatThicknessEstimate = 0.;
 }
 
 
@@ -227,6 +231,8 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   m_Mask = duplicator->GetOutput();
 
+  ComputeDistanceTransform();
+
   this->Modified();
 }
 
@@ -244,6 +250,70 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   if (out) 
     out->SetRequestedRegion( out->GetLargestPossibleRegion() );
+}
+
+
+/* -----------------------------------------------------------------------
+   ComputeDistanceTransform()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+void
+MammogramFatSubtractionImageFilter<TInputImage>
+::ComputeDistanceTransform( void )
+{
+  if ( ! m_Mask )
+  {
+    itkExceptionMacro( << "ERROR: A mask image must be specified" );
+    return;
+  }
+
+  typedef itk::SignedMaurerDistanceMapImageFilter< MaskImageType, 
+                                                   DistanceImageType> DistanceTransformType;
+  
+  typename DistanceTransformType::Pointer distanceTransform = DistanceTransformType::New();
+
+  distanceTransform->SetInput( m_Mask );
+  distanceTransform->SetInsideIsPositive( true );
+  distanceTransform->UseImageSpacingOff();
+  distanceTransform->SquaredDistanceOff();
+
+  distanceTransform->UpdateLargestPossibleRegion();
+
+  m_Distance = distanceTransform->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< DistanceImageType >( "Distance.nii", "mask distance transform", 
+                                           m_Distance ); 
+  }
+  
+}
+
+
+/* -----------------------------------------------------------------------
+   GetMaskOfRegionInsideBreastEdge()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+typename MammogramFatSubtractionImageFilter<TInputImage>::MaskImagePointer
+MammogramFatSubtractionImageFilter<TInputImage>
+::GetMaskOfRegionInsideBreastEdge( void )
+{
+  typedef itk::BinaryThresholdImageFilter< DistanceImageType, MaskImageType > ThresholdingFilterType;
+
+  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+    
+  thresholder->SetLowerThreshold( m_BreastEdgeWidthEstimate );
+
+  thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue(  1 );
+
+  thresholder->SetInput( m_Distance );
+
+  thresholder->Update();
+
+  return thresholder->GetOutput();
 }
 
 
@@ -386,6 +456,67 @@ MammogramFatSubtractionImageFilter<TInputImage>
   shrinkFilter->Update();
 
   return shrinkFilter->GetOutput();
+}
+
+
+/* -----------------------------------------------------------------------
+   SubtractFatEstimation()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage>
+void 
+MammogramFatSubtractionImageFilter<TInputImage>
+::SubtractFatEstimation( InputImagePointer &imFatSubtraction,
+                         InputImagePointer &imFatEstimation )
+{
+  float fatSubtraction;
+  float minFatSubtraction = std::numeric_limits<float>::max();
+
+  
+  IteratorType itFatSub( imFatSubtraction,
+                         imFatSubtraction->GetLargestPossibleRegion() );
+
+  IteratorConstType itFatEst( imFatEstimation,
+                              imFatEstimation->GetLargestPossibleRegion() );
+
+
+  for ( itFatSub.GoToBegin(), itFatEst.GoToBegin();
+        ! itFatSub.IsAtEnd();
+        ++itFatSub, ++itFatEst )
+  {
+    if ( ! itFatEst.Get() )
+    {
+      itFatSub.Set( 0 );
+    }
+    else 
+    {
+      fatSubtraction = itFatSub.Get() - itFatEst.Get();
+      itFatSub.Set( fatSubtraction );
+
+      if ( fatSubtraction < minFatSubtraction )
+      {
+        minFatSubtraction = fatSubtraction;
+      }
+    }
+  }
+
+  // Ensure subtracted image doesn't have any negative pixels
+
+  if ( minFatSubtraction < 0. )
+  {
+
+    for ( itFatSub.GoToBegin(), itFatEst.GoToBegin();
+          ! itFatSub.IsAtEnd();
+          ++itFatSub, ++itFatEst )
+    {
+      if ( itFatEst.Get() )
+      {
+        itFatSub.Set( itFatSub.Get() - minFatSubtraction );
+      }
+    }
+  }
+
+  
 }
 
 
@@ -554,12 +685,15 @@ MammogramFatSubtractionImageFilter<TInputImage>
   std::cout << "Final parameters: " << std::endl
             << "   breast edge width (mm):         " << parameters[0] << std::endl
             << "   breast thickness (intensity):   " << parameters[1] << std::endl
-            << "   edge profile (2=elliptical):    " << parameters[2] << std::endl
+            << "   edge profile (1=elliptical):    " << parameters[2] << std::endl
             << "   plate tilt in 'x':              " << parameters[3] << std::endl
             << "   plate tilt in 'y':              " << parameters[4] << std::endl
             << "   width of the skin (mm):         " << parameters[5] << std::endl
             << "   height of the skin (intensity): " << parameters[6] << std::endl
             << ", Cost: " << optimiser->GetCurrentCost() << std::endl;
+
+  m_BreastEdgeWidthEstimate = parameters[0];
+  m_FatThicknessEstimate = parameters[1];
 
 
   // Save the intensity vs edge distance data and the fit to a text files
@@ -638,30 +772,9 @@ MammogramFatSubtractionImageFilter<TInputImage>
   duplicator->Update();
 
   InputImagePointer fatSubImage = duplicator->GetOutput();
-  
-  IteratorType itInput( fatSubImage,
-                        fatSubImage->GetLargestPossibleRegion() );
 
-  IteratorConstType itFat( fatImage,
-                           fatImage->GetLargestPossibleRegion() );
+  SubtractFatEstimation( fatSubImage, fatImage );
 
-  for ( itInput.GoToBegin(), itFat.GoToBegin();
-        ! itInput.IsAtEnd();
-        ++itInput, ++itFat )
-  {
-    if ( ! itFat.Get() )
-    {
-      itInput.Set( 0 );
-    }
-    else if ( itFat.Get() <= itInput.Get() )
-    {
-      itInput.Set( itInput.Get() - itFat.Get() );
-    }
-    else
-    {
-      itInput.Set( 0 );
-    }
-  }
   
   // The fat subtracted image is the first output
 
@@ -710,6 +823,12 @@ MammogramFatSubtractionImageFilter<TInputImage>
     return;
   }
 
+  if ( ! m_Distance )
+  {
+    itkExceptionMacro( << "ERROR: A distance image must be specified" );
+    return;
+  }
+
   MaskImageSizeType    maskSize    = m_Mask->GetLargestPossibleRegion().GetSize();
   MaskImageSpacingType maskSpacing = m_Mask->GetSpacing();
   MaskImagePointType   maskOrigin  = m_Mask->GetOrigin();
@@ -751,32 +870,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
   // Compute the distance transform of the image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef float                                                  DistancePixelType;
-  typedef typename itk::Image<DistancePixelType, ImageDimension> DistanceImageType;
-  typedef typename DistanceImageType::Pointer                    DistanceImagePointer;
-
   DistancePixelType      maxDistance;
-  DistanceImagePointer   imDistance;
-
-  typedef itk::SignedMaurerDistanceMapImageFilter< MaskImageType, 
-                                                   DistanceImageType> DistanceTransformType;
-  
-  typename DistanceTransformType::Pointer distanceTransform = DistanceTransformType::New();
-
-  distanceTransform->SetInput( m_Mask );
-  distanceTransform->SetInsideIsPositive( true );
-  distanceTransform->UseImageSpacingOff();
-  distanceTransform->SquaredDistanceOff();
-
-  distanceTransform->UpdateLargestPossibleRegion();
-
-  imDistance = distanceTransform->GetOutput();
-
-  if ( this->GetDebug() )
-  {
-    WriteImageToFile< DistanceImageType >( "Distance.nii", "mask distance transform", 
-                                           imDistance ); 
-  }
 
   // and hence the maximum distance
 
@@ -786,7 +880,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
   typename MinimumMaximumDistanceCalculatorType::Pointer 
     distanceRangeCalculator = MinimumMaximumDistanceCalculatorType::New();
 
-  distanceRangeCalculator->SetImage( imDistance );
+  distanceRangeCalculator->SetImage( m_Distance );
   distanceRangeCalculator->Compute();  
 
   maxDistance = distanceRangeCalculator->GetMaximum();
@@ -834,8 +928,8 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   typedef typename itk::ImageRegionIterator< DistanceImageType > DistanceIteratorType;
 
-  DistanceIteratorType itDistance( imDistance, 
-                                   imDistance->GetLargestPossibleRegion() );
+  DistanceIteratorType itDistance( m_Distance, 
+                                   m_Distance->GetLargestPossibleRegion() );
 
   IteratorConstType itImage( image,
                              image->GetLargestPossibleRegion() );
@@ -858,38 +952,57 @@ MammogramFatSubtractionImageFilter<TInputImage>
     }
   }
 
-  // Compute the cummulative histogram
+  // Smooth the histogram
 
- typedef itk::ImageLinearIteratorWithIndex< IntensityVsDistanceHistogramType > LinearIteratorType;
+  typedef itk::MeanImageFilter< IntensityVsDistanceHistogramType, IntensityVsDistanceHistogramType > meanFilterType;
 
- LinearIteratorType itHist( imIntVsDistHist, imIntVsDistHist->GetRequestedRegion() );
+  meanFilterType::Pointer meanFilter = meanFilterType::New();
+  meanFilter->SetInput( imIntVsDistHist );
 
- itHist.SetDirection( 1 );
+  meanFilter->Update();
 
- for ( itHist.GoToBegin(); ! itHist.IsAtEnd(); itHist.NextLine() )
- {
-   float sum = 0.;
-
-   itHist.GoToBeginOfLine();
-   while ( ! itHist.IsAtEndOfLine() )
-   {
-     sum += itHist.Get();
-     itHist.Set( sum );
-     ++itHist;
-   }
-
-   itHist.GoToBeginOfLine();
-   while ( ! itHist.IsAtEndOfLine() )
-   {
-     itHist.Set( itHist.Get() / sum );
-     ++itHist;
-   }
- }
+  imIntVsDistHist = meanFilter->GetOutput();
+  imIntVsDistHist->DisconnectPipeline();
 
   if ( this->GetDebug() )
   {
     WriteImageToFile< IntensityVsDistanceHistogramType >( "IntensityVsDistanceHistogram.nii",
                                                           "intensity vs distance histogram", 
+                                                          imIntVsDistHist ); 
+  }
+
+  // Compute the cummulative histogram
+
+  typedef itk::ImageLinearIteratorWithIndex< IntensityVsDistanceHistogramType > LinearIteratorType;
+
+  LinearIteratorType itHist( imIntVsDistHist, imIntVsDistHist->GetRequestedRegion() );
+
+  itHist.SetDirection( 1 );
+
+  for ( itHist.GoToBegin(); ! itHist.IsAtEnd(); itHist.NextLine() )
+  {
+    float sum = 0.;
+
+    itHist.GoToBeginOfLine();
+    while ( ! itHist.IsAtEndOfLine() )
+    {
+      sum += itHist.Get();
+      itHist.Set( sum );
+      ++itHist;
+    }
+
+    itHist.GoToBeginOfLine();
+    while ( ! itHist.IsAtEndOfLine() )
+    {
+      itHist.Set( itHist.Get() / sum );
+      ++itHist;
+    }
+  }
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< IntensityVsDistanceHistogramType >( "IntensityVsDistanceCumulativeDistribution.nii",
+                                                          "intensity vs distance cumulative distribution", 
                                                           imIntVsDistHist ); 
   }
 
@@ -929,7 +1042,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   // Calculate the minimum intensities from the nth percentile of the cummulative histogram
 
-  float pcntDistance = 0.05;
+  float pcntDistance = 0.2;
   float intensity = 0.;
 
   iDistance=0;
@@ -1029,12 +1142,29 @@ MammogramFatSubtractionImageFilter<TInputImage>
     }
 
     fout.precision(16);
-    
+
+#if 0
+
+    for ( itDistance.GoToBegin(), itImage.GoToBegin();
+          ! itDistance.IsAtEnd();
+          ++itDistance, ++itImage )
+    {
+      if ( itDistance.Get() >= 0. )
+      {
+        fout << std::setw(12) << itDistance.Get() << " "
+             << std::setw(12) << itImage.Get() << std::endl;
+      }
+    }
+
+#else
+
     for ( iDistance=0; iDistance<nDistances; iDistance++)
     {
       fout << std::setw(12) << iDistance << " "
            << std::setw(12) << minIntensityVsEdgeDistance[ iDistance ] << std::endl;
     }
+
+#endif
     
     fout.close();
 
@@ -1064,12 +1194,9 @@ MammogramFatSubtractionImageFilter<TInputImage>
     parameters.SetSize( metric->GetNumberOfParameters() );
 
     parameters[0] = metric->GetMaxDistance()/4.;            // Breast edge width (mm)
-    parameters[1] = imageRangeCalculator->GetMaximum();     // Constant thickness of fat
+    parameters[1] = minIntensityVsEdgeDistance[ nDistances - 1 ];     // Constant thickness of fat
     parameters[2] = 1.;                                     // Profile of breast edge region
-    parameters[3] = 0.;                                     // Background offset in x
-    parameters[4] = 0.;                                     // Background offset in y
-    parameters[5] = 2.;                                     // Width of skin region
-    parameters[6] = imageRangeCalculator->GetMaximum()/20.; // Thickness of skin
+    parameters[3] = 0.;                                     // Background offset
 
     // Optimise the fit
 
@@ -1080,9 +1207,6 @@ MammogramFatSubtractionImageFilter<TInputImage>
     parameterScales[1] = 1;
     parameterScales[2] = 100;
     parameterScales[3] = 100;
-    parameterScales[4] = 100;
-    parameterScales[5] = 100;
-    parameterScales[6] = 10;
 
     typedef itk::PowellOptimizer OptimizerType;
     OptimizerType::Pointer optimiser = OptimizerType::New();
@@ -1115,13 +1239,12 @@ MammogramFatSubtractionImageFilter<TInputImage>
     std::cout << "Final parameters: " << std::endl
               << "   breast edge width (mm):         " << parameters[0] << std::endl
               << "   breast thickness (intensity):   " << parameters[1] << std::endl
-              << "   edge profile (2=elliptical):    " << parameters[2] << std::endl
-              << "   plate tilt in 'x':              " << parameters[3] << std::endl
-              << "   plate tilt in 'y':              " << parameters[4] << std::endl
-              << "   width of the skin (mm):         " << parameters[5] << std::endl
-              << "   height of the skin (intensity): " << parameters[6] << std::endl
+              << "   edge profile (1=elliptical):    " << parameters[2] << std::endl
+              << "   background offset:              " << parameters[3] << std::endl
               << ", Cost: " << optimiser->GetCurrentCost() << std::endl;
     
+    m_BreastEdgeWidthEstimate = parameters[0];
+    m_FatThicknessEstimate = parameters[1];
 
     metric->GenerateFatArray( nDistances, minIntensityVsEdgeDistance, parameters );
 
@@ -1237,26 +1360,7 @@ MammogramFatSubtractionImageFilter<TInputImage>
 
   InputImagePointer fatSubImage = duplicator->GetOutput();
 
-  IteratorType itFatSub( fatSubImage,
-                         fatSubImage->GetLargestPossibleRegion() );
-
-  for ( itFatSub.GoToBegin(), itFatEst.GoToBegin();
-        ! itFatSub.IsAtEnd();
-        ++itFatSub, ++itFatEst )
-  {
-    if ( ! itFatEst.Get() )
-    {
-      itFatSub.Set( 0 );
-    }
-    else if ( itFatEst.Get() <= itFatSub.Get() )
-    {
-      itFatSub.Set( itFatSub.Get() - itFatEst.Get() );
-    }
-    else
-    {
-      itFatSub.Set( 0 );
-    }
-  }
+  SubtractFatEstimation( fatSubImage, fatEstImage );
   
   // The fat subtracted image is the first output
 

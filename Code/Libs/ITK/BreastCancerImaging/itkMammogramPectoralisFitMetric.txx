@@ -269,6 +269,12 @@ MammogramPectoralisFitMetric<TInputImage>
 
   w = pecInterceptInMM[0];
   h = pecInterceptInMM[1];
+
+  if ( w == 0. )
+  {
+    itkExceptionMacro( << "ERROR: Pectoral muscle intercept is zero." );
+    w = 1.;
+  }
   
   parameters[0] = h;            // The Gompertz curve pectoral profile
   parameters[1] = -4.;

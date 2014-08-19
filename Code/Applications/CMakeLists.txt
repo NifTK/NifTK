@@ -92,6 +92,7 @@ if(SlicerExecutionModel_FOUND)
     niftkHistogramMatchingImageFilter
     niftkInvertImage
     niftkLogInvertImage
+    niftkMammogramFatSubtraction
     niftkMammogramMaskSegmentation
     niftkMaskDICOMMammograms
     niftkMammogramPectoralisSegmentation

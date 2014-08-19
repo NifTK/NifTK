@@ -55,7 +55,14 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int,
                       TInputImage::ImageDimension);
 
-  typedef float                                                  DistancePixelType;
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 4 );
+
+  virtual unsigned int GetNumberOfParameters(void) const  
+  {
+    return ParametricSpaceDimension;
+  }
+
+  typedef float DistancePixelType;
 
   /** Set the number of distances. */
   void SetNumberOfDistances( unsigned int nDistances ) {

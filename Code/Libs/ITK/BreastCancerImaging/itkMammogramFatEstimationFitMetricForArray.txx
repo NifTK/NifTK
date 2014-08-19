@@ -69,14 +69,14 @@ MammogramFatEstimationFitMetricForArray<TInputImage>
 
   double a = sqrt ( 3 + parameters[0]*parameters[0] );
 
-  if ( a > m_MaxDistance/4. )
+  if ( a > m_MaxDistance )
   {
-    a = m_MaxDistance/4.;
+    a = m_MaxDistance;
   }
 
   // Similarly the thickness of the breast should be some positive value
 
-  double b = sqrt( 10 + parameters[1]*parameters[1] );
+  double b = sqrt( 1 + parameters[1]*parameters[1] );
 
   // Rather than a simple ellipse we fit a hyperellipse
 
@@ -85,6 +85,10 @@ MammogramFatEstimationFitMetricForArray<TInputImage>
 #else
   double r = 2.;
 #endif
+
+  // Add a constant (positive) offset term
+
+  double offset = fabs( parameters[3] );
 
   double fatEstimate;
 
@@ -95,11 +99,11 @@ MammogramFatEstimationFitMetricForArray<TInputImage>
 
   if ( d > a )
   {
-    fatEstimate = b;
+    fatEstimate = offset + b;
   }
   else
   {
-    fatEstimate = b*pow( 1 - pow((a - d)/a, r), 1/r ); 
+    fatEstimate = offset + b*pow( 1 - pow((a - d)/a, r), 1/r ); 
   }
   
   if ( fatEstimate > 0. )
@@ -150,12 +154,32 @@ MammogramFatEstimationFitMetricForArray<TInputImage>
 
     fatEstimate = const_cast< MammogramFatEstimationFitMetricForArray<TInputImage>* >(this)->CalculateFit( iDistance, parameters );
 
-    if ( fatEstimate >= 0. )
+
+    if ( 0 && this->GetDebug() )
+    {
+      std::cout << std::setw(6) << iDistance << ": "
+                << std::setw(12) << fatEstimate << " - "
+                << std::setw(12) << m_MinIntensityVsEdgeDistance[ iDistance ];
+    }
+
+    if ( ( fatEstimate >= 0. ) && 
+         ( m_MinIntensityVsEdgeDistance[ iDistance ] > parameters[1]/2. ) )
     {
       diff = fatEstimate - m_MinIntensityVsEdgeDistance[ iDistance ];
 
+      if ( 0 && this->GetDebug() )
+      {
+        std::cout << std::setw(12) << diff;
+      }
+
       similarity += diff*diff;
     }
+
+    if ( 0 && this->GetDebug() )
+    {
+      std::cout << std::endl;
+    }
+
   }
 
   if ( similarity == 0. )
@@ -222,7 +246,7 @@ MammogramFatEstimationFitMetricForArray<TInputImage>
 
   fout.close();
 
-  std::cout << "Intensity vs edge distance data (fit) written to file: "
+  std::cout << "Intensity vs edge distance data written to file: "
             << fileOutputIntensityVsEdgeDist << std::endl;
 }
 
