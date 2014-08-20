@@ -24,6 +24,8 @@
 
 #include <vnl/vnl_math.h>
 
+#include <iomanip>
+
 namespace itk
 {
 

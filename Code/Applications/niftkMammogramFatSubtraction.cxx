@@ -210,27 +210,6 @@ int DoMain(arguments args)
     mask->DisconnectPipeline();
   }
 
-  // Save the mask image?
-
-  if ( args.outputMask.length() )
-  {
-    typename OutputMaskWriterType::Pointer imageWriter = OutputMaskWriterType::New();
-    
-    imageWriter->SetFileName(args.outputMask);
-    imageWriter->SetInput( mask );
-      
-    try
-    {
-      std::cout << "Writing mask image to file: " << args.outputMask << std::endl;
-      imageWriter->Update(); 
-    }
-    catch( itk::ExceptionObject & err ) 
-    { 
-      std::cerr << "Failed: " << err << std::endl; 
-      return EXIT_FAILURE;
-    }       
-  }
-
 
   // Calculate the fat subtracted image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -464,6 +443,27 @@ int DoMain(arguments args)
 
     fatSubImage = maskFilter->GetOutput();
     fatSubImage->DisconnectPipeline();
+  }
+
+  // Save the mask image?
+
+  if ( args.outputMask.length() )
+  {
+    typename OutputMaskWriterType::Pointer imageWriter = OutputMaskWriterType::New();
+    
+    imageWriter->SetFileName(args.outputMask);
+    imageWriter->SetInput( mask );
+      
+    try
+    {
+      std::cout << "Writing mask image to file: " << args.outputMask << std::endl;
+      imageWriter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "Failed: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }       
   }
 
 
