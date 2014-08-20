@@ -1398,7 +1398,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename AxialImageType::IndexType  leftAxialCutoff  = start2D;
 
-  leftAxialStart2D[1] = idxNippleLeft[1];
+  leftAxialStart2D[1] = idxNippleLeft[2]; // should this be idxNippleLeft[2] ?
 
   leftAxialSize2D[0] = idxNippleLeft[0] - start2D[0];
   leftAxialSize2D[1] = 1;
@@ -1480,7 +1480,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename AxialImageType::IndexType  rightAxialCutoff  = start2D;
 
   rightAxialStart2D[0] = idxNippleRight[0];
-  rightAxialStart2D[1] = idxNippleRight[1];
+  rightAxialStart2D[1] = idxNippleRight[2]; // should this be idxNippleRight[2] ?
 
   rightAxialSize2D[0] = size2D[0] - idxNippleRight[0];
   rightAxialSize2D[1] = 1;
