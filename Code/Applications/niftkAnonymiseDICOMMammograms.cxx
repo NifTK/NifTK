@@ -38,6 +38,7 @@
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkCreatePositiveMammogram.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -161,46 +162,6 @@ void AnonymiseTag( bool flgDontAnonymise,
       
       itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
     }
-  }
-
-};
-
-
-// -------------------------------------------------------------------------
-// SetTag()
-// -------------------------------------------------------------------------
-
-void SetTag( DictionaryType &dictionary,
-	     std::string tagID,
-	     std::string newTagValue )
-{
-  // Search for the tag
-  
-  DictionaryType::ConstIterator tagItr = dictionary.Find( tagID );
-  DictionaryType::ConstIterator end = dictionary.End();
-   
-  if ( tagItr != end )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-    
-    if ( entryvalue )
-    {
-      std::string tagValue = entryvalue->GetMetaDataObjectValue();
-      
-      std::cout << "Changing tag (" << tagID <<  ") "
-		<< " from: " << tagValue 
-		<< " to: " << newTagValue << std::endl;
-      
-      itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
-    }
-  }
-  else
-  {
-    std::cout << "Setting tag (" << tagID <<  ") "
-	      << " to: " << newTagValue << std::endl;
-      
-    itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
   }
 
 };
@@ -390,82 +351,10 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
   }
 
 
-  // Check if the DICOM Inverse tag is set
+  // Create a positive version of the mammogram?
 
-  std::string tagInverse = "2050|0020";
-  
-  DictionaryType::ConstIterator tagInverseItr = dictionary.Find( tagInverse );
-  DictionaryType::ConstIterator tagInverseEnd = dictionary.End();
-  
-  if ( tagInverseItr != tagInverseEnd )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagInverseItr->second.GetPointer() );
-    
-    if ( entryvalue )
-    {
-      std::string strInverse( "INVERSE" );
-      std::string tagInverseValue = entryvalue->GetMetaDataObjectValue();
-      
-      std::cout << "Tag (" << tagInverse 
-		<< ") is: " << tagInverseValue << std::endl;
+  itk::CreatePositiveMammogram< InputImageType >( image, dictionary, args.flgInvert );
 
-      std::size_t foundInverse = tagInverseValue.find( strInverse );
-      if (foundInverse != std::string::npos)
-      {
-	args.flgInvert = true;
-	std::cout << "Image is INVERSE - inverting" << std::endl;
-	SetTag( dictionary, tagInverse, "IDENTITY" );
-      }
-    }
-  }
-
-
-  // Fix the MONOCHROME1 issue
-
-  std::string tagPhotoInterpID = "0028|0004";
-  
-  DictionaryType::ConstIterator tagPhotoInterpItr = dictionary.Find( tagPhotoInterpID );
-  DictionaryType::ConstIterator tagPhotoInterpEnd = dictionary.End();
-  
-  if ( tagPhotoInterpItr != tagPhotoInterpEnd )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagPhotoInterpItr->second.GetPointer() );
-    
-    if ( entryvalue )
-    {
-      std::string strMonochrome1( "MONOCHROME1" );
-      std::string tagPhotoInterpValue = entryvalue->GetMetaDataObjectValue();
-      
-      std::cout << "Tag (" << tagPhotoInterpID 
-		<< ") is: " << tagPhotoInterpValue << std::endl;
-
-      std::size_t foundMonochrome1 = tagPhotoInterpValue.find( strMonochrome1 );
-      if (foundMonochrome1 != std::string::npos)
-      {
-	args.flgInvert = true;
-	std::cout << "Image is MONOCHROME1 - inverting" << std::endl;
-	SetTag( dictionary, tagPhotoInterpID, "MONOCHROME2" );
-      }
-    }
-  }
-
-
-  // Invert the image
-
-  if ( args.flgInvert )
-  {
-    typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
-    
-    typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
-    invertFilter->SetInput( image );
-
-    invertFilter->Update( );
-	
-    image = invertFilter->GetOutput();
-    image->DisconnectPipeline();
-  }
 
   // Anonymise the image label
 

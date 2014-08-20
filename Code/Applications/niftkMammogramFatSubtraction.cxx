@@ -28,12 +28,14 @@
 
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionConstIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 #include <itkMammogramFatSubtractionImageFilter.h>
 #include <itkMammogramMaskSegmentationImageFilter.h>
 #include <itkMammogramLeftOrRightSideCalculator.h>
 #include <itkMammogramPectoralisSegmentationImageFilter.h>
 #include <itkMammogramMLOorCCViewCalculator.h>
+#include <itkCreatePositiveMammogram.h>
 
 #include <niftkMammogramFatSubtractionCLP.h>
 
@@ -156,6 +158,28 @@ int DoMain(arguments args)
 
   image->DisconnectPipeline();
 
+#if 0
+  typedef itk::ImageRegionConstIteratorWithIndex< InputImageType > ConstIteratorType;
+  ConstIteratorType imIterator(image, image->GetRequestedRegion());
+  
+  i = 0;
+  for (imIterator.GoToBegin(); ! imIterator.IsAtEnd(); ++imIterator) {
+
+    if ( imIterator.GetIndex()[1] == 1400 ) {
+
+      std::cout << i << " " << imIterator.GetIndex() << ": " << imIterator.Get() << std::endl;
+
+      i++;
+    }
+  }
+#endif
+
+
+  // Create a positive version of the mammogram?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  itk::ConvertMammogramFromRawToPresentation< InputImageType >( image, 
+                                                                dictionary );
 
   // Read the mask image?
   // ~~~~~~~~~~~~~~~~~~~~
