@@ -57,7 +57,6 @@ if(NOT WIN32)
 endif()
 
 set(python_scripts
-    niftkRegPhosImmunofluorAutoradImages
 )
 foreach(script ${python_scripts})
   NIFTK_CREATE_COMMAND_LINE_SCRIPT(NAME ${script} EXTENSION py INSTALL_CLI_MODULES)
