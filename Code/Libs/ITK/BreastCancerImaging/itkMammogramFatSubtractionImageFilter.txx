@@ -1193,10 +1193,15 @@ MammogramFatSubtractionImageFilter<TInputImage>
     typename FitImageMetricType::ParametersType parameters;
     parameters.SetSize( metric->GetNumberOfParameters() );
 
-    parameters[0] = metric->GetMaxDistance()/4.;            // Breast edge width (mm)
-    parameters[1] = minIntensityVsEdgeDistance[ nDistances - 1 ];     // Constant thickness of fat
-    parameters[2] = 1.;                                     // Profile of breast edge region
-    parameters[3] = 0.;                                     // Background offset
+    // Breast edge width (mm)
+    parameters[0] = metric->GetMaxDistance()/4.;           
+    // Constant thickness of fat (a mid-range point avoids the
+    // pectoral muscle region, if present)
+    parameters[1] = minIntensityVsEdgeDistance[ nDistances/2 ];    
+    // Profile of breast edge region
+    parameters[2] = 1.;                                     
+    // Background offset
+    parameters[3] = 0.;                                     
 
     // Optimise the fit
 

@@ -38,6 +38,8 @@
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkMammogramFatSubtractionImageFilter.h>
+#include <itkMammogramMaskSegmentationImageFilter.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -64,6 +66,7 @@ struct arguments
   bool flgOverwrite;
   bool flgRescaleIntensitiesToMaxRange;
   bool flgVerbose;
+  bool flgFatSubtract;
 
   std::string iterFilename;
 };
@@ -390,6 +393,72 @@ int DoMain(arguments args, OutputPixelType min, OutputPixelType max)
     ModifyTag( dictionary, "0028|0004", "MONOCHROME2" );
   }
 
+
+  // Fat subtract the image?
+
+  if ( args.flgFatSubtract )
+  {
+    // First compute the mask
+
+    typedef unsigned char MaskPixelType;
+    typedef itk::Image< MaskPixelType, InputDimension > MaskImageType;   
+
+    typedef itk::MammogramMaskSegmentationImageFilter<InternalImageType, MaskImageType> 
+      MammogramMaskSegmentationImageFilterType;
+
+    typename MammogramMaskSegmentationImageFilterType::Pointer 
+      maskFilter = MammogramMaskSegmentationImageFilterType::New();
+
+    maskFilter->SetInput( image );
+
+    maskFilter->SetVerbose( args.flgVerbose );
+
+    maskFilter->SetIncludeBorderRegion( true );
+
+    try {
+      maskFilter->Update();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to segment image" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    typename MaskImageType::Pointer mask = maskFilter->GetOutput();
+
+    mask->DisconnectPipeline();
+    
+    // Then calculate the fat subtracted image
+
+    typedef itk::MammogramFatSubtractionImageFilter<InternalImageType> 
+      MammogramFatSubtractionImageFilterType;
+
+    typename MammogramFatSubtractionImageFilterType::Pointer 
+      fatFilter = MammogramFatSubtractionImageFilterType::New();
+
+    fatFilter->SetInput( image );  
+
+    fatFilter->SetVerbose( args.flgVerbose );
+
+    fatFilter->SetComputeFatEstimationFit( true );
+
+    fatFilter->SetMask( mask );
+  
+    try
+    {
+      fatFilter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to calculate the fat subtraction: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+    
+    image = fatFilter->GetOutput( 0 );
+    image->DisconnectPipeline();
+  }
+
    
   // Set the desired output range (i.e. the same as the input)
 
@@ -588,8 +657,9 @@ int main( int argc, char *argv[] )
 
   args.strAdd2Suffix = strAdd2Suffix;                      
 				   	                                                 
-  args.flgOverwrite            = flgOverwrite;                       
-  args.flgVerbose              = flgVerbose;    
+  args.flgOverwrite   = flgOverwrite;                       
+  args.flgVerbose     = flgVerbose;    
+  args.flgFatSubtract = flgFatSubtract;
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
 
