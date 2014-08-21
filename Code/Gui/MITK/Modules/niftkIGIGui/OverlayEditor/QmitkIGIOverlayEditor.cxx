@@ -81,10 +81,12 @@ void QmitkIGIOverlayEditor::OnOverlayCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_3DViewerCheckBox->setEnabled(false);
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
     m_3DViewerCheckBox->setEnabled(true);
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_OverlayViewer->setVisible(checked);
 }
@@ -96,10 +98,12 @@ void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_OverlayCheckBox->setEnabled(false);
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
   }
   else
   {
     m_OverlayCheckBox->setEnabled(true);
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
   }
   m_3DViewer->setVisible(checked);
 }
