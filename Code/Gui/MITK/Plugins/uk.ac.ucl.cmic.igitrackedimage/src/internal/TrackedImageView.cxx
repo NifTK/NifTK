@@ -83,11 +83,13 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageNode->SetDataStorage(dataStorage);
     m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageNode->SetPredicate(isImage);
+    m_Controls->m_ImageNode->setEditable(true);
 
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
     m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
     m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
+    m_Controls->m_ImageToWorldNode->setEditable(true);
 
     RetrievePreferenceValues();
 
