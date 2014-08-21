@@ -54,13 +54,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(NifTKItkImageFileIOFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-  {
-    NifTKItkImageFileIOFactory::Pointer factory = NifTKItkImageFileIOFactory::New();
-    ObjectFactoryBase::RegisterFactory(factory);
-  }
-
 protected:
   NifTKItkImageFileIOFactory();
   ~NifTKItkImageFileIOFactory();
