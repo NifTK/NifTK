@@ -34,7 +34,6 @@ set(CPP_FILES
   DataManagement/mitkCoordinateAxesDataOpUpdate.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
-  Rendering/mitkImage2DToTexturePlaneMapper3D.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx

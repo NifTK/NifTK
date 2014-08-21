@@ -20,7 +20,6 @@
 #include "ui_TrackedImageView.h"
 #include <service/event/ctkEvent.h>
 #include <vtkSmartPointer.h>
-#include <mitkImage2DToTexturePlaneMapper3D.h>
 
 class vtkMatrix4x4;
 

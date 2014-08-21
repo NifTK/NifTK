@@ -15,7 +15,7 @@
 #ifndef mitk2DImageToTexturePlaneMapper3D_h
 #define mitk2DImageToTexturePlaneMapper3D_h
 
-#include "niftkCoreExports.h"
+#include "niftkIGIExports.h"
 
 #include <mitkVtkMapper.h>
 #include <mitkBaseRenderer.h>
@@ -37,7 +37,7 @@ class Image;
 /**
  * \brief Vtk-based mapper for a 2D image, that displays a texture mapped plane in 3D space.
  */
-class NIFTKCORE_EXPORT Image2DToTexturePlaneMapper3D : public VtkMapper
+class NIFTKIGI_EXPORT Image2DToTexturePlaneMapper3D : public VtkMapper
 {
 public:
   mitkClassMacro(Image2DToTexturePlaneMapper3D, VtkMapper);

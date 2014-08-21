@@ -19,7 +19,7 @@
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
-#include <mitkImage2DToTexturePlaneMapper3D.h>
+#include "mitkImage2DToTexturePlaneMapper3D.h"
 
 //-----------------------------------------------------------------------------
 mitk::NifTKIGIObjectFactory::NifTKIGIObjectFactory()

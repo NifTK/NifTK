@@ -15,8 +15,8 @@
 #ifndef mitkNifTKIGIObjectFactory_h
 #define mitkNifTKIGIObjectFactory_h
 
+#include "niftkIGIExports.h"
 #include <mitkCoreObjectFactory.h>
-#include "niftkCoreExports.h"
 
 namespace mitk {
 
@@ -27,7 +27,7 @@ namespace mitk {
  * Currently does:
  *   - Registers a new mapper mitk::Image2DToTexturePlaneMapper3D
  */
-class NIFTKCORE_EXPORT NifTKIGIObjectFactory : public CoreObjectFactoryBase
+class NIFTKIGI_EXPORT NifTKIGIObjectFactory : public CoreObjectFactoryBase
 {
   public:
     mitkClassMacro(NifTKIGIObjectFactory,CoreObjectFactoryBase);
