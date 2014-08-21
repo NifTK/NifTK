@@ -36,6 +36,11 @@
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
+, m_ItkImageFileIOFactory(NULL) // deliberately NULL
+, m_NifTKItkImageFileIOFactory(mitk::NifTKItkImageFileIOFactory::New().GetPointer())
+, m_PNMImageIOFactory(itk::PNMImageIOFactory::New().GetPointer())
+, m_CoordinateAxesDataReaderFactory(mitk::CoordinateAxesDataReaderFactory::New().GetPointer())
+, m_CoordinateAxesDataWriterFactory(mitk::CoordinateAxesDataWriterFactory::New().GetPointer())
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
@@ -52,27 +57,40 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
       itkIOFactory = dynamic_cast<mitk::ItkImageFileIOFactory*>(*iter);
       if (itkIOFactory.IsNotNull())
       {
+        itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
+        m_ItkImageFileIOFactory = itkIOFactory;
         break;
       }
     }
-    itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
 
-    // Load our specific factory, which will be used to load all ITK images, just like the MITK one,
-    // but then in addition, will load DRC Analyze files differently.
-    mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
+    itk::ObjectFactoryBase::RegisterFactory(m_NifTKItkImageFileIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataWriterFactory);
 
-    // Register our extra factories.
-    itk::PNMImageIOFactory::RegisterOneFactory();
-    mitk::CoordinateAxesDataReaderFactory::RegisterOneFactory();
-    mitk::CoordinateAxesDataWriterFactory::RegisterOneFactory();
     m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
 
-    // Carry on as per normal.
     CreateFileExtensionsMap();
     alreadyDone = true;
+
     MITK_DEBUG << "NifTKCoreObjectFactory c'tor finished" << std::endl;
   }
 
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
+{
+  itk::ObjectFactoryBase::UnRegisterFactory(m_PNMImageIOFactory);
+  itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataReaderFactory);
+  itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataWriterFactory);
+
+  itk::ObjectFactoryBase::UnRegisterFactory(m_NifTKItkImageFileIOFactory);
+  if (m_ItkImageFileIOFactory.IsNotNull())
+  {
+    itk::ObjectFactoryBase::RegisterFactory(m_ItkImageFileIOFactory);
+  }
 }
 
 
