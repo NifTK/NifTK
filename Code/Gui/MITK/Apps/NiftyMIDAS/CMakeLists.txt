@@ -22,12 +22,13 @@ set(MY_APP_NAME NiftyMIDAS)
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
-  org.mitk.gui.qt.volumevisualization
-  org.mitk.gui.qt.pointsetinteraction
-  org.mitk.gui.qt.stdmultiwidgeteditor
-  org.mitk.gui.qt.segmentation
-  org.mitk.gui.qt.measurementtoolbox
-  org.mitk.gui.qt.moviemaker
+  org_mitk_gui_qt_extapplication
+  org_mitk_gui_qt_volumevisualization
+  org_mitk_gui_qt_pointsetinteraction
+  org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_segmentation
+  org_mitk_gui_qt_measurementtoolbox
+  org_mitk_gui_qt_moviemaker
 )
 
 ###########################################################
