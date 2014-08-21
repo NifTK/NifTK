@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkNifTKIGIObjectFactory.cxx
   DataSources/mitkIGITestDataUtils.cxx
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx

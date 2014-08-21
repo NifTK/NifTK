@@ -16,18 +16,21 @@
 #define TrackedImageView_h
 
 #include <QmitkBaseView.h>
-#include <service/event/ctkEvent.h>
+
 #include "ui_TrackedImageView.h"
+#include <service/event/ctkEvent.h>
 #include <vtkSmartPointer.h>
-#include <mitkVector.h>
+#include <mitkImage2DToTexturePlaneMapper3D.h>
 
 class vtkMatrix4x4;
 
 /**
  * \class TrackedImageView
- * \brief User interface to coordinate an image and tracker transform to
- * enable the display of an image in a rendered scene, as might be useful in
- * a tracked ultrasound probe for example.
+ * \brief Coordinates an image moving via a tracking transform.
+ *
+ * This is useful for displaying a tracked ultrasound plane in a 3D scene,
+ * such as might be used for a free-hand ultrasound demo.
+ *
  * \ingroup uk_ac_ucl_cmic_igitrackedimage_internal
 */
 class TrackedImageView : public QmitkBaseView
@@ -73,6 +76,9 @@ signals:
   
 protected slots:
 
+  /**
+   * \brief Creates copies of the image, and mappers to display them.
+   */
   void OnClonePushButtonClicked();
 
 protected:
@@ -109,12 +115,11 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4>        m_ImageToTrackingSensorTransform;
-  std::string                          m_ImageToTrackingSensorFileName;
-  mitk::DataNode::Pointer              m_PlaneNode; // we use this to proxy the modified time of this class.
-  mitk::Point2D                        m_ImageScaling;
-  bool                                 m_ShowCloneImageGroup;
-  int                                  m_NameCounter;
+  vtkSmartPointer<vtkMatrix4x4>                m_ImageToTrackingSensorTransform;
+  std::string                                  m_ImageToTrackingSensorFileName;
+  mitk::Point2D                                m_ImageScaling;
+  bool                                         m_ShowCloneImageGroup;
+  int                                          m_NameCounter;
 };
 
 #endif // TrackedImageView_h
