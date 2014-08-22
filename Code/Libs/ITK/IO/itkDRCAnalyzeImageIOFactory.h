@@ -47,13 +47,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(DRCAnalyzeImageIOFactory, AnalyzeImageIOFactory);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-    {
-    DRCAnalyzeImageIOFactory::Pointer metaFactory = DRCAnalyzeImageIOFactory::New();
-    ObjectFactoryBase::RegisterFactory(metaFactory);
-    }
-
 protected:
   DRCAnalyzeImageIOFactory();
   ~DRCAnalyzeImageIOFactory();

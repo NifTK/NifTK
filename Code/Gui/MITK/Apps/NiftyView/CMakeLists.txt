@@ -22,6 +22,7 @@ set(MY_APP_NAME NiftyView)
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
+  org_mitk_gui_qt_extapplication
 )
 
 ###########################################################

@@ -13,6 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkImage2DToTexturePlaneMapper3D.cxx
+  Common/mitkNifTKIGIObjectFactory.cxx
   DataSources/mitkIGITestDataUtils.cxx
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx
