@@ -7,6 +7,7 @@ import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
 import diffusion_mri_processing         as dmri
+from midas2dicom import Midas2Dicom
 import argparse
 import os
 
@@ -83,7 +84,7 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
 
 help_message = \
 'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
-'Mandatory Input is the DICOM directory from which the DWIs, bval bvecs \n' + \
+'Mandatory Input is the DICOM directory OR a MIDAS code from which the DWIs, bval bvecs \n' + \
 'as well as a T1 image are extracted for reference space. \n\n' + \
 'The Field maps are provided so susceptibility correction is applied. \n' + \
 'Use the --model option to control which diffusion model to use (tensor or noddi)' 
@@ -91,11 +92,14 @@ help_message = \
 model_choices = ['tensor', 'noddi', 'both']
 
 parser = argparse.ArgumentParser(description=help_message)
-parser.add_argument('-i', '--dicoms',
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-i', '--dicoms',
                     dest='dicoms',
                     metavar='dicoms',
-                    help='DICOM directory where the files are stored',
-                    required=True)
+                    help='DICOM directory where the files are stored')
+group.add_argument('-m', '--midas_code',
+										help='MIDAS code of the subject image')
+
 parser.add_argument('--model',
                     dest='model',
                     metavar='model',
@@ -144,10 +148,20 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
 
 r.base_dir = os.getcwd()
 
+
 dg = pe.Node(nio.DataGrabber(outfields = ['dicom_files']), name='dg')
 dg.inputs.template = '*'
 dg.inputs.sort_filelist = False
-dg.inputs.base_directory = os.path.abspath(args.dicoms)
+
+if len(args.midas_code) > 0:
+	midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
+	midas2dicom.inputs.midas_code = args.midas_code
+	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/',
+									'/var/lib/midas/data/ppadti/images/ims-study/']
+	midas2dicom.inputs.midas_dirs = database_paths
+	r.connect(midas2dicom, 'dicom_dir', dg, 'base_directory')
+else:
+	dg.inputs.base_directory = os.path.abspath(args.dicoms)
 
 dcm2nii = pe.Node(interface = mricron.Dcm2nii(), 
                   name = 'dcm2nii')
@@ -239,7 +253,7 @@ r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 
 #r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 
-r.write_graph(graph2use = 'colored')
+#r.write_graph(graph2use = 'colored')
 
 qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
