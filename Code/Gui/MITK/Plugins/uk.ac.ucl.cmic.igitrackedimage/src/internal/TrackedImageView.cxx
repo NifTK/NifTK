@@ -52,6 +52,21 @@ TrackedImageView::TrackedImageView()
 //-----------------------------------------------------------------------------
 TrackedImageView::~TrackedImageView()
 {
+  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();  
+  if (imageNode.IsNotNull())
+  {
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
+    if (image.IsNotNull())
+    {
+      // Remove any instance of Image2DToTexturePlaneMapper3D
+      mitk::Mapper::Pointer mapper = imageNode->GetMapper(mitk::BaseRenderer::Standard3D);
+      if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
+      {
+        imageNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
+      }
+    }
+  }
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -207,28 +222,21 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
           && trackingSensorToTrackerTransform.IsNotNull()
          )
       {
-        // Check modified times to minimise updates.
-        unsigned long trackingSensorToTrackerModifiedTime = trackingSensorToTrackerTransform->GetMTime();
-        unsigned long imageModifiedTime = imageNode->GetMTime();
-        
-        if (imageModifiedTime < trackingSensorToTrackerModifiedTime)
-        {          
-          // We publish this update signal immediately after the image plane is updated,
-          // as we want the Overlay Display to listen synchronously, and update immediately.
-          // We don't want a rendering event to trigger the Overlay Display to re-render at the
-          // wrong position, and momentarily display the wrong thing.
+        // We publish this update signal immediately after the image plane is updated,
+        // as we want the Overlay Display to listen synchronously, and update immediately.
+        // We don't want a rendering event to trigger the Overlay Display to re-render at the
+        // wrong position, and momentarily display the wrong thing.
           
-          mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
-          command->Update(imageNode,
-                          trackingSensorToTrackerTransform,
-                          m_ImageToTrackingSensorTransform,
-                          m_ImageScaling
-                          );
+        mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+        command->Update(imageNode,
+                        trackingSensorToTrackerTransform,
+                        m_ImageToTrackingSensorTransform,
+                        m_ImageScaling
+                        );
                     
-          ctkDictionary properties;
-          emit Updated(properties);
-
-        } // if modified times suggest we need an update
+        ctkDictionary properties;
+        emit Updated(properties);
+        
       } // end if input is valid
     } // if got an image
   } // if got an image node

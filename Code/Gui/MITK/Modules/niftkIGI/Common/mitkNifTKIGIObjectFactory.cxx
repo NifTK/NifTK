@@ -61,12 +61,13 @@ void mitk::NifTKIGIObjectFactory::SetDefaultProperties(mitk::DataNode* node)
   {
     return;
   }
-
+  /*
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
   if (image.IsNotNull())
   {
     mitk::Image2DToTexturePlaneMapper3D::SetDefaultProperties(node);
   }
+  */
 }
 
 
