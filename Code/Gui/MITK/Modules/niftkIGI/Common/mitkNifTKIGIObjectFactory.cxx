@@ -42,11 +42,13 @@ mitk::Mapper::Pointer mitk::NifTKIGIObjectFactory::CreateMapper(mitk::DataNode* 
 
   if ( id == mitk::BaseRenderer::Standard3D )
   {
+    /* This would get added to ALL images. For IGI TrackedImageView we only want the one being tracked.
     if (dynamic_cast<mitk::Image*>(data) != NULL)
     {
       newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
       newMapper->SetDataNode(node);
     }
+    */
   }
   return newMapper;
 }
