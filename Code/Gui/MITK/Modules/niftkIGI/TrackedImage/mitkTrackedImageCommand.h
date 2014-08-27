@@ -36,17 +36,12 @@ public:
   itkNewMacro(TrackedImageCommand);
 
   /**
-   * \brief Stores the name of the plane node representing the tracked image.
-   */
-  static const char* TRACKED_IMAGE_NODE_NAME;
-
-  /**
    * \brief Stores the name of a DataNode property, indicating the currently selected image = niftk.trackedimage
    */
   static const char* TRACKED_IMAGE_SELECTED_PROPERTY_NAME;
   
   /**
-   * \brief Write My Documentation
+   * \brief Computes the new position/scaling of the tracked image plane.
    */
   void Update(const mitk::DataNode::Pointer imageNode,
            const mitk::DataNode::Pointer trackingSensorToTrackerNode,

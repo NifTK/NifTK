@@ -14,6 +14,7 @@
 
 #include "mitkTrackedImageCommand.h"
 #include <mitkCoordinateAxesData.h>
+#include <mitkMathsUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurface.h>
@@ -21,7 +22,6 @@
 namespace mitk
 {
 
-const char* TrackedImageCommand::TRACKED_IMAGE_NODE_NAME("TrackedImageViewPlane");
 const char* TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME("niftk.trackedimage");
 
 //-----------------------------------------------------------------------------
@@ -77,11 +77,14 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     if (geometry.IsNotNull())
     {
       mitk::Vector3D spacing = geometry->GetSpacing();
-      spacing[0] = imageScaling[0];
-      spacing[1] = imageScaling[1];
+      if (! (mitk::IsCloseToZero(spacing[0] - imageScaling[0])
+          && mitk::IsCloseToZero(spacing[1] - imageScaling[1])))
+      {
+        // This is surprisingly expensive, so avoid it if possible.
+        geometry->SetSpacing(spacing);
+      }
 
       geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
-      geometry->SetSpacing(spacing);
     }
   }
 }
