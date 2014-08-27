@@ -29,7 +29,7 @@
 #include <mitkTrackedImageCommand.h>
 #include <mitkFileIOUtils.h>
 #include <mitkRenderingManager.h>
-#include <mitkGeometry2DDataMapper2D.h>
+#include <mitkImage2DToTexturePlaneMapper3D.h>
 #include <mitkIOUtil.h>
 #include <mitkExceptionMacro.h>
 #include <QMessageBox>
@@ -52,6 +52,21 @@ TrackedImageView::TrackedImageView()
 //-----------------------------------------------------------------------------
 TrackedImageView::~TrackedImageView()
 {
+  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();  
+  if (imageNode.IsNotNull())
+  {
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
+    if (image.IsNotNull())
+    {
+      // Remove any instance of Image2DToTexturePlaneMapper3D
+      mitk::Mapper::Pointer mapper = imageNode->GetMapper(mitk::BaseRenderer::Standard3D);
+      if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
+      {
+        imageNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
+      }
+    }
+  }
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -168,11 +183,21 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       {
         mitk::DataNode::Pointer aNode = this->m_Controls->m_ImageNode->GetNode(i);
         aNode->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
+
+        // Remove any instance of Image2DToTexturePlaneMapper3D
+        mitk::Mapper::Pointer mapper = aNode->GetMapper(mitk::BaseRenderer::Standard3D);
+        if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
+        {
+          aNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
+        }
       }
       mitk::DataNode::Pointer nodeToUpdate = this->GetDataStorage()->GetNamedNode(node->GetName());
       if (nodeToUpdate.IsNotNull())
       {
         nodeToUpdate->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);        
+
+        mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
+        nodeToUpdate->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
       }
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     }
@@ -197,28 +222,21 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
           && trackingSensorToTrackerTransform.IsNotNull()
          )
       {
-        // Check modified times to minimise updates.
-        unsigned long trackingSensorToTrackerModifiedTime = trackingSensorToTrackerTransform->GetMTime();
-        unsigned long imageModifiedTime = imageNode->GetMTime();
-        
-        if (imageModifiedTime < trackingSensorToTrackerModifiedTime)
-        {          
-          // We publish this update signal immediately after the image plane is updated,
-          // as we want the Overlay Display to listen synchronously, and update immediately.
-          // We don't want a rendering event to trigger the Overlay Display to re-render at the
-          // wrong position, and momentarily display the wrong thing.
+        // We publish this update signal immediately after the image plane is updated,
+        // as we want the Overlay Display to listen synchronously, and update immediately.
+        // We don't want a rendering event to trigger the Overlay Display to re-render at the
+        // wrong position, and momentarily display the wrong thing.
           
-          mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
-          command->Update(imageNode,
-                          trackingSensorToTrackerTransform,
-                          m_ImageToTrackingSensorTransform,
-                          m_ImageScaling
-                          );
+        mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+        command->Update(imageNode,
+                        trackingSensorToTrackerTransform,
+                        m_ImageToTrackingSensorTransform,
+                        m_ImageScaling
+                        );
                     
-          ctkDictionary properties;
-          emit Updated(properties);
-
-        } // if modified times suggest we need an update
+        ctkDictionary properties;
+        emit Updated(properties);
+        
       } // end if input is valid
     } // if got an image
   } // if got an image node
