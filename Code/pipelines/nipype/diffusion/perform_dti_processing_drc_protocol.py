@@ -81,10 +81,9 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
 
     return dwis, bvals, bvecs, fmmag, fmph, t1
 
-
 help_message = \
 'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
-'Mandatory Input is the DICOM directory OR a MIDAS code from which the DWIs, bval bvecs \n' + \
+'Mandatory Input is the 4/5 MIDAS code from which the DWIs, bval bvecs \n' + \
 'as well as a T1 image are extracted for reference space. \n\n' + \
 'The Field maps are provided so susceptibility correction is applied. \n' + \
 'Use the --model option to control which diffusion model to use (tensor or noddi)' 
@@ -92,13 +91,11 @@ help_message = \
 model_choices = ['tensor', 'noddi', 'both']
 
 parser = argparse.ArgumentParser(description=help_message)
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-i', '--dicoms',
-                    dest='dicoms',
-                    metavar='dicoms',
-                    help='DICOM directory where the files are stored')
-group.add_argument('-m', '--midas_code',
-										help='MIDAS code of the subject image')
+
+parser.add_argument('-m', '--midas_code',
+                   dest='midas_code',
+                   narg='+',
+                   help='MIDAS code of the subject image')
 
 parser.add_argument('--model',
                     dest='model',
@@ -120,22 +117,14 @@ parser.add_argument('-r', '--resample-t1',
                     required=False,
                     type=int,
                     default=0)
-parser.add_argument('-p', '--prefix',
-                    dest='prefix',
-                    metavar='prefix',
-                    help='prefix to use for the output images',
-                    required=False,
-                    default='subject')
 
 args = parser.parse_args()
 
 result_dir = os.path.abspath(args.output)
+
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-input_dir = os.path.join(result_dir, 'inputs')
-if not os.path.exists(input_dir):
-    os.mkdir(input_dir)
 
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                   resample_in_t1 = args.resample_t1, 
@@ -145,23 +134,21 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   t1_mask_provided = True,
                                                   ref_b0_provided = False,
                                                   model = args.model)
-
 r.base_dir = os.getcwd()
 
+
+infosource = pe.Node(niu.IdentityInterface(fields = ['subject_id']),
+                     name = 'infosource')
+infosource.iterables = ('subject_id', args.midas_code)
+
+midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
+database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/',
+                  '/var/lib/midas/data/ppadti/images/ims-study/']
+midas2dicom.inputs.midas_dirs = database_paths
 
 dg = pe.Node(nio.DataGrabber(outfields = ['dicom_files']), name='dg')
 dg.inputs.template = '*'
 dg.inputs.sort_filelist = False
-
-if len(args.midas_code) > 0:
-	midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
-	midas2dicom.inputs.midas_code = args.midas_code
-	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/',
-									'/var/lib/midas/data/ppadti/images/ims-study/']
-	midas2dicom.inputs.midas_dirs = database_paths
-	r.connect(midas2dicom, 'dicom_dir', dg, 'base_directory')
-else:
-	dg.inputs.base_directory = os.path.abspath(args.dicoms)
 
 dcm2nii = pe.Node(interface = mricron.Dcm2nii(), 
                   name = 'dcm2nii')
@@ -170,12 +157,11 @@ dcm2nii.inputs.gzip_output = True
 dcm2nii.inputs.anonymize = False
 dcm2nii.inputs.reorient = True
 dcm2nii.inputs.reorient_and_crop = False
-dcm2nii.inputs.output_dir = input_dir
 
 find_and_merge_dwis = pe.Node(interface = niu.Function(input_names = ['input_bvals', 'input_bvecs', 'input_files'],
                                                        output_names = ['dwis', 'bvals', 'bvecs', 'fieldmapmag', 'fieldmapphase', 't1'],
                                                        function = find_and_merge_dwi_data),
-                        name = 'find_and_merge_dwis')
+                              name = 'find_and_merge_dwis')
 
 mni_to_input = pe.Node(interface=niftyreg.RegAladin(), name='mni_to_input')
 mni_to_input.inputs.flo_file = mni_template
@@ -184,6 +170,8 @@ mask_resample  = pe.Node(interface = niftyreg.RegResample(), name = 'mask_resamp
 mask_resample.inputs.inter_val = 'NN'
 mask_resample.inputs.flo_file = mni_template_mask
 
+r.connect(infosource, 'subject_id', midas2dicom, 'midas_code')
+r.connect(midas2dicom, 'dicom_dir', dg, 'base_directory')
 r.connect(dg, 'dicom_files', dcm2nii, 'source_names')
 r.connect(dcm2nii, 'converted_files', find_and_merge_dwis, 'input_files')
 r.connect(dcm2nii, 'bvals', find_and_merge_dwis, 'input_bvals')
@@ -203,11 +191,12 @@ mask_eroder = pe.Node(interface = niftyseg.BinaryMaths(),
                       name = 'mask_eroder')
 mask_eroder.inputs.operation = 'ero'
 mask_eroder.inputs.operand_value = 3
-r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
 
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
+
+r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
 
 if (args.model == 'tensor' or args.model == 'both'):
     
@@ -242,10 +231,10 @@ if (args.model == 'tensor' or args.model == 'both'):
     r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res_tensor')
 
 if (args.model == 'noddi' or args.model == 'both'):
+
     r.connect(r.get_node('output_node'), 'mcmap', ds, '@mcmap')
     r.connect(r.get_node('output_node'), 'predicted_image_noddi', ds, '@img_noddi')
     r.connect(r.get_node('output_node'), 'residual_image_noddi', ds, '@res_noddi')
-
 
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
@@ -253,7 +242,7 @@ r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 
 #r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 
-#r.write_graph(graph2use = 'colored')
+r.write_graph(graph2use = 'colored')
 
 qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
