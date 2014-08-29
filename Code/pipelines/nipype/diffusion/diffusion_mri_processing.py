@@ -69,6 +69,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                              t1_mask_provided = False,
                                              ref_b0_provided = False,
                                              dwi_interp_type = 'CUB',
+                                             wls_tensor_fit = False,
                                              model='tensor'):
 
     """Creates a diffusion processing workflow. This initially performs a groupwise registration
@@ -203,6 +204,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     # Fit the model
     diffusion_model_fitting_tensor = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_tensor')
     diffusion_model_fitting_tensor.inputs.dti_flag = True
+    diffusion_model_fitting_tensor.inputs.wls_flag = wls_tensor_fit
+			
     diffusion_model_fitting_noddi = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_noddi')
     diffusion_model_fitting_noddi.inputs.nod_flag = True    
 
