@@ -51,11 +51,12 @@ public:
    * and sets up the videotracker matcher
    */
   void Initialise (std::string directory, std::string calibrationParameterDirectory);
+
   /**
    * \brief
    * performs the point projection
    */
-  void  Triangulate();
+  void Triangulate();
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
@@ -72,10 +73,11 @@ public:
    * \brief Set the matrix flip state for the VideoTracker matcher
    */
   void SetFlipMatrices (bool);
+
   /** 
   * \brief set the video lag parameters for the tracker matcher
   */
-  void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
+  void SetVideoLagMilliseconds (unsigned long long videoLag, bool videoLeadsTracking = false);
 
 protected:
 
