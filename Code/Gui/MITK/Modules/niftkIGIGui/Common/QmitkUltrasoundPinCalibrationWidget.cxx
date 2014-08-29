@@ -25,22 +25,12 @@
 
 //-----------------------------------------------------------------------------
 QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
-  const QString& inputTrackerDirectory,
   const QString& inputImageDirectory,
-  const QString& outputMatrixDirectory,
   const QString& outputPointDirectory,  
-  const unsigned long long timingToleranceInMilliseconds,
-  const bool& skipForward,
-  const bool& multiPointMode,
   QWidget *parent)
 : QVTKWidget(parent)
-, m_InputTrackerDirectory(inputTrackerDirectory)
 , m_InputImageDirectory(inputImageDirectory)
-, m_OutputMatrixDirectory(outputMatrixDirectory)
 , m_OutputPointDirectory(outputPointDirectory)
-, m_TimingToleranceInMilliseconds(timingToleranceInMilliseconds)
-, m_SkipForward(skipForward)
-, m_MultiPointMode(multiPointMode)
 {
   m_ImageViewer = vtkImageViewer::New();
   this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
@@ -51,19 +41,12 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   m_PNGReader = vtkPNGReader::New();
 
   // Load all data, and set up the PNG reader to the first image.
-  bool canFindTrackingData = mitk::CheckIfDirectoryContainsTrackingMatrices(m_InputTrackerDirectory.toStdString());
-  if (!canFindTrackingData)
-  {
-    throw std::runtime_error("Could not find tracker matrices\n");
-  }
-
-  m_TrackingTimeStamps = mitk::FindTrackingTimeStamps(m_InputTrackerDirectory.toStdString());
   m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".png");
+  if (m_ImageFiles.size() == 0)
+  {
+    throw std::runtime_error("Did not find any .png files.");
+  }
   std::sort(m_ImageFiles.begin(), m_ImageFiles.end());
-
-  std::cout << "Found " << m_ImageFiles.size() << " image files..." << std::endl;
-  std::cout << "Found " << m_TrackingTimeStamps.m_TimeStamps.size() << " tracking matrices..." << std::endl;
-
   m_ImageFileCounter = 0;
   m_PointsOutputCounter = 0;
 
@@ -102,12 +85,12 @@ void QmitkUltrasoundPinCalibrationWidget::mousePressEvent(QMouseEvent* event)
   }
   catch (std::exception& e)
   {
-    std::cerr << "Caught std::exception:" << e.what();
+    std::cerr << "Caught std::exception: " << e.what() << std::endl;
     event->ignore();
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception:";
+    std::cerr << "Caught unknown exception: " << std::endl;
     event->ignore();
   }
 }
@@ -150,7 +133,9 @@ void QmitkUltrasoundPinCalibrationWidget::ShowImage(const unsigned long int& ima
 {
   m_PNGReader->SetFileName(m_ImageFiles[imageNumber].c_str());
   m_ImageViewer->Render();
-  std::cout << "Displaying image[" << imageNumber << "/" << m_ImageFiles.size() << ", " << imageNumber*100/m_ImageFiles.size() << "%]=" << m_ImageFiles[imageNumber] << ", stored " << m_PointsOutputCounter << " so far." << std::endl;
+
+  int offsetImageNumber = imageNumber + 1;
+  std::cout << "Displaying image[" << offsetImageNumber << "/" << m_ImageFiles.size() << ", " << offsetImageNumber*100/m_ImageFiles.size() << "%]=" << m_ImageFiles[imageNumber] << ", stored " << m_PointsOutputCounter << " so far." << std::endl;
 }
 
 
@@ -159,40 +144,7 @@ void QmitkUltrasoundPinCalibrationWidget::NextImage()
 {
   if (m_ImageFileCounter < m_ImageFiles.size() - 1)
   {
-    unsigned int offset = 1;
-
-    if (m_SkipForward)
-    {
-      unsigned int testCounter = m_ImageFileCounter + offset;
-
-      while (testCounter < m_ImageFiles.size() - 1)
-      {
-        QString imageFileName = QString::fromStdString(m_ImageFiles[testCounter]);
-        QRegExp rx("([0-9]{19})");
-
-        int matchIndex = imageFileName.indexOf(rx);
-        if (matchIndex != -1)
-        {
-          QString imageTimeStampString = imageFileName.mid(matchIndex,19);
-
-          long long delta = 0;
-          unsigned long long imageTimeStamp = imageTimeStampString.toULongLong();
-          unsigned long long matrixTimeStamp = m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
-
-          delta /= 1000000; // convert nanoseconds to milliseconds.
-
-          if (fabs(static_cast<double>(delta)) < m_TimingToleranceInMilliseconds)
-          {
-            break;
-          }
-        }
-        std::cerr << "For image=" << m_ImageFileCounter << ", skipping offset=" << offset << std::endl;
-        offset++;
-        testCounter = m_ImageFileCounter + offset;
-      }
-    }
-
-    m_ImageFileCounter += offset;
+    m_ImageFileCounter++;
     this->ShowImage(m_ImageFileCounter);
   }
 }
@@ -230,64 +182,30 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
 {
   if (event != NULL)
   {
-    this->CreateDir(m_OutputPointDirectory.toStdString());
-    this->CreateDir(m_OutputMatrixDirectory.toStdString());
+    int xPixel = event->x();
+    int yPixel = event->y();
+    Qt::MouseButton button = event->button();
 
-    QString imageFileName = QString::fromStdString(m_ImageFiles[m_ImageFileCounter]);
-    QRegExp rx("([0-9]{19})");
-
-    int matchIndex = imageFileName.indexOf(rx);
-    if (matchIndex != -1)
+    if (button == Qt::LeftButton)
     {
+      this->CreateDir(m_OutputPointDirectory.toStdString());
 
-      // Check if we have the right data.
-      //
-      // For a given image, where the filename is the timestamp,
-      // we find the closest tracking matrix within tolerance.
-      // If such a tracking matrix exists, we output both
-      // matrix and point in separate files, named after the timestamp.
-      QString imageTimeStampString = imageFileName.mid(matchIndex,19);
+      QString imageFileName = QString::fromStdString(m_ImageFiles[m_ImageFileCounter]);
+      QRegExp rx("([0-9]{19})");
 
-      long long delta = 0;
-      unsigned long long imageTimeStamp = imageTimeStampString.toULongLong();
-      unsigned long long matrixTimeStamp = m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
-
-      delta /= 1000000; // convert nanoseconds to milliseconds.
-
-      if (fabs(static_cast<double>(delta)) < m_TimingToleranceInMilliseconds)
+      int matchIndex = imageFileName.indexOf(rx);
+      if (matchIndex != -1)
       {
-        // Output point.
-        int xPixel = event->x();
-        int yPixel = event->y();
-        Qt::MouseButton button = event->button();
-        int pinNumber = 0;
-        if (button == Qt::LeftButton)
-        {
-          pinNumber = 0;
-        }
-        else if (button == Qt::MidButton)
-        {
-          pinNumber = 1;
-        }
-        else if (button == Qt::RightButton)
-        {
-          pinNumber = 2;
-        }
+        QString imageTimeStampString = imageFileName.mid(matchIndex,19);
         QString baseNameForPoint = imageTimeStampString + QString(".txt");
         std::string pointFileFullPath = niftk::ConvertToFullNativePath((m_OutputPointDirectory + QString("/") + baseNameForPoint).toStdString());
 
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          if (m_MultiPointMode)
-          {
-            myfile << pinNumber << " " << xPixel << " " << yPixel << std::endl;
-          }
-          else
-          {
-            myfile << xPixel << " " << yPixel << std::endl;
-          }
+          myfile << imageTimeStampString.toStdString() << xPixel << " " << yPixel << std::endl;
           myfile.close();
+          m_PointsOutputCounter++;
         }
         else
         {
@@ -295,36 +213,13 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
                                       tr("Failed to write point to file\n%1").arg(QString::fromStdString(pointFileFullPath)),
                                       QMessageBox::Ok);
         }
-
-        // Output matrix
-        QString baseNameForMatrix = QString::number(matrixTimeStamp) + QString(".txt");
-        QString baseNameForImage = imageTimeStampString + QString(".txt");
-
-        std::string inputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_InputTrackerDirectory + QString("/") + baseNameForMatrix).toStdString());
-        std::string outputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_OutputMatrixDirectory + QString("/") + baseNameForImage).toStdString());
-
-        vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-        trackingMatrix = mitk::LoadVtkMatrix4x4FromFile(inputMatrixFileFullPath);
-
-        m_PointsOutputCounter++;
-
-        if (!mitk::SaveVtkMatrix4x4ToFile(outputMatrixFileFullPath, *trackingMatrix))
-        {
-          QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
-                                      tr("Failed to write matrix to file\n%1").arg(QString::fromStdString(outputMatrixFileFullPath)),
-                                      QMessageBox::Ok);
-        }
       }
       else
       {
-        MITK_ERROR << "niftkUltrasoundPinCalibrationSorter: No tracking data for this image";
+        QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
+                                    tr("Invalid image file name\n%1").arg(imageFileName),
+                                    QMessageBox::Ok);
       }
-    }
-    else
-    {
-      QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
-                                  tr("Invalid image file name\n%1").arg(imageFileName),
-                                  QMessageBox::Ok);
     }
   }
 }

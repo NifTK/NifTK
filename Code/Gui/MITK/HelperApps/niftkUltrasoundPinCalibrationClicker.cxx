@@ -24,19 +24,11 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if (inputMatrixDirectory.length() == 0 
-  ||  inputImageDirectory.length() == 0
-  ||  outputMatrixDirectory.length() == 0
+  if (inputImageDirectory.length() == 0
   ||  outputPointDirectory.length() == 0
   )
   {
     commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
-  }
-
-  if (outputMatrixDirectory == outputPointDirectory)
-  {
-    std::cerr << "ERROR: outputMatrixDirectory and outputPointDirectory must differ." << std::endl;
     return returnStatus;
   }
 
@@ -46,13 +38,8 @@ int main(int argc, char** argv)
     QApplication app(argc,argv);
     
     QmitkUltrasoundPinCalibrationWidget cw(
-      QString::fromStdString(inputMatrixDirectory),
       QString::fromStdString(inputImageDirectory),
-      QString::fromStdString(outputMatrixDirectory),
-      QString::fromStdString(outputPointDirectory),
-      timingTolerance,
-      skipForward,
-      multiPointMode
+      QString::fromStdString(outputPointDirectory)
     );
     cw.show();
     
@@ -60,12 +47,12 @@ int main(int argc, char** argv)
   }
   catch (std::exception& e)
   {
-    std::cerr << "Caught std::exception:" << e.what();
+    std::cerr << "Caught std::exception: " << e.what() << std::endl;
     returnStatus = -1;
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception:";
+    std::cerr << "Caught unknown exception: " << std::endl;
     returnStatus = -2;
   }
 
