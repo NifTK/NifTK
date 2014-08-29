@@ -37,22 +37,14 @@ class NIFTKIGIGUI_EXPORT QmitkUltrasoundPinCalibrationWidget : public QVTKWidget
 public:
 
   QmitkUltrasoundPinCalibrationWidget(
-    const QString& inputTrackerDirectory,
     const QString& inputImageDirectory,
-    const QString& outputMatrixDirectory,
     const QString& outputPointDirectory,
-    const unsigned long long timingToleranceInMilliseconds,
-    const bool& skipForward,
-    const bool& multiPointMode,
     QWidget *parent = 0
   );
   virtual ~QmitkUltrasoundPinCalibrationWidget();
 
   /**
-   * \brief When mouse is pressed, we store the 2D pixel location, in a single line, in a new file.
-   * 
-   * This will only save if the timing difference between an ultrasound image and the tracking data
-   * is within a certain tolerance. An error message is raised if there is no tracking information.
+   * \brief When mouse is pressed, we store the timestamp, 2D pixel location, in a single line, in a new file, whose filename is timestamp.
    */
   virtual void mousePressEvent(QMouseEvent* event);
   
@@ -77,17 +69,11 @@ private slots:
   
 private:
 
-  const QString m_InputTrackerDirectory;
   const QString m_InputImageDirectory;
-  const QString m_OutputMatrixDirectory;
   const QString m_OutputPointDirectory;
-  const unsigned long long m_TimingToleranceInMilliseconds;
-  const bool m_SkipForward;
-  const bool m_MultiPointMode;
 
   vtkSmartPointer<vtkImageViewer> m_ImageViewer;
   vtkSmartPointer<vtkPNGReader> m_PNGReader;
-  mitk::TrackingMatrixTimeStamps m_TrackingTimeStamps;
   std::vector<std::string> m_ImageFiles;
   int m_ImageWidth;
   int m_ImageHeight;
