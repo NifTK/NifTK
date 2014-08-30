@@ -39,24 +39,24 @@ int mitkTrackingMatrixTimeStampsTest(int argc, char * argv[])
 
   // Test GetFrameNumber().
   MITK_TEST_CONDITION (timeStamps.GetFrameNumber(1234) == -1, "GetFrameNumber(): Empty list, expecting -1 and got:" << timeStamps.GetFrameNumber(1234));
-  timeStamps.m_TimeStamps.push_back(1);
+  timeStamps.Insert(1);
   MITK_TEST_CONDITION (timeStamps.GetFrameNumber(1234) == -1, "GetFrameNumber(): Single item in list, expecting -1, and got:" << timeStamps.GetFrameNumber(1234));
-  timeStamps.m_TimeStamps.push_back(2);
+  timeStamps.Insert(2);
   MITK_TEST_CONDITION (timeStamps.GetFrameNumber(1234) == -1, "GetFrameNumber(): Two item in list, expecting -1, and got:" << timeStamps.GetFrameNumber(1234));
   MITK_TEST_CONDITION (timeStamps.GetFrameNumber(1) == 0, "GetFrameNumber(): Find first item in list, expecting 0, and got:" << timeStamps.GetFrameNumber(1));
   MITK_TEST_CONDITION (timeStamps.GetFrameNumber(2) == 1, "GetFrameNumber(): Find second item in list, expecting 1, and got:" << timeStamps.GetFrameNumber(2));
 
   // Test GetBoundingTimeStamps();
-  timeStamps.m_TimeStamps.clear();
+  timeStamps.Clear();
   isValid = timeStamps.GetBoundingTimeStamps(1, before, after, proportion);
   MITK_TEST_CONDITION (!isValid, "GetBoundingTimeStamps(): Empty list, expecting isValid==false, and got:" << isValid);
   MITK_TEST_CONDITION (before == 0, "GetBoundingTimeStamps(): Empty list, expecting before==0, and got:" << before);
   MITK_TEST_CONDITION (after == 0, "GetBoundingTimeStamps(): Empty list, expecting after==0, and got:" << after);
   MITK_TEST_CONDITION (proportion == 0, "GetBoundingTimeStamps(): Empty list, expecting proportion==0, and got:" << proportion);
-  timeStamps.m_TimeStamps.push_back(2);
-  timeStamps.m_TimeStamps.push_back(4);
-  timeStamps.m_TimeStamps.push_back(6);
-  timeStamps.m_TimeStamps.push_back(8);
+  timeStamps.Insert(2);
+  timeStamps.Insert(4);
+  timeStamps.Insert(6);
+  timeStamps.Insert(8);
   isValid = timeStamps.GetBoundingTimeStamps(10, before, after, proportion);
   MITK_TEST_CONDITION (!isValid, "GetBoundingTimeStamps(): Off top end of list, expecting isValid==false, and got:" << isValid);
   MITK_TEST_CONDITION (before == 8, "GetBoundingTimeStamps(): Off top end of list, expecting before==8, and got:" << before);
@@ -79,7 +79,7 @@ int mitkTrackingMatrixTimeStampsTest(int argc, char * argv[])
   MITK_TEST_CONDITION (proportion == 0.5, "GetBoundingTimeStamps(): Interpolating match, expecting proportion==0.5, and got:" << proportion);
 
   // Test GetNearestTimeStamp();
-  timeStamps.m_TimeStamps.clear();
+  timeStamps.Clear();
   delta = -1;
   result = timeStamps.GetNearestTimeStamp(1, NULL);
   MITK_TEST_CONDITION (result == 0, "GetNearestTimeStamp(): Empty list, expecting result==0, and got:" << result);
@@ -87,10 +87,10 @@ int mitkTrackingMatrixTimeStampsTest(int argc, char * argv[])
   result = timeStamps.GetNearestTimeStamp(2, &delta);
   MITK_TEST_CONDITION (result == 0, "GetNearestTimeStamp(): Empty list, expecting result==0, and got:" << result);
   MITK_TEST_CONDITION (delta == 0, "GetNearestTimeStamp(): Empty list, expecting delta==0, as it was passed, and got:" << delta);
-  timeStamps.m_TimeStamps.push_back(3);
-  timeStamps.m_TimeStamps.push_back(6);
-  timeStamps.m_TimeStamps.push_back(9);
-  timeStamps.m_TimeStamps.push_back(12);
+  timeStamps.Insert(3);
+  timeStamps.Insert(6);
+  timeStamps.Insert(9);
+  timeStamps.Insert(12);
   result = timeStamps.GetNearestTimeStamp(15, &delta);
   MITK_TEST_CONDITION (result == 12, "GetNearestTimeStamp(): Off top end of list, expecting result==12, and got:" << result);
   MITK_TEST_CONDITION (delta == 3, "GetNearestTimeStamp(): Off top end of list, expecting delta==3, and got:" << delta);

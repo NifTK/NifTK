@@ -48,10 +48,10 @@ void TwoTrackerMatching::Initialise(std::string directory1, std::string director
   m_Directory2 = directory2;
   
   m_TrackingMatrixTimeStamps1 = mitk::FindTrackingTimeStamps(m_Directory1);
-  MITK_INFO << "Found " << m_TrackingMatrixTimeStamps1.m_TimeStamps.size() << " time stamped tracking files in " << m_Directory1;
+  MITK_INFO << "Found " << m_TrackingMatrixTimeStamps1.GetSize() << " time stamped tracking files in " << m_Directory1;
   
   m_TrackingMatrixTimeStamps2 = mitk::FindTrackingTimeStamps(m_Directory2);
-  MITK_INFO << "Found " << m_TrackingMatrixTimeStamps2.m_TimeStamps.size() << " time stamped tracking files in " << m_Directory2;
+  MITK_INFO << "Found " << m_TrackingMatrixTimeStamps2.GetSize() << " time stamped tracking files in " << m_Directory2;
 
   //now match em up. Do it both ways
   this->CreateLookUps ();
@@ -78,19 +78,19 @@ void TwoTrackerMatching::CreateLookUps()
   m_TrackingMatrices12.m_TimingErrors.clear();
   m_TrackingMatrices12.m_TrackingMatrices.clear();
 
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.m_TimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.GetSize() ; i ++ )
   {
     long long timingError;
     unsigned long long TargetTimeStamp;
     if ( m_LagIsNegative )
     {
       TargetTimeStamp = m_TrackingMatrixTimeStamps2.GetNearestTimeStamp(
-          m_TrackingMatrixTimeStamps1.m_TimeStamps[i]+m_Lag,&timingError);
+          m_TrackingMatrixTimeStamps1.GetTimeStamp(i)+m_Lag,&timingError);
     }
     else
     {
       TargetTimeStamp = m_TrackingMatrixTimeStamps2.GetNearestTimeStamp(
-          m_TrackingMatrixTimeStamps1.m_TimeStamps[i]-m_Lag,&timingError);
+          m_TrackingMatrixTimeStamps1.GetTimeStamp(i)-m_Lag,&timingError);
     }
     m_TrackingMatrices12.m_TimingErrors.push_back(timingError);
     std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
@@ -108,19 +108,19 @@ void TwoTrackerMatching::CreateLookUps()
   m_TrackingMatrices21.m_TimingErrors.clear();
   m_TrackingMatrices21.m_TrackingMatrices.clear();
 
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.m_TimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.GetSize() ; i ++ )
   {
     long long timingError;
     unsigned long long TargetTimeStamp;
     if ( m_LagIsNegative )
     {
       TargetTimeStamp = m_TrackingMatrixTimeStamps1.GetNearestTimeStamp(
-          m_TrackingMatrixTimeStamps2.m_TimeStamps[i]-m_Lag,&timingError);
+          m_TrackingMatrixTimeStamps2.GetTimeStamp(i)-m_Lag,&timingError);
     }
     else
     {
       TargetTimeStamp = m_TrackingMatrixTimeStamps1.GetNearestTimeStamp(
-          m_TrackingMatrixTimeStamps2.m_TimeStamps[i]+m_Lag,&timingError);
+          m_TrackingMatrixTimeStamps2.GetTimeStamp(i)-+m_Lag,&timingError);
     }
     m_TrackingMatrices21.m_TimingErrors.push_back(timingError);
     std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
@@ -143,10 +143,10 @@ void TwoTrackerMatching::LoadOwnMatrices()
   m_TrackingMatrices11.m_TimingErrors.clear();
   m_TrackingMatrices11.m_TrackingMatrices.clear();
 
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.m_TimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps1.GetSize() ; i ++ )
   {
     m_TrackingMatrices11.m_TimingErrors.push_back(0);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps1.m_TimeStamps[i]) + ".txt";
+    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps1.GetTimeStamp(i)) + ".txt";
     boost::filesystem::path MatrixFileNameFull (m_Directory1);
     MatrixFileNameFull /= MatrixFileName;
   
@@ -160,10 +160,10 @@ void TwoTrackerMatching::LoadOwnMatrices()
   m_TrackingMatrices22.m_TimingErrors.clear();
   m_TrackingMatrices22.m_TrackingMatrices.clear();
 
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.m_TimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps2.GetSize() ; i ++ )
   {
     m_TrackingMatrices22.m_TimingErrors.push_back(0);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps2.m_TimeStamps[i]) + ".txt";
+    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TrackingMatrixTimeStamps2.GetTimeStamp(i)) + ".txt";
     boost::filesystem::path MatrixFileNameFull (m_Directory2);
     MatrixFileNameFull /= MatrixFileName;
   
@@ -217,10 +217,10 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
 
 
   if ( m_TrackingMatrices21.m_TrackingMatrices.size() != 
-        m_TrackingMatrixTimeStamps2.m_TimeStamps.size() )
+        m_TrackingMatrixTimeStamps2.GetSize() )
   {
       MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices21.m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrixTimeStamps2.m_TimeStamps.size();
+        << " != " <<  m_TrackingMatrixTimeStamps2.GetSize();
       ok = false;
   }
   if ( m_TrackingMatrices21.m_TrackingMatrices.size() != 
@@ -233,10 +233,10 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
 
 
   if ( m_TrackingMatrices12.m_TrackingMatrices.size() != 
-        m_TrackingMatrixTimeStamps1.m_TimeStamps.size() )
+        m_TrackingMatrixTimeStamps1.GetSize() )
   {
       MITK_ERROR << "Wrong number of tracking matrix " << ": " << m_TrackingMatrices12.m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrixTimeStamps2.m_TimeStamps.size();
+        << " != " <<  m_TrackingMatrixTimeStamps2.GetSize();
       ok = false;
   }
 

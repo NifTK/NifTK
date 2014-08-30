@@ -16,14 +16,43 @@
 #include <algorithm>
 #include <mitkExceptionMacro.h>
 #include <sstream>
+#include <vector>
 
 namespace mitk {
+
+
+//---------------------------------------------------------------------------
+void TrackingMatrixTimeStamps::Insert(const TimeStamp& timeStamp)
+{
+  m_TimeStamps.push_back(timeStamp);
+}
+
+
+//---------------------------------------------------------------------------
+TrackingMatrixTimeStamps::TimeStamp TrackingMatrixTimeStamps::GetTimeStamp(std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type frameNumber) const
+{
+  return m_TimeStamps[frameNumber];
+}
 
 
 //---------------------------------------------------------------------------
 void TrackingMatrixTimeStamps::Sort()
 {
   std::sort(m_TimeStamps.begin(), m_TimeStamps.end());
+}
+
+
+//---------------------------------------------------------------------------
+void TrackingMatrixTimeStamps::Clear()
+{
+  m_TimeStamps.clear();
+}
+
+
+//---------------------------------------------------------------------------
+std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type TrackingMatrixTimeStamps::GetSize() const
+{
+  return m_TimeStamps.size();
 }
 
 
