@@ -19,6 +19,7 @@
 #include <fstream>
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
+#include <niftkFileHelper.h>
 
 namespace mitk {
 
@@ -209,6 +210,74 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
   }
 
   return capture;
+}
+
+
+//---------------------------------------------------------------------------
+std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory)
+{
+  std::vector< std::pair<unsigned long long, cv::Point3d> > timeStampedPoints;
+
+  std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(directory);
+  std::sort(pointFiles.begin(), pointFiles.end());
+
+  for (unsigned int i = 0; i < pointFiles.size(); i++)
+  {
+    cv::Point3d point;
+    std::string fileName = pointFiles[i];
+
+    if(fileName.size() > 0)
+    {
+      std::ifstream myfile(fileName.c_str());
+      if (myfile.is_open())
+      {
+        point.x = 0;
+        point.y = 0;
+        point.z = 0;
+
+        myfile >> point.x;
+        myfile >> point.y;
+        myfile >> point.z;
+
+        if (myfile.bad() || myfile.eof() || myfile.fail())
+        {
+          std::ostringstream errorMessage;
+          errorMessage << "Could not load point file:" << fileName << std::endl;
+          mitkThrow() << errorMessage.str();
+        }
+        myfile.close();
+      }
+    }
+
+    // Parse timestamp.
+    boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
+    boost::cmatch what;
+    unsigned long long timeStamp = 0;
+
+    if ( boost::regex_match( (niftk::Basename(fileName)).c_str(), what, timeStampFilter) )
+    {
+      timeStamp = boost::lexical_cast<unsigned long long>(niftk::Basename(fileName));
+
+      if (timeStamp != 0)
+      {
+        timeStampedPoints.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
+      }
+      else
+      {
+        std::ostringstream errorMessage;
+        errorMessage << "Failed to extract timestamp from name of file:" << fileName << std::endl;
+        mitkThrow() << errorMessage.str();
+      }
+    }
+    else
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Could not match timestamp in name of file:" << fileName << std::endl;
+      mitkThrow() << errorMessage.str();
+    }
+  }
+
+  return timeStampedPoints;
 }
 
 } // end namespace
