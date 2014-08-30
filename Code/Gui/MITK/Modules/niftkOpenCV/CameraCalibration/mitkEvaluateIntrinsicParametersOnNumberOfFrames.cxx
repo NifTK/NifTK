@@ -157,7 +157,7 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::ReadTimeStampFromLogFile()
 //---------------------------------------------------------------------------
 void EvaluateIntrinsicParametersOnNumberOfFrames::MatchingVideoFramesToTrackingMatrix()
 {     
-  TrackingMatrixTimeStamps mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
+  TimeStampsContainer mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
 
   long long timingError;
   unsigned long long targetTimeStamp; 
@@ -571,8 +571,8 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::PairewiseFiles(std::vector<std
                                                                  std::vector<std::string> &fnvec_robj, 
                                                                  std::vector<std::string> &fnvec_mtx)
 {     
-  TrackingMatrixTimeStamps mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
-  TrackingMatrixTimeStamps imgStamps = mitk::FindTrackingTimeStamps(m_LeftDirectory + "\\img" );
+  TimeStampsContainer mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
+  TimeStampsContainer imgStamps = mitk::FindTrackingTimeStamps(m_LeftDirectory + "\\img" );
 
   m_MatchedVideoFrames.clear();
   m_MatchedTrackingMatrix.clear();
