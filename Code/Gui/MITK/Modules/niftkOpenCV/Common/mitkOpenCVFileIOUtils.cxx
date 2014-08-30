@@ -67,11 +67,11 @@ std::vector<std::string> FindTrackingMatrixDirectories(const std::string& direct
 
 
 //---------------------------------------------------------------------------
-mitk::TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory)
+mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory)
 {
   boost::filesystem::directory_iterator endItr;
   boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
-  TrackingMatrixTimeStamps returnStamps;
+  TimeStampsContainer returnStamps;
   
   for ( boost::filesystem::directory_iterator it(directory);it != endItr ; ++it)
   {

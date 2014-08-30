@@ -19,17 +19,17 @@
 #include <niftkFileHelper.h>
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
-#include <mitkTrackingMatrixTimeStamps.h>
+#include <mitkTimeStampsContainer.h>
 
 /**
- * \file Test harness for mitk::TrackingMatrixTimeStamps.
+ * \file Test harness for mitk::TimeStampsContainer.
  */
-int mitkTrackingMatrixTimeStampsTest(int argc, char * argv[])
+int mitkTimeStampsContainerTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("mitkTrackingMatrixTimeStampsTest");
+  MITK_TEST_BEGIN("mitkTimeStampsContainerTest");
 
-  mitk::TrackingMatrixTimeStamps timeStamps;
+  mitk::TimeStampsContainer timeStamps;
   unsigned long long result = 0;
   unsigned long long before = 0;
   unsigned long long after = 0;

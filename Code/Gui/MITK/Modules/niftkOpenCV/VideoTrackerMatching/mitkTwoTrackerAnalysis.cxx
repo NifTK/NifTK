@@ -67,7 +67,7 @@ void TwoTrackerAnalysis::TemporalCalibration(
       SetLagMilliseconds ( (unsigned long long) (Lag ) , false );
     }
    
-    if ( m_TrackingMatrixTimeStamps1.GetSize() > m_TrackingMatrixTimeStamps2.GetSize() )
+    if ( m_TimeStampsContainer1.GetSize() > m_TimeStampsContainer2.GetSize() )
     {
       // use 2 
     }
@@ -104,7 +104,7 @@ void TwoTrackerAnalysis::HandeyeCalibration(
   std::vector<int> indexes;
   bool Tracker2ToTracker1 = false;
   //sort distance based on the shortest set. Select up to 80 matrices, evenly spread on distance
-  if ( m_TrackingMatrixTimeStamps1.GetSize() > m_TrackingMatrixTimeStamps2.GetSize() )
+  if ( m_TimeStampsContainer1.GetSize() > m_TimeStampsContainer2.GetSize() )
   {
     Tracker2ToTracker1 = false;
     indexes = mitk::SortMatricesByDistance(m_TrackingMatrices22.m_TrackingMatrices);
@@ -185,7 +185,7 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
 
   bool Tracker2ToTracker1 = false;
   std::vector < double > distances;
-  if ( m_TrackingMatrixTimeStamps1.GetSize() > m_TrackingMatrixTimeStamps2.GetSize() )
+  if ( m_TimeStampsContainer1.GetSize() > m_TimeStampsContainer2.GetSize() )
   {
     Tracker2ToTracker1 = false;
     for ( unsigned int i = 0; i < m_TrackingMatrices22.m_TrackingMatrices.size() ; i ++  )

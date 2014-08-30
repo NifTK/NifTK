@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTimeStampsContainer.h"
 #include <algorithm>
 #include <mitkExceptionMacro.h>
 #include <sstream>
@@ -22,42 +22,42 @@ namespace mitk {
 
 
 //---------------------------------------------------------------------------
-void TrackingMatrixTimeStamps::Insert(const TimeStamp& timeStamp)
+void TimeStampsContainer::Insert(const TimeStamp& timeStamp)
 {
   m_TimeStamps.push_back(timeStamp);
 }
 
 
 //---------------------------------------------------------------------------
-TrackingMatrixTimeStamps::TimeStamp TrackingMatrixTimeStamps::GetTimeStamp(std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type frameNumber) const
+TimeStampsContainer::TimeStamp TimeStampsContainer::GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const
 {
   return m_TimeStamps[frameNumber];
 }
 
 
 //---------------------------------------------------------------------------
-void TrackingMatrixTimeStamps::Sort()
+void TimeStampsContainer::Sort()
 {
   std::sort(m_TimeStamps.begin(), m_TimeStamps.end());
 }
 
 
 //---------------------------------------------------------------------------
-void TrackingMatrixTimeStamps::Clear()
+void TimeStampsContainer::Clear()
 {
   m_TimeStamps.clear();
 }
 
 
 //---------------------------------------------------------------------------
-std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type TrackingMatrixTimeStamps::GetSize() const
+std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetSize() const
 {
   return m_TimeStamps.size();
 }
 
 
 //---------------------------------------------------------------------------
-int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp)
+int TimeStampsContainer::GetFrameNumber(const unsigned long long& timeStamp)
 {
   int result = -1;
 
@@ -75,7 +75,7 @@ int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp
 
 
 //---------------------------------------------------------------------------
-bool TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
+bool TimeStampsContainer::GetBoundingTimeStamps(const unsigned long long& input,
                                                      unsigned long long& before,
                                                      unsigned long long& after,
                                                      double& proportion
@@ -126,7 +126,7 @@ bool TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& i
 
 
 //---------------------------------------------------------------------------
-unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long *delta)
+unsigned long long TimeStampsContainer::GetNearestTimeStamp (const unsigned long long& timestamp, long long *delta)
 {
   unsigned long long before = 0;
   unsigned long long after = 0;

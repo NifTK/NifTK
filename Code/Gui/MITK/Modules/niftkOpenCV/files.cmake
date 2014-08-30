@@ -16,7 +16,7 @@ set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
   Common/mitkOpenCVFileIOUtils.cxx
   Common/mitkOpenCVPointTypes.cxx
-  Common/mitkTrackingMatrixTimeStamps.cxx
+  Common/mitkTimeStampsContainer.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx

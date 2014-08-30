@@ -65,9 +65,9 @@ void VideoTrackerMatching::Initialise(std::string directory)
     {
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        TrackingMatrixTimeStamps tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
+        TimeStampsContainer tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.GetSize() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
-        m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
+        m_TimeStampsContainer.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
         cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
@@ -146,7 +146,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
 
   m_FrameNumbers.clear();
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
   {
     m_TrackingMatrices[i].m_TimingErrors.clear();
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
@@ -163,18 +163,18 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         m_FrameNumbers.push_back(frameNumber);
         m_VideoTimeStamps.Insert(timeStamp);
         
-        for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+        for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
         {
           long long timingError;
           unsigned long long TargetTimeStamp; 
           if ( m_VideoLeadsTracking[i] )
           {
-            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
                 timeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
-            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
                 timeStamp - m_VideoLag[i], &timingError);
           }
           

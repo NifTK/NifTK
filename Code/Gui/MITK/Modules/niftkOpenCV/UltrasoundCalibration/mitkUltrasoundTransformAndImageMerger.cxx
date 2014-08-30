@@ -19,7 +19,7 @@
 #include <mitkFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkImagePixelReadAccessor.h>
-#include <mitkTrackingMatrixTimeStamps.h>
+#include <mitkTimeStampsContainer.h>
 #include <niftkFileHelper.h>
 #include <niftkVTKFunctions.h>
 #include <mitkIOUtil.h>
@@ -58,7 +58,7 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(inputMatrixDirectory);
   std::sort(matrixFiles.begin(), matrixFiles.end());
 
-  mitk::TrackingMatrixTimeStamps trackingTimeStamps = FindTrackingTimeStamps(inputMatrixDirectory);
+  mitk::TimeStampsContainer trackingTimeStamps = FindTrackingTimeStamps(inputMatrixDirectory);
 
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(inputImageDirectory);
   std::sort(imageFiles.begin(), imageFiles.end());

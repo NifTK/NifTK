@@ -16,7 +16,7 @@
 #define mitkOpenCVFileIOUtils_h
 
 #include "niftkOpenCVExports.h"
-#include <mitkTrackingMatrixTimeStamps.h>
+#include <mitkTimeStampsContainer.h>
 #include <highgui.h>
 
 /**
@@ -36,9 +36,9 @@ extern "C++" NIFTKOPENCV_EXPORT bool CheckIfDirectoryContainsTrackingMatrices(co
 extern "C++" NIFTKOPENCV_EXPORT std::vector<std::string> FindTrackingMatrixDirectories(const std::string& directory);
 
 /**
- * \brief Returns an mitk::TrackingMatrixTimeStamps containing all the timestamps of tracking matrices.
+ * \brief Returns an mitk::TimeStampsContainer containing all the timestamps of tracking matrices.
  */
-extern "C++" NIFTKOPENCV_EXPORT mitk::TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
+extern "C++" NIFTKOPENCV_EXPORT mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory);
 
 /**
  * \brief Recursively hunts for all files that look like they are a video frame map file, (.+)(framemap.log).

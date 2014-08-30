@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkTrackingMatrixTimeStamps_h
-#define mitkTrackingMatrixTimeStamps_h
+#ifndef mitkTimeStampsContainer_h
+#define mitkTimeStampsContainer_h
 
 #include "niftkOpenCVExports.h"
 #include <cv.h>
@@ -22,31 +22,16 @@ namespace mitk
 {
 
 /**
- * \class TrackingMatrixTimeStamps
+ * \class TimeStampsContainer
  * \brief Helper class that contains a vector of timestamps, that are assumed to be strictly increasing.
  *
- * See also mitkTrackingMatrixTimeStampsTest.cxx.
+ * See also mitkTimeStampsContainerTest.cxx.
  */
-class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
+class NIFTKOPENCV_EXPORT TimeStampsContainer
 {
 public:
 
   typedef unsigned long long TimeStamp;
-
-  /**
-   * \brief Simply adds a TimeStamp to the list.
-   */
-  void Insert(const TimeStamp& timeStamp);
-
-  /**
-   * \brief Gets the number of timestamps.
-   */
-  std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type GetSize() const;
-
-  /**
-   * \brief Returns the time stamp at a given frameNumber.
-   */
-  TimeStamp GetTimeStamp(std::vector<TrackingMatrixTimeStamps::TimeStamp>::size_type frameNumber) const;
 
   /**
    * \brief Empties the list.
@@ -57,6 +42,21 @@ public:
    * \brief Sorts the list.
    */
   void Sort();
+
+  /**
+   * \brief Simply adds a TimeStamp to the list.
+   */
+  void Insert(const TimeStamp& timeStamp);
+
+  /**
+   * \brief Returns the time stamp at a given frameNumber.
+   */
+  TimeStamp GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const;
+
+  /**
+   * \brief Gets the number of timestamps.
+   */
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetSize() const;
 
   /**
    * \brief Given a timeStamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
@@ -100,6 +100,7 @@ public:
   TimeStamp GetNearestTimeStamp (const TimeStamp& timeStamp , long long * delta = NULL );
 
 private:
+
   std::vector<TimeStamp> m_TimeStamps;
 
 };

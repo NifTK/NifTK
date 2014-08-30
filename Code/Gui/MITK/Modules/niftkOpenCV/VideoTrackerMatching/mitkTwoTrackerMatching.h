@@ -21,7 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include "mitkTrackingMatrices.h"
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -79,8 +79,8 @@ protected:
   TwoTrackerMatching& operator=(const TwoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  TrackingMatrixTimeStamps              m_TrackingMatrixTimeStamps1; 
-  TrackingMatrixTimeStamps              m_TrackingMatrixTimeStamps2; 
+  TimeStampsContainer              m_TimeStampsContainer1;
+  TimeStampsContainer              m_TimeStampsContainer2;
   bool                                  m_Ready;
   std::string                           m_Directory1;
   std::string                           m_Directory2;
@@ -92,7 +92,7 @@ protected:
 
 private:
   
-  TrackingMatrixTimeStamps              FindTrackingTimeStamps(std::string directory);
+  TimeStampsContainer              FindTrackingTimeStamps(std::string directory);
   bool                                  CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   bool                                  CheckTimingErrorStats();
   void                                  CreateLookUps();
