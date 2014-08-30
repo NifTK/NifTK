@@ -35,39 +35,21 @@ int main(int argc, char** argv)
 
   try
   {
-    int maxNegativeInt = -32767;
-
-    int numberOfInvariantPoints = 0;
-    if (invariantPoint1[0] != maxNegativeInt) numberOfInvariantPoints++;
-    if (invariantPoint2[0] != maxNegativeInt) numberOfInvariantPoints++;
-    if (invariantPoint3[0] != maxNegativeInt) numberOfInvariantPoints++;
-
-    std::cout << "niftkUltrasoundPinCalibration: matrices       = " << matrixDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: points         = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output         = " << outputMatrixFile << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: opt scaling    = " <<  optimiseScaling << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: opt inv points = " <<  optimiseInvariantPoints << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: num inv points = " <<  numberOfInvariantPoints << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: matrices      = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: points        = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output        = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt scaling   = " << optimiseScaling << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: mm/pix        = " << millimetresPerPixel[0] << ", " << millimetresPerPixel[1] << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt inv point = " << optimiseInvariantPoint << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: inv point     = " << invariantPoint[0] << ", " << invariantPoint[1] << ", " << invariantPoint[2] << std::endl;
 
     // Setup.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
     calibration->SetOptimiseScaling(optimiseScaling);
     calibration->InitialiseMillimetresPerPixel(millimetresPerPixel);
-    calibration->SetOptimiseInvariantPoints(optimiseInvariantPoints);
-    calibration->SetNumberOfInvariantPoints(numberOfInvariantPoints);
-    if (invariantPoint1[0] != maxNegativeInt)
-    {
-      calibration->InitialiseInvariantPoint(0, invariantPoint1);
-    }
-    if (invariantPoint2[0] != maxNegativeInt)
-    {
-      calibration->InitialiseInvariantPoint(1, invariantPoint2);
-    }
-    if (invariantPoint3[0] != maxNegativeInt)
-    {
-      calibration->InitialiseInvariantPoint(2, invariantPoint3);
-    }
-
+    calibration->SetOptimiseInvariantPoints(optimiseInvariantPoint);
+    calibration->SetNumberOfInvariantPoints(1);
+    calibration->InitialiseInvariantPoint(0, invariantPoint);
     calibration->InitialiseInitialGuess(initialGuess);
 
     // Do calibration.
@@ -95,12 +77,12 @@ int main(int argc, char** argv)
   }
   catch (std::exception& e)
   {
-    MITK_ERROR << "Caught std::exception:" << e.what();
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
     returnStatus = EXIT_FAILURE + 1;
   }
   catch (...)
   {
-    MITK_ERROR << "Caught unknown exception:";
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
     returnStatus = EXIT_FAILURE + 2;
   }
 
