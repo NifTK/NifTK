@@ -81,11 +81,11 @@ mitk::TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory)
       std::string stringThing = it->path().filename().string();
       if ( boost::regex_match( stringThing.c_str(), what, timeStampFilter) )
       {
-        returnStamps.m_TimeStamps.push_back(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
+        returnStamps.Insert(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
       }
     }
   }
-  std::sort ( returnStamps.m_TimeStamps.begin() , returnStamps.m_TimeStamps.end());
+  returnStamps.Sort();
   return returnStamps;
 }
 
