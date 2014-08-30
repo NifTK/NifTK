@@ -68,6 +68,11 @@ extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filena
 extern "C++" NIFTKOPENCV_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::string filename, bool ignoreErrors = false);
 
 
+/**
+ * \brief Loads points from a directory, where each point is in a separate file, and the filename is a timestamp.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory);
+
 } // end namespace
 
 #endif
