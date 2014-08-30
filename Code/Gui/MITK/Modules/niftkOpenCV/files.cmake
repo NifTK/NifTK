@@ -51,6 +51,7 @@ set(CPP_FILES
   UltrasoundCalibration/itkUltrasoundCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx
+  UltrasoundCalibration/mitkInvariantPointCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPointerCalibration.cxx
