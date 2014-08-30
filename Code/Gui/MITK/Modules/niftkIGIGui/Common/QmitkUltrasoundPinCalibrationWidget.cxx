@@ -185,6 +185,7 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
     int xPixel = event->x();
     int yPixel = event->y();
     Qt::MouseButton button = event->button();
+    double zCoordinate = 0;
 
     if (button == Qt::LeftButton)
     {
@@ -203,7 +204,7 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          myfile << imageTimeStampString.toStdString() << xPixel << " " << yPixel << std::endl;
+          myfile << xPixel << " " << yPixel << zCoordinate << std::endl;
           myfile.close();
           m_PointsOutputCounter++;
         }
