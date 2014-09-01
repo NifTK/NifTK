@@ -63,7 +63,7 @@ public:
    * \param[in] timeStamp in nano-seconds since Unix Epoch (UTC).
    * \return vector index number or -1 if not found.
    */
-  int GetFrameNumber(const TimeStamp& timeStamp);
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStamp& timeStamp);
 
   /**
    * \brief Retrieves the timestamps before and after a given point.

@@ -472,6 +472,12 @@ extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, 
  */
 extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output);
 
+
+/**
+ * \see InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output)
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output);
+
 } // end namespace
 
 #endif

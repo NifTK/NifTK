@@ -31,13 +31,6 @@
       <label>Output Image</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions=".txt">
-      <name>outputDataFile</name>
-      <longflag>outputDataFile</longflag>
-      <description>Output meta-data file name, with .txt extension.</description>
-      <label>Output Meta-Data</label>
-      <channel>output</channel>
-    </file>
     <string>
       <name>orientation</name>
       <longflag>orientation</longflag>
