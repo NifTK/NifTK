@@ -24,7 +24,6 @@
 #include <vtkImageViewer.h>
 #include <vtkSmartPointer.h>
 #include <vtkPNGReader.h>
-#include <mitkTrackingMatrixTimeStamps.h>
 
 /**
  * \class QmitkUltrasoundPinCalibrationWidget

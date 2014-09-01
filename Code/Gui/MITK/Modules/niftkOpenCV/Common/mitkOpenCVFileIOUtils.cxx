@@ -113,6 +113,7 @@ std::vector<std::string> FindVideoFrameMapFiles(const std::string directory)
   return returnStrings;
 }
 
+
 //---------------------------------------------------------------------------
 bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 {
@@ -126,6 +127,26 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
     mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
 
+  cv::Matx44d matrix;
+  isSuccessful = ReadTrackerMatrix(filename, matrix);
+  if (isSuccessful)
+  {
+    for ( int row = 0 ; row < 4 ; row ++ )
+    {
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        outputMatrix.at<double>(row,col) = matrix(row, col);
+      }
+    }
+  }
+  return isSuccessful;
+}
+
+
+//---------------------------------------------------------------------------
+bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
+{
+  bool isSuccessful = false;
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
@@ -135,9 +156,9 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 
   for ( int row = 0 ; row < 4 ; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0 ; col < 4 ; col ++ )
     {
-      fin >> outputMatrix.at<double>(row,col);
+      fin >> outputMatrix(row, col);
     }
   }
   isSuccessful = true;
@@ -158,6 +179,26 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
     mitkThrow() << "SaveTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
 
+  cv::Matx44d matrix;
+  isSuccessful = SaveTrackerMatrix(filename, matrix);
+  if (isSuccessful)
+  {
+    for ( int row = 0 ; row < 4 ; row ++ )
+    {
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        outputMatrix.at<double>(row,col) = matrix(row, col);
+      }
+    }
+  }
+  return isSuccessful;
+}
+
+
+//---------------------------------------------------------------------------
+bool SaveTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
+{
+  bool isSuccessful = false;
   std::ofstream fout(filename.c_str());
   if ( !fout )
   {
@@ -166,15 +207,15 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   }
   for ( int row = 0 ; row < 4 ; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0 ; col < 4 ; col ++ )
     {
-      fout << outputMatrix.at<double>(row,col);
-      if ( col < 3 ) 
+      fout << outputMatrix(row,col);
+      if ( col < 3 )
       {
         fout << " ";
       }
     }
-    if ( row < 3 ) 
+    if ( row < 3 )
     {
       fout << std::endl;
     }
@@ -183,6 +224,7 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   isSuccessful = true;
   return isSuccessful;
 }
+
 
 //---------------------------------------------------------------------------
 cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErrors )

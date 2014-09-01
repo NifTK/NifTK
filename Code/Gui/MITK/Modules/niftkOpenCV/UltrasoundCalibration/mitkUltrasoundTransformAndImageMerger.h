@@ -57,7 +57,6 @@ public:
       const std::string& inputMatrixDirectory,
       const std::string& inputImageDirectory,
       const std::string& outputImageFileName,
-      const std::string& outputDataFileName,
       const std::string& imageOrientation
       );
 

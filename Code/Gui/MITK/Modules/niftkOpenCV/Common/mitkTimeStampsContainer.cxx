@@ -17,6 +17,7 @@
 #include <mitkExceptionMacro.h>
 #include <sstream>
 #include <vector>
+#include <cassert>
 
 namespace mitk {
 
@@ -31,6 +32,8 @@ void TimeStampsContainer::Insert(const TimeStamp& timeStamp)
 //---------------------------------------------------------------------------
 TimeStampsContainer::TimeStamp TimeStampsContainer::GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const
 {
+  assert(frameNumber >= 0);
+  assert(frameNumber < m_TimeStamps.size());
   return m_TimeStamps[frameNumber];
 }
 
@@ -57,11 +60,12 @@ std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetS
 
 
 //---------------------------------------------------------------------------
-int TimeStampsContainer::GetFrameNumber(const unsigned long long& timeStamp)
+std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetFrameNumber(const TimeStamp& timeStamp)
 {
-  int result = -1;
+  std::vector<TimeStampsContainer::TimeStamp>::size_type result = -1;
+  std::vector<TimeStampsContainer::TimeStamp>::size_type i;
 
-  for (unsigned long int i = 0; i < m_TimeStamps.size(); i++)
+  for (i = 0; i < m_TimeStamps.size(); i++)
   {
     if (m_TimeStamps[i] == timeStamp)
     {
@@ -75,9 +79,9 @@ int TimeStampsContainer::GetFrameNumber(const unsigned long long& timeStamp)
 
 
 //---------------------------------------------------------------------------
-bool TimeStampsContainer::GetBoundingTimeStamps(const unsigned long long& input,
-                                                     unsigned long long& before,
-                                                     unsigned long long& after,
+bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
+                                                     TimeStamp& before,
+                                                     TimeStamp& after,
                                                      double& proportion
                                                     )
 {
@@ -126,11 +130,11 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const unsigned long long& input,
 
 
 //---------------------------------------------------------------------------
-unsigned long long TimeStampsContainer::GetNearestTimeStamp (const unsigned long long& timestamp, long long *delta)
+unsigned long long TimeStampsContainer::GetNearestTimeStamp (const TimeStamp& timestamp, long long *delta)
 {
-  unsigned long long before = 0;
-  unsigned long long after = 0;
-  unsigned long long result = 0;
+  TimeStamp before = 0;
+  TimeStamp after = 0;
+  TimeStamp result = 0;
   double proportion = 0;
   bool isValid = false;
   long long diff = 0;

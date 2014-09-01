@@ -53,10 +53,20 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<std::string> FindVideoFrameMapFiles(
 extern "C++" NIFTKOPENCV_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
 /**
+ * \see ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix);
+
+/**
  * \brief Saves a 4x4 matrix;
  * @return true if successful and false otherwise
  */
 extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+
+/**
+ * \brief See SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix);
 
 /**
  * \brief Attempts to open a video capture and checks for errors. see trac 3718. This 
@@ -66,7 +76,6 @@ extern "C++" NIFTKOPENCV_EXPORT bool SaveTrackerMatrix(const std::string& filena
  * @return the video capture object
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::string filename, bool ignoreErrors = false);
-
 
 /**
  * \brief Loads points from a directory, where each point is in a separate file, and the filename is a timestamp.
