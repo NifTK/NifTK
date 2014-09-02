@@ -62,7 +62,7 @@ double VideoHandEyeCalibration::Calibrate()
   scaleFactors.SetSize(numberOfParameters);
 
   parameters.Fill(0);
-  scaleFactors.Fill(0.0000001);
+  scaleFactors.Fill(0.001);
 
   parameters[0] = m_RigidTransformation[0];
   parameters[1] = m_RigidTransformation[1];
@@ -84,13 +84,19 @@ double VideoHandEyeCalibration::Calibrate()
     parameters[9] = timeStamp;
   }
 
-  std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
+  assert(m_PointData);
+  assert(m_TrackingData);
 
+  std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
+  std::cout << "VideoHandEyeCalibration:Optimising " << m_PointData->size() << " points and " << m_TrackingData->GetSize() << " matrices " << std::endl;
+
+  m_CostFunction->SetPointData(m_PointData);
+  m_CostFunction->SetTrackingData(m_TrackingData);
   m_CostFunction->SetNumberOfParameters(parameters.GetSize());
   m_CostFunction->SetScales(scaleFactors);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
-  optimizer->UseCostFunctionGradientOn();
+  optimizer->UseCostFunctionGradientOff();
   optimizer->SetCostFunction(m_CostFunction);
   optimizer->SetInitialPosition(parameters);
   optimizer->SetScales(scaleFactors);

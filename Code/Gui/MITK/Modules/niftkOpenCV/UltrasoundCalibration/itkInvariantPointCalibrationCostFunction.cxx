@@ -21,11 +21,17 @@ namespace itk {
 
 //-----------------------------------------------------------------------------
 InvariantPointCalibrationCostFunction::InvariantPointCalibrationCostFunction()
-: m_NumberOfValues(1)
+: m_OptimiseInvariantPoint(true)
+, m_TimingLag(0)
+, m_OptimiseTimingLag(false)
+, m_NumberOfValues(1)
 , m_NumberOfParameters(1)
 , m_PointData(NULL)
 , m_TrackingData(NULL)
 {
+  m_InvariantPoint[0] = 0;
+  m_InvariantPoint[1] = 0;
+  m_InvariantPoint[2] = 0;
 }
 
 
@@ -140,13 +146,24 @@ cv::Matx44d InvariantPointCalibrationCostFunction::GetTranslationTransformation(
 InvariantPointCalibrationCostFunction::TimeStampType InvariantPointCalibrationCostFunction::GetLag(const ParametersType & parameters) const
 {
   TimeStampType lag = 0;
-  if (this->GetNumberOfParameters() == 10)
+  if (this->GetOptimiseTimingLag())
   {
-    lag = parameters[9];
+    if (this->GetNumberOfParameters() == 10)
+    {
+      lag = parameters[9];
+    }
+    else if (this->GetNumberOfParameters() == 11)
+    {
+      lag = parameters[10];
+    }
+    else
+    {
+      mitkThrow() << "Cannot optimise the lag, with " << this->GetNumberOfParameters() << " parameters." << std::endl;
+    }
   }
-  else if (this->GetNumberOfParameters() == 11)
+  else
   {
-    lag = parameters[11];
+    lag = m_TimingLag;
   }
   return lag;
 }
@@ -202,6 +219,7 @@ void InvariantPointCalibrationCostFunction::SetTrackingData(mitk::TrackingAndTim
 void InvariantPointCalibrationCostFunction::SetPointData(std::vector< std::pair<unsigned long long, cv::Point3d> >* pointData)
 {
   m_PointData = pointData;
+  m_NumberOfValues = pointData->size() * 3;
   this->Modified();
 }
 
@@ -255,6 +273,7 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   cv::Matx44d similarityTransformation = this->GetCalibrationTransformation(parameters);
   cv::Matx44d translationTransformation = this->GetTranslationTransformation(parameters);
   TimeStampType lag = this->GetLag(parameters);
+
   TimeStampType timeStamp = 0;
 
   for (unsigned int i = 0; i < this->m_PointData->size(); i++)
