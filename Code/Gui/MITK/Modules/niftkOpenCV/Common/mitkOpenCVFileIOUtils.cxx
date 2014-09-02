@@ -217,10 +217,7 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
         fout << " ";
       }
     }
-    if ( row < 3 )
-    {
-      fout << std::endl;
-    }
+    fout << std::endl;
   }
   fout.close();
   isSuccessful = true;
