@@ -60,6 +60,7 @@ int main(int argc, char** argv)
     calibration->SetOptimiseTimingLag(optimiseTimingLag);
     calibration->SetTimingLag(timingLag);
     calibration->LoadRigidTransformation(initialGuess);
+    calibration->SetVerbose(verbose);
 
     mitk::TrackingAndTimeStampsContainer trackingData;
     trackingData.LoadFromDirectory(matrixDirectory);
@@ -120,8 +121,9 @@ int main(int argc, char** argv)
     double residualError = calibration->Calibrate();
     calibration->SaveRigidTransformation(outputMatrixFile);
 
-    std::cout << "niftkVideoHandEyeByCrossCalibration: residual = " << residualError << std::endl;
-    std::cout << "niftkVideoHandEyeByCrossCalibration: lag      = " << calibration->GetTimingLag() << " (ms) " << std::endl;
+    std::cout << "niftkVideoHandEyeByCrossCalibration: residual  = " << residualError << std::endl;
+    std::cout << "niftkVideoHandEyeByCrossCalibration: lag       = " << calibration->GetTimingLag() << " (seconds) " << std::endl;
+    std::cout << "niftkVideoHandEyeByCrossCalibration: inv point = " << calibration->GetInvariantPoint() << std::endl;
 
     returnStatus = EXIT_SUCCESS;
   }

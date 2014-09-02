@@ -65,6 +65,7 @@ int main(int argc, char** argv)
     calibration->SetOptimiseTimingLag(optimiseTimingLag);
     calibration->SetTimingLag(timingLag);
     calibration->LoadRigidTransformation(initialGuess);
+    calibration->SetVerbose(verbose);
 
     mitk::TrackingAndTimeStampsContainer trackingData;
     trackingData.LoadFromDirectory(matrixDirectory);
@@ -84,9 +85,10 @@ int main(int argc, char** argv)
     double residualError = calibration->Calibrate();
     calibration->SaveRigidTransformation(outputMatrixFile);
 
-    std::cout << "niftkUltrasoundPinCalibration: residual = " << residualError << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: scaling  = " << calibration->GetImageScaleFactors() << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: lag      = " << calibration->GetTimingLag() << " (ms) " << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: residual  = " << residualError << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: scaling   = " << calibration->GetImageScaleFactors() << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: lag       = " << calibration->GetTimingLag() << " (seconds) " << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: inv point = " << calibration->GetInvariantPoint() << std::endl;
 
     returnStatus = EXIT_SUCCESS;
   }

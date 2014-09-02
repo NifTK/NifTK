@@ -28,15 +28,20 @@ namespace itk {
  * \brief Base class for Ultrasound Pin/Cross-Wire calibration and Video Hand-Eye calibration cost functions.
  *
  * Ultrasound:
+ *   - 1 DOF: temporal calibration
  *   - 6 DOF: 3 rotations, 3 translations
  *   - 9 DOF: 6 DOF + invariant point
  *   - 11 DOF: 9 DOF + scaling
  *   - 12 DOF: 11 DOF + temporal calibration
  *
  * Video:
+ *   - 1 DOF: temporal calibration
  *   - 6 DOF: 3 rotations, 3 translations
  *   - 9 DOF: 6 DOF + invariant point
  *   - 10 DOF: 9 DOF + temporal calibration
+ *
+ * \see itk::UltrasoundPinCalibrationCostFunction
+ * \see itk::VideoHandEyeCalibrationCostFunction
  */
 class InvariantPointCalibrationCostFunction : public itk::MultipleValuedCostFunction
 {
@@ -59,11 +64,23 @@ public:
   itkSetMacro(OptimiseInvariantPoint, bool);
   itkGetConstMacro(OptimiseInvariantPoint, bool);
 
-  itkSetMacro(TimingLag, TimeStampType);
-  itkGetConstMacro(TimingLag, TimeStampType);
+  itkSetMacro(TimingLag, double);
+  itkGetConstMacro(TimingLag, double);
 
   itkSetMacro(OptimiseTimingLag, bool);
   itkGetConstMacro(OptimiseTimingLag, bool);
+
+  itkSetMacro(OptimiseRigidTransformation, bool);
+  itkGetConstMacro(OptimiseRigidTransformation, bool);
+
+  itkSetMacro(Verbose, bool);
+  itkGetConstMacro(Verbose, bool);
+
+  void SetRigidTransformation(const cv::Matx44d& rigidBodyTrans);
+  cv::Matx44d GetRigidTransformation() const;
+
+  std::vector<double> GetRigidTransformationParameters() const;
+  void SetRigidTransformationParameters(const std::vector<double>& params);
 
   /**
    * \brief Equal to the number of points * 3.
@@ -72,18 +89,26 @@ public:
 
   /**
    * \brief Required by base class to return the number of parameters.
+   * See introduction to this class.
    */
   virtual unsigned int GetNumberOfParameters() const;
 
   /**
    * \brief Sets the number of parameters being optimised.
+   * This should be called before optimisation starts.
    */
   void SetNumberOfParameters(const int& numberOfParameters);
 
   /**
-   * \brief Simply uses forward differences to approximate the derivative for each of the parameters.
+   * \brief Simply uses central differences to approximate the derivative for each of the parameters.
+   * See also SetScales where you set the relative size of each parameter step size.
    */
   virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
+
+  /**
+   * \brief Used when calculating derivative using central differences.
+   */
+  void SetScales(const ParametersType& scales);
 
   /**
    * \brief Returns the RMS residual of all the values stored in the values array.
@@ -91,17 +116,12 @@ public:
   double GetResidual(const MeasureType& values) const;
 
   /**
-   * \brief Used when calculating derivative using forward differences.
-   */
-  void SetScales(const ParametersType& scales);
-
-  /**
    * \brief Sets the tracking data onto this object.
    */
   void SetTrackingData(mitk::TrackingAndTimeStampsContainer* trackingData);
 
   /**
-   * \brief Sets the point data onto this object.
+   * \brief Sets the point data onto this object, setting the number of values = pointData.size()*3.
    */
   void SetPointData(std::vector< std::pair<unsigned long long, cv::Point3d> >* pointData);
 
@@ -120,38 +140,55 @@ protected:
   InvariantPointCalibrationCostFunction(const InvariantPointCalibrationCostFunction&); // Purposefully not implemented.
   InvariantPointCalibrationCostFunction& operator=(const InvariantPointCalibrationCostFunction&); // Purposefully not implemented.
 
+  /**
+   * \brief Checks the supplied parameters array is the right size (i.e. it equals this->GetNumberOfParameters()), and throws mitk::Exception if it isnt.
+   */
   void ValidateSizeOfParametersArray(const ParametersType & parameters) const;
+
+  /**
+   * \brief Checks the supplied parameters array is the right size (i.e. it equals this->m_Scales.GetSize()), and throws mitk::Exception if it isnt.
+   */
   void ValidateSizeOfScalesArray(const ParametersType & parameters) const;
 
   /**
    * \brief Computes the calibration (image-to-probe) or (hand-eye) transformation from the current estimate of the parameters.
+   *
+   * ie. Derived class itk::UltrasoundPinCalibrationCostFunction can choose to add scaling, whereas
+   * itk::VideoHandEyeCalibrationCostFunction can choose not to for examples.
    */
   virtual cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const = 0;
 
   /**
-   * \brief Computes the rigid body (US: image-to-probe) or (Video: hand-eye) transformation from the current estimate of the parameters.
+   * \brief Computes the rigid body part (US: image-to-probe) or (Video: hand-eye) transformation from the current estimate of the parameters.
+   *
+   * This is always 6 DOF, so no scaling.
    */
   cv::Matx44d GetRigidTransformation(const ParametersType & parameters) const;
 
   /**
    * \brief Computes the translation transformation.
+   *
+   * This is always 3 DOF, pure translation, translating from tracker coordinates to the invariant point.
    */
   cv::Matx44d GetTranslationTransformation(const ParametersType & parameters) const;
 
   /**
    * \brief Extracts the lag parameter from the array of things being optimised.
    */
-  TimeStampType GetLag(const ParametersType & parameters) const;
+  double GetLag(const ParametersType & parameters) const;
 
   ParametersType                                        m_Scales;
   mitk::Point3D                                         m_InvariantPoint;
   bool                                                  m_OptimiseInvariantPoint;
-  TimeStampType                                         m_TimingLag;
+  double                                                m_TimingLag;
   bool                                                  m_OptimiseTimingLag;
+  std::vector<double>                                   m_RigidTransformation;
+  bool                                                  m_OptimiseRigidTransformation;
   mutable unsigned int                                  m_NumberOfValues;
   unsigned int                                          m_NumberOfParameters;
   std::vector< std::pair<TimeStampType, cv::Point3d> > *m_PointData;
   mitk::TrackingAndTimeStampsContainer                 *m_TrackingData;
+  bool                                                  m_Verbose;
 };
 
 } // end namespace

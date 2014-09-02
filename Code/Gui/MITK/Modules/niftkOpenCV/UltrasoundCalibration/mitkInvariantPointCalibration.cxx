@@ -29,13 +29,6 @@ InvariantPointCalibration::InvariantPointCalibration()
 , m_PointData(NULL)
 , m_TrackingData(NULL)
 {
-  m_RigidTransformation.resize(6);
-  m_RigidTransformation[0] = 0;
-  m_RigidTransformation[1] = 0;
-  m_RigidTransformation[2] = 0;
-  m_RigidTransformation[3] = 0;
-  m_RigidTransformation[4] = 0;
-  m_RigidTransformation[5] = 0;
 }
 
 
@@ -76,7 +69,7 @@ bool InvariantPointCalibration::GetOptimiseInvariantPoint() const
 
 
 //-----------------------------------------------------------------------------
-void InvariantPointCalibration::SetTimingLag(const TimeStampType& timeStamp)
+void InvariantPointCalibration::SetTimingLag(const double &timeStamp)
 {
   m_CostFunction->SetTimingLag(timeStamp);
   this->Modified();
@@ -84,7 +77,7 @@ void InvariantPointCalibration::SetTimingLag(const TimeStampType& timeStamp)
 
 
 //-----------------------------------------------------------------------------
-InvariantPointCalibration::TimeStampType InvariantPointCalibration::GetTimingLag()
+double InvariantPointCalibration::GetTimingLag()
 {
   return m_CostFunction->GetTimingLag();
 }
@@ -124,26 +117,7 @@ void InvariantPointCalibration::SetPointData(std::vector< std::pair<unsigned lon
 //-----------------------------------------------------------------------------
 void InvariantPointCalibration::SetRigidTransformation(const cv::Matx44d& rigidBodyTrans)
 {
-  cv::Matx33d rotationMatrix;
-  cv::Matx31d rotationVector;
-
-  for (int i = 0; i < 3; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      rotationMatrix(i,j) = rigidBodyTrans(i,j);
-    }
-  }
-  cv::Rodrigues(rotationMatrix, rotationVector);
-
-  m_RigidTransformation.clear();
-  m_RigidTransformation.push_back(rotationVector(0,0));
-  m_RigidTransformation.push_back(rotationVector(1,0));
-  m_RigidTransformation.push_back(rotationVector(2,0));
-  m_RigidTransformation.push_back(rigidBodyTrans(0,3));
-  m_RigidTransformation.push_back(rigidBodyTrans(1,3));
-  m_RigidTransformation.push_back(rigidBodyTrans(2,3));
-
+  m_CostFunction->SetRigidTransformation(rigidBodyTrans);
   this->Modified();
 }
 
@@ -151,28 +125,7 @@ void InvariantPointCalibration::SetRigidTransformation(const cv::Matx44d& rigidB
 //-----------------------------------------------------------------------------
 cv::Matx44d InvariantPointCalibration::GetRigidTransformation() const
 {
-  assert(m_RigidTransformation.size() == 6);
-
-  cv::Matx44d result;
-  mitk::MakeIdentity(result);
-
-  cv::Matx33d rotationMatrix;
-  cv::Matx31d rotationVector;
-
-  rotationVector(0, 0) = m_RigidTransformation[0];
-  rotationVector(1, 0) = m_RigidTransformation[1];
-  rotationVector(2, 0) = m_RigidTransformation[2];
-  cv::Rodrigues(rotationVector, rotationMatrix);
-
-  for (int i = 0; i < 3; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      result(i,j) = rotationMatrix(i,j);
-    }
-    result(i,3) = m_RigidTransformation[i+3];
-  }
-  return result;
+  return m_CostFunction->GetRigidTransformation();
 }
 
 
@@ -186,6 +139,7 @@ void InvariantPointCalibration::LoadRigidTransformation(const std::string& fileN
     {
       mitkThrow() << "Failed to load matrix from file:" << fileName << std::endl;
     }
+    this->SetRigidTransformation(matrix);
   }
 }
 
@@ -203,6 +157,35 @@ void InvariantPointCalibration::SaveRigidTransformation(const std::string& fileN
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void InvariantPointCalibration::SetOptimiseRigidTransformation(const bool& optimise)
+{
+  m_CostFunction->SetOptimiseRigidTransformation(optimise);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool InvariantPointCalibration::GetOptimiseRigidTransformation() const
+{
+  return m_CostFunction->GetOptimiseRigidTransformation();
+}
+
+
+//-----------------------------------------------------------------------------
+void InvariantPointCalibration::SetVerbose(const bool& verbose)
+{
+  m_CostFunction->SetVerbose(verbose);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool InvariantPointCalibration::GetVerbose() const
+{
+  return m_CostFunction->GetVerbose();
+}
 
 //-----------------------------------------------------------------------------
 } // end namespace

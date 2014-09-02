@@ -38,13 +38,51 @@ VideoHandEyeCalibration::~VideoHandEyeCalibration()
 //-----------------------------------------------------------------------------
 double VideoHandEyeCalibration::Calibrate()
 {
+  double residual = 0;
+
+  bool doLag = this->GetOptimiseTimingLag();
+  bool doRigid = this->GetOptimiseRigidTransformation();
+  bool doInvariant = this->GetOptimiseInvariantPoint();
+
+  if (doLag)
+  {
+    this->SetOptimiseTimingLag(false);
+  }
+
+  residual = this->DoCalibration();
+
+  if (doLag)
+  {
+    this->SetOptimiseTimingLag(true);
+    this->SetOptimiseRigidTransformation(false);
+    this->SetOptimiseInvariantPoint(false);
+    residual = this->DoCalibration();
+    this->SetOptimiseTimingLag(doLag);
+    this->SetOptimiseRigidTransformation(doRigid);
+    this->SetOptimiseInvariantPoint(doInvariant);
+  }
+
+  return residual;
+}
+
+
+//-----------------------------------------------------------------------------
+double VideoHandEyeCalibration::DoCalibration()
+{
+  assert(m_PointData);
+  assert(m_TrackingData);
+
   double residualError = 0;
 
   itk::VideoHandEyeCalibrationCostFunction::ParametersType parameters;
   itk::VideoHandEyeCalibrationCostFunction::ParametersType scaleFactors;
 
   // Setup size of parameters array.
-  int numberOfParameters = 6;
+  int numberOfParameters = 0;
+  if (this->GetOptimiseRigidTransformation())
+  {
+    numberOfParameters += 6;
+  }
   if (this->GetOptimiseInvariantPoint())
   {
     numberOfParameters += 3;
@@ -53,7 +91,8 @@ double VideoHandEyeCalibration::Calibrate()
   {
     numberOfParameters += 1;
   }
-  assert(numberOfParameters == 6
+  assert(   numberOfParameters == 1
+         || numberOfParameters == 6
          || numberOfParameters == 9
          || numberOfParameters == 10
          );
@@ -62,15 +101,18 @@ double VideoHandEyeCalibration::Calibrate()
   scaleFactors.SetSize(numberOfParameters);
 
   parameters.Fill(0);
-  scaleFactors.Fill(0.001);
+  scaleFactors.Fill(0.1);
 
-  parameters[0] = m_RigidTransformation[0];
-  parameters[1] = m_RigidTransformation[1];
-  parameters[2] = m_RigidTransformation[2];
-  parameters[3] = m_RigidTransformation[3];
-  parameters[4] = m_RigidTransformation[4];
-  parameters[5] = m_RigidTransformation[5];
-
+  if (this->GetOptimiseRigidTransformation())
+  {
+    std::vector<double> rigidParams = m_DownCastCostFunction->GetRigidTransformationParameters();
+    parameters[0] = rigidParams[0];
+    parameters[1] = rigidParams[1];
+    parameters[2] = rigidParams[2];
+    parameters[3] = rigidParams[3];
+    parameters[4] = rigidParams[4];
+    parameters[5] = rigidParams[5];
+  }
   if (this->GetOptimiseInvariantPoint())
   {
     mitk::Point3D invariantPoint = this->GetInvariantPoint();
@@ -80,42 +122,46 @@ double VideoHandEyeCalibration::Calibrate()
   }
   if (this->GetOptimiseTimingLag())
   {
-    TimeStampType timeStamp = this->GetTimingLag();
+    double timeStamp = this->GetTimingLag();
     parameters[9] = timeStamp;
   }
-
-  assert(m_PointData);
-  assert(m_TrackingData);
 
   std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
   std::cout << "VideoHandEyeCalibration:Optimising " << m_PointData->size() << " points and " << m_TrackingData->GetSize() << " matrices " << std::endl;
 
-  m_CostFunction->SetPointData(m_PointData);
-  m_CostFunction->SetTrackingData(m_TrackingData);
-  m_CostFunction->SetNumberOfParameters(parameters.GetSize());
-  m_CostFunction->SetScales(scaleFactors);
+  m_DownCastCostFunction->SetPointData(m_PointData);
+  m_DownCastCostFunction->SetTrackingData(m_TrackingData);
+  m_DownCastCostFunction->SetNumberOfParameters(parameters.GetSize());
+  m_DownCastCostFunction->SetScales(scaleFactors);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
-  optimizer->UseCostFunctionGradientOff();
-  optimizer->SetCostFunction(m_CostFunction);
+  optimizer->UseCostFunctionGradientOff(); // use default VNL derivative, not our one.
+  optimizer->SetCostFunction(m_DownCastCostFunction);
   optimizer->SetInitialPosition(parameters);
-  optimizer->SetScales(scaleFactors);
   optimizer->SetNumberOfIterations(20000000);
-  optimizer->SetGradientTolerance(0.0000005);
-  optimizer->SetEpsilonFunction(0.0000005);
-  optimizer->SetValueTolerance(0.0000005);
+  optimizer->SetGradientTolerance(0.000000005);
+  optimizer->SetEpsilonFunction(0.000000005);
+  optimizer->SetValueTolerance(0.000000005);
 
   optimizer->StartOptimization();
-
   parameters = optimizer->GetCurrentPosition();
 
-  m_RigidTransformation[0] = parameters[0];
-  m_RigidTransformation[1] = parameters[1];
-  m_RigidTransformation[2] = parameters[2];
-  m_RigidTransformation[3] = parameters[3];
-  m_RigidTransformation[4] = parameters[4];
-  m_RigidTransformation[5] = parameters[5];
+  itk::VideoHandEyeCalibrationCostFunction::MeasureType values = m_DownCastCostFunction->GetValue(parameters);
+  residualError = m_DownCastCostFunction->GetResidual(values);
 
+  std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
+
+  if (this->GetOptimiseRigidTransformation())
+  {
+    std::vector<double> rigidParams;
+    rigidParams.push_back(parameters[0]);
+    rigidParams.push_back(parameters[1]);
+    rigidParams.push_back(parameters[2]);
+    rigidParams.push_back(parameters[3]);
+    rigidParams.push_back(parameters[4]);
+    rigidParams.push_back(parameters[5]);
+    m_DownCastCostFunction->SetRigidTransformationParameters(rigidParams);
+  }
   if (this->GetOptimiseInvariantPoint())
   {
     mitk::Point3D invariantPoint;
@@ -126,17 +172,9 @@ double VideoHandEyeCalibration::Calibrate()
   }
   if (this->GetOptimiseTimingLag())
   {
-    TimeStampType timeStamp;
-    timeStamp = parameters[9];
+    double timeStamp = parameters[parameters.GetSize() -1];
     this->SetTimingLag(timeStamp);
   }
-
-  itk::VideoHandEyeCalibrationCostFunction::MeasureType values = m_CostFunction->GetValue(parameters);
-  residualError = m_CostFunction->GetResidual(values);
-
-  std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
-  std::cout << "VideoHandEyeCalibration:End parameters = " << parameters << std::endl;
-  std::cout << "VideoHandEyeCalibration:End residual = " << residualError << std::endl;
 
   return residualError;
 }
