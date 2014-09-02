@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Ultrasound Invariant Point Calibration</title>
-  <description><![CDATA[Calibrates an US probe using a single pin/cross-wire method.]]></description>
+  <title>Video Hand-Eye Calibration Using Invariant Point</title>
+  <description><![CDATA[Calibrates stereo laparoscopic video using a single cross method.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -15,44 +15,49 @@
     <directory>
       <name>matrixDirectory</name>
       <longflag>matrixDirectory</longflag>
-      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <description>Directory of 4x4 matrices in plain text files.</description>
       <label>Matrix Directory</label>
     </directory>
     <directory>
-      <name>pointDirectory</name>
-      <longflag>pointDirectory</longflag>
-      <description>Directory containing 2D point locations in plain text files.</description>
-      <label>Points Directory</label>
+      <name>videoDirectory</name>
+      <longflag>videoDirectory</longflag>
+      <description>Directory containing video (*.264) file.</description>
+      <label>Video Directory</label>
+    </directory>
+    <directory>
+      <name>cameraCalibrationDirectory</name>
+      <longflag>cameraCalibrationDirectory</longflag>
+      <description>Directory containing NifTK camera calibration.</description>
+      <label>Camera Calibration Directory</label>
     </directory>
     <file fileExtensions=".txt,.4x4">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
-      <description>Output matrix filename.</description>
+      <description>Output 4x4 matrix filename.</description>
       <label>Output Matrix</label>
       <default>calib.4x4</default>
       <channel>output</channel>
     </file>
+    <file fileExtensions=".txt">
+      <name>outputVideoData</name>
+      <longflag>outputVideoData</longflag>
+      <description>Output a data file containing time-stamps and extracted camera points.</description>
+      <label>Output Video Data</label>
+      <channel>output</channel>
+    </file>
+
   </parameters>
 
   <parameters>
     <label>Optional Parameters</label>
     <description><![CDATA[Additional parameters]]></description>
-    <boolean>
-      <name>optimiseScaling</name>
-      <longflag>optimiseScaling</longflag>
-      <description>Optimise the scale parameters.</description>
-      <label>Optimise Scaling</label>
-      <default>false</default>
+    <file fileExtensions=".txt">
+      <name>inputVideoData</name>
+      <longflag>inputVideoData</longflag>
+      <description>Input a data file containing time-stamps and extracted camera points (from a previous run).</description>
+      <label>Input Video Data</label>
       <channel>input</channel>
-    </boolean>
-    <float-vector>
-      <name>millimetresPerPixel</name>
-      <longflag>millimetresPerPixel</longflag>
-      <description>Initial millimetres per pixel, for the scaling.</description>
-      <label>Millimetres/Pixel</label>
-      <default>1,1</default>
-      <channel>input</channel>
-    </float-vector>
+    </file>
     <boolean>
       <name>optimiseInvariantPoint</name>
       <longflag>optimiseInvariantPoint</longflag>

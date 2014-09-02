@@ -16,18 +16,20 @@
 #include <limits>
 #include <mitkUltrasoundPinCalibration.h>
 #include <niftkUltrasoundPinCalibrationCLP.h>
-#include <niftkVTKFunctions.h>
 #include <mitkVector.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkTrackingAndTimeStampsContainer.h>
 #include <mitkExceptionMacro.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if ( matrixDirectory.length() == 0 || pointDirectory.length() == 0)
+  if ( matrixDirectory.length() == 0
+       || outputMatrixFile.length() == 0
+       || pointDirectory.length() == 0
+       )
   {
     commandLine.getOutput()->usage(commandLine);
     return returnStatus;
@@ -35,55 +37,73 @@ int main(int argc, char** argv)
 
   try
   {
-    std::cout << "niftkUltrasoundPinCalibration: matrices      = " << matrixDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: points        = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output        = " << outputMatrixFile << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: opt scaling   = " << optimiseScaling << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: mm/pix        = " << millimetresPerPixel[0] << ", " << millimetresPerPixel[1] << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: opt inv point = " << optimiseInvariantPoint << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: inv point     = " << invariantPoint[0] << ", " << invariantPoint[1] << ", " << invariantPoint[2] << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: matrices       = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: points         = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output         = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt scaling    = " << optimiseScaling << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: mm/pix         = " << millimetresPerPixel[0] << ", " << millimetresPerPixel[1] << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt inv point  = " << optimiseInvariantPoint << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: inv point      = " << invariantPoint[0] << ", " << invariantPoint[1] << ", " << invariantPoint[2] << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt timing lag = " << optimiseTimingLag << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: timing lag     = " << timingLag << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: initial guess  = " << initialGuess << std::endl;
 
-    // Setup.
+    mitk::Point2D mmPerPix;
+    mmPerPix[0] = millimetresPerPixel[0];
+    mmPerPix[1] = millimetresPerPixel[1];
+
+    mitk::Point3D invPoint;
+    invPoint[0] = invariantPoint[0];
+    invPoint[1] = invariantPoint[1];
+    invPoint[2] = invariantPoint[2];
+
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    calibration->SetOptimiseScaling(optimiseScaling);
-    calibration->InitialiseMillimetresPerPixel(millimetresPerPixel);
-    calibration->SetOptimiseInvariantPoints(optimiseInvariantPoint);
-    calibration->SetNumberOfInvariantPoints(1);
-    calibration->InitialiseInvariantPoint(0, invariantPoint);
-    calibration->InitialiseInitialGuess(initialGuess);
+    calibration->SetOptimiseImageScaleFactors(optimiseScaling);
+    calibration->SetImageScaleFactors(mmPerPix);
+    calibration->SetOptimiseInvariantPoint(optimiseInvariantPoint);
+    calibration->SetInvariantPoint(invPoint);
+    calibration->SetOptimiseTimingLag(optimiseTimingLag);
+    calibration->SetTimingLag(timingLag);
+    calibration->LoadRigidTransformation(initialGuess);
 
-    // Do calibration.
-    double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-
-    residualError = calibration->CalibrateFromDirectories(
-        matrixDirectory,
-        pointDirectory,
-        *transformationMatrix
-        );
-
-    // Save matrix.
-    if (!niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
+    mitk::TrackingAndTimeStampsContainer trackingData;
+    trackingData.LoadFromDirectory(matrixDirectory);
+    if (trackingData.GetSize() == 0)
     {
-      std::ostringstream oss;
-      oss << "niftkUltrasoundPinCalibration: Failed to save transformation to file:" << outputMatrixFile << std::endl;
-      mitkThrow() << oss.str();
+      mitkThrow() << "Failed to tracking data from " << matrixDirectory << std::endl;
     }
+    calibration->SetTrackingData(&trackingData);
+
+    std::vector< std::pair<unsigned long long, cv::Point3d> > pointData = mitk::LoadTimeStampedPoints(pointDirectory);
+    if (pointData.size() == 0)
+    {
+      mitkThrow() << "Failed to load point data from " << pointDirectory << std::endl;
+    }
+    calibration->SetPointData(&pointData);
+
+    double residualError = calibration->Calibrate();
+    calibration->SaveRigidTransformation(outputMatrixFile);
 
     std::cout << "niftkUltrasoundPinCalibration: residual = " << residualError << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: scaling  = " << calibration->GetMillimetresPerPixel() << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: scaling  = " << calibration->GetImageScaleFactors() << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: lag      = " << calibration->GetTimingLag() << " (ms) " << std::endl;
 
     returnStatus = EXIT_SUCCESS;
+  }
+  catch (mitk::Exception& e)
+  {
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 1;
   }
   catch (std::exception& e)
   {
     MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
-    returnStatus = EXIT_FAILURE + 1;
+    returnStatus = EXIT_FAILURE + 2;
   }
   catch (...)
   {
     MITK_ERROR << "Caught unknown exception:" << std::endl;
-    returnStatus = EXIT_FAILURE + 2;
+    returnStatus = EXIT_FAILURE + 3;
   }
 
   return returnStatus;

@@ -139,8 +139,9 @@ if(SlicerExecutionModel_FOUND)
       niftkVideoToImages
       niftkUltrasoundPinCalibrationClicker
       niftkUltrasoundPinCalibration
-      niftkUltrasoundPointerCalibration
-      niftkUltrasoundPinCalibrationEvaluation
+      niftkVideoHandEyeByCrossCalibration
+      #niftkUltrasoundPointerCalibration
+      #niftkUltrasoundPinCalibrationEvaluation
       niftkUltrasoundTransformAndImageMerger
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
