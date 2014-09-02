@@ -48,6 +48,8 @@ protected:
 
 private:
 
+  double DoCalibration();
+
   itk::VideoHandEyeCalibrationCostFunction* m_DownCastCostFunction;
 
 }; // end class

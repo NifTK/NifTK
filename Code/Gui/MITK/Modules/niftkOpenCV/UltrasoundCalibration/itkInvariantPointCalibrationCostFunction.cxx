@@ -24,14 +24,22 @@ InvariantPointCalibrationCostFunction::InvariantPointCalibrationCostFunction()
 : m_OptimiseInvariantPoint(true)
 , m_TimingLag(0)
 , m_OptimiseTimingLag(false)
+, m_OptimiseRigidTransformation(true)
 , m_NumberOfValues(1)
 , m_NumberOfParameters(1)
 , m_PointData(NULL)
 , m_TrackingData(NULL)
+, m_Verbose(false)
 {
   m_InvariantPoint[0] = 0;
   m_InvariantPoint[1] = 0;
   m_InvariantPoint[2] = 0;
+
+  m_RigidTransformation.clear();
+  for (unsigned int i = 0; i < 6; i++)
+  {
+    m_RigidTransformation.push_back(0);
+  }
 }
 
 
@@ -44,7 +52,7 @@ InvariantPointCalibrationCostFunction::~InvariantPointCalibrationCostFunction()
 //-----------------------------------------------------------------------------
 unsigned int InvariantPointCalibrationCostFunction::GetNumberOfValues(void) const
 {
-  return m_NumberOfValues * 3;
+  return m_NumberOfValues;
 }
 
 
@@ -52,6 +60,77 @@ unsigned int InvariantPointCalibrationCostFunction::GetNumberOfValues(void) cons
 unsigned int InvariantPointCalibrationCostFunction::GetNumberOfParameters(void) const
 {
   return m_NumberOfParameters;
+}
+
+
+
+//-----------------------------------------------------------------------------
+void InvariantPointCalibrationCostFunction::SetRigidTransformation(const cv::Matx44d& rigidBodyTrans)
+{
+  cv::Matx33d rotationMatrix;
+  cv::Matx31d rotationVector;
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      rotationMatrix(i,j) = rigidBodyTrans(i,j);
+    }
+  }
+  cv::Rodrigues(rotationMatrix, rotationVector);
+
+  m_RigidTransformation.clear();
+  m_RigidTransformation.push_back(rotationVector(0,0));
+  m_RigidTransformation.push_back(rotationVector(1,0));
+  m_RigidTransformation.push_back(rotationVector(2,0));
+  m_RigidTransformation.push_back(rigidBodyTrans(0,3));
+  m_RigidTransformation.push_back(rigidBodyTrans(1,3));
+  m_RigidTransformation.push_back(rigidBodyTrans(2,3));
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d InvariantPointCalibrationCostFunction::GetRigidTransformation() const
+{
+  assert(m_RigidTransformation.size() == 6);
+
+  cv::Matx44d result;
+  mitk::MakeIdentity(result);
+
+  cv::Matx33d rotationMatrix;
+  cv::Matx31d rotationVector;
+
+  rotationVector(0, 0) = m_RigidTransformation[0];
+  rotationVector(1, 0) = m_RigidTransformation[1];
+  rotationVector(2, 0) = m_RigidTransformation[2];
+  cv::Rodrigues(rotationVector, rotationMatrix);
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      result(i,j) = rotationMatrix(i,j);
+    }
+    result(i,3) = m_RigidTransformation[i+3];
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<double> InvariantPointCalibrationCostFunction::GetRigidTransformationParameters() const
+{
+  return m_RigidTransformation;
+}
+
+
+//-----------------------------------------------------------------------------
+void InvariantPointCalibrationCostFunction::SetRigidTransformationParameters(const std::vector<double>& params)
+{
+  m_RigidTransformation = params;
+  this->Modified();
 }
 
 
@@ -94,11 +173,14 @@ void InvariantPointCalibrationCostFunction::GetDerivative(
     {
       norm += (derivative[i][j]*derivative[i][j]);
     }
-    norm = sqrt(norm);
-
-    for (unsigned int i = 0; i < m_NumberOfParameters; i++)
+    if (norm != 0)
     {
-      derivative[i][j] = derivative[i][j]*m_Scales[i]/norm;
+      norm = sqrt(norm);
+
+      for (unsigned int i = 0; i < m_NumberOfParameters; i++)
+      {
+        derivative[i][j] = derivative[i][j]*m_Scales[i]/norm;
+      }
     }
   }
 }
@@ -107,14 +189,32 @@ void InvariantPointCalibrationCostFunction::GetDerivative(
 //-----------------------------------------------------------------------------
 cv::Matx44d InvariantPointCalibrationCostFunction::GetRigidTransformation(const ParametersType & parameters) const
 {
-  cv::Matx44d rigidTransformation = mitk::ConstructRodriguesTransformationMatrix(
-    parameters[0],
-    parameters[1],
-    parameters[2],
-    parameters[3],
-    parameters[4],
-    parameters[5]
-  );
+  cv::Matx44d rigidTransformation;
+  mitk::MakeIdentity(rigidTransformation);
+
+  if (parameters.GetSize() >= 6 && this->GetOptimiseRigidTransformation())
+  {
+    rigidTransformation  = mitk::ConstructRodriguesTransformationMatrix(
+      parameters[0],
+      parameters[1],
+      parameters[2],
+      parameters[3],
+      parameters[4],
+      parameters[5]
+      );
+  }
+  else
+  {
+    rigidTransformation = mitk::ConstructRodriguesTransformationMatrix(
+      m_RigidTransformation[0],
+      m_RigidTransformation[1],
+      m_RigidTransformation[2],
+      m_RigidTransformation[3],
+      m_RigidTransformation[4],
+      m_RigidTransformation[5]
+      );
+  }
+
   return rigidTransformation;
 }
 
@@ -143,18 +243,22 @@ cv::Matx44d InvariantPointCalibrationCostFunction::GetTranslationTransformation(
 
 
 //-----------------------------------------------------------------------------
-InvariantPointCalibrationCostFunction::TimeStampType InvariantPointCalibrationCostFunction::GetLag(const ParametersType & parameters) const
+double InvariantPointCalibrationCostFunction::GetLag(const ParametersType & parameters) const
 {
-  TimeStampType lag = 0;
+  double lag = 0;
   if (this->GetOptimiseTimingLag())
   {
-    if (this->GetNumberOfParameters() == 10)
+    if (this->GetNumberOfParameters() == 1)
+    {
+      lag = parameters[0];
+    }
+    else if (this->GetNumberOfParameters() == 10)
     {
       lag = parameters[9];
     }
-    else if (this->GetNumberOfParameters() == 11)
+    else if (this->GetNumberOfParameters() == 12)
     {
-      lag = parameters[10];
+      lag = parameters[11];
     }
     else
     {
@@ -258,7 +362,6 @@ void InvariantPointCalibrationCostFunction::ValidateSizeOfScalesArray(const Para
 }
 
 
-
 //-----------------------------------------------------------------------------
 InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCostFunction::GetValue(const ParametersType & parameters) const
 {
@@ -272,14 +375,16 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
 
   cv::Matx44d similarityTransformation = this->GetCalibrationTransformation(parameters);
   cv::Matx44d translationTransformation = this->GetTranslationTransformation(parameters);
-  TimeStampType lag = this->GetLag(parameters);
+
+  double lag = this->GetLag(parameters); // seconds
+  long long lagInNanoSeconds = static_cast<long long>(lag*1000000000);
 
   TimeStampType timeStamp = 0;
 
   for (unsigned int i = 0; i < this->m_PointData->size(); i++)
   {
     timeStamp = (*this->m_PointData)[i].first;
-    timeStamp -= lag;
+    timeStamp -= lagInNanoSeconds;
 
     cv::Matx44d trackingTransformation = m_TrackingData->InterpolateMatrix(timeStamp);
     cv::Matx44d combinedTransformation = translationTransformation * (trackingTransformation * (similarityTransformation));
@@ -292,13 +397,25 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
 
     transformedPoint = combinedTransformation * point;
 
-    value[i*3 + 0] = transformedPoint(0, 0) - m_InvariantPoint[0];
-    value[i*3 + 1] = transformedPoint(1, 0) - m_InvariantPoint[1];
-    value[i*3 + 2] = transformedPoint(2, 0) - m_InvariantPoint[2];
+    value[i*3 + 0] = transformedPoint(0, 0);
+    value[i*3 + 1] = transformedPoint(1, 0);
+    value[i*3 + 2] = transformedPoint(2, 0);
   }
 
-  double residual = this->GetResidual(value);
-  std::cout << "UltrasoundPinCalibrationCostFunction::GetValue(" << parameters << ") = " << residual << std::endl;
+  if (m_Verbose)
+  {
+    double residual = this->GetResidual(value);
+    std::cout << "InvariantPointCalibrationCostFunction::GetValue(";
+    for (int j = 0; j < parameters.GetSize(); j++)
+    {
+      std::cout << parameters[j];
+      if (j != (parameters.GetSize() -1))
+      {
+        std::cout << ", ";
+      }
+    }
+    std::cout << ") = " << residual << std::endl;
+  }
 
   return value;
 }

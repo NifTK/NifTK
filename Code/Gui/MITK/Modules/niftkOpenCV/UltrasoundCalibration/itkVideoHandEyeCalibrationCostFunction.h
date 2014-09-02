@@ -23,6 +23,7 @@ namespace itk {
  * \class VideoHandEyeCalibrationCostFunction
  * \brief Minimises the RMS error around a stationary invariant point.
  * \see itk::InvariantPointCalibrationCostFunction
+ * \see itk::UltrasoundPinCalibrationCostFunction
  */
 class VideoHandEyeCalibrationCostFunction : public itk::InvariantPointCalibrationCostFunction
 {

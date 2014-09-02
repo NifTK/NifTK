@@ -47,14 +47,20 @@ public:
   void SetOptimiseInvariantPoint(const bool&);
   bool GetOptimiseInvariantPoint() const;
 
-  void SetTimingLag(const TimeStampType& timeStamp);
-  TimeStampType GetTimingLag();
+  void SetTimingLag(const double& timeStamp);
+  double GetTimingLag();
 
   void SetOptimiseTimingLag(const bool&);
   bool GetOptimiseTimingLag() const;
 
   void SetRigidTransformation(const cv::Matx44d& rigidBodyTrans);
   cv::Matx44d GetRigidTransformation() const;
+
+  void SetOptimiseRigidTransformation(const bool&);
+  bool GetOptimiseRigidTransformation() const;
+
+  void SetVerbose(const bool&);
+  bool GetVerbose() const;
 
   /**
    * \brief Loads a 4x4 matrix for the initial guess of the rigid part of the transformation.
@@ -94,7 +100,6 @@ protected:
   itk::InvariantPointCalibrationCostFunction::Pointer        m_CostFunction; // constructor in derived classes MUST create one.
   std::vector< std::pair<unsigned long long, cv::Point3d> > *m_PointData;
   mitk::TrackingAndTimeStampsContainer                      *m_TrackingData;
-  std::vector<double>                                        m_RigidTransformation;
 
 }; // end class
 

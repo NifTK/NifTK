@@ -92,6 +92,14 @@
       <label>Initial Guess</label>
       <channel>input</channel>
     </file>
+    <boolean>
+      <name>verbose</name>
+      <longflag>verbose</longflag>
+      <description>Verbose output.</description>
+      <label>Verbose</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
   </parameters>
 
 </executable>
