@@ -1927,9 +1927,9 @@ void InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after
 //-----------------------------------------------------------------------------
 void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output)
 {
-  vtkSmartPointer<vtkMatrix4x4> b = vtkMatrix4x4::New();
-  vtkSmartPointer<vtkMatrix4x4> a = vtkMatrix4x4::New();
-  vtkSmartPointer<vtkMatrix4x4> interp = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> b = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> a = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> interp = vtkSmartPointer<vtkMatrix4x4>::New();
 
   mitk::CopyToVTK4x4Matrix(before, *b);
   mitk::CopyToVTK4x4Matrix(after, *a);
