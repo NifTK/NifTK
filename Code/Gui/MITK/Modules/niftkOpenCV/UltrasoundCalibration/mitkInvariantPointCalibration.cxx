@@ -101,7 +101,7 @@ void InvariantPointCalibration::SetOptimiseTimingLag(const bool& optimise)
 //-----------------------------------------------------------------------------
 bool InvariantPointCalibration::GetOptimiseTimingLag() const
 {
-  return m_CostFunction->GetTimingLag();
+  return m_CostFunction->GetOptimiseTimingLag();
 }
 
 
