@@ -19,7 +19,9 @@
 #include <fstream>
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
+#include <mitkTimeStampsContainer.h>
 #include <niftkFileHelper.h>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace mitk {
 
@@ -320,6 +322,76 @@ std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(
   }
 
   return timeStampedPoints;
+}
+
+
+//---------------------------------------------------------------------------
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName)
+{
+  if (fileName.length() == 0)
+  {
+    mitkThrow() << "Filename should not be empty." << std::endl;
+  }
+
+  std::ifstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    cv::Point3d point;
+
+    do
+    {
+      mitk::TimeStampsContainer::TimeStamp timeStamp = 0;
+      double x = 0;
+      double y = 0;
+      double z = 0;
+
+      myfile >> timeStamp;
+      myfile >> x;
+      myfile >> y;
+      myfile >> z;
+
+      if (timeStamp > 0 && !boost::math::isnan(x) && !boost::math::isnan(y) && !boost::math::isnan(z)) // any other validation?
+      {
+        point.x = x;
+        point.y = y;
+        point.z = z;
+
+        points.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
+      }
+    }
+    while (!myfile.bad() && !myfile.eof() && !myfile.fail());
+
+    myfile.close();
+  }
+  else
+  {
+    mitkThrow() << "Failed to open file " << fileName << " for reading." << std::endl;
+  }
+}
+
+
+//---------------------------------------------------------------------------
+void SaveTimeStampedPoints(const std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName)
+{
+  if (fileName.length() == 0)
+  {
+    mitkThrow() << "Filename should not be empty." << std::endl;
+  }
+
+  std::ofstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    for (unsigned long int i = 0; i < points.size(); i++)
+    {
+      myfile << points[i].first << " " << points[i].second.x << " " << points[i].second.y << " " << points[i].second.z << std::endl;
+    }
+
+    myfile.close();
+  }
+  else
+  {
+    mitkThrow() << "Failed to open file " << fileName << " for writing." << std::endl;
+  }
 }
 
 } // end namespace

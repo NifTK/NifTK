@@ -49,14 +49,12 @@ set(CPP_FILES
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
-  UltrasoundCalibration/itkUltrasoundCalibrationCostFunction.cxx
+  UltrasoundCalibration/itkInvariantPointCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
-  UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx
+  UltrasoundCalibration/itkVideoHandEyeCalibrationCostFunction.cxx
   UltrasoundCalibration/mitkInvariantPointCalibration.cxx
-  UltrasoundCalibration/mitkUltrasoundCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
-  UltrasoundCalibration/mitkUltrasoundPointerCalibration.cxx
-  UltrasoundCalibration/mitkUltrasoundPinCalibrationEvaluation.cxx
+  UltrasoundCalibration/mitkVideoHandEyeCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
 )

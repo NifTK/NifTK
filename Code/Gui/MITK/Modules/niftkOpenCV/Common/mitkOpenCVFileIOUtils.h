@@ -82,6 +82,16 @@ extern "C++" NIFTKOPENCV_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::st
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory);
 
+/**
+ * \brief Loads points from a flat text file.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName);
+
+/**
+ * \brief Saves points to a flat text file.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void SaveTimeStampedPoints(const std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName);
+
 } // end namespace
 
 #endif

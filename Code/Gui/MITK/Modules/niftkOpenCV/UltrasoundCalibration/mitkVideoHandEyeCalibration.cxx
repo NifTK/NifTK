@@ -12,73 +12,39 @@
 
 =============================================================================*/
 
-#include "mitkUltrasoundPinCalibration.h"
-#include <itkUltrasoundPinCalibrationCostFunction.h>
+#include "mitkVideoHandEyeCalibration.h"
+#include <itkVideoHandEyeCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <cassert>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-UltrasoundPinCalibration::UltrasoundPinCalibration()
+VideoHandEyeCalibration::VideoHandEyeCalibration()
 {
-  m_CostFunction = itk::UltrasoundPinCalibrationCostFunction::New();
-  m_DownCastCostFunction = dynamic_cast<itk::UltrasoundPinCalibrationCostFunction*>(m_CostFunction.GetPointer());
+  m_CostFunction = itk::VideoHandEyeCalibrationCostFunction::New();
+  m_DownCastCostFunction = dynamic_cast<itk::VideoHandEyeCalibrationCostFunction*>(m_CostFunction.GetPointer());
   assert(m_DownCastCostFunction);
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasoundPinCalibration::~UltrasoundPinCalibration()
+VideoHandEyeCalibration::~VideoHandEyeCalibration()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundPinCalibration::SetImageScaleFactors(const mitk::Point2D& point)
-{
-  m_DownCastCostFunction->SetScaleFactors(point);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Point2D UltrasoundPinCalibration::GetImageScaleFactors() const
-{
-  return m_DownCastCostFunction->GetScaleFactors();
-}
-
-
-//-----------------------------------------------------------------------------
-void UltrasoundPinCalibration::SetOptimiseImageScaleFactors(const bool& optimise)
-{
-  m_DownCastCostFunction->SetOptimiseScaleFactors(optimise);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-bool UltrasoundPinCalibration::GetOptimiseImageScaleFactors() const
-{
-  return m_DownCastCostFunction->GetOptimiseScaleFactors();
-}
-
-
-//-----------------------------------------------------------------------------
-double UltrasoundPinCalibration::Calibrate()
+double VideoHandEyeCalibration::Calibrate()
 {
   double residualError = 0;
 
-  itk::UltrasoundPinCalibrationCostFunction::ParametersType parameters;
-  itk::UltrasoundPinCalibrationCostFunction::ParametersType scaleFactors;
-  
+  itk::VideoHandEyeCalibrationCostFunction::ParametersType parameters;
+  itk::VideoHandEyeCalibrationCostFunction::ParametersType scaleFactors;
+
   // Setup size of parameters array.
   int numberOfParameters = 6;
-  if (this->GetOptimiseImageScaleFactors())
-  {
-    numberOfParameters += 2;
-  }
   if (this->GetOptimiseInvariantPoint())
   {
     numberOfParameters += 3;
@@ -89,14 +55,14 @@ double UltrasoundPinCalibration::Calibrate()
   }
   assert(numberOfParameters == 6
          || numberOfParameters == 9
-         || numberOfParameters == 11
-         || numberOfParameters == 12
+         || numberOfParameters == 10
          );
 
   parameters.SetSize(numberOfParameters);
   scaleFactors.SetSize(numberOfParameters);
 
   parameters.Fill(0);
+  scaleFactors.Fill(0.0000001);
 
   parameters[0] = m_RigidTransformation[0];
   parameters[1] = m_RigidTransformation[1];
@@ -112,20 +78,14 @@ double UltrasoundPinCalibration::Calibrate()
     parameters[7] = invariantPoint[1];
     parameters[8] = invariantPoint[2];
   }
-  if (this->GetOptimiseImageScaleFactors())
-  {
-    mitk::Point2D scaleFactors = this->GetImageScaleFactors();
-    parameters[9] = scaleFactors[0];
-    parameters[10] = scaleFactors[1];
-  }
   if (this->GetOptimiseTimingLag())
   {
     TimeStampType timeStamp = this->GetTimingLag();
-    parameters[11] = timeStamp;
+    parameters[9] = timeStamp;
   }
-  
-  std::cout << "UltrasoundPinCalibration:Start parameters = " << parameters << std::endl;
-  
+
+  std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
+
   m_CostFunction->SetNumberOfParameters(parameters.GetSize());
   m_CostFunction->SetScales(scaleFactors);
 
@@ -158,26 +118,19 @@ double UltrasoundPinCalibration::Calibrate()
     invariantPoint[2] = parameters[8];
     this->SetInvariantPoint(invariantPoint);
   }
-  if (this->GetOptimiseImageScaleFactors())
-  {
-    mitk::Point2D scaleFactors;
-    scaleFactors[0] = parameters[9];
-    scaleFactors[1] = parameters[10];
-    this->SetImageScaleFactors(scaleFactors);
-  }
   if (this->GetOptimiseTimingLag())
   {
     TimeStampType timeStamp;
-    timeStamp = parameters[11];
+    timeStamp = parameters[9];
     this->SetTimingLag(timeStamp);
   }
 
-  itk::UltrasoundPinCalibrationCostFunction::MeasureType values = m_CostFunction->GetValue(parameters);
+  itk::VideoHandEyeCalibrationCostFunction::MeasureType values = m_CostFunction->GetValue(parameters);
   residualError = m_CostFunction->GetResidual(values);
 
   std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
-  std::cout << "UltrasoundPinCalibration:End parameters = " << parameters << std::endl;
-  std::cout << "UltrasoundPinCalibration:End residual = " << residualError << std::endl;
+  std::cout << "VideoHandEyeCalibration:End parameters = " << parameters << std::endl;
+  std::cout << "VideoHandEyeCalibration:End residual = " << residualError << std::endl;
 
   return residualError;
 }

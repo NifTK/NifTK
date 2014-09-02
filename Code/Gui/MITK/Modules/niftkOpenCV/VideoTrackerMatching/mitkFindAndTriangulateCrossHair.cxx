@@ -16,6 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkTimeStampsContainer.h>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -199,6 +200,8 @@ void FindAndTriangulateCrossHair::Triangulate()
   cv::Mat rightHough;
   m_ScreenPoints.clear();
   int terminator = m_TrackerMatcher->GetNumberOfFrames();
+  TimeStampsContainer::TimeStamp timeStamp;
+
   if ( m_FramesToProcess >= 0 ) 
   {
     terminator = m_FramesToProcess;
@@ -210,6 +213,7 @@ void FindAndTriangulateCrossHair::Triangulate()
     leftFrame = videoImage.clone();
     bool rightSuccess = m_Capture->read(videoImage);
     rightFrame = videoImage.clone();
+    m_TrackerMatcher->GetVideoFrame(framenumber, &timeStamp);
 
     mitk::ProjectedPointPair screenPoints;
     screenPoints.m_Left = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
@@ -239,6 +243,7 @@ void FindAndTriangulateCrossHair::Triangulate()
       std::vector <cv::Point2d> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
       screenPoints.m_Left = mitk::GetCentroid(leftIntersectionPoints,true);
       screenPoints.m_Right = mitk::GetCentroid(rightIntersectionPoints,true);
+      screenPoints.SetTimeStamp(timeStamp);
       //push_back twice because we're jumping two frames
       m_ScreenPoints.push_back(screenPoints);
       m_ScreenPoints.push_back(screenPoints);

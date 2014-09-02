@@ -21,15 +21,16 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <mitkVector.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 #include <cv.h>
+#include <mitkTimeStampsContainer.h>
+#include <mitkTrackingAndTimeStampsContainer.h>
+#include <itkInvariantPointCalibrationCostFunction.h>
 
 namespace mitk {
 
 /**
  * \class InvariantPointCalibration
- * \brief Base class for Ultrasound Pin calibration and Video Hand-Eye calibration.
+ * \brief Base class for Ultrasound Pin/Cross-Wire calibration and Video Hand-Eye calibration.
  */
 class NIFTKOPENCV_EXPORT InvariantPointCalibration : public itk::Object
 {
@@ -38,33 +39,47 @@ public:
 
   mitkClassMacro(InvariantPointCalibration, itk::Object);
 
-  itkSetMacro(InvariantPoint, mitk::Point3D);
-  itkGetMacro(InvariantPoint, mitk::Point3D);
+  typedef mitk::TimeStampsContainer::TimeStamp TimeStampType;
 
-  itkSetMacro(OptimiseInvariantPoint, bool);
-  itkGetMacro(OptimiseInvariantPoint, bool);
+  void SetInvariantPoint(const mitk::Point3D& point);
+  mitk::Point3D GetInvariantPoint() const;
 
-  itkSetMacro(TimingLag, double);
-  itkGetMacro(TimingLag, double);
+  void SetOptimiseInvariantPoint(const bool&);
+  bool GetOptimiseInvariantPoint() const;
 
-  itkSetMacro(OptimiseTimingLag, bool);
-  itkGetMacro(OptimiseTimingLag, bool);
+  void SetTimingLag(const TimeStampType& timeStamp);
+  TimeStampType GetTimingLag();
 
+  void SetOptimiseTimingLag(const bool&);
+  bool GetOptimiseTimingLag() const;
+
+  void SetRigidTransformation(const cv::Matx44d& rigidBodyTrans);
+  cv::Matx44d GetRigidTransformation() const;
 
   /**
-   * \brief Loads a 4x4 matrix from file, decomposes to Rodrigues formula and stores 3 rotations and 3 translation parameters.
+   * \brief Loads a 4x4 matrix for the initial guess of the rigid part of the transformation.
    */
-  void InitialiseInitialGuess(const std::string& fileName);
+  void LoadRigidTransformation(const std::string& fileName);
 
   /**
-   * \brief Decomposes the matrix to Rodrigues formula and stores 3 rotations and 3 translation parameters.
+   * \brief Saves the 4x4 matrix (after calibration).
    */
-  void SetInitialGuess(const vtkMatrix4x4& matrix);
+  void SaveRigidTransformation(const std::string& fileName);
+
+  /**
+   * \brief Sets the tracking data onto this object.
+   */
+  void SetTrackingData(mitk::TrackingAndTimeStampsContainer* trackingData);
+
+  /**
+   * \brief Sets the point data onto this object.
+   */
+  void SetPointData(std::vector< std::pair<unsigned long long, cv::Point3d> >* pointData);
 
   /**
    * \brief Derived classes implement the calibration method.
    */
-  virtual void Calibrate() = 0;
+  virtual double Calibrate() = 0;
 
 protected:
 
@@ -76,15 +91,10 @@ protected:
 
 protected:
 
-  std::vector<double>                                       m_InitialGuess;
-  mitk::Point3D                                             m_InvariantPoint;
-  bool                                                      m_OptimiseInvariantPoint;
-  double                                                    m_TimingLag;
-  bool                                                      m_OptimiseTimingLag;
-  std::vector< std::pair<unsigned long long, cv::Point3d> > m_Points;
-
-
-private:
+  itk::InvariantPointCalibrationCostFunction::Pointer        m_CostFunction; // constructor in derived classes MUST create one.
+  std::vector< std::pair<unsigned long long, cv::Point3d> > *m_PointData;
+  mitk::TrackingAndTimeStampsContainer                      *m_TrackingData;
+  std::vector<double>                                        m_RigidTransformation;
 
 }; // end class
 

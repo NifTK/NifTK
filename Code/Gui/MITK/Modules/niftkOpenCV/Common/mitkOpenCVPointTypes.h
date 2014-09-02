@@ -20,6 +20,7 @@
 #include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
+#include <mitkTimeStampsContainer.h>
 
 /**
  * \file mitkOpenCVPointTypes.h
@@ -97,9 +98,11 @@ public:
 
   bool LeftNaNOrInf ();
   bool RightNaNOrInf ();
+  void SetTimeStamp(const TimeStampsContainer::TimeStamp& ts) { m_TimeStamp = ts; }
 
   cv::Point2d m_Left;
   cv::Point2d m_Right;
+  TimeStampsContainer::TimeStamp m_TimeStamp;
 };
 
 
