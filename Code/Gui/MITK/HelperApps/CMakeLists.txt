@@ -155,6 +155,7 @@ if(SlicerExecutionModel_FOUND)
       niftkAverageTrackingMatrices
       niftkAverageStationaryChessboards
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
+      niftkMakeChessBoardPointSet
     )
     
     if(BUILD_PCL)
