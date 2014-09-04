@@ -49,7 +49,15 @@ r.inputs.input_node.in_entries_directory = os.path.abspath(args.inputs)
 r.inputs.input_node.in_initial_labels_directory = os.path.abspath(args.labels)
 r.inputs.input_node.out_database_directory = result_dir
 
-r.write_graph(graph2use='hierarchical')
+
+# Run the overall workflow
+# r.write_graph(graph2use='hierarchical')
+qsub_exec=spawn.find_executable('qsub')
+if not qsub_exec == None:
+	qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+else:
+	r.run(plugin='MultiProc')
 
 qsubargs='-l h_rt=01:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
 r.run(plugin='SGE', plugin_args={'qsub_args': qsubargs})

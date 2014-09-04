@@ -71,10 +71,13 @@ r.connect(dg, 'in_files', r.get_node('input_node'), 'in_files')
 r.connect(r.get_node('output_node'), 'average_image', ds, '@average_image')
 r.connect(r.get_node('output_node'), 'trans_files', ds, 'trans_files')
 
-r.write_graph(graph2use = 'colored')
 
-qsubargs='-l h_rt=00:59:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=1.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
-r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
-#r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
-r.run(plugin='MultiProc')
+# Run the overall workflow
+# r.write_graph(graph2use='colored')
+qsub_exec=spawn.find_executable('qsub')
+if not qsub_exec == None:
+	qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+else:
+	r.run(plugin='MultiProc')
 

@@ -181,8 +181,14 @@ def main():
     workflow.connect(output_node, 'res_files', ds, '@res')
 
     # Run the overall workflow
-    workflow.write_graph(graph2use='colored')
-    workflow.run(plugin='MultiProc')
+#     workflow.write_graph(graph2use='colored')
+    qsub_exec=spawn.find_executable('qsub')
+	if not qsub_exec == None:
+		qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+		workflow.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+	else:
+		workflow.run(plugin='MultiProc')
+
     
 if __name__ == "__main__":
     main()

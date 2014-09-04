@@ -8,6 +8,7 @@ import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
 import diffusion_mri_processing         as dmri
 from midas2dicom import Midas2Dicom
+from distutils import spawn
 import argparse
 import os
 
@@ -214,8 +215,8 @@ parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-m', '--midas_code',
                    dest='midas_code',
                    nargs='+',
+                   required=True,
                    help='MIDAS code of the subject image')
-
 parser.add_argument('--model',
                     dest='model',
                     metavar='model',
@@ -249,9 +250,11 @@ r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_i
 
 #r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 
-#r.write_graph(graph2use = 'colored')
-
-qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
-#r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
-r.run(plugin='MultiProc')
-
+# Run the overall workflow
+# r.write_graph(graph2use='colored')
+qsub_exec=spawn.find_executable('qsub')
+if not qsub_exec == None:
+	qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+else:
+	r.run(plugin='MultiProc')
