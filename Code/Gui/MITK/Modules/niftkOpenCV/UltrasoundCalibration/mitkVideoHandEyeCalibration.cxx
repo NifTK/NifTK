@@ -75,7 +75,8 @@ double VideoHandEyeCalibration::DoCalibration()
   double residualError = 0;
 
   itk::VideoHandEyeCalibrationCostFunction::ParametersType parameters;
-  itk::VideoHandEyeCalibrationCostFunction::ParametersType scaleFactors;
+  itk::VideoHandEyeCalibrationCostFunction::ParametersType scaleFactorsForCostFunctionDerivative;
+  itk::VideoHandEyeCalibrationCostFunction::ParametersType scaleFactorsForParameterSizes;
 
   // Setup size of parameters array.
   int numberOfParameters = 0;
@@ -98,10 +99,11 @@ double VideoHandEyeCalibration::DoCalibration()
          );
 
   parameters.SetSize(numberOfParameters);
-  scaleFactors.SetSize(numberOfParameters);
+  scaleFactorsForCostFunctionDerivative.SetSize(numberOfParameters);
+  scaleFactorsForParameterSizes.SetSize(numberOfParameters);
 
   parameters.Fill(0);
-  scaleFactors.Fill(0.1);
+  scaleFactorsForCostFunctionDerivative.Fill(0.1);
 
   if (this->GetOptimiseRigidTransformation())
   {
@@ -112,6 +114,13 @@ double VideoHandEyeCalibration::DoCalibration()
     parameters[3] = rigidParams[3];
     parameters[4] = rigidParams[4];
     parameters[5] = rigidParams[5];
+
+    scaleFactorsForParameterSizes[0] = 0.01;
+    scaleFactorsForParameterSizes[1] = 0.01;
+    scaleFactorsForParameterSizes[2] = 0.01;
+    scaleFactorsForParameterSizes[3] = 1;
+    scaleFactorsForParameterSizes[4] = 1;
+    scaleFactorsForParameterSizes[5] = 1;
   }
   if (this->GetOptimiseInvariantPoint())
   {
@@ -119,11 +128,17 @@ double VideoHandEyeCalibration::DoCalibration()
     parameters[6] = invariantPoint[0];
     parameters[7] = invariantPoint[1];
     parameters[8] = invariantPoint[2];
+
+    scaleFactorsForParameterSizes[6] = 1;
+    scaleFactorsForParameterSizes[7] = 1;
+    scaleFactorsForParameterSizes[8] = 1;
   }
   if (this->GetOptimiseTimingLag())
   {
     double timeStamp = this->GetTimingLag();
     parameters[9] = timeStamp;
+
+    scaleFactorsForParameterSizes[9] = 0.1;
   }
 
   std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
@@ -132,7 +147,7 @@ double VideoHandEyeCalibration::DoCalibration()
   m_DownCastCostFunction->SetPointData(m_PointData);
   m_DownCastCostFunction->SetTrackingData(m_TrackingData);
   m_DownCastCostFunction->SetNumberOfParameters(parameters.GetSize());
-  m_DownCastCostFunction->SetScales(scaleFactors);
+  m_DownCastCostFunction->SetScales(scaleFactorsForCostFunctionDerivative);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->UseCostFunctionGradientOff(); // use default VNL derivative, not our one.
@@ -142,6 +157,7 @@ double VideoHandEyeCalibration::DoCalibration()
   optimizer->SetGradientTolerance(0.000000005);
   optimizer->SetEpsilonFunction(0.000000005);
   optimizer->SetValueTolerance(0.000000005);
+  optimizer->SetScales(scaleFactorsForParameterSizes);
 
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
