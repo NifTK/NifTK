@@ -254,7 +254,7 @@ r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_i
 # r.write_graph(graph2use='colored')
 qsub_exec=spawn.find_executable('qsub')
 if not qsub_exec == None:
-	qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
-	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+    qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+    r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
-	r.run(plugin='MultiProc')
+    r.run(plugin='MultiProc')

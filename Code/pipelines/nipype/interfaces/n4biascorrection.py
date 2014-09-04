@@ -1,18 +1,9 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-    Simple interface for the CropImage.sh script
+    Simple interface for the niftkN4BiasFieldCorrection executable
 """
-
-import os
-import numpy as np
-from nibabel import load
-import os.path as op
-import warnings
 
 from nipype.interfaces.niftyseg.base import NIFTYSEGCommand, NIFTYSEGCommandInputSpec
-from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath,
-                                    isdefined)
+from nipype.interfaces.base import (TraitedSpec, File, traits, )
 
 class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
     
@@ -30,7 +21,8 @@ class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
     in_levels = traits.BaseInt(desc='Number of Multi-Scale Levels - optional - default = 3', 
                                argstr='--nlevels %d')
 
-    in_downsampling = traits.BaseInt(desc='Level of Downsampling - optional - default = 1 (no downsampling), downsampling to level 2 is recommended', 
+    in_downsampling = traits.BaseInt(desc='Level of Downsampling - optional - default = 1' +\
+    							'(no downsampling), downsampling to level 2 is recommended', 
                                      argstr='--sub %d')
 
     in_maxiter = traits.BaseInt(desc='Maximum number of Iterations - optional - default = 50', 
