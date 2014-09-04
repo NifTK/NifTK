@@ -22,11 +22,13 @@ def merge_vector_files(input_files, basename):
         np.savetxt(output_file, result, fmt = '%.3f')
         return output_file
 
-op_root_dir = '/Users/isimpson/Documents/DWI/DTIReproPaper/data/back_to_back/'
+op_root_dir = '/var/drc/scratch1/simpson/reproducibility_study/'
 temp_folder = op_root_dir + '/temp/'
-subj_data_dirs = ['/Users/isimpson/Data/me/nifti/','']
+if not os.path.exists(temp_folder):
+	os.mkdir(temp_folder)
+subj_data_dirs = ['/var/drc/scratch1/simpson/reproducibility_study/ivor_data/','/var/drc/scratch1/simpson/reproducibility_study/nico_data/']
 subj_labels = ['ivor', 'nico']
-stamps = [['20130717_133322','20130717_151013'], []]
+stamps = [['20130717_133322','20130717_151013'], ['20130717_123411','20130717_142818']]
 
 interp_options = ['LIN', 'CUB']
 
@@ -41,17 +43,27 @@ for interp_option in interp_options:
             stamp = subj_stamps[subj_index]
 
             fm = glob.glob(subj_data_dir+stamp+'*fieldmappings*.nii.gz')
+            fm.sort()
             dwi = glob.glob(subj_data_dir+stamp+'*ep2ddiff*.nii.gz')
 
             bvec = glob.glob(subj_data_dir+stamp+'*.bvec')
             bval = glob.glob(subj_data_dir+stamp+'*.bval')
+            dwi.sort()
+            bvec.sort()
+            bval.sort()
             combo_index = 0
             for i in range(4):
                 for j in range(i+1,4):
-                    op_folder = op_root_dir+subj_label+'_'+str(stamp_index)+'_'+str(combo_index)+'_'+interp_option+'/'
+                    qname = subj_label+'_'+str(stamp_index)+'_'+str(combo_index)+'_'+interp_option
+                    temp_folder = op_root_dir + '/temp/'+qname+'/'
+                    op_folder = op_root_dir+qname+'/'
+
                     if not os.path.exists(op_folder):
                         os.mkdir(op_folder)
-                    temp_data_basename = op_folder+'merged'
+                    if not os.path.exists(temp_folder):
+                        os.mkdir(temp_folder)
+                    temp_data_basename = temp_folder+'merged'
+
                     temp_data = temp_data_basename+'.nii.gz'
 
                     if not os.path.exists(temp_data):
@@ -85,6 +97,7 @@ for interp_option in interp_options:
                         r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(fm[0])
                         r.inputs.input_node.in_fm_phase_file = os.path.abspath(fm[1])
                         r.inputs.input_node.in_t1_file = os.path.abspath(t1)
+                        r.inputs.input_node.op_basename = 'dti'
 
                         ds = pe.Node(nio.DataSink(), name='ds')
                         ds.inputs.base_directory = op_folder
@@ -100,6 +113,7 @@ for interp_option in interp_options:
                         #r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
                         #r.run(plugin='SGEGraph',  plugin_args={'qsub_args': qsubargs})
                         r.run(plugin='MultiProc')
+                        os.rmdir(temp_folder)
 
                     combo_index += 1
 

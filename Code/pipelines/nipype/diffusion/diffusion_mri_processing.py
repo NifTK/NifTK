@@ -70,7 +70,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                              ref_b0_provided = False,
                                              dwi_interp_type = 'CUB',
                                              wls_tensor_fit = False,
-                                             model='tensor'):
+                                             model='tensor',
+                                             set_op_basename = False):
 
     """Creates a diffusion processing workflow. This initially performs a groupwise registration
     of all the B=0 images, subsequently each of the DWI is registered to the averageB0.
@@ -128,7 +129,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                     'in_fm_phase_file',
                     'in_t1_file',
                     'in_t1_mask',
-                    'in_ref_b0']),
+                    'in_ref_b0',
+                    'op_basename'], mandatory_inputs=False),
         name='input_node')
     
     #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
@@ -205,7 +207,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     diffusion_model_fitting_tensor = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_tensor')
     diffusion_model_fitting_tensor.inputs.dti_flag = True
     diffusion_model_fitting_tensor.inputs.wls_flag = wls_tensor_fit
-			
+
     diffusion_model_fitting_noddi = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_noddi')
     diffusion_model_fitting_noddi.inputs.nod_flag = True    
 
@@ -359,7 +361,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     #############################################################
     #   Fit the tensor or noddi model from the DWI data         #
     #############################################################
-    
+    # Set the op basename for the tensor
+    if set_op_basename == True:
+    	  workflow.connect(input_node, 'op_basename', diffusion_model_fitting_tensor, 'op_basename')
+    else:
+        diffusion_model_fitting_tensor.inputs.op_basename = 'dti'
+
     if correct_susceptibility == True:
         # If we're correcting for susceptibility distortions, need to divide by the
         # jacobian of the distortion field

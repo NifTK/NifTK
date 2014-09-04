@@ -92,7 +92,8 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 		                                                t1_mask_provided = True,
 		                                                ref_b0_provided = False,
 																										wls_tensor_fit = False,
-		                                                model = args.model)
+		                                                model = args.model,
+                                                    set_op_basename = True)
 	r.base_dir = os.getcwd()
 
 
@@ -129,7 +130,13 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	mask_resample.inputs.inter_val = 'NN'
 	mask_resample.inputs.flo_file = mni_template_mask
 
+	mask_eroder = pe.Node(interface = niftyseg.BinaryMaths(), 
+		                    name = 'mask_eroder')
+	mask_eroder.inputs.operation = 'ero'
+	mask_eroder.inputs.operand_value = 3
+
 	r.connect(infosource, 'subject_id', midas2dicom, 'midas_code')
+	r.connect(infosource, 'subject_id', r.get_node('input_node'), 'op_basename')
 	r.connect(midas2dicom, 'dicom_dir', dg, 'base_directory')
 	r.connect(dg, 'dicom_files', dcm2nii, 'source_names')
 	r.connect(dcm2nii, 'converted_files', find_and_merge_dwis, 'input_files')
@@ -138,54 +145,28 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(find_and_merge_dwis, 't1', mni_to_input, 'ref_file')
 	r.connect(find_and_merge_dwis, 't1', mask_resample, 'ref_file')
 	r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
-	r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_t1_mask')
+	r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
+	r.connect(mask_eroder, 'out_file', r.get_node('input_node'), 'in_t1_mask')
 	r.connect(find_and_merge_dwis, 'dwis', r.get_node('input_node'), 'in_dwi_4d_file')
 	r.connect(find_and_merge_dwis, 'bvals', r.get_node('input_node'), 'in_bval_file')
 	r.connect(find_and_merge_dwis, 'bvecs', r.get_node('input_node'), 'in_bvec_file')
 	r.connect(find_and_merge_dwis, 'fieldmapmag', r.get_node('input_node'), 'in_fm_magnitude_file')
 	r.connect(find_and_merge_dwis, 'fieldmapphase', r.get_node('input_node'), 'in_fm_phase_file')
 	r.connect(find_and_merge_dwis, 't1', r.get_node('input_node'), 'in_t1_file')
-
-	mask_eroder = pe.Node(interface = niftyseg.BinaryMaths(), 
-		                    name = 'mask_eroder')
-	mask_eroder.inputs.operation = 'ero'
-	mask_eroder.inputs.operand_value = 3
+	
 
 	ds = pe.Node(nio.DataSink(), name='ds')
 	ds.inputs.base_directory = result_dir
 	ds.inputs.parameterization = False
 
-	r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
+	
 
-	if (args.model == 'tensor' or args.model == 'both'):
-		  
-		  multiplicater_fa = pe.Node(interface = niftyseg.BinaryMaths(), 
-		                             name = 'multiplicater_fa')
-		  multiplicater_fa.inputs.operation = 'mul'
-		  multiplicater_md = pe.Node(interface = niftyseg.BinaryMaths(), 
-		                             name = 'multiplicater_md')
-		  multiplicater_md.inputs.operation = 'mul'
-		  multiplicater_v1 = pe.Node(interface = niftyseg.BinaryMaths(), 
-		                             name = 'multiplicater_v1')
-		  multiplicater_v1.inputs.operation = 'mul'
-		  multiplicater_colfa = pe.Node(interface = niftyseg.BinaryMaths(), 
-		                                name = 'multiplicater_colfa')
-		  multiplicater_colfa.inputs.operation = 'mul'
-		  
-		  r.connect(mask_eroder, 'out_file', multiplicater_fa, 'operand_file')
-		  r.connect(mask_eroder, 'out_file', multiplicater_md, 'operand_file')
-		  r.connect(mask_eroder, 'out_file', multiplicater_v1, 'operand_file')
-		  r.connect(mask_eroder, 'out_file', multiplicater_colfa, 'operand_file')
-		  r.connect(r.get_node('output_node'), 'FA', multiplicater_fa, 'in_file')
-		  r.connect(r.get_node('output_node'), 'MD', multiplicater_md, 'in_file')
-		  r.connect(r.get_node('output_node'), 'V1', multiplicater_v1, 'in_file')
-		  r.connect(r.get_node('output_node'), 'COL_FA', multiplicater_colfa, 'in_file')
-		  
+	if (args.model == 'tensor' or args.model == 'both'):		  
 		  r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
-		  r.connect(multiplicater_fa, 'out_file', ds, '@fa')
-		  r.connect(multiplicater_md, 'out_file', ds, '@md')
-		  r.connect(multiplicater_colfa, 'out_file', ds, '@colfa')
-		  r.connect(multiplicater_v1, 'out_file', ds, '@v1')
+		  r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
+		  r.connect(r.get_node('output_node'), 'MD', ds, '@md')
+		  r.connect(r.get_node('output_node'), 'COL_FA', ds, '@colfa')
+		  r.connect(r.get_node('output_node'), 'V1', ds, '@v1')
 		  r.connect(r.get_node('output_node'), 'predicted_image_tensor', ds, '@img_tensor')
 		  r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res_tensor')
 
