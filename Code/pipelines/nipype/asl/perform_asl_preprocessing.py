@@ -12,7 +12,9 @@ import os
 help_message = \
 'Perform Arterial Spin Labelling Fitting with pre-processing steps. \n\n' + \
 'Mandatory Input is the 4D nifti image ASL sequence. \n' + \
-'as well as a T1 image for reference space. \n\n' 
+'as well as a T1 image for reference space. \n\n' + \
+'Additionally to the ASL information, the pipeline outputs \n' + \
+'transformations from ASL to M0 space and transformation from M0 to T1 space. \n\n' 
 
 parser = argparse.ArgumentParser(description=help_message)
 
@@ -42,6 +44,9 @@ r = asl.create_asl_processing_workflow(name = 'asl_workflow')
 r.base_dir = os.getcwd()
 
 r.get_node('input_node').inputs.in_source = os.path.abspath(args.source)
+if args.t1:
+    r.get_node('input_node').inputs.in_t1 = os.path.abspath(args.t1)
+    
 
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
@@ -50,6 +55,9 @@ ds.inputs.parameterization = False
 r.connect(r.get_node('output_node'), 'cbf_file', ds, '@cbf_file')
 r.connect(r.get_node('output_node'), 'syn_file', ds, '@syn_file')
 r.connect(r.get_node('output_node'), 'error_file', ds, '@error_file')
+r.connect(r.get_node('output_node'), 'asl_to_m0_transformations', ds, 'asl_to_m0_transformations')
+if args.t1:
+    r.connect(r.get_node('output_node'), 'm0_to_t1_transformation', ds, 'm0_to_t1_transformation')
 
 r.write_graph(graph2use = 'colored')
 
