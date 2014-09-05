@@ -136,9 +136,9 @@ double VideoHandEyeCalibration::DoCalibration()
   if (this->GetOptimiseTimingLag())
   {
     double timeStamp = this->GetTimingLag();
-    parameters[9] = timeStamp;
+    parameters[parameters.GetSize() -1] = timeStamp;
 
-    scaleFactorsForParameterSizes[9] = 0.1;
+    scaleFactorsForParameterSizes[parameters.GetSize() -1] = 0.1;
   }
 
   std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
