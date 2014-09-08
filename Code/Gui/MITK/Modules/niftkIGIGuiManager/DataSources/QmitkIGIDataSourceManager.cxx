@@ -1069,10 +1069,10 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
           vtkRenderer *renderer = focusedRenderer->GetVtkRenderer();
           if (renderer != NULL)
           {
-            vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkWindowToImageFilter::New();
+            vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
             windowToImageFilter->SetInput(renderer->GetRenderWindow());
 
-            vtkSmartPointer<vtkJPEGWriter> writer = vtkJPEGWriter::New();
+            vtkSmartPointer<vtkJPEGWriter> writer = vtkSmartPointer<vtkJPEGWriter>::New();
             writer->SetQuality(100);
             writer->ProgressiveOff();
             writer->SetInputDataObject(windowToImageFilter->GetOutput());

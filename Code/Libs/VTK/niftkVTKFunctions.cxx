@@ -476,9 +476,9 @@ bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matri
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent)
+vtkSmartPointer<vtkMatrix4x4> LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent)
 {
-  vtkMatrix4x4 *result = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
   result->Identity();
 
   if (fileName.size() > 0)

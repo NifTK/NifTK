@@ -64,7 +64,7 @@ public:
    * \brief Takes a surface representing a tracked pointer, updates the surface's geometry, and calculates the pointer position.
    */
   void Update(
-      const vtkMatrix4x4* tipToPointerTransform,
+      const vtkMatrix4x4& tipToPointerTransform,
       const mitk::DataNode::Pointer pointerToWorldNode,
       mitk::DataNode::Pointer surfaceNode,
       mitk::Point3D& tipCoordinate

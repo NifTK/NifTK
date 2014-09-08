@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 
     cv::Rodrigues(rotationVector, rotationMatrix);
 
-    vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     outputMatrix->Identity();
 
     for (int i = 0; i < 3; i++)

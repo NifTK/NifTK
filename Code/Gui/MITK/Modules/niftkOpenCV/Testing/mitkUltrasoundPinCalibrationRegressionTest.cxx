@@ -63,7 +63,7 @@ public:
     initialTransformation.push_back(0);
 
     double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();

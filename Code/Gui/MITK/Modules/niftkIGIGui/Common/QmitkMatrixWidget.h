@@ -44,7 +44,7 @@ public:
   /**
    * \brief Copies the internal matrix, returning a new matrix that the caller is responsible for deleting.
    */
-  vtkMatrix4x4* CloneMatrix() const;
+  vtkSmartPointer<vtkMatrix4x4> CloneMatrix() const;
 
 signals:
   void MatrixChanged();

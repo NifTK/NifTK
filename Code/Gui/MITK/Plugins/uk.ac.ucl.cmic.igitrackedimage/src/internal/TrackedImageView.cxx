@@ -218,9 +218,7 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
     {
       mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
 
-      if (   m_ImageToTrackingSensorTransform != NULL
-          && trackingSensorToTrackerTransform.IsNotNull()
-         )
+      if (trackingSensorToTrackerTransform.IsNotNull())
       {
         // We publish this update signal immediately after the image plane is updated,
         // as we want the Overlay Display to listen synchronously, and update immediately.
@@ -230,7 +228,7 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
         mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
         command->Update(imageNode,
                         trackingSensorToTrackerTransform,
-                        m_ImageToTrackingSensorTransform,
+                        *m_ImageToTrackingSensorTransform,
                         m_ImageScaling
                         );
                     
