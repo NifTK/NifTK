@@ -91,7 +91,7 @@ def create_asl_processing_workflow(name='asl_processing',
     asl_model_fitting.inputs.Tinv1 = 800.0
     asl_model_fitting.inputs.Tinv2 = 1600.0
 #    asl_model_fitting.inputs.dTinv2 = 50.5722
-    asl_model_fitting.inputs.mul = 1.0
+    asl_model_fitting.inputs.mul = -1.0
     asl_model_fitting.inputs.out = 2.5
 
     # Output node
