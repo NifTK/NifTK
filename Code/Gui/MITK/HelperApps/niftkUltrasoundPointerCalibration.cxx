@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 
     // Do calibration.
     double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     residualError = calibration->CalibrateFromDirectories(
         matrixDirectory,

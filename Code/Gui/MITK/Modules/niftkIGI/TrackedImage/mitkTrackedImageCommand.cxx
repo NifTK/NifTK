@@ -62,10 +62,10 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     return;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> trackingSensorToWorldTransform = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> trackingSensorToWorldTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   trackingSensorToWorld->GetVtkMatrix(*trackingSensorToWorldTransform);
 
-  vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   combinedTransform->Identity();
 
   combinedTransform->Multiply4x4(trackingSensorToWorldTransform, imageToTrackingSensor, combinedTransform);

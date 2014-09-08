@@ -303,7 +303,7 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         std::string inputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_InputTrackerDirectory + QString("/") + baseNameForMatrix).toStdString());
         std::string outputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_OutputMatrixDirectory + QString("/") + baseNameForImage).toStdString());
 
-        vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkMatrix4x4::New();
+        vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
         trackingMatrix = mitk::LoadVtkMatrix4x4FromFile(inputMatrixFileFullPath);
 
         m_PointsOutputCounter++;

@@ -62,7 +62,7 @@ void UltrasoundCalibration::InitialiseMillimetresPerPixel(const std::vector<floa
 //-----------------------------------------------------------------------------
 void UltrasoundCalibration::InitialiseInitialGuess(const std::string& fileName)
 {
-  vtkSmartPointer<vtkMatrix4x4> initialMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> initialMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   initialMatrix->Identity();
 
   if(fileName.size() != 0)

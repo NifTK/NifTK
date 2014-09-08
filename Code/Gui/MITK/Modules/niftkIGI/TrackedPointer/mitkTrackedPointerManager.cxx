@@ -166,10 +166,10 @@ void TrackedPointerManager::Update(
     return;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> pointerToWorldTransform = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> pointerToWorldTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   pointerToWorld->GetVtkMatrix(*pointerToWorldTransform);
 
-  vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   combinedTransform->Identity();
 
   combinedTransform->Multiply4x4(pointerToWorldTransform, tipToPointerTransform, combinedTransform);

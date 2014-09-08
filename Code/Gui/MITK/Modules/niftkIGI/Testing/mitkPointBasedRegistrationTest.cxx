@@ -78,7 +78,7 @@ int mitkPointBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
   movingPoints->InsertPoint(3, m3);
   movingPoints->InsertPoint(4, m4);
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   matrix->Identity();
   double fre = 0;
   double fre2 = 0;

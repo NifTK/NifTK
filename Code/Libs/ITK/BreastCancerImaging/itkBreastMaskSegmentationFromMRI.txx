@@ -3047,7 +3047,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Apply the Marching Cubes algorithm
   
-  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkSmartPointer<vtkMarchingCubes>::New();
 
   surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
@@ -3066,7 +3066,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   int niterations = 5;		// The number of smoothing iterations
   float bandwidth = 0.1;	// The band width of the smoothing filter
 
-  vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+  vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
     
   postSmoothingFilter->BoundarySmoothingOff();
     
@@ -3078,7 +3078,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Write the created vtk surface to a file
 
-  vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
+  vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkSmartPointer<vtkPolyDataWriter>::New();
 
   writer3D->SetFileName( fileModifiedOutput.c_str() );
   writer3D->SetInputDataObject(pipeVTKPolyDataConnector);
