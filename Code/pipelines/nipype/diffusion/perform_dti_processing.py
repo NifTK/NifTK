@@ -55,18 +55,26 @@ parser.add_argument('--model',
                     required=False,
                     choices = model_choices,
                     default = model_choices[0])
+parser.add_argument('-o', '--output',
+                    dest='output',
+                    metavar='output',
+                    help='Result directory where the output data is to be stored',
+                    required=False,
+                    default='results')
 
 args = parser.parse_args()
 
-result_dir = os.path.join(os.getcwd(),'results')
+
+result_dir = os.path.abspath(args.output)
+
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
 do_susceptibility_correction = False
-if os.path.exists(os.path.abspath(parser.fieldmapmag)) and os.path.exists(os.path.abspath(parser.fieldmapphase)):
+if os.path.exists(os.path.abspath(args.fieldmapmag)) and os.path.exists(os.path.abspath(args.fieldmapphase)):
     do_susceptibility_correction = True
 
-r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
+r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   resample_in_t1 = True, 
                                                   log_data = True,
                                                   correct_susceptibility = do_susceptibility_correction,

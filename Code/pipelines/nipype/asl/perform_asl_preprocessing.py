@@ -6,9 +6,10 @@ import nipype.pipeline.engine           as pe
 import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
-import asl_processing                as asl
+import asl_processing                   as asl
 import argparse
 import os
+from distutils                          import spawn
 help_message = \
 'Perform Arterial Spin Labelling Fitting with pre-processing steps. \n\n' + \
 'Mandatory Input is the 4D nifti image ASL sequence. \n' + \
@@ -61,7 +62,10 @@ if args.t1:
 
 r.write_graph(graph2use = 'colored')
 
-qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
-#r.run(plugin='SGE',       plugin_args={'qsub_args': qsubargs})
-r.run(plugin='MultiProc')
+qsub_exec=spawn.find_executable('qsub')
+if not qsub_exec == None:
+    qsubargs='-l h_rt=03:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+    r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+else:
+    r.run(plugin='MultiProc')
 

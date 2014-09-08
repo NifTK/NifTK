@@ -84,16 +84,17 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
 
 # Create a drc diffusion pipeline
 def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_type = 'CUB', log_data=False,resample_t1=False): 
-	r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
-		                                                resample_in_t1 = resample_t1, 
-		                                                log_data = log_data,
-		                                                correct_susceptibility = True,
-		                                                dwi_interp_type = dwi_interp_type,
-		                                                t1_mask_provided = True,
-		                                                ref_b0_provided = False,
-																										wls_tensor_fit = False,
-		                                                model = args.model,
-                                                    set_op_basename = True)
+	
+        r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
+                                                          resample_in_t1 = resample_t1, 
+                                                          log_data = log_data,
+                                                          correct_susceptibility = True,
+                                                          dwi_interp_type = dwi_interp_type,
+                                                          t1_mask_provided = True,
+                                                          ref_b0_provided = False,
+                                                          wls_tensor_fit = False,
+                                                          model = args.model,
+                                                          set_op_basename = True)
 	r.base_dir = os.getcwd()
 
 
@@ -103,7 +104,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 
 	midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
 	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/',
-		                '/var/lib/midas/data/ppadti/images/ims-study/']
+                          '/var/lib/midas/data/ppadti/images/ims-study/']
 	midas2dicom.inputs.midas_dirs = database_paths
 
 	dg = pe.Node(nio.DataGrabber(outfields = ['dicom_files']), name='dg')
@@ -180,6 +181,8 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
 	r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 
+        # r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
+
 	return r
 
 help_message = \
@@ -227,9 +230,6 @@ if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
 r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=False)
-
-
-#r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 
 # Run the overall workflow
 # r.write_graph(graph2use='colored')
