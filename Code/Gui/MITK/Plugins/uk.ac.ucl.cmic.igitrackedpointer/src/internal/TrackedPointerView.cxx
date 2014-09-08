@@ -211,8 +211,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
-  if (   m_TipToProbeTransform != NULL
-      && probeToWorldTransform.IsNotNull()
+  if (   probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)
   {
     mitk::Point3D tipCoordinate;
@@ -221,7 +220,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
     tipCoordinate[1] = currentCoordinateInModelCoordinates[1];
     tipCoordinate[2] = currentCoordinateInModelCoordinates[2];
 
-    m_TrackedPointerManager->Update(m_TipToProbeTransform,
+    m_TrackedPointerManager->Update(*m_TipToProbeTransform,
                                     probeToWorldTransform,
                                     probeModel,              // The Geometry on this gets updated, so we surface model moving
                                     tipCoordinate            // This gets updated.

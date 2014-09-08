@@ -60,7 +60,7 @@ int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 
   mitk::TrackedPointerManager::Pointer manager = mitk::TrackedPointerManager::New();
   manager->Update(
-      tipToPointerTransform,
+      *tipToPointerTransform,
       pointerToWorldNode,
       surfaceNode,
       tip

@@ -109,7 +109,7 @@ bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string& fileName)
+vtkSmartPointer<vtkMatrix4x4> LoadVtkMatrix4x4FromFile(const std::string& fileName)
 {
   return niftk::LoadMatrix4x4FromFile(fileName, true);
 }

@@ -147,18 +147,12 @@ void TrackedPointerManager::ExecuteOperation(mitk::Operation* operation)
 
 //-----------------------------------------------------------------------------
 void TrackedPointerManager::Update(
-         const vtkMatrix4x4* tipToPointerTransform,
+         const vtkMatrix4x4& tipToPointerTransform,
          const mitk::DataNode::Pointer pointerToWorldNode,
          const mitk::DataNode::Pointer probeModel,
          mitk::Point3D& tipCoordinate
          )
 {
-  if (tipToPointerTransform == NULL)
-  {
-    MITK_ERROR << "TrackedPointerManager::Update, invalid tipToPointerTransform";
-    return;
-  }
-
   mitk::CoordinateAxesData::Pointer pointerToWorld = dynamic_cast<mitk::CoordinateAxesData*>(pointerToWorldNode->GetData());
   if (pointerToWorld.IsNull())
   {
@@ -172,7 +166,7 @@ void TrackedPointerManager::Update(
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   combinedTransform->Identity();
 
-  combinedTransform->Multiply4x4(pointerToWorldTransform, tipToPointerTransform, combinedTransform);
+  combinedTransform->Multiply4x4(pointerToWorldTransform, &tipToPointerTransform, combinedTransform);
 
   if (probeModel.IsNotNull())
   {

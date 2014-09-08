@@ -54,9 +54,9 @@ void QmitkIGITrackerSource::SetPreMultiplyMatrix(const vtkMatrix4x4& mat)
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* QmitkIGITrackerSource::ClonePreMultiplyMatrix()
+vtkSmartPointer<vtkMatrix4x4> QmitkIGITrackerSource::ClonePreMultiplyMatrix()
 {
-  vtkMatrix4x4 *tmp = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
   tmp->DeepCopy(m_PreMultiplyMatrix);
   return tmp;
 }
@@ -70,16 +70,16 @@ void QmitkIGITrackerSource::SetPostMultiplyMatrix(const vtkMatrix4x4& mat)
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* QmitkIGITrackerSource::ClonePostMultiplyMatrix()
+vtkSmartPointer<vtkMatrix4x4> QmitkIGITrackerSource::ClonePostMultiplyMatrix()
 {
-  vtkMatrix4x4 *tmp = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
   tmp->DeepCopy(m_PostMultiplyMatrix);
   return tmp;
 }
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* QmitkIGITrackerSource::CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform)
+vtkSmartPointer<vtkMatrix4x4> QmitkIGITrackerSource::CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform)
 {
   vtkSmartPointer<vtkMatrix4x4> vtkMatrixFromTracker = vtkSmartPointer<vtkMatrix4x4>::New();
   for (int i = 0; i < 4; i++)
@@ -93,7 +93,7 @@ vtkMatrix4x4* QmitkIGITrackerSource::CombineTransformationsWithPreAndPost(const 
   vtkSmartPointer<vtkMatrix4x4> tmp1 = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Multiply4x4(vtkMatrixFromTracker, this->m_PreMultiplyMatrix, tmp1);
 
-  vtkMatrix4x4* combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Multiply4x4(this->m_PostMultiplyMatrix, tmp1, combinedTransform);
 
   return combinedTransform;

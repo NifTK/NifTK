@@ -39,7 +39,7 @@ TrackedImageCommand::~TrackedImageCommand()
 //-----------------------------------------------------------------------------
 void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
                                  const mitk::DataNode::Pointer trackingSensorToTrackerNode,
-                                 const vtkMatrix4x4* imageToTrackingSensor,
+                                 const vtkMatrix4x4& imageToTrackingSensor,
                                  const mitk::Point2D& imageScaling
                                  )
 {
@@ -56,19 +56,13 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     return;
   }
 
-  if (imageToTrackingSensor == NULL)
-  {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid imageToTrackingSensor";
-    return;
-  }
-
   vtkSmartPointer<vtkMatrix4x4> trackingSensorToWorldTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   trackingSensorToWorld->GetVtkMatrix(*trackingSensorToWorldTransform);
 
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   combinedTransform->Identity();
 
-  combinedTransform->Multiply4x4(trackingSensorToWorldTransform, imageToTrackingSensor, combinedTransform);
+  combinedTransform->Multiply4x4(trackingSensorToWorldTransform, &imageToTrackingSensor, combinedTransform);
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
   if (image.IsNotNull())
