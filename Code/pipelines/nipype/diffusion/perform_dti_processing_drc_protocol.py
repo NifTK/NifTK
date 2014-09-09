@@ -15,7 +15,7 @@ import os
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
 
-def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
+def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_files):
 
     import os, glob, sys, errno
     import nipype.interfaces.fsl as fsl
@@ -42,14 +42,15 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
         sys.exit(errno.EIO)
 
     for bvals_file in input_bvals:
-        dwi_base, _ = os.path.splitext(bvals_file)
-        dwi_file = dwi_base + '.nii.gz'
-        if not os.path.exists(dwi_file):
-            dwi_file = dwi_base + '.nii'
-        if not os.path.exists(dwi_file):
-            print 'I/O The DWI file with base ', dwi_base, ' does not exist, exiting.'
-            sys.exit(errno.EIO)
-        dwis_files.append(dwi_file)
+        if ('isos' in bvals_file) and ('001.bval' in bvals_file):
+            dwi_base, _ = os.path.splitext(bvals_file)
+            dwi_file = dwi_base + '.nii.gz'
+            if not os.path.exists(dwi_file):
+                dwi_file = dwi_base + '.nii'
+            if not os.path.exists(dwi_file):
+                print 'I/O The DWI file with base ', dwi_base, ' does not exist, exiting.'
+                sys.exit(errno.EIO)
+            dwis_files.append(dwi_file)
 
     merger = fsl.Merge(dimension = 't')
     merger.inputs.in_files = dwis_files
@@ -59,6 +60,7 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files):
     bvecs = merge_vector_files(input_bvecs)
 
     fms = glob.glob(input_path + os.sep + '*fieldmap*.nii*')
+    fms.sort()
     if len(fms) == 0:
         print 'I/O Could not find any field map image in ', input_path, ', exiting.'
         sys.exit(errno.EIO)
@@ -103,8 +105,9 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	infosource.iterables = ('subject_id', midas_code)
 
 	midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
-	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/',
-                          '/var/lib/midas/data/ppadti/images/ims-study/']
+
+	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/']#,
+		               # '/var/lib/midas/data/ppadti/images/ims-study/']
 	midas2dicom.inputs.midas_dirs = database_paths
 
 	dg = pe.Node(nio.DataGrabber(outfields = ['dicom_files']), name='dg')
@@ -117,9 +120,9 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	dcm2nii.inputs.gzip_output = True
 	dcm2nii.inputs.anonymize = False
 	dcm2nii.inputs.reorient = True
-	dcm2nii.inputs.reorient_and_crop = False
+	dcm2nii.inputs.reorient_and_crop = True
 
-	find_and_merge_dwis = pe.Node(interface = niu.Function(input_names = ['input_bvals', 'input_bvecs', 'input_files'],
+	find_and_merge_dwis = pe.Node(interface = niu.Function(input_names = ['input_bvals', 'input_bvecs', 'input_files', 'reoriented_files'],
 		                                                     output_names = ['dwis', 'bvals', 'bvecs', 'fieldmapmag', 'fieldmapphase', 't1'],
 		                                                     function = find_and_merge_dwi_data),
 		                            name = 'find_and_merge_dwis')
@@ -143,6 +146,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(dcm2nii, 'converted_files', find_and_merge_dwis, 'input_files')
 	r.connect(dcm2nii, 'bvals', find_and_merge_dwis, 'input_bvals')
 	r.connect(dcm2nii, 'bvecs', find_and_merge_dwis, 'input_bvecs')
+	r.connect(dcm2nii, 'reoriented_files', find_and_merge_dwis, 'reoriented_files')
 	r.connect(find_and_merge_dwis, 't1', mni_to_input, 'ref_file')
 	r.connect(find_and_merge_dwis, 't1', mask_resample, 'ref_file')
 	r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
@@ -216,11 +220,9 @@ parser.add_argument('-o', '--output',
                     default='results')
 parser.add_argument('-r', '--resample-t1',
                     dest='resample_t1',
-                    metavar='resample_t1',
                     help='Resample the outputs in the T1 space',
                     required=False,
-                    type=int,
-                    default=0)
+                    action='store_true')
 
 args = parser.parse_args()
 
@@ -229,7 +231,7 @@ result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=False)
+r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=args.resample_t1)
 
 # Run the overall workflow
 # r.write_graph(graph2use='colored')
@@ -238,4 +240,4 @@ if not qsub_exec == None:
     qsubargs='-l h_rt=02:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
     r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
-    r.run(plugin='MultiProc')
+    r.run(plugin='MultiProc', plugin_args={'n_procs' : 10})

@@ -363,9 +363,10 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     #############################################################
     # Set the op basename for the tensor
     if set_op_basename == True:
-    	  workflow.connect(input_node, 'op_basename', diffusion_model_fitting_tensor, 'op_basename')
+        workflow.connect(input_node, 'op_basename', diffusion_model_fitting_tensor, 'op_basename')
     else:
         diffusion_model_fitting_tensor.inputs.op_basename = 'dti'
+        
 
     if correct_susceptibility == True:
         # If we're correcting for susceptibility distortions, need to divide by the
@@ -405,7 +406,11 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         if (model == 'tensor' or model == 'both'):
             resamp_tensors = pe.Node(niftyreg.RegResample(), name='resamp_tensors')
             resamp_tensors.inputs.tensor_flag = True
-            dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')        
+            dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')
+            if set_op_basename == True:
+                workflow.connect(input_node, 'op_basename', dwi_tool, 'op_basename')
+            else:
+                dwi_tool.inputs.op_basename = 'dti'     
             workflow.connect(input_node, 'in_t1_file', resamp_tensors, 'ref_file')
             workflow.connect(diffusion_model_fitting_tensor, 'tenmap_file', resamp_tensors, 'flo_file')
             workflow.connect(inv_T1_aff, 'out_file', resamp_tensors, 'trans_file')

@@ -41,6 +41,7 @@ def convert_midas2_dicom(midas_code, midas_dirs):
 
     dicom_file = subprocess.check_output(command.split())
     dicom_dir = os.path.dirname(dicom_file)
+    print "Dicom directory is: "+dicom_dir
     # return the directory
     return dicom_dir
 
