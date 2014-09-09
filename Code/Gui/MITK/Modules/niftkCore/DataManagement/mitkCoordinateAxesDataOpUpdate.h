@@ -34,7 +34,7 @@ public:
       );
   ~CoordinateAxesDataOpUpdate();
 
-  vtkMatrix4x4* GetMatrix() const { return m_Matrix; }
+  vtkSmartPointer<vtkMatrix4x4> GetMatrix() const;
   std::string GetNodeName() const { return m_NodeName; }
 
 private:

@@ -23,7 +23,7 @@
 QmitkMatrixWidget::QmitkMatrixWidget(QWidget *parent)
 {
   setupUi(this);
-  m_Matrix = vtkMatrix4x4::New();
+  m_Matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_Matrix->Identity();
   m_MatrixWidget->setEditable(false);
   m_MatrixWidget->setRange(-1e10, 1e10);
@@ -101,10 +101,10 @@ void QmitkMatrixWidget::SetMatrix(const vtkMatrix4x4& matrix)
 
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* QmitkMatrixWidget::CloneMatrix() const
+vtkSmartPointer<vtkMatrix4x4> QmitkMatrixWidget::CloneMatrix() const
 {
-  vtkMatrix4x4* tmp = vtkMatrix4x4::New();
-  tmp->DeepCopy(this->m_Matrix);
-  return tmp;
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+  result->DeepCopy(this->m_Matrix);
+  return result;
 }
 

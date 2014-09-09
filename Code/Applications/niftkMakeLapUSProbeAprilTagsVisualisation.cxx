@@ -50,56 +50,56 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  vtkSmartPointer<vtkPNGReader> imageReader = vtkPNGReader::New();
+  vtkSmartPointer<vtkPNGReader> imageReader = vtkSmartPointer<vtkPNGReader>::New();
   imageReader->SetFileName(texture.c_str());
   imageReader->Update();
 
   std::cout << "Loaded " << texture << std::endl;
 
-  vtkSmartPointer<vtkPolyDataReader> modelReader = vtkPolyDataReader::New();
+  vtkSmartPointer<vtkPolyDataReader> modelReader = vtkSmartPointer<vtkPolyDataReader>::New();
   modelReader->SetFileName(modelForVisualisation.c_str());
   modelReader->Update();
 
   std::cout << "Loaded " << modelForVisualisation << std::endl;
 
-  vtkSmartPointer<vtkPolyDataReader> modelForTrackingReader = vtkPolyDataReader::New();
+  vtkSmartPointer<vtkPolyDataReader> modelForTrackingReader = vtkSmartPointer<vtkPolyDataReader>::New();
   modelForTrackingReader->SetFileName(modelForTracking.c_str());
   modelForTrackingReader->Update();
 
   std::cout << "Loaded " << modelForTracking << std::endl;
 
-  vtkSmartPointer<vtkTexture> text = vtkTexture::New();
+  vtkSmartPointer<vtkTexture> text = vtkSmartPointer<vtkTexture>::New();
   text->SetInputConnection(imageReader->GetOutputPort());
   text->InterpolateOn();
 
-  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputConnection(modelReader->GetOutputPort());
   mapper->ScalarVisibilityOff();
 
-  vtkSmartPointer<vtkActor> actor = vtkActor::New();
+  vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
   actor->SetMapper(mapper);
   actor->SetTexture(text);
   actor->GetProperty()->BackfaceCullingOn();
 
-  vtkSmartPointer<vtkSphereSource> sphereForGlyph = vtkSphereSource::New();
+  vtkSmartPointer<vtkSphereSource> sphereForGlyph = vtkSmartPointer<vtkSphereSource>::New();
   sphereForGlyph->SetRadius(0.25);
 
-  vtkSmartPointer<vtkGlyph3D> glyph = vtkGlyph3D::New();
+  vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
   glyph->SetSourceData(sphereForGlyph->GetOutput());
   glyph->SetInputData(modelForTrackingReader->GetOutput());
   glyph->SetScaleModeToDataScalingOff();
   //glyph->SetScaleFactor(0.01);
   //glyph->SetScaleModeToScaleByScalar();
 
-  vtkSmartPointer<vtkPolyDataMapper> trackingModelMapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> trackingModelMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   trackingModelMapper->SetInputConnection(glyph->GetOutputPort());
 
-  vtkSmartPointer<vtkActor> trackingModelActor = vtkActor::New();
+  vtkSmartPointer<vtkActor> trackingModelActor = vtkSmartPointer<vtkActor>::New();
   trackingModelActor->SetMapper(trackingModelMapper);
   trackingModelActor->GetProperty()->BackfaceCullingOn();
 
-  vtkSmartPointer<vtkRenderer> renderer = vtkRenderer::New();
-  vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
+  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+  vtkSmartPointer<vtkRenderWindow> renWin = vtkSmartPointer<vtkRenderWindow>::New();
   renWin->SetSize(512, 512);
   renWin->AddRenderer(renderer);
 
@@ -110,10 +110,10 @@ int main(int argc, char** argv)
 
   renWin->Render();
 
-  vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkRenderWindowInteractor::New();
+  vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
   iren->SetRenderWindow(renWin);
 
-  vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkInteractorStyleTrackballCamera::New();
+  vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
   iren->SetInteractorStyle(istyle);
 
   iren->Initialize();

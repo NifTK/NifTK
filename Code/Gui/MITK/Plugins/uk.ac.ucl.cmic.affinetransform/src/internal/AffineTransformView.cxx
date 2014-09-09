@@ -656,7 +656,7 @@ void AffineTransformView::ResetUIValues()
   SetUIValues(affineTransformParametersProperty);
 
   // Update the matrix view
-  vtkSmartPointer<vtkMatrix4x4> identity = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> identity = vtkSmartPointer<vtkMatrix4x4>::New();
   identity->Identity();
 
   for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)

@@ -105,7 +105,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate(const std::string& modelInputF
     mitkThrow() << "There must be the same number of hand (e.g. laparoscope) tracking matrices as the number of sets of reconstucted camera points." << std::endl;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   calibrationMatrix->Identity();
 
   this->Calibrate(
@@ -172,10 +172,10 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
 
   for (unsigned int i = 0; i < cameraPoints.size(); i++)
   {
-    vtkSmartPointer<vtkMatrix4x4> trackingTransform = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> trackingTransform = vtkSmartPointer<vtkMatrix4x4>::New();
     trackingTransform->Identity();
 
-    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     registrationMatrix->Identity();
 
     if (isModelTracking)

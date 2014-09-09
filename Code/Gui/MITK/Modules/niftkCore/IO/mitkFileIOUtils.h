@@ -17,6 +17,7 @@
 
 #include "niftkCoreExports.h"
 #include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 #include <mitkImage.h>
 #include <mitkVector.h>
 #include <mitkPointSet.h>
@@ -42,9 +43,9 @@ NIFTKCORE_EXPORT bool Load3DPointFromFile(const std::string& fileName, mitk::Poi
 /**
  * \brief Load a plain text file of 4 rows of 4 space separated numbers into a vtkMatrix4x4.  
  * \param fileName full path of file name
- * \return vtkMatrix4x4* that the caller is responsible for
+ * \return vtkSmartPointer<vtkMatrix4x4> that the caller is responsible for
  */
-NIFTKCORE_EXPORT vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string &fileName);
+NIFTKCORE_EXPORT vtkSmartPointer<vtkMatrix4x4> LoadVtkMatrix4x4FromFile(const std::string &fileName);
 
 /**
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.

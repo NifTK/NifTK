@@ -193,7 +193,7 @@ extern "C++" NIFTKVTK_WINEXPORT bool SaveMatrix4x4ToFile (const std::string& fil
  * \brief Loads the matrix from file, or else creates an Identity matrix, and the caller is responsible for deallocation.
  * \param fileName
  */
-extern "C++" NIFTKVTK_WINEXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
+extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkMatrix4x4> LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
 
 /**
  * \brief Checks matrices for equality.

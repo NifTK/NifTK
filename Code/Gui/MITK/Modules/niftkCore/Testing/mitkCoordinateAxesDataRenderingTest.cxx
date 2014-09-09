@@ -45,7 +45,7 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   axesNode->SetIntProperty("size", 1);
   axesNode->SetBoolProperty("show text", true);
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   matrix->Identity();
   axes->SetVtkMatrix(*matrix);
 

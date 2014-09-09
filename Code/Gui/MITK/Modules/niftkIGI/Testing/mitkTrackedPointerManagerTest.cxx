@@ -31,15 +31,15 @@ int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 {
 
   double trackingMatrixArray[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0, 0, 1};
-  vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   trackingMatrix->DeepCopy(trackingMatrixArray);
 
   double tipToPointerArray[16] = {17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 0, 0, 0, 1};
-  vtkSmartPointer<vtkMatrix4x4> tipToPointerTransform = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> tipToPointerTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   tipToPointerTransform->DeepCopy(tipToPointerArray);
 
   double expectedMatrixArray[16] = {134, 140, 146, 156, 386, 404, 422, 448, 638, 668, 698, 740, 0, 0, 0, 1};
-  vtkSmartPointer<vtkMatrix4x4> expectdMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> expectdMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   expectdMatrix->DeepCopy(expectedMatrixArray);
 
   mitk::CoordinateAxesData::Pointer coords = mitk::CoordinateAxesData::New();
@@ -60,7 +60,7 @@ int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 
   mitk::TrackedPointerManager::Pointer manager = mitk::TrackedPointerManager::New();
   manager->Update(
-      tipToPointerTransform,
+      *tipToPointerTransform,
       pointerToWorldNode,
       surfaceNode,
       tip
@@ -78,7 +78,7 @@ int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 
   // Check that the matrix was set onto the surface.
   vtkLinearTransform *surfaceGeometryTransform = surface->GetGeometry()->GetVtkTransform();
-  vtkSmartPointer<vtkMatrix4x4> surfaceGeometryTransformMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> surfaceGeometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   surfaceGeometryTransform->GetMatrix(surfaceGeometryTransformMatrix);
 
   for (int i = 0; i < 4; i++)

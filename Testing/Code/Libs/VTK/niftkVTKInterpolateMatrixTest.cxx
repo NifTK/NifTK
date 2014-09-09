@@ -40,7 +40,7 @@ int niftkVTKInterpolateMatrixTest ( int argc, char * argv[] )
   double proportion = atof(argv[3]);
   vtkSmartPointer<vtkMatrix4x4> expected = niftk::LoadMatrix4x4FromFile(argv[4]);
 
-  vtkSmartPointer<vtkMatrix4x4> actual = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> actual = vtkSmartPointer<vtkMatrix4x4>::New();
 
   niftk::InterpolateTransformationMatrix(*m1, *m2, proportion, *actual);
   if (!niftk::MatricesAreEqual(*expected, *actual))
