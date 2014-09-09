@@ -270,7 +270,7 @@ then
   download_from_github commontk $project $version
 elif [ $project = NiftySeg ]
 then
-  download_from_sourceforge_svn $project $version 
+  download_from_sourceforge_git2 $project $version
 elif [ $project = NiftyReg ]
 then
   download_from_sourceforge_git2 $project $version
