@@ -51,6 +51,10 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
                 print 'I/O The DWI file with base ', dwi_base, ' does not exist, exiting.'
                 sys.exit(errno.EIO)
             dwis_files.append(dwi_file)
+        else:
+            dwi_base, _ = os.path.splitext(bvals_file)
+            input_bvals.remove(dwi_base+'.bval')
+            input_bvecs.remove(dwi_base+'.bvec')
 
     merger = fsl.Merge(dimension = 't')
     merger.inputs.in_files = dwis_files
@@ -231,7 +235,13 @@ result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-r = create_drc_diffusion_processing_workflow(args.midas_code, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=args.resample_t1)
+# Check if some images have already been processed, and if so, remove them from the analysis
+codes = []
+for code in args.midas_code:
+    if not os.path.exists(result_dir+'/'+code+'_tenmap2_res.nii.gz'):
+        codes.append(code)
+print codes
+r = create_drc_diffusion_processing_workflow(codes, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=args.resample_t1)
 
 # Run the overall workflow
 # r.write_graph(graph2use='colored')
