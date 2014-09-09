@@ -32,12 +32,14 @@ GoldStandardPoint::GoldStandardPoint()
 , m_Point (cv::Point2d( std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()))
 {}
 
+
 //-----------------------------------------------------------------------------
 GoldStandardPoint::GoldStandardPoint(unsigned int framenumber, int index, cv::Point2d point)
 : m_FrameNumber(framenumber)
 , m_Index (index)
 , m_Point (point)
 {}
+
 
 //-----------------------------------------------------------------------------
 GoldStandardPoint::GoldStandardPoint( std::istream &is)
@@ -83,6 +85,7 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
   }
 }
 
+
 //-----------------------------------------------------------------------------
 std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
 {
@@ -117,6 +120,7 @@ std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
   return is;
 }
 
+
 //-----------------------------------------------------------------------------
 bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
 {
@@ -130,6 +134,7 @@ bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
   }
 }
 
+
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint()
 : m_Point ( cv::Point3d(std::numeric_limits<double>::infinity(),
@@ -137,22 +142,28 @@ WorldPoint::WorldPoint()
                         std::numeric_limits<double>::infinity()) )
 , m_Scalar (cv::Scalar(255,0,0))
 {}
+
+
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint(cv::Point3d point, cv::Scalar scalar)
 : m_Point ( point )
 , m_Scalar ( scalar )
 {}
+
+
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint(cv::Point3d point)
 : m_Point ( point )
 , m_Scalar (cv::Scalar(255,0,0))
 {}
 
+
 //-----------------------------------------------------------------------------
 WorldPointsWithTimingError::WorldPointsWithTimingError()
 : m_Points ()
 , m_TimingError ( 0 )
 {}
+
 
 //-----------------------------------------------------------------------------
 WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldPoint> points,
@@ -161,11 +172,13 @@ WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldP
 , m_TimingError ( timingError )
 {}
 
+
 //-----------------------------------------------------------------------------
 WorldPointsWithTimingError::WorldPointsWithTimingError(std::vector <mitk::WorldPoint> points)
 : m_Points ( points )
 , m_TimingError (0)
 {}
+
 
 //-----------------------------------------------------------------------------
 ProjectedPointPair::ProjectedPointPair()
@@ -173,11 +186,13 @@ ProjectedPointPair::ProjectedPointPair()
 , m_Right (cv::Point2d(std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN()))
 {}
 
+
 //-----------------------------------------------------------------------------
 ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
 : m_Left (left)
 , m_Right (right)
 {}
+
 
 //-----------------------------------------------------------------------------
 bool ProjectedPointPair::LeftNaNOrInf()
@@ -195,6 +210,7 @@ bool ProjectedPointPair::LeftNaNOrInf()
   }    
 }
 
+
 //-----------------------------------------------------------------------------
 bool WorldPoint::IsNaN()
 {
@@ -209,6 +225,8 @@ bool WorldPoint::IsNaN()
     return false;
   }    
 }
+
+
 //-----------------------------------------------------------------------------
 bool ProjectedPointPair::RightNaNOrInf()
 {
@@ -225,11 +243,13 @@ bool ProjectedPointPair::RightNaNOrInf()
   }    
 }
 
+
 //-----------------------------------------------------------------------------
 ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError()
 : m_Points()
 , m_TimingError(0)
 {}
+
 
 //-----------------------------------------------------------------------------
 ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
@@ -238,6 +258,7 @@ ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
 , m_TimingError(timingError)
 {}
 
+
 //-----------------------------------------------------------------------------
 ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
     std::vector <mitk::ProjectedPointPair> points)
@@ -245,9 +266,11 @@ ProjectedPointPairsWithTimingError::ProjectedPointPairsWithTimingError(
 , m_TimingError(0)
 {}
 
+
 //-----------------------------------------------------------------------------
 VideoFrame::VideoFrame()
 {}
+
 
 //-----------------------------------------------------------------------------
 VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFile)
@@ -306,6 +329,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   return;
 }
 
+
 //-----------------------------------------------------------------------------
 bool VideoFrame::WriteToFile ( std::string prefix )
 {
@@ -320,6 +344,7 @@ bool VideoFrame::WriteToFile ( std::string prefix )
   }
   return cv::imwrite( filename, m_VideoData);
 }
+
 
 //-----------------------------------------------------------------------------
 void VideoFrame::OutputVideoInformation (cv::VideoCapture * capture)

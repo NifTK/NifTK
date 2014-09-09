@@ -12,27 +12,60 @@
 
 =============================================================================*/
 
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTimeStampsContainer.h"
 #include <algorithm>
 #include <mitkExceptionMacro.h>
 #include <sstream>
+#include <vector>
+#include <cassert>
 
 namespace mitk {
 
 
 //---------------------------------------------------------------------------
-void TrackingMatrixTimeStamps::Sort()
+void TimeStampsContainer::Insert(const TimeStamp& timeStamp)
+{
+  m_TimeStamps.push_back(timeStamp);
+}
+
+
+//---------------------------------------------------------------------------
+TimeStampsContainer::TimeStamp TimeStampsContainer::GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const
+{
+  assert(frameNumber >= 0);
+  assert(frameNumber < m_TimeStamps.size());
+  return m_TimeStamps[frameNumber];
+}
+
+
+//---------------------------------------------------------------------------
+void TimeStampsContainer::Sort()
 {
   std::sort(m_TimeStamps.begin(), m_TimeStamps.end());
 }
 
 
 //---------------------------------------------------------------------------
-int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp)
+void TimeStampsContainer::Clear()
 {
-  int result = -1;
+  m_TimeStamps.clear();
+}
 
-  for (unsigned long int i = 0; i < m_TimeStamps.size(); i++)
+
+//---------------------------------------------------------------------------
+std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetSize() const
+{
+  return m_TimeStamps.size();
+}
+
+
+//---------------------------------------------------------------------------
+std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetFrameNumber(const TimeStamp& timeStamp)
+{
+  std::vector<TimeStampsContainer::TimeStamp>::size_type result = -1;
+  std::vector<TimeStampsContainer::TimeStamp>::size_type i;
+
+  for (i = 0; i < m_TimeStamps.size(); i++)
   {
     if (m_TimeStamps[i] == timeStamp)
     {
@@ -46,9 +79,9 @@ int TrackingMatrixTimeStamps::GetFrameNumber(const unsigned long long& timeStamp
 
 
 //---------------------------------------------------------------------------
-bool TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& input,
-                                                     unsigned long long& before,
-                                                     unsigned long long& after,
+bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
+                                                     TimeStamp& before,
+                                                     TimeStamp& after,
                                                      double& proportion
                                                     )
 {
@@ -97,11 +130,11 @@ bool TrackingMatrixTimeStamps::GetBoundingTimeStamps(const unsigned long long& i
 
 
 //---------------------------------------------------------------------------
-unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (const unsigned long long& timestamp, long long *delta)
+unsigned long long TimeStampsContainer::GetNearestTimeStamp (const TimeStamp& timestamp, long long *delta)
 {
-  unsigned long long before = 0;
-  unsigned long long after = 0;
-  unsigned long long result = 0;
+  TimeStamp before = 0;
+  TimeStamp after = 0;
+  TimeStamp result = 0;
   double proportion = 0;
   bool isValid = false;
   long long diff = 0;

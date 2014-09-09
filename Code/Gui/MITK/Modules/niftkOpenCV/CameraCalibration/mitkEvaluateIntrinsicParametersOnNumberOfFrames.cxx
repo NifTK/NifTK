@@ -157,7 +157,7 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::ReadTimeStampFromLogFile()
 //---------------------------------------------------------------------------
 void EvaluateIntrinsicParametersOnNumberOfFrames::MatchingVideoFramesToTrackingMatrix()
 {     
-  TrackingMatrixTimeStamps mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
+  TimeStampsContainer mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
 
   long long timingError;
   unsigned long long targetTimeStamp; 
@@ -571,8 +571,8 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::PairewiseFiles(std::vector<std
                                                                  std::vector<std::string> &fnvec_robj, 
                                                                  std::vector<std::string> &fnvec_mtx)
 {     
-  TrackingMatrixTimeStamps mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
-  TrackingMatrixTimeStamps imgStamps = mitk::FindTrackingTimeStamps(m_LeftDirectory + "\\img" );
+  TimeStampsContainer mtxTimeStamps = mitk::FindTrackingTimeStamps(m_InputMatrixDirectory);
+  TimeStampsContainer imgStamps = mitk::FindTrackingTimeStamps(m_LeftDirectory + "\\img" );
 
   m_MatchedVideoFrames.clear();
   m_MatchedTrackingMatrix.clear();
@@ -581,32 +581,32 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::PairewiseFiles(std::vector<std
   unsigned long long targetTimeStamp; 
 
   int size;
-  if ( mtxTimeStamps.m_TimeStamps.size() < imgStamps.m_TimeStamps.size() )
+  if ( mtxTimeStamps.GetSize() < imgStamps.GetSize() )
   {
-    size = mtxTimeStamps.m_TimeStamps.size();
+    size = mtxTimeStamps.GetSize();
 
     for ( int i=0; i<size; i++ )
     {
-      targetTimeStamp = imgStamps.GetNearestTimeStamp(mtxTimeStamps.m_TimeStamps[i], &timingError);
+      targetTimeStamp = imgStamps.GetNearestTimeStamp(mtxTimeStamps.GetTimeStamp(i), &timingError);
 
       if ( timingError < m_AbsTrackerTimingError && timingError > -m_AbsTrackerTimingError )
       {
-        std::string matrixFileName = boost::lexical_cast<std::string>(mtxTimeStamps.m_TimeStamps[i]) + ".txt";
+        std::string matrixFileName = boost::lexical_cast<std::string>(mtxTimeStamps.GetTimeStamp(i)) + ".txt";
         std::string  matrixFileNameFull = m_InputMatrixDirectory + "\\" + matrixFileName;
         fnvec_mtx.push_back(matrixFileNameFull);
 
-        m_MatchedTrackingMatrix.push_back(mtxTimeStamps.m_TimeStamps[i]);
+        m_MatchedTrackingMatrix.push_back(mtxTimeStamps.GetTimeStamp(i));
         m_MatchedVideoFrames.push_back(targetTimeStamp);
       }
     }
   }
   else
   {
-    size = imgStamps.m_TimeStamps.size();
+    size = imgStamps.GetSize();
 
     for ( int i=0; i<size; i++ )
     {
-      targetTimeStamp = mtxTimeStamps.GetNearestTimeStamp(imgStamps.m_TimeStamps[i], &timingError);
+      targetTimeStamp = mtxTimeStamps.GetNearestTimeStamp(imgStamps.GetTimeStamp(i), &timingError);
 
       if ( timingError < m_AbsTrackerTimingError && timingError > -m_AbsTrackerTimingError )
       {
@@ -615,7 +615,7 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::PairewiseFiles(std::vector<std
         fnvec_mtx.push_back(matrixFileNameFull);
 
         m_MatchedTrackingMatrix.push_back(targetTimeStamp);
-        m_MatchedVideoFrames.push_back(imgStamps.m_TimeStamps[i]); 
+        m_MatchedVideoFrames.push_back(imgStamps.GetTimeStamp(i));
       }
     } 
   }

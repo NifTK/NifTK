@@ -137,10 +137,11 @@ if(SlicerExecutionModel_FOUND)
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages
+      niftkUltrasoundPinCalibrationClicker
       niftkUltrasoundPinCalibration
-      niftkUltrasoundPinCalibrationSorter
-      niftkUltrasoundPointerCalibration
-      niftkUltrasoundPinCalibrationEvaluation
+      niftkVideoHandEyeByCrossCalibration
+      #niftkUltrasoundPointerCalibration
+      #niftkUltrasoundPinCalibrationEvaluation
       niftkUltrasoundTransformAndImageMerger
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
@@ -154,6 +155,7 @@ if(SlicerExecutionModel_FOUND)
       niftkAverageTrackingMatrices
       niftkAverageStationaryChessboards
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
+      niftkMakeChessBoardPointSet
     )
     
     if(BUILD_PCL)

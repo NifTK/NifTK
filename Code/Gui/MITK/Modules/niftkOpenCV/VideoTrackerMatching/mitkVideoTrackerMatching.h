@@ -22,7 +22,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include "mitkTrackingMatrices.h"
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -109,8 +109,8 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
-  TrackingMatrixTimeStamps              m_VideoTimeStamps; 
+  std::vector<TimeStampsContainer> m_TimeStampsContainer;
+  TimeStampsContainer              m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
   std::string                           m_Directory;
@@ -133,7 +133,7 @@ private:
 
   std::vector<std::string>          FindFrameMaps();
   void                              FindTrackingMatrixDirectories();
-  TrackingMatrixTimeStamps          FindTrackingTimeStamps(std::string directory);
+  TimeStampsContainer          FindTrackingTimeStamps(std::string directory);
   bool                              CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                              ProcessFrameMapFile();
   bool                              CheckTimingErrorStats();

@@ -12,25 +12,25 @@
 
 =============================================================================*/
 
-#ifndef itkUltrasoundPinCalibrationCostFunction_h
-#define itkUltrasoundPinCalibrationCostFunction_h
+#ifndef itkVideoHandEyeCalibrationCostFunction_h
+#define itkVideoHandEyeCalibrationCostFunction_h
 
 #include <itkInvariantPointCalibrationCostFunction.h>
 
 namespace itk {
 
 /**
- * \class UltrasoundPinCalibrationCostFunction
+ * \class VideoHandEyeCalibrationCostFunction
  * \brief Minimises the RMS error around a stationary invariant point.
  * \see itk::InvariantPointCalibrationCostFunction
- * \see itk::VideoHandEyeCalibrationCostFunction
+ * \see itk::UltrasoundPinCalibrationCostFunction
  */
-class UltrasoundPinCalibrationCostFunction : public itk::InvariantPointCalibrationCostFunction
+class VideoHandEyeCalibrationCostFunction : public itk::InvariantPointCalibrationCostFunction
 {
 
 public:
 
-  typedef UltrasoundPinCalibrationCostFunction       Self;
+  typedef VideoHandEyeCalibrationCostFunction        Self;
   typedef itk::InvariantPointCalibrationCostFunction Superclass;
   typedef itk::SmartPointer<Self>                    Pointer;
   typedef itk::SmartPointer<const Self>              ConstPointer;
@@ -41,12 +41,6 @@ public:
   typedef Superclass::DerivativeType                 DerivativeType;
   typedef Superclass::MeasureType                    MeasureType;
 
-  itkSetMacro(ScaleFactors, mitk::Point2D);
-  itkGetConstMacro(ScaleFactors, mitk::Point2D);
-
-  itkSetMacro(OptimiseScaleFactors, bool);
-  itkGetConstMacro(OptimiseScaleFactors, bool);
-
   /**
    * \see itk::InvariantPointCalibrationCostFunction::GetCalibrationTransformation().
    */
@@ -54,21 +48,13 @@ public:
 
 protected:
 
-  UltrasoundPinCalibrationCostFunction();
-  virtual ~UltrasoundPinCalibrationCostFunction();
+  VideoHandEyeCalibrationCostFunction();
+  virtual ~VideoHandEyeCalibrationCostFunction();
 
-  UltrasoundPinCalibrationCostFunction(const UltrasoundPinCalibrationCostFunction&); // Purposefully not implemented.
-  UltrasoundPinCalibrationCostFunction& operator=(const UltrasoundPinCalibrationCostFunction&); // Purposefully not implemented.
-
-  /**
-   * \brief Computes the scaling transformation.
-   */
-  cv::Matx44d GetScalingTransformation(const ParametersType & parameters) const;
+  VideoHandEyeCalibrationCostFunction(const VideoHandEyeCalibrationCostFunction&); // Purposefully not implemented.
+  VideoHandEyeCalibrationCostFunction& operator=(const VideoHandEyeCalibrationCostFunction&); // Purposefully not implemented.
 
 private:
-
-  mitk::Point2D m_ScaleFactors;
-  bool          m_OptimiseScaleFactors;
 
 };
 

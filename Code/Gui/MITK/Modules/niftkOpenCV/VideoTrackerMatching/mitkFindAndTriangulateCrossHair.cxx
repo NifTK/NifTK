@@ -16,6 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkTimeStampsContainer.h>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -63,8 +64,8 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 //-----------------------------------------------------------------------------
 FindAndTriangulateCrossHair::~FindAndTriangulateCrossHair()
 {
-
 }
+
 
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::Initialise(std::string directory, 
@@ -77,9 +78,9 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
   {
     mitk::LoadStereoCameraParametersFromDirectory
       ( calibrationParameterDirectory,
-      m_LeftIntrinsicMatrix,m_LeftDistortionVector,m_RightIntrinsicMatrix,
-      m_RightDistortionVector,m_RightToLeftRotationMatrix,
-      m_RightToLeftTranslationVector,m_LeftCameraToTracker);
+      m_LeftIntrinsicMatrix, m_LeftDistortionVector, m_RightIntrinsicMatrix,
+      m_RightDistortionVector, m_RightToLeftRotationMatrix,
+      m_RightToLeftTranslationVector, m_LeftCameraToTracker);
   }
   catch ( int e )
   {
@@ -146,11 +147,14 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
 
 }
 
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::SetVisualise ( bool visualise )
 {
   m_Visualise = visualise;
 }
+
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::SetSaveVideo ( bool savevideo )
 {
@@ -158,10 +162,13 @@ void FindAndTriangulateCrossHair::SetSaveVideo ( bool savevideo )
   {
     MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
   }
+
   m_SaveVideo = savevideo;
   m_InitOK = false;
   return;
 }
+
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::Triangulate()
 {
@@ -193,6 +200,8 @@ void FindAndTriangulateCrossHair::Triangulate()
   cv::Mat rightHough;
   m_ScreenPoints.clear();
   int terminator = m_TrackerMatcher->GetNumberOfFrames();
+  TimeStampsContainer::TimeStamp timeStamp;
+
   if ( m_FramesToProcess >= 0 ) 
   {
     terminator = m_FramesToProcess;
@@ -204,6 +213,7 @@ void FindAndTriangulateCrossHair::Triangulate()
     leftFrame = videoImage.clone();
     bool rightSuccess = m_Capture->read(videoImage);
     rightFrame = videoImage.clone();
+    m_TrackerMatcher->GetVideoFrame(framenumber, &timeStamp);
 
     mitk::ProjectedPointPair screenPoints;
     screenPoints.m_Left = cv::Point2d(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
@@ -233,6 +243,7 @@ void FindAndTriangulateCrossHair::Triangulate()
       std::vector <cv::Point2d> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
       screenPoints.m_Left = mitk::GetCentroid(leftIntersectionPoints,true);
       screenPoints.m_Right = mitk::GetCentroid(rightIntersectionPoints,true);
+      screenPoints.SetTimeStamp(timeStamp);
       //push_back twice because we're jumping two frames
       m_ScreenPoints.push_back(screenPoints);
       m_ScreenPoints.push_back(screenPoints);
@@ -288,6 +299,8 @@ void FindAndTriangulateCrossHair::Triangulate()
   TriangulatePoints();
   TransformPointsToWorld();
 }
+
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TriangulatePoints()
 {
@@ -311,6 +324,7 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
        0.0, m_VideoWidth, 0.0, m_VideoHeight, cropValue );
 }
 
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TransformPointsToWorld()
 {
@@ -326,7 +340,8 @@ void FindAndTriangulateCrossHair::TransformPointsToWorld()
     m_WorldPoints.push_back( m_TrackerMatcher->GetCameraTrackingMatrix(framenumber, NULL , m_TrackerIndex) * m_PointsInLeftLensCS[i]);
   }
 }
-                                          
+
+
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::SetFlipMatrices(bool state)
 {
@@ -335,18 +350,21 @@ void FindAndTriangulateCrossHair::SetFlipMatrices(bool state)
     MITK_ERROR << "Tried to set flip matrices before initialisation";
     return;
   }
+
   m_TrackerMatcher->SetFlipMatrices(state);
 }
 
+
 //-----------------------------------------------------------------------------
-void FindAndTriangulateCrossHair::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking)
+void FindAndTriangulateCrossHair::SetVideoLagMilliseconds ( unsigned long long videoLag, bool videoLeadsTracking)
 {
   if ( m_TrackerMatcher.IsNull()  || (! m_TrackerMatcher->IsReady()) )
   {
     MITK_ERROR << "Need to initialise before setting video lag";
     return;
   }
-  m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
+
+  m_TrackerMatcher->SetVideoLagMilliseconds (videoLag, videoLeadsTracking);
 }
 
 } // end namespace

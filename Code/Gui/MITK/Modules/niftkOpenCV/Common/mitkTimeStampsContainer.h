@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkTrackingMatrixTimeStamps_h
-#define mitkTrackingMatrixTimeStamps_h
+#ifndef mitkTimeStampsContainer_h
+#define mitkTimeStampsContainer_h
 
 #include "niftkOpenCVExports.h"
 #include <cv.h>
@@ -22,15 +22,21 @@ namespace mitk
 {
 
 /**
- * \class TrackingMatrixTimeStamps
+ * \class TimeStampsContainer
  * \brief Helper class that contains a vector of timestamps, that are assumed to be strictly increasing.
  *
- * See also mitkTrackingMatrixTimeStampsTest.cxx.
+ * See also mitkTimeStampsContainerTest.cxx.
  */
-class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
+class NIFTKOPENCV_EXPORT TimeStampsContainer
 {
 public:
-  std::vector<unsigned long long> m_TimeStamps;
+
+  typedef unsigned long long TimeStamp;
+
+  /**
+   * \brief Empties the list.
+   */
+  void Clear();
 
   /**
    * \brief Sorts the list.
@@ -38,16 +44,31 @@ public:
   void Sort();
 
   /**
+   * \brief Simply adds a TimeStamp to the list.
+   */
+  void Insert(const TimeStamp& timeStamp);
+
+  /**
+   * \brief Returns the time stamp at a given frameNumber.
+   */
+  TimeStamp GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const;
+
+  /**
+   * \brief Gets the number of timestamps.
+   */
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetSize() const;
+
+  /**
    * \brief Given a timeStamp in nanoseconds, will search the list for the corresponding array index, returning -1 if not found.
-   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[in] timeStamp in nano-seconds since Unix Epoch (UTC).
    * \return vector index number or -1 if not found.
    */
-  int GetFrameNumber(const unsigned long long& timestamp);
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStamp& timeStamp);
 
   /**
    * \brief Retrieves the timestamps before and after a given point.
    *
-   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[in] timeStamp in nano-seconds since Unix Epoch (UTC).
    * \param[out] before timestamp in nano-seconds since Unix Epoch (UTC).
    * \param[out] after timestamp in nano-seconds since Unix Epoch (UTC).
    * \param[out] proportion the fraction from [0 to 1] of what proportion the input timestamp is of the interval between before and after.
@@ -60,23 +81,28 @@ public:
    *   - If input exactly matches item in list, before = input, after = input, proportion = 0, return true;
    *   - Otherwise, before is timestamp just before, after is timestamp just after the given input, proportion is linear interpolation between timestamps, return true;
    */
-  bool GetBoundingTimeStamps(const unsigned long long& timestamp,
-                               unsigned long long& before,
-                               unsigned long long& after,
+  bool GetBoundingTimeStamps(const TimeStamp& timeStamp,
+                               TimeStamp& before,
+                               TimeStamp& after,
                                double& proportion
                               );
 
   /**
    * \brief Retrieves the closest timestamp, and if delta is non-null, will populate with the error.
    *
-   * \param[in] timestamp in nano-seconds since Unix Epoch (UTC).
+   * \param[in] timeStamp in nano-seconds since Unix Epoch (UTC).
    * \param[out] delta i.e. the number of nanoseconds between the requested timestamp, and the returned timestamp.
    * \return nearest timestamp
    *
    * Additional Spec:
    *   - If no timestamps, return 0, delta = 0 if provided
    */
-  unsigned long long GetNearestTimeStamp (const unsigned long long& timestamp , long long * delta = NULL );
+  TimeStamp GetNearestTimeStamp (const TimeStamp& timeStamp , long long * delta = NULL );
+
+private:
+
+  std::vector<TimeStamp> m_TimeStamps;
+
 };
 
 } // end namespace

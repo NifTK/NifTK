@@ -39,10 +39,10 @@ void Usage(char *exec)
     std::cout << "    -vx  <float> 1.0          Size of voxels in x dimension" << std::endl;
     std::cout << "    -vy  <float> 1.0          Size of voxels in y dimension" << std::endl;
     std::cout << "    -vz  <float> 1.0          Size of voxels in z dimension" << std::endl;
-    std::cout << "    -ox  <float> 0.0          X origin" << std::endl;    
+    std::cout << "    -ox  <float> 0.0          X origin" << std::endl;
     std::cout << "    -oy  <float> 0.0          Y origin" << std::endl;
     std::cout << "    -oz  <float> 0.0          Z origin" << std::endl;
-    std::cout << "    -o   <filename>           Ouput filename" << std::endl;
+    std::cout << "    -o   <filename>           Output filename" << std::endl;
     std::cout << "    -bv  <int>   0            Background value" << std::endl;
     std::cout << "    -mode [int]  0            Selects the mode of operation. See further parameters below." << std::endl;
     std::cout << "                              0 = generate cuboid" << std::endl;
@@ -52,8 +52,9 @@ void Usage(char *exec)
     std::cout << "                              4 - generate distance from centre image" << std::endl;
     std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
     std::cout << "                              6 - make calibration chessboard" << std::endl;
+    std::cout << "                              7 - make calibration chessboard with distant corner points" << std::endl;
     std::cout << "  " << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;  
+    std::cout << "*** [options]   ***" << std::endl << std::endl;
     std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
     std::cout << "" << std::endl;
     std::cout << "For mode:" << std::endl;
@@ -80,6 +81,9 @@ void Usage(char *exec)
     std::cout << "      none" << std::endl;
     std::cout << "  6" << std::endl;
     std::cout << "      none" << std::endl;
+    std::cout << "  7" << std::endl;
+    std::cout << "      -xs <int>    9            x-size of chessboard" << std::endl;
+    std::cout << "      -ys <int>    6            y-size of chessboard" << std::endl;
   }
 
 /**
@@ -87,7 +91,7 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
-  
+
   const    unsigned int    Dimension = 3;
   typedef  float           ScalarType;
 
@@ -113,7 +117,7 @@ int main(int argc, char** argv)
   int xstep=2;
   int ystep=2;
   int zstep=2;
-  
+
 
   // Parse command line args
   for(int i=1; i < argc; i++){
@@ -128,35 +132,35 @@ int main(int argc, char** argv)
     else if(strcmp(argv[i], "-nx") == 0){
       nx=atoi(argv[++i]);
       if (nx <= 0){
-	std::cerr << "Error: nx must be an integer value above 0" << std::endl;
-	return EXIT_FAILURE;
-	}
+        std::cerr << "Error: nx must be an integer value above 0" << std::endl;
+        return EXIT_FAILURE;
+      }
       std::cout << "Set -nx=" << niftk::ConvertToString(nx) << std::endl;
     }
     else if(strcmp(argv[i], "-ny") == 0){
       ny=atoi(argv[++i]);
       if (ny <= 0){
-	std::cerr << "Error: ny must be an integer value above 0" << std::endl;
-	return EXIT_FAILURE;
-	}
+        std::cerr << "Error: ny must be an integer value above 0" << std::endl;
+        return EXIT_FAILURE;
+      }
       std::cout << "Set -ny=" << niftk::ConvertToString(ny) << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "-nz") == 0){
       nz=atoi(argv[++i]);
       if (nz <= 0){
-	std::cerr << "Error: nz must be an integer value above 0" << std::endl;
-	return EXIT_FAILURE;
-	}
+        std::cerr << "Error: nz must be an integer value above 0" << std::endl;
+        return EXIT_FAILURE;
+      }
       std::cout << "Set -nz=" << niftk::ConvertToString(nz) << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "-bv") == 0){
       backgroundValue=atoi(argv[++i]);
       std::cout << "Set -bv=" << niftk::ConvertToString(backgroundValue) << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "-fv") == 0){
       foregroundValue=atoi(argv[++i]);
       std::cout << "Set -fv=" << niftk::ConvertToString(foregroundValue) << std::endl;
-    }    
+    }
     else if(strcmp(argv[i], "-vx") == 0){
       xdim=atof(argv[++i]);
       std::cout << "Set -vx=" << niftk::ConvertToString(xdim) << std::endl;
@@ -221,10 +225,10 @@ int main(int argc, char** argv)
     else {
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
       return -1;
-    }            
+    }
   }
 
-  if (mode < 0 || mode > 6)
+  if (mode < 0 || mode > 7)
   {
     std::cerr << "Invalid mode" << std::endl;
     return EXIT_FAILURE;
@@ -246,7 +250,7 @@ int main(int argc, char** argv)
   typedef ImageType::DirectionType          ImageDirectionType;
   typedef itk::ContinuousIndex<float, Dimension> ContinuousIndexType;
   typedef itk::Point<float, Dimension>           PointType;
-  
+
   ImageType::Pointer testImage = ImageType::New();
   ImageRegionType region;
 
@@ -266,7 +270,7 @@ int main(int argc, char** argv)
   origin[0] = xorigin;
   origin[1] = yorigin;
   origin[2] = zorigin;
-  
+
   ImageDirectionType directionType;
   if (userSuppliedDirection)
   {
@@ -433,10 +437,11 @@ int main(int argc, char** argv)
           }
       }
   }
-  else if (mode == 6)
+  else if (mode == 6 || mode == 7)
   {
     testImage->FillBuffer(255);
 
+    // First make chessboard
     for (int z = 0; z < nz; z++)
       {
         for (int y = 0; y < ny; y++)
@@ -457,9 +462,53 @@ int main(int argc, char** argv)
               }
           }
       }
+
+    // For mode 7, we blank (set to white=255) everything except
+    // the 2x2 square at each corner, and the specified size of chessboard in the middle.
+    float middleX = (nx-1)/2.0;
+    float middleY = (ny-1)/2.0;
+    int startX = middleX - (xstep/2.0) + 0.5;
+    int startY = middleY - (ystep/2.0) + 0.5;
+    int endX = startX + xstep - 1;
+    int endY = startY + ystep - 1;
+
+    std::cerr << "Matt, middleX=" << middleX << std::endl;
+    std::cerr << "Matt, middleY=" << middleY << std::endl;
+    std::cerr << "Matt, xstep=" << xstep << std::endl;
+    std::cerr << "Matt, ystep=" << ystep << std::endl;
+
+    std::cerr << "Blanking out all except corners and (" << startX << ", " << startY << ") to (" << endX << ", " << endY << ")" << std::endl;
+
+    for (int z = 0; z < nz; z++)
+      {
+        for (int y = 0; y < ny; y++)
+          {
+            for (int x = 0; x < nx; x++)
+              {
+                index[0] = x;
+                index[1] = y;
+                index[2] = z;
+
+                if (   (x < 2 && y < 2)
+                    || (x < 2 && y >= (ny-2))
+                    || (y < 2 && x >= (nx-2))
+                    || (x >= (nx-2) && y >= (ny-2))
+                    || (x >= startX && x <= endX && y >= startY && y <= endY)
+                    )
+                {
+                  // leave alone
+                }
+                else
+                {
+                  testImage->SetPixel(index, 255);
+                }
+              }
+          }
+      }
+
   }
 
-  if (mode != 6)
+  if (mode != 6 && mode != 7)
   {
     typedef itk::ImageFileWriter< ImageType  > ImageWriterType;
     ImageWriterType::Pointer writer = ImageWriterType::New();
@@ -491,6 +540,6 @@ int main(int argc, char** argv)
     imageWriter->SetInput(filter->GetOutput());
     imageWriter->Update();
   }
-  
+
   return 0;
 }

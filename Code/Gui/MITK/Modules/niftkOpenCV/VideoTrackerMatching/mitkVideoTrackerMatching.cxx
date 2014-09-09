@@ -65,9 +65,9 @@ void VideoTrackerMatching::Initialise(std::string directory)
     {
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        TrackingMatrixTimeStamps tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
-        MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
-        m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
+        TimeStampsContainer tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
+        MITK_INFO << "Found " << tempTimeStamps.GetSize() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
+        m_TimeStampsContainer.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
         cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
@@ -146,7 +146,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
 
   m_FrameNumbers.clear();
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
   {
     m_TrackingMatrices[i].m_TimingErrors.clear();
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
@@ -161,20 +161,20 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
        if ( parseSuccess )
       {
         m_FrameNumbers.push_back(frameNumber);
-        m_VideoTimeStamps.m_TimeStamps.push_back(timeStamp);
+        m_VideoTimeStamps.Insert(timeStamp);
         
-        for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+        for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
         {
           long long timingError;
           unsigned long long TargetTimeStamp; 
           if ( m_VideoLeadsTracking[i] )
           {
-            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
                 timeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
-            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
                 timeStamp - m_VideoLag[i], &timingError);
           }
           
@@ -375,13 +375,13 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
 }
 
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetVideoFrame ( unsigned int FrameNumber , unsigned long long * TimeStamp )
+cv::Mat VideoTrackerMatching::GetVideoFrame ( unsigned int frameNumber , unsigned long long * timeStamp )
 {
   //a dummy holder for the return matrix, This should be implemented properly
   cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
-  if ( TimeStamp != NULL )
+  if ( timeStamp != NULL )
   {
-    *TimeStamp = m_VideoTimeStamps.m_TimeStamps[FrameNumber];
+    *timeStamp = m_VideoTimeStamps.GetTimeStamp(frameNumber);
   }
   return returnMat;
 }
