@@ -106,6 +106,14 @@
       <default>10</default>
     </integer>
 
+    <float>
+      <name>squareSizeInmm</name>
+      <longflag>squareSizeInmm</longflag>
+      <description>The size in mm of each grid sqaure</description>
+      <label>The size in mm of each grid square</label>
+      <default>3.0</default>
+    </float>
+
     <boolean>
       <name>DontSortByDistance</name>
       <longflag>DontSortByDistance</longflag>

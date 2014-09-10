@@ -64,6 +64,10 @@ int main(int argc, char** argv)
     calibrationObject->SetFlipExtrinsic(FlipExtrin);
     calibrationObject->SetSortByDistance(SortByDistance);
     calibrationObject->SetSortByAngle(SortByAngle);
+    calibrationObject->SetNumberCornersWidth(NumberCornerWidth);
+    calibrationObject->SetNumberCornersHeight(NumberCornerHeight);
+    calibrationObject->SetSquareSizeInMillimetres(squareSizeInmm);
+
     if ( extrinsicInputDirectory.length() == 0 )
     {
       ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,

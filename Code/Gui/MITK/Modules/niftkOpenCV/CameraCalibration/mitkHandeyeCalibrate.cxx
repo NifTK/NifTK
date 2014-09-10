@@ -35,6 +35,9 @@ HandeyeCalibrate::HandeyeCalibrate()
 , m_CameraToMarker(cvCreateMat(4,4,CV_64FC1))
 , m_GridToWorld(cvCreateMat(4,4,CV_64FC1))
 , m_OutputDirectory("")
+, m_NumberCornersWidth(14)
+, m_NumberCornersHeight(10)
+, m_SquareSizeInMillimetres(3.0)
 {
 }
 
@@ -173,7 +176,10 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
       {
         for ( int j = 0 ; j < 2 ; j ++ ) 
         {  
-          cv::Point3d x = cv::Point3d (i*(27.0) , j * (39.0), 0.0 );
+          cv::Point3d x = cv::Point3d (
+              i*(m_SquareSizeInMillimetres * (static_cast<double>(m_NumberCornersWidth-1))),
+              j*(m_SquareSizeInMillimetres * (static_cast<double>(m_NumberCornersHeight-1))),
+              0.0 );
           cv::Point3d y = m_GridToWorld * x;
           gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
         }

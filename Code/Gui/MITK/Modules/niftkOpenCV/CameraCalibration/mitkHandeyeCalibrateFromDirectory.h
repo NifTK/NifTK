@@ -53,9 +53,6 @@ public:
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
   
-  itkSetMacro(NumberCornersWidth, unsigned int);
-  itkSetMacro(NumberCornersHeight, unsigned int);
-  itkSetMacro(SquareSizeInMillimetres, double);
   itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
   itkSetMacro(NoVideoSupport,bool);
@@ -85,9 +82,6 @@ private:
   int                                 m_TrackerIndex;
   long long                           m_AbsTrackerTimingError;
   
-  unsigned int                        m_NumberCornersWidth;
-  unsigned int                        m_NumberCornersHeight;
-  double                              m_SquareSizeInMillimetres;
   mitk::Point2D                       m_PixelScaleFactor;
   std::string                         m_InputDirectory;
   bool                                m_WriteOutChessboards;
