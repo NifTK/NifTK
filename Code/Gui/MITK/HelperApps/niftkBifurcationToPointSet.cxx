@@ -16,17 +16,9 @@
 #include <mitkExceptionMacro.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
-#include <mitkPointUtils.h>
-#include <vtkPolyData.h>
+#include <mitkBifurcationToPointSet.h>
 #include <vtkPolyDataReader.h>
 #include <vtkSmartPointer.h>
-#include <vtkPointLocator.h>
-#include <vtkCleanPolyData.h>
-#include <vtkCellArray.h>
-#include <vtkIdList.h>
-#include <vtkMath.h>
-
-#include <map>
 
 int main(int argc, char** argv)
 {
@@ -46,65 +38,13 @@ int main(int argc, char** argv)
     reader->SetFileName(input.c_str());
     reader->Update();
 
-    vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
-    cleaner->SetInputData(reader->GetOutput());
-    cleaner->PointMergingOn();
-    cleaner->Update();
-
-    vtkPolyData* poly = cleaner->GetOutput();
-    assert(poly);
-    poly->BuildLinks();
-    vtkCellArray* lines = poly->GetLines();
-    assert(lines);
-    vtkPoints *points = poly->GetPoints();
-    assert(points);
-
     mitk::PointSet::Pointer finalPointSet = mitk::PointSet::New();
-    mitk::PointSet::Pointer pointSetToAverage = mitk::PointSet::New();
 
-    double point[3];
-    mitk::Point3D mitkPoint;
+    std::vector<vtkPolyData*> polyDatas;
+    polyDatas.push_back(reader->GetOutput());
 
-    for (vtkIdType pointCounter = 0; pointCounter < points->GetNumberOfPoints(); pointCounter++)
-    {
-      points->GetPoint(pointCounter, point);
-
-      vtkSmartPointer<vtkIdList> cellIdsContainingAPoint = vtkSmartPointer<vtkIdList>::New();
-      poly->GetPointCells(pointCounter, cellIdsContainingAPoint);
-
-      std::set<vtkIdType> after;
-
-      for (vtkIdType cellCounter = 0; cellCounter < cellIdsContainingAPoint->GetNumberOfIds(); cellCounter++)
-      {
-        vtkSmartPointer<vtkIdList> allPointsInACell = vtkSmartPointer<vtkIdList>::New();
-        poly->GetCellPoints(cellIdsContainingAPoint->GetId(cellCounter), allPointsInACell);
-
-        for (vtkIdType pointIterator = 0; pointIterator < allPointsInACell->GetNumberOfIds(); pointIterator++)
-        {
-          if (   allPointsInACell->GetId(pointIterator) == pointCounter
-              && pointIterator != (allPointsInACell->GetNumberOfIds()-1))
-          {
-            after.insert(allPointsInACell->GetId(pointIterator + 1));
-          }
-        }
-      }
-
-      if (after.size() > 1)
-      {
-        std::set<vtkIdType>::iterator iter;
-        for (iter = after.begin(); iter != after.end(); iter++)
-        {
-          points->GetPoint(*iter, point);
-          mitkPoint[0] = point[0];
-          mitkPoint[1] = point[1];
-          mitkPoint[2] = point[2];
-          pointSetToAverage->InsertPoint(pointSetToAverage->GetSize(), mitkPoint);
-        }
-        mitk::Point3D centroid = mitk::ComputeCentroid(*pointSetToAverage);
-        finalPointSet->InsertPoint(finalPointSet->GetSize(), centroid);
-      }
-      pointSetToAverage->Clear();
-    }
+    mitk::BifurcationToPointSet::Pointer converter = mitk::BifurcationToPointSet::New();
+    converter->Update(polyDatas, *finalPointSet);
 
     if (!mitk::IOUtil::SavePointSet(finalPointSet, output))
     {

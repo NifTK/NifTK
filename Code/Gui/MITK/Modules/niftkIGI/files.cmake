@@ -29,6 +29,7 @@ set(CPP_FILES
   Utils/mitkMakeGeometry.cxx
   # this one does not depend on pcl!
   PointClouds/mitkMergePointClouds.cxx
+  CentreLines/mitkBifurcationToPointSet.cxx
 )
 
 if(BUILD_PCL)
