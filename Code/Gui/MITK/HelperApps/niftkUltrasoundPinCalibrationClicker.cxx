@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <limits>
-#include <niftkUltrasoundPinCalibrationSorterCLP.h>
+#include <niftkUltrasoundPinCalibrationClickerCLP.h>
 #include <mitkVector.h>
 #include <QApplication>
 #include <QmitkUltrasoundPinCalibrationWidget.h>
