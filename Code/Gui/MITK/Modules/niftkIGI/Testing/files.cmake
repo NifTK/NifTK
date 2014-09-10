@@ -16,7 +16,7 @@
 set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
   mitkTrackedImageTest.cxx
-  mitkTrackedPointerManagerTest.cxx
+  mitkTrackedPointerTest.cxx
   mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx
   # does not depend on pcl
