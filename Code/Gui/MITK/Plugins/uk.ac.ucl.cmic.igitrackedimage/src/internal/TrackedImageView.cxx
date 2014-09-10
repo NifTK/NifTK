@@ -26,7 +26,7 @@
 #include <vtkMatrix4x4.h>
 #include "TrackedImageViewActivator.h"
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 #include <mitkFileIOUtils.h>
 #include <mitkRenderingManager.h>
 #include <mitkImage2DToTexturePlaneMapper3D.h>
@@ -182,7 +182,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       for (int i = 0; i < this->m_Controls->m_ImageNode->count(); i++)
       {
         mitk::DataNode::Pointer aNode = this->m_Controls->m_ImageNode->GetNode(i);
-        aNode->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
+        aNode->SetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
 
         // Remove any instance of Image2DToTexturePlaneMapper3D
         mitk::Mapper::Pointer mapper = aNode->GetMapper(mitk::BaseRenderer::Standard3D);
@@ -194,7 +194,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       mitk::DataNode::Pointer nodeToUpdate = this->GetDataStorage()->GetNamedNode(node->GetName());
       if (nodeToUpdate.IsNotNull())
       {
-        nodeToUpdate->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);        
+        nodeToUpdate->SetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);
 
         mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
         nodeToUpdate->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
@@ -225,7 +225,7 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
         // We don't want a rendering event to trigger the Overlay Display to re-render at the
         // wrong position, and momentarily display the wrong thing.
           
-        mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+        mitk::TrackedImage::Pointer command = mitk::TrackedImage::New();
         command->Update(imageNode,
                         trackingSensorToTrackerTransform,
                         *m_ImageToTrackingSensorTransform,

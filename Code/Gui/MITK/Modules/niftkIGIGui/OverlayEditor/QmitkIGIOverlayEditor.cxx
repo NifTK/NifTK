@@ -21,7 +21,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
@@ -174,7 +174,7 @@ void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
   bool propValue = false;
   if (node != NULL
     && !m_OverlayViewer->GetCameraTrackingMode()
-    && node->GetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue) 
+    && node->GetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue)
     && propValue)
   {
     m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));

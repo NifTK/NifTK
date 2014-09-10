@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkTrackedPointerManager.h"
+#include "mitkTrackedPointer.h"
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
@@ -24,21 +24,21 @@
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 
-const bool mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT(false);
-const std::string mitk::TrackedPointerManager::TRACKED_POINTER_POINTSET_NAME("TrackedPointerManagerPointSet");
-const mitk::OperationType mitk::TrackedPointerManager::OP_UPDATE_POINTSET(9034657);
+const bool mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT(false);
+const std::string mitk::TrackedPointer::TRACKED_POINTER_POINTSET_NAME("TrackedPointerPointSet");
+const mitk::OperationType mitk::TrackedPointer::OP_UPDATE_POINTSET(9034657);
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-TrackedPointerManager::TrackedPointerManager()
+TrackedPointer::TrackedPointer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TrackedPointerManager::~TrackedPointerManager()
+TrackedPointer::~TrackedPointer()
 {
   if (m_DataStorage.IsNotNull())
   {
@@ -52,7 +52,7 @@ TrackedPointerManager::~TrackedPointerManager()
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::SetDataStorage(const mitk::DataStorage::Pointer& storage)
+void TrackedPointer::SetDataStorage(const mitk::DataStorage::Pointer& storage)
 {
   m_DataStorage = storage;
   this->Modified();
@@ -60,7 +60,7 @@ void TrackedPointerManager::SetDataStorage(const mitk::DataStorage::Pointer& sto
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer TrackedPointerManager::RetrievePointSet()
+mitk::PointSet::Pointer TrackedPointer::RetrievePointSet()
 {
   assert(m_DataStorage);
   mitk::PointSet::Pointer result = NULL;
@@ -85,7 +85,7 @@ mitk::PointSet::Pointer TrackedPointerManager::RetrievePointSet()
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
+void TrackedPointer::OnGrabPoint(const mitk::Point3D& point)
 {
   mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
 
@@ -105,7 +105,7 @@ void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::OnClearPoints()
+void TrackedPointer::OnClearPoints()
 {
   mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
 
@@ -123,7 +123,7 @@ void TrackedPointerManager::OnClearPoints()
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::ExecuteOperation(mitk::Operation* operation)
+void TrackedPointer::ExecuteOperation(mitk::Operation* operation)
 {
   assert(m_DataStorage);
   assert(operation);
@@ -146,7 +146,7 @@ void TrackedPointerManager::ExecuteOperation(mitk::Operation* operation)
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::Update(
+void TrackedPointer::Update(
          const vtkMatrix4x4& tipToPointerTransform,
          const mitk::DataNode::Pointer pointerToWorldNode,
          const mitk::DataNode::Pointer probeModel,
@@ -156,7 +156,7 @@ void TrackedPointerManager::Update(
   mitk::CoordinateAxesData::Pointer pointerToWorld = dynamic_cast<mitk::CoordinateAxesData*>(pointerToWorldNode->GetData());
   if (pointerToWorld.IsNull())
   {
-    MITK_ERROR << "TrackedPointerManager::Update, invalid pointerToWorldNode";
+    MITK_ERROR << "TrackedPointer::Update, invalid pointerToWorldNode";
     return;
   }
 

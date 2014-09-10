@@ -20,7 +20,7 @@
 #include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>
 #include <mitkDataStorage.h>
-#include <mitkTrackedPointerManager.h>
+#include <mitkTrackedPointer.h>
 
 class vtkMatrix4x4;
 
@@ -113,7 +113,7 @@ private:
   std::string m_TipToProbeFileName;
   bool m_UpdateViewCoordinate;
   mitk::DataStorage* m_DataStorage;
-  mitk::TrackedPointerManager::Pointer m_TrackedPointerManager;
+  mitk::TrackedPointer::Pointer m_TrackedPointer;
   unsigned int m_NumberOfPointsToAverageOver;
   unsigned int m_RemainingPointsCounter;
   mitk::Point3D m_TipCoordinate;

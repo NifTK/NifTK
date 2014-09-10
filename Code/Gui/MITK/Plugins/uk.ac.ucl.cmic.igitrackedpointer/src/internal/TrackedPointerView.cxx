@@ -29,7 +29,7 @@
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedPointerManager.h>
+#include <mitkTrackedPointer.h>
 #include <mitkFileIOUtils.h>
 #include <QMessageBox>
 #include <QCoreApplication>
@@ -44,7 +44,7 @@ TrackedPointerView::TrackedPointerView()
 , m_NumberOfPointsToAverageOver(1)
 , m_RemainingPointsCounter(0)
 {
-  m_TrackedPointerManager = mitk::TrackedPointerManager::New();
+  m_TrackedPointer = mitk::TrackedPointer::New();
 }
 
 
@@ -78,7 +78,7 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
 
     m_DataStorage = dataStorage;
 
-    m_TrackedPointerManager->SetDataStorage(dataStorage);
+    m_TrackedPointer->SetDataStorage(dataStorage);
 
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
     mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
@@ -136,7 +136,7 @@ void TrackedPointerView::RetrievePreferenceValues()
     m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
-    m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT);
+    m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);
     m_NumberOfPointsToAverageOver = prefs->GetInt(TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE, 1);
   }
 }
@@ -174,7 +174,7 @@ void TrackedPointerView::OnStartGrabPoints()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::UpdateDisplayedPoints()
 {
-  mitk::PointSet::Pointer pointSet = m_TrackedPointerManager->RetrievePointSet();
+  mitk::PointSet::Pointer pointSet = m_TrackedPointer->RetrievePointSet();
   mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet();
   mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
   mitk::PointSet::PointsIterator pIt;
@@ -197,7 +197,7 @@ void TrackedPointerView::UpdateDisplayedPoints()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnClearPoints()
 {
-  m_TrackedPointerManager->OnClearPoints();
+  m_TrackedPointer->OnClearPoints();
   this->UpdateDisplayedPoints();
 }
 
@@ -220,7 +220,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
     tipCoordinate[1] = currentCoordinateInModelCoordinates[1];
     tipCoordinate[2] = currentCoordinateInModelCoordinates[2];
 
-    m_TrackedPointerManager->Update(*m_TipToProbeTransform,
+    m_TrackedPointer->Update(*m_TipToProbeTransform,
                                     probeToWorldTransform,
                                     probeModel,              // The Geometry on this gets updated, so we surface model moving
                                     tipCoordinate            // This gets updated.
@@ -244,7 +244,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
         m_TipCoordinate[1] /= divisor;
         m_TipCoordinate[2] /= divisor;
 
-        m_TrackedPointerManager->OnGrabPoint(m_TipCoordinate);
+        m_TrackedPointer->OnGrabPoint(m_TipCoordinate);
         m_Controls->m_GrabPointsButton->setText("grab");
       }
     }

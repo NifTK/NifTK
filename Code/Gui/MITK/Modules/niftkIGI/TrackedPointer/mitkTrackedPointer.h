@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkTrackedPointerManager_h
-#define mitkTrackedPointerManager_h
+#ifndef mitkTrackedPointer_h
+#define mitkTrackedPointer_h
 
 #include "niftkIGIExports.h"
 #include <vtkMatrix4x4.h>
@@ -29,16 +29,16 @@
 namespace mitk {
 
 /**
- * \class TrackedPointerManager
+ * \class TrackedPointer
  * \brief Command used to update the alignment of a tracked pointer.
  */
-class NIFTKIGI_EXPORT TrackedPointerManager : public itk::Object,
+class NIFTKIGI_EXPORT TrackedPointer : public itk::Object,
                                               public mitk::OperationActor
 {
 public:
 
-  mitkClassMacro(TrackedPointerManager, itk::Object);
-  itkNewMacro(TrackedPointerManager);
+  mitkClassMacro(TrackedPointer, itk::Object);
+  itkNewMacro(TrackedPointer);
 
   /**
    * \brief Stores the default value of whether to update the view (i.e. center it) each time the pointer moves, defaults to false.
@@ -87,11 +87,11 @@ public:
 
 protected:
 
-  TrackedPointerManager(); // Purposefully hidden.
-  virtual ~TrackedPointerManager(); // Purposefully hidden.
+  TrackedPointer(); // Purposefully hidden.
+  virtual ~TrackedPointer(); // Purposefully hidden.
 
-  TrackedPointerManager(const TrackedPointerManager&); // Purposefully not implemented.
-  TrackedPointerManager& operator=(const TrackedPointerManager&); // Purposefully not implemented.
+  TrackedPointer(const TrackedPointer&); // Purposefully not implemented.
+  TrackedPointer& operator=(const TrackedPointer&); // Purposefully not implemented.
 
 private:
 

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkTrackedImageCommand.h"
+#include "mitkTrackedImage.h"
 #include <mitkCoordinateAxesData.h>
 #include <mitkMathsUtils.h>
 #include <vtkSmartPointer.h>
@@ -22,22 +22,22 @@
 namespace mitk
 {
 
-const char* TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME("niftk.trackedimage");
+const char* TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME("niftk.trackedimage");
 
 //-----------------------------------------------------------------------------
-TrackedImageCommand::TrackedImageCommand()
+TrackedImage::TrackedImage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TrackedImageCommand::~TrackedImageCommand()
+TrackedImage::~TrackedImage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
+void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
                                  const mitk::DataNode::Pointer trackingSensorToTrackerNode,
                                  const vtkMatrix4x4& imageToTrackingSensor,
                                  const mitk::Point2D& imageScaling
@@ -45,14 +45,14 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
 {
   if (imageNode.IsNull())
   {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid imageNode";
+    MITK_ERROR << "TrackedImage::Update, invalid imageNode";
     return;
   }
 
   mitk::CoordinateAxesData::Pointer trackingSensorToWorld = dynamic_cast<mitk::CoordinateAxesData*>(trackingSensorToTrackerNode->GetData());
   if (trackingSensorToWorld.IsNull())
   {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid trackingSensorToWorld";
+    MITK_ERROR << "TrackedImage::Update, invalid trackingSensorToWorld";
     return;
   }
 
