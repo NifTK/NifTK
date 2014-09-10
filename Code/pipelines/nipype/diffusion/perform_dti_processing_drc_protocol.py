@@ -263,6 +263,11 @@ parser.add_argument('-r', '--resample-t1',
                     help='Resample the outputs in the T1 space',
                     required=False,
                     action='store_true')
+parser.add_argument('--interpolation',
+                    dest='interpolation',
+                    help='Interpolation options CUB (default) or LIN',
+                    required=False,
+                    default='CUB')
 
 args = parser.parse_args()
 
@@ -277,7 +282,7 @@ for code in args.midas_code:
     if not (os.path.exists(result_dir+'/'+code+'_tenmap2_res.nii.gz') and os.path.exists(result_dir+'/'+code+'_averageb0.nii.gz')):
         codes.append(code)
 print codes
-r = create_drc_diffusion_processing_workflow(codes, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=args.resample_t1)
+r = create_drc_diffusion_processing_workflow(codes, args.output, dwi_interp_type = args.interpolation, log_data=False,resample_t1=args.resample_t1)
 
 # Run the overall workflow
 # r.write_graph(graph2use='colored')
