@@ -46,6 +46,7 @@ Supported projects:
     IGSTK
     NifTK
     RTK
+    camino
 "
   exit 1
 }
@@ -183,13 +184,14 @@ function download_from_sourceforge_svn() {
 function download_from_sourceforge_git() {
   project=$1
   version=$2
+  suffix=$3
   directory=$project-$version
   project_lowercase=$(echo $project | tr [:upper:] [:lower:])
   tarball=$directory.tar.gz
   if [[ $keep_repository && ! $keep_sources ]]
   then
     mkdir $directory
-    git clone --bare git://git.code.sf.net/p/$project_lowercase/code $directory/.git
+    git clone --bare git://git.code.sf.net/p/$project_lowercase/$suffix $directory/.git
     cd $directory
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
@@ -198,39 +200,7 @@ function download_from_sourceforge_git() {
     tar cvfz $tarball $directory
     rm -rf $directory
   else
-    git clone git://git.code.sf.net/p/$project_lowercase/code $directory
-    cd $directory
-    git checkout $version
-    if [[ ! $keep_repository ]]
-    then
-      rm -rf .git
-    fi
-    cd ..
-    rm $tarball 2> /dev/null
-    tar cvfz $tarball $directory
-    rm -rf $directory
-  fi
-}
-
-function download_from_sourceforge_git2() {
-  project=$1
-  version=$2
-  directory=$project-$version
-  project_lowercase=$(echo $project | tr [:upper:] [:lower:])
-  tarball=$directory.tar.gz
-  if [[ $keep_repository && ! $keep_sources ]]
-  then
-    mkdir $directory
-    git clone --bare git://git.code.sf.net/p/$project_lowercase/git $directory/.git
-    cd $directory
-    git config --local --bool core.bare false
-    mkdir -p .git/logs/refs
-    cd ..
-    rm $tarball 2> /dev/null
-    tar cvfz $tarball $directory
-    rm -rf $directory
-  else
-    git clone git://git.code.sf.net/p/$project_lowercase/git $directory
+    git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory
     cd $directory
     git checkout $version
     if [[ ! $keep_repository ]]
@@ -270,17 +240,19 @@ then
   download_from_github commontk $project $version
 elif [ $project = NiftySeg ]
 then
-  download_from_sourceforge_git2 $project $version
+  download_from_sourceforge_git $project $version git
 elif [ $project = NiftyReg ]
 then
-  download_from_sourceforge_git2 $project $version
+  download_from_sourceforge_git $project $version git
 elif [ $project = NiftySim ]
 then
-#  download_from_sourceforge_svn $project $version trunk/nifty_sim
-  download_from_sourceforge_git $project $version
+  download_from_sourceforge_git $project $version code
 elif [ $project = NiftyRec ]
 then
-  download_from_sourceforge_svn $project $version 
+  download_from_sourceforge_svn $project $version
+elif [ $project = camino ]
+then
+  download_from_sourceforge_git $project $version git
 elif [ $project = NiftyLink ]
 then
   download_from_cmicdev $project $version
