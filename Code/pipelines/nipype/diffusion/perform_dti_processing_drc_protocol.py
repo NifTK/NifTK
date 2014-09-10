@@ -7,10 +7,20 @@ import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
 import diffusion_mri_processing         as dmri
+
 from midas2dicom import Midas2Dicom
 from distutils import spawn
 import argparse
 import os
+
+def gen_substitutions(op_basename):    
+    from nipype.utils.filemanip import split_filename
+    subs = []
+    
+    subs.append(('average_output_res_maths', op_basename+'_averageb0'))
+    subs.append(('vol0000_res_merged', op_basename+'_corrected_dwi'))
+
+    return subs
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
@@ -19,6 +29,8 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
 
     import os, glob, sys, errno
     import nipype.interfaces.fsl as fsl
+    import nibabel as nib
+    import numpy as np 
     
     def merge_vector_files(input_files):
         import numpy as np
@@ -41,8 +53,13 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
         print 'I/O Could not any diffusion based images in ', input_path, ', exiting.'
         sys.exit(errno.EIO)
 
+    qforms = []
+    if not type(input_bvals) == list:
+        input_bvals = [input_bvals]
+        input_bvecs = [input_bvecs]
+
     for bvals_file in input_bvals:
-        if ('isos' in bvals_file) and ('001.bval' in bvals_file):
+        if ('iso' in bvals_file) and ('001.bval' in bvals_file):
             dwi_base, _ = os.path.splitext(bvals_file)
             dwi_file = dwi_base + '.nii.gz'
             if not os.path.exists(dwi_file):
@@ -50,18 +67,36 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
             if not os.path.exists(dwi_file):
                 print 'I/O The DWI file with base ', dwi_base, ' does not exist, exiting.'
                 sys.exit(errno.EIO)
+            im = nib.load(dwi_file)
+            qform = im.get_qform()
+            qforms.append(qform)
             dwis_files.append(dwi_file)
         else:
             dwi_base, _ = os.path.splitext(bvals_file)
             input_bvals.remove(dwi_base+'.bval')
             input_bvecs.remove(dwi_base+'.bvec')
 
-    merger = fsl.Merge(dimension = 't')
-    merger.inputs.in_files = dwis_files
-    res = merger.run()
-    dwis = res.outputs.merged_file
-    bvals = merge_vector_files(input_bvals)
-    bvecs = merge_vector_files(input_bvecs)
+    if len(dwis_files) > 1:
+        # Work backwards through the dwis, assume later scans are more likely to be correctly acquired!
+        for file_index in range(len(dwis_files)-2,-1,-1):
+            # If the qform doesn't match that of the last scan, throw it away
+            if np.sum(qform[len(dwis_files)-1] == qform[file_index]) < 16:
+                dwis_files.pop(file_index)
+                input_bvals.pop(file_index)
+                input_bvecs.pop(file_index)
+
+    # Set the default values of these variables as the first index, in case we only have one image and we don't do a merge
+    dwis = dwis_files[0]
+    bvals = input_bvals[0]
+    bvecs = input_bvecs[0]
+    if len(dwis_files) > 1:
+        merger = fsl.Merge(dimension = 't')
+        merger.inputs.in_files = dwis_files
+        res = merger.run()
+        dwis = res.outputs.merged_file
+        bvals = merge_vector_files(input_bvals)
+        bvecs = merge_vector_files(input_bvecs)
+    
 
     fms = glob.glob(input_path + os.sep + '*fieldmap*.nii*')
     fms.sort()
@@ -90,8 +125,7 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
 
 # Create a drc diffusion pipeline
 def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_type = 'CUB', log_data=False,resample_t1=False): 
-	
-        r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
+	r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                           resample_in_t1 = resample_t1, 
                                                           log_data = log_data,
                                                           correct_susceptibility = True,
@@ -122,7 +156,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 		                name = 'dcm2nii')
 	dcm2nii.inputs.args = '-d n'
 	dcm2nii.inputs.gzip_output = True
-	dcm2nii.inputs.anonymize = False
+	dcm2nii.inputs.anonymize = True
 	dcm2nii.inputs.reorient = True
 	dcm2nii.inputs.reorient_and_crop = True
 
@@ -162,11 +196,13 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(find_and_merge_dwis, 'fieldmapmag', r.get_node('input_node'), 'in_fm_magnitude_file')
 	r.connect(find_and_merge_dwis, 'fieldmapphase', r.get_node('input_node'), 'in_fm_phase_file')
 	r.connect(find_and_merge_dwis, 't1', r.get_node('input_node'), 'in_t1_file')
-	
 
+	subsgen = pe.Node(interface = niu.Function(input_names = ['op_basename'], output_names = ['substitutions'], function = gen_substitutions), name = 'subsgen')
+	r.connect(infosource, 'subject_id', subsgen, 'op_basename')
 	ds = pe.Node(nio.DataSink(), name='ds')
 	ds.inputs.base_directory = result_dir
 	ds.inputs.parameterization = False
+	r.connect(subsgen, 'substitutions', ds, 'substitutions')
 
 	
 
@@ -238,7 +274,7 @@ if not os.path.exists(result_dir):
 # Check if some images have already been processed, and if so, remove them from the analysis
 codes = []
 for code in args.midas_code:
-    if not os.path.exists(result_dir+'/'+code+'_tenmap2_res.nii.gz'):
+    if not (os.path.exists(result_dir+'/'+code+'_tenmap2_res.nii.gz') and os.path.exists(result_dir+'/'+code+'_averageb0.nii.gz')):
         codes.append(code)
 print codes
 r = create_drc_diffusion_processing_workflow(codes, args.output, dwi_interp_type = 'CUB', log_data=False,resample_t1=args.resample_t1)
