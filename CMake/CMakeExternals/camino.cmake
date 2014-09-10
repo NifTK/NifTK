@@ -25,9 +25,8 @@ endif()
 if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE)
 
   find_package(Java COMPONENTS Development)
-  find_package(Subversion)
 
-  if(NOT "${Java_VERSION}" STREQUAL "" AND Subversion_FOUND)
+  if(NOT "${Java_VERSION}" STREQUAL "")
 
     set(proj camino)
     set(proj_DEPENDENCIES)
