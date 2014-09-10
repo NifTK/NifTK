@@ -209,7 +209,6 @@ void mitk::ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& 
 }
 
 
-
 //-----------------------------------------------------------------------------
 void mitk::TransformPointByVtkMatrix(
     const vtkMatrix4x4* matrix,
@@ -316,6 +315,7 @@ int mitk::FilterMatchingPoints(
   return matchedPoints;
 }
 
+
 //-----------------------------------------------------------------------------
 int mitk::RemoveNaNPoints(
     const mitk::PointSet& pointsIn,
@@ -351,6 +351,7 @@ int mitk::RemoveNaNPoints(
   return removedPoints;
 }
 
+
 //-----------------------------------------------------------------------------
 bool mitk::CheckForNaNPoint( const mitk::PointSet::PointType& point )
 {
@@ -359,6 +360,40 @@ bool mitk::CheckForNaNPoint( const mitk::PointSet::PointType& point )
     return true;
   }
   return false;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Point3D mitk::ComputeCentroid(
+    const mitk::PointSet& input
+    )
+{
+  mitk::Point3D average;
+  average.Fill(0);
+
+  if (input.GetSize() > 0)
+  {
+    mitk::PointSet::DataType* pointSet = input.GetPointSet(0);
+    mitk::PointSet::PointsContainer* points = pointSet->GetPoints();
+    mitk::PointSet::PointsIterator pointsIt;
+    mitk::PointSet::PointType point;
+
+    for (pointsIt = points->Begin(); pointsIt != points->End(); ++pointsIt)
+    {
+      point = pointsIt->Value();
+      average[0] += point[0];
+      average[1] += point[1];
+      average[2] += point[2];
+    }
+
+    double numberOfPoints = static_cast<double>(input.GetSize());
+
+    average[0] /= numberOfPoints;
+    average[1] /= numberOfPoints;
+    average[2] /= numberOfPoints;
+  }
+
+  return average;
 }
 
 
