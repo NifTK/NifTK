@@ -11,6 +11,11 @@ import sys
 import os
 import textwrap
 import argparse
+import nipype.interfaces.niftyreg as niftyreg
+import nipype.interfaces.niftyseg as niftyseg
+
+mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
+mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
 
 
 def gen_substitutions(in_files, prefix, suffix):    
@@ -37,24 +42,41 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, \
         description=pipelineDescription)
     """ Input images """
-    parser.add_argument('-i', '--img',dest='input_img', type=str, nargs='+', \
-        metavar='input_img', help='Image file or list of input images', required=True) 
-    parser.add_argument('-m', '--mask',dest='input_mask', type=str, nargs='+', \
-        metavar='input_mask', help='Mask image or list of mask images', required=False)
+    parser.add_argument('-i', '--img',dest='input_img', 
+                        type=str, nargs='+', \
+                        metavar='input_img', 
+                        help='Image file or list of input images',
+                        required=True) 
+    parser.add_argument('-m', '--mask',dest='input_mask', 
+                        type=str, nargs='+', \
+                        metavar='input_mask', 
+                        help='Mask image or list of mask images (optional)', 
+                        required=False)
     """ Output argument """
-    parser.add_argument('--output_dir',dest='output_dir', type=str, \
-        metavar='directory', help='Output directory containing the registration result\n' + \
-        'Default is the current directory', \
-        default=os.path.abspath('.'), required=False)
-    parser.add_argument('--output_pre',dest='output_pre', type=str, \
-        metavar='prefix', help='Output result prefix', \
-        default='', required=False)
-    parser.add_argument('--output_suf',dest='output_suf', type=str, \
-        metavar='suffix', help='Output result suffix', \
-        default='', required=False)
+    parser.add_argument('--output_dir',dest='output_dir', 
+                        type=str, \
+                        metavar='directory', 
+                        help='Output directory containing the registration result\n' + \
+                        'Default is the current directory', \
+                        default=os.path.abspath('.'), 
+                        required=False)
+    parser.add_argument('--output_pre',
+                        dest='output_pre', 
+                        type=str, \
+                        metavar='prefix', 
+                        help='Output result prefix', \
+                        default='', 
+                        required=False)
+    parser.add_argument('--output_suf',
+                        dest='output_suf',
+                        type=str, \
+                        metavar='suffix', 
+                        help='Output result suffix', \
+                        default='', 
+                        required=False)
     
     	# Parse the arguments
-    args=parser.parse_args()    
+    args=parser.parse_args()
 
     	# Check the parsed arguments
     if not args.input_mask==None:
@@ -85,19 +107,39 @@ def main():
             fields=['out_img_files',
                     'out_bias_files']),
             name='output_node')
-    input_node.inputs.in_files=args.input_img;
-    input_node.inputs.mask_files=args.input_mask;
+    input_node.inputs.in_files=args.input_img
+    input_node.inputs.mask_files=args.input_mask
     
-    # Create the processing node
-    if not args.input_mask==None:
-        bias_correction=pe.MapNode(interface = N4BiasCorrection(), \
-            name='bias_correction', iterfield=['in_file', 'mask_file'])
-        workflow.connect(input_node, 'mask_files', bias_correction, 'mask_file')
-    else:
-        bias_correction=pe.MapNode(interface = N4BiasCorrection(), \
-            name='bias_correction', iterfield=['in_file'])
-    workflow.connect(input_node, 'in_files', bias_correction, 'in_file')
+    # Fnding masks to use for bias correction:
+    bias_correction=pe.MapNode(interface = N4BiasCorrection(),
+                               name='bias_correction', 
+                               iterfield=['in_file', 'mask_file'])
     bias_correction.inputs.in_downsampling=2
+
+    if args.input_mask is None:
+	mni_to_input = pe.MapNode(interface=niftyreg.RegAladin(), 
+                                  name='mni_to_input',
+                                  iterfield = ['ref_file'])
+	mni_to_input.inputs.flo_file = mni_template
+	mask_resample  = pe.MapNode(interface = niftyreg.RegResample(), 
+                                    name = 'mask_resample',
+                                    iterfield = ['ref_file', 'aff_file'])
+	mask_resample.inputs.inter_val = 'NN'
+	mask_resample.inputs.flo_file = mni_template_mask
+	mask_eroder = pe.MapNode(interface = niftyseg.BinaryMaths(), 
+                                 name = 'mask_eroder',
+                                 iterfield = ['in_file'])
+	mask_eroder.inputs.operation = 'ero'
+	mask_eroder.inputs.operand_value = 3
+	workflow.connect(input_node, 'in_files', mni_to_input, 'ref_file')
+	workflow.connect(input_node, 'in_files', mask_resample, 'ref_file')
+	workflow.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
+	workflow.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
+        workflow.connect(mask_eroder, 'out_file', bias_correction, 'mask_file')
+    else:
+        workflow.connect(input_node, 'mask_files', bias_correction, 'mask_file')
+    
+    workflow.connect(input_node, 'in_files', bias_correction, 'in_file')
     	
     # Gather the processed images
     workflow.connect(bias_correction, 'out_file', output_node, 'out_img_files')
