@@ -16,7 +16,7 @@
 #include <QGridLayout>
 #include <mitkDataStorageUtils.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkGeometry3D.h>

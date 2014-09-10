@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkTrackedImageCommand_h
-#define mitkTrackedImageCommand_h
+#ifndef mitkTrackedImage_h
+#define mitkTrackedImage_h
 
 #include "niftkIGIExports.h"
 #include <mitkDataStorage.h>
@@ -25,15 +25,15 @@
 namespace mitk {
 
 /**
- * \class TrackedImageCommand
+ * \class TrackedImage
  * \brief Command used to update the position of a tracked image.
  */
-class NIFTKIGI_EXPORT TrackedImageCommand : public itk::Object
+class NIFTKIGI_EXPORT TrackedImage : public itk::Object
 {
 public:
 
-  mitkClassMacro(TrackedImageCommand, itk::Object);
-  itkNewMacro(TrackedImageCommand);
+  mitkClassMacro(TrackedImage, itk::Object);
+  itkNewMacro(TrackedImage);
 
   /**
    * \brief Stores the name of a DataNode property, indicating the currently selected image = niftk.trackedimage
@@ -51,11 +51,11 @@ public:
 
 protected:
 
-  TrackedImageCommand(); // Purposefully hidden.
-  virtual ~TrackedImageCommand(); // Purposefully hidden.
+  TrackedImage(); // Purposefully hidden.
+  virtual ~TrackedImage(); // Purposefully hidden.
 
-  TrackedImageCommand(const TrackedImageCommand&); // Purposefully not implemented.
-  TrackedImageCommand& operator=(const TrackedImageCommand&); // Purposefully not implemented.
+  TrackedImage(const TrackedImage&); // Purposefully not implemented.
+  TrackedImage& operator=(const TrackedImage&); // Purposefully not implemented.
 
 private:
 

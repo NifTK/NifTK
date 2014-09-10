@@ -15,7 +15,7 @@
 # tests with no extra command line parameter
 set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
-  mitkTrackedImageCommandTest.cxx
+  mitkTrackedImageTest.cxx
   mitkTrackedPointerManagerTest.cxx
   mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx

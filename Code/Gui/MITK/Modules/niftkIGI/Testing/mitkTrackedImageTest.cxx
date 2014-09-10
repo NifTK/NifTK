@@ -14,13 +14,13 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 
 /**
- * \file mitkTrackedImageCommandTest.cxx
- * \brief Tests for mitk::TrackedImageCommand.
+ * \file mitkTrackedImage.cxx
+ * \brief Tests for mitk::TrackedImage.
  */
-int mitkTrackedImageCommandTest(int /*argc*/, char* /*argv*/[])
+int mitkTrackedImageTest(int /*argc*/, char* /*argv*/[])
 {
   return EXIT_SUCCESS;
 }

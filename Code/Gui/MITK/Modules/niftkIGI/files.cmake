@@ -22,7 +22,7 @@ set(CPP_FILES
   SurfaceReconstruction/SurfaceReconstruction.cxx
   SurfaceReconstruction/SequentialCpuQds.cxx
   SurfaceReconstruction/QDSCommon.cxx
-  TrackedImage/mitkTrackedImageCommand.cxx
+  TrackedImage/mitkTrackedImage.cxx
   TrackedPointer/mitkTrackedPointerManager.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
