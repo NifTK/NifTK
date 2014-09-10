@@ -137,6 +137,12 @@ NIFTKCORE_EXPORT void TransformPointsByVtkMatrix(
     mitk::PointSet& output
     );
 
+/**
+ * \brief Computes the mean/centroid of an mitk::PointSet.
+ */
+NIFTKCORE_EXPORT mitk::Point3D ComputeCentroid(
+    const mitk::PointSet& input
+    );
 } // end namespace mitk
 
 
