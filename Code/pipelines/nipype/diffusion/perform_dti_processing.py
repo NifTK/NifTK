@@ -55,27 +55,29 @@ parser.add_argument('--model',
                     required=False,
                     choices = model_choices,
                     default = model_choices[0])
-parser.add_argument('-o', '--output',
-                    dest='output',
-                    metavar='output',
-                    help='Result directory where the output data is to be stored',
-                    required=False,
-                    default='results')
+parser.add_argument('--output_dir',dest='output_dir', type=str, \
+                    metavar='directory', help='Output directory containing the registration result\n' + \
+                    'Default is a directory called results', \
+                    default=os.path.abspath('results'), required=False)
 
 args = parser.parse_args()
 
-
-result_dir = os.path.abspath(args.output)
+result_dir = os.path.abspath(args.output_dir)
 
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-do_susceptibility_correction = False
-if os.path.exists(os.path.abspath(args.fieldmapmag)) and os.path.exists(os.path.abspath(args.fieldmapphase)):
+if args.fieldmapmag is None or args.fieldmapphase is None:
+    do_susceptibility_correction = False
+else:
     do_susceptibility_correction = True
 
+if do_susceptibility_correction == True:
+    if not os.path.exists(os.path.abspath(args.fieldmapmag)) or not os.path.exists(os.path.abspath(args.fieldmapphase)):
+        do_susceptibility_correction = False
+
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
-                                                  resample_in_t1 = True, 
+                                                  resample_in_t1 = True,
                                                   log_data = True,
                                                   correct_susceptibility = do_susceptibility_correction,
                                                   dwi_interp_type = 'CUB',
