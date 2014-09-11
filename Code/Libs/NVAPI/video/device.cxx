@@ -44,6 +44,7 @@ static bool map_nvformat_to_interlaced(NVVIOSIGNALFORMAT signalformat)
         case NVVIOSIGNALFORMAT_487I_59_94_SMPTE259_NTSC:
         case NVVIOSIGNALFORMAT_576I_50_00_SMPTE259_PAL:
         case NVVIOSIGNALFORMAT_1080I_59_94_SMPTE274:
+        case NVVIOSIGNALFORMAT_1080I_60_00_SMPTE274:
             return true;
         // tested
         case NVVIOSIGNALFORMAT_720P_60_00_SMPTE296:
@@ -66,7 +67,6 @@ static bool map_nvformat_to_interlaced(NVVIOSIGNALFORMAT signalformat)
         case NVVIOSIGNALFORMAT_1035I_60_00_SMPTE260:
         case NVVIOSIGNALFORMAT_1035I_59_94_SMPTE260:
         case NVVIOSIGNALFORMAT_1080I_50_00_SMPTE295:
-        case NVVIOSIGNALFORMAT_1080I_60_00_SMPTE274:
         case NVVIOSIGNALFORMAT_1080I_50_00_SMPTE274:
         case NVVIOSIGNALFORMAT_1080I_48_00_SMPTE274:
         case NVVIOSIGNALFORMAT_1080I_47_96_SMPTE274:
@@ -151,6 +151,7 @@ static StreamFormat::RefreshRate map_nvformat_to_rr(NVVIOSIGNALFORMAT signalform
         case NVVIOSIGNALFORMAT_720P_30_00_SMPTE296:
         case NVVIOSIGNALFORMAT_1080P_30_00_SMPTE274:
         case NVVIOSIGNALFORMAT_1080P_30_00_SMPTE274_3G_LEVEL_B:
+        case NVVIOSIGNALFORMAT_1080I_60_00_SMPTE274:
         case NVVIOSIGNALFORMAT_2048P_30_00_SMPTE372:
             return StreamFormat::RR_30;
 
@@ -227,6 +228,7 @@ static StreamFormat::PictureFormat map_nvformat_to_pf(NVVIOSIGNALFORMAT signalfo
         case NVVIOSIGNALFORMAT_1080P_23_98_SMPTE274_3G_LEVEL_B:
         // not 100% sure what to do about the interlaced format here...
         case NVVIOSIGNALFORMAT_1080I_59_94_SMPTE274:
+        case NVVIOSIGNALFORMAT_1080I_60_00_SMPTE274:
             return StreamFormat::PF_1080;
 
         case NVVIOSIGNALFORMAT_2048P_30_00_SMPTE372:
