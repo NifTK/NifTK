@@ -77,6 +77,11 @@ int mitkTimeStampsContainerTest(int argc, char * argv[])
   MITK_TEST_CONDITION (before == 6, "GetBoundingTimeStamps(): Interpolating match, expecting before==6, and got:" << before);
   MITK_TEST_CONDITION (after == 8, "GetBoundingTimeStamps(): Interpolating match, expecting after==8, and got:" << after);
   MITK_TEST_CONDITION (proportion == 0.5, "GetBoundingTimeStamps(): Interpolating match, expecting proportion==0.5, and got:" << proportion);
+  isValid = timeStamps.GetBoundingTimeStamps(3, before, after, proportion);
+  MITK_TEST_CONDITION (isValid, "GetBoundingTimeStamps(): Interpolating match, expecting true==false, and got:" << isValid);
+  MITK_TEST_CONDITION (before == 2, "GetBoundingTimeStamps(): Interpolating match, expecting before==2, and got:" << before);
+  MITK_TEST_CONDITION (after == 4, "GetBoundingTimeStamps(): Interpolating match, expecting after==4, and got:" << after);
+  MITK_TEST_CONDITION (proportion == 0.5, "GetBoundingTimeStamps(): Interpolating match, expecting proportion==0.5, and got:" << proportion);
   isValid = timeStamps.GetBoundingTimeStamps(2, before, after, proportion);
   MITK_TEST_CONDITION (isValid, "GetBoundingTimeStamps(): Exact match first in list, expecting true==true, and got:" << isValid);
   MITK_TEST_CONDITION (before == 2, "GetBoundingTimeStamps(): Exact match first in list, expecting before==2, and got:" << before);
