@@ -343,7 +343,12 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
       if (m_CachedUpdate.second)
       {
-        const video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
+        video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
+        // remember: stream format can be different from capture format. stream is what comes off the wire, capture is what goes to gpu.
+        const video::StreamFormat             currentStreamFormat = m_Pimpl->GetFormat();
+        // if the stream format is not interlaced then field mode will have no effect on the capture format.
+        if (!currentStreamFormat.is_interlaced)
+          currentFieldMode = video::SDIInput::DO_NOTHING_SPECIAL;
 
         // max 4 streams
         const int streamcount = m_CachedUpdate.second;
@@ -440,6 +445,10 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
           assert(imageInNode.IsNotNull());
 
+
+          mitk::Vector3D    currentImageSpacing = imageInNode->GetGeometry()->GetSpacing();
+          mitk::Vector3D    shouldbeImageSpacing;
+
           // this is internal field mode, which might have the obsolete stack configured (i.e. during playback).
           switch (currentFieldMode)
           {
@@ -447,22 +456,31 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
               // in case of stack, the subimage-stuffing-into-mitk will have discarded the bottom half.
             case DROP_ONE_FIELD:
             {
-              mitk::Vector3D    s;
-              s[0] = 1;
-              s[1] = 2;
-              s[2] = 1;
-              mitk::Vector3D    c = imageInNode->GetGeometry()->GetSpacing();
-              // only update spacing if necessary. it has a huge overhead because mitk keeps
-              // allocating itk objects everytime we do this.
-              if ((std::abs(c[0] - s[0]) > 0.01) ||
-                  (std::abs(c[1] - s[1]) > 0.01) ||
-                  (std::abs(c[2] - s[2]) > 0.01))
-              {
-                imageInNode->GetGeometry()->SetSpacing(s);
-              }
+              shouldbeImageSpacing[0] = 1;
+              shouldbeImageSpacing[1] = 2;
+              shouldbeImageSpacing[2] = 1;
+              break;
+            }
+            case DO_NOTHING_SPECIAL:
+            {
+              shouldbeImageSpacing[0] = 1;
+              shouldbeImageSpacing[1] = 1;
+              shouldbeImageSpacing[2] = 1;
               break;
             }
           }
+
+          // only update spacing if necessary. it has a huge overhead because mitk keeps
+          // allocating itk objects everytime we do this.
+          // BUT: always check whether the image spacing we currently have and what we want match!
+          // otherwise we run into some weird problems if we actually do have a progressive video source.
+          if ((std::abs(currentImageSpacing[0] - shouldbeImageSpacing[0]) > 0.01) ||
+              (std::abs(currentImageSpacing[1] - shouldbeImageSpacing[1]) > 0.01) ||
+              (std::abs(currentImageSpacing[2] - shouldbeImageSpacing[2]) > 0.01))
+          {
+            imageInNode->GetGeometry()->SetSpacing(shouldbeImageSpacing);
+          }
+
 
           node->Modified();
         } // for
