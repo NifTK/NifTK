@@ -227,15 +227,15 @@ cv::Matx44d InvariantPointCalibrationCostFunction::GetTranslationTransformation(
 
   if (parameters.GetSize() >= 9 && this->GetOptimiseInvariantPoint())
   {
-    translateToInvariantPoint(0,3) = parameters[6];
-    translateToInvariantPoint(1,3) = parameters[7];
-    translateToInvariantPoint(2,3) = parameters[8];
+    translateToInvariantPoint(0,3) = -parameters[6];
+    translateToInvariantPoint(1,3) = -parameters[7];
+    translateToInvariantPoint(2,3) = -parameters[8];
   }
   else
   {
-    translateToInvariantPoint(0,3) = m_InvariantPoint[0];
-    translateToInvariantPoint(1,3) = m_InvariantPoint[1];
-    translateToInvariantPoint(2,3) = m_InvariantPoint[2];
+    translateToInvariantPoint(0,3) = -m_InvariantPoint[0];
+    translateToInvariantPoint(1,3) = -m_InvariantPoint[1];
+    translateToInvariantPoint(2,3) = -m_InvariantPoint[2];
   }
 
   return translateToInvariantPoint;
@@ -388,18 +388,22 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
 
     cv::Matx44d trackingTransformation = m_TrackingData->InterpolateMatrix(timeStamp);
     cv::Matx44d combinedTransformation = translationTransformation * (trackingTransformation * (similarityTransformation));
-    cv::Matx41d point, transformedPoint;
+
+    cv::Matx41d point;
+    cv::Matx41d residual;
+    cv::Matx41d pointInWorld;
 
     point(0,0) = (*this->m_PointData)[i].second.x;
     point(1,0) = (*this->m_PointData)[i].second.y;
     point(2,0) = (*this->m_PointData)[i].second.z;
     point(3,0) = 1;
 
-    transformedPoint = combinedTransformation * point;
-
-    value[i*3 + 0] = transformedPoint(0, 0);
-    value[i*3 + 1] = transformedPoint(1, 0);
-    value[i*3 + 2] = transformedPoint(2, 0);
+    pointInWorld = (trackingTransformation * similarityTransformation) * point;
+    residual = translationTransformation * pointInWorld;
+  
+    value[i*3 + 0] = residual(0, 0);
+    value[i*3 + 1] = residual(1, 0);
+    value[i*3 + 2] = residual(2, 0);
   }
 
   if (m_Verbose)
