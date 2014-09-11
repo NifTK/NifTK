@@ -72,8 +72,10 @@ public:
 
   /**
    * \brief Extracts a matrix for the given time-stamp, by interpolating.
+   * \param the desired time stamp and a holder to return the timing error.
    */
-  cv::Matx44d InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp);
+  cv::Matx44d InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp,
+      TimeStampsContainer::TimeStamp& minError);
 
 private:
 

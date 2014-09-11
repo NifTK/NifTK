@@ -200,6 +200,7 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
   boost::cmatch what;
   std::string timeStampAsString;
   unsigned long long timeStamp;
+  unsigned long long timingError;
   unsigned long long timeStampFirstFrame = 0;
   double timeStampInSeconds = 0;
   cv::Matx44d interpolatedMatrix;
@@ -233,7 +234,7 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
       {
         timeStampFirstFrame = timeStamp;
       }
-      interpolatedMatrix = trackingTimeStamps.InterpolateMatrix(timeStamp);
+      interpolatedMatrix = trackingTimeStamps.InterpolateMatrix(timeStamp, timingError);
       timeStampInSeconds = (timeStamp - timeStampFirstFrame)/static_cast<double>(1000000000);
 
       fout << "Seq_Frame" << suffix.str() << "_FrameNumber = " << i << std::endl;

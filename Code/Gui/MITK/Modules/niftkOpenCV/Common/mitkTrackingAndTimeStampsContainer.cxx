@@ -149,22 +149,36 @@ std::vector<TimeStampsContainer::TimeStamp>::size_type TrackingAndTimeStampsCont
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp)
+cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& minError)
 {
   TimeStampsContainer::TimeStamp before;
   TimeStampsContainer::TimeStamp after;
   double proportion = 0;
 
-  assert(m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion));
+  if (m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion))
+  {
+    std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
+    std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
+    indexBefore = this->GetFrameNumber(before);
+    indexAfter = this->GetFrameNumber(after);
 
-  std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
-  std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
-  indexBefore = this->GetFrameNumber(before);
-  indexAfter = this->GetFrameNumber(after);
+    cv::Matx44d interpolatedMatrix;
+    mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
+    if ( proportion > 0.5 )
+    {
+      minError = after - timeStamp;
+    }
+    else
+    {
+      minError = timeStamp - before;
+    }
 
-  cv::Matx44d interpolatedMatrix;
-  mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
-  return interpolatedMatrix;
+    return interpolatedMatrix;
+  }
+  else
+  {
+   // that failed so now what?
+  }
 }
 
 } // end namespace

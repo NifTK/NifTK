@@ -380,13 +380,14 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   long long lagInNanoSeconds = static_cast<long long>(lag*1000000000);
 
   TimeStampType timeStamp = 0;
+  TimeStampType timingError = 0;
 
   for (unsigned int i = 0; i < this->m_PointData->size(); i++)
   {
     timeStamp = (*this->m_PointData)[i].first;
     timeStamp -= lagInNanoSeconds;
 
-    cv::Matx44d trackingTransformation = m_TrackingData->InterpolateMatrix(timeStamp);
+    cv::Matx44d trackingTransformation = m_TrackingData->InterpolateMatrix(timeStamp, timingError);
     cv::Matx44d combinedTransformation = translationTransformation * (trackingTransformation * (similarityTransformation));
 
     cv::Matx41d point;
