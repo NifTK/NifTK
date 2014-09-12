@@ -46,7 +46,8 @@ int main(int argc, char** argv)
     std::cout << "niftkVideoHandEyeByCrossCalibration: opt inv point  = " << optimiseInvariantPoint << std::endl;
     std::cout << "niftkVideoHandEyeByCrossCalibration: inv point      = " << invariantPoint[0] << ", " << invariantPoint[1] << ", " << invariantPoint[2] << std::endl;
     std::cout << "niftkVideoHandEyeByCrossCalibration: opt timing lag = " << optimiseTimingLag << std::endl;
-    std::cout << "niftkVideoHandEyeByCrossCalibration: timing lag     = " << timingLag << std::endl;
+    std::cout << "niftkVideoHandEyeByCrossCalibration: timing lag     = " << timingLag << "ms" <<  std::endl;
+    std::cout << "niftkVideoHandEyeByCrossCalibration: max timing Error     = " << maxTimingError << "ms" <<  std::endl;
     std::cout << "niftkVideoHandEyeByCrossCalibration: initial guess  = " << initialGuess << std::endl;
 
     mitk::Point3D invPoint;
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
     calibration->SetInvariantPoint(invPoint);
     calibration->SetOptimiseTimingLag(optimiseTimingLag);
     calibration->SetTimingLag(timingLag * 1e-3);
-    calibration->SetAllowableTimingError(maxTimingError * 1e-3);
+    calibration->SetAllowableTimingError(maxTimingError * 1e6);
     calibration->LoadRigidTransformation(initialGuess);
     calibration->SetVerbose(verbose);
 
