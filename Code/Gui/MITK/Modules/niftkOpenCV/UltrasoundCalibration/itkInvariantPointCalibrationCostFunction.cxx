@@ -26,6 +26,7 @@ InvariantPointCalibrationCostFunction::InvariantPointCalibrationCostFunction()
 , m_OptimiseTimingLag(false)
 , m_OptimiseRigidTransformation(true)
 , m_NumberOfValues(1)
+, m_AllowableTimingError (20e6) //20 milliseconds
 , m_NumberOfParameters(1)
 , m_PointData(NULL)
 , m_TrackingData(NULL)
@@ -160,14 +161,7 @@ void InvariantPointCalibrationCostFunction::GetDerivative(
 
     for (unsigned int j = 0; j < m_NumberOfValues; j++)
     {
-      if ( (! (boost::math::isnan(forwardValue[j]))) && (! (boost::math::isnan(backwardValue[j]))) )
-      {
-        derivative[i][j] = (forwardValue[j] - backwardValue[j])/2.0;
-      }
-      else
-      {
-        derivative[i][j] = 0.0;
-      }
+      derivative[i][j] = (forwardValue[j] - backwardValue[j])/2.0;
     }
   }
 
@@ -416,7 +410,7 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
     pointInWorld = (trackingTransformation * similarityTransformation) * point;
     residual = translationTransformation * pointInWorld;
  
-    if ( timingError < 2e7 ) 
+    if ( timingError < m_AllowableTimingError ) 
     {
       
       value[i*3 + 0] = residual(0, 0);
@@ -425,9 +419,14 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
     }
     else
     {
-      value[i*3 + 0] = std::numeric_limits<double>::quiet_NaN();
-      value[i*3 + 1] = std::numeric_limits<double>::quiet_NaN();
-      value[i*3 + 2] = std::numeric_limits<double>::quiet_NaN();
+      //excessive timing error, discard the value. I would much prefer
+      //to fill these with NaN or change the size of the value array, 
+      //however I haven't found a way to do this that works with itk's 
+      //solver. Filling with zeros should be OK but might lead to bugs when
+      //optimising the timingLag
+      value[i*3 + 0] = 0.0;
+      value[i*3 + 1] = 0.0;
+      value[i*3 + 2] = 0.0;
       valuesDropped += 3;
     }
   }
