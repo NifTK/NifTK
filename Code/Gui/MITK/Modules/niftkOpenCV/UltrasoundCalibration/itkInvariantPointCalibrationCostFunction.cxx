@@ -160,7 +160,14 @@ void InvariantPointCalibrationCostFunction::GetDerivative(
 
     for (unsigned int j = 0; j < m_NumberOfValues; j++)
     {
-      derivative[i][j] = (forwardValue[j] - backwardValue[j])/2.0;
+      if ( (! (boost::math::isnan(forwardValue[j]))) && (! (boost::math::isnan(backwardValue[j]))) )
+      {
+        derivative[i][j] = (forwardValue[j] - backwardValue[j])/2.0;
+      }
+      else
+      {
+        derivative[i][j] = 0.0;
+      }
     }
   }
 
@@ -278,15 +285,20 @@ double InvariantPointCalibrationCostFunction::GetResidual(const MeasureType& val
 {
   double residual = 0;
   unsigned int numberOfValues = values.size();
+  unsigned int numberOfRealValues = 0;
 
   for (unsigned int i = 0; i < numberOfValues; i++)
   {
-    residual += (values[i]*values[i]);
+    if ( ! (boost::math::isnan(values[i])) )
+    {
+      residual += (values[i]*values[i]);
+      numberOfRealValues++;
+    }
   }
 
   if (numberOfValues > 0)
   {
-    residual /= static_cast<double>(numberOfValues);
+    residual /= static_cast<double>(numberOfRealValues);
   }
 
   residual = sqrt(residual);
@@ -382,7 +394,8 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   TimeStampType timeStamp = 0;
   TimeStampType timingError = 0;
   bool inBounds;
-
+  
+  unsigned int valuesDropped = 0;
   for (unsigned int i = 0; i < this->m_PointData->size(); i++)
   {
     timeStamp = (*this->m_PointData)[i].first;
@@ -402,16 +415,28 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
 
     pointInWorld = (trackingTransformation * similarityTransformation) * point;
     residual = translationTransformation * pointInWorld;
-  
-    value[i*3 + 0] = residual(0, 0);
-    value[i*3 + 1] = residual(1, 0);
-    value[i*3 + 2] = residual(2, 0);
+ 
+    if ( timingError < 2e7 ) 
+    {
+      
+      value[i*3 + 0] = residual(0, 0);
+      value[i*3 + 1] = residual(1, 0);
+      value[i*3 + 2] = residual(2, 0);
+    }
+    else
+    {
+      value[i*3 + 0] = std::numeric_limits<double>::quiet_NaN();
+      value[i*3 + 1] = std::numeric_limits<double>::quiet_NaN();
+      value[i*3 + 2] = std::numeric_limits<double>::quiet_NaN();
+      valuesDropped += 3;
+    }
   }
 
   if (m_Verbose)
   {
     double residual = this->GetResidual(value);
-    std::cout << "InvariantPointCalibrationCostFunction::GetValue(";
+    std::cout << "InvariantPointCalibrationCostFunction::GetValue [ " << value.GetSize() << 
+      " , " << valuesDropped << " ] (";
     for (int j = 0; j < parameters.GetSize(); j++)
     {
       std::cout << parameters[j];
