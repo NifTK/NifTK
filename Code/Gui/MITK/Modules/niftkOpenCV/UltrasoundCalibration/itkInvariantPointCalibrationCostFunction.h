@@ -183,7 +183,7 @@ protected:
   ParametersType                                        m_Scales;
   mitk::Point3D                                         m_InvariantPoint;
   bool                                                  m_OptimiseInvariantPoint;
-  double                                                m_TimingLag;
+  double                                                m_TimingLag; //in seconds
   bool                                                  m_OptimiseTimingLag;
   std::vector<double>                                   m_RigidTransformation;
   bool                                                  m_OptimiseRigidTransformation;
