@@ -279,20 +279,15 @@ double InvariantPointCalibrationCostFunction::GetResidual(const MeasureType& val
 {
   double residual = 0;
   unsigned int numberOfValues = values.size();
-  unsigned int numberOfRealValues = 0;
 
   for (unsigned int i = 0; i < numberOfValues; i++)
   {
-    if ( ! (boost::math::isnan(values[i])) )
-    {
-      residual += (values[i]*values[i]);
-      numberOfRealValues++;
-    }
+    residual += (values[i]*values[i]);
   }
 
   if (numberOfValues > 0)
   {
-    residual /= static_cast<double>(numberOfRealValues);
+    residual /= static_cast<double>(numberOfValues);
   }
 
   residual = sqrt(residual);
