@@ -75,6 +75,14 @@ void InvariantPointCalibration::SetTimingLag(const double &timeStamp)
   this->Modified();
 }
 
+//-----------------------------------------------------------------------------
+void InvariantPointCalibration::SetAllowableTimingError(const TimeStampsContainer::TimeStamp &timingError)
+{
+  m_CostFunction->SetAllowableTimingError(timingError);
+  this->Modified();
+}
+
+
 
 //-----------------------------------------------------------------------------
 double InvariantPointCalibration::GetTimingLag()

@@ -21,6 +21,7 @@ set(MODULE_TESTS
   mitkOpenCVMathTests.cxx
   mitkOpenCVPointTypesTest.cxx
   mitkTimeStampsContainerTest.cxx
+  mitkTrackingAndTimeStampsContainerTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

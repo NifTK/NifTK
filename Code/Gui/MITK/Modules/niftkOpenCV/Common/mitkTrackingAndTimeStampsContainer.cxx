@@ -149,22 +149,50 @@ std::vector<TimeStampsContainer::TimeStamp>::size_type TrackingAndTimeStampsCont
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp)
+cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& minError, bool& inBounds)
 {
   TimeStampsContainer::TimeStamp before;
   TimeStampsContainer::TimeStamp after;
   double proportion = 0;
-
-  assert(m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion));
-
+  inBounds=false;
+    
+  cv::Matx44d interpolatedMatrix;
   std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
   std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
-  indexBefore = this->GetFrameNumber(before);
-  indexAfter = this->GetFrameNumber(after);
 
-  cv::Matx44d interpolatedMatrix;
-  mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
-  return interpolatedMatrix;
+  if (m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion))
+  {
+    indexBefore = this->GetFrameNumber(before);
+    indexAfter = this->GetFrameNumber(after);
+
+    mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
+    if ( proportion > 0.5 )
+    {
+      minError = after - timeStamp;
+    }
+    else
+    {
+      minError = timeStamp - before;
+    }
+    inBounds = true;
+    return interpolatedMatrix;
+  }
+  else
+  {
+    inBounds=false;
+    if ( before == 0 ) 
+    {
+      minError = after - timeStamp;
+      indexAfter = this->GetFrameNumber(after);
+      return m_TrackingMatrices[indexAfter];
+    }
+    else
+    {
+      minError = timeStamp - before;
+      indexBefore = this->GetFrameNumber(before);
+      return m_TrackingMatrices[indexBefore];
+    }
+  }
 }
 
 } // end namespace

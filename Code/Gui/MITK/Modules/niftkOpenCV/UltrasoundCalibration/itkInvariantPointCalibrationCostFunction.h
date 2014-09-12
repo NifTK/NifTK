@@ -66,6 +66,9 @@ public:
 
   itkSetMacro(TimingLag, double);
   itkGetConstMacro(TimingLag, double);
+  
+  itkSetMacro(AllowableTimingError, TimeStampType);
+  itkGetConstMacro(AllowableTimingError, TimeStampType);
 
   itkSetMacro(OptimiseTimingLag, bool);
   itkGetConstMacro(OptimiseTimingLag, bool);
@@ -180,11 +183,12 @@ protected:
   ParametersType                                        m_Scales;
   mitk::Point3D                                         m_InvariantPoint;
   bool                                                  m_OptimiseInvariantPoint;
-  double                                                m_TimingLag;
+  double                                                m_TimingLag; //in seconds
   bool                                                  m_OptimiseTimingLag;
   std::vector<double>                                   m_RigidTransformation;
   bool                                                  m_OptimiseRigidTransformation;
   mutable unsigned int                                  m_NumberOfValues;
+  TimeStampType                                         m_AllowableTimingError;
   unsigned int                                          m_NumberOfParameters;
   std::vector< std::pair<TimeStampType, cv::Point3d> > *m_PointData;
   mitk::TrackingAndTimeStampsContainer                 *m_TrackingData;
