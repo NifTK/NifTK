@@ -90,6 +90,14 @@
       <default>0</default>
       <channel>input</channel>
     </double>
+    <double>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum allowable timing error in milliseconds for performing tracking matrix interpolation</description>
+      <label>Timing Error</label>
+      <default>20</default>
+      <channel>input</channel>
+    </double> 
     <file fileExtensions=".txt,.mat,.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>

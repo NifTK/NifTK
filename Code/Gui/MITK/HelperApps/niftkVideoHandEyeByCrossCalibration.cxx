@@ -58,7 +58,8 @@ int main(int argc, char** argv)
     calibration->SetOptimiseInvariantPoint(optimiseInvariantPoint);
     calibration->SetInvariantPoint(invPoint);
     calibration->SetOptimiseTimingLag(optimiseTimingLag);
-    calibration->SetTimingLag(timingLag);
+    calibration->SetTimingLag(timingLag * 1e-3);
+    calibration->SetAllowableTimingError(maxTimingError * 1e-3);
     calibration->LoadRigidTransformation(initialGuess);
     calibration->SetVerbose(verbose);
 
