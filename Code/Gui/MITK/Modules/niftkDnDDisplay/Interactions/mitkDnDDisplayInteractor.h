@@ -69,14 +69,6 @@ protected:
 
   virtual bool SelectPosition(StateMachineAction*, InteractionEvent*);
 
-  /// \brief Scrolls one slice up.
-  /// Overrides superclass function to set the focus to the renderer before scrolling.
-  virtual bool ScrollOneUp(StateMachineAction*, InteractionEvent*);
-
-  /// \brief Scrolls one slice down.
-  /// Overrides superclass function to set the focus to the renderer before scrolling.
-  virtual bool ScrollOneDown(StateMachineAction*, InteractionEvent*);
-
   /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
   virtual bool InitMove(StateMachineAction*, InteractionEvent*);
 
@@ -105,33 +97,54 @@ protected:
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
 
+  /// \brief Selects the previous slice.
+  /// The slices are ordered in the following way:
+  ///   <li>axial: inferior to superior
+  ///   <li>sagittal: left to right
+  ///   <>
+  virtual bool SelectPreviousSlice(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Selects the next slice.
+  virtual bool SelectNextSlice(StateMachineAction*, InteractionEvent*);
+
   /// \brief Selects the previous time step.
   virtual bool SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Selects the next time step.
   virtual bool SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
 
-  /// \brief Starts scrolling through slices in a loop in anterior direction.
-  virtual bool StartScrollingThroughSlicesAnterior(StateMachineAction* action, InteractionEvent* interactionEvent);
+  /// \brief Starts scrolling through slices in a loop backwards.
+  virtual bool StartScrollingThroughSlicesBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through slices in a loop in posterior direction.
-  virtual bool StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent);
-
-  /// \brief Starts scrolling through time steps in a loop, forwards.
-  virtual bool StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartScrollingThroughSlicesForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through time steps in a loop, backwards.
   virtual bool StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Starts scrolling through time steps in a loop, forwards.
+  virtual bool StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Stops scrolling through slices.
   virtual bool StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent);
 
 private slots:
 
-  void StepOneSliceAnterior();
-  void StepOneSlicePosterior();
-  void StepOneTimeStepForwards();
-  void StepOneTimeStepBackwards();
+  /// \brief Selects the previous slice or the last slice if the first slice is currently selected.
+  /// This slot connected to a timer when the user starts auto-scrolling slices backwards.
+  void SelectPreviousSlice();
+
+  /// \brief Selects the next slice or the first slice if the last slice is currently selected.
+  /// This slot connected to a timer when the user starts auto-scrolling slices forwards.
+  void SelectNextSlice();
+
+  /// \brief Selects the previous time step or the last time step if the first time step is currently selected.
+  /// This slot connected to a timer when the user starts auto-scrolling time steps backwards.
+  void SelectPreviousTimeStep();
+
+  /// \brief Selects the next time step or the first time step if the last time step is currently selected.
+  /// This slot connected to a timer when the user starts auto-scrolling time steps forwards.
+  void SelectNextTimeStep();
 
 private:
 

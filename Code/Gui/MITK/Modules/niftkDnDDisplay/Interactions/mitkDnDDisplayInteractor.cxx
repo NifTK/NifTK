@@ -76,13 +76,15 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
+  CONNECT_FUNCTION("selectPreviousSlice", SelectPreviousSlice);
+  CONNECT_FUNCTION("selectNextSlice", SelectNextSlice);
   CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
   CONNECT_FUNCTION("selectNextTimeStep", SelectNextTimeStep);
 
-  CONNECT_FUNCTION("startScrollingThroughSlicesAnterior", StartScrollingThroughSlicesAnterior);
-  CONNECT_FUNCTION("startScrollingThroughSlicesPosterior", StartScrollingThroughSlicesPosterior);
-  CONNECT_FUNCTION("startScrollingThroughTimeStepsForwards", StartScrollingThroughTimeStepsForwards);
+  CONNECT_FUNCTION("startScrollingThroughSlicesBackwards", StartScrollingThroughSlicesBackwards);
+  CONNECT_FUNCTION("startScrollingThroughSlicesForwards", StartScrollingThroughSlicesForwards);
   CONNECT_FUNCTION("startScrollingThroughTimeStepsBackwards", StartScrollingThroughTimeStepsBackwards);
+  CONNECT_FUNCTION("startScrollingThroughTimeStepsForwards", StartScrollingThroughTimeStepsForwards);
   CONNECT_FUNCTION("stopScrolling", StopScrolling);
 }
 
@@ -146,84 +148,6 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* action, Inte
 
   m_Viewer->BlockUpdate(updateWasBlocked);
 
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
-{
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-
-  /// Note:
-  /// We do not implement scrolling for the 3D window.
-  if (renderer == m_Renderers[3])
-  {
-    return true;
-  }
-
-  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
-
-  if (renderer != m_FocusManager->GetFocused())
-  {
-    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_Viewer->SetSelectedRenderWindow(renderWindow);
-    m_Viewer->SetFocused();
-  }
-
-  /// Note:
-  /// This does not work if the slice are locked.
-  /// See:
-  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
-  /// and
-  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
-
-//  bool result = Superclass::ScrollOneUp(action, interactionEvent);
-
-  m_Viewer->MoveAnterior();
-
-  m_Viewer->BlockUpdate(updateWasBlocked);
-
-//  return result;
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
-{
-  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-
-  /// Note:
-  /// We do not implement scrolling for the 3D window.
-  if (renderer == m_Renderers[3])
-  {
-    return true;
-  }
-
-  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
-
-  if (renderer != m_FocusManager->GetFocused())
-  {
-    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
-    m_Viewer->SetSelectedRenderWindow(renderWindow);
-    m_Viewer->SetFocused();
-  }
-
-  /// Note:
-  /// This does not work if the slice are locked.
-  /// See:
-  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
-  /// and
-  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
-
-//  bool result = Superclass::ScrollOneDown(action, interactionEvent);
-
-  m_Viewer->MovePosterior();
-
-  m_Viewer->BlockUpdate(updateWasBlocked);
-
-//  return result;
   return true;
 }
 
@@ -371,6 +295,86 @@ bool mitk::DnDDisplayInteractor::ToggleCursorVisibility(StateMachineAction* acti
 
 
 //-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SelectPreviousSlice(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not implement scrolling for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
+
+  if (renderer != m_FocusManager->GetFocused())
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
+  }
+
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  m_Viewer->MoveSlice(orientation, -1);
+
+  m_Viewer->BlockUpdate(updateWasBlocked);
+
+//  return result;
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::SelectNextSlice(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not implement scrolling for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  bool updateWasBlocked = m_Viewer->BlockUpdate(true);
+
+  if (renderer != m_FocusManager->GetFocused())
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetFocused();
+  }
+
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  m_Viewer->MoveSlice(orientation, +1);
+
+  m_Viewer->BlockUpdate(updateWasBlocked);
+
+//  return result;
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   int timeStep = m_Viewer->GetTimeStep() - 1;
@@ -399,9 +403,9 @@ bool mitk::DnDDisplayInteractor::SelectNextTimeStep(StateMachineAction* action, 
 
 
 //-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneSliceAnterior()));
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectPreviousSlice()));
   m_AutoScrollTimer->start();
 
   return true;
@@ -409,18 +413,9 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesAnterior(StateMachin
 
 
 //-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesPosterior(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneSlicePosterior()));
-  m_AutoScrollTimer->start();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
-{
-  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneTimeStepForwards()));
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectNextSlice()));
   m_AutoScrollTimer->start();
   return true;
 }
@@ -429,7 +424,16 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMac
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(StepOneTimeStepBackwards()));
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectPreviousTimeStep()));
+  m_AutoScrollTimer->start();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectNextTimeStep()));
   m_AutoScrollTimer->start();
   return true;
 }
@@ -445,50 +449,40 @@ bool mitk::DnDDisplayInteractor::StopScrolling(StateMachineAction* action, Inter
 
 
 //-----------------------------------------------------------------------------
-void mitk::DnDDisplayInteractor::StepOneSliceAnterior()
+void mitk::DnDDisplayInteractor::SelectPreviousSlice()
 {
   WindowOrientation orientation = m_Viewer->GetOrientation();
-  int slice = m_Viewer->GetSelectedSlice(orientation) + 1;
-  if (slice > m_Viewer->GetMaxSlice(orientation))
-  {
-    slice = 0;
-  }
-  m_Viewer->SetSelectedSlice(orientation, slice);
+  m_Viewer->MoveSlice(orientation, -1, true);
 }
 
 
 //-----------------------------------------------------------------------------
-void mitk::DnDDisplayInteractor::StepOneSlicePosterior()
+void mitk::DnDDisplayInteractor::SelectNextSlice()
 {
   WindowOrientation orientation = m_Viewer->GetOrientation();
-  int slice = m_Viewer->GetSelectedSlice(orientation) - 1;
-  if (slice < 0)
-  {
-    slice = m_Viewer->GetMaxSlice(orientation);
-  }
-  m_Viewer->SetSelectedSlice(orientation, slice);
+  m_Viewer->MoveSlice(orientation, +1, true);
 }
 
 
 //-----------------------------------------------------------------------------
-void mitk::DnDDisplayInteractor::StepOneTimeStepForwards()
+void mitk::DnDDisplayInteractor::SelectPreviousTimeStep()
 {
-  int timeStep = m_Viewer->GetTimeStep() + 1;
-  if (timeStep > m_Viewer->GetMaxTimeStep())
+  int timeStep = m_Viewer->GetTimeStep() - 1;
+  if (timeStep < 0)
   {
-    timeStep = 0;
+    timeStep = m_Viewer->GetMaxTimeStep();
   }
   m_Viewer->SetTimeStep(timeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-void mitk::DnDDisplayInteractor::StepOneTimeStepBackwards()
+void mitk::DnDDisplayInteractor::SelectNextTimeStep()
 {
-  int timeStep = m_Viewer->GetTimeStep() - 1;
-  if (timeStep < 0)
+  int timeStep = m_Viewer->GetTimeStep() + 1;
+  if (timeStep > m_Viewer->GetMaxTimeStep())
   {
-    timeStep = m_Viewer->GetMaxTimeStep();
+    timeStep = 0;
   }
   m_Viewer->SetTimeStep(timeStep);
 }

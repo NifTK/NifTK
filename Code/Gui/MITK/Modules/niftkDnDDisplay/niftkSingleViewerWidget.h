@@ -84,11 +84,11 @@ public:
   niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
   virtual ~niftkSingleViewerWidget();
 
-  /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
-  void SetEnabled(bool enabled);
-
   /// \brief Returns the enabled flag.
   bool IsEnabled() const;
+
+  /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
+  void SetEnabled(bool enabled);
 
   /// \brief Tells if the selected render window has the focus.
   bool IsFocused() const;
@@ -292,35 +292,15 @@ public:
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultMultiWindowLayout(WindowLayout windowLayout);
 
-  /// \brief Move anterior a slice.
-  bool MoveAnterior();
-
-  /// \brief Move posterior a slice.
-  bool MovePosterior();
-
-  /// \brief Selects the previous time step.
-  bool SelectPreviousTimeStep();
-
-  /// \brief Selects the next time step.
-  bool SelectNextTimeStep();
-
-  /// \brief Switch to Axial.
-  bool SwitchToAxial();
-
-  /// \brief Switch to Sagittal.
-  bool SwitchToSagittal();
-
-  /// \brief Switch to Coronal.
-  bool SwitchToCoronal();
-
-  /// \brief Switch to 3D.
-  bool SwitchTo3D();
+  /// \brief Selects the nth slice before or after the currently selected slice.
+  /// Slices are ordered: coronal: posterior -> anterior, sagittal: left -> right, axial: inferior -> superior
+  void MoveSlice(WindowOrientation orientation, int delta, bool restart = false);
 
   /// \brief Switch the from single window to multiple windows or back
-  bool ToggleMultiWindowLayout();
+  void ToggleMultiWindowLayout();
 
   /// \brief Shows or hides the cursor.
-  bool ToggleCursorVisibility();
+  void ToggleCursorVisibility();
 
   /// \brief Blocks the update of the viewer.
   ///

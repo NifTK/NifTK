@@ -1988,13 +1988,13 @@ void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveAnteriorOrPosterior(int windowIndex, int slices)
+void niftkMultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
 {
   if (m_Geometry && windowIndex < 3 && slices != 0)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    int selectedSlice = this->GetSelectedSlice(windowIndex);
+    int slice = this->GetSelectedSlice(windowIndex);
 
     int upDirection;
     if (windowIndex == AXIAL)
@@ -2010,13 +2010,25 @@ void niftkMultiWindowWidget::MoveAnteriorOrPosterior(int windowIndex, int slices
       upDirection = m_UpDirections[1];
     }
 
-    int nextSelectedSlice = selectedSlice + upDirection * slices;
+    int nextSlice = slice + upDirection * slices;
 
     int maxSlice = this->GetMaxSlice(windowIndex);
 
-    if (nextSelectedSlice >= 0 && nextSelectedSlice <= static_cast<int>(maxSlice))
+    if (restart)
     {
-      this->SetSelectedSlice(windowIndex, nextSelectedSlice);
+      if (nextSlice < 0)
+      {
+        nextSlice += maxSlice + 1;
+      }
+      else if (nextSlice > maxSlice)
+      {
+        nextSlice -= maxSlice + 1;
+      }
+    }
+
+    if (nextSlice >= 0 && nextSlice <= maxSlice)
+    {
+      this->SetSelectedSlice(windowIndex, nextSlice);
 
       /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
       /// when scrolling through them by keeping the 'a' or 'z' key pressed.

@@ -59,61 +59,61 @@
   </event_variant>
 
   <!-- Scrolling through slices -->
-  <event_variant class="MouseWheelEvent" name="SelectAnteriorSlice">
-    <attribute name="ScrollDirection" value="up"/>
-  </event_variant>
-  <event_variant class="MouseWheelEvent" name="SelectPosteriorSlice">
-    <attribute name="ScrollDirection" value="down"/>
-  </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectAnteriorSlice">
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousSlice">
     <attribute name="Key" value="A"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectPosteriorSlice">
+  <event_variant class="InteractionKeyEvent" name="SelectNextSlice">
     <attribute name="Key" value="Z"/>
+  </event_variant>
+  <event_variant class="MouseWheelEvent" name="SelectPreviousSlice">
+    <attribute name="ScrollDirection" value="up"/>
+  </event_variant>
+  <event_variant class="MouseWheelEvent" name="SelectNextSlice">
+    <attribute name="ScrollDirection" value="down"/>
   </event_variant>
 
   <!-- Scrolling through time steps -->
-  <event_variant class="MouseWheelEvent" name="SelectNextTimeStep">
-    <attribute name="ScrollDirection" value="down"/>
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
+    <attribute name="Key" value="A"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectNextTimeStep">
+    <attribute name="Key" value="Z"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
   <event_variant class="MouseWheelEvent" name="SelectPreviousTimeStep">
     <attribute name="ScrollDirection" value="up"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectNextTimeStep">
-    <attribute name="Key" value="A"/>
-    <attribute name="Modifiers" value="alt"/>
-  </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectPreviousTimeStep">
-    <attribute name="Key" value="Z"/>
+  <event_variant class="MouseWheelEvent" name="SelectNextTimeStep">
+    <attribute name="ScrollDirection" value="down"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
 
   <!-- Autoscroll through slices -->
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesAnteriorByKey">
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesBackwardsByKey">
     <attribute name="Key" value="A"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesPosteriorByKey">
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughSlicesForwardsByKey">
     <attribute name="Key" value="Z"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesAnteriorByMouse">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesBackwardsByMouse">
     <attribute name="ScrollDirection" value="up"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesPosteriorByMouse">
+  <event_variant class="MouseWheelEvent" name="StartScrollingThroughSlicesForwardsByMouse">
     <attribute name="ScrollDirection" value="down"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
 
   <!-- Autoscroll through time steps -->
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsForwardsByKey">
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsBackwardsByKey">
     <attribute name="Key" value="A"/>
     <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsBackwardsByKey">
+  <event_variant class="InteractionKeyEvent" name="StartScrollingThroughTimeStepsForwardsByKey">
     <attribute name="Key" value="Z"/>
     <attribute name="Modifiers" value="shift,alt"/>
   </event_variant>

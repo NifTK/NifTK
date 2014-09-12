@@ -195,7 +195,13 @@ public:
 
   /// \brief Move n slices towards or opposite of the up direction.
   /// If delta is positive, the direction is the up direction.
-  void MoveAnteriorOrPosterior(int windowIndex, int delta);
+  /// \param windowIndex the index of the 2D window that determines the orientation
+  ///                    (axial = 0, sagittal = 1, coronal = 2)
+  /// \param delta  tells how many slices to move. Negative value means moving backwards.
+  ///               i.e. against the up direction.
+  /// \param loop   tells if the next slice should be taken from the beginning if the last
+  ///               slice has been reached or vice versa.
+  void MoveSlice(int windowIndex, int delta, bool restart = false);
 
   /// \brief Get the current time step.
   int GetTimeStep() const;
