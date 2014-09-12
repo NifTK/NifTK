@@ -48,6 +48,7 @@ public:
   bool GetOptimiseInvariantPoint() const;
 
   void SetTimingLag(const double& timeStamp);
+  void SetAllowableTimingError(const TimeStampsContainer::TimeStamp& maxError);
   double GetTimingLag();
 
   void SetOptimiseTimingLag(const bool&);
