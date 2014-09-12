@@ -28,44 +28,44 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="initZoom"/>
         </transition>
 
-        <transition event_class="InteractionEvent" event_variant="SelectAnteriorSlice" target="start">
-            <action name="ScrollOneUp"/>
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
+            <action name="selectPreviousSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPosteriorSlice" target="start">
-            <action name="ScrollOneDown"/>
-        </transition>
-
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesAnteriorByKey" target="scrollingThroughSlicesAnterior">
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesPosteriorByKey" target="scrollingThroughSlicesPosterior">
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesAnteriorByMouse" target="scrollingThroughSlicesAnterior">
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesPosteriorByMouse" target="scrollingThroughSlicesPosterior">
-            <action name="startScrollingThroughSlicesPosterior"/>
+        <transition event_class="InteractionEvent" event_variant="SelectNextSlice" target="start">
+            <action name="selectNextSlice"/>
         </transition>
 
-        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
-            <action name="selectNextTimeStep"/>
-        </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
             <action name="selectPreviousTimeStep"/>
         </transition>
-
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
-            <action name="startScrollingThroughTimeStepsForwards"/>
+        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
+            <action name="selectNextTimeStep"/>
         </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesBackwardsByKey" target="scrollingThroughSlicesBackwards">
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesForwardsByKey" target="scrollingThroughSlicesForwards">
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesBackwardsByMouse" target="scrollingThroughSlicesBackwards">
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesForwardsByMouse" target="scrollingThroughSlicesForwards">
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+
         <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="scrollingThroughTimeStepsBackwards">
             <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
             <action name="startScrollingThroughTimeStepsForwards"/>
         </transition>
         <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByMouse" target="scrollingThroughTimeStepsBackwards">
             <action name="startScrollingThroughTimeStepsBackwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
+            <action name="startScrollingThroughTimeStepsForwards"/>
         </transition>
 
         <transition event_class="InteractionKeyEvent" event_variant="AxialWindowLayout" target="start">
@@ -113,7 +113,7 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionPositionEvent" event_variant="StopZooming" target="start"/>
     </state>
 
-    <state name="scrollingThroughSlicesAnterior">
+    <state name="scrollingThroughSlicesBackwards">
         <transition event_class="InteractionKeyEvent" event_variant="StopScrolling" target="start">
             <action name="stopScrolling"/>
         </transition>
@@ -129,53 +129,54 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="stopScrolling"/>
             <action name="initZoom"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectAnteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneUp"/>
+            <action name="selectPreviousSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPosteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectNextSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneDown"/>
+            <action name="selectNextSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesBackwardsByKey" target="start">
             <action name="stopScrolling"/>
-            <action name="selectNextTimeStep"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesForwardsByKey" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+        <!-- Note: a second wheel event in the same direction (StartScrollingThroughSlicesBackwardsByMouse) should not switch off the autoscroll,
+             therefore this event is not handled here. -->
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesForwardsByMouse" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
             <action name="stopScrolling"/>
             <action name="selectPreviousTimeStep"/>
         </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesAnteriorByKey" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
             <action name="stopScrolling"/>
-        </transition>
-        <!-- Note: a second wheel event in the same direction should not switch off the autoscroll,
-             therefore this event is not handled here. -->
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesPosteriorByKey" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesPosteriorByMouse" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsForwards"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsForwards"/>
+            <action name="selectNextTimeStep"/>
         </transition>
         <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="scrollingThroughTimeStepsBackwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughTimeStepsForwards"/>
+        </transition>
         <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByMouse" target="scrollingThroughTimeStepsBackwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsBackwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughTimeStepsForwards"/>
         </transition>
     </state>
-    <state name="scrollingThroughSlicesPosterior">
+
+    <state name="scrollingThroughSlicesForwards">
         <transition event_class="InteractionKeyEvent" event_variant="StopScrolling" target="start">
             <action name="stopScrolling"/>
         </transition>
@@ -191,50 +192,113 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="stopScrolling"/>
             <action name="initZoom"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectAnteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneUp"/>
+            <action name="selectPreviousSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPosteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectNextSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneDown"/>
+            <action name="selectNextSlice"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesBackwardsByKey" target="scrollingThroughSlicesBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesForwardsByKey" target="start">
+            <action name="stopScrolling"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesBackwardsByMouse" target="scrollingThroughSlicesBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <!-- Note: a second wheel event in the same direction (StartScrollingThroughSlicesForwardsByMouse) should not switch off the autoscroll,
+             therefore this event is not handled here. -->
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
+            <action name="stopScrolling"/>
+            <action name="selectPreviousTimeStep"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
             <action name="stopScrolling"/>
             <action name="selectNextTimeStep"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="scrollingThroughTimeStepsBackwards">
             <action name="stopScrolling"/>
-            <action name="selectPreviousTimeStep"/>
+            <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesAnteriorByKey" target="scrollingThroughSlicesAnterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesAnteriorByMouse" target="scrollingThroughSlicesAnterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesPosteriorByKey" target="start">
-            <action name="stopScrolling"/>
-        </transition>
-        <!-- Note: a second wheel event in the same direction should not switch off the autoscroll,
-             therefore this event is not handled here. -->
         <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsForwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByMouse" target="scrollingThroughTimeStepsBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
         <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsForwards"/>
         </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="scrollingThroughTimeStepsBackwards">
+    </state>
+
+    <state name="scrollingThroughTimeStepsBackwards">
+        <transition event_class="InteractionKeyEvent" event_variant="StopScrolling" target="start">
             <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByMouse" target="scrollingThroughTimeStepsBackwards">
+        <transition event_class="InteractionEvent" event_variant="StartSelectingPosition" target="selectingPosition">
             <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsBackwards"/>
+            <action name="selectPosition"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
+            <action name="stopScrolling"/>
+            <action name="initMove"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
+            <action name="stopScrolling"/>
+            <action name="initZoom"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
+            <action name="stopScrolling"/>
+            <action name="selectPreviousSlice"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="SelectNextSlice" target="start">
+            <action name="stopScrolling"/>
+            <action name="selectNextSlice"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesBackwardsByKey" target="scrollingThroughSlicesBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesForwardsByKey" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesBackwardsByMouse" target="scrollingThroughSlicesBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesForwardsByMouse" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
+            <action name="stopScrolling"/>
+            <action name="selectPreviousTimeStep"/>
+        </transition>
+        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
+            <action name="stopScrolling"/>
+            <action name="selectNextTimeStep"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="start">
+            <action name="stopScrolling"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughTimeStepsForwards"/>
+        </transition>
+        <!-- Note: a second wheel event in the same direction (StartScrollingThroughTimeStepsBackwardsByMouse) should not switch off the autoscroll,
+             therefore this event is not handled here. -->
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughTimeStepsForwards"/>
         </transition>
     </state>
 
@@ -254,112 +318,50 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="stopScrolling"/>
             <action name="initZoom"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectAnteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneUp"/>
+            <action name="selectPreviousSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPosteriorSlice" target="start">
+        <transition event_class="InteractionEvent" event_variant="SelectNextSlice" target="start">
             <action name="stopScrolling"/>
-            <action name="ScrollOneDown"/>
+            <action name="selectNextSlice"/>
         </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesBackwardsByKey" target="scrollingThroughSlicesBackwards">
             <action name="stopScrolling"/>
-            <action name="selectNextTimeStep"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesForwardsByKey" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesBackwardsByMouse" target="scrollingThroughSlicesBackwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesBackwards"/>
+        </transition>
+        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesForwardsByMouse" target="scrollingThroughSlicesForwards">
+            <action name="stopScrolling"/>
+            <action name="startScrollingThroughSlicesForwards"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
             <action name="stopScrolling"/>
             <action name="selectPreviousTimeStep"/>
         </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesAnteriorByKey" target="scrollingThroughSlicesAnterior">
+        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
             <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
+            <action name="selectNextTimeStep"/>
         </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesAnteriorByMouse" target="scrollingThroughSlicesAnterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesPosteriorByKey" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesPosteriorByMouse" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="start">
-            <action name="stopScrolling"/>
-        </transition>
-        <!-- Note: a second wheel event in the same direction should not switch off the autoscroll,
-             therefore this event is not handled here. -->
         <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="scrollingThroughTimeStepsBackwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsBackwards"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="start">
+            <action name="stopScrolling"/>
         </transition>
         <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByMouse" target="scrollingThroughTimeStepsBackwards">
             <action name="stopScrolling"/>
             <action name="startScrollingThroughTimeStepsBackwards"/>
         </transition>
-    </state>
-    <state name="scrollingThroughTimeStepsBackwards">
-        <transition event_class="InteractionKeyEvent" event_variant="StopScrolling" target="start">
-            <action name="stopScrolling"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="StartSelectingPosition" target="selectingPosition">
-            <action name="stopScrolling"/>
-            <action name="selectPosition"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
-            <action name="stopScrolling"/>
-            <action name="initMove"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
-            <action name="stopScrolling"/>
-            <action name="initZoom"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectAnteriorSlice" target="start">
-            <action name="stopScrolling"/>
-            <action name="ScrollOneUp"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPosteriorSlice" target="start">
-            <action name="stopScrolling"/>
-            <action name="ScrollOneDown"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectNextTimeStep" target="start">
-            <action name="stopScrolling"/>
-            <action name="selectNextTimeStep"/>
-        </transition>
-        <transition event_class="InteractionEvent" event_variant="SelectPreviousTimeStep" target="start">
-            <action name="stopScrolling"/>
-            <action name="selectPreviousTimeStep"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesAnteriorByKey" target="scrollingThroughSlicesAnterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesAnteriorByMouse" target="scrollingThroughSlicesAnterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesAnterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughSlicesPosteriorByKey" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughSlicesPosteriorByMouse" target="scrollingThroughSlicesPosterior">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughSlicesPosterior"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsForwardsByKey" target="scrollingThroughTimeStepsForwards">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsForwards"/>
-        </transition>
-        <transition event_class="MouseWheelEvent" event_variant="StartScrollingThroughTimeStepsForwardsByMouse" target="scrollingThroughTimeStepsForwards">
-            <action name="stopScrolling"/>
-            <action name="startScrollingThroughTimeStepsForwards"/>
-        </transition>
-        <transition event_class="InteractionKeyEvent" event_variant="StartScrollingThroughTimeStepsBackwardsByKey" target="start">
-            <action name="stopScrolling"/>
-        </transition>
-        <!-- Note: a second wheel event in the same direction should not switch off the autoscroll,
+        <!-- Note: a second wheel event in the same direction (StartScrollingThroughTimeStepsForwardsByMouse) should not switch off the autoscroll,
              therefore this event is not handled here. -->
     </state>
 

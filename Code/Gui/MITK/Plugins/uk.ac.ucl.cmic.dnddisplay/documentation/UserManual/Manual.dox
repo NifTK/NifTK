@@ -115,15 +115,15 @@ just the cursors, the magnification, or the geometry.
 
 Many features of the display can be controlled by key or mouse interactions.
 
-\li Selecting position: left mouse button
-\li Zooming: dragging with the right mouse button (keep it pressed and move the mouse)
+\li Selecting position: single click with left mouse button
+\li Zooming: dragging with the right mouse button (keeping it pressed and moving the mouse)
 \li Panning: dragging with middle mouse button or dragging with the left button with Shift
-\li Select anterior slice: 'A' or scrolling up with the mouse wheel
-\li Select posterior slice: 'Z' or scrolling down with the mouse wheel
+\li Select previous slice: 'A' or scrolling up with the mouse wheel
+\li Select next slice: 'Z' or scrolling down with the mouse wheel
 \li Select next time step: Alt-A or scrolling up with the mouse wheel with Alt
 \li Select previous time step: Alt-Z or scrolling down with the mouse wheel with Alt
-\li Auto-scroll through slices in anterior direction: Shift-A or start scrolling up with Shift
-\li Auto-scroll through slices in posterior direction: Shift-Z or start scrolling down with Shift
+\li Auto-scroll through slices backwards: Shift-A or start scrolling up with Shift
+\li Auto-scroll through slices in forwards: Shift-Z or start scrolling down with Shift
 \li Auto-scroll through time steps forwards: Shift-Alt-A or scrolling up with the mouse wheel with Shift-Alt
 \li Auto-scroll through time steps backwards: Shift-Alt-Z or scrolling down with the mouse wheel with Shift-Alt
 \li Switch to axial window: 'Q'
@@ -132,6 +132,13 @@ Many features of the display can be controlled by key or mouse interactions.
 \li Switch to 3D window: 'R'
 \li Toggle between single and multiple window layout: 'T' or double click in a window
 \li Toggle cursor visibility: 'X'
+
+The slices are ordered in world coordinate system that is independent of the voxel coordinates.
+The order of slices is the following:
+
+\li axial orientation: from inferior to superior
+\li sagittal orientation: from right to left
+\li coronal orientation: from anterior to posterior
 
 \subsection DragAndDropPreferences User Preferences for the Drag and Drop Display
 

@@ -30,7 +30,7 @@
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::RenderingManager* renderingManager, const QString& name)
+niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
 : QWidget(parent)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
@@ -605,6 +605,16 @@ void niftkSingleViewerWidget::SetSelectedSlice(WindowOrientation orientation, in
 
 
 //-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::MoveSlice(WindowOrientation orientation, int delta, bool restart)
+{
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
+  {
+    m_MultiWidget->MoveSlice(orientation, delta, restart);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 int niftkSingleViewerWidget::GetTimeStep() const
 {
   return m_MultiWidget->GetTimeStep();
@@ -962,83 +972,7 @@ void niftkSingleViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLay
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::MoveAnterior()
-{
-  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), +1);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::MovePosterior()
-{
-  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), -1);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SelectPreviousTimeStep()
-{
-  int timeStep = m_MultiWidget->GetTimeStep() - 1;
-
-  if (timeStep >= 0)
-  {
-    m_MultiWidget->SetTimeStep(timeStep);
-  }
-
-  return timeStep == m_MultiWidget->GetTimeStep();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SelectNextTimeStep()
-{
-  int timeStep = m_MultiWidget->GetTimeStep() + 1;
-
-  if (timeStep <= m_MultiWidget->GetMaxTimeStep())
-  {
-    m_MultiWidget->SetTimeStep(timeStep);
-  }
-
-  return timeStep == m_MultiWidget->GetTimeStep();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SwitchToAxial()
-{
-  this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SwitchToSagittal()
-{
-  this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SwitchToCoronal()
-{
-  this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::SwitchTo3D()
-{
-  this->SetWindowLayout(WINDOW_LAYOUT_3D);
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
+void niftkSingleViewerWidget::ToggleMultiWindowLayout()
 {
   if (m_GeometryInitialised)
   {
@@ -1098,13 +1032,11 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 
     m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
-
-  return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::ToggleCursorVisibility()
+void niftkSingleViewerWidget::ToggleCursorVisibility()
 {
   bool visible = !this->IsCursorVisible();
 
@@ -1113,8 +1045,6 @@ bool niftkSingleViewerWidget::ToggleCursorVisibility()
   this->RequestUpdate();
 
   emit CursorVisibilityChanged(visible);
-
-  return true;
 }
 
 
