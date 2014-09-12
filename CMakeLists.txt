@@ -234,7 +234,7 @@ set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "1dd16ae785" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "d5dc66e74f" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_MITK "c00657bd0c" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "08806c008c" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "837b181ce2" CACHE STRING "Version of NiftySeg" FORCE)
@@ -1412,45 +1412,6 @@ include(CPack)
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
 
 include(mitkInstallRules)
-
-######################################################################
-#####     The following lines are from mitkInstallRules,         #####
-#####     they were customized and copied here. See Trac #3788   #####           
-######################################################################
-
-# Install CTK Qt (designer) plugins
-if(WIN32)
-  if(MITK_USE_CTK)
-    if(EXISTS ${CTK_QTDESIGNERPLUGINS_DIR})
-      set(_qtplugin_install_destinations)
-      list(APPEND _qtplugin_install_destinations bin/plugins/designer)
-
-      if(NOT CMAKE_CFG_INTDIR STREQUAL ".")
-        set(_matching_pattern FILES_MATCHING PATTERN "*.dll")
-      else()
-        set(_matching_pattern )
-      endif()
-      
-      foreach(_qtplugin_install_dir ${_qtplugin_install_destinations})
-        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-          install(DIRECTORY "${CTK_QTDESIGNERPLUGINS_DIR}/designer/Debug/"
-            DESTINATION ${_qtplugin_install_dir}
-            CONFIGURATIONS Debug
-            ${_matching_pattern}
-          )
-        elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-          install(DIRECTORY "${CTK_QTDESIGNERPLUGINS_DIR}/designer/Release/"
-            DESTINATION ${_qtplugin_install_dir}
-            CONFIGURATIONS Release
-            ${_matching_pattern}
-          )
-        endif()
-      endforeach()
-      
-    endif()
-  endif()
-endif()
-
 
 ######################################################################
 # If we are under Windows, create two batch files which correctly
