@@ -229,7 +229,7 @@ private:
       double& stdDev,
       unsigned long& counter,
       TPixel1* imagePixelsCopy,
-      double median
+      double& median
       );
 
   /// See: http://docs.mitk.org/nightly-qt4/group__Adaptor.html
