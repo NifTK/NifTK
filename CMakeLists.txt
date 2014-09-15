@@ -809,43 +809,54 @@ if (WIN32)
   if(OPENMP_FOUND)
     message("Found OpenMP")
 
+    # the debug versions of the runtime library are considered "non redistributable".
+    # we never hand out debug-build installers, so no problem having these packaged along correctly for internal testing.
+    set(CMAKE_MSVC_ARCH_DEBUG_PREFIX "")
+    set(CMAKE_MSVC_LIBNAME_FRAGMENT "")
+    set(CMAKE_MSVC_OPENMP_DLLNAMESUFFIX "")
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+      set(CMAKE_MSVC_ARCH_DEBUG_PREFIX "Debug_NonRedist/")
+      set(CMAKE_MSVC_LIBNAME_FRAGMENT "Debug")
+      set(CMAKE_MSVC_OPENMP_DLLNAMESUFFIX "d")
+    endif()
+
     if(CMAKE_CL_64)
       if(MSVC_VERSION GREATER 1599)
         # VS 10 and later:
-        set(CMAKE_MSVC_ARCH x64)
+        set(CMAKE_MSVC_ARCH "${CMAKE_MSVC_ARCH_DEBUG_PREFIX}x64")
       else()
         # VS 9 and earlier:
-        set(CMAKE_MSVC_ARCH amd64)
+        set(CMAKE_MSVC_ARCH "${CMAKE_MSVC_ARCH_DEBUG_PREFIX}amd64")
       endif()
     else()
-      set(CMAKE_MSVC_ARCH x86)
+      set(CMAKE_MSVC_ARCH "${CMAKE_MSVC_ARCH_DEBUG_PREFIX}x86")
     endif()
 
     if (MSVC90)
-      set (_omp_dll "${MSVC90_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC90.OPENMP/vcomp90.dll")
+      set (_omp_dll "${MSVC90_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC90.${CMAKE_MSVC_LIBNAME_FRAGMENT}OPENMP/vcomp90${CMAKE_MSVC_OPENMP_DLLNAMESUFFIX}.dll")
     elseif (MSVC10)
       # for some random reason, MSVC10_REDIST_DIR can be empty sometimes. as in empty-string, not
       # as in undefined-value.
       if (NOT "${MSVC10_REDIST_DIR}" STREQUAL "")
-        set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.OPENMP/vcomp100.dll")
+        set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.${CMAKE_MSVC_LIBNAME_FRAGMENT}OPENMP/vcomp100${CMAKE_MSVC_OPENMP_DLLNAMESUFFIX}.dll")
       endif()
     elseif (MSVC11)
       # MSVC11_REDIST_DIR being empty, like above for 2010, has so far never happened for 2011.
       # so this is only precautionary.
       if (NOT "${MSVC11_REDIST_DIR}" STREQUAL "")
-        set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.OPENMP/vcomp110.dll")
+        set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.${CMAKE_MSVC_LIBNAME_FRAGMENT}OPENMP/vcomp110${CMAKE_MSVC_OPENMP_DLLNAMESUFFIX}.dll")
       endif()
     elseif (MSVC12)
       if (NOT "${MSVC12_REDIST_DIR}" STREQUAL "")
-        set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.OPENMP/vcomp120.dll")
+        set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.${CMAKE_MSVC_LIBNAME_FRAGMENT}OPENMP/vcomp120${CMAKE_MSVC_OPENMP_DLLNAMESUFFIX}.dll")
       endif()
     endif ()
 
-    if (NOT "${_omp_dll}" STREQUAL "")
+    if ((NOT ("${_omp_dll}" STREQUAL "")) AND (EXISTS "${_omp_dll}"))
       message("Found OpenMP dll at: ${_omp_dll}")
       set (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS};${_omp_dll}")
     else()
-      message(WARNING "Did not OpenMP DLLs (even though the compiler supports it)! The built installer might be missing dependencies.")
+      message(WARNING "Did not find OpenMP DLLs (even though the compiler supports it)! The built installer might be missing dependencies.")
     endif()
 
   endif()
