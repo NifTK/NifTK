@@ -824,16 +824,30 @@ if (WIN32)
     if (MSVC90)
       set (_omp_dll "${MSVC90_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC90.OPENMP/vcomp90.dll")
     elseif (MSVC10)
-      set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.OPENMP/vcomp100.dll")
+      # for some random reason, MSVC10_REDIST_DIR can be empty sometimes. as in empty-string, not
+      # as in undefined-value.
+      if (NOT "${MSVC10_REDIST_DIR}" STREQUAL "")
+        set (_omp_dll "${MSVC10_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC100.OPENMP/vcomp100.dll")
+      endif()
     elseif (MSVC11)
-      set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.OPENMP/vcomp110.dll")
+      # MSVC11_REDIST_DIR being empty, like above for 2010, has so far never happened for 2011.
+      # so this is only precautionary.
+      if (NOT "${MSVC11_REDIST_DIR}" STREQUAL "")
+        set (_omp_dll "${MSVC11_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC110.OPENMP/vcomp110.dll")
+      endif()
     elseif (MSVC12)
-      set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.OPENMP/vcomp120.dll")
+      if (NOT "${MSVC12_REDIST_DIR}" STREQUAL "")
+        set (_omp_dll "${MSVC12_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC120.OPENMP/vcomp120.dll")
+      endif()
     endif ()
 
-    message("Found OpenMP dll at: ${_omp_dll}")
+    if (NOT "${_omp_dll}" STREQUAL "")
+      message("Found OpenMP dll at: ${_omp_dll}")
+      set (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS};${_omp_dll}")
+    else()
+      message(WARNING "Did not OpenMP DLLs (even though the compiler supports it)! The built installer might be missing dependencies.")
+    endif()
 
-    set (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS};${_omp_dll}")
   endif()
 endif()
 
