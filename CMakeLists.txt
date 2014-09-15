@@ -168,6 +168,7 @@ option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
+# the console window is normally shown only for debug builds. but can be explicitly enabled.
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
 else()
