@@ -293,7 +293,7 @@ public:
   void SetDefaultMultiWindowLayout(WindowLayout windowLayout);
 
   /// \brief Selects the nth slice before or after the currently selected slice.
-  /// Slices are ordered: coronal: posterior -> anterior, sagittal: left -> right, axial: inferior -> superior
+  /// Slices are ordered: coronal: anterior to posterior, sagittal: right to left, axial: inferior to superior
   void MoveSlice(WindowOrientation orientation, int delta, bool restart = false);
 
   /// \brief Switch the from single window to multiple windows or back

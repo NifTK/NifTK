@@ -100,11 +100,15 @@ protected:
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior
-  ///   <li>sagittal: left to right
-  ///   <>
+  ///   <li>sagittal: right to left
+  ///   <li>coronal: anterior to posterior
   virtual bool SelectPreviousSlice(StateMachineAction*, InteractionEvent*);
 
   /// \brief Selects the next slice.
+  /// The slices are ordered in the following way:
+  ///   <li>axial: inferior to superior
+  ///   <li>sagittal: right to left
+  ///   <li>coronal: anterior to posterior
   virtual bool SelectNextSlice(StateMachineAction*, InteractionEvent*);
 
   /// \brief Selects the previous time step.
