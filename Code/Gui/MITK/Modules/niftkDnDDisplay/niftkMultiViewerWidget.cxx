@@ -1143,6 +1143,28 @@ void niftkMultiViewerWidget::OnTimeGeometryChanged(const mitk::TimeGeometry* tim
   niftkSingleViewerWidget* dropOntoViewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
+  if (dropOntoViewer == selectedViewer)
+  {
+    int maxTimeStep = selectedViewer->GetMaxTimeStep();
+    int timeStep = selectedViewer->GetTimeStep();
+    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
+    m_ControlPanel->SetTimeStep(timeStep);
+
+    WindowOrientation orientation = selectedViewer->GetOrientation();
+    if (orientation != WINDOW_ORIENTATION_UNKNOWN)
+    {
+      int maxSlice = selectedViewer->GetMaxSlice(orientation);
+      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
+      m_ControlPanel->SetMaxSlice(maxSlice);
+      m_ControlPanel->SetSelectedSlice(selectedSlice);
+    }
+    else
+    {
+      /// TODO disable slice controls as well
+      m_ControlPanel->SetMagnificationControlsEnabled(false);
+    }
+  }
+
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
