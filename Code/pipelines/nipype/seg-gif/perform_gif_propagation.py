@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 
-use_simple = False
-
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
-import seg_gif_propagation as gif
 import argparse
 import os
+from distutils import spawn
+
 import nipype.interfaces.niftyreg as niftyreg
+import seg_gif_propagation as gif
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
@@ -60,13 +60,16 @@ if args.simple == 1:
     r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow')
     r.base_dir = basedir
     r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
-    r.inputs.input_node.template_db_file = os.path.abspath(args.database)
-    r.inputs.input_node.out_directory = result_dir
-    r.inputs.input_node.cpp_directory = cpp_dir
+    r.inputs.input_node.in_db_file = os.path.abspath(args.database)
+    r.inputs.input_node.out_dir = result_dir
+    r.inputs.input_node.in_cpp_dir = cpp_dir
     r.write_graph(graph2use='colored')
-    r.run('MultiProc')
+    r.run('Linear')
 
 else:
+
+    r = gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
+    r.base_dir = basedir
 
     mni_to_input = pe.Node(interface=niftyreg.RegAladin(), name='mni_to_input')
     mni_to_input.inputs.ref_file = os.path.abspath(args.inputfile)
@@ -76,23 +79,27 @@ else:
     mask_resample.inputs.inter_val = 'NN'
     mask_resample.inputs.ref_file = os.path.abspath(args.inputfile)
     mask_resample.inputs.flo_file = mni_template_mask
-    
-    r = gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
-    r.base_dir = basedir
-    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
-    r.inputs.input_node.template_db_file = os.path.abspath(args.database)
-    r.inputs.input_node.out_res_directory = result_dir
-    r.inputs.input_node.out_cpp_directory = cpp_dir
-    r.inputs.input_node.template_T1s_directory = os.path.abspath(args.t1s)
-
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
+    
+    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
     r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask')
-	# Run the overall workflow
-#     r.write_graph(graph2use='colored')
-    qsub_exec=spawn.find_executable('qsub')
-	if not qsub_exec == None:
-		qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
-		r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
-	else:
-		r.run(plugin='MultiProc')
+    r.inputs.input_node.in_db_file = os.path.abspath(args.database)
+    r.inputs.input_node.out_cpp_dir = cpp_dir
+    r.inputs.input_node.in_t1s_dir = os.path.abspath(args.t1s)
+
+    data_sink = pe.Node(nio.DataSink(parameterization=False),
+                         name = 'data_sink')
+    data_sink.inputs.base_directory = result_dir
+    r.connect(r.get_node('output_node'), 'out_parc_file', data_sink, 'label') 
+    r.connect(r.get_node('output_node'), 'out_geo_file', data_sink, 'geo') 
+    r.connect(r.get_node('output_node'), 'out_prior_file', data_sink, 'prior')
+
+
+    r.write_graph(graph2use='colored')
+    qsub_exec=spawn.find_executable('qsub')    
+    if not qsub_exec == None:
+        qsubargs='-l h_rt=05:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+        r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+    else:
+        r.run(plugin='MultiProc')
 
