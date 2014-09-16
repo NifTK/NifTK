@@ -170,6 +170,21 @@ def find_preprocessing_substitutions(in_files, out_files):
     return subs
 
 
+'''
+Convenient function that generates the substitutions 
+between files 
+'''
+def find_preprocessing_substitutions_change_ext(in_files, out_files):
+    import os
+    subs = []
+    start_index = out_files[0].rfind('mapflow')+8
+    for i in range(len(in_files)):
+        replacement = os.path.basename(in_files[i])
+        replacement = replacement.replace('.nii.gz', '.txt')
+        subs.append(( out_files[i][start_index:], replacement))
+    return subs
+
+
 def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
 
     """
@@ -326,6 +341,20 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     workflow.connect(grabber_t1s, 'images', find_cpp_substitutions, 'in_files') 
     workflow.connect(non_linear_registration, 'cpp_file', find_cpp_substitutions, 'out_files') 
     workflow.connect(find_cpp_substitutions, 'substitutions', cpp_sink, 'substitutions') 
+
+    aff_sink = pe.Node(nio.DataSink(parameterization=True),
+                       name = 'aff_sink')
+    workflow.connect(input_node, 'out_cpp_dir', aff_sink, 'base_directory') 
+    workflow.connect(linear_registration, 'aff_file', aff_sink, '@affs')
+    find_aff_substitutions = pe.Node(niu.Function(
+        input_names = ['in_files', 'out_files'],
+        output_names = ['substitutions'],
+        function = find_preprocessing_substitutions_change_ext),
+                                     name = 'find_aff_substitutions')
+    
+    workflow.connect(grabber_t1s, 'images', find_aff_substitutions, 'in_files') 
+    workflow.connect(linear_registration, 'aff_file', find_aff_substitutions, 'out_files') 
+    workflow.connect(find_aff_substitutions, 'substitutions', aff_sink, 'substitutions') 
     
     find_cpp_dir = pe.Node(niu.Function(
         input_names = ['in_files'],
