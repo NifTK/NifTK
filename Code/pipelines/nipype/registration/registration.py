@@ -259,7 +259,8 @@ def create_atlas(name="atlas_creation",
         lin_workflows.append(w)
         # Connect up the input data to the workflows
         pipeline.connect(input_node, 'in_files', w, 'input_node.in_files')
-        
+        #pipeline.connect(input_node, 'rmask_files', w, 'input_node.rmask_file')
+
         if i > 0:
             pipeline.connect(lin_workflows[i-1], 'output_node.average_image', w, 'input_node.ref_file' )
             pipeline.connect(lin_workflows[i-1], 'output_node.trans_files', w, 'input_node.in_aff_files' )
@@ -289,6 +290,7 @@ def create_atlas(name="atlas_creation",
         
         # Connect up the input data to the workflows
         pipeline.connect(input_node, 'in_files', w, 'input_node.in_files')
+        #pipeline.connect(input_node, 'rmask_files', w, 'input_node.rmask_files')
 
         if i == 0:
             if (len(lin_workflows)):
