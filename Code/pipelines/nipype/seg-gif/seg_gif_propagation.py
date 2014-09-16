@@ -17,10 +17,7 @@ def ensure_aff_files (basedir):
     import os, glob
     cppslist=glob.glob(basedir+os.sep+'*.nii.gz')
     
-    affcontent='1 0 0 0\n\
-    0 1 0 0\n\
-    0 0 1 0\n\
-    0 0 0 1\n'
+    affcontent='1 0 0 0\n\0 1 0 0\n\0 0 1 0\n\0 0 0 1\n'
     
     afffilelist = []
     
@@ -59,10 +56,10 @@ def get_basedir(paths):
     import os
     return os.path.dirname(mypaths[0])
 
-def get_common_directory(in_files):
+def get_db_file(in_files):
     import os
-    commonpath = os.path.commonprefix(list(in_files))    
-    return commonpath
+    db_directory = os.path.dirname(in_files[0])
+    return os.path.join(db_directory, 'db.xml')
 
 def find_database_fname_function(in_db_file):
     import xml.etree.ElementTree as ET
@@ -119,12 +116,10 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
     gif_post_sink = pe.Node(nio.DataSink(), name='gif_post_sink')
     gif_post_sink.inputs.parameterization = False
 
-    workflow.connect(input_node, 'cpp_directory',     create_aff_files, 'basedir')
-
     workflow.connect(input_node, 'in_file',           gif, 'in_file')
     workflow.connect(input_node, 'mask_file',         gif, 'mask_file')
+    workflow.connect(input_node, 'cpp_directory',     gif, 'cpp_dir')
     workflow.connect(input_node, 'template_db_file',  gif, 'database_file')
-    workflow.connect(create_aff_files, 'out_dir',     gif, 'cpp_dir')
     
     
     workflow.connect(input_node, 'template_db_file', find_database_fname, 'in_db_file')
@@ -135,18 +130,18 @@ def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagati
     workflow.connect(gif,        'geo_file',       gif_post_sink, 'labels_geo')
     workflow.connect(gif,        'prior_file',     gif_post_sink, 'priors')
 
-    extract_sink_dir = pe.Node(interface = niu.Function(input_names = ['in_files'],
-                                                        output_names = ['out_dir'],
-                                                        function = get_common_directory),
-                               name = 'extract_sink_dir')
-    workflow.connect(gif_post_sink, 'out_file', extract_sink_dir, 'in_files')
+    extract_output_database = pe.Node(interface = niu.Function(input_names = ['in_files'],
+                                                               output_names = ['out_db'],
+                                                               function = get_db_file),
+                                      name = 'extract_output_database')
+    workflow.connect(gif_post_sink, 'out_file', extract_output_database, 'in_files')
 
     output_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['parc_file', 'geo_file', 'prior_file', 'out_directory']),
+            fields=['parc_file', 'geo_file', 'prior_file', 'out_db']),
         name='output_node')
     
-    workflow.connect(extract_sink_dir, 'out_dir',       output_node, 'out_directory')
+    workflow.connect(extract_output_database, 'out_db', output_node, 'out_db')
     workflow.connect(gif,              'parc_file',     output_node, 'parc_file')
     workflow.connect(gif,              'geo_file',      output_node, 'geo_file')
     workflow.connect(gif,              'prior_file',    output_node, 'prior_file')
