@@ -48,9 +48,6 @@ public:
     std::string fileName2 = argv[2];
     int mode = atoi(argv[3]);
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
-
     // Need to load image, using MITK utils.
     std::vector<std::string> files;
     files.push_back(fileName1);

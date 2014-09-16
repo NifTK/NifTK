@@ -1,0 +1,25 @@
+<statemachine>
+  <state name="start" startstate="true">
+    <transition event_class="InteractionKeyEvent" event_variant="KeyS" target="start">
+      <action name="selectSeedTool"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeyD" target="start">
+      <action name="selectDrawTool"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeySpace" target="start">
+      <action name="unselectTools"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeyN" target="start">
+      <action name="unselectTools"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeyY" target="start">
+      <action name="selectPolyTool"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeyV" target="start">
+      <action name="selectViewMode"/>
+    </transition>
+    <transition event_class="InteractionKeyEvent" event_variant="KeyC" target="start">
+      <action name="cleanSlice"/>
+    </transition>
+  </state>
+</statemachine>

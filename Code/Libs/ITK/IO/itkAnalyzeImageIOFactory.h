@@ -50,14 +50,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(AnalyzeImageIOFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-  {
-    AnalyzeImageIOFactory::Pointer metaFactory = AnalyzeImageIOFactory::New();
-
-    ObjectFactoryBase::RegisterFactory(metaFactory);
-  }
-
 protected:
   AnalyzeImageIOFactory();
   ~AnalyzeImageIOFactory();

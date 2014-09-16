@@ -448,7 +448,7 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
       }
       else
       {
-        vtkFloatingPointType vpn[3];
+        double vpn[3];
         m_currentCamera->GetViewPlaneNormal( vpn );
 
         mitk::Vector3D viewPlaneNormal;

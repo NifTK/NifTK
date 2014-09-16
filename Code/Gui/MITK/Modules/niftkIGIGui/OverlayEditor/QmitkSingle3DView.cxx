@@ -16,7 +16,7 @@
 #include <QGridLayout>
 #include <mitkDataStorageUtils.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkGeometry3D.h>
@@ -85,10 +85,10 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(1.0,0.0,0.0);
 
-  m_TrackingCalibrationTransform = vtkMatrix4x4::New();
+  m_TrackingCalibrationTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   m_TrackingCalibrationTransform->Identity();
 
-  m_MatrixDrivenCamera = vtkOpenGLMatrixDrivenCamera::New();
+  m_MatrixDrivenCamera = vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
 }
 
@@ -415,7 +415,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
     if (prop.IsNotNull())
     {
       itk::Matrix<float, 4, 4> txf = prop->GetValue();
-      vtkSmartPointer<vtkMatrix4x4> tmpMatrix = vtkMatrix4x4::New();
+      vtkSmartPointer<vtkMatrix4x4> tmpMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
       for (int i = 0; i < 4; ++i)
       {
         for (int j = 0; j < 4; ++j)
@@ -438,10 +438,10 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
     mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
     if (trackingTransform.IsNotNull())
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkMatrix4x4::New();
+      vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
       trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
 
-      vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
+      vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
       vtkMatrix4x4::Multiply4x4( trackingTransformMatrix , m_TrackingCalibrationTransform, combinedTransform);
 
       combinedTransform->MultiplyPoint(origin, origin);

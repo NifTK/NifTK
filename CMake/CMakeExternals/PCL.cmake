@@ -52,6 +52,10 @@ if(BUILD_IGI AND BUILD_PCL)
           -DEIGEN_ROOT:PATH=${Eigen_DIR}
           -DFLANN_ROOT:PATH=${FLANN_DIR}
           -DVTK_DIR:PATH=${VTK_DIR}
+          # explicitly define this (with the default value) because pcl will try to use static libs otherwise
+          -DBoost_USE_STATIC_LIBS:BOOL=${Boost_USE_STATIC_LIBS}
+          -DPCL_BUILD_WITH_BOOST_DYNAMIC_LINKING_WIN32:BOOL=NOT ${Boost_USE_STATIC_LIBS}
+          -DBUILD_tools:BOOL=OFF
        DEPENDS ${proj_DEPENDENCIES}
       )
     if(WIN32)

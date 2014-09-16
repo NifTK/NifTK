@@ -34,7 +34,6 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkWeakPointer.h>
 #include <mitkBoundingObject.h>
-#include <mitkAffineInteractor3D.h>
 
 #include <mitkNifTKAffineTransformer.h>
 

@@ -24,7 +24,7 @@
       <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
-    <file fileExtensions="*.txt,*.4x4">
+    <file fileExtensions=".txt,.4x4">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
       <description>Output matrix filename.</description>
@@ -61,21 +61,21 @@
       <default>1,1</default>
       <channel>input</channel>
     </float-vector>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>pointerTrackerToProbeTrackerTransform</name>
       <longflag>pointerTrackerToProbeTrackerTransform</longflag>
       <description>Matrix to register the coordinate system of the tracker that tracks the pointer to the tracker that tracks the ultrasound probe.</description>
       <label>Tracker to Pointer</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>probeToProbeTrackerTransform</name>
       <longflag>probeToProbeTrackerTransform</longflag>
       <description>Matrix to transform from probe coordinates to the coordinate system of the tracker that tracks the probe.</description>
       <label>Tracker to Pointer</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
       <description>Guess of calibration transformation, stored as a 4x4 matrix.</description>

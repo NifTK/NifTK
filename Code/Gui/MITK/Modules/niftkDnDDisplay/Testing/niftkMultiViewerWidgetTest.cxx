@@ -99,9 +99,6 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
 
-  // Need to load images, specifically using MIDAS/DRC object factory.
-  ::RegisterNifTKCoreObjectFactory();
-
   QmitkRegisterClasses();
 
   d->DataStorage = mitk::StandaloneDataStorage::New();

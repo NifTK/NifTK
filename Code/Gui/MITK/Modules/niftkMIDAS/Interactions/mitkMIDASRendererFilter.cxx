@@ -15,7 +15,7 @@
 #include "mitkMIDASRendererFilter.h"
 
 #include <mitkEvent.h>
-#include <mitkStateEvent.h>
+#include <mitkInteractionEvent.h>
 #include <mitkBaseRenderer.h>
 
 //-----------------------------------------------------------------------------
@@ -31,9 +31,9 @@ mitk::MIDASRendererFilter::~MIDASRendererFilter()
 
 
 //-----------------------------------------------------------------------------
-bool mitk::MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
+bool mitk::MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) const
 {
-  mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
+  mitk::BaseRenderer* renderer = event->GetSender();
   std::vector<mitk::BaseRenderer*>::const_iterator it =
       std::find(m_Renderers.begin(), m_Renderers.end(), renderer);
   return it == m_Renderers.end();

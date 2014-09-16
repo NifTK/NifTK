@@ -117,12 +117,12 @@ void mitk::MIDASContourTool::ClearData()
 {
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
   feedbackContour->Initialize();
-  feedbackContour->SetIsClosed(m_ContourClosed);
+  feedbackContour->SetClosed(m_ContourClosed);
 //  feedbackContour->SetWidth(m_ContourWidth);
 
   mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
   backgroundContour->Initialize();
-  backgroundContour->SetIsClosed(m_ContourClosed);
+  backgroundContour->SetClosed(m_ContourClosed);
 //  backgroundContour->SetWidth(m_ContourWidth);
 }
 
@@ -152,7 +152,7 @@ void mitk::MIDASContourTool::SetFeedbackContourVisible(bool b)
   FeedbackContourTool::SetFeedbackContourVisible(b);
 }
 
-bool mitk::MIDASContourTool::OnMousePressed (Action* action, const StateEvent* stateEvent)
+bool mitk::MIDASContourTool::OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   DataNode* referenceNode( m_ToolManager->GetReferenceData(0) );
   if (!referenceNode) return false;
@@ -485,7 +485,7 @@ bool mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
 
 void mitk::MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::ContourModel& b)
 {
-  b.SetIsClosed(a.IsClosed());
+  b.SetClosed(a.IsClosed());
   // TODO Removed at from the new MITK segmentation framework.
   // Some property of the node controls this.
 //  b.SetSelected(a.GetSelected());

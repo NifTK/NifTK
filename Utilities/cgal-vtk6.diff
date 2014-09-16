@@ -1,0 +1,50 @@
+diff --git a/include/CGAL/Image_3_vtk_interface.h b/include/CGAL/Image_3_vtk_interface.h
+index 9f8501f..db30c03 100644
+--- a/include/CGAL/Image_3_vtk_interface.h
++++ b/include/CGAL/Image_3_vtk_interface.h
+@@ -113,13 +113,12 @@ struct VTK_type_generator<boost::uint32_t> {
+   vtk_image->SetDimensions(image.xdim(),
+                            image.ydim(),
+                            image.zdim());
+-  vtk_image->SetWholeExtent(0, image.xdim(),
+-                            0, image.ydim(),
+-                            0, image.zdim());
++  vtk_image->SetExtent(0, image.xdim(),
++                       0, image.ydim(),
++                       0, image.zdim());
+   vtk_image->SetSpacing(image.vx(),
+                         image.vy(),
+                         image.vz());
+-  vtk_image->SetScalarType(type);
+   vtk_image->GetPointData()->SetScalars(data_array);
+   return vtk_image;
+ } // end vtk_image_sharing_same_data_pointer
+diff --git a/src/CGAL_ImageIO/CMakeLists.txt b/src/CGAL_ImageIO/CMakeLists.txt
+index d08f74f..e3338bc 100644
+--- a/src/CGAL_ImageIO/CMakeLists.txt
++++ b/src/CGAL_ImageIO/CMakeLists.txt
+@@ -34,7 +34,11 @@ if(OPENGL_FOUND)
+       cache_set(CGAL_ImageIO_3RD_PARTY_DEFINITIONS  ${CGAL_ImageIO_3RD_PARTY_DEFINITIONS} -DCGAL_USE_VTK ${VTK_REQUIRED_CXX_FLAGS})
+       cache_set(CGAL_ImageIO_3RD_PARTY_INCLUDE_DIRS ${CGAL_ImageIO_3RD_PARTY_INCLUDE_DIRS} ${VTK_INCLUDE_DIRS} )
+       cache_set(CGAL_ImageIO_3RD_PARTY_LIBRARIES_DIRS ${CGAL_ImageIO_3RD_PARTY_LIBRARIES_DIRS} ${VTK_LIBRARY_DIRS} )
+-      cache_set(CGAL_ImageIO_3RD_PARTY_LIBRARIES    ${CGAL_ImageIO_3RD_PARTY_LIBRARIES}    vtkImaging vtkIO )
++      if(VTK_MAJOR_VERSION LESS 6)
++        cache_set(CGAL_ImageIO_3RD_PARTY_LIBRARIES    ${CGAL_ImageIO_3RD_PARTY_LIBRARIES}    vtkImaging vtkIO )
++      else()
++        cache_set(CGAL_ImageIO_3RD_PARTY_LIBRARIES    ${CGAL_ImageIO_3RD_PARTY_LIBRARIES}    vtkImagingCore vtkIOImage )
++      endif()
+       
+     else()
+       message(STATUS "VTK not found.")
+diff --git a/src/CGAL_ImageIO/Image_3.cpp b/src/CGAL_ImageIO/Image_3.cpp
+index f0f5e02..e92bbca 100644
+--- a/src/CGAL_ImageIO/Image_3.cpp
++++ b/src/CGAL_ImageIO/Image_3.cpp
+@@ -197,7 +197,6 @@ Image_3::read_vtk_image_data(vtkImageData* vtk_image)
+   image->vx = spacing[0];
+   image->vy = spacing[1];
+   image->vz = spacing[2];
+-  vtk_image->Update();
+   image->endianness = ::_getEndianness();
+   int vtk_type = vtk_image->GetScalarType();
+   if(vtk_type == VTK_SIGNED_CHAR) vtk_type = VTK_CHAR;

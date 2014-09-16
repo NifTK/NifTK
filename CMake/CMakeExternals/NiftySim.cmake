@@ -28,11 +28,6 @@ if(BUILD_NIFTYSIM)
   set(NIFTYSIM_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
-    if (DEFINED NIFTK_LOCATION_Boost)
-      option(USE_NIFTYSIM_BOOST "Enable CPU-parallelism in NiftySim through Boost." OFF)
-      mark_as_advanced(USE_NIFTYSIM_BOOST)
-    endif (DEFINED NIFTK_LOCATION_Boost)
-
     if(DEFINED VTK_DIR)
       set(USE_VTK ON)
     else(DEFINED VTK_DIR)
@@ -42,20 +37,38 @@ if(BUILD_NIFTYSIM)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
 
     set(proj_DEPENDENCIES "")
-    if (USE_NIFTYSIM_BOOST)
-      list(APPEND proj_DEPENDENCIES Boost)
-    endif (USE_NIFTYSIM_BOOST)
 
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)
     endif (USE_VTK)
 
-    # Temporary solution to build problems on MSVS 2010
-    if (WIN32)
-      set(NIFTYSIM_CMAKE_CXX_FLAGS "/D_USE_MATH_DEFINES")
+    # Run search for needed CUDA SDK components here so as to give the user the option
+    # to manually set paths should they not be found by NiftySim.
+    if (NIFTK_USE_CUDA)
+      if (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
+	find_path(CUDA_SDK_COMMON_INCLUDE_DIR
+	  helper_cuda.h
+	  PATHS ${CUDA_SDK_SEARCH_PATH}
+	  PATH_SUFFIXES "common/inc"
+	  DOC "Location of helper_cuda.h"
+	  NO_DEFAULT_PATH
+	  )
+	mark_as_advanced(CUDA_SDK_COMMON_INCLUDE_DIR)
+      else ()
+	find_path(CUDA_CUT_INCLUDE_DIR
+	  cutil.h
+	  PATHS ${CUDA_SDK_SEARCH_PATH}
+	  PATH_SUFFIXES "common/inc"
+	  DOC "Location of cutil.h"
+	  NO_DEFAULT_PATH
+	  )
+	mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
+      endif (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
     else ()
-      set(NIFTYSIM_CMAKE_CXX_FLAGS "")
-    endif (WIN32)
+      if (NIFTYSIM_USE_CUDA) 
+	MESSAGE(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
+      endif (NIFTYSIM_USE_CUDA) 
+    endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj}-src
@@ -71,16 +84,14 @@ if(BUILD_NIFTYSIM)
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTYSIM_USE_CUDA}
         -DCUDA_CUT_INCLUDE_DIR:STRING=${CUDA_CUT_INCLUDE_DIR}
-        -DUSE_BOOST:BOOL=${USE_NIFTYSIM_BOOST}
+        -DUSE_BOOST:BOOL=OFF
         -DUSE_VIZ:BOOL=${USE_VTK}
         -DVTK_DIR:PATH=${VTK_DIR}
-        -DVTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}
-        -DVTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}
-        -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
-        -DBOOST_ROOT:PATH=${BOOST_ROOT}
-        -DBoost_USE_STATIC_LIBS:BOOL=TRUE
-        -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
-        -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
+	-DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
+	-DCUDA_SDK_ROOT_DIR:PATH=${CUDA_SDK_ROOT_DIR}
+	-DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
+	-DCUDA_COMMON_INCLUDE_DIR:PATH=${CUDA_COMMON_INCLUDE_DIR}
+	-DCUDA_HOST_COMPILER:PATH=${CUDA_HOST_COMPILER}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}

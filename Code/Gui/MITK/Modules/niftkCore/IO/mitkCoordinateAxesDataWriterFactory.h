@@ -40,18 +40,6 @@ public:
   /** Method for class instantiation. */
   itkFactorylessNewMacro(Self);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-  {
-    static bool IsRegistered = false;
-    if ( !IsRegistered )
-    {
-      CoordinateAxesDataWriterFactory::Pointer factory = CoordinateAxesDataWriterFactory::New();
-      ObjectFactoryBase::RegisterFactory( factory );
-      IsRegistered = true;
-    }
-  }
-
 protected:
   CoordinateAxesDataWriterFactory(); // Purposefully hidden.
   ~CoordinateAxesDataWriterFactory(); // Purposefully hidden.

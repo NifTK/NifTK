@@ -23,11 +23,13 @@
 
 #include <niftkIOException.h>
 
+#include <niftkCommonWin32ExportHeader.h>
+
 namespace niftk {
   /**
    * \brief Parses a Medit mesh (.mesh) file
    */
-  class MeditMeshParser {
+  class NIFTKCOMMON_WINEXPORT MeditMeshParser {
     /**
      * \name FS I/O
      * @{

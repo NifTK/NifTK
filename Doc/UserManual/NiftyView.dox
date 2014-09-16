@@ -10,29 +10,29 @@ plugins is shown below, and these exact pages are available in each GUI as help 
 
 \section UserManualNiftyViewPlugins Plugins
 
-\li \subpage uk.ac.ucl.cmic.gui.qt.niftyview The original NiftyView application containing most if not all plugins.
-\li \subpage uk.ac.ucl.cmic.gui.qt.niftyigi NiftyIGI contains a subset of plugins, dedicated to image guided interventions.
-\li \subpage uk.ac.ucl.cmic.gui.qt.niftymidas NiftyMIDAS contains a subset of plugins, dedicated to image analysis.
-\li \subpage it.unito.cim.intensityprofile
-\li \subpage uk.ac.ucl.cmic.affinetransform
-\li \subpage uk.ac.ucl.cmic.dnddisplay
-\li \subpage uk.ac.ucl.cmic.igidatasources
-\li \subpage uk.ac.ucl.cmic.igioverlayeditor
-\li \subpage uk.ac.ucl.cmic.igipointreg
-\li \subpage uk.ac.ucl.cmic.igisurfacerecon
-\li \subpage uk.ac.ucl.cmic.igisurfacereg
-\li \subpage uk.ac.ucl.cmic.igitrackedimage
-\li \subpage uk.ac.ucl.cmic.igitrackedpointer
-\li \subpage uk.ac.ucl.cmic.igiundistort
-\li \subpage uk.ac.ucl.cmic.imagelookuptables
-\li \subpage uk.ac.ucl.cmic.imagestatistics
-\li \subpage uk.ac.ucl.cmic.midasgeneralsegmentor
-\li \subpage uk.ac.ucl.cmic.midasmorphologicalsegmentor
-\li \subpage uk.ac.ucl.cmic.niftyreg
-\li \subpage uk.ac.ucl.cmic.snapshot
-\li \subpage uk.ac.ucl.cmic.surfaceextractor
-\li \subpage uk.ac.ucl.cmic.thumbnail
-\li \subpage uk.ac.ucl.cmic.xnat
+\li \subpage uk_ac_ucl_cmic_gui_qt_niftyview The original NiftyView application containing most if not all plugins.
+\li \subpage uk_ac_ucl_cmic_gui_qt_niftyigi NiftyIGI contains a subset of plugins, dedicated to image guided interventions.
+\li \subpage uk_ac_ucl_cmic_gui_qt_niftymidas NiftyMIDAS contains a subset of plugins, dedicated to image analysis.
+\li \subpage it_unito_cim_intensityprofile
+\li \subpage uk_ac_ucl_cmic_affinetransform
+\li \subpage uk_ac_ucl_cmic_dnddisplay
+\li \subpage uk_ac_ucl_cmic_igidatasources
+\li \subpage uk_ac_ucl_cmic_igioverlayeditor
+\li \subpage uk_ac_ucl_cmic_igipointreg
+\li \subpage uk_ac_ucl_cmic_igisurfacerecon
+\li \subpage uk_ac_ucl_cmic_igisurfacereg
+\li \subpage uk_ac_ucl_cmic_igitrackedimage
+\li \subpage uk_ac_ucl_cmic_igitrackedpointer
+\li \subpage uk_ac_ucl_cmic_igiundistort
+\li \subpage uk_ac_ucl_cmic_imagelookuptables
+\li \subpage uk_ac_ucl_cmic_imagestatistics
+\li \subpage uk_ac_ucl_cmic_midasgeneralsegmentor
+\li \subpage uk_ac_ucl_cmic_midasmorphologicalsegmentor
+\li \subpage uk_ac_ucl_cmic_niftyreg
+\li \subpage uk_ac_ucl_cmic_snapshot
+\li \subpage uk_ac_ucl_cmic_surfaceextractor
+\li \subpage uk_ac_ucl_cmic_thumbnail
+\li \subpage uk_ac_ucl_cmic_xnat
 
 \section UserManualEnvVariables Environment Variables
 

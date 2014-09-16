@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Ultrasound Pin Calibration Evaluation</title>
+  <title>Ultrasound Invariant Point Calibration Evaluation</title>
   <description><![CDATA[Processes point and tracking data by evaluating against an invariant point.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -24,14 +24,14 @@
       <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>calibrationMatrix</name>
       <longflag>calibrationMatrix</longflag>
       <description>The ultrasound to probe calibration matrix.</description>
       <label>Calibration Matrix</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>cameraToWorldMatrix</name>
       <longflag>cameraToWorldMatrix</longflag>
       <description>The camera to world matrix.</description>

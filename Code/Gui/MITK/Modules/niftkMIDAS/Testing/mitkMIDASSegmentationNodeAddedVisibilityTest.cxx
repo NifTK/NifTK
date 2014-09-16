@@ -52,8 +52,6 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting Setup...");
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
     mitk::GlobalInteraction::GetInstance()->Initialize("mitkMIDASPaintbrushToolClass");
     m_DataNode = mitk::DataNode::New();
 

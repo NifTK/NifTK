@@ -26,7 +26,7 @@
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::RenderingManager* renderingManager)
+niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::RenderingManager* renderingManager, const QString& name)
 : QWidget(parent)
 , m_DataStorage(NULL)
 , m_GridLayout(NULL)
@@ -60,7 +60,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   }
 
   // Create the main niftkMultiWindowWidget
-  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager);
+  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

@@ -23,6 +23,8 @@
 #include "ImageStatisticsViewPreferencesPage.h"
 
 // Qt
+#include <QClipboard>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QTableWidgetItem>
 
@@ -35,6 +37,8 @@
 
 const std::string ImageStatisticsView::VIEW_ID = "uk.ac.ucl.cmic.imagestatistics";
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsView::ImageStatisticsView()
 : m_AutoUpdate(false)
 , m_RequireSameSizeImage(true)
@@ -42,45 +46,75 @@ ImageStatisticsView::ImageStatisticsView()
 , m_BackgroundValue(0)
 , m_MaskNode(NULL)
 , m_ImageNode(NULL)
+, m_PerSliceStats(false)
+, m_Orientation(itk::ORIENTATION_AXIAL)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 ImageStatisticsView::~ImageStatisticsView()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::SetFocus()
 {
 }
 
-void ImageStatisticsView::CreateQtPartControl( QWidget *parent )
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::CreateQtPartControl(QWidget* parent)
 {
   // Create GUI widgets from the Qt Designer's .ui file
-  m_Controls.setupUi( parent );
+  m_Controls.setupUi(parent);
+
+  this->EnableControls(false);
+
+  parent->installEventFilter(this);
+
+  this->InitializeTable();
 
   // Retrieve up-to-date preference values.
   this->RetrievePreferenceValues();
 
   // Connect slots, so we are ready for action.
-  connect( m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()) );
+  this->connect(m_Controls.m_PerSliceStatsCheckBox, SIGNAL(toggled(bool)), SLOT(OnPerSliceStatsCheckBoxToggled(bool)));
+  this->connect(m_Controls.m_AxialRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_SagittalRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_CoronalRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalRadioButtonToggled(bool)));
+  this->connect(m_Controls.m_UpdateButton, SIGNAL(clicked()), SLOT(OnUpdateButtonClicked()));
+  this->connect(m_Controls.m_CopyAllButton, SIGNAL(clicked()), SLOT(OnCopyAllButtonClicked()));
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::EnableControls(bool enabled)
 {
-  m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
-  m_Controls.m_Table->setEnabled(enabled);
-  m_Controls.m_MaskNameLabel->setEnabled(enabled);
-  m_Controls.m_MaskLabel->setEnabled(enabled);
-  m_Controls.m_ImageNameLabel->setEnabled(enabled);
   m_Controls.m_ImageLabel->setEnabled(enabled);
+  m_Controls.m_ImageNameLabel->setEnabled(enabled);
+  m_Controls.m_MaskLabel->setEnabled(enabled);
+  m_Controls.m_MaskNameLabel->setEnabled(enabled);
+  m_Controls.m_TreeWidget->setEnabled(enabled);
+  m_Controls.m_PerSliceStatsCheckBox->setEnabled(enabled);
+  m_Controls.m_AxialRadioButton->setEnabled(enabled && m_PerSliceStats);
+  m_Controls.m_SagittalRadioButton->setEnabled(enabled && m_PerSliceStats);
+  m_Controls.m_CoronalRadioButton->setEnabled(enabled && m_PerSliceStats);
+  m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
+  m_Controls.m_CopyAllButton->setEnabled(enabled);
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   // Retrieve up-to-date preference values.
   this->RetrievePreferenceValues();
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::RetrievePreferenceValues()
 {
   berry::IPreferencesService::Pointer prefService
@@ -98,6 +132,8 @@ void ImageStatisticsView::RetrievePreferenceValues()
   m_BackgroundValue = prefs->GetInt(ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME, 0);
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
@@ -145,6 +181,8 @@ void ImageStatisticsView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*s
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
   bool isValid = true;
@@ -203,9 +241,10 @@ bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>&
   return isValid;
 }
 
-void ImageStatisticsView::TryUpdate()
-{
 
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnUpdateButtonClicked()
+{
   // This does not work, as when you select the Update button, you lose the selection in the DataManager as it loses focus.
   // const QList<mitk::DataNode::Pointer>& nodes = this->GetDataManagerSelection();
 
@@ -230,6 +269,7 @@ void ImageStatisticsView::TryUpdate()
 }
 
 
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 {
   // We are assuming nodes is valid input, and not checking it any further.
@@ -295,19 +335,43 @@ void ImageStatisticsView::Update(const QList<mitk::DataNode::Pointer>& nodes)
   {
     MITK_ERROR << "During ImageStatisticsView::Update, caught mitk::AccessByItkException caused by:" << e.what() << std::endl;
   }
-  catch( itk::ExceptionObject &err )
+  catch(itk::ExceptionObject& err)
   {
     MITK_ERROR << "During ImageStatisticsView::Update, caught itk::ExceptionObject caused by:" << err.what() << std::endl;
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::InitializeTable()
 {
-  m_Controls.m_Table->clear();
-  m_Controls.m_Table->setColumnCount(9);
+  m_Controls.m_TreeWidget->clear();
+  int columnCount = 10;
+  if (m_PerSliceStats)
+  {
+    ++columnCount;
+  }
+  m_Controls.m_TreeWidget->setColumnCount(columnCount);
 
-  // The order of these columns must match the order in AddTableRow.
+  // The order of these columns must match the order in CreateTableRow.
   QStringList headers;
+  if (m_PerSliceStats)
+  {
+    QString orientationName;
+    if (m_Orientation == itk::ORIENTATION_AXIAL)
+    {
+      orientationName = "slice (I->S)";
+    }
+    else if (m_Orientation == itk::ORIENTATION_SAGITTAL)
+    {
+      orientationName = "slice (L->R)";
+    }
+    else if (m_Orientation == itk::ORIENTATION_CORONAL)
+    {
+      orientationName = "slice (P->A)";
+    }
+    headers << orientationName;
+  }
   headers << "value";
   headers << "volume (ml)";
   headers << "mean";
@@ -318,54 +382,46 @@ void ImageStatisticsView::InitializeTable()
   headers << "min";
   headers << "max";
   headers << "count";
-  m_Controls.m_Table->setHorizontalHeaderLabels(headers);
+
+  m_Controls.m_TreeWidget->setHeaderLabels(headers);
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType>
-void
+QTreeWidgetItem*
 ImageStatisticsView
-::AddTableRow(int row,
-    QString &value, PixelType &min, PixelType &max, double &mean, double median,
-    double &stdDev, unsigned long int &count, double &volume)
+::CreateTableRow(QTreeWidgetItem* parentItem,
+    const QString& value, PixelType min, PixelType max, double mean, double median,
+    double stdDev, unsigned long count, double volume, int sliceIndex)
 {
-  QTableWidgetItem *valueItem = new QTableWidgetItem(tr("%1").arg(value));
-  m_Controls.m_Table->setItem(row, 0, valueItem);
+  QStringList values;
+  if (m_PerSliceStats)
+  {
+    values.append(QString("%1").arg(sliceIndex));
+  }
+  values.append(QString("%1").arg(value));
+  values.append(QString("%1").arg(volume / 1000.0));
+  values.append(QString("%1").arg(mean));
+  values.append(QString("%1").arg(mean * 0.6));
+  values.append(QString("%1").arg(mean * 0.7));
+  values.append(QString("%1").arg(median));
+  values.append(QString("%1").arg(stdDev));
+  values.append(QString("%1").arg(min));
+  values.append(QString("%1").arg(max));
+  values.append(QString("%1").arg(count));
 
-  QTableWidgetItem *volumeItem = new QTableWidgetItem(tr("%1").arg(volume/1000.0)); // convert cubic millimetres to cubic centimetres (ml).
-  m_Controls.m_Table->setItem(row, 1, volumeItem);
-
-  QTableWidgetItem *meanItem = new QTableWidgetItem(tr("%1").arg(mean));
-  m_Controls.m_Table->setItem(row, 2, meanItem);
-
-  QTableWidgetItem *mean60Item = new QTableWidgetItem(tr("%1").arg(mean * 0.6));
-  m_Controls.m_Table->setItem(row, 3, mean60Item);
-
-  QTableWidgetItem *mean70Item = new QTableWidgetItem(tr("%1").arg(mean * 0.7));
-  m_Controls.m_Table->setItem(row, 4, mean70Item);
-
-  QTableWidgetItem *medianItem = new QTableWidgetItem(tr("%1").arg(median));
-  m_Controls.m_Table->setItem(row, 5, medianItem);
-
-  QTableWidgetItem *stdDevItem = new QTableWidgetItem(tr("%1").arg(stdDev));
-  m_Controls.m_Table->setItem(row, 6, stdDevItem);
-
-  QTableWidgetItem *minItem = new QTableWidgetItem(tr("%1").arg(min));
-  m_Controls.m_Table->setItem(row, 7, minItem);
-
-  QTableWidgetItem *maxItem = new QTableWidgetItem(tr("%1").arg(max));
-  m_Controls.m_Table->setItem(row, 8, maxItem);
-
-  QTableWidgetItem *countItem = new QTableWidgetItem(tr("%1").arg(count));
-  m_Controls.m_Table->setItem(row, 9, countItem);
-
+  return new QTreeWidgetItem(parentItem, values);
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType, unsigned int VImageDimension>
 void
 ImageStatisticsView
 ::GetLabelValues(
     itk::Image<PixelType, VImageDimension>* itkImage,
-    std::set<PixelType> &labels)
+    std::set<PixelType>& labels)
 {
   labels.clear();
 
@@ -378,12 +434,14 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename PixelType, unsigned int VImageDimension>
 void
 ImageStatisticsView
 ::GetVoxelVolume(
     itk::Image<PixelType, VImageDimension>* itkImage,
-    double &volume
+    double& volume
     )
 {
 
@@ -399,13 +457,15 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
 ::TestMinAndMax(
-    TPixel &imageValue,
-    TPixel &min,
-    TPixel &max
+    TPixel imageValue,
+    TPixel& min,
+    TPixel& max
     )
 {
   if (imageValue < min)
@@ -418,85 +478,69 @@ ImageStatisticsView
   }
 }
 
-template <typename TPixel>
-void
-ImageStatisticsView
-::InitializeData(
-    TPixel &min,
-    TPixel &max,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    double &stdDev,
-    unsigned long int &counter
-    )
-{
-  min = std::numeric_limits<TPixel>::max();
-  max = std::numeric_limits<TPixel>::min();
-  mean = 0;
-  s0 = 0;
-  s1 = 0;
-  s2 = 0;
-  stdDev = 0;
-  counter = 0;
-}
 
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
 ::AccumulateData(
-    TPixel &imageValue,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    unsigned long int &counter
+    TPixel imageValue,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter
     )
 {
   mean += imageValue;
   s0 += 1;
   s1 += imageValue;
-  s2 += imageValue*imageValue;
+  s2 += imageValue * imageValue;
   counter++;
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel>
 void
 ImageStatisticsView
 ::AccumulateValue(
-    TPixel &imageValue,
-    TPixel &min,
-    TPixel &max,
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    unsigned long int &counter
+    TPixel imageValue,
+    TPixel& min,
+    TPixel& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter,
+    TPixel* imagePixelsCopy
     )
 {
   if (imageValue != (TPixel)m_BackgroundValue)
   {
     this->TestMinAndMax<TPixel>(imageValue, min, max);
+    imagePixelsCopy[counter] = imageValue;
     this->AccumulateData<TPixel>(imageValue, mean, s0, s1, s2, counter);
   }
 }
 
-template <typename TPixel1, typename TPixel2, typename LabelType>
+
+//-----------------------------------------------------------------------------
+template <typename TPixel1, typename TPixel2>
 void
 ImageStatisticsView
 ::AccumulateValue(
-    bool &invert,
-    LabelType &valueToCompareMaskAgainst,
-    TPixel1 &imageValue,
-    TPixel2 &maskValue,
-    TPixel1 &min,
-    TPixel1 &max,
-    double  &mean,
-    double  &s0,
-    double  &s1,
-    double  &s2,
-    unsigned long int &counter,
+    bool invert,
+    TPixel2 valueToCompareMaskAgainst,
+    TPixel1 imageValue,
+    TPixel2 maskValue,
+    TPixel1& min,
+    TPixel1& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    unsigned long& counter,
     TPixel1* imagePixelsCopy
     )
 {
@@ -510,13 +554,15 @@ ImageStatisticsView
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageStatisticsView::CalculateMeanAndStdDev(
-    double &mean,
-    double &s0,
-    double &s1,
-    double &s2,
-    double &stdDev,
-    unsigned long int &counter
+    double& mean,
+    double s0,
+    double s1,
+    double s2,
+    double& stdDev,
+    unsigned long counter
     )
 {
   if (counter > 0)
@@ -531,6 +577,8 @@ void ImageStatisticsView::CalculateMeanAndStdDev(
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
 void
 ImageStatisticsView
@@ -538,48 +586,123 @@ ImageStatisticsView
     itk::Image<TPixel, VImageDimension>* itkImage
     )
 {
-  typedef typename itk::Image<TPixel, VImageDimension> GreyImageType;
-  double mean, s0, s1, s2, stdDev;
+  typedef typename itk::Image<TPixel, VImageDimension> GreyImage;
+  double mean, s0, s1, s2, stdDev, median;
   unsigned long int counter;
-  TPixel greyPixel, min, max;
+  TPixel min, max;
 
   // Initialize table.
   this->InitializeTable();
-  m_Controls.m_Table->setRowCount(1);
 
-  // Calculate Stats.
-  this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+  // Get voxel volume.
+  double voxelVolume;
+  this->GetVoxelVolume<TPixel, VImageDimension>(itkImage, voxelVolume);
+
+  if (!m_PerSliceStats)
+  {
+    typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+    TPixel* imagePixelsCopy = new TPixel[region.GetNumberOfPixels()];
+
+    // Calculate Stats.
+    this->CalculateStats(itkImage, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+    double volume = voxelVolume * counter;
+
+    QString value = tr("All except %1").arg(m_BackgroundValue);
+    QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+    m_Controls.m_TreeWidget->addTopLevelItem(item);
+
+    delete[] imagePixelsCopy;
+  }
+  else
+  {
+    if (VImageDimension == 3)
+    {
+      typedef typename itk::Image<TPixel, 3> GreyImage3D;
+      GreyImage3D* itkImage3D = reinterpret_cast<GreyImage3D*>(itkImage);
+
+      typename GreyImage3D::RegionType region = itkImage3D->GetLargestPossibleRegion();
+
+      int axis;
+      itk::GetAxisFromITKImage(itkImage3D, m_Orientation, axis);
+      int upDirection;
+      itk::GetUpDirectionFromITKImage(itkImage3D, m_Orientation, upDirection);
+
+      int sliceNumber = region.GetSize(axis);
+      int startSlice = upDirection > 0 ? 0 : sliceNumber - 1;
+      int endSlice = upDirection > 0 ? sliceNumber : -1;
+
+      region.SetSize(axis, 1);
+
+      TPixel* imagePixelsCopy = new TPixel[region.GetNumberOfPixels()];
+
+      for (int sliceIndex = startSlice; sliceIndex != endSlice; sliceIndex += upDirection)
+      {
+        region.SetIndex(axis, sliceIndex);
+
+        this->CalculateStats(itkImage3D, region, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+        double volume = voxelVolume * counter;
+
+        QString value = tr("All except %1").arg(m_BackgroundValue);
+        QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
+        m_Controls.m_TreeWidget->addTopLevelItem(item);
+      }
+
+      delete[] imagePixelsCopy;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template <typename TPixel, unsigned VImageDimension>
+void
+ImageStatisticsView
+::CalculateStats(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    const itk::ImageRegion<VImageDimension>& region,
+    TPixel& min,
+    TPixel& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    double& stdDev,
+    unsigned long& counter,
+    TPixel* imagePixelsCopy,
+    double& median
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> GreyImageType;
+
+  min = std::numeric_limits<TPixel>::max();
+  max = std::numeric_limits<TPixel>::min();
+  mean = 0.0;
+  s0 = 0.0;
+  s1 = 0.0;
+  s2 = 0.0;
+  stdDev = 0.0;
+  counter = 0;
+  median = 0.0;
 
   // Iterate through image, calculating stats for anything != background value.
-  itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<GreyImageType> iter(itkImage, region);
   for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
   {
-    greyPixel = iter.Get();
-    this->AccumulateValue<TPixel>(greyPixel, min, max, mean, s0, s1, s2, counter);
+    TPixel greyPixel = iter.Get();
+    this->AccumulateValue<TPixel>(greyPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
   }
   this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
 
-  // Get voxel volume.
-  double volume;
-  this->GetVoxelVolume<TPixel, VImageDimension>(itkImage, volume);
-  volume *= (double)counter;
-
-  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
-  TPixel* itkImagePixels = itkImagePixelContainer->GetImportPointer();
-  typename GreyImageType::SizeValueType imageSize = itkImagePixelContainer->Size();
-  TPixel* imagePixelsCopy = new TPixel[imageSize];
-  std::copy(itkImagePixels, itkImagePixels + imageSize, imagePixelsCopy);
-
-  std::nth_element(imagePixelsCopy, imagePixelsCopy + imageSize / 2, imagePixelsCopy + imageSize);
-  double median = imagePixelsCopy[imageSize / 2];
-
-  delete[] imagePixelsCopy;
-
-  QString value = tr("All except %1").arg(m_BackgroundValue);
-  this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+  /// Median is put in the middle of the copy array.
+  std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+  median = imagePixelsCopy[counter / 2];
 }
 
-template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
+
+//-----------------------------------------------------------------------------
+template <typename TPixel1, unsigned VImageDimension1, typename TPixel2, unsigned VImageDimension2>
 void
 ImageStatisticsView
 ::UpdateTableWithMask(
@@ -587,13 +710,11 @@ ImageStatisticsView
     itk::Image<TPixel2, VImageDimension2>* itkMask
     )
 {
-  typedef typename itk::Image<TPixel1, VImageDimension1> GreyImageType;
-  typedef typename itk::Image<TPixel2, VImageDimension2> MaskImageType;
-  double mean, s0, s1, s2, stdDev;
+  typedef typename itk::Image<TPixel1, VImageDimension1> GreyImage;
+  typedef typename itk::Image<TPixel2, VImageDimension2> MaskImage;
+  double mean, s0, s1, s2, stdDev, median;
   unsigned long int counter;
-  bool invert;
-  TPixel1 greyPixel, min, max;
-  TPixel2 maskPixel;
+  TPixel1 min, max;
 
   // Get a list of values in itkMask.
   std::set<TPixel2> labels;
@@ -604,91 +725,327 @@ ImageStatisticsView
 
   // Initialize table.
   this->InitializeTable();
-  if (labels.size() > 1)
-  {
-    m_Controls.m_Table->setRowCount(labels.size());
-  }
-  else
-  {
-    m_Controls.m_Table->setRowCount(1);
-  }
 
-  typename GreyImageType::PixelContainer* itkImagePixelContainer = itkImage->GetPixelContainer();
-  TPixel1* imagePixelsCopy = new TPixel1[itkImagePixelContainer->Size()];
+  // Get voxel volume.
+  double voxelVolume;
+  this->GetVoxelVolume<TPixel1, VImageDimension1>(itkImage, voxelVolume);
 
   if (m_AssumeBinary)
   {
-    invert = true;
+    TPixel2 labelValue = m_BackgroundValue;
 
-    // Initialize variables
-    this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
-
-    // We iterate over the image, calculating stats for any voxel where the mask value is NOT the background value.
-    // i.e. we are using the mask image, but if the mask has multiple labels, we treat any label except the background label as foreground, and accumulate stats.
-
-    itk::ImageRegionConstIterator<GreyImageType> greyIter(itkImage, itkImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<MaskImageType> binaryIter(itkMask, itkMask->GetLargestPossibleRegion());
-    for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
+    if (!m_PerSliceStats)
     {
-      greyPixel = greyIter.Get();
-      maskPixel = binaryIter.Get();
+      typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+      TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
 
-      this->AccumulateValue<TPixel1, TPixel2, int>
-        (invert, m_BackgroundValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
+      // Calculate Stats.
+      this->CalculateStatsWithMask(itkImage, itkMask, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+      double volume = voxelVolume * counter;
+
+      QString value = tr("All except %1").arg(m_BackgroundValue);
+      QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+      m_Controls.m_TreeWidget->addTopLevelItem(item);
+
+      delete[] imagePixelsCopy;
     }
-    this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
+    else
+    {
+      if (VImageDimension1 == 3)
+      {
+        typedef typename itk::Image<TPixel1, 3> GreyImage3D;
+        typedef typename itk::Image<TPixel2, 3> MaskImage3D;
+        GreyImage3D* itkImage3D = reinterpret_cast<GreyImage3D*>(itkImage);
+        MaskImage3D* itkMask3D = reinterpret_cast<MaskImage3D*>(itkMask);
 
-    std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
-    double median = imagePixelsCopy[counter / 2];
+        typename GreyImage3D::RegionType region = itkImage3D->GetLargestPossibleRegion();
 
-    // Get voxel volume.
-    double volume;
-    this->GetVoxelVolume<TPixel1, VImageDimension2>(itkImage, volume);
-    volume *= (double)counter;
+        int axis;
+        itk::GetAxisFromITKImage(itkImage3D, m_Orientation, axis);
+        int upDirection;
+        itk::GetUpDirectionFromITKImage(itkImage3D, m_Orientation, upDirection);
 
-    QString value = tr("All except %1").arg(m_BackgroundValue);
-    this->AddTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+        int sliceNumber = region.GetSize(axis);
+        int startSlice = upDirection > 0 ? 0 : sliceNumber - 1;
+        int endSlice = upDirection > 0 ? sliceNumber : -1;
+
+        region.SetSize(axis, 1);
+
+        TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+
+        for (int sliceIndex = startSlice; sliceIndex != endSlice; sliceIndex += upDirection)
+        {
+          region.SetIndex(axis, sliceIndex);
+
+          this->CalculateStatsWithMask(itkImage3D, itkMask3D, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+          double volume = voxelVolume * counter;
+
+          QString value = tr("All except %1").arg(m_BackgroundValue);
+          QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
+          m_Controls.m_TreeWidget->addTopLevelItem(item);
+        }
+
+        delete[] imagePixelsCopy;
+      }
+    }
   }
   else
   {
-    invert = false;
-
-    // We compute stats for EACH label.
-    // This is a bit slow, as we repeatedly iterate over the image.
-
-    typename std::set<TPixel2>::iterator iterator;
-    unsigned int rowCounter = 0;
-    for (iterator = labels.begin(); iterator != labels.end(); iterator++)
+    if (!m_PerSliceStats)
     {
-      TPixel2 labelValue = *iterator;
+      typename GreyImage::RegionType region = itkImage->GetLargestPossibleRegion();
+      TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
 
-      // Initialize variables
-      this->InitializeData(min, max, mean, s0, s1, s2, stdDev, counter);
+      // We compute stats for EACH label.
+      // This is a bit slow, as we repeatedly iterate over the image.
 
-      itk::ImageRegionConstIterator<GreyImageType> greyIter(itkImage, itkImage->GetLargestPossibleRegion());
-      itk::ImageRegionConstIterator<MaskImageType> binaryIter(itkMask, itkMask->GetLargestPossibleRegion());
-      for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
+      typename std::set<TPixel2>::iterator itLabels;
+      for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
       {
-        greyPixel = greyIter.Get();
-        maskPixel = binaryIter.Get();
+        TPixel2 labelValue = *itLabels;
 
-        this->AccumulateValue<TPixel1, TPixel2, TPixel2>
-          (invert, labelValue, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
+        // Calculate Stats.
+        this->CalculateStatsWithMask(itkImage, itkMask, region, false, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+        double volume = voxelVolume * counter;
+
+        QString value = tr("%1").arg(labelValue);
+        QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume);
+        m_Controls.m_TreeWidget->addTopLevelItem(item);
       }
-      this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
 
-      std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
-      double median = imagePixelsCopy[counter / 2];
+      delete[] imagePixelsCopy;
+    }
+    else
+    {
+      if (VImageDimension1 == 3)
+      {
+        typedef typename itk::Image<TPixel1, 3> GreyImage3D;
+        typedef typename itk::Image<TPixel2, 3> MaskImage3D;
+        GreyImage3D* itkImage3D = reinterpret_cast<GreyImage3D*>(itkImage);
+        MaskImage3D* itkMask3D = reinterpret_cast<MaskImage3D*>(itkMask);
 
-      // Get voxel volume.
-      double volume;
-      this->GetVoxelVolume<TPixel1, VImageDimension1>(itkImage, volume);
-      volume *= (double)counter;
+        typename GreyImage3D::RegionType region = itkImage3D->GetLargestPossibleRegion();
 
-      QString value = tr("%1").arg(labelValue);
-      this->AddTableRow(rowCounter++, value, min, max, mean, median, stdDev, counter, volume);
+        int axis;
+        itk::GetAxisFromITKImage(itkImage3D, m_Orientation, axis);
+        int upDirection;
+        itk::GetUpDirectionFromITKImage(itkImage3D, m_Orientation, upDirection);
+
+        int sliceNumber = region.GetSize(axis);
+        int startSlice = upDirection > 0 ? 0 : sliceNumber - 1;
+        int endSlice = upDirection > 0 ? sliceNumber : -1;
+
+        region.SetSize(axis, 1);
+
+        TPixel1* imagePixelsCopy = new TPixel1[region.GetNumberOfPixels()];
+
+        for (int sliceIndex = startSlice; sliceIndex != endSlice; sliceIndex += upDirection)
+        {
+          region.SetIndex(axis, sliceIndex);
+
+          // We compute stats for EACH label.
+          // This is a bit slow, as we repeatedly iterate over the image.
+
+          typename std::set<TPixel2>::iterator itLabels;
+          for (itLabels = labels.begin(); itLabels != labels.end(); itLabels++)
+          {
+            TPixel2 labelValue = *itLabels;
+
+            // Calculate Stats.
+            this->CalculateStatsWithMask(itkImage3D, itkMask3D, region, true, labelValue, min, max, mean, s0, s1, s2, stdDev, counter, imagePixelsCopy, median);
+
+            double volume = voxelVolume * counter;
+
+            QString value = tr("%1").arg(labelValue);
+            QTreeWidgetItem* item = this->CreateTableRow(0, value, min, max, mean, median, stdDev, counter, volume, sliceIndex);
+            m_Controls.m_TreeWidget->addTopLevelItem(item);
+          }
+        }
+
+        delete[] imagePixelsCopy;
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template <typename TPixel1, typename TPixel2, unsigned int VImageDimension>
+void
+ImageStatisticsView
+::CalculateStatsWithMask(
+    itk::Image<TPixel1, VImageDimension>* itkImage,
+    itk::Image<TPixel2, VImageDimension>* itkMask,
+    const itk::ImageRegion<VImageDimension>& region,
+    bool invert,
+    TPixel2 label,
+    TPixel1& min,
+    TPixel1& max,
+    double& mean,
+    double& s0,
+    double& s1,
+    double& s2,
+    double& stdDev,
+    unsigned long& counter,
+    TPixel1* imagePixelsCopy,
+    double& median
+    )
+{
+  typedef typename itk::Image<TPixel1, VImageDimension> GreyImage;
+  typedef typename itk::Image<TPixel2, VImageDimension> MaskImage;
+
+  // Initialize variables
+  min = std::numeric_limits<TPixel1>::max();
+  max = std::numeric_limits<TPixel1>::min();
+  mean = 0.0;
+  s0 = 0.0;
+  s1 = 0.0;
+  s2 = 0.0;
+  stdDev = 0.0;
+  counter = 0;
+  median = 0.0;
+
+  // We iterate over the image, calculating stats for any voxel where the mask value is NOT the background value.
+  // i.e. we are using the mask image, but if the mask has multiple labels, we treat any label except the background label as foreground, and accumulate stats.
+
+  itk::ImageRegionConstIterator<GreyImage> greyIter(itkImage, region);
+  itk::ImageRegionConstIterator<MaskImage> binaryIter(itkMask, region);
+  for (greyIter.GoToBegin(), binaryIter.GoToBegin(); !greyIter.IsAtEnd() && !binaryIter.IsAtEnd(); ++greyIter, ++binaryIter)
+  {
+    TPixel1 greyPixel = greyIter.Get();
+    TPixel2 maskPixel = binaryIter.Get();
+
+    this->AccumulateValue<TPixel1, TPixel2>
+      (invert, label, greyPixel, maskPixel, min, max, mean, s0, s1, s2, counter, imagePixelsCopy);
+  }
+  this->CalculateMeanAndStdDev(mean, s0, s1, s2, stdDev, counter);
+
+  std::nth_element(imagePixelsCopy, imagePixelsCopy + counter / 2, imagePixelsCopy + counter);
+  median = imagePixelsCopy[counter / 2];
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnPerSliceStatsCheckBoxToggled(bool toggled)
+{
+  m_PerSliceStats = toggled;
+  m_Controls.m_AxialRadioButton->setEnabled(m_PerSliceStats);
+  m_Controls.m_SagittalRadioButton->setEnabled(m_PerSliceStats);
+  m_Controls.m_CoronalRadioButton->setEnabled(m_PerSliceStats);
+
+  this->InitializeTable();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnAxialRadioButtonToggled(bool toggled)
+{
+  if (toggled)
+  {
+    m_Orientation = itk::ORIENTATION_AXIAL;
+
+    this->InitializeTable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnSagittalRadioButtonToggled(bool toggled)
+{
+  if (toggled)
+  {
+    m_Orientation = itk::ORIENTATION_SAGITTAL;
+
+    this->InitializeTable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnCoronalRadioButtonToggled(bool toggled)
+{
+  if (toggled)
+  {
+    m_Orientation = itk::ORIENTATION_CORONAL;
+
+    this->InitializeTable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool ImageStatisticsView::eventFilter(QObject* object, QEvent* event)
+{
+  if (event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
+    if (keyEvent->matches(QKeySequence::SelectAll))
+    {
+      m_Controls.m_TreeWidget->selectAll();
+      return true;
+    }
+    else if (keyEvent->matches(QKeySequence::Copy))
+    {
+      this->Copy();
+      return true;
     }
   }
 
-  delete[] imagePixelsCopy;
+  // pass the event on to the parent class
+  return Superclass::eventFilter(object, event);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::OnCopyAllButtonClicked()
+{
+  m_Controls.m_TreeWidget->selectAll();
+  this->Copy();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageStatisticsView::Copy()
+{
+  QAbstractItemModel* model = m_Controls.m_TreeWidget->model();
+  QItemSelectionModel* selection = m_Controls.m_TreeWidget->selectionModel();
+  QModelIndexList indexes = selection->selectedRows();
+
+  int columnCount = model->columnCount();
+
+  QString selectedText;
+
+  QVariant data = model->headerData(0, Qt::Horizontal);
+  selectedText.append(data.toString());
+
+  for (int column = 1; column < columnCount; ++column)
+  {
+    selectedText.append(QLatin1Char('\t'));
+    data = model->headerData(column, Qt::Horizontal);
+    selectedText.append(data.toString());
+  }
+
+  selectedText.append(QLatin1Char('\n'));
+
+  foreach (QModelIndex current, indexes)
+  {
+    int row = current.row();
+
+    data = model->data(current);
+    selectedText.append(data.toString());
+
+    for (int column = 1; column < columnCount; ++column)
+    {
+      selectedText.append(QLatin1Char('\t'));
+      data = model->data(model->index(row, column));
+      selectedText.append(data.toString());
+    }
+
+    selectedText.append(QLatin1Char('\n'));
+  }
+
+  qApp->clipboard()->setText(selectedText);
 }

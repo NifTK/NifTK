@@ -50,13 +50,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(INRImageIOFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-  {
-    INRImageIOFactory::Pointer inrFactory = INRImageIOFactory::New();
-    ObjectFactoryBase::RegisterFactory(inrFactory);
-  }
-  
 protected:
   INRImageIOFactory();
   ~INRImageIOFactory();

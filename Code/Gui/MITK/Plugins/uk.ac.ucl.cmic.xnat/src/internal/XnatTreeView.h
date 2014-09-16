@@ -33,12 +33,12 @@ public:
   explicit XnatTreeView(QWidget* parent = 0);
   virtual ~XnatTreeView();
 
-  void initialize(ctkXnatConnection* connection);
+  void initialize(ctkXnatSession* connection);
 
   ctkXnatTreeModel* xnatModel();
 
-  const ctkXnatObject::Pointer getObject(const QModelIndex& index);
-  const ctkXnatObject::Pointer currentObject();
+  const ctkXnatObject* xnatObject(const QModelIndex& index);
+  const ctkXnatObject* currentObject();
 
 public slots:
   void refreshRows();

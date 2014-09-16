@@ -87,7 +87,7 @@ protected:
   virtual ~MIDASContourTool(); // purposely hidden
 
   /// \brief Calls the FeedbackContour::OnMousePressed method, then checks for working image, reference image and geometry.
-  virtual bool OnMousePressed (Action*, const StateEvent*);
+  virtual bool OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief This method makes sure that the argument node will not show up in ANY 3D viewer thats currently registered with the global mitk::RenderingManager.
   void Disable3dRenderingOfNode(mitk::DataNode* node);

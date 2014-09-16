@@ -58,8 +58,6 @@ public:
   {
     std::string fileName = argv[1];
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
     mitk::GlobalInteraction::GetInstance()->Initialize("mitkMIDASPaintbrushToolClass");
 
     m_DataStorage = mitk::StandaloneDataStorage::New();

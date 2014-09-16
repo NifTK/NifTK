@@ -18,6 +18,8 @@ filename=`stat -f "%N" $0`
 binpath=`dirname ${filename}`
 upone=`dirname ${binpath}`
 
+export US_DISABLE_AUTOLOADING=ON
+
 command_string="${upone}/@FULL_APP_NAME@"
 
 for arg in "$@"

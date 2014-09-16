@@ -15,6 +15,7 @@
 #include "mitkPickPointsOnStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <cv.h>
 //#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
@@ -46,6 +47,7 @@ m_VideoIn("")
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_OrderedPoints(false)
 , m_AskOverWrite(false)
+, m_HaltOnVideoReadFail(true)
 , m_StartFrame(0)
 , m_EndFrame(0)
 , m_Frequency(50)
@@ -106,15 +108,15 @@ void PickPointsOnStereoVideo::Initialise(std::string directory,
       MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
     }
     m_VideoIn = videoFiles[0];
-   
-    m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-  }
-  
-  if ( ! m_Capture )
-  {
-    MITK_ERROR << "Failed to open " << m_VideoIn;
-    m_InitOK=false;
-    return;
+    try
+    {
+      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
   }
 
   m_InitOK = true;
@@ -142,11 +144,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   IplImage blankImage(blankMat);
   cvShowImage("Left Channel" , &blankImage);
   cvShowImage("Right Channel" , &blankImage);
+  unsigned long long startTime;
+  trackerMatcher->GetVideoFrame(0, &startTime);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
-      cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+      cv::Mat videoImage;
+      m_Capture->read(videoImage);
       MITK_INFO << "Skipping frame " << framenumber;
       framenumber ++;
     }
@@ -155,8 +160,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
 
-      cv::Mat leftVideoImage = cvQueryFrame ( m_Capture ) ;
-      cv::Mat rightVideoImage = cvQueryFrame ( m_Capture ) ;
+      cv::Mat tempMat;
+      cv::Mat leftVideoImage;
+      m_Capture->read(tempMat);
+      leftVideoImage = tempMat.clone();
+      m_Capture->read(tempMat);
+      cv::Mat rightVideoImage = tempMat.clone();
+
       if ( std::abs(timingError) <  m_AllowableTimingError )
       {
         key = cvWaitKey (20);
@@ -167,17 +177,18 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
         if ( framenumber %m_Frequency == 0 ) 
         {
+          unsigned long long timeStamp;
+          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
+
           if ( m_OrderedPoints )
           {
-            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick unordered, n for next frame, q to quit";
+            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, n for next frame, q to quit";
           }
           else 
           {
-            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " t to pick ordered, n for next frame, q to quit";
+            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, n for next frame, q to quit";
           }
           
-          unsigned long long timeStamp;
-          trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
           std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
           std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";

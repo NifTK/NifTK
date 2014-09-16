@@ -33,9 +33,6 @@
 // note the trailing space
 const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 
-const char*    QmitkIGINVidiaDataSource::s_SDISequenceNumberPropertyName      = "niftk.SDISequenceNumber";
-const char*    QmitkIGINVidiaDataSource::s_SDIFieldModePropertyName           = "niftk.SDIFieldMode";
-
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
@@ -318,16 +315,40 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       // at the GUI refresh rate, even if no new timestamp has been selected.
       if (m_MostRecentlyUpdatedTimeStamp != dataType->GetTimeStampInNanoSeconds())
       {
-        cvReleaseImage(&m_CachedUpdate.first);
+        std::pair<int, int> captureformat = m_Pimpl->GetCaptureFormat();
+        int                 numstreams    = m_Pimpl->GetStreamCount();
+
+        bool  neednewcacheimg = false;
+        if (m_CachedUpdate.first)
+        {
+          neednewcacheimg |=  captureformat.first                != m_CachedUpdate.first->width;
+          neednewcacheimg |= (captureformat.second * numstreams) != m_CachedUpdate.first->height;
+        }
+        else
+          neednewcacheimg = true;
+
+        if (neednewcacheimg)
+        {
+          if (m_CachedUpdate.first)
+          {
+            cvReleaseImage(&m_CachedUpdate.first);
+          }
+          m_CachedUpdate.first = cvCreateImage(cvSize(captureformat.first, captureformat.second * numstreams), IPL_DEPTH_8U, 4);
+        }
 
         // one massive image, with all streams stacked in
-        m_CachedUpdate = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
+        m_CachedUpdate.second = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber(), m_CachedUpdate.first);
       }
 
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-      if (m_CachedUpdate.first)
+      if (m_CachedUpdate.second)
       {
-        const video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
+        video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
+        // remember: stream format can be different from capture format. stream is what comes off the wire, capture is what goes to gpu.
+        const video::StreamFormat             currentStreamFormat = m_Pimpl->GetFormat();
+        // if the stream format is not interlaced then field mode will have no effect on the capture format.
+        if (!currentStreamFormat.is_interlaced)
+          currentFieldMode = video::SDIInput::DO_NOTHING_SPECIAL;
 
         // max 4 streams
         const int streamcount = m_CachedUpdate.second;
@@ -360,18 +381,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           IplImage  subimg;
           cvInitImageHeader(&subimg, cvSize((int) m_CachedUpdate.first->width, fieldHeight), IPL_DEPTH_8U, m_CachedUpdate.first->nChannels);
           cvSetData(&subimg, &m_CachedUpdate.first->imageData[i * channelHeight * m_CachedUpdate.first->widthStep], m_CachedUpdate.first->widthStep);
-
-          // readback will have dumped data in opengl orientation (origin is at the lower left corner).
-          // and we cannot flip the whole image because that would change channel order.
-          // so do it individually for each channel-subimage.
-          // note: we are free to do this because we own the IplImage returned by readback.
-          if (!GetIsPlayingBack())
-          {
-            // but: only flip it for live video.
-            // currently the decompressor outputs top-left, instead of opengl bottom-left.
-            // (i'm not sure which one is better or more correct here.)
-            cvFlip(&subimg);
-          }
 
           // Check if we already have an image on the node.
           // We dont want to create a new one in that case (there is a lot of stuff going on
@@ -433,11 +442,12 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             }
           }
 
-          // copy the node properties to its image too.
           imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
           assert(imageInNode.IsNotNull());
-          imageInNode->SetProperty(s_SDISequenceNumberPropertyName, mitk::IntProperty::New(dataType->GetSequenceNumber()));
-          imageInNode->SetProperty(s_SDIFieldModePropertyName, mitk::IntProperty::New(currentFieldMode));
+
+
+          mitk::Vector3D    currentImageSpacing = imageInNode->GetGeometry()->GetSpacing();
+          mitk::Vector3D    shouldbeImageSpacing;
 
           // this is internal field mode, which might have the obsolete stack configured (i.e. during playback).
           switch (currentFieldMode)
@@ -446,17 +456,32 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
               // in case of stack, the subimage-stuffing-into-mitk will have discarded the bottom half.
             case DROP_ONE_FIELD:
             {
-              mitk::Vector3D    s;
-              s[0] = 1;
-              s[1] = 2;
-              s[2] = 1;
-              imageInNode->GetGeometry()->SetSpacing(s);
+              shouldbeImageSpacing[0] = 1;
+              shouldbeImageSpacing[1] = 2;
+              shouldbeImageSpacing[2] = 1;
+              break;
+            }
+            case DO_NOTHING_SPECIAL:
+            {
+              shouldbeImageSpacing[0] = 1;
+              shouldbeImageSpacing[1] = 1;
+              shouldbeImageSpacing[2] = 1;
               break;
             }
           }
 
-          node->SetIntProperty(s_SDISequenceNumberPropertyName, dataType->GetSequenceNumber());
-          node->SetIntProperty(s_SDIFieldModePropertyName, currentFieldMode);
+          // only update spacing if necessary. it has a huge overhead because mitk keeps
+          // allocating itk objects everytime we do this.
+          // BUT: always check whether the image spacing we currently have and what we want match!
+          // otherwise we run into some weird problems if we actually do have a progressive video source.
+          if ((std::abs(currentImageSpacing[0] - shouldbeImageSpacing[0]) > 0.01) ||
+              (std::abs(currentImageSpacing[1] - shouldbeImageSpacing[1]) > 0.01) ||
+              (std::abs(currentImageSpacing[2] - shouldbeImageSpacing[2]) > 0.01))
+          {
+            imageInNode->GetGeometry()->SetSpacing(shouldbeImageSpacing);
+          }
+
+
           node->Modified();
         } // for
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Perform varisous tracking accuracy tests</title>
+  <title>Laparoscope Tracking Accuracy</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

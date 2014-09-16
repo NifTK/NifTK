@@ -224,6 +224,7 @@ int main (int argc, char *argv[])
 				// The link between objects in the pipeline
   vtkImageData *pipeVTKImageDataConnector;
   vtkPolyData *pipeVTKPolyDataConnector;	// The link between objects in the pipeline
+  vtkAlgorithmOutput *pipeVTKAlgorithmConnector;	// The link between objects in the pipeline
 
 
   // Define the input image type
@@ -799,7 +800,7 @@ int main (int argc, char *argv[])
   // Apply the Marching Cubes algorithm
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkSmartPointer<vtkMarchingCubes>::New();
 
   if ( distTransThresh )
     // The threshold 'd' corresponds to voxels which are sqrt(d) voxels
@@ -810,23 +811,23 @@ int main (int argc, char *argv[])
     // This is half the region groeing value
     surfaceExtractor->SetValue(0, 500);
 
-  surfaceExtractor->SetInput((vtkDataObject *) pipeVTKImageDataConnector);
-  pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
+  surfaceExtractor->SetInputData(pipeVTKImageDataConnector);
+  pipeVTKAlgorithmConnector = surfaceExtractor->GetOutputPort();
 
 
   if (verbose) {
     surfaceExtractor->Update();
 
     std::cout << std::endl << "Extracted surface data:" << std::endl;
-    polyDataInfo(pipeVTKPolyDataConnector);
+    polyDataInfo(surfaceExtractor->GetOutput());
   }
 
 
   // Create triangles from the (assumed) polygonal data
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
-  triangleFilter->SetInput(pipeVTKPolyDataConnector);
+  vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+  triangleFilter->SetInputConnection(pipeVTKAlgorithmConnector);
   pipeVTKPolyDataConnector = triangleFilter->GetOutput();
 
   if (verbose) {
@@ -841,7 +842,7 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~~~~~~~~~
 
   if (preSmooth) {
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> preSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter> preSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
  
     preSmoothingFilter->BoundarySmoothingOff();
 
@@ -853,7 +854,7 @@ int main (int argc, char *argv[])
     preSmoothingFilter->SetNumberOfIterations(niterations);
     preSmoothingFilter->SetPassBand(bandwidth);
  
-    preSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+    preSmoothingFilter->SetInputData(pipeVTKPolyDataConnector);
     pipeVTKPolyDataConnector = preSmoothingFilter->GetOutput();
   }
 
@@ -865,7 +866,7 @@ int main (int argc, char *argv[])
 
     if ( flgDecimatePro ) {
       
-      vtkSmartPointer<vtkDecimatePro> decimator = vtkDecimatePro::New();
+      vtkSmartPointer<vtkDecimatePro> decimator = vtkSmartPointer<vtkDecimatePro>::New();
       
       decimator->SetTargetReduction( decimation );
       decimator->PreserveTopologyOn();
@@ -874,7 +875,7 @@ int main (int argc, char *argv[])
       
       if (featureAngle) decimator->SetFeatureAngle( featureAngle );
       
-      decimator->SetInput( pipeVTKPolyDataConnector );
+      decimator->SetInputData( pipeVTKPolyDataConnector );
 
       pipeVTKPolyDataConnector = decimator->GetOutput();
       
@@ -888,10 +889,10 @@ int main (int argc, char *argv[])
 
     else {
 
-      vtkSmartPointer<vtkQuadricDecimation> decimatorQD = vtkQuadricDecimation::New();
+      vtkSmartPointer<vtkQuadricDecimation> decimatorQD = vtkSmartPointer<vtkQuadricDecimation>::New();
       
       decimatorQD->SetTargetReduction( decimation );
-      decimatorQD->SetInput( pipeVTKPolyDataConnector );
+      decimatorQD->SetInputData( pipeVTKPolyDataConnector );
       
       pipeVTKPolyDataConnector = decimatorQD->GetOutput();
 
@@ -909,7 +910,7 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~~~~~~~~~
 
   if (postSmooth) {
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
  
     postSmoothingFilter->BoundarySmoothingOff();
 
@@ -921,7 +922,7 @@ int main (int argc, char *argv[])
     postSmoothingFilter->SetNumberOfIterations(niterations);
     postSmoothingFilter->SetPassBand(bandwidth);
     
-    postSmoothingFilter->SetInput(pipeVTKPolyDataConnector);
+    postSmoothingFilter->SetInputData(pipeVTKPolyDataConnector);
     pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
   }
 
@@ -931,9 +932,9 @@ int main (int argc, char *argv[])
 
   if ( fileOutputPolydata.length() > 0 ) {
 
-    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
+    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkSmartPointer<vtkPolyDataWriter>::New();
     writer3D->SetFileName( fileOutputPolydata.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
+    writer3D->SetInputData(pipeVTKPolyDataConnector);
 
     if (flgTextOutput)
       writer3D->SetFileType(VTK_ASCII);
@@ -950,9 +951,9 @@ int main (int argc, char *argv[])
 
   if ( fileOutputSTL.length() > 0 ) {
 
-    vtkSmartPointer<vtkSTLWriter> writer3D = vtkSTLWriter::New();
+    vtkSmartPointer<vtkSTLWriter> writer3D = vtkSmartPointer<vtkSTLWriter>::New();
     writer3D->SetFileName( fileOutputSTL.c_str() );
-    writer3D->SetInput(pipeVTKPolyDataConnector);
+    writer3D->SetInputData(pipeVTKPolyDataConnector);
 
     if (flgTextOutput)
       writer3D->SetFileType(VTK_ASCII);
@@ -976,22 +977,22 @@ int main (int argc, char *argv[])
   // Create surface normals to allow Goraud shading
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  vtkSmartPointer<vtkPolyDataNormals> normals = vtkPolyDataNormals::New();
+  vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New();
 
   normals->SplittingOff();
 
-  normals->SetInput(pipeVTKPolyDataConnector);
+  normals->SetInputData(pipeVTKPolyDataConnector);
   pipeVTKPolyDataConnector = normals->GetOutput();
 
 
   // Map 3D volume to graphics library
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkPolyDataMapper> map3D = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> map3D = vtkSmartPointer<vtkPolyDataMapper>::New();
 
   map3D->ScalarVisibilityOff();
 
-  map3D->SetInput(pipeVTKPolyDataConnector);
+  map3D->SetInputData(pipeVTKPolyDataConnector);
 
 
   // Create the renderer, the render window, and the interactor. The renderer
@@ -1007,7 +1008,7 @@ int main (int argc, char *argv[])
   // Create actor
   // ~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkActor> actor3D = vtkActor::New();
+  vtkSmartPointer<vtkActor> actor3D = vtkSmartPointer<vtkActor>::New();
 
   actor3D->SetMapper(map3D);
   actor3D->GetProperty()->SetColor(1, 1, 1);
@@ -1027,10 +1028,10 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~
     
   if (! noInteractor) {
-    vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkRenderWindowInteractor::New(); 
+    vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     iren->SetRenderWindow(renWin); 
 
-    vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkInteractorStyleTrackballCamera::New();
+    vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
     iren->SetInteractorStyle(istyle);
 
     iren->Initialize(); 

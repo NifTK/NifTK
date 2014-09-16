@@ -15,6 +15,9 @@
 #include <cstdlib>
 #include <limits>
 #include <mitkProjectPointsOnStereoVideo.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
+#include <mitkPointSetReader.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 
 #include <fstream>
@@ -37,7 +40,10 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( input2D.length() == 0 && input3D.length() == 0 && input3DWithScalars.length() == 0  )
+  if ( ( input2D.length() == 0 ) && 
+       ( input3D.length() == 0 ) && 
+       ( input3DWithScalars.length() == 0 ) && 
+       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -82,11 +88,11 @@ int main(int argc, char** argv)
     projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
-    std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
+    std::vector < mitk::ProjectedPointPair > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
-    std::vector < cv::Point3d > worldPoints;
-    std::vector < cv::Point3d > classifierWorldPoints;
-    std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
+    std::vector < mitk::WorldPoint > worldPoints;
+    std::vector < mitk::WorldPoint > classifierWorldPoints;
+    std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -97,24 +103,42 @@ int main(int argc, char** argv)
       double y2;
       while ( fin >> frameNumber >> x1 >> y1 >> x2 >> y2 )
       {
-        screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
+        screenPoints.push_back( mitk::ProjectedPointPair (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
         screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
+      projector->AppendWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
     }
     if ( input3D.length() != 0 ) 
     {
-      std::ifstream fin(input3D.c_str());
-      double x;
-      double y;
-      double z;
-      while ( fin >> x >> y >> z  )
+      //try reading it as a mitk point set first
+      mitk::PointSetReader::Pointer reader = mitk::PointSetReader::New();
+      reader->SetFileName(input3D);
+      mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+      reader->Update();
+      pointSet = reader->GetOutput();
+      if ( pointSet->GetSize() == 0 ) 
       {
-        worldPoints.push_back(cv::Point3d(x,y,z));
+        //try reading a stream of points instead
+        std::ifstream fin(input3D.c_str());
+        double x;
+        double y;
+        double z;
+        while ( fin >> x >> y >> z  )
+        {
+          worldPoints.push_back(mitk::WorldPoint(cv::Point3d(x,y,z)));
+        }
+        fin.close();
       }
-      projector->SetWorldPoints(worldPoints);
-      fin.close();
+      else
+      {
+        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
+        for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ ) 
+        {
+          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
+        }
+      }
+      projector->AppendWorldPoints(worldPoints);
     }
    
     if ( classifier3D.length() != 0 ) 
@@ -127,7 +151,7 @@ int main(int argc, char** argv)
       {
         classifierWorldPoints.push_back(cv::Point3d(x,y,z));
       }
-      projector->SetClassifierWorldPoints(classifierWorldPoints);
+      projector->AppendClassifierWorldPoints(classifierWorldPoints);
       fin.close();
     }
    
@@ -141,26 +165,64 @@ int main(int argc, char** argv)
       int b; 
       int g;
       int r;
-
-      while ( fin >> x >> y >> z >> b >> g >> r )
+      
+      std::string in[6];
+      while ( fin >> in[0] >> in[1] >> in[2] >> in[3] >> in[4] >> in[5] )
       {
-        worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
+        x=atof(in[0].c_str());
+        y=atof(in[1].c_str());
+        z=atof(in[2].c_str());
+        b=atoi(in[3].c_str());
+        g=atoi(in[4].c_str());
+        r=atoi(in[5].c_str());
+
+        worldPointsWithScalars.push_back(mitk::WorldPoint 
             (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
       }
-      projector->SetWorldPoints(worldPointsWithScalars);
+      projector->AppendWorldPoints(worldPointsWithScalars);
       fin.close();
     }
-
+    
+    if ( leftGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(leftGoldStandard.c_str());
+      std::vector < mitk::GoldStandardPoint > leftGS;
+      while ( fin  )
+      {
+        mitk::GoldStandardPoint point(fin);
+        if ( fin )
+        {
+          leftGS.push_back( point );
+        }
+      }
+      fin.close();
+      projector->SetLeftGoldStandardPoints(leftGS);
+    }
+    if ( rightGoldStandard.length() != 0 ) 
+    {
+      std::ifstream fin(rightGoldStandard.c_str());
+      std::vector < mitk::GoldStandardPoint > rightGS;
+      while ( fin )
+      {
+        mitk::GoldStandardPoint point(fin);
+        if ( fin ) 
+        {
+          rightGS.push_back(point);
+        }
+      }
+      fin.close();
+      projector->SetRightGoldStandardPoints(rightGS);
+    }
 
     projector->Project(matcher);
    
     if ( output2D.length() != 0 ) 
     {
       std::ofstream fout (output2D.c_str());
-      std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > > projectedPoints = 
+      std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
         projector->GetProjectedPoints();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < projectedPoints[0].second.size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < projectedPoints[0].m_Points.size() ; i ++ ) 
       {
         fout << "P" << i << "[lx,ly,rx,ry]" << " ";
       }
@@ -168,10 +230,10 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < projectedPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < projectedPoints[i].second.size() ; j ++ )
+        for ( unsigned int j = 0 ; j < projectedPoints[i].m_Points.size() ; j ++ )
         {
-          fout << projectedPoints[i].second[j].first.x << " " <<  projectedPoints[i].second[j].first.y <<
-             " " << projectedPoints[i].second[j].second.x << " " << projectedPoints[i].second[j].second.y << " ";
+          fout << projectedPoints[i].m_Points[j].m_Left.x << " " <<  projectedPoints[i].m_Points[j].m_Left.y <<
+             " " << projectedPoints[i].m_Points[j].m_Right.x << " " << projectedPoints[i].m_Points[j].m_Right.y << " ";
         }
         fout << std::endl;
       }
@@ -180,10 +242,10 @@ int main(int argc, char** argv)
     if ( output3D.length() !=0 )
     {
       std::ofstream fout (output3D.c_str());
-      std::vector < std::vector < cv::Point3d > > leftLensPoints = 
+      std::vector <mitk::WorldPointsWithTimingError> leftLensPoints = 
         projector->GetPointsInLeftLensCS();
       fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < leftLensPoints[0].size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < leftLensPoints[0].m_Points.size() ; i ++ ) 
       {
         fout << "P" << i << "[x,y,z]" << " ";
       }
@@ -191,10 +253,11 @@ int main(int argc, char** argv)
       for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
       {
         fout << i << " ";
-        for ( unsigned int j = 0 ; j < leftLensPoints[i].size() ; j ++ )
+        for ( unsigned int j = 0 ; j < leftLensPoints[i].m_Points.size() ; j ++ )
         {
-          fout << leftLensPoints[i][j].x << " " <<  leftLensPoints[i][j].y <<
-             " " << leftLensPoints[i][j].z << " " ;
+          fout << leftLensPoints[i].m_Points[j].m_Point.x << " " <<  
+            leftLensPoints[i].m_Points[j].m_Point.y <<
+             " " << leftLensPoints[i].m_Points[j].m_Point.z << " " ;
         }
         fout << std::endl;
       }
@@ -214,40 +277,23 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
-    if ( leftGoldStandard.length() != 0 ) 
+    if ( outputTriangulatedPoints.length() != 0 )
     {
-      std::ifstream fin(leftGoldStandard.c_str());
-      unsigned int frameNumber;
-      double x1;
-      double y1;
-      std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
-      while ( fin >> frameNumber >> x1 >> y1 )
-      {
-        leftGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
-      }
-      fin.close();
-      projector->SetLeftGoldStandardPoints(leftGS);
+      projector->SetTriangulatedPointsOutName(outputTriangulatedPoints);
     }
-    if ( rightGoldStandard.length() != 0 ) 
-    {
-      std::ifstream fin(rightGoldStandard.c_str());
-      unsigned int frameNumber;
-      double x1;
-      double y1;
-      std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
-      while ( fin >> frameNumber >> x1 >> y1 )
-      {
-        rightGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
-      }
-      fin.close();
-      projector->SetRightGoldStandardPoints(rightGS);
-    }
-
     if ( outputErrors.length() != 0 ) 
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       projector->CalculateProjectionErrors(outputErrors);
       projector->CalculateTriangulationErrors(outputErrors, matcher);
+    }
+    else
+    {
+      if ( outputTriangulatedPoints.length() != 0 )
+      {
+        projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
+        projector->CalculateTriangulationErrors(outputErrors, matcher);
+      }
     }
    
 

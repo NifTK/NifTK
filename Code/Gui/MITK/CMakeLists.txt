@@ -51,11 +51,22 @@ add_subdirectory(Modules)
 # Create all CTK plugins.
 ####################################################################################
 
+ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
+
 macro(GetMyTargetLibraries all_target_libraries varname)
   set(re_ctkplugin "^(uk_ac_ucl|it_unito_cim)_[a-zA-Z0-9_]+$")
   set(_tmp_list)
   list(APPEND _tmp_list ${all_target_libraries})
   ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
+endmacro()
+
+macro(ForcePluginCacheValue list_of_plugins plugin_value)
+  foreach(plugin ${list_of_plugins})
+    string(REPLACE ":" "\;" target_info ${plugin})
+    set(target_info_list ${target_info})
+    list(GET target_info_list 0 plugin_name)
+    set(${PROJECT_NAME}_${plugin_name} ${plugin_value} CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
+  endforeach()
 endmacro()
 
 # Get infos about application directories and build options
@@ -71,15 +82,13 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   endif()
 endforeach()
 
+# This is to get a list of plugins to pass to ctkMacroSetupPlugins
 include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 
-# Force the IGI plugins to turn off/on.
-foreach(IGI_PLUGIN ${IGI_PLUGINS})
-  string(REPLACE ":" "\;" target_info ${IGI_PLUGIN})
-  set(target_info_list ${target_info})
-  list(GET target_info_list 0 plugin_name)
-  set(${PROJECT_NAME}_${plugin_name} ${BUILD_IGI} CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
-endforeach()
+# These are required, because people turn BUILD_IGI/BUILD_MIDAS off
+# and expect all the corresponding plugins to do the same.
+ForcePluginCacheValue(${IGI_PLUGINS} ${BUILD_IGI})
+ForcePluginCacheValue(${MIDAS_PLUGINS} ${BUILD_MIDAS})
 
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      APPS ${_apps_fullpath} 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Ultrasound Transform and Image Merger (for PLUS).</title>
+  <title>Ultrasound Transform and Image Merger (for PLUS)</title>
   <description><![CDATA[Merges a directory of ultrasound images (*.nii) and tracking data (*.txt) into a .mhd file]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -24,14 +24,20 @@
       <description>Directory containing ultrasound images as .nii files.</description>
       <label>Input Image Directory</label>
     </directory>
-    <file fileExtensions="*.mhd">
+    <file fileExtensions=".mhd">
       <name>outputImageFile</name>
       <longflag>outputImageFile</longflag>
-      <description>Output merged image</description>
+      <description>Output merged image filename without extension.</description>
       <label>Output Image</label>
-      <default>merged.mhd</default>
       <channel>output</channel>
     </file>
+    <string>
+      <name>orientation</name>
+      <longflag>orientation</longflag>
+      <description>Ultrasound image orientation (see PLUS documentation).</description>
+      <label>Image Orientation</label>
+      <default>UF</default>
+    </string>
   </parameters>
 
 </executable>

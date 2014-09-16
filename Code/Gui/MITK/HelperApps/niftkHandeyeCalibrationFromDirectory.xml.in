@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Get Matched Tracking Matrix</title>
+  <title>Hand-eye Calibration From Directory</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, uses the video data to perform and intrinsic calibration and the tracking data to perform a handeye calibration.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -25,7 +25,7 @@
       <longflag>outputDirectory</longflag>
       <description>Output the calibration results</description>
       <label>Output results</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </directory>
     
   </parameters>
@@ -89,6 +89,30 @@
       <label>The target number of randomly selected video frames to use</label>
       <default>30</default>
     </integer>
+    
+    <integer>
+      <name>NumberCornerWidth</name>
+      <longflag>NumberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis</description>
+      <label>The number of internal chessboard corners along the width axis</label>
+      <default>14</default>
+    </integer>
+    
+    <integer>
+      <name>NumberCornerHeight</name>
+      <longflag>NumberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis</description>
+      <label>The number of internal chessboard corners along the height axis</label>
+      <default>10</default>
+    </integer>
+
+    <float>
+      <name>squareSizeInmm</name>
+      <longflag>squareSizeInmm</longflag>
+      <description>The size in mm of each grid sqaure</description>
+      <label>The size in mm of each grid square</label>
+      <default>3.0</default>
+    </float>
 
     <boolean>
       <name>DontSortByDistance</name>
@@ -115,13 +139,21 @@
     </boolean>
 
     <directory>
-      <name>existingCalibrationDirectory</name>
-      <longflag>existingCalibrationDirectory</longflag>
-      <description>Use an exsiting intrinsic calibration</description>
-      <label>input intrinsics calibration</label>
+      <name>existingIntrinsicsDirectory</name>
+      <longflag>existingIntrinsicsDirectory</longflag>
+      <description>For stereo calibration, use an existing intrinsic calibration.</description>
+      <label>Existing intrinsics directory</label>
       <channel>input</channel>
     </directory>
- 
+
+    <directory>
+      <name>existingRightToLeftDirectory</name>
+      <longflag>existingRightToLeftDirectory</longflag>
+      <description>For stereo calibration, use an existing right-to-left calibration.</description>
+      <label>Existing right-to-left directory</label>
+      <channel>input</channel>
+    </directory>
+
   </parameters>
   
 </executable>

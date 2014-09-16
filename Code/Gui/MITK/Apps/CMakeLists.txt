@@ -15,7 +15,7 @@
 # Note: The name of the App in Apps.cmake, must match the directory name.
 
 foreach(NIFTK_APP ${NIFTK_APPS})
-  
+
   # extract option_name
   string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
   set(target_info_list ${target_info})

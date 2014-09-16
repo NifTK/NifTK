@@ -2,7 +2,7 @@
 <executable>
   <category>Laparoscopic Demo</category>
   <title>Ultrasound Invariant Point Calibration</title>
-  <description><![CDATA[Calibrates an US probe using a Single Pin method.]]></description>
+  <description><![CDATA[Calibrates an US probe using a single pin/cross-wire method.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -24,7 +24,7 @@
       <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
-    <file fileExtensions="*.txt,*.4x4">
+    <file fileExtensions=".txt,.4x4">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
       <description>Output matrix filename.</description>
@@ -48,50 +48,58 @@
     <float-vector>
       <name>millimetresPerPixel</name>
       <longflag>millimetresPerPixel</longflag>
-      <description>Initial millimetres per pixel</description>
+      <description>Initial millimetres per pixel, for the scaling.</description>
       <label>Millimetres/Pixel</label>
       <default>1,1</default>
       <channel>input</channel>
     </float-vector>
     <boolean>
-      <name>optimiseInvariantPoints</name>
-      <longflag>optimiseInvariantPoints</longflag>
-      <description>Optimise the position of the invariant points.</description>
-      <label>Optimise Invariant Points</label>
+      <name>optimiseInvariantPoint</name>
+      <longflag>optimiseInvariantPoint</longflag>
+      <description>Optimise the position of the invariant point.</description>
+      <label>Optimise Invariant Point</label>
       <default>false</default>
       <channel>input</channel>
     </boolean>
     <point>
-      <name>invariantPoint1</name>
-      <longflag>invariantPoint1</longflag>
-      <description>Location of the first invariant point in tracker coordinates.</description>
-      <label>Invariant Point 1</label>
+      <name>invariantPoint</name>
+      <longflag>invariantPoint</longflag>
+      <description>Location of the invariant point in tracker coordinates.</description>
+      <label>Invariant Point</label>
       <default>0,0,0</default>
       <channel>input</channel>
     </point>
-    <point>
-      <name>invariantPoint2</name>
-      <longflag>invariantPoint2</longflag>
-      <description>Location of the second invariant point in tracker coordinates.</description>
-      <label>Invariant Point 2</label>
-      <default>-32767,-32767,-32767</default>
+    <boolean>
+      <name>optimiseTimingLag</name>
+      <longflag>optimiseTimingLag</longflag>
+      <description>Optimise the timing lag.</description>
+      <label>Optimise Timing Lag</label>
+      <default>false</default>
       <channel>input</channel>
-    </point>
-    <point>
-      <name>invariantPoint3</name>
-      <longflag>invariantPoint3</longflag>
-      <description>Location of the third invariant point in tracker coordinates.</description>
-      <label>Invariant Point 3</label>
-      <default>-32767,-32767,-32767</default>
+    </boolean>
+    <double>
+      <name>timingLag</name>
+      <longflag>timingLag</longflag>
+      <description>The timing lag in milliseconds, where a +ve number represents the point data lagging behind the tracking data.</description>
+      <label>Timing Lag</label>
+      <default>0</default>
       <channel>input</channel>
-    </point>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    </double>
+    <file fileExtensions=".txt,.mat,.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
       <description>Guess of calibration transformation, stored as a 4x4 matrix.</description>
       <label>Initial Guess</label>
       <channel>input</channel>
     </file>
+    <boolean>
+      <name>verbose</name>
+      <longflag>verbose</longflag>
+      <description>Verbose output.</description>
+      <label>Verbose</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
   </parameters>
 
 </executable>

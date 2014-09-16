@@ -15,14 +15,14 @@
 MITK_CREATE_MODULE(niftkMIDAS
   EXPORT_DEFINE NIFTKMIDAS_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
-  DEPENDS niftkCore Segmentation niftkDnDDisplay
-  PACKAGE_DEPENDS ITK
+  PACKAGE_DEPENDS ITK|ITKCommon
+  DEPENDS niftkCore MitkSegmentation niftkDnDDisplay
 )
 
 target_link_libraries(niftkMIDAS
   niftkcommon
   niftkITK
-  )
+)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkMIDAS)

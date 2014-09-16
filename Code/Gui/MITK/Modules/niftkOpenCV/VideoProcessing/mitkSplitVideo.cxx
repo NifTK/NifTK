@@ -84,7 +84,10 @@ bool SplitVideo::Split(
     + "-" +  boost::lexical_cast<std::string>(endFrame) + ".avi";
   std::string outLogName = videoIn + "." +  boost::lexical_cast<std::string>(startFrame)
     + "-" +  boost::lexical_cast<std::string>(endFrame) + ".framemap.log";
-  CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),codec,fps,S, true);
+  //CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),codec,fps,S, true);
+  CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),CV_FOURCC('D','I','V','X'),fps,S, true);
+  //CV_FOURCC('D', 'I', 'V', 'X')
+  //CV_FOURCC('U', '2', '6', '3')
   std::ofstream fout(outLogName.c_str());
 
   std::string line;

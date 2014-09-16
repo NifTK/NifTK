@@ -14,8 +14,8 @@
 
 MITK_CREATE_MODULE(niftkThumbnail
   EXPORT_DEFINE niftkThumbnail_EXPORT
-  DEPENDS MitkExt Qmitk niftkCoreGui
-  QT_MODULE 
+  DEPENDS MitkQtWidgets niftkCoreGui
+  PACKAGE_DEPENDS Qt4|QtGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

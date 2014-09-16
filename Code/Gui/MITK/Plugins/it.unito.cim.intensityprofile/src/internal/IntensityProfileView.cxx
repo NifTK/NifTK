@@ -20,7 +20,6 @@
 
 #include <itkSimpleDataObjectDecorator.h>
 
-#include <mitkItkBaseDataAdapter.h>
 #include <mitkImageTimeSelector.h>
 #include <mitkColorProperty.h>
 #include <mitkImageStatisticsHolder.h>

@@ -2148,8 +2148,8 @@ void
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::RegisterTheImages( void )
 {
-  RegisterTheImages( PREDIAGNOSTIC_MAMMO );
-  RegisterTheImages( CONTROL_MAMMO );
+  RegisterTheImages( PREDIAGNOSTIC_MAMMO, m_TransformPreDiag );
+  RegisterTheImages( CONTROL_MAMMO, m_TransformControl );
 };
 
 
@@ -2160,7 +2160,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::RegisterTheImages( MammogramType mammoType )
+::RegisterTheImages( MammogramType mammoType,
+                     typename FactoryType::EulerAffineTransformType::Pointer &transform )
 {
   int finalInterpolator;
   int registrationInterpolator;
@@ -2202,7 +2203,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   std::string outputMatrixTransformFile; 
   std::string outputUCLTransformFile;
 
-  typename FactoryType::EulerAffineTransformType::Pointer transform;
 
   if ( mammoType == PREDIAGNOSTIC_MAMMO )
   {
@@ -2282,8 +2282,13 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if ( niftk::FileExists( outputUCLTransformFile ) && ( ! m_FlgOverwrite ) )
   {
+    std::cout << "Reading the registration transformation: " << outputUCLTransformFile << std::endl;
     transform = dynamic_cast<typename FactoryType::EulerAffineTransformType*>(builder->CreateTransform( outputUCLTransformFile ).GetPointer());
     transform->SetNumberOfDOF(dof); 
+    if ( m_FlgDebug )
+    {
+      transform->Print( std::cout );
+    }
     return;
   }
     

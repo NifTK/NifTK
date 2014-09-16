@@ -152,23 +152,23 @@ int main(int argc, char** argv)
   // 4. Right hand coordinate system.
   // 5. Origin is the centre of the probe, aligned with the face .... i.e. NOT including the white border.
 
-  vtkSmartPointer<vtkPolyData> polyData = vtkPolyData::New();
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkSmartPointer<vtkPoints> points = vtkPoints::New();
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   points->SetDataTypeToDouble();
   points->Initialize();
 
-  vtkSmartPointer<vtkDoubleArray> normals = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> normals = vtkSmartPointer<vtkDoubleArray>::New();
   normals->SetNumberOfComponents(3);
   normals->SetName("Normals");
   normals->Initialize();
 
-  vtkSmartPointer<vtkIntArray> pointIDArray = vtkIntArray::New();
+  vtkSmartPointer<vtkIntArray> pointIDArray = vtkSmartPointer<vtkIntArray>::New();
   pointIDArray->SetNumberOfComponents(1);
   pointIDArray->SetName("Point IDs");
   pointIDArray->Initialize();
 
-  vtkSmartPointer<vtkCellArray> vertices = vtkCellArray::New();
+  vtkSmartPointer<vtkCellArray> vertices = vtkSmartPointer<vtkCellArray>::New();
   vertices->Initialize();
 
   for (int lengthCounter = 0; lengthCounter < numberOfTagsAlongLength; lengthCounter++)
@@ -190,9 +190,9 @@ int main(int argc, char** argv)
   polyData->GetPointData()->SetNormals(normals);
   polyData->GetPointData()->SetScalars(pointIDArray);
 
-  vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkPolyDataWriter::New();
+  vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkSmartPointer<vtkPolyDataWriter>::New();
   polyWriter->SetFileName(outputTrackingModel.c_str());
-  polyWriter->SetInput(polyData);
+  polyWriter->SetInputData(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 
@@ -206,18 +206,18 @@ int main(int argc, char** argv)
     // Generate an open ended cylinder, along +z axis.
     // Note each quad is completely independant.
 
-    vtkSmartPointer<vtkPolyData> polyData2 = vtkPolyData::New();
+    vtkSmartPointer<vtkPolyData> polyData2 = vtkSmartPointer<vtkPolyData>::New();
 
-    vtkSmartPointer<vtkPoints> points2 = vtkPoints::New();
+    vtkSmartPointer<vtkPoints> points2 = vtkSmartPointer<vtkPoints>::New();
     points2->SetDataTypeToDouble();
     points2->Initialize();
 
-    vtkSmartPointer<vtkIntArray> pointIDArray2 = vtkIntArray::New();
+    vtkSmartPointer<vtkIntArray> pointIDArray2 = vtkSmartPointer<vtkIntArray>::New();
     pointIDArray2->SetNumberOfComponents(1);
     pointIDArray2->SetName("Point IDs");
     pointIDArray2->Initialize();
 
-    vtkSmartPointer<vtkCellArray> quads = vtkCellArray::New();
+    vtkSmartPointer<vtkCellArray> quads = vtkSmartPointer<vtkCellArray>::New();
     quads->Initialize();
 
     vtkIdType pointsFor1Quad[4];
@@ -270,11 +270,11 @@ int main(int argc, char** argv)
 
     vtkIdType numberPoints = points2->GetNumberOfPoints();
 
-    vtkFloatArray* tc = vtkFloatArray::New();
+    vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New();
     tc->SetNumberOfComponents( 2 );
     tc->Allocate(numberPoints);
 
-    vtkSmartPointer<vtkDoubleArray> normals2 = vtkDoubleArray::New();
+    vtkSmartPointer<vtkDoubleArray> normals2 = vtkSmartPointer<vtkDoubleArray>::New();
     normals2->SetNumberOfComponents(3);
     normals2->SetName("Normals");
     normals2->Initialize();
@@ -331,24 +331,24 @@ int main(int argc, char** argv)
     //   convert to triangles for faster rendering.
 
     // Photo-consistency model.
-    vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkCleanPolyData::New();
-    cleanFilter->SetInput(polyData2);
+    vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkSmartPointer<vtkCleanPolyData>::New();
+    cleanFilter->SetInputData(polyData2);
 
-    vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
-    writer->SetInput(cleanFilter->GetOutput());
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+    writer->SetInputData(cleanFilter->GetOutput());
     writer->SetFileName(outputPhotoConsistencyModel.c_str());
     writer->Update();
 
     std::cout << "written photo consistency model to = " << outputPhotoConsistencyModel << std::endl;
 
-    vtkSmartPointer<vtkPolyDataNormals> normalsFilter = vtkPolyDataNormals::New();
-    normalsFilter->SetInput(polyData2);
+    vtkSmartPointer<vtkPolyDataNormals> normalsFilter = vtkSmartPointer<vtkPolyDataNormals>::New();
+    normalsFilter->SetInputData(polyData2);
     normalsFilter->FlipNormalsOn();
 
-    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
-    triangleFilter->SetInput(normalsFilter->GetOutput());
+    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+    triangleFilter->SetInputData(normalsFilter->GetOutput());
 
-    writer->SetInput(triangleFilter->GetOutput());
+    writer->SetInputData(triangleFilter->GetOutput());
     writer->SetFileName(outputVisualisationModel.c_str());
     writer->Update();
 

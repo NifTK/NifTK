@@ -487,7 +487,7 @@ int main(int argc, char** argv)
 
   vtkPolyDataWriter *polyWriter = vtkPolyDataWriter::New();
   polyWriter->SetFileName(outputPoints.c_str());
-  polyWriter->SetInput(polyData);
+  polyWriter->SetInputDataObject(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 

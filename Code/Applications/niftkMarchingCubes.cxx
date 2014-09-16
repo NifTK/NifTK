@@ -116,14 +116,14 @@ int main(int argc, char** argv)
   reader->SetFileName(args.inputImage.c_str());
 
   vtkContourFilter *filter = vtkContourFilter::New();
-  filter->SetInput(reader->GetOutput());
+  filter->SetInputDataObject(reader->GetOutput());
   filter->SetValue(0, args.isoSurfaceValue);
   filter->SetComputeScalars(args.withScalars);
   filter->SetComputeGradients(args.withGradients);
   filter->SetComputeNormals(args.withNormals);
   
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInput(filter->GetOutput());
+  writer->SetInputDataObject(filter->GetOutput());
   writer->SetFileName(args.outputPolyData.c_str());
   writer->Update();
 }

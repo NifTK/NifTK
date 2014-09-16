@@ -89,8 +89,10 @@ if(SlicerExecutionModel_FOUND)
     niftkExtract2DSliceFrom3DImage
     niftkExtrudeMaskToVolume
     niftkHistogramEqualization
+    niftkHistogramMatchingImageFilter
     niftkInvertImage
     niftkLogInvertImage
+    niftkMammogramFatSubtraction
     niftkMammogramMaskSegmentation
     niftkMaskDICOMMammograms
     niftkMammogramPectoralisSegmentation
@@ -141,49 +143,9 @@ if(SlicerExecutionModel_FOUND)
         NAME ${APP}
         BUILD_SLICER
         INSTALL_SCRIPT
-        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
+        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} vtkIOImage
       )
     endforeach()
-
-    #-------------------------------------------------------------
-    # Add new programs which link to VTK and NiftyReg to this list.
-    #-------------------------------------------------------------
-
-    if(NIFTYREG_FOUND)
-      set(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
-        niftkF3DControlGridToVTKPolyData
-      )
-      list(APPEND _all_command_line_apps ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
-
-      if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-        # OpenMP is disabled when the compiler is based on Clang
-        find_package(OpenMP)
-        if(OPENMP_FOUND)
-          set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        endif(OPENMP_FOUND)
-      endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-
-      add_definitions(-DUSE_NIFTYREG)
-      link_directories(${NIFTYREG_LIBRARY_DIR})
-      include_directories(${NIFTYREG_INCLUDE_DIR})
-
-      set(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
-        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
-        niftkITK
-        niftkVTKNiftyReg
-        ${NIFTYREG_LIBRARIES}
-      )
-
-      foreach(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
-        NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-          NAME ${APP}
-          BUILD_SLICER
-          INSTALL_SCRIPT
-          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
-        )
-      endforeach()
-    endif(NIFTYREG_FOUND)
 
   endif(VTK_FOUND)
 
@@ -196,7 +158,7 @@ endif()
 ###############################################################
 
 set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
-  niftkBreastMaskSegmentationFromMRI
+  #niftkBreastMaskSegmentationFromMRI
   niftkOCTVolumeConstructor
   niftkVesselExtractor
   )
@@ -206,7 +168,7 @@ foreach(APP ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME ${APP}
     INSTALL_SCRIPT
-    TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
+    TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
   )
 endforeach()
 
@@ -219,6 +181,7 @@ endforeach()
 # Add new programs to this list.
 ##############################################################
 set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
+  niftk2DImagesTo3DVolume
   niftkAbsImageFilter
   niftkAnd
   niftkAtlasStatistics
@@ -300,6 +263,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkShiftProb
   niftkShiftScale
   niftkShrinkImage
+  niftkSplitVolumeIntoVoxelPlanes
   niftkSTAPLE
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
@@ -374,7 +338,7 @@ if(VTK_FOUND)
     # Add new programs to this list.
     ##############################################################
     set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
-      niftkCreateBreastMesh
+      #niftkCreateBreastMesh
     )
     list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
 

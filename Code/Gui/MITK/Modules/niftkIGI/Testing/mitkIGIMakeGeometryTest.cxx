@@ -18,6 +18,7 @@
 
 #include <niftkVTKFunctions.h>
 #include <vtkSmartPointer.h>
+#include <mitkIOUtil.h>
 
 namespace mitk
 {
@@ -41,37 +42,31 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
   mitk::Surface::Pointer surface = mitk::Surface::New();
 
   surface = MakeAWall(0);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 0");
   surface = MakeAWall(1);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 1");
   surface = MakeAWall(2);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 2");
   surface = MakeAWall(3);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 3");
   surface = MakeAWall(4);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
       ".. Testing MakeAWall 4");
   surface = MakeAWall(5);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 6 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 24 ) ,
@@ -81,73 +76,64 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       baseDirectory + "calib.left.handeye.txt",
       baseDirectory + "calib.left.handeye.txt",
       baseDirectory + "calib.left.handeye.txt", false);
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
-      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1699 ) &&
-      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 942 ) ,
+      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1708 ) &&
+      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 960 ) ,
       ".. Testing make laparoscope");
 
   surface = MakePointer ( baseDirectory + "pointer_cal.rig", "" );
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 360 ) ,
       ".. Testing make pointer");
-  
+
   surface = MakeReference ( baseDirectory + "reference.rig", "" );
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 360 ) ,
       ".. Testing make reference");
 
   surface = MakeReferencePolaris ( baseDirectory + "reference.rig", "" );
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
-      ( surface->GetVtkPolyData()->GetNumberOfCells() == 673 ) &&
-      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 352 ) ,
+      ( surface->GetVtkPolyData()->GetNumberOfCells() == 733 ) &&
+      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 472 ) ,
       ".. Testing make referencePolaris");
 
-
   surface = MakeXAxes();
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make XAxis");
+
   surface = MakeYAxes();
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make YAxis");
+
   surface = MakeZAxes();
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 1 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 2 ) ,
       ".. Testing make ZAxis");
 
-
   surface = MakeLapLensAxes();
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 5 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 10 ) ,
       ".. Testing make laplensaxes");
 
   surface = MakeOptotrak();
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 278 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 380 ) ,
       ".. Testing make Optotrak");
 
   surface = MakeTransrectalUSProbe("");
-  surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 3127 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 1887 ) ,
       ".. Testing make trans rectal US Probe");
+
   return EXIT_SUCCESS;
 }

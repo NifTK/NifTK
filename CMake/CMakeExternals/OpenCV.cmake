@@ -30,6 +30,12 @@ if(BUILD_IGI)
   
   if(NOT DEFINED OpenCV_DIR)
   
+    set(additional_cmake_args
+      -DBUILD_opencv_java:BOOL=OFF
+    )
+
+    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.6.1.cmake)
+
     niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
     
     ExternalProject_Add(${proj}
@@ -41,28 +47,30 @@ if(BUILD_IGI)
       URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
       UPDATE_COMMAND  ""
       INSTALL_COMMAND ""
+      PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS
-      ${EP_COMMON_ARGS}
-      -DBUILD_opencv_core:BOOL=ON
-      -DBUILD_opencv_calib3d:BOOL=ON
-      -DBUILD_opencv_features2d:BOOL=ON
-      -DBUILD_opencv_imgproc:BOOL=ON
-      -DBUILD_opencv_video:BOOL=ON
-      -DBUILD_opencv_python:BOOL=OFF
-      -DBUILD_opencv_ts:BOOL=OFF
-      -DBUILD_opencv_java:BOOL=OFF
-      -DBUILD_DOCS:BOOL=OFF
-      -DBUILD_TESTS:BOOL=OFF
-      -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_DOXYGEN_DOCS:BOOL=OFF
-      -DBUILD_PERF_TESTS:BOOL=OFF
-      -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
-      -DWITH_QT:BOOL=OFF
-      -DWITH_EIGEN:BOOL=OFF      
-      -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
-      -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
-      -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
+        ${EP_COMMON_ARGS}
+        -DBUILD_opencv_core:BOOL=ON
+        -DBUILD_opencv_calib3d:BOOL=ON
+        -DBUILD_opencv_features2d:BOOL=ON
+        -DBUILD_opencv_imgproc:BOOL=ON
+        -DBUILD_opencv_video:BOOL=ON
+        -DBUILD_opencv_python:BOOL=OFF
+        -DBUILD_opencv_ts:BOOL=OFF
+        -DBUILD_opencv_java:BOOL=OFF
+        -DBUILD_DOCS:BOOL=OFF
+        -DBUILD_TESTS:BOOL=OFF
+        -DBUILD_EXAMPLES:BOOL=OFF
+        -DBUILD_DOXYGEN_DOCS:BOOL=OFF
+        -DBUILD_PERF_TESTS:BOOL=OFF
+        -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
+        -DWITH_QT:BOOL=OFF
+        -DWITH_EIGEN:BOOL=OFF      
+        -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
+        -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
+        -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
+        ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)

@@ -180,7 +180,7 @@ void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -213,7 +213,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geome
 mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -237,7 +237,7 @@ mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk
 mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mitk::Geometry3D* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
   affineTransformMatrix.GetVnlMatrix().normalize_columns();
   mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
@@ -543,9 +543,6 @@ void niftkSingleViewerWidgetTestClass::SetRandomPositions()
 void niftkSingleViewerWidgetTestClass::initTestCase()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-
-  // Need to load images, specifically using MIDAS/DRC object factory.
-  ::RegisterNifTKCoreObjectFactory();
 
   QmitkRegisterClasses();
 
@@ -1237,9 +1234,9 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
 
-  const mitk::TimeGeometry::Pointer axialTimeGeometry = axialRenderer->GetTimeWorldGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetTimeWorldGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetTimeWorldGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer axialTimeGeometry = axialRenderer->GetWorldTimeGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetWorldTimeGeometry()->Clone();
+  const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetWorldTimeGeometry()->Clone();
 
 //  MITK_INFO << "axial time geometry: " << axialTimeGeometry;
 //  MITK_INFO << "sagittal time geometry: " << sagittalTimeGeometry;

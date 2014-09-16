@@ -366,7 +366,7 @@ void LoadMatrixOrCreateDefault(
   vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
   if (matrix.GetPointer() == NULL)
   {
-    matrix = vtkMatrix4x4::New();
+    matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity();
   }
 
@@ -412,8 +412,8 @@ void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node , vtkMatr
   }
 
   mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3>  matrix;
-  itk::Vector<float, 3> offset;
+  itk::Matrix<double, 3, 3>  matrix;
+  itk::Vector<double, 3> offset;
   matrix = affineTransform->GetMatrix();
   offset = affineTransform->GetOffset();
 
@@ -440,10 +440,10 @@ void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Poi
     mitkThrow() << "In ComposeTransformWithNode, node is NULL";
   }
 
-  vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   GetCurrentTransformFromNode(node, *currentMatrix);
 
-  vtkSmartPointer<vtkMatrix4x4> newMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> newMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   newMatrix->Multiply4x4(&transform, currentMatrix, newMatrix);
 
   mitk::CoordinateAxesData::Pointer axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());

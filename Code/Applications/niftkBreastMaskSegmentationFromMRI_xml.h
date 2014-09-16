@@ -32,7 +32,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the input image
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileInputStructural</name>\n"
 "      <index>0</index>\n"
 "      <description>Filename of the input structural MR image to be segmented.</description>\n"
@@ -43,7 +43,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the output segmented image
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileOutputImage</name>\n"
 "      <flag>o</flag>\n"
 "      <description>Filename of the output segmented image.</description>\n"
@@ -66,7 +66,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of an optional additional Fat-saturated input MR image
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileInputFatSat</name>\n"
 "      <longflag>fs</longflag>\n"
 "      <description>An additional optional fat-saturated image (must be the same size and resolution as the structural image).</description>\n"
@@ -152,7 +152,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the output background mask
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileOutputBackground</name>\n"
 "      <longflag>obgnd</longflag>\n"
 "      <description>Output the background mask.</description>\n"
@@ -164,7 +164,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the output pectoral mask
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileOutputPectoral</name>\n"
 "      <longflag>opec</longflag>\n"
 "      <description>Output the pectoral mask.</description>\n"
@@ -176,7 +176,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the output fitted surface mask
 
-"    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+"    <image fileExtensions=\".nii,.nii.gz\">\n"
 "      <name>fileOutputFitSurface</name>\n"
 "      <longflag>ofitsurf</longflag>\n"
 "      <description>Output the mask from fitting a B-spline to the skin surface (Only possible when flgCropFit selected).</description>\n"
@@ -188,7 +188,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 
   // Filename of the output vtk surface
 
-"    <image fileExtensions=\"*.vtk\">\n"
+"    <image fileExtensions=\".vtk\">\n"
 "      <name>fileOutputSurface</name>\n"
 "      <longflag>ovtk</longflag>\n"
 "      <description>Write the breast surface to a VTK polydata file.</description>\n"

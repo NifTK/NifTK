@@ -19,6 +19,9 @@
 #include <fstream>
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
+#include <mitkTimeStampsContainer.h>
+#include <niftkFileHelper.h>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace mitk {
 
@@ -66,11 +69,11 @@ std::vector<std::string> FindTrackingMatrixDirectories(const std::string& direct
 
 
 //---------------------------------------------------------------------------
-mitk::TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory)
+mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory)
 {
   boost::filesystem::directory_iterator endItr;
   boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
-  TrackingMatrixTimeStamps returnStamps;
+  TimeStampsContainer returnStamps;
   
   for ( boost::filesystem::directory_iterator it(directory);it != endItr ; ++it)
   {
@@ -80,11 +83,11 @@ mitk::TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory)
       std::string stringThing = it->path().filename().string();
       if ( boost::regex_match( stringThing.c_str(), what, timeStampFilter) )
       {
-        returnStamps.m_TimeStamps.push_back(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
+        returnStamps.Insert(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
       }
     }
   }
-  std::sort ( returnStamps.m_TimeStamps.begin() , returnStamps.m_TimeStamps.end());
+  returnStamps.Sort();
   return returnStamps;
 }
 
@@ -112,6 +115,7 @@ std::vector<std::string> FindVideoFrameMapFiles(const std::string directory)
   return returnStrings;
 }
 
+
 //---------------------------------------------------------------------------
 bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 {
@@ -125,6 +129,26 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
     mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
 
+  cv::Matx44d matrix;
+  isSuccessful = ReadTrackerMatrix(filename, matrix);
+  if (isSuccessful)
+  {
+    for ( int row = 0 ; row < 4 ; row ++ )
+    {
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        outputMatrix.at<double>(row,col) = matrix(row, col);
+      }
+    }
+  }
+  return isSuccessful;
+}
+
+
+//---------------------------------------------------------------------------
+bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
+{
+  bool isSuccessful = false;
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
@@ -134,9 +158,9 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 
   for ( int row = 0 ; row < 4 ; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0 ; col < 4 ; col ++ )
     {
-      fin >> outputMatrix.at<double>(row,col);
+      fin >> outputMatrix(row, col);
     }
   }
   isSuccessful = true;
@@ -157,6 +181,26 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
     mitkThrow() << "SaveTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
 
+  cv::Matx44d matrix;
+  isSuccessful = SaveTrackerMatrix(filename, matrix);
+  if (isSuccessful)
+  {
+    for ( int row = 0 ; row < 4 ; row ++ )
+    {
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        outputMatrix.at<double>(row,col) = matrix(row, col);
+      }
+    }
+  }
+  return isSuccessful;
+}
+
+
+//---------------------------------------------------------------------------
+bool SaveTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
+{
+  bool isSuccessful = false;
   std::ofstream fout(filename.c_str());
   if ( !fout )
   {
@@ -165,22 +209,186 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   }
   for ( int row = 0 ; row < 4 ; row ++ )
   {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
+    for ( int col = 0 ; col < 4 ; col ++ )
     {
-      fout << outputMatrix.at<double>(row,col);
-      if ( col < 3 ) 
+      fout << outputMatrix(row,col);
+      if ( col < 3 )
       {
         fout << " ";
       }
     }
-    if ( row < 3 ) 
-    {
-      fout << std::endl;
-    }
+    fout << std::endl;
   }
+  fout.close();
   isSuccessful = true;
   return isSuccessful;
 }
 
+
+//---------------------------------------------------------------------------
+cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErrors )
+{
+  cv::VideoCapture* capture = new cv::VideoCapture (filename);
+  if ( ! capture )
+  {
+    mitkThrow() << "Failed to open " << filename << " for video capture" << std::endl;
+  }
+  //try and get some information about the capture, if these calls fail it may be that 
+  //the capture may still work but will exhibit undesirable behaviour, see trac 3718
+  int m_VideoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  int m_VideoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+
+  if ( m_VideoWidth == 0 || m_VideoHeight == 0 )
+  {
+    if ( ! ignoreErrors )
+    {
+      mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+    }
+    else 
+    {
+      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+    }
+  }
+
+  return capture;
+}
+
+
+//---------------------------------------------------------------------------
+std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory)
+{
+  std::vector< std::pair<unsigned long long, cv::Point3d> > timeStampedPoints;
+
+  std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(directory);
+  std::sort(pointFiles.begin(), pointFiles.end());
+
+  for (unsigned int i = 0; i < pointFiles.size(); i++)
+  {
+    cv::Point3d point;
+    std::string fileName = pointFiles[i];
+
+    if(fileName.size() > 0)
+    {
+      std::ifstream myfile(fileName.c_str());
+      if (myfile.is_open())
+      {
+        point.x = 0;
+        point.y = 0;
+        point.z = 0;
+
+        myfile >> point.x;
+        myfile >> point.y;
+        myfile >> point.z;
+
+        if (myfile.bad() || myfile.eof() || myfile.fail())
+        {
+          std::ostringstream errorMessage;
+          errorMessage << "Could not load point file:" << fileName << std::endl;
+          mitkThrow() << errorMessage.str();
+        }
+        myfile.close();
+      }
+    }
+
+    // Parse timestamp.
+    boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
+    boost::cmatch what;
+    unsigned long long timeStamp = 0;
+
+    if ( boost::regex_match( (niftk::Basename(fileName)).c_str(), what, timeStampFilter) )
+    {
+      timeStamp = boost::lexical_cast<unsigned long long>(niftk::Basename(fileName));
+
+      if (timeStamp != 0)
+      {
+        timeStampedPoints.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
+      }
+      else
+      {
+        std::ostringstream errorMessage;
+        errorMessage << "Failed to extract timestamp from name of file:" << fileName << std::endl;
+        mitkThrow() << errorMessage.str();
+      }
+    }
+    else
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Could not match timestamp in name of file:" << fileName << std::endl;
+      mitkThrow() << errorMessage.str();
+    }
+  }
+
+  return timeStampedPoints;
+}
+
+
+//---------------------------------------------------------------------------
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName)
+{
+  if (fileName.length() == 0)
+  {
+    mitkThrow() << "Filename should not be empty." << std::endl;
+  }
+
+  std::ifstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    cv::Point3d point;
+
+    do
+    {
+      mitk::TimeStampsContainer::TimeStamp timeStamp = 0;
+      double x = 0;
+      double y = 0;
+      double z = 0;
+
+      myfile >> timeStamp;
+      myfile >> x;
+      myfile >> y;
+      myfile >> z;
+
+      if (timeStamp > 0 && !boost::math::isnan(x) && !boost::math::isnan(y) && !boost::math::isnan(z)) // any other validation?
+      {
+        point.x = x;
+        point.y = y;
+        point.z = z;
+
+        points.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
+      }
+    }
+    while (!myfile.bad() && !myfile.eof() && !myfile.fail());
+
+    myfile.close();
+  }
+  else
+  {
+    mitkThrow() << "Failed to open file " << fileName << " for reading." << std::endl;
+  }
+}
+
+
+//---------------------------------------------------------------------------
+void SaveTimeStampedPoints(const std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName)
+{
+  if (fileName.length() == 0)
+  {
+    mitkThrow() << "Filename should not be empty." << std::endl;
+  }
+
+  std::ofstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    for (unsigned long int i = 0; i < points.size(); i++)
+    {
+      myfile << points[i].first << " " << points[i].second.x << " " << points[i].second.y << " " << points[i].second.z << std::endl;
+    }
+
+    myfile.close();
+  }
+  else
+  {
+    mitkThrow() << "Failed to open file " << fileName << " for writing." << std::endl;
+  }
+}
 
 } // end namespace

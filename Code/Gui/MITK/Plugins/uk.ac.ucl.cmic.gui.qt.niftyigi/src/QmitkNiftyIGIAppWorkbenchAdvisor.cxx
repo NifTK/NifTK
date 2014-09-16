@@ -14,6 +14,7 @@
 
 #include "QmitkNiftyIGIAppWorkbenchAdvisor.h"
 #include "QmitkNiftyIGIWorkbenchWindowAdvisor.h"
+#include <mitkNifTKIGIObjectFactory.h>
 
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyIGIAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()

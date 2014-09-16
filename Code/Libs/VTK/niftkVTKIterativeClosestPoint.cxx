@@ -19,6 +19,7 @@
 #include <vtkIterativeClosestPointTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
+#include <vtkVersion.h>
 
 namespace niftk
 {
@@ -132,11 +133,10 @@ bool VTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
 
 #if VTK_MAJOR_VERSION <= 5
   icpTransformFilter->SetInput(m_Source);
-  icpTransformFilter->SetOutput(solution);
 #else
   icpTransformFilter->SetInputData(m_Source);
-  icpTransformFilter->SetOutputData(solution);
 #endif
+  icpTransformFilter->SetOutput(solution);
   icpTransformFilter->SetTransform(icpTransform);
   icpTransformFilter->Update();
   return true;

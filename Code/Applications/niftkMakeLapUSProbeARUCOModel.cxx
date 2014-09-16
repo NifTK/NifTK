@@ -124,23 +124,23 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  vtkSmartPointer<vtkPolyData> polyData = vtkPolyData::New();
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkPoints *points = vtkPoints::New();
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   points->SetDataTypeToDouble();
   points->Initialize();
 
-  vtkSmartPointer<vtkDoubleArray> normals = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> normals = vtkSmartPointer<vtkDoubleArray>::New();
   normals->SetNumberOfComponents(3);
   normals->SetName("Normals");
   normals->Initialize();
 
-  vtkSmartPointer<vtkIntArray> pointIDArray = vtkIntArray::New();
+  vtkSmartPointer<vtkIntArray> pointIDArray = vtkSmartPointer<vtkIntArray>::New();
   pointIDArray->SetNumberOfComponents(1);
   pointIDArray->SetName("Point IDs");
   pointIDArray->Initialize();
 
-  vtkSmartPointer<vtkCellArray> vertices = vtkCellArray::New();
+  vtkSmartPointer<vtkCellArray> vertices = vtkSmartPointer<vtkCellArray>::New();
   vertices->Initialize();
 
   int pointCounter = 0;
@@ -190,9 +190,9 @@ int main(int argc, char** argv)
   polyData->GetPointData()->SetNormals(normals);
   polyData->GetPointData()->SetScalars(pointIDArray);
 
-  vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkPolyDataWriter::New();
+  vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkSmartPointer<vtkPolyDataWriter>::New();
   polyWriter->SetFileName(outputTrackingModel.c_str());
-  polyWriter->SetInput(polyData);
+  polyWriter->SetInputData(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
   // for overlay purposes onto a video overlay. Here we just create a cyclinder.
   if (outputVisualisationModel.size() > 0)
   {
-    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSphereSource::New();
+    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereSource->SetRadius(radius);
     sphereSource->SetCenter(0, offsetOfOriginFromCentre, tipZOffset);
     sphereSource->SetThetaResolution(36);
@@ -210,27 +210,27 @@ int main(int argc, char** argv)
     sphereSource->SetStartPhi(90);
     sphereSource->SetEndPhi(180);
 
-    vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkCylinderSource::New();
+    vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
     cylinderSource->SetCenter(0, length/2.0, -offsetOfOriginFromCentre);
     cylinderSource->SetRadius(radius);
     cylinderSource->SetHeight(length);
     cylinderSource->SetResolution(36);
     cylinderSource->SetCapping(false);
 
-    vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
+    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
     transform->Identity();
     transform->RotateX(90);
 
-    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(cylinderSource->GetOutput());
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transformFilter->SetInputData(cylinderSource->GetOutput());
     transformFilter->SetTransform(transform);
 
-    vtkSmartPointer<vtkAppendPolyData> appender = vtkAppendPolyData::New();
-    appender->AddInput(sphereSource->GetOutput());
-    appender->AddInput(transformFilter->GetOutput());
+    vtkSmartPointer<vtkAppendPolyData> appender = vtkSmartPointer<vtkAppendPolyData>::New();
+    appender->AddInputData(sphereSource->GetOutput());
+    appender->AddInputData(transformFilter->GetOutput());
 
-    vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
-    writer->SetInput(appender->GetOutput());
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+    writer->SetInputData(appender->GetOutput());
     writer->SetFileName(outputVisualisationModel.c_str());
     writer->Update();
 

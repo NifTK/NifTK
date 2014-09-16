@@ -186,7 +186,7 @@ typedef _W64 int ptrdiff_t;
 
 // i only ever use the static version of glew, so might as well hardcode it
 #ifndef GLEW_STATIC
-#define GLEW_STATIC
+//#define GLEW_STATIC
 #endif
 
 #ifdef GLEW_STATIC

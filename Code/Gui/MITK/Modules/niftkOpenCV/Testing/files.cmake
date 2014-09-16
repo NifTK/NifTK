@@ -17,6 +17,11 @@ set(MODULE_TESTS
   ImageConversionTest.cxx
   mitkCameraCalibrationFacadeTest.cxx
   UndistortionTest.cxx
+  mitkMatrixInvertTest.cxx
+  mitkOpenCVMathTests.cxx
+  mitkOpenCVPointTypesTest.cxx
+  mitkTimeStampsContainerTest.cxx
+  mitkTrackingAndTimeStampsContainerTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

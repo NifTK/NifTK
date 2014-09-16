@@ -15,6 +15,7 @@
 #include "mitkHandeyeCalibrateFromDirectory.h"
 #include "mitkCameraCalibrationFacade.h"
 #include "mitkHandeyeCalibrate.h"
+#include <mitkOpenCVFileIOUtils.h>
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -38,9 +39,6 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_TrackingDataInitialised(false)
 , m_TrackerIndex(0)
 , m_AbsTrackerTimingError(20e6) // 20 milliseconds
-, m_NumberCornersWidth(14)
-, m_NumberCornersHeight(10)
-, m_SquareSizeInMillimetres(3.0)
 , m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
 , m_NoVideoSupport(false)
@@ -49,16 +47,30 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_IntrinsicMatrixRight(cvCreateMat(3,3,CV_64FC1))
 , m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
 , m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
+, m_RotationMatrixRightToLeft(cvCreateMat(3,3,CV_64FC1))
+, m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
+, m_OptimiseRightToLeft(true)
 {
   m_PixelScaleFactor.Fill(1);
+  cvSetIdentity(m_IntrinsicMatrixLeft);
+  cvSetIdentity(m_IntrinsicMatrixRight);
+  cvSetZero(m_DistortionCoefficientsLeft);
+  cvSetZero(m_DistortionCoefficientsRight);
+  cvSetIdentity(m_RotationMatrixRightToLeft);
+  cvSetZero(m_TranslationVectorRightToLeft);
 }
 
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 {
-
+  cvReleaseMat(&m_IntrinsicMatrixLeft);
+  cvReleaseMat(&m_IntrinsicMatrixRight);
+  cvReleaseMat(&m_DistortionCoefficientsLeft);
+  cvReleaseMat(&m_DistortionCoefficientsRight);
+  cvReleaseMat(&m_RotationMatrixRightToLeft);
+  cvReleaseMat(&m_TranslationVectorRightToLeft);
 }
 
 
@@ -159,10 +171,16 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   cv::Mat ritemp = cv::Mat(m_IntrinsicMatrixRight);
   cv::Mat rdtemp = cv::Mat(m_DistortionCoefficientsRight);
 
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.left.intrinsic.txt",
-     &litemp, &ldtemp);
-  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.right.intrinsic.txt",
-     &ritemp, &rdtemp);
+  std::string leftIntrinsicName("calib.left.intrinsic.txt");         
+  boost::filesystem::path leftIntrinsicNameFull (directory);
+  leftIntrinsicNameFull /= leftIntrinsicName;
+
+  std::string rightIntrinsicName("calib.right.intrinsic.txt");         
+  boost::filesystem::path rightIntrinsicNameFull (directory);
+  rightIntrinsicNameFull /= rightIntrinsicName;
+
+  mitk::LoadCameraIntrinsicsFromPlainText(leftIntrinsicNameFull.string(), &litemp, &ldtemp);
+  mitk::LoadCameraIntrinsicsFromPlainText(rightIntrinsicNameFull.string(), &ritemp, &rdtemp);
   *m_IntrinsicMatrixLeft = CvMat(litemp);
   *m_DistortionCoefficientsLeft = CvMat(ldtemp);
   *m_IntrinsicMatrixRight = CvMat(ritemp);
@@ -170,6 +188,23 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   m_OptimiseIntrinsics=false;
   return true;
 }
+
+
+//-----------------------------------------------------------------------------
+bool HandeyeCalibrateFromDirectory::LoadExistingRightToLeft(const std::string& directoryName)
+{
+  cv::Mat r2lr = cv::Mat(m_RotationMatrixRightToLeft);
+  cv::Mat r2lt = cv::Mat(m_TranslationVectorRightToLeft);
+
+  mitk::LoadStereoTransformsFromPlainText(niftk::ConcatenatePath(directoryName, "calib.r2l.txt"), &r2lr, &r2lt);
+
+  *m_RotationMatrixRightToLeft = CvMat(r2lr);
+  *m_TranslationVectorRightToLeft = CvMat(r2lt);
+
+  m_OptimiseRightToLeft = false;
+  return true;
+}
+
 
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
@@ -180,9 +215,19 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     return;
   }
 
-  cv::VideoCapture capture = cv::VideoCapture(filename) ; 
+  cv::VideoCapture *capture;
+  try 
+  {
+    bool ignoreVideoReadFailure = false;
+    capture = mitk::InitialiseVideoCapture(filename, ignoreVideoReadFailure) ; 
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught std::exception:" << e.what();
+    exit(1);
+  }
   
-  if ( ! capture.isOpened() ) 
+  if ( ! capture->isOpened() ) 
   {
     MITK_ERROR << "Failed to open " << filename;
     return;
@@ -198,8 +243,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //raw data get the frame count from the framemap log
   int numberOfFrames = m_Matcher->GetNumberOfFrames();
 
-  double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-  double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+  double framewidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  double frameheight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
   
   double filesize = numberOfFrames * framewidth * frameheight * 4 / 1e9;
   MITK_INFO << numberOfFrames << "frames in video : " << framewidth << "x" << frameheight;;
@@ -265,12 +310,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat RightFrame;
     cv::Mat LeftFrame_orig;
     cv::Mat RightFrame_orig;
-    capture >> TempFrame;
+    *capture >> TempFrame;
     if (!m_SwapVideoChannels)
       LeftFrame = TempFrame.clone();
     else
       RightFrame = TempFrame.clone();
-    capture >> TempFrame;
+    *capture >> TempFrame;
     if (!m_SwapVideoChannels)
       RightFrame = TempFrame.clone();
     else
@@ -304,7 +349,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         if ( LeftOK && RightOK )
         {
 
-          MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
+          MITK_INFO << "Frame " << capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
 
           allLeftImagePoints.push_back(cv::Mat(*leftImageCorners,true));
           allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
@@ -312,18 +357,18 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
           if ( m_WriteOutCalibrationImages )
           {
-            std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
+            std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
             MITK_INFO << "Writing image to " << leftfilename;
             cv::imwrite( leftfilename, LeftFrame_orig );
             
-            std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
+            std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
             MITK_INFO << "Writing image to " << rightfilename;            
             cv::imwrite( rightfilename, RightFrame_orig );
           }
         }
         else
         {
-          MITK_INFO << "Frame " <<  capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
+          MITK_INFO << "Frame " <<  capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
           std::vector<int>::iterator newEnd = std::remove(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber);
           LeftFramesToUse.erase(newEnd, LeftFramesToUse.end());
           newEnd = std::remove(RightFramesToUse.begin(), RightFramesToUse.end(), FrameNumber+1);
@@ -332,11 +377,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         
         if ( m_WriteOutChessboards )
         {
-          std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
+          std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".png";
           MITK_INFO << "Writing image to " << leftfilename;
           cv::imwrite( leftfilename, LeftFrame );
           
-          std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".jpg";
+          std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".png";
           MITK_INFO << "Writing image to " << rightfilename;          
           cv::imwrite( rightfilename, RightFrame );
         }
@@ -461,8 +506,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
-  CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputRightToLeftTranslation = cvCreateMat(3,1,CV_64FC1);
   CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_64FC1);
   CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
 
@@ -483,11 +526,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       *m_DistortionCoefficientsRight,
       *outputRotationVectorsRight,
       *outputTranslationVectorsRight,
-      *outputRightToLeftRotation,
-      *outputRightToLeftTranslation,
+      *m_RotationMatrixRightToLeft,
+      *m_TranslationVectorRightToLeft,
       *outputEssentialMatrix,
       *outputFundamentalMatrix,
-      ! m_OptimiseIntrinsics
+      ! m_OptimiseIntrinsics,
+      ! m_OptimiseRightToLeft
       );
   
   //write it out
@@ -526,7 +570,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       fs_leftIntrinsic << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, row,col) << " ";
       fs_rightIntrinsic << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, row,col) << " ";
-      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, double , row,col) << " ";
+      fs_r2l << CV_MAT_ELEM (*m_RotationMatrixRightToLeft, double , row,col) << " ";
     }
     fs_leftIntrinsic << std::endl;
     fs_rightIntrinsic << std::endl;
@@ -542,7 +586,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
-    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, double , i, 0 ) << " ";
+    fs_r2l << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double , i, 0 ) << " ";
   }
   fs_r2l << std::endl;
 

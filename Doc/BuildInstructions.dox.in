@@ -60,29 +60,28 @@ Do check your system path, if it has Boost, old Qt, random installation of ITK o
 </li>
 </ul>
 
-\section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
+\section BuildInstructionsDownloadCMake 2. Install CMake
 
+Caveat: CMake is very difficult to work with, requiring specific versions on each platform.
 
 You can build CMake from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
 \verbatim
 http://www.cmake.org/files/v2.8/
 \endverbatim
 
-Please note that different versions of CMake are known to work on different platforms.
-
 <ul>
-<li> On Windows you can use CMake 2.8.11.2.</li>
-<li> On Mac Mountain Lion (10.8) machines you can use CMake 2.8.9. </li>
-<li> On Mac Mavericks (10.9) machines you can use CMake 2.8.12.1. </li>
-<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. </li>
-<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. </li>
-<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. </li>
+<li> On Windows you must use CMake 2.8.11.2.</li>
+<li> On Mac Mountain Lion (10.8) machines you must use CMake 2.8.9. </li>
+<li> On Mac Mavericks (10.9) machines you must use CMake 2.8.12.1. </li>
+<li> On Linux machines you must use CMake 2.8.9. </li>
 </ul>
 
 Once you have obtained a binary version of CMake or built your own CMake, please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" or "/opt/cmake-2.8.12.1/bin").
 If you have built your own CMake on Linux or Mac, make sure that you have built the 'ccmake' command and it is visible on your PATH.
 
-\section BuildInstructionsDownloadQt 3. Install Qt 4.8.3 or greater
+\section BuildInstructionsDownloadQt 3. Install Qt 4.8.6 
+
+Note: Qt series 5 is not supported. You should use the latest Qt series 4.
 
 <ul>
 <li> If you intend to simply build and develop you can install a pre-compiled Qt version. 
@@ -94,7 +93,7 @@ the source code and compile your own, and install it in a non standard place (i.
 then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
 On Linux/Mac try
 \verbatim
-./configure -prefix /somewhere/to/install/qt-4.8.5 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 

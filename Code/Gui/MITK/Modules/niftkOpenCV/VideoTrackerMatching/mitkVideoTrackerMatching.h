@@ -16,12 +16,13 @@
 #define mitkVideoTrackerMatching_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
 #include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include "mitkTrackingMatrices.h"
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -108,8 +109,8 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
-  TrackingMatrixTimeStamps              m_VideoTimeStamps; 
+  std::vector<TimeStampsContainer> m_TimeStampsContainer;
+  TimeStampsContainer              m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
   std::string                           m_Directory;
@@ -120,9 +121,9 @@ protected:
    * [framenumber][pointID]
    * [framenumber][pointID](left,right)
    */
-  std::vector < std::vector <cv::Point3d> >  ReadPointsInLensCSFile (std::string filename, 
+  std::vector < mitk::WorldPointsWithTimingError >  ReadPointsInLensCSFile (std::string filename, 
       int PointsPerFrame = 1 ,
-      std::vector < std::vector <std::pair < cv::Point2d, cv::Point2d > > >* onScreenPoints = NULL);
+      std::vector < mitk::ProjectedPointPairsWithTimingError >* onScreenPoints = NULL);
   
 private:
   
@@ -132,7 +133,7 @@ private:
 
   std::vector<std::string>          FindFrameMaps();
   void                              FindTrackingMatrixDirectories();
-  TrackingMatrixTimeStamps          FindTrackingTimeStamps(std::string directory);
+  TimeStampsContainer          FindTrackingTimeStamps(std::string directory);
   bool                              CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                              ProcessFrameMapFile();
   bool                              CheckTimingErrorStats();

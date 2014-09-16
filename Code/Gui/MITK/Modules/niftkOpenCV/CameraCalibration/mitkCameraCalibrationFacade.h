@@ -16,6 +16,7 @@
 #define mitkCameraCalibrationFacade_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
@@ -150,13 +151,15 @@ extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
  * \param flags A bit-wise OR, of zero, CV_CALIB_USE_INTRINSIC_GUESS, CV_CALIB_FIX_PRINCIPAL_POINT, CV_CALIB_FIX_ASPECT_RATIO,
  * CV_CALIB_FIX_FOCAL_LENGTH, CV_CALIB_FIXK1, CV_CALIB_FIXK2, CV_CALIB_FIXK3 and CV_CALIB_ZERO_TANGENT_DIST.
  */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicParameters(
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
   const CvSize& imageSize,
   CvMat& outputIntrinsicMatrix,
   CvMat& outputDistortionCoefficients,
+  CvMat* outputRotationVectors,
+  CvMat* outputTranslationVectors,
   const int& flags=0
   );
 
@@ -170,52 +173,28 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicParameters(
  * \param outputIntrinsicMatrix \see CalibrateSingleCameraIntrinsicParameters
  * \param outputDistortionCoefficients \see CalibrateSingleCameraIntrinsicParameters
  */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicUsing3Passes(
-  const CvMat& objectPoints,
-  const CvMat& imagePoints,
-  const CvMat& pointCounts,
-  const CvSize& imageSize,
-  CvMat& outputIntrinsicMatrix,
-  CvMat& outputDistortionCoefficients
-  );
-
-
-/**
- * \brief Calibrate a single cameras extrinsic parameters.
- * \param objectPoints [Nx3] list of 3D points for 1 image view of a chess board.
- * \param imagePoints [Nx2] list of 2D image points for 1 image view of a chess board.
- * \param intrinsicMatrix [3x3] matrix of pre-initialised intrinsic parameters.
- * \param distortionCoefficients [4x1] matrix of [k1, k2, p1, p2, k3], pre-initialised.
- * \param outputRotationMatrix [3x3] rotation matrix - see OpenCV docs - for this function its a 3x3 not a 1x3.
- * \param outputTranslationVector [1x3] translation vector.
- */
-extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsicParameters(
-  const CvMat& objectPoints,
-  const CvMat& imagePoints,
-  const CvMat& intrinsicMatrix,
-  const CvMat& distortionCoefficients,
-  CvMat& outputRotationMatrix,
-  CvMat& outputTranslationVector
-  );
-
-
-/**
- * \brief Calibrate a single camera for both intrinsic and extrinsic parameters, using number of views = M, and number of corners per view = N.
- * \param objectPoints [(MxN)x3] list of 3D points generated as output from ExtractChessBoardPoints, for all M views.
- * \param imagePoints [(MxN)x2] list of 2D image points generated as output from ExtractChessBoardPoints for all M views.
- * \param pointCounts [Mx1] array containing the number of points that matched, which should all be equal for all M views, and contain the number N.
- * \param outputIntrinsicMatrix [3x3] matrix.
- * \param outputDistortionCoefficients [4x1] matrix of [k1, k2, p1, p2, k3].
- * \param outputRotationMatrix an [Mx3] matrix of rotation vectors, see also cvRodrigues2 to convert from a rotation vector to a rotation matrix.
- * \param outputTranslationVector an [Mx3] matrix of translation vectors.
- */
-extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraUsingMultiplePasses(
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,
   const CvSize& imageSize,
   CvMat& outputIntrinsicMatrix,
   CvMat& outputDistortionCoefficients,
+  CvMat& outputRotationVectors,
+  CvMat& outputTranslationVectors
+  );
+
+
+/**
+ * \brief Calculates JUST the extrinsic parameters for a whole bunch of calibrations.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsics(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  const bool& useExtrinsicGuess,
   CvMat& outputRotationVectors,
   CvMat& outputTranslationVectors
   );
@@ -291,7 +270,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalculateRPE(
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
  * and also outputs the rotation and translation vector between the two cameras.
- * plus option to fix the intrinsics, so only the extrinsics and r2l transform are calculated
+ *
+ * Now we also have an option to fix the intrinsics, and an option to fix the right to left calculation.
  */
 extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   const CvMat& objectPointsLeft,
@@ -313,7 +293,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   CvMat& outputRightToLeftTranslation,
   CvMat& outputEssentialMatrix,
   CvMat& outputFundamentalMatrix,
-  const bool& fixedIntrinsics = false
+  const bool& fixedIntrinsics = false,
+  const bool& fixedRightToLeft = false
   );
 
 
@@ -556,6 +537,8 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObse
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
  * greater than the tolerance, the point is rejected.
+ * \param preserveVectorSize if true will fill any output points outside tolerance with NaN, to
+ * preserve correspondance between input and output vectors
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
@@ -563,7 +546,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
   const cv::Mat& rightCameraIntrinsicParams,
   const cv::Mat& rightToLeftRotationMatrix,
   const cv::Mat& rightToLeftTranslationVector,
-  const double& tolerance
+  const double& tolerance,
+  const bool& preserveVectorSize = false
   );
 
 
@@ -596,6 +580,23 @@ extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& rightCameraTranslationVector,
   CvMat& output3DPoints
   );
+
+/**
+ * \brief Wrapper to triangulate vector of mitk::ProjectedPointPair to vector of mitk::WorldPoint
+ */
+
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > Triangulate (
+    const std::vector < mitk::ProjectedPointPair >& onScreenPoints,
+    const cv::Mat& leftIntrinsicMatrix,
+    const cv::Mat& leftDistortionVector,
+    const cv::Mat& rightIntrinsicMatrix,
+    const cv::Mat& rightDistorionVector,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const bool& cropPointsToScreen = false,
+    const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+    const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
+    );
 
 /** 
  * \brief Reprojects undistorted  screen points to normalised points (x/z, y/z, 1.0) in lens coordinates.

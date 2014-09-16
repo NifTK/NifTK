@@ -51,29 +51,33 @@ public:
    * and sets up the videotracker matcher
    */
   void Initialise (std::string directory, std::string calibrationParameterDirectory);
+
   /**
    * \brief
    * performs the point projection
    */
-  void  Triangulate();
+  void Triangulate();
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
-  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3d> );
-  itkGetMacro ( WorldPoints, std::vector<cv::Point3d> );
+  itkSetMacro ( FramesToProcess, int);
+  itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkGetMacro ( PointsInLeftLensCS, std::vector<mitk::WorldPoint> );
+  itkGetMacro ( WorldPoints, std::vector<mitk::WorldPoint> );
+  itkGetMacro ( ScreenPoints, std::vector<mitk::ProjectedPointPair> );
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( TriangulateOK, bool);
-  std::vector< std::pair <cv::Point2d , cv::Point2d> > GetScreenPoints ();
 
   /**
    * \brief Set the matrix flip state for the VideoTracker matcher
    */
   void SetFlipMatrices (bool);
+
   /** 
   * \brief set the video lag parameters for the tracker matcher
   */
-  void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
+  void SetVideoLagMilliseconds (unsigned long long videoLag, bool videoLeadsTracking = false);
 
 protected:
 
@@ -84,46 +88,53 @@ protected:
   FindAndTriangulateCrossHair& operator=(const FindAndTriangulateCrossHair&); // Purposefully not implemented.
 
 private:
-  bool                          m_Visualise; //if true the project function attempts to open a couple of windows to show projection in real time
-  bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
-  std::string                   m_VideoIn; //the video in file
-  std::string                   m_VideoOut; //video needs to be saved on the fly
-  std::string                   m_Directory; //the directory containing the data
+  bool                          m_Visualise; // if true the project function attempts to open a couple of windows to show projection in real time
+  bool                          m_SaveVideo; // if true the project function will buffer frames into a object to write out.
+  std::string                   m_VideoIn;   // the video in file
+  std::string                   m_VideoOut;  // video needs to be saved on the fly
+  std::string                   m_Directory; // the directory containing the data
 
-  std::vector<cv::Point3d>      m_WorldPoints;  //the triangulated points in world coordinates
-  std::vector<cv::Point3d>      m_PointsInLeftLensCS;  //the triangulated points in world coordinates
-  int                           m_TrackerIndex; //the tracker index to use for frame matching
+  std::vector<mitk::WorldPoint> m_WorldPoints;        // the triangulated points in world coordinates
+  std::vector<mitk::WorldPoint> m_PointsInLeftLensCS; // the triangulated points in world coordinates
+  int                           m_TrackerIndex;       // the tracker index to use for frame matching
   mitk::VideoTrackerMatching::Pointer
                                 m_TrackerMatcher; //the tracker matcher
  
   bool                          m_InitOK;
   bool                          m_TriangulateOK;
 
-  //the camera calibration parameters
-  cv::Mat* m_LeftIntrinsicMatrix;
-  cv::Mat* m_LeftDistortionVector;
-  cv::Mat* m_RightIntrinsicMatrix;
-  cv::Mat* m_RightDistortionVector;
-  cv::Mat* m_RightToLeftRotationMatrix;
-  cv::Mat* m_RightToLeftTranslationVector;
-  cv::Mat* m_LeftCameraToTracker;
-  //the video screen dimensions
-  double   m_VideoWidth;
-  double   m_VideoHeight;
+  int                           m_FramesToProcess; //can stop early, if negative it runs to the end
 
-  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
+  // The camera calibration parameters
+  cv::Mat*                      m_LeftIntrinsicMatrix;
+  cv::Mat*                      m_LeftDistortionVector;
+  cv::Mat*                      m_RightIntrinsicMatrix;
+  cv::Mat*                      m_RightDistortionVector;
+  cv::Mat*                      m_RightToLeftRotationMatrix;
+  cv::Mat*                      m_RightToLeftTranslationVector;
+  cv::Mat*                      m_LeftCameraToTracker;
+
+  // The video screen dimensions
+  double                        m_VideoWidth;
+  double                        m_VideoHeight;
+  double                        m_DefaultVideoWidth;
+  double                        m_DefaultVideoHeight;
+
+  std::vector < mitk::ProjectedPointPair > 
                                 m_ScreenPoints; // the projected points
 
-  CvCapture*                    m_Capture;
+  cv::VideoCapture*             m_Capture;
+  bool                          m_HaltOnVideoReadFail;
   CvVideoWriter*                m_Writer;
 
-  cv::Size                      m_BlurKernel; //for blurring
+  cv::Size                      m_BlurKernel;      // For blurring
  
-  double                        m_HoughRho; //for the hough filter
-  double                        m_HoughTheta; //for the hough filter
-  int                           m_HoughThreshold; //for the hough filter
-  int                           m_HoughLineLength; //for the hough filter
-  int                           m_HoughLineGap; //for the hough filter
+  double                        m_HoughRho;        // For the hough filter
+  double                        m_HoughTheta;      // For the hough filter
+  int                           m_HoughThreshold;  // For the hough filter
+  int                           m_HoughLineLength; // For the hough filter
+  int                           m_HoughLineGap;    // For the hough filter
+
   void TriangulatePoints();
   void TransformPointsToWorld();
 

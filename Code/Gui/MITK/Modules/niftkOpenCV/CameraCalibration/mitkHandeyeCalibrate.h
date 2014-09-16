@@ -51,6 +51,9 @@ public:
   itkSetMacro(SortByDistance, bool);
   itkSetMacro(SortByAngle, bool);
   itkSetMacro(DoGridToWorld, bool);
+  itkSetMacro(NumberCornersWidth, unsigned int);
+  itkSetMacro(NumberCornersHeight, unsigned int);
+  itkSetMacro(SquareSizeInMillimetres, double);
   itkGetMacro(CameraToMarker, cv::Mat);
   itkGetMacro(GridToWorld, cv::Mat);
 
@@ -74,7 +77,12 @@ protected:
   cv::Mat m_GridToWorld;    //the position of the calibration grid in world coordinates
   std::string m_OutputDirectory;
   
+  unsigned int   m_NumberCornersWidth; 
+  unsigned int   m_NumberCornersHeight;
+  double m_SquareSizeInMillimetres; 
+ 
 private: 
+  
 
 }; // end class
 

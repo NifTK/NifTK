@@ -17,9 +17,10 @@
 
 #include "niftkMIDASExports.h"
 
-namespace mitk {
+namespace mitk
+{
 
-class StateEvent;
+class InteractionEvent;
 
 /**
  * \class MIDASEventFilter
@@ -40,7 +41,7 @@ public:
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
-  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const = 0;
+  virtual bool EventFilter(mitk::InteractionEvent* event) const { return false; };
 
 };
 

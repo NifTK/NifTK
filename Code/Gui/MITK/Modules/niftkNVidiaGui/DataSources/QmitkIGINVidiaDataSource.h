@@ -89,10 +89,6 @@ public:
   InterlacedBehaviour GetFieldMode() const;
 
 
-  static const char*      s_SDISequenceNumberPropertyName;      // mitk::IntProperty
-  static const char*      s_SDIFieldModePropertyName;           // mitk::IntProperty --> InterlacedBehaviour
-
-
   // overridden from IGIDataSource
   virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
   virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);

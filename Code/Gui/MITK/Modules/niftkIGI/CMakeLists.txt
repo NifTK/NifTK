@@ -14,15 +14,15 @@
 
 find_package(OpenMP)
 
-set(_packages ITK NiftyLink)
+set(_packages NiftyLink)
 if(BUILD_PCL)
   list(APPEND _packages PCL)
 endif()
 
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration PCLTest Utils
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration niftkOpenCV
+  INCLUDE_DIRS CentreLines Common DataSources PointBasedRegistration SurfaceBasedRegistration SurfaceReconstruction TrackedImage TrackedPointer  PCLTest Utils
+  DEPENDS MitkCore MitkOpenCVVideoSupport niftkCore MitkCameraCalibration niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )
 
@@ -40,4 +40,4 @@ endif()
 
 if(BUILD_TESTING)
   add_subdirectory(Testing)
-endif()  
+endif()

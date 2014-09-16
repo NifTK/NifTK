@@ -16,6 +16,7 @@
 #define mitkOpenCVMaths_h
 
 #include "niftkOpenCVExports.h"
+#include "mitkOpenCVPointTypes.h"
 #include <cv.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -101,6 +102,18 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& matr
 
 
 /**
+ * \brief Copies to VTK matrix, throwing exceptions if input is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToVTK4x4Matrix(const cv::Mat& input, vtkMatrix4x4& output);
+
+
+/**
+ * \brief Copies to OpenCV matrix, throwing exceptions if output is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output);
+
+
+/**
  * \brief Generates a rotation about X-axis, given a Euler angle in radians.
  * \param rx angle in radians
  * \return a new [3x3] rotation matrix
@@ -157,21 +170,40 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, c
 /**
  * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
-    const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > operator*(cv::Mat M, 
+    const std::vector< mitk::WorldPoint >& p);
 
 
 /**
  * \brief multiplies a point and corresponding scalar value by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Scalar >  operator*(cv::Mat M, 
-    const std::pair < cv::Point3d, cv::Scalar > & p);
+extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(cv::Mat M, 
+    const mitk::WorldPoint & p);
 
 
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
+
+
+/**
+ * \brief Tests equality of 2 2d points. The openCV == operator struggles on floating points, 
+ * this uses a tolerance of 1e-
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2);
+
+
+/**
+ * \brief Divides a 2d point by an integer (x=x1/n, y=y1/2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator/(const cv::Point2d& p, const int& n);
+
+
+/**
+ * \brief Multiplies the components of a 2d point by an integer (x=x1*x2, y=y1*y2)
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2);
 
 
 /**
@@ -282,26 +314,40 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
 
-extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
-    std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
+/**
+ * \brief Returns the mean pixel errors for the right and left sets of projected points
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optional pointer to return standard deviations
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
+ */
+extern "C++" NIFTKOPENCV_EXPORT mitk::ProjectedPointPair MeanError ( 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, 
+    mitk::ProjectedPointPair * StandardDeviations = NULL , int index = -1,
+    long long allowableTimingError = 30e6, bool duplicateLines = true );
 
 
 /** 
- * \brief Returns the RMS error between two point vectors
+ * \brief Returns the RMS error between two projected point vectors
+ * \param the measured projected points
+ * \param the actual projected points
+ * \param optionally constrain calculation for only one projected point pair in each vector,
+ * if -1 all projected point pairs are used
+ * \param discard point pairs where the error is above the mean error +/- n standard deviations.
+ * \param discard point pairs with timing errors in excess of allowableTimingError
+ * \param if duplicateLines true, only every second entry in measured and actual is used, 
+ * this is useful when running from stereo video and tracking data.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0 );
-
-
-/** 
- * \brief Returns the RMS error between two point vectors, with the measured values containing 
- * a measure of the timing error
- */
-extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
-    double outlierSD = 2.0, long long allowableTimingError = 30e6 );
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError
+  (std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual, int index = -1 ,
+    cv::Point2d outlierSD = cv::Point2d (2.0,2.0) , long long allowableTimingError = 30e6,
+    bool duplicateLines = true);
 
 
 /**
@@ -328,13 +374,6 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d
  */
 extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
     const cv::Point2d& p2 );
-
-
-/**
- * \brief Compare pairs based on the value of the first bit
- */
-extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
-    const std::pair < unsigned int, cv::Point2d>& p2 );
 
 
 /**
@@ -374,7 +413,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::ve
 /**
  * \brief find the average of a vector of 4x4 matrices
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(const std::vector<cv::Mat>& matrices);
 
 
  /**
@@ -388,20 +427,56 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const s
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
 
+
 /**
- *  * \brief Returns the angular distance between two rotation matrices
- *   */
+ * \brief Returns the angular distance between two rotation matrices
+ */
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
-/**
- *  * \brief Returns the distance between two 4x4 matrices
- *   */
-extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
 
 /**
- *  * \brief Converts a 3x3 rotation matrix to a quaternion
- *   */
+ * \brief Returns the distance between two 4x4 matrices
+ */
+extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+
+
+/**
+ * \brief Converts a 3x3 rotation matrix to a quaternion
+ */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+
+
+/**
+ * \brief Specific method that inverts a matrix without SVD or decomposition,
+ * because the input is known to be orthonormal.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const CvMat& input, CvMat& output);
+
+
+/**
+ * \brief Overloaded invert method that calls the C-looking one.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Matx44d& input, cv::Matx44d& output);
+
+
+/**
+ * \brief Overloaded invert method that calls the C-looking one.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InvertRigid4x4Matrix(const cv::Mat& input, cv::Mat& output);
+
+
+/**
+ * \brief Interpolates between two matrices.
+ * \param proportion is defined as between [0 and 1], where 0 gives exactly the before matrix,
+ * 1 gives exactly the after matrix, and the proportion is a linear proportion between them over which to interpolate.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output);
+
+
+/**
+ * \see InterpolateTransformationMatrix(const cv::Mat& before, const cv::Mat& after, const double& proportion, cv::Mat& output)
+ */
+extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output);
 
 } // end namespace
 

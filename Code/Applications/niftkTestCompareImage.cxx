@@ -187,13 +187,16 @@ void CompareIntensityValues(
 
   for(iter1.GoToBegin(), iter2.GoToBegin(); !iter1.IsAtEnd() && !iter2.IsAtEnd(); ++iter1, ++iter2)
   {
-    if (fabs((double)iter1.Get() - (double)iter2.Get()) > tolerance)
+    double value1 = static_cast<double>(iter1.Get());
+    double value2 = static_cast<double>(iter2.Get());
+
+    if (fabs(value1 - value2) > tolerance)
     {
       IndexType index1 = iter1.GetIndex();
       IndexType index2 = iter2.GetIndex();
 
       std::ostringstream oss;
-      oss << "CompareIntensityValues failed, image 1 has " << iter1.Get() << " at index " <<  index1 << " whereas image 2 has " << iter2.Get() << " at index " <<  index2 << ", and tolerance = " << tolerance << std::endl;
+      oss << "CompareIntensityValues failed, image 1 has " << value1 << " at index " <<  index1 << " whereas image 2 has " << value2 << " at index " <<  index2 << ", and tolerance = " << tolerance << std::endl;
       throw std::runtime_error(oss.str());
     }
   }

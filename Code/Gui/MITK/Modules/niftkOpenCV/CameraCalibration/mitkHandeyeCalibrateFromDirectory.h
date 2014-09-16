@@ -53,15 +53,13 @@ public:
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
   
-  itkSetMacro(NumberCornersWidth, unsigned int);
-  itkSetMacro(NumberCornersHeight, unsigned int);
-  itkSetMacro(SquareSizeInMillimetres, double);
   itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
   itkSetMacro(NoVideoSupport,bool);
   itkSetMacro(SwapVideoChannels, bool);
 
   bool LoadExistingIntrinsicCalibrations (std::string directory);
+  bool LoadExistingRightToLeft(const std::string& directory);
   void SetInputDirectory(const std::string& inputDir);
   virtual void SetOutputDirectory(const std::string& outputDir);
   
@@ -84,9 +82,6 @@ private:
   int                                 m_TrackerIndex;
   long long                           m_AbsTrackerTimingError;
   
-  unsigned int                        m_NumberCornersWidth;
-  unsigned int                        m_NumberCornersHeight;
-  double                              m_SquareSizeInMillimetres;
   mitk::Point2D                       m_PixelScaleFactor;
   std::string                         m_InputDirectory;
   bool                                m_WriteOutChessboards;
@@ -116,8 +111,10 @@ private:
   CvMat*                              m_IntrinsicMatrixRight;
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
+  CvMat*                              m_RotationMatrixRightToLeft;
+  CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
-
+  bool                                m_OptimiseRightToLeft;
 }; // end class
 
 } // end namespace

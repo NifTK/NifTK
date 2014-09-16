@@ -128,7 +128,7 @@ void CoordinateAxesDataWriter::GenerateData()
 
     MITK_INFO << "Writing CoordinateAxesData to " << m_FileName;
 
-    vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     input->GetVtkMatrix(*matrix);
 
     m_Success = mitk::SaveVtkMatrix4x4ToFile(m_FileName, *matrix);
