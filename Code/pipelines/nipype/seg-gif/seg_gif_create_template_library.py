@@ -156,11 +156,16 @@ def preprocessing_inputs_pipeline(name='preprocessing_inputs_pipeline', number_o
         output_names=['files_1', 'files_2'],
         function=generate_unique_pairs),
                                             name='generate_image_pairs')
+    '''
+    *****************************************************************************
+    I noticed the resulting displacement fields were smoother and better without providing the masks...
+    *****************************************************************************
     generate_mask_pairs = pe.Node(niu.Function(
         input_names=['in_files'],
         output_names=['files_1', 'files_2'],
         function=generate_unique_pairs),
                                             name='generate_mask_pairs')
+    '''
     generate_aff_pairs_1 = pe.Node(niu.Function(
         input_names=['in_files'],
         output_names=['files_1', 'files_2'],
@@ -193,7 +198,7 @@ def preprocessing_inputs_pipeline(name='preprocessing_inputs_pipeline', number_o
     '''
     nonlinear_registration = pe.MapNode(interface = niftyreg.RegF3D(), 
                                         name='nonlinear_registration', 
-                                        iterfield=['ref_file', 'flo_file', 'aff_file', 'rmask_file', 'fmask_file'])
+                                        iterfield=['ref_file', 'flo_file', 'aff_file'])
     nonlinear_registration.inputs.vel_flag  = True
     nonlinear_registration.inputs.lncc_val  = -5
     nonlinear_registration.inputs.maxit_val = 150
@@ -246,8 +251,12 @@ def preprocessing_inputs_pipeline(name='preprocessing_inputs_pipeline', number_o
     *****************************************************************************
     '''
     workflow.connect(bias_correction, 'out_file', generate_image_pairs, 'in_files')
+    '''
+    *****************************************************************************
+    I noticed the resulting displacement fields were smoother and better without providing the masks...
+    *****************************************************************************
     workflow.connect(resample_image_mask_to_cropped_image, 'res_file', generate_mask_pairs, 'in_files')
-
+    '''
 
     '''
     *****************************************************************************
@@ -269,8 +278,13 @@ def preprocessing_inputs_pipeline(name='preprocessing_inputs_pipeline', number_o
 
     workflow.connect(generate_image_pairs, 'files_1', nonlinear_registration, 'ref_file')
     workflow.connect(generate_image_pairs, 'files_2', nonlinear_registration, 'flo_file')
+    '''
+    *****************************************************************************
+    I noticed the resulting displacement fields were smoother and better without providing the masks...
+    *****************************************************************************
     workflow.connect(generate_mask_pairs, 'files_1', nonlinear_registration, 'rmask_file')
     workflow.connect(generate_mask_pairs, 'files_2', nonlinear_registration, 'fmask_file')
+    '''
     workflow.connect(compose_affine_transformations, 'out_file', nonlinear_registration, 'aff_file')
 
 
