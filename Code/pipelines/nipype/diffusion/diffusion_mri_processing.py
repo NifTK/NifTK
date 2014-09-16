@@ -449,11 +449,10 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     workflow.connect(merge_dwis, 'merged_file', output_node, 'dwis')
     if correct_susceptibility == True:
-        workflow.connect(transformation_composition, 'out_file', output_node, 'transformations')
         workflow.connect(susceptibility_correction, 'output_node.out_epi', output_node, 'average_b0')
     else:
-        workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')    
+    workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
     
     return workflow    
 
