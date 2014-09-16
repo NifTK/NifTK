@@ -1,16 +1,13 @@
 #! /usr/bin/env python
 
-import seg_gif_create_template_library as seggif
-import glob, os
-
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
-import seg_gif_propagation as gif
 import argparse
 import os
-import nipype.interfaces.niftyreg as niftyreg
-from distutils                          import spawn
+from distutils import spawn
+import nipype.interfaces.niftyreg       as niftyreg
+import seg_gif_create_template_library  as seggif
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
