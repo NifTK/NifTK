@@ -3521,6 +3521,10 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   int expectedSagittalSlice;
   int expectedCoronalSlice;
 
+  /// Stores how many slices we step forwards (left, superior or posterior, resp.).
+  /// Negative delta means stepping backwards. Note that stepping forwards is associated
+  /// with scrolling down by the mouse wheel, that means a negative 'delta' in terms
+  /// of the QWheelEvent. See the QWheelEvent API documentation for details.
   int delta;
 
   d->StateTester->Clear();
@@ -3552,7 +3556,7 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
-  Self::MouseWheel(d->CoronalWindow, Qt::NoButton, Qt::NoModifier, centre, delta);
+  Self::MouseWheel(d->CoronalWindow, Qt::NoButton, Qt::NoModifier, centre, -delta);
 
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL), expectedSagittalSlice);
@@ -3572,7 +3576,7 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
-  Self::MouseWheel(d->CoronalWindow, Qt::NoButton, Qt::NoModifier, centre, delta);
+  Self::MouseWheel(d->CoronalWindow, Qt::NoButton, Qt::NoModifier, centre, -delta);
 
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL), expectedSagittalSlice);
@@ -3601,6 +3605,9 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   int expectedSagittalSlice;
   int expectedCoronalSlice;
 
+  /// Stores how many slices we step forwards (left, superior or posterior, resp.).
+  /// Negative delta means stepping backwards. Note that stepping forwards is associated
+  /// with hitting the 'Z' key, while the 'A' key is for stepping backwards.
   int delta;
 
   d->StateTester->Clear();
@@ -3632,7 +3639,7 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
-  QTest::keyClick(d->CoronalWindow, Qt::Key_A, Qt::NoModifier);
+  QTest::keyClick(d->CoronalWindow, Qt::Key_Z, Qt::NoModifier);
 
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL), expectedSagittalSlice);
@@ -3650,7 +3657,7 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
-  QTest::keyClick(d->CoronalWindow, Qt::Key_Z, Qt::NoModifier);
+  QTest::keyClick(d->CoronalWindow, Qt::Key_A, Qt::NoModifier);
 
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL), expectedSagittalSlice);
