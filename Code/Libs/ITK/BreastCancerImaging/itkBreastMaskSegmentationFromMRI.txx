@@ -3051,17 +3051,16 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
-  surfaceExtractor->SetInputDataObject((vtkDataObject *) convertITKtoVTK->GetOutput());
+  surfaceExtractor->SetInputData( convertITKtoVTK->GetOutput() );
+  surfaceExtractor->Update();
   pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
 
   if (flgVerbose) {
-    surfaceExtractor->Update();
-      
     std::cout << std::endl << "Extracted surface data:" << std::endl;
     polyDataInfo(pipeVTKPolyDataConnector);
   }
 
-  // Post-decimation smoothing
+  // Post-extraction smoothing
 
   int niterations = 5;		// The number of smoothing iterations
   float bandwidth = 0.1;	// The band width of the smoothing filter
@@ -3073,7 +3072,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   postSmoothingFilter->SetNumberOfIterations(niterations);
   postSmoothingFilter->SetPassBand(bandwidth);
     
-  postSmoothingFilter->SetInputDataObject(pipeVTKPolyDataConnector);
+  postSmoothingFilter->SetInputData( pipeVTKPolyDataConnector );
+  postSmoothingFilter->Update();
+
   pipeVTKPolyDataConnector = postSmoothingFilter->GetOutput();
 
   // Write the created vtk surface to a file
