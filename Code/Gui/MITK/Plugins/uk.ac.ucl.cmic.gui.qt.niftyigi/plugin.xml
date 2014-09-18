@@ -8,12 +8,24 @@
     </application>
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.InputDevicesPreferencePage" name="Input Devices" class="QmitkInputDevicesPrefPage">
+      <keywordreference id="org.mitk.InputDevicesPreferencePageKeywords"/>
+    </page>
+  </extension>
+
+  <extension point="org.blueberry.ui.keywords">
+    <keyword id="org.mitk.InputDevicesPreferencePageKeywords" label="3D mouse"/>
+    <keyword id="org.mitk.InputDevicesPreferencePageKeywords" label="WiiMote"/>
+    <keyword id="org.mitk.InputDevicesPreferencePageKeywords" label="Input Devices"/>
+  </extension>
+
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftyigi.igiperspective"
       name="IGI Perspective"
       class="QmitkCommonAppsIGIPerspective"
-	  icon="resources/icon_cmic.xpm">
+      icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
 

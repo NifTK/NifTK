@@ -40,7 +40,12 @@ QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
-  QmitkCommonAppsApplicationPlugin::start(context);
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// has been executed when the commonapps plugin has been loaded.
+
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASSegmentationPerspective, context);
@@ -63,7 +68,10 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// will be executed when the commonapps plugin gets unloaded.
 }
 
 
