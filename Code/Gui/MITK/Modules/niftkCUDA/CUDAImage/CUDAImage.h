@@ -16,8 +16,8 @@
 #define CUDAImage_h
 
 #include "niftkCUDAExports.h"
+#include <CUDAImage/LightweightCUDAImage.h>
 #include <mitkBaseData.h>
-#include <cuda_runtime_api.h>
 
 
 // BaseData is rather fat. can we avoid it?
@@ -25,8 +25,19 @@ class NIFTKCUDA_EXPORT CUDAImage : public mitk::BaseData
 {
 
 public:
-  mitkClassMacro(CUDAImage, mitk::BaseData)
+  mitkClassMacro(CUDAImage, mitk::BaseData);
 
+  itkFactorylessNewMacro(Self);
+
+  // mitk stuff not applicable. will always throw an exception, or fail somehow.
+  virtual void SetRequestedRegionToLargestPossibleRegion();
+  virtual bool RequestedRegionIsOutsideOfTheBufferedRegion();
+  virtual bool VerifyRequestedRegion();
+  virtual void SetRequestedRegion(const itk::DataObject* data);
+
+
+  LightweightCUDAImage GetLightweightCUDAImage() const;
+  void SetLightweightCUDAImage(const LightweightCUDAImage& lwci);
 
 
 protected:
@@ -40,16 +51,7 @@ private:
 
 
 private:
-  // remember: CUevent is interchangable with cudaEvent_t and vice versa
-
-  int             m_Device;    // the device this image lives on.
-  unsigned int    m_Id;
-  cudaEvent_t     m_ReadyEvent;       // signaled when the image is ready for consumption.
-
-  unsigned int    m_Width;
-  unsigned int    m_Height;
-  unsigned int    m_BytePitch;
-  // FIXME: pixel type descriptor
+  LightweightCUDAImage      m_LWCImage;
 };
 
 
