@@ -17,6 +17,7 @@
 #include <itkScalarConnectedComponentImageFilter.h>
 #include <itkRelabelComponentImageFilter.h>
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
+#include <itkImageMaskSpatialObject.h>
 
 namespace itk
 {
@@ -2944,22 +2945,127 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   pipeITKImageDataConnector = GetBreastSide( image, breastSide );
   std::string fileModifiedOutput = GetBreastSide( fileOutput, breastSide );
 
-
-
+  // Get input image properties
+  // Spacing
   const typename InternalImageType::SpacingType 
     &sp = pipeITKImageDataConnector->GetSpacing();
+  
+  // Origin
+  const typename InternalImageType::PointType 
+    & originInput = pipeITKImageDataConnector->GetOrigin();
+
+  // Size
+  const typename InternalImageType::SizeType 
+    &sz = pipeITKImageDataConnector->GetLargestPossibleRegion().GetSize();
+
+  // Print these properties
+  std::cout << "Input image origin: " 
+    << originInput[0] << ","  << originInput[1] << "," << originInput[2] << std::endl;
 
   std::cout << "Input image resolution: "
 	    << sp[0] << "," << sp[1] << "," << sp[2] << std::endl;
-    
-  const typename InternalImageType::SizeType 
-    &sz = pipeITKImageDataConnector->GetLargestPossibleRegion().GetSize();
 
   std::cout << "Input image dimensions: "
 	    << sz[0] << "," << sz[1] << "," << sz[2] << std::endl;
   
+  // Estimate the image extent as an AABB in physical coordinates
+  InternalImageType::IndexType idx1, idx2, idx3, idx4, idx5, idx6, idx7, idx8;
+  idx1[0] = sz[0];    idx1[1] = sz[1];    idx1[2] = sz[2];  // x+ y+ z+
+  idx2[0] =     0;    idx2[1] = sz[1];    idx2[2] = sz[2];  // x- y+ z+
+  idx3[0] = sz[0];    idx3[1] =     0;    idx3[2] = sz[2];  // x+ y- z+
+  idx4[0] =     0;    idx4[1] =     0;    idx4[2] = sz[2];  // x- y- z+
+  idx5[0] = sz[0];    idx5[1] = sz[1];    idx5[2] =     0;  // x+ y+ z-
+  idx6[0] =     0;    idx6[1] = sz[1];    idx6[2] =     0;  // x- y+ z-
+  idx7[0] = sz[0];    idx7[1] =     0;    idx7[2] =     0;  // x+ y- z-
+  idx8[0] =     0;    idx8[1] =     0;    idx8[2] =     0;  // x- y- z-
 
-  // Set the border around the image to zero to prevent holes in the image
+  InternalImageType::PointType p1, p2, p3, p4, p5, p6, p7, p8;
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx1, p1 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx2, p2 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx3, p3 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx4, p4 ); 
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx5, p5 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx6, p6 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx7, p7 );
+  pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx8, p8);
+
+  std::cout << " --> coordinate (1): " << p1[0] << ", " << p1[1] << ", "<< p1[2] << std::endl;
+  std::cout << " --> coordinate (2): " << p2[0] << ", " << p2[1] << ", "<< p2[2] << std::endl;
+  std::cout << " --> coordinate (3): " << p3[0] << ", " << p3[1] << ", "<< p3[2] << std::endl;
+  std::cout << " --> coordinate (4): " << p4[0] << ", " << p4[1] << ", "<< p4[2] << std::endl;
+  std::cout << " --> coordinate (5): " << p5[0] << ", " << p5[1] << ", "<< p5[2] << std::endl;
+  std::cout << " --> coordinate (6): " << p6[0] << ", " << p6[1] << ", "<< p6[2] << std::endl;
+  std::cout << " --> coordinate (7): " << p7[0] << ", " << p7[1] << ", "<< p7[2] << std::endl;
+  std::cout << " --> coordinate (8): " << p8[0] << ", " << p8[1] << ", "<< p8[2] << std::endl;
+
+  // min x
+  double dXMin = p1[0];
+  dXMin = dXMin < p2[0] ? dXMin : p2[0];
+  dXMin = dXMin < p3[0] ? dXMin : p3[0];
+  dXMin = dXMin < p4[0] ? dXMin : p4[0];
+  dXMin = dXMin < p5[0] ? dXMin : p5[0];
+  dXMin = dXMin < p6[0] ? dXMin : p6[0];
+  dXMin = dXMin < p7[0] ? dXMin : p7[0];
+  dXMin = dXMin < p7[0] ? dXMin : p8[0];
+
+  // max x
+  double dXMax = p1[0];
+  dXMax = dXMax > p2[0] ? dXMax : p2[0];
+  dXMax = dXMax > p3[0] ? dXMax : p3[0];
+  dXMax = dXMax > p4[0] ? dXMax : p4[0];
+  dXMax = dXMax > p5[0] ? dXMax : p5[0];
+  dXMax = dXMax > p6[0] ? dXMax : p6[0];
+  dXMax = dXMax > p7[0] ? dXMax : p7[0];
+  dXMax = dXMax > p7[0] ? dXMax : p8[0];
+
+  //min y
+  double dYMin = p1[1];
+  dYMin = dYMin < p2[1] ? dYMin : p2[1];
+  dYMin = dYMin < p3[1] ? dYMin : p3[1];
+  dYMin = dYMin < p4[1] ? dYMin : p4[1];
+  dYMin = dYMin < p5[1] ? dYMin : p5[1];
+  dYMin = dYMin < p6[1] ? dYMin : p6[1];
+  dYMin = dYMin < p7[1] ? dYMin : p7[1];
+  dYMin = dYMin < p7[1] ? dYMin : p8[1];
+
+  // max y
+  double dYMax = p1[1];
+  dYMax = dYMax > p2[1] ? dYMax : p2[1];
+  dYMax = dYMax > p3[1] ? dYMax : p3[1];
+  dYMax = dYMax > p4[1] ? dYMax : p4[1];
+  dYMax = dYMax > p5[1] ? dYMax : p5[1];
+  dYMax = dYMax > p6[1] ? dYMax : p6[1];
+  dYMax = dYMax > p7[1] ? dYMax : p7[1];
+  dYMax = dYMax > p7[1] ? dYMax : p8[1];
+
+  //min z
+  double dZMin = p1[2];
+  dZMin = dZMin < p2[2] ? dZMin : p2[2];
+  dZMin = dZMin < p3[2] ? dZMin : p3[2];
+  dZMin = dZMin < p4[2] ? dZMin : p4[2];
+  dZMin = dZMin < p5[2] ? dZMin : p5[2];
+  dZMin = dZMin < p6[2] ? dZMin : p6[2];
+  dZMin = dZMin < p7[2] ? dZMin : p7[2];
+  dZMin = dZMin < p7[2] ? dZMin : p8[2];
+
+  // max z
+  double dZMax = p1[2];
+  dZMax = dZMax > p2[2] ? dZMax : p2[2];
+  dZMax = dZMax > p3[2] ? dZMax : p3[2];
+  dZMax = dZMax > p4[2] ? dZMax : p4[2];
+  dZMax = dZMax > p5[2] ? dZMax : p5[2];
+  dZMax = dZMax > p6[2] ? dZMax : p6[2];
+  dZMax = dZMax > p7[2] ? dZMax : p7[2];
+  dZMax = dZMax > p7[2] ? dZMax : p8[2];
+
+  // TODO: Use itk alternative, maybe using itkImageMaskSpatialObject
+  std::cout << "Bounding box of image: " << std::endl
+    << " x:  " << dXMin << " --> " << dXMax << std::endl
+    << " y:  " << dYMin << " --> " << dYMax << std::endl
+    << " z:  " << dZMin << " --> " << dZMax << std::endl;
+
+
+  // Set the border around the image to zero to prevent holes in the mesh
  
   typedef itk::SetBoundaryVoxelsToValueFilter< InternalImageType, 
     InternalImageType > SetBoundaryVoxelsToValueFilterType;
@@ -2979,7 +3085,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Downsample the image to istropic voxels with dimensions
 
-  double subsamplingResolution = 10.; //The isotropic volume resolution in mm for sub-sampling
+  double subsamplingResolution = 5.; //The isotropic volume resolution in mm for sub-sampling
   typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
   typename ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
   
@@ -2993,9 +3099,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   subsampleFilter->SetOutputSpacing( spacing );
 
   double origin[ ImageDimension ];
-  origin[0] = 0.0;  // X space coordinate of origin
-  origin[1] = 0.0;  // Y space coordinate of origin
-  origin[2] = 0.0;  // Y space coordinate of origin
+  origin[0] = dXMin-spacing[0]; // X space coordinate of origin (including some safety margin for sealed boundary!)
+  origin[1] = dYMin-spacing[1]; // Y space coordinate of origin
+  origin[2] = dZMin-spacing[2]; // Y space coordinate of origin
 
   subsampleFilter->SetOutputOrigin( origin );
 
@@ -3005,9 +3111,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename InternalImageType::SizeType size;
 
-  size[0] = (int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
-  size[1] = (int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
-  size[2] = (int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
+  size[0] = (int) ceil( (dXMax - dXMin + 2 * subsamplingResolution) / spacing[0] ); //(int) ceil( sz[0]*sp[0]/spacing[0] );  // number of pixels along X
+  size[1] = (int) ceil( (dYMax - dYMin + 2 * subsamplingResolution) / spacing[1] ); //(int) ceil( sz[1]*sp[1]/spacing[1] );  // number of pixels along X
+  size[2] = (int) ceil( (dZMax - dZMin + 2 * subsamplingResolution) / spacing[2] ); //(int) ceil( sz[2]*sp[2]/spacing[2] );  // number of pixels along X
 
   subsampleFilter->SetSize( size );
 
@@ -3029,6 +3135,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 	    << spacing[0] << ", " << spacing[1] << ", " << spacing[2] << "mm..."<< std::endl;
   
   subsampleFilter->Update();
+
+  pipeITKImageDataConnector = subsampleFilter->GetOutput();
+
+  // ToDo: Check if the subsampling causes any issues?
+  WriteImageToFile(std::string("subsampled.nii.gz"), "sub", subsampleFilter->GetOutput(), false, false);
 
 
   // Create the ITK to VTK filter
