@@ -54,11 +54,13 @@ static bool CUDADelayLoadCheck()
 
 //-----------------------------------------------------------------------------
 CUDAManager*      CUDAManager::s_Instance = 0;
-
+QMutex            CUDAManager::s_Lock(QMutex::Recursive);
 
 //-----------------------------------------------------------------------------
 CUDAManager* CUDAManager::GetInstance()
 {
+  QMutexLocker    lock(&s_Lock);
+
   if (s_Instance == 0)
   {
     bool  ok = CUDADelayLoadCheck();
@@ -77,9 +79,8 @@ CUDAManager* CUDAManager::GetInstance()
 
 //-----------------------------------------------------------------------------
 CUDAManager::CUDAManager()
-  : m_Lock(QMutex::Recursive)
   // zero is not a valid id, but it's good for init: we'll inc this one and the first valid id is then 1.
-  , m_LastIssuedId(0)
+  : m_LastIssuedId(0)
 {
 
 }
@@ -94,7 +95,7 @@ CUDAManager::~CUDAManager()
 //-----------------------------------------------------------------------------
 cudaStream_t CUDAManager::GetStream(const std::string& name)
 {
-  QMutexLocker    lock(&m_Lock);
+  QMutexLocker    lock(&s_Lock);
 
   std::map<std::string, cudaStream_t>::const_iterator i = m_Streams.find(name);
   if (i == m_Streams.end())
@@ -116,7 +117,7 @@ cudaStream_t CUDAManager::GetStream(const std::string& name)
 //-----------------------------------------------------------------------------
 WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype)
 {
-  QMutexLocker    lock(&m_Lock);
+  QMutexLocker    lock(&s_Lock);
 
   // FIXME: figure out how to best deal with pixel types.
 
@@ -174,7 +175,8 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     i = m_ImagePool[sizeTier].insert(m_ImagePool[sizeTier].begin(), lwci);
   }
 
-  m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i));
+  bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
+  assert(inserted);
 
   WriteAccessor   wa;
   wa.m_Id             = i->m_Id;
@@ -210,7 +212,7 @@ unsigned int CUDAManager::SizeToTier(std::size_t size) const
 //-----------------------------------------------------------------------------
 LightweightCUDAImage CUDAManager::Finalise(WriteAccessor& writeAccessor, cudaStream_t stream)
 {
-  QMutexLocker    lock(&m_Lock);
+  QMutexLocker    lock(&s_Lock);
 
   std::map<unsigned int, LightweightCUDAImage>::iterator i = m_InFlightOutputImages.find(writeAccessor.m_Id);
   if (i == m_InFlightOutputImages.end())

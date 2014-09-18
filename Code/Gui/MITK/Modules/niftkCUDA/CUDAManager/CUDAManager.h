@@ -94,7 +94,8 @@ private:
   unsigned int SizeToTier(std::size_t size) const;
 
   static CUDAManager*           s_Instance;
-  QMutex                        m_Lock;
+  // there's only one instance of our class (singleton), so a single mutex is ok too.
+  static QMutex                 s_Lock;
 
   unsigned int                  m_LastIssuedId;
 
