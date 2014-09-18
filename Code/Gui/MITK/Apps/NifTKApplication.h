@@ -170,7 +170,7 @@ int ApplicationMain(int argc, char** argv,
 #define CTK_LIB_PREFIX "lib"
 #endif
 
-  QString libraryPath = "liborg_mitk_gui_qt_ext,";
+  QString libraryPath = "libuk_ac_ucl_cmic_gui_qt_commonapps,";
 
   // Fix for bug 17557:
   // Setting absolute path to liborg_mitk_gui_qt_ext. Otherwise MITK fails to preload
@@ -178,7 +178,7 @@ int ApplicationMain(int argc, char** argv,
 #ifdef Q_OS_MAC
 
   // In case the application is started from an install directory
-  QString tempLibraryPath = QCoreApplication::applicationDirPath().append("/plugins/liborg_mitk_gui_qt_ext.dylib");
+  QString tempLibraryPath = QCoreApplication::applicationDirPath().append("/plugins/libuk_ac_ucl_cmic_gui_qt_commonapps.dylib");
 
   QFile preloadLibrary (tempLibraryPath);
   if (preloadLibrary.exists())
@@ -189,7 +189,7 @@ int ApplicationMain(int argc, char** argv,
   else
   {
     // In case the application is started from a build tree
-    tempLibraryPath = QCoreApplication::applicationDirPath().append("/../../../../../MITK-build/MITK-build/bin/plugins/liborg_mitk_gui_qt_ext.dylib");
+    tempLibraryPath = QCoreApplication::applicationDirPath().append("/../../../plugins/libuk_ac_ucl_cmic_gui_qt_commonapps.dylib");
 
     preloadLibrary.setFileName(tempLibraryPath);
     if (preloadLibrary.exists())

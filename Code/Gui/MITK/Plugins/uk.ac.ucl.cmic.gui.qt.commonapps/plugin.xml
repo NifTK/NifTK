@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
+
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.gui.qt.commonapps.QmitkCommonAppsApplicationPreferencePage" name="Application Preferences" class="QmitkCommonAppsApplicationPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.gui.qt.commonapps.QmitkCommonAppsApplicationPreferencePageKeywords"></keywordreference>
+    <page id="uk.ac.ucl.cmic.gui.qt.commonapps.QmitkCommonAppsApplicationPreferencePage"
+        name="Application Preferences"
+        class="QmitkCommonAppsApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.gui.qt.commonapps.QmitkCommonAppsApplicationPreferencePageKeywords"/>
+    </page>
+    <page id="org.mitk.AppInstancesPreferencePage" name="Application Instances"
+          class="QmitkAppInstancesPreferencePage" category="org.mitk.GeneralPreferencePage">
+      <keywordreference id="org.mitk.AppInstancesPreferencePageKeywords"/>
     </page>
   </extension>
+
+  <extension point="org.blueberry.ui.keywords">
+    <keyword id="org.mitk.AppInstancesPreferencePageKeywords" label="application instances"/>
+    <keyword id="org.mitk.AppInstancesPreferencePageKeywords" label="scene"/>
+  </extension>
+
+  <extension point="org.blueberry.ui.views">
+    <view
+      id="org.mitk.views.modules"
+      name="Modules"
+      category="org.mitk.views.general"
+      class="QmitkModuleView"
+      icon="resources/ModuleView.png" />
+  </extension>
+
 </plugin>
