@@ -101,6 +101,12 @@ protected:
 
 private:
 
+  /// \brief Parses a node property value that was specified on the command line.
+  QVariant ParsePropertyValue(const QString& propertyValue, const QString& propertyType);
+
+  /// \brief Sets node properties from a map of QVariant values per renderer name per property name.
+  void SetNodeProperties(mitk::DataNode* node, const QMap<QString, QMap<QString, QVariant> >& properties);
+
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
   void NodeAddedProxy(const mitk::DataNode *node);
 
@@ -127,7 +133,7 @@ private:
       float &stdDev);
 
 
-  void loadDataFromDisk(const QStringList& args, bool globalReinit);
+  void LoadDataFromDisk(const QStringList& args, bool globalReinit);
   void startNewInstance(const QStringList& args, const QStringList &files);
 
 private Q_SLOTS:
