@@ -16,6 +16,7 @@
 #include <QmitkCommonAppsIGIPerspective.h>
 #include "../QmitkNiftyIGIApplication.h"
 #include <QmitkNiftyViewApplicationPreferencePage.h>
+#include "QmitkInputDevicesPrefPage.h"
 
 //-----------------------------------------------------------------------------
 QmitkNiftyIGIApplicationPlugin::QmitkNiftyIGIApplicationPlugin()
@@ -39,11 +40,17 @@ QString QmitkNiftyIGIApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 {
-  QmitkCommonAppsApplicationPlugin::start(context);
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// has been executed when the commonapps plugin has been loaded.
+
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkInputDevicesPrefPage, context);
 
   this->RegisterHelpSystem();
 }
@@ -52,7 +59,10 @@ void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function 
+  /// will be executed when the commonapps plugin gets unloaded.
 }
 
 

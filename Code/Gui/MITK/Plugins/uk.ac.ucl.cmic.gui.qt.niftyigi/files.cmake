@@ -20,12 +20,14 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   QmitkNiftyIGIApplicationPlugin.cxx
+  QmitkInputDevicesPrefPage.cpp
 )
 
 set(MOC_H_FILES
   src/QmitkNiftyIGIApplication.h
   src/QmitkNiftyIGIWorkbenchWindowAdvisor.h
   src/internal/QmitkNiftyIGIApplicationPlugin.h
+  src/internal/QmitkInputDevicesPrefPage.h
 )
 
 set(CACHED_RESOURCE_FILES
