@@ -3006,7 +3006,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dXMin = dXMin < p5[0] ? dXMin : p5[0];
   dXMin = dXMin < p6[0] ? dXMin : p6[0];
   dXMin = dXMin < p7[0] ? dXMin : p7[0];
-  dXMin = dXMin < p7[0] ? dXMin : p8[0];
+  dXMin = dXMin < p8[0] ? dXMin : p8[0];
 
   // max x
   double dXMax = p1[0];
@@ -3016,7 +3016,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dXMax = dXMax > p5[0] ? dXMax : p5[0];
   dXMax = dXMax > p6[0] ? dXMax : p6[0];
   dXMax = dXMax > p7[0] ? dXMax : p7[0];
-  dXMax = dXMax > p7[0] ? dXMax : p8[0];
+  dXMax = dXMax > p8[0] ? dXMax : p8[0];
 
   //min y
   double dYMin = p1[1];
@@ -3026,7 +3026,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dYMin = dYMin < p5[1] ? dYMin : p5[1];
   dYMin = dYMin < p6[1] ? dYMin : p6[1];
   dYMin = dYMin < p7[1] ? dYMin : p7[1];
-  dYMin = dYMin < p7[1] ? dYMin : p8[1];
+  dYMin = dYMin < p8[1] ? dYMin : p8[1];
 
   // max y
   double dYMax = p1[1];
@@ -3036,7 +3036,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dYMax = dYMax > p5[1] ? dYMax : p5[1];
   dYMax = dYMax > p6[1] ? dYMax : p6[1];
   dYMax = dYMax > p7[1] ? dYMax : p7[1];
-  dYMax = dYMax > p7[1] ? dYMax : p8[1];
+  dYMax = dYMax > p8[1] ? dYMax : p8[1];
 
   //min z
   double dZMin = p1[2];
@@ -3046,7 +3046,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dZMin = dZMin < p5[2] ? dZMin : p5[2];
   dZMin = dZMin < p6[2] ? dZMin : p6[2];
   dZMin = dZMin < p7[2] ? dZMin : p7[2];
-  dZMin = dZMin < p7[2] ? dZMin : p8[2];
+  dZMin = dZMin < p8[2] ? dZMin : p8[2];
 
   // max z
   double dZMax = p1[2];
@@ -3056,7 +3056,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dZMax = dZMax > p5[2] ? dZMax : p5[2];
   dZMax = dZMax > p6[2] ? dZMax : p6[2];
   dZMax = dZMax > p7[2] ? dZMax : p7[2];
-  dZMax = dZMax > p7[2] ? dZMax : p8[2];
+  dZMax = dZMax > p8[2] ? dZMax : p8[2];
 
   // TODO: Use itk alternative, maybe using itkImageMaskSpatialObject
   std::cout << "Bounding box of image: " << std::endl
