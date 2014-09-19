@@ -3085,7 +3085,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Downsample the image to istropic voxels with dimensions
 
-  double subsamplingResolution = 5.; //The isotropic volume resolution in mm for sub-sampling
+  double subsamplingResolution = 5.0; //The isotropic volume resolution in mm for sub-sampling
   typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
   typename ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
   
@@ -3174,7 +3174,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // Post-extraction smoothing
 
   int niterations = 5;		// The number of smoothing iterations
-  float bandwidth = 0.1;	// The band width of the smoothing filter
+  float bandwidth = 0.05;	// The band width of the smoothing filter
 
   vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
     
