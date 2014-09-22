@@ -269,6 +269,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
+  niftkThinPlateSplineScatteredDataPointSetToImage
   niftkThreshold
   niftkTransformation
   niftkTransformPoint3Dto2D
