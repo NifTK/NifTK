@@ -43,16 +43,24 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(MINGW)
 
-  if(DESIRED_QT_VERSION MATCHES 4) # current VTK package has a HARD Qt 4 dependency
-    list(APPEND additional_cmake_args
-        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-        -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-        -DVTK_USE_QT:BOOL=ON
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DVTK_Group_Qt:BOOL=ON
-    )
-  endif()
+  # Optionally enable memory leak checks for any objects derived from vtkObject. This
+  # will force unit tests to fail if they have any of these memory leaks.
+  option(MITK_VTK_DEBUG_LEAKS OFF)
+  mark_as_advanced(MITK_VTK_DEBUG_LEAKS)
+  set(additional_cmake_args
+      -DVTK_DEBUG_LEAKS:BOOL=${MITK_VTK_DEBUG_LEAKS}
+      )
+
+
+  list(APPEND additional_cmake_args
+      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
+      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+      -DModule_vtkGUISupportQt:BOOL=ON
+      -DModule_vtkGUISupportQtWebkit:BOOL=ON
+      -DModule_vtkGUISupportQtSQL:BOOL=ON
+      -DModule_vtkRenderingQt:BOOL=ON
+      -DVTK_Group_Qt:BOOL=ON
+  )
 
   if(APPLE)
     set(additional_cmake_args
@@ -83,10 +91,6 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_USE_GUISUPPORT:BOOL=ON
         -DVTK_LEGACY_REMOVE:BOOL=ON
         -DModule_vtkTestingRendering:BOOL=ON
-        -DModule_vtkGUISupportQt:BOOL=ON
-        -DModule_vtkGUISupportQtWebkit:BOOL=ON
-        -DModule_vtkGUISupportQtSQL:BOOL=ON
-        -DModule_vtkRenderingQt:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
