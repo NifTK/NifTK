@@ -287,13 +287,13 @@ int main(int argc, char** argv)
   if ( args.size[2] > 1 )
   {
 
-    result = DoMain<3, float>( args );  
+    result = DoMain<3, unsigned char>( args );  
 
   }
   else
   {
 
-    result = DoMain<2, float>( args );  
+    result = DoMain<2, unsigned char>( args );  
 
   }
 
