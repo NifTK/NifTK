@@ -59,10 +59,10 @@ LightweightCUDAImage::LightweightCUDAImage(const LightweightCUDAImage& copyme)
   , m_Id(copyme.m_Id)
   , m_ReadyEvent(copyme.m_ReadyEvent)
   , m_DevicePtr(copyme.m_DevicePtr)
+  , m_SizeInBytes(copyme.m_SizeInBytes)
   , m_Width(copyme.m_Width)
   , m_Height(copyme.m_Height)
   , m_BytePitch(copyme.m_BytePitch)
-  , m_SizeInBytes(copyme.m_SizeInBytes)
 {
   if (m_RefCount)
   {
@@ -88,10 +88,10 @@ LightweightCUDAImage& LightweightCUDAImage::operator=(const LightweightCUDAImage
   m_Id          = assignme.m_Id;
   m_ReadyEvent  = assignme.m_ReadyEvent;
   m_DevicePtr   = assignme.m_DevicePtr;
+  m_SizeInBytes = assignme.m_SizeInBytes;
   m_Width       = assignme.m_Width;
   m_Height      = assignme.m_Height;
   m_BytePitch   = assignme.m_BytePitch;
-  m_SizeInBytes = assignme.m_SizeInBytes;
 
   if (m_RefCount)
   {

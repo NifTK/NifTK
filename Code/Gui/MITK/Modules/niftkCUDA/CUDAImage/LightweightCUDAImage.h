@@ -25,6 +25,10 @@
 class CUDAManager;
 
 
+/**
+ * Wraps a device memory pointer with a bit of meta data and reference count.
+ * Instances are created by CUDAManager.
+ */
 class NIFTKCUDA_EXPORT LightweightCUDAImage
 {
   friend class CUDAManager;
@@ -36,17 +40,28 @@ public:
    */
   LightweightCUDAImage();
 
-  // non-virtual destructor: do not derive from this class.
+  /**
+   * Non-virtual destructor: do not derive from this class.
+   */
   ~LightweightCUDAImage();
 
+  /** Copy constructor to handle reference count correctly. */
   LightweightCUDAImage(const LightweightCUDAImage& copyme);
+  /** Assignment operator to handle reference count correctly. */
   LightweightCUDAImage& operator=(const LightweightCUDAImage& assignme);
 
 
-  // zero is not a valid id.
+  /**
+   * Returns the ID of this image. Note that zero is not a valid ID!
+   */
   unsigned int GetId() const;
 
 
+  /**
+   * Returns the CUDA event object that can be used to synchronise kernel
+   * calls with completion of previous steps.
+   * Use with cudaStreamWaitEvent().
+   */
   cudaEvent_t GetReadyEvent() const;
 
 
@@ -58,13 +73,12 @@ private:
   cudaEvent_t     m_ReadyEvent;       // signaled when the image is ready for consumption.
 
   void*           m_DevicePtr;
+  std::size_t     m_SizeInBytes;
 
   unsigned int    m_Width;          // in pixel
   unsigned int    m_Height;         // in (pixel) lines
   unsigned int    m_BytePitch;      // length of a line of pixels in bytes.
   // FIXME: pixel type descriptor
-
-  std::size_t     m_SizeInBytes;
 };
 
 #endif // LightweightCUDAImage_h

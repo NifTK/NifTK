@@ -28,6 +28,7 @@
 #include <string>
 
 
+// FIXME: not yet implemented
 struct ScopedCUDADevice
 {
   ScopedCUDADevice(int dev);
@@ -35,28 +36,66 @@ struct ScopedCUDADevice
 };
 
 
-// FIXME: better class name
+/**
+ * Holds information necessary to read from a LightweightCUDAImage.
+ * @see CUDAManager::RequestReadAccess
+ */
 struct ReadAccessor
 {
-  unsigned int    m_Id;
-  cudaEvent_t     m_ReadyEvent;
   const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
+
+  unsigned int    m_Id;
+  cudaEvent_t     m_ReadyEvent;
 };
 
 
-// FIXME: better class name
+/**
+ * Holds information necessary to write into a CUDA memory block
+ * representing an image.
+ * @see CUDAManager::RequestOutputImage
+ */
 struct WriteAccessor
 {
   void*           m_DevicePointer;
   std::size_t     m_SizeInBytes;
 
   unsigned int    m_Id;
-
   cudaEvent_t     m_ReadyEvent;
 };
 
 
+/**
+ * Singleton that owns all CUDA resources.
+ * It manages images in a copy-on-write like fashion: you cannot write into an existing
+ * CUDA-image, you can only read from these and write data into a newly allocated one.
+ *
+ * To get access to an image living on the card, do the usual DataNode::GetData(), and a
+ * cast to CUDAImage. Then call CUDAImage::GetLightweightCUDAImage() to retrieve a handle
+ * to the actual bits in CUDA-memory.
+ * Side note: even though LightweightCUDAImage has members you should consider it opaque.
+ *
+ * This LightweightCUDAImage instance you can use with RequestReadAccess() to obtain a device
+ * pointer that you can read from in your kernel.
+ * RequestReadAccess() will increment a reference count for that image so that CUDAManager
+ * will not recycle it too early.
+ *
+ * Then call RequestOutputImage() to get a device pointer to where you can write your kernel's
+ * output. From an API point of view, RequestOutputImage() will always give you a new memory
+ * block so that you never overwrite an existing image.
+ *
+ * Call GetStream() with your favourite name, or create your own stream, for synchronising and
+ * coarse-grain parallelising CUDA tasks.
+ *
+ * Run your kernel on your stream. But do not synchronise on its completion!
+ *
+ * When all your work has been submitted to the driver, call FinaliseAndAutorelease() to turn
+ * the output device pointer into a proper LightweightCUDAImage that you can stick onto a
+ * DataNode. This function will also release your read-request on the input image at the right time
+ * so that it can be eventually returned to the memory pool.
+ * In addition, Finalise*() functions will queue a "ready" event that you can use on your stream to
+ * GPU-synchronise on completion of a previous processing step.
+ */
 class NIFTKCUDA_EXPORT CUDAManager : public QThread
 {
   friend class LightweightCUDAImage;
@@ -68,7 +107,7 @@ public:
    */
   static CUDAManager* GetInstance();
 
-
+  // FIXME: not yet implemented
   ScopedCUDADevice ActivateDevice(int dev);
 
   cudaStream_t GetStream(const std::string& name);
@@ -84,6 +123,7 @@ public:
 
   LightweightCUDAImage FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream);
 
+  // FIXME: need an Autorelease()
 
 protected:
   CUDAManager();
@@ -112,7 +152,7 @@ private:
 
   /**
    * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
-   * a previously requested image. 
+   * a previously requested image.
    */
   void ReleaseReadAccess(unsigned int id);
 
