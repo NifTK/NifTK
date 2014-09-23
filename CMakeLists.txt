@@ -623,6 +623,8 @@ endif (BUILD_MESHING)
 # the Superbuild, because VTK needs to know if we have Qt.
 ######################################################################
 
+set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+
 # We ALWAYS need Qt. This is because MITK always needs it.
 if(BUILD_IGI)
   find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
@@ -637,7 +639,7 @@ if(QT_FOUND)
   include(${QT_USE_FILE})
   if(BUILD_SUPERBUILD)
     set(VTK_QT_ARGS
-      -DDESIRED_QT_VERSION:STRING=4
+      -DVTK_QT_VERSION:STRING=@DESIRED_QT_VERSION@
       -DVTK_USE_GUISUPPORT:BOOL=ON
       -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
       -DVTK_USE_QT:BOOL=ON
@@ -907,7 +909,6 @@ set(MITK_USE_Boost 1)
 set(MITK_USE_DCMTK 1)
 set(MITK_USE_BLUEBERRY ${QT_FOUND})
 set(MITK_USE_QT ${QT_FOUND})
-set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 set(MITK_DESIRED_QT_VERSION @DESIRED_QT_VERSION@)
 #set(MITK_DESIRED_QT_VERSION 4)
 set(MITK_USE_OpenCV ${BUILD_IGI})
