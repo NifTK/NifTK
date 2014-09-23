@@ -73,7 +73,7 @@ template<typename TPixel, unsigned int VImageDimension>
 ITK_EXPORT
 void
 GetVolumeFromITKImage(
-  itk::Image<TPixel, VImageDimension>* itkImage,
+  const itk::Image<TPixel, VImageDimension>* itkImage,
   double &imageVolume
   )
 {
