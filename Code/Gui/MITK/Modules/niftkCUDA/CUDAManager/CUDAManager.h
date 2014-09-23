@@ -137,6 +137,9 @@ protected:
 
 
 private:
+  CUDAManager(const CUDAManager& copyme);
+  CUDAManager& operator=(const CUDAManager& assignme);
+
   std::size_t TierToSize(unsigned int tier) const;
   unsigned int SizeToTier(std::size_t size) const;
 
