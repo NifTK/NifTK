@@ -62,6 +62,18 @@ CUDAManager*      CUDAManager::s_Instance = 0;
 QMutex            CUDAManager::s_Lock(QMutex::Recursive);
 
 
+/**
+ * @internal
+ * Used by FinaliseAndAutorelease() and StreamCallback() to pass information through
+ * the CUDA driver about what should be released.
+ */
+struct StreamCallbackReleasePOD
+{
+  CUDAManager*        m_Manager;
+  unsigned int        m_Id;
+};
+
+
 //-----------------------------------------------------------------------------
 CUDAManager* CUDAManager::GetInstance()
 {
@@ -293,12 +305,20 @@ LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(WriteAccessor& writeAcc
 
   LightweightCUDAImage  lwci = Finalise(writeAccessor, stream);
 
-  // FIXME: queue completion callback
-  //        inside callback deref lwci
-  std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(readAccessor.m_Id);
-  assert(i != m_ValidImages.end());
-  // BEWARE: may call back into AllRefsDropped()
-  i->second.m_RefCount->deref();
+  // the image represented by readAccessor can only be released once the kernel has finished with it.
+  // queueing a callback onto the stream will tell us when.
+  StreamCallbackReleasePOD*   pod = new StreamCallbackReleasePOD;
+  pod->m_Manager = this;
+  pod->m_Id      = readAccessor.m_Id;
+
+  cudaError_t   err = cudaSuccess;
+  err = cudaStreamAddCallback(stream, StreamCallback, pod, 0);
+  if (err != cudaSuccess)
+  {
+    // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
+    throw std::runtime_error("Cannot queue stream callback");
+  }
+
 
   // invalidate readaccessor.
   // to be done immediately, completion callback would be too late!
@@ -330,4 +350,31 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
   // work-around is to inc refcount. that works because in Finalise() we've dec'd the refcount specifically for m_ValidImages.
   lwci.m_RefCount->ref();
   m_ValidImages.erase(i);
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDART_CB CUDAManager::StreamCallback(cudaStream_t stream, cudaError_t status, void* userData)
+{
+  StreamCallbackReleasePOD*   pod = (StreamCallbackReleasePOD*) userData;
+
+  pod->m_Manager->ReleaseReadAccess(pod->m_Id);
+
+  // every callback is guaranteed to be executed only once. (says the cuda doc.)
+  // so we are safe to free the memory.
+  delete pod;
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::ReleaseReadAccess(unsigned int id)
+{
+  QMutexLocker    lock(&s_Lock);
+
+  std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(id);
+  assert(i != m_ValidImages.end());
+  // BEWARE: may call back into AllRefsDropped().
+  // this effectively drops the reference from the readaccessor (that is dead already) that was
+  // passed into FinaliseAndAutorelease().
+  i->second.m_RefCount->deref();
 }

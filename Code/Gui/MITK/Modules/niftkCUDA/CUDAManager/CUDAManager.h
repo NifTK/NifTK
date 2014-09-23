@@ -40,7 +40,7 @@ struct ReadAccessor
 {
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
-  void*           m_DevicePointer;
+  const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
 };
 
@@ -84,9 +84,6 @@ public:
 
   LightweightCUDAImage FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream);
 
-  // when done with input image, call this.
-  // BEWARE: does not sync with GPU! should only be called from completion callback!
-  void Release(ReadAccessor& readAccessor);
 
 protected:
   CUDAManager();
@@ -102,6 +99,22 @@ protected:
 private:
   std::size_t TierToSize(unsigned int tier) const;
   unsigned int SizeToTier(std::size_t size) const;
+
+
+  /**
+   * Called by the CUDA driver when work has finished.
+   * The callback is queued by FinaliseAndAutorelease() to release an image.
+   * Note: this callback will block work on the stream, therefore the image-ready-events are
+   * triggered before the callback so that work on other streams can proceed in parallel.
+   */
+  static void CUDART_CB StreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
+
+
+  /**
+   * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
+   * a previously requested image. 
+   */
+  void ReleaseReadAccess(unsigned int id);
 
 
   static CUDAManager*           s_Instance;
