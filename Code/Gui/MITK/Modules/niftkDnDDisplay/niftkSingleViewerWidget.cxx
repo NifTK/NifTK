@@ -623,9 +623,9 @@ mitk::Vector2D niftkSingleViewerWidget::GetCentrePosition(int windowIndex)
 {
   mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+  const mitk::PlaneGeometry* worldPlaneGeometry = renderer->GetCurrentWorldPlaneGeometry();
 
-  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point3D centreInMm = worldPlaneGeometry->GetCenter();
   mitk::Point2D centreInMm2D;
   displayGeometry->Map(centreInMm, centreInMm2D);
   mitk::Point2D centreInPx2D;
@@ -668,7 +668,7 @@ mitk::Vector2D niftkSingleViewerWidget::GetCursorPositionFromCentre(int windowIn
 {
   mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+  const mitk::PlaneGeometry* worldPlaneGeometry = renderer->GetCurrentWorldPlaneGeometry();
 
   const mitk::Point3D& selectedPosition = m_MultiWidget->GetSelectedPosition();
   double scaleFactor = m_MultiWidget->GetScaleFactor(windowIndex);
@@ -679,12 +679,12 @@ mitk::Vector2D niftkSingleViewerWidget::GetCursorPositionFromCentre(int windowIn
   centreOnDisplayInPx[1] = centrePosition[1] * renderer->GetSizeY();
 
   /// World centre in mm.
-  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point3D centreInMm = worldPlaneGeometry->GetCenter();
   mitk::Point2D centreInMm2D;
   displayGeometry->Map(centreInMm, centreInMm2D);
 
   /// World origin in mm.
-  mitk::Point3D originInMm = worldGeometry2D->GetOrigin();
+  mitk::Point3D originInMm = worldPlaneGeometry->GetOrigin();
   mitk::Point2D originInMm2D;
   displayGeometry->Map(originInMm, originInMm2D);
 

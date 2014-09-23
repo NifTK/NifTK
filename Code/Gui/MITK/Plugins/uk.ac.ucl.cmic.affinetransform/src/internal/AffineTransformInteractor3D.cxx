@@ -301,7 +301,7 @@ bool AffineTransformInteractor3D::OnAcCheckObject(mitk::Action* action, const mi
   //qDebug() <<"WorldPoint: " <<m_CurrentlyPickedWorldPoint.operator [](0) <<m_CurrentlyPickedWorldPoint.operator [](1) <<m_CurrentlyPickedWorldPoint.operator [](2);
   //qDebug() <<"DisplayPos: " <<m_CurrentlyPickedDisplayPoint.operator [](0) <<m_CurrentlyPickedDisplayPoint.operator [](1) <<m_CurrentlyPickedDisplayPoint.operator [](2);
   
-  mitk::Geometry3D * geometry = m_DataNode->GetData()->GetUpdatedTimeGeometry()->GetGeometryForTimeStep(timeStep);
+  mitk::BaseGeometry* geometry = m_DataNode->GetData()->GetUpdatedTimeGeometry()->GetGeometryForTimeStep(timeStep);
 
   if (geometry->IsInside(m_CurrentlyPickedWorldPoint))
   {
@@ -374,7 +374,7 @@ bool AffineTransformInteractor3D::OnAcInitMove(mitk::Action * action, const mitk
 
   // Make deep copy of current Geometry3D of the plane
   m_DataNode->GetData()->UpdateOutputInformation(); // make sure that the Geometry is up-to-date
-  m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
+  m_OriginalGeometry = dynamic_cast<mitk::BaseGeometry*>(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
   return true;
 }
@@ -486,11 +486,11 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
       // apply rotation
       
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle );
-      mitk::Geometry3D::Pointer newGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
+      mitk::BaseGeometry::Pointer newGeometry = dynamic_cast<mitk::BaseGeometry*>(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
       if (newGeometry.IsNotNull())
       {
-        newGeometry->mitk::Geometry3D::ExecuteOperation( &op );
+        newGeometry->mitk::BaseGeometry::ExecuteOperation( &op );
         mitk::TimeGeometry::Pointer timeGeometry = m_DataNode->GetData()->GetTimeGeometry();
         bool succ = false;
         if (timeGeometry.IsNotNull() && timeGeometry->IsValidTimeStep(timeStep))
@@ -523,7 +523,7 @@ bool AffineTransformInteractor3D::OnAcAccept(mitk::Action * action, const mitk::
   if (m_currentRenderer != NULL)
     timeStep = m_currentRenderer->GetTimeStep(m_DataNode->GetData());
 
-  m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
+  m_OriginalGeometry = dynamic_cast<mitk::BaseGeometry*>(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
     
   emit transformReady();
   newStateEvent = new mitk::StateEvent(mitk::EIDYES );

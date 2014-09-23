@@ -17,6 +17,7 @@
 #include <mitkMathsUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkImage.h>
 #include <mitkSurface.h>
 
 namespace mitk
@@ -67,8 +68,8 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
   if (image.IsNotNull())
   {
-    mitk::Geometry3D::Pointer geometry = image->GetGeometry();
-    if (geometry.IsNotNull())
+    mitk::BaseGeometry* geometry = image->GetGeometry();
+    if (geometry)
     {
       mitk::Vector3D spacing = geometry->GetSpacing();
       if (! (mitk::IsCloseToZero(spacing[0] - imageScaling[0])

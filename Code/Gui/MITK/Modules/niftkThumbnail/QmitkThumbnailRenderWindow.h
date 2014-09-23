@@ -231,7 +231,7 @@ private:
   mitk::BaseRenderer::ConstPointer m_TrackedRenderer;
 
   // This is set to the current world geometry.
-  mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
+  mitk::BaseGeometry::Pointer m_TrackedWorldGeometry;
 
   // Keep track of this to register and unregister event listeners.
   mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;

@@ -59,7 +59,7 @@ NIFTKCORE_EXPORT int GetUpDirection(const mitk::Image* image, const MIDASOrienta
  * </pre>
  */
 
-NIFTKCORE_EXPORT int GetUpDirection(const mitk::Geometry3D* geometry, itk::Orientation orientation);
+NIFTKCORE_EXPORT int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientation);
 
 
 /**

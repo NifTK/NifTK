@@ -17,6 +17,7 @@
 
 #include <itkMultipleValuedCostFunction.h>
 #include <cv.h>
+#include <mitkPoint.h>
 #include <mitkVector.h>
 #include <mitkTimeStampsContainer.h>
 #include <mitkTrackingAndTimeStampsContainer.h>
