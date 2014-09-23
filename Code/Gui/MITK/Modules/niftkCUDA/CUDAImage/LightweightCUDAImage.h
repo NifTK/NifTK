@@ -47,6 +47,9 @@ public:
   unsigned int GetId() const;
 
 
+  cudaEvent_t GetReadyEvent() const;
+
+
 private:
   QAtomicInt*     m_RefCount;
 

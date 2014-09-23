@@ -322,9 +322,12 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
   assert(i != m_ValidImages.end());
 
   std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
-  // FIXME: check if refcount underflows during copy-construction!
   freeList.insert(freeList.begin(), lwci);
 
   // as the image is back on the free-list, it can no longer be read.
+  // beware: m_ValidImages does not account for the refcount, so removing the image will recursively
+  // call this method as its refcount goes to zero all the time.
+  // work-around is to inc refcount. that works because in Finalise() we've dec'd the refcount specifically for m_ValidImages.
+  lwci.m_RefCount->ref();
   m_ValidImages.erase(i);
 }

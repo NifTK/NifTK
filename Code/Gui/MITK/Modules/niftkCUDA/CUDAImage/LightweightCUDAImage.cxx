@@ -32,6 +32,13 @@ unsigned int LightweightCUDAImage::GetId() const
 
 
 //-----------------------------------------------------------------------------
+cudaEvent_t LightweightCUDAImage::GetReadyEvent() const
+{
+  return m_ReadyEvent;
+}
+
+
+//-----------------------------------------------------------------------------
 LightweightCUDAImage::~LightweightCUDAImage()
 {
   if (m_RefCount)
