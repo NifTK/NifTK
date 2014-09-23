@@ -38,7 +38,10 @@ struct ScopedCUDADevice
 // FIXME: better class name
 struct ReadAccessor
 {
-
+  unsigned int    m_Id;
+  cudaEvent_t     m_ReadyEvent;
+  void*           m_DevicePointer;
+  std::size_t     m_SizeInBytes;
 };
 
 
@@ -56,6 +59,7 @@ struct WriteAccessor
 
 class NIFTKCUDA_EXPORT CUDAManager : public QThread
 {
+  friend class LightweightCUDAImage;
 
 public:
   /**
@@ -69,7 +73,7 @@ public:
 
   cudaStream_t GetStream(const std::string& name);
 
-  ReadAccessor RequestReadAccess(unsigned int id);
+  ReadAccessor RequestReadAccess(const LightweightCUDAImage& lwci);
 
   WriteAccessor RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype);
 
@@ -88,10 +92,17 @@ protected:
   CUDAManager();
   virtual ~CUDAManager();
 
+  /**
+   * Used by LightweightCUDAImage to notify us that all references to it have been dropped,
+   * and that it can be placed back onto m_AvailableImagePool for later re-use.
+   */
+  void AllRefsDropped(LightweightCUDAImage& lwci);
+
 
 private:
   std::size_t TierToSize(unsigned int tier) const;
   unsigned int SizeToTier(std::size_t size) const;
+
 
   static CUDAManager*           s_Instance;
   // there's only one instance of our class (singleton), so a single mutex is ok too.
@@ -100,7 +111,7 @@ private:
   unsigned int                  m_LastIssuedId;
 
   // vector is a size tier, followed by linked list for that tier.
-  std::vector<std::list<LightweightCUDAImage> >     m_ImagePool;
+  std::vector<std::list<LightweightCUDAImage> >     m_AvailableImagePool;
 
   // images currently in use via WriteAccessor, i.e. work is being queued.
   std::map<unsigned int, LightweightCUDAImage>    m_InFlightOutputImages;

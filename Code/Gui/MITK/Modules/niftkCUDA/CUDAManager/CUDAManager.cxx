@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 static bool CUDADelayLoadCheck()
 {
+#ifdef _MSC_VER
   // the cuda dlls are delay-loaded, that means they are only mapped into our process
   // on demand, i.e. when we try to call an exported function for the first time.
   // this is what we do here.
@@ -49,12 +50,17 @@ static bool CUDADelayLoadCheck()
 
   // unreachable
   assert(false);
+
+#else
+  return true;
+#endif
 }
 
 
 //-----------------------------------------------------------------------------
 CUDAManager*      CUDAManager::s_Instance = 0;
 QMutex            CUDAManager::s_Lock(QMutex::Recursive);
+
 
 //-----------------------------------------------------------------------------
 CUDAManager* CUDAManager::GetInstance()
@@ -130,18 +136,19 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   std::size_t   minSizeInBytes = bytepitch * height;
 
   unsigned int   sizeTier = SizeToTier(minSizeInBytes);
-  if (m_ImagePool.size() <= sizeTier)
+  if (m_AvailableImagePool.size() <= sizeTier)
   {
-    m_ImagePool.resize(sizeTier + 1);
+    m_AvailableImagePool.resize(sizeTier + 1);
   }
 
-  std::list<LightweightCUDAImage>::iterator i = m_ImagePool[sizeTier].begin();
-  if (i == m_ImagePool[sizeTier].end())
+  std::list<LightweightCUDAImage>::iterator i = m_AvailableImagePool[sizeTier].begin();
+  if (i == m_AvailableImagePool[sizeTier].end())
   {
     // the amount we request from the driver is always the full tier size.
     // makes management simpler, but wastes memory (we got plenty though).
     std::size_t   fullTierSize = TierToSize(sizeTier);
     assert(fullTierSize >= minSizeInBytes);
+    assert(SizeToTier(fullTierSize) == sizeTier);
 
     cudaError_t   err = cudaSuccess;
     void*         devptr = 0;
@@ -157,11 +164,13 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     assert(m_LastIssuedId != 0);
 
     LightweightCUDAImage  lwci;
+    lwci.m_RefCount   = new QAtomicInt(1);
     lwci.m_Id         = m_LastIssuedId;
     lwci.m_DevicePtr  = devptr;
     lwci.m_Width      = width;
     lwci.m_Height     = height;
     lwci.m_BytePitch  = bytepitch;
+    lwci.m_SizeInBytes = fullTierSize;
 
     // the ready-event is specifically not for timing, only for stream-sync.
     err = cudaEventCreateWithFlags(&lwci.m_ReadyEvent, cudaEventDisableTiming);
@@ -172,7 +181,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
       throw std::runtime_error("Cannot create CUDA event");
     }
 
-    i = m_ImagePool[sizeTier].insert(m_ImagePool[sizeTier].begin(), lwci);
+    i = m_AvailableImagePool[sizeTier].insert(m_AvailableImagePool[sizeTier].begin(), lwci);
   }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
@@ -182,7 +191,13 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   wa.m_Id             = i->m_Id;
   wa.m_ReadyEvent     = i->m_ReadyEvent;
   wa.m_DevicePointer  = i->m_DevicePtr;
-  wa.m_SizeInBytes    = TierToSize(sizeTier);
+  wa.m_SizeInBytes    = i->m_SizeInBytes;
+  // the to be returned WriteAccessor has an implicit reference to the image.
+  // so keep it alive.
+  i->m_RefCount->ref();
+
+  // if the image is used for output then it is no longer available for something else.
+  m_AvailableImagePool[sizeTier].erase(i);
 
   return wa;
 }
@@ -191,7 +206,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
 //-----------------------------------------------------------------------------
 std::size_t CUDAManager::TierToSize(unsigned int tier) const
 {
-  return 1 << tier;
+  return (1 << tier) - 1;
 }
 
 
@@ -223,20 +238,93 @@ LightweightCUDAImage CUDAManager::Finalise(WriteAccessor& writeAccessor, cudaStr
   assert(i->second.GetId() == i->first);
 
   LightweightCUDAImage  lwci = i->second;
-  m_InFlightOutputImages.erase(i);
 
   cudaError_t   err = cudaSuccess;
   err = cudaEventRecord(lwci.m_ReadyEvent, stream);
   assert(err == cudaSuccess);
 
-  // queue completion callback?
-
-
   bool inserted = m_ValidImages.insert(std::make_pair(lwci.GetId(), lwci)).second;
   assert(inserted);
+  // important to update the two lists (m_ValidImages and m_InFlightOutputImages) close together so
+  // that we can handle exceptions properly. say if insert fails for one we could otherwise leak memory.
+  m_InFlightOutputImages.erase(i);
 
   // invalidate writeAccessor
+  writeAccessor.m_Id = 0;
   writeAccessor.m_DevicePointer = 0;
+  // deref because writeaccessor has now lost its implicit reference to this image.
+  lwci.m_RefCount->deref();
+
+  // while being held by m_ValidImages, refs in there dont count towards the reference count.
+  // this is so that m_ValidImages does not keep them artificially alive.
+  lwci.m_RefCount->deref();
 
   return lwci;
+}
+
+
+//-----------------------------------------------------------------------------
+ReadAccessor CUDAManager::RequestReadAccess(const LightweightCUDAImage& lwci)
+{
+  QMutexLocker    lock(&s_Lock);
+
+  std::map<unsigned int, LightweightCUDAImage>::const_iterator i = m_ValidImages.find(lwci.GetId());
+  if (i == m_ValidImages.end())
+  {
+    throw std::runtime_error("Requested image is not (yet?) valid");
+  }
+
+  ReadAccessor  ra;
+  ra.m_Id             = lwci.m_Id;
+  ra.m_DevicePointer  = lwci.m_DevicePtr;
+  ra.m_ReadyEvent     = lwci.m_ReadyEvent;
+  ra.m_SizeInBytes    = lwci.m_SizeInBytes;
+  // readaccessor has an implicit ref to the image.
+  i->second.m_RefCount->ref();
+
+  return ra;
+}
+
+
+//-----------------------------------------------------------------------------
+LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream)
+{
+  QMutexLocker    lock(&s_Lock);
+
+  LightweightCUDAImage  lwci = Finalise(writeAccessor, stream);
+
+  // FIXME: queue completion callback
+  //        inside callback deref lwci
+  std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(readAccessor.m_Id);
+  assert(i != m_ValidImages.end());
+  // BEWARE: may call back into AllRefsDropped()
+  i->second.m_RefCount->deref();
+
+  // invalidate readaccessor.
+  // to be done immediately, completion callback would be too late!
+  readAccessor.m_Id = 0;
+  readAccessor.m_DevicePointer = 0;
+
+
+  return lwci;
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
+{
+  QMutexLocker    lock(&s_Lock);
+
+  // by definition, lwci can not be on m_InFlightOutputImages.
+  assert(m_InFlightOutputImages.find(lwci.GetId()) == m_InFlightOutputImages.end());
+
+  std::map<unsigned int, LightweightCUDAImage>::iterator  i = m_ValidImages.find(lwci.GetId());
+  assert(i != m_ValidImages.end());
+
+  std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
+  // FIXME: check if refcount underflows during copy-construction!
+  freeList.insert(freeList.begin(), lwci);
+
+  // as the image is back on the free-list, it can no longer be read.
+  m_ValidImages.erase(i);
 }

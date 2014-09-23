@@ -15,4 +15,5 @@
 set(CPP_FILES
   CUDAManager/CUDAManager.cxx
   CUDAImage/CUDAImage.cxx
+  CUDAImage/LightweightCUDAImage.cxx
 )

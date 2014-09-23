@@ -66,20 +66,34 @@ void Consumer(const mitk::StandaloneDataStorage::Pointer& datastorage)
   CUDAImage::Pointer  cudaImage = dynamic_cast<CUDAImage*>(node->GetData());
   assert(cudaImage.IsNotNull());
 
-  LightweightCUDAImage  lwci = cudaImage->GetLightweightCUDAImage();
+  LightweightCUDAImage  lwciInput = cudaImage->GetLightweightCUDAImage();
 
   CUDAManager*    cm = CUDAManager::GetInstance();
 
   //ScopedCUDADevice  sd = cm->ActivateDevice(0);
 
-  cudaError_t   err = cudaSuccess;
-  //cm->RequestReadAccess(lwci);
-
-
   cudaStream_t stream = cm->GetStream("consumer-test");
 
+  ReadAccessor ra = cm->RequestReadAccess(lwciInput);
   WriteAccessor wa = cm->RequestOutputImage(1920, 1080, 4);
+
+  cudaError_t err = cudaSuccess;
+  // make sure input image has actually finished processing before we start our work.
+  // (remember: streams can run in parallel.)
+  err = cudaStreamWaitEvent(stream, ra.m_ReadyEvent, 0);
+  assert(err == cudaSuccess);
+
+  err = cudaMemcpyAsync(wa.m_DevicePointer, ra.m_DevicePointer, 1, cudaMemcpyDeviceToDevice, stream);
+
+  // Finalise*() does an automatic ready-event queueing so no need to do this here.
+  // (Producer() above did it only to illustrate how).
+  LightweightCUDAImage lwciOutput = cm->FinaliseAndAutorelease(wa, ra, stream);
+
+  // replace image on node.
+  cudaImage->SetLightweightCUDAImage(lwciOutput);
 }
+
+
 
 
 int CUDAManagerTest(int /*argc*/, char* /*argv*/[])

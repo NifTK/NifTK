@@ -16,31 +16,40 @@
 #ifndef LightweightCUDAImage_h
 #define LightweightCUDAImage_h
 
+#include "niftkCUDAExports.h"
 #include <cuda_runtime_api.h>
+#include <QAtomicInt>
+
 
 // forward-decl
 class CUDAManager;
 
 
-class LightweightCUDAImage
+class NIFTKCUDA_EXPORT LightweightCUDAImage
 {
   friend class CUDAManager;
 
 public:
-  LightweightCUDAImage()
-    : m_Id(0)
-  {
-  }
+  /**
+   * The default constructor creates an invalid object.
+   * Only CUDAManager can create a valid one.
+   */
+  LightweightCUDAImage();
+
+  // non-virtual destructor: do not derive from this class.
+  ~LightweightCUDAImage();
+
+  LightweightCUDAImage(const LightweightCUDAImage& copyme);
+  LightweightCUDAImage& operator=(const LightweightCUDAImage& assignme);
 
 
   // zero is not a valid id.
-  unsigned int GetId() const
-  {
-    return m_Id;
-  }
+  unsigned int GetId() const;
 
 
 private:
+  QAtomicInt*     m_RefCount;
+
   int             m_Device;    // the device this image lives on.
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;       // signaled when the image is ready for consumption.
@@ -52,6 +61,7 @@ private:
   unsigned int    m_BytePitch;      // length of a line of pixels in bytes.
   // FIXME: pixel type descriptor
 
+  std::size_t     m_SizeInBytes;
 };
 
 #endif // LightweightCUDAImage_h
