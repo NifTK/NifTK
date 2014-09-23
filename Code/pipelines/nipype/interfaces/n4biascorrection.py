@@ -3,7 +3,7 @@
 """
 
 from nipype.interfaces.niftyseg.base import NIFTYSEGCommand, NIFTYSEGCommandInputSpec
-from nipype.interfaces.base import (TraitedSpec, File, traits, )
+from nipype.interfaces.base import (TraitedSpec, File, traits)
 
 class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
     
