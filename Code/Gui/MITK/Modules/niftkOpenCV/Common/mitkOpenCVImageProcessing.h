@@ -1,0 +1,39 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
+#ifndef mitkOpenCVImageProcessing_h
+#define mitkOpenCVImageProcessing_h
+
+#include "niftkOpenCVExports.h"
+#include <cv.h>
+
+/**
+ * \file mitkOpenCVImageProcessing.h
+ * \brief Various simplish image processing functions
+ */
+namespace mitk {
+
+/**
+ * \brief finds the intersection of two lines in an image
+ */
+
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindCrosshairCentre(const cv::Mat image);
+
+
+} // end namespace
+
+#endif
+
+
+
