@@ -255,7 +255,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneNode(mitk::Image* referenceImage)
 {
-  mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+  mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
   int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
   int sagittalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
@@ -315,7 +315,7 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
-  mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+  mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
   int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
   int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);

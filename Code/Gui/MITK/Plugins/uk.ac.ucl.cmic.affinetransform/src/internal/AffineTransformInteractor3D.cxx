@@ -484,7 +484,7 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
 
       // Reset current Geometry3D to original state (pre-interaction) and
       // apply rotation
-      
+
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle );
       mitk::BaseGeometry::Pointer newGeometry = dynamic_cast<mitk::BaseGeometry*>(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
@@ -503,28 +503,28 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
       }
     }
   }
-  
+
   if (m_boundingObjectNode != NULL)
   {
    static_cast<mitk::BoundingObject * >(m_boundingObjectNode->GetData())->FitGeometry(m_DataNode->GetData()->GetGeometry());
   }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
- 
+
   return true;
 }
 
 bool AffineTransformInteractor3D::OnAcAccept(mitk::Action * action, const mitk::StateEvent * stateEvent)
 {
   mitk::StateEvent * newStateEvent = NULL;
-  
+
   // Get the timestep to also support 3D+t
   int timeStep = 0;
-    
+
   if (m_currentRenderer != NULL)
     timeStep = m_currentRenderer->GetTimeStep(m_DataNode->GetData());
 
   m_OriginalGeometry = dynamic_cast<mitk::BaseGeometry*>(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
-    
+
   emit transformReady();
   newStateEvent = new mitk::StateEvent(mitk::EIDYES );
   this->HandleEvent( newStateEvent );
@@ -571,7 +571,7 @@ bool AffineTransformInteractor3D::OnAcAccept(mitk::Action * action, const mitk::
 
 CustomVTKAxesActor::CustomVTKAxesActor() 
   : vtkAxesActor() 
-{ 
+{
   //default: 0.25
   m_axesLabelWidth = 0.1; 
   this->XAxisLabel->SetWidth(0.1);
