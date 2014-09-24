@@ -7,6 +7,7 @@ import registration as reg
 import argparse
 import os
 import nipype.interfaces.niftyreg as niftyreg
+from distutils import spawn
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 
