@@ -60,7 +60,7 @@ inputfiles = [os.path.abspath(f) for f in args.inputfile]
 masks = [os.path.abspath(f) for f in args.mask]
 cpps = [os.path.abspath(f) for f in args.cpp]
 
-infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile']),
+infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile', 'mask', 'cpp']),
                      name = 'infosource',
                      synchronize=True)
 infosource.iterables = [ ('inputfile', inputfiles), 
