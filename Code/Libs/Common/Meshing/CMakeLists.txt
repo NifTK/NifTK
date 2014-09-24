@@ -62,20 +62,11 @@ if (WIN32)
     )
 
 else (WIN32)
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
-    COMMAND ${CMAKE_CXX_COMPILER}
-    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
-    ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../Exceptions -I${CGAL_INCLUDE_DIRS}
-    ARGS `echo ${NIFTK_CGAL_CXX_FLAGS}`
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
-    )
-
   add_library(niftkMeshingLib
-    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
     niftkMeditMeshParser.cxx
     niftkMeshGenerator.cxx
     niftkMeshMerger.cxx
+    niftkCGALMesherBackEnd.cxx
     )
   target_link_libraries(niftkMeshingLib
     ${CGAL_LIBRARIES}
