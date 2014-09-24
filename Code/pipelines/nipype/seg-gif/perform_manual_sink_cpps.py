@@ -58,7 +58,7 @@ id_matrix_content = '1 0 0 0 \n' + \
                     '0 0 1 0 \n' + \
                     '0 0 0 1'
 
-for i in range(refs):
+for i in range(len(refs)):
     
     ref = refs[i]
     flo = flos[i]
