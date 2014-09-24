@@ -73,9 +73,7 @@ for i in range(len(refs)):
     cpp_target = os.path.join(args.output, ref_b, flo_b + '.nii.gz')
     invcpp_target = os.path.join(args.output, flo_b, ref_b + '.nii.gz')
     
-    print 'copying ', cpp, 'into', cpp_target
-#    shutil.copyfile(cpp, cpp_target)
-    print 'copying ', invcpp, 'into', invcpp_target
-#    shutil.copyfile(invcpp, invcpp_target)
+    shutil.copyfile(cpp, cpp_target)
+    shutil.copyfile(invcpp, invcpp_target)
     
     
