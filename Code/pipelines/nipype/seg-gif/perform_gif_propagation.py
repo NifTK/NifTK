@@ -85,12 +85,11 @@ else:
     mni_to_input.inputs.flo_file = mni_template
     mask_resample  = pe.Node(interface = niftyreg.RegResample(), name = 'mask_resample')
     mask_resample.inputs.inter_val = 'NN'
-#    mask_resample.inputs.ref_file = os.path.abspath(args.inputfile)
     r.connect(infosource, 'inputfile', mask_resample, 'ref_file')
     mask_resample.inputs.flo_file = mni_template_mask
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
     
-    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
+    r.connect(infosource, 'inputfile', r.get_node('input_node'), 'in_file')
     r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask')
     r.inputs.input_node.in_db_file = os.path.abspath(args.database)
     r.inputs.input_node.out_cpp_dir = cpp_dir
@@ -109,12 +108,11 @@ else:
         function=gif.find_gif_substitutions_function),
                                      name = 'find_gif_substitutions')
     find_gif_substitutions.inputs.in_db_file = os.path.abspath(args.database)
-    workflow.connect(find_gif_substitutions, 'substitutions', gif_sink, 'regexp_substitutions')
+    r.connect(find_gif_substitutions, 'substitutions', data_sink, 'regexp_substitutions')
 
 
     r.write_graph(graph2use='colored')
     
-    exit()
     qsub_exec=spawn.find_executable('qsub')    
     if not qsub_exec == None:
         qsubargs='-l h_rt=05:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
