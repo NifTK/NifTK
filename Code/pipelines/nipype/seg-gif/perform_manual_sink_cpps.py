@@ -70,8 +70,6 @@ for i in range(refs):
     
     print i, ref_b, flo_b
     
-    aff_target = os.path.join(args.output, ref_b, flo_b + '.txt')
-    invaff_target = os.path.join(args.output, flo_b, ref_b + '.txt')
     cpp_target = os.path.join(args.output, ref_b, flo_b + '.nii.gz')
     invcpp_target = os.path.join(args.output, flo_b, ref_b + '.nii.gz')
 
@@ -79,12 +77,4 @@ for i in range(refs):
 
     shutil.copyfile(invcpp, invcpp_target)
     
-    f=open(aff_target, 'w+')
-    f.write(id_matrix_content)
-    f.close()
-
-    f=open(invaff_target, 'w+')
-    f.write(id_matrix_content)
-    f.close()
-
 
