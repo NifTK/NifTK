@@ -305,6 +305,20 @@ LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(WriteAccessor& writeAcc
 
   LightweightCUDAImage  lwci = Finalise(writeAccessor, stream);
 
+  // it's important that release comes after finalise!
+  // otherwise, the ready-event will be blocked by the stream-callback.
+
+  Autorelease(readAccessor, stream);
+
+  return lwci;
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
+{
+  QMutexLocker    lock(&s_Lock);
+
   // the image represented by readAccessor can only be released once the kernel has finished with it.
   // queueing a callback onto the stream will tell us when.
   StreamCallbackReleasePOD*   pod = new StreamCallbackReleasePOD;
@@ -324,9 +338,6 @@ LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(WriteAccessor& writeAcc
   // to be done immediately, completion callback would be too late!
   readAccessor.m_Id = 0;
   readAccessor.m_DevicePointer = 0;
-
-
-  return lwci;
 }
 
 

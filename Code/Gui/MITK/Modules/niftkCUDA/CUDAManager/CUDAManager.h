@@ -95,6 +95,8 @@ struct WriteAccessor
  * so that it can be eventually returned to the memory pool.
  * In addition, Finalise*() functions will queue a "ready" event that you can use on your stream to
  * GPU-synchronise on completion of a previous processing step.
+ *
+ * CUDAManager is thread-safe: all public methods can be called from any thread at any time.
  */
 class NIFTKCUDA_EXPORT CUDAManager : public QThread
 {
@@ -123,7 +125,12 @@ public:
 
   LightweightCUDAImage FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream);
 
-  // FIXME: need an Autorelease()
+  /**
+   * Releases the read-request of an image once processing on stream has finished.
+   * This method does not block, it will return immediately.
+   * Make sure you call this method after Finalise(), or use FinaliseAndAutorelease().
+   */
+  void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
 protected:
   CUDAManager();

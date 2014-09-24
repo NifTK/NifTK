@@ -94,6 +94,29 @@ void Consumer(const mitk::StandaloneDataStorage::Pointer& datastorage)
 }
 
 
+void AnotherConsumer(const mitk::StandaloneDataStorage::Pointer& datastorage)
+{
+  mitk::DataNode::Pointer node = datastorage->GetNamedNode("cudaimagetest");
+  assert(node.IsNotNull());
+  CUDAImage::Pointer  cudaImage = dynamic_cast<CUDAImage*>(node->GetData());
+  assert(cudaImage.IsNotNull());
+
+  LightweightCUDAImage  lwciInput = cudaImage->GetLightweightCUDAImage();
+  CUDAManager*          cm = CUDAManager::GetInstance();
+
+  cudaStream_t stream = cm->GetStream("anotherconsumer-test");
+
+  ReadAccessor ra = cm->RequestReadAccess(lwciInput);
+  cudaError_t err = cudaSuccess;
+  err = cudaStreamWaitEvent(stream, ra.m_ReadyEvent, 0);
+  assert(err == cudaSuccess);
+
+  // no output this time
+
+  cm->Autorelease(ra, stream);
+}
+
+
 void WaitForResult(const mitk::StandaloneDataStorage::Pointer& datastorage)
 {
   mitk::DataNode::Pointer   node = datastorage->GetNamedNode("cudaimagetest");
@@ -115,6 +138,7 @@ int CUDAManagerTest(int /*argc*/, char* /*argv*/[])
   mitk::StandaloneDataStorage::Pointer    datastorage(mitk::StandaloneDataStorage::New());
   Producer(datastorage);
   Consumer(datastorage);
+  AnotherConsumer(datastorage);
   WaitForResult(datastorage);
   MITK_TEST_END();
 
