@@ -92,6 +92,7 @@ ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
 
 r.connect(dg, 'output', dcm2nii, 'source_names')
-r.connect(dcm2nii, 'converted_files', ds, '@xnat_data')
-r.run(plugin='Linear')
+r.connect(dcm2nii, 'converted_files', ds, 'nifti')
+r.connect(dg, 'output', ds, 'dicom')
+r.run(plugin='MultiProc')
 

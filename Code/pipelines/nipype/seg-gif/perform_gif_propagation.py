@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser(description='GIF Propagation')
 parser.add_argument('-i', '--inputfile',
                     dest='inputfile',
                     metavar='inputfile',
+                    nargs='+',
                     help='Input target image to propagate labels in',
                     required=True)
 parser.add_argument('-t','--t1s',
@@ -55,11 +56,19 @@ if not os.path.exists(cpp_dir):
 
 basedir = os.getcwd()
 
+inputfiles = [os.path.abspath(f) for f in args.inputfile]
+
+infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile']),
+                     name = 'infosource')
+infosource.iterables = ('inputfile', inputfiles)
+
+print inputfiles[0]
+
 if args.simple == 1:
 
-    r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow')
+    r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow_s')
     r.base_dir = basedir
-    r.inputs.input_node.in_file = os.path.abspath(args.inputfile)
+    r.connect(infosource, 'inputfile', r.get_node('input_node'), 'in_file')
     r.inputs.input_node.in_db_file = os.path.abspath(args.database)
     r.inputs.input_node.out_dir = result_dir
     r.inputs.input_node.in_cpp_dir = cpp_dir
@@ -70,14 +79,14 @@ else:
 
     r = gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
     r.base_dir = basedir
-
-    mni_to_input = pe.Node(interface=niftyreg.RegAladin(), name='mni_to_input')
-    mni_to_input.inputs.ref_file = os.path.abspath(args.inputfile)
-    mni_to_input.inputs.flo_file = mni_template
     
+    mni_to_input = pe.Node(interface=niftyreg.RegAladin(), name='mni_to_input')
+    r.connect(infosource, 'inputfile', mni_to_input, 'ref_file')
+    mni_to_input.inputs.flo_file = mni_template
     mask_resample  = pe.Node(interface = niftyreg.RegResample(), name = 'mask_resample')
     mask_resample.inputs.inter_val = 'NN'
-    mask_resample.inputs.ref_file = os.path.abspath(args.inputfile)
+#    mask_resample.inputs.ref_file = os.path.abspath(args.inputfile)
+    r.connect(infosource, 'inputfile', mask_resample, 'ref_file')
     mask_resample.inputs.flo_file = mni_template_mask
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
     
@@ -93,9 +102,19 @@ else:
     r.connect(r.get_node('output_node'), 'out_parc_file', data_sink, 'label') 
     r.connect(r.get_node('output_node'), 'out_geo_file', data_sink, 'geo') 
     r.connect(r.get_node('output_node'), 'out_prior_file', data_sink, 'prior')
+    
+    find_gif_substitutions = pe.Node(interface = niu.Function(
+        input_names = ['in_db_file'],
+        output_names = ['substitutions'],
+        function=gif.find_gif_substitutions_function),
+                                     name = 'find_gif_substitutions')
+    find_gif_substitutions.inputs.in_db_file = os.path.abspath(args.database)
+    workflow.connect(find_gif_substitutions, 'substitutions', gif_sink, 'regexp_substitutions')
 
 
     r.write_graph(graph2use='colored')
+    
+    exit()
     qsub_exec=spawn.find_executable('qsub')    
     if not qsub_exec == None:
         qsubargs='-l h_rt=05:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
