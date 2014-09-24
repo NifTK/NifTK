@@ -60,19 +60,13 @@ inputfiles = [os.path.abspath(f) for f in args.inputfile]
 masks = [os.path.abspath(f) for f in args.mask]
 cpps = [os.path.abspath(f) for f in args.cpp]
 
-infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile', 'mask', 'cpp']),
-                     name = 'infosource',
-                     synchronize=True)
-infosource.iterables = [ ('inputfile', inputfiles), 
-                         ('mask', masks), 
-                         ('cpp', cpps) ]
-                        
-
 r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow_s')
 r.base_dir = basedir
-r.connect(infosource, 'inputfile', r.get_node('input_node'), 'in_file')
-r.connect(infosource, 'mask', r.get_node('input_node'), 'in_mask_file')
-r.connect(infosource, 'cpp', r.get_node('input_node'), 'in_cpp_dir')
+
+r.input_node.in_file = inputfiles
+r.input_node.in_mask_file = masks
+r.input_node.in_cpp_dir = cpps
+
 r.inputs.input_node.in_db_file = os.path.abspath(args.database)
 r.inputs.input_node.out_dir = result_dir
 
