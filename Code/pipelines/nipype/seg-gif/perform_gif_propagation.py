@@ -25,12 +25,14 @@ parser.add_argument('-i', '--inputfile',
 parser.add_argument('-m','--mask',
                     dest='mask',
                     metavar='mask',
+                    nargs='+',
                     help='Mask image corresponding to inputfile',
                     required=True)
 
 parser.add_argument('-c','--cpp',
                     dest='cpp',
                     metavar='cpp',
+                    nargs='+',
                     help='cpp directory to store/read cpp files related to inputfile',
                     required=True)
 
