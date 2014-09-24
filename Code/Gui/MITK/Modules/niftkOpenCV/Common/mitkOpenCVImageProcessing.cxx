@@ -19,6 +19,7 @@
 #include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
+#include <opencv2/gpu/gpu.hpp>
 
 namespace mitk {
 
@@ -28,6 +29,13 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
     const double& houghRho, const double& houghTheta, const int& houghThreshold, 
     const int& houghLineLength, const int& houghLineGap )
 {
+  // is open cv built with CUDA support ?
+  if ( cv::gpu::getCudaEnabledDeviceCount () != 0 ) 
+  {
+    MITK_INFO << "Found " <<  cv::gpu::getCudaEnabledDeviceCount () << " CUDA devices." ;
+    //we could switch to a GPU implementation, which might be faster
+  }
+
   cv::Mat hough;
   cv::Mat canny;
   //maybe it would be better to only accept gray images??
