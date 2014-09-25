@@ -450,8 +450,8 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   double b1;
   double b2;
   cv::Point2d returnPoint;
-  returnPoint.x = -100.0;
-  returnPoint.y = -100.0;
+  returnPoint.x = std::numeric_limits<double>::quiet_NaN();
+  returnPoint.y = std::numeric_limits<double>::quiet_NaN();
 
   if ( line1[2] == line1[0]  || line2[2] == line2[0]  ) 
   {
@@ -496,7 +496,7 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   }
   if ( ok == false ) 
   {
-    return ( cv::Point2d (-100.0, -100.0) );
+    return ( cv::Point2d (std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()) );
   }
   else 
   {
@@ -515,7 +515,7 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
       cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
-      if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
+      if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
       {
         returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
       }
