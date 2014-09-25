@@ -189,9 +189,8 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point
 
 /**
  * \brief Tests equality of 2 2d points. The openCV == operator struggles on floating points, 
- * this uses a tolerance of 1e-
  */
-extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2);
+extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance );
 
 
 /**

@@ -417,9 +417,9 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 }
 
 //-----------------------------------------------------------------------------
-bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2)
+bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance )
 {
-  if ( fabs(( ( p1.x - p2.x ) + ( p2.y - p2.y ) )) < 1e-6 )
+  if ( fabs(( ( p1.x - p2.x ) + ( p2.y - p2.y ) )) < tolerance )
   {
     return true;
   }
