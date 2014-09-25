@@ -26,18 +26,6 @@
  * \file Tests for some of the functions in openCVImageProcessing.
  */
 
-bool PointsEqual ( std::pair<double,double> p1, std::pair<double,double> p2 ) 
-{
-  if ( fabs ( ( ( p1.first - p2.first ) + ( p1.second - p2.second ) ) ) < 1e-4 )
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
 bool FindCrossHairTest()
 {
   MITK_TEST_BEGIN ("mitkOpenCVFindCrossHairTest");
@@ -54,9 +42,9 @@ bool FindCrossHairTest()
   cv::vector <cv::Vec4i> lines;
 
   cv::Mat image ( 100 , 100 , CV_64FC3 );
-  cv::line ( image, cvPoint ( 60 , 40 ) , cvPoint ( 60 , 60 ) );
+  cv::line ( image, cvPoint ( 60 , 40 ) , cvPoint ( 60 , 60 ), cv::Scalar ( 0, 0, 0 ) );
 
-  cv::Point2d intersect = mitk::FindCrosshairCentre ( cannyLowThreshold, cannyHighThreshold,
+  cv::Point2d intersect = mitk::FindCrosshairCentre (image, cannyLowThreshold, cannyHighThreshold,
       cannyKernel, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap , lines ); 
   
   MITK_TEST_CONDITION ( intersect == cv::Point2d (60 , 50) , "Testing intersect for no noise state" );
@@ -64,10 +52,10 @@ bool FindCrossHairTest()
 }
 
 
-int mitkOpenCVMathTests(int argc, char * argv[])
+int mitkOpenCVImageProcessingTests(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("mitkOpenCVMathTests");
+  MITK_TEST_BEGIN("mitkOpenCVImageProcessingTests");
 
   FindCrossHairTest();
   MITK_TEST_END();
