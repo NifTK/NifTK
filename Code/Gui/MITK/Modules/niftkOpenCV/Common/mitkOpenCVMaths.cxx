@@ -453,10 +453,32 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   returnPoint.x = std::numeric_limits<double>::quiet_NaN();
   returnPoint.y = std::numeric_limits<double>::quiet_NaN();
 
-  if ( line1[2] == line1[0]  || line2[2] == line2[0]  ) 
+  if ( ( line1[2] == line1[0] ) && (line2[2] == line2[0]) )
   {
-    MITK_ERROR << "Intersect for vertical lines not implemented";
+    //parallel vertical lines return NaN
     return returnPoint;
+  }
+
+  if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  ) 
+  {
+    if ( line1[2] == line1[0] )
+    {
+      //line1 is vertical so substitute x = line1[0] into equation for line2
+      a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) /
+              ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
+      b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
+      returnPoint.x = line1[0];
+      returnPoint.y = a2 * returnPoint.x + b2;
+    }
+    else
+    {
+      //line2 is vertical so substitute x = line2[0] into equation for line1
+      a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) /
+              ( static_cast<double>(line1[2]) - static_cast<double>(line1[0]) );
+      b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
+      returnPoint.x = line2[0];
+      returnPoint.y = a1 * returnPoint.x + b1;
+    }
   }
   else
   {
@@ -502,7 +524,25 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   {
     return returnPoint;
   }
+}
 
+//-----------------------------------------------------------------------------
+bool CheckIfLinesArePerpenicular ( cv::Vec4i line1, cv::Vec4i line2 , double tolerance )
+{
+  return false;
+}
+ 
+//-----------------------------------------------------------------------------
+double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
+{
+  double u1 = line1[2] - line1[0];
+  double u2 = line1[3] - line1[1];
+  double v1 = line2[2] - line2[0];
+  double v2 = line2[3] - line2[1];
+ 
+  double cosAngle = fabs ( u1 * v1 + u2 * v2 ) /
+    ( (sqrt( u1*u1 + u2*u2)) * (sqrt( v1*v1 + v2*v2 )) );
+  return acos (cosAngle);
 }
 
 

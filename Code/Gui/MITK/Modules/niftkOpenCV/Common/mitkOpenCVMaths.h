@@ -210,13 +210,21 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, con
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
 
-
 /**
  * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i>, 
     bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
 
+/**
+ * \ brief Finds the angle, in radians between two line segments
+ */
+extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenLines(cv::Vec4i , cv::Vec4i); 
+
+/**
+ * \ brief Finds the angle, in radians between two line segments
+ */
+extern "C++" NIFTKOPENCV_EXPORT double CheckIfLinesArePerpendicular(cv::Vec4i , cv::Vec4i, double toleranceInDegrees); 
 
 /**
  * \brief Calculates the centroid of a vector of points.
