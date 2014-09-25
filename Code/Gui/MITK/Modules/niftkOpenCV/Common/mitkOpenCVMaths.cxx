@@ -529,7 +529,14 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
 //-----------------------------------------------------------------------------
 bool CheckIfLinesArePerpenicular ( cv::Vec4i line1, cv::Vec4i line2 , double tolerance )
 {
-  return false;
+  if ( fabs ( mitk::AngleBetweenLines ( line1, line2 ) - (CV_PI/2.0) ) < (tolerance * CV_PI/180.0) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
  
 //-----------------------------------------------------------------------------
