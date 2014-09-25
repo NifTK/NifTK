@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Registration</category>
+  <title>Image Moments Registration</title>
+  <description><![CDATA[Registers two images using a rigid plus scale transformation computed via the ITK ImageMomentsCalculator.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Mandatory Input and Output Options</label>
+    <description><![CDATA[Mandatory parameters]]></description>
+
+    <image>
+      <name>fileFixedImage</name>
+      <longflag>ti</longflag>
+      <description>The fixed target or reference image.</description>
+      <label>Fixed target image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileMovingImage</name>
+      <longflag>si</longflag>
+      <description>The moving source image to be registered.</description>
+      <label>Moving source image</label>
+      <channel>input</channel>
+    </image>
+
+    <file>
+      <name>fileOutputTransformFile</name>
+      <longflag>ot</longflag>
+      <description>The output transformation.</description>      
+      <label>Output transformation</label>
+      <default>Transformation.txt</default>
+      <channel>output</channel>
+    </file>
+
+    <image>
+      <name>fileOutputImage</name>
+      <longflag>oi</longflag>
+      <description>The output moving image transformed into the space of the fixed image.</description>      
+      <label>Output registered image</label>
+      <default>RegisteredImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Common Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <image>
+      <name>fileFixedMask</name>
+      <longflag>tm</longflag>
+      <description>The fixed target or reference image mask.</description>
+      <label>Fixed target mask image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileMovingMask</name>
+      <longflag>sm</longflag>
+      <description>The moving source image mask.</description>
+      <label>Moving source mask image</label>
+      <channel>input</channel>
+    </image>
+
+  </parameters>
+
+</executable>

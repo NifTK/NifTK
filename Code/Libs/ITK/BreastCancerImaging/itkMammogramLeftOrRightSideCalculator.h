@@ -74,13 +74,15 @@ public:
     RIGHT_BREAST_SIDE
   } BreastSideType;
 
+  static const char* BreastSideDescription[3];
+
   /** Set the input image. */
   itkSetConstObjectMacro(Image, ImageType);
 
   /** Compute which breast was imaged in the mammogram. */
   void Compute(void) throw (ExceptionObject);
 
-  /** Return the threshold intensity value. */
+  /** Return the computed breast side. */
   itkGetConstMacro(BreastSide, BreastSideType);
 
   void SetVerbose( bool flag )  { m_FlgVerbose = flag; }

@@ -246,6 +246,26 @@ int DoMain(arguments args)
               << "Mammogram view score: " << mammogramViewScore << std::endl;
   }
 
+  
+  // Compute the image moments
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef typename itk::ImageMomentsCalculator< InputImageType > ImageMomentCalculatorType;
+
+  typename ImageMomentCalculatorType::Pointer momentsCalculator = ImageMomentCalculatorType::New(); 
+
+  momentsCalculator->SetImage( image ); 
+  momentsCalculator->Compute(); 
+
+  if ( args.flgVerbose )
+  {
+    momentsCalculator->Print( std::cout );
+  }
+
+  typename ImageMomentCalculatorType::VectorType moments; 
+  
+  moments = momentsCalculator->GetPrincipalMoments();
+
 
   // Write the data to a file?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~
