@@ -311,7 +311,7 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
         itr != end_itr;
         ++itr )
   {
-    if (!fs::is_directory(*itr))
+    if (!fs::is_directory(itr->path()))
     {
       fs::path fullFilePath(fs::initial_path<fs::path>() );
       fullFilePath = fs::system_complete(itr->path());
