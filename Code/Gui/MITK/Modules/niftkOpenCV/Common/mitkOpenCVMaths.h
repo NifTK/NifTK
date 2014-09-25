@@ -222,9 +222,9 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::v
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenLines(cv::Vec4i , cv::Vec4i); 
 
 /**
- * \ brief Finds the angle, in radians between two line segments
+ * \ brief Checks if two line segments are perpendicular, within a tolerance set in degrees
  */
-extern "C++" NIFTKOPENCV_EXPORT double CheckIfLinesArePerpendicular(cv::Vec4i , cv::Vec4i, double toleranceInDegrees); 
+extern "C++" NIFTKOPENCV_EXPORT bool CheckIfLinesArePerpendicular(cv::Vec4i , cv::Vec4i, double toleranceInDegrees); 
 
 /**
  * \brief Calculates the centroid of a vector of points.
