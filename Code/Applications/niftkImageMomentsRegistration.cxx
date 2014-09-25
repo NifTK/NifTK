@@ -13,7 +13,7 @@
   =============================================================================*/
 
 #include <niftkConversionUtils.h>
-#include <niftkImageMomentsAffineRegistrationCLP.h>
+#include <niftkImageMomentsRegistrationCLP.h>
 
 #include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
@@ -27,14 +27,14 @@
 #include <itkScaleTransform.h>
 
 /*!
- * \file niftkImageMomentsAffineRegistration.cxx
- * \page niftkImageMomentsAffineRegistration
- * \section niftkImageMomentsAffineRegistrationSummary Registers two images using the ITK ImageMomentsCalculator.
+ * \file niftkImageMomentsRegistration.cxx
+ * \page niftkImageMomentsRegistration
+ * \section niftkImageMomentsRegistrationSummary Registers two images using the ITK ImageMomentsCalculator by calculating a rigid plus scale transformation.
  *
  * \li Dimensions: 2,3.
  * \li Pixel type: Scalar images only that are converted to float on input.
  *
- * \section niftkImageMomentsAffineRegistrationCaveats Caveats
+ * \section niftkImageMomentsRegistrationCaveats Caveats
  * \li None
  */
 
@@ -161,7 +161,7 @@ int DoMain(arguments args)
   }                
 
 
-  // Compute the affine registration matrix
+  // Compute the  registration matrix
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   // Compute the fixed image physical axes to principal axes transform
@@ -307,7 +307,7 @@ int DoMain(arguments args)
 
 
 /**
- * \brief Performs a image moments affine registration
+ * \brief Performs a image moments  registration
  */
 int main(int argc, char** argv)
 {
@@ -336,7 +336,7 @@ int main(int argc, char** argv)
   std::cout << "  Mandatory Input and Output Options: "	<< std::endl
             << "    Fixed target image: "		<< args.fileFixedImage          << std::endl
             << "    Moving source image: "		<< args.fileMovingImage         << std::endl
-            << "    Output affine transformation: "	<< args.fileOutputTransformFile << std::endl
+            << "    Output  transformation: "	<< args.fileOutputTransformFile << std::endl
             << "    Output registered image: "		<< args.fileOutputImage         << std::endl;
 
   std::cout << "  Common Options: "			<< std::endl

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Registration</category>
-  <title>Image Moments Affine Registration</title>
-  <description><![CDATA[Registers two images using an affine transformation computed via the ITK ImageMomentsCalculator.]]></description>
+  <title>Image Moments Registration</title>
+  <description><![CDATA[Registers two images using a rigid plus scale transformation computed via the ITK ImageMomentsCalculator.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -34,8 +34,8 @@
       <name>fileOutputTransformFile</name>
       <longflag>ot</longflag>
       <description>The output transformation.</description>      
-      <label>Output affine transformation</label>
-      <default>AffineTransformation.txt</default>
+      <label>Output transformation</label>
+      <default>Transformation.txt</default>
       <channel>output</channel>
     </file>
 

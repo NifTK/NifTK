@@ -90,7 +90,7 @@ if(SlicerExecutionModel_FOUND)
     niftkExtrudeMaskToVolume
     niftkHistogramEqualization
     niftkHistogramMatchingImageFilter
-    niftkImageMomentsAffineRegistration
+    niftkImageMomentsRegistration
     niftkInvertImage
     niftkLogInvertImage
     niftkMammogramFatSubtraction
