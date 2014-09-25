@@ -20,6 +20,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVMaths.h>
+#include <boost/math/special_functions/fpclassify.hpp>
 #include <cmath>
 
 /**
@@ -125,10 +126,116 @@ bool FindIntersectTest()
 {
   MITK_TEST_BEGIN(mitkFindInterectTest);
 
+
   MITK_TEST_CONDITION ( false, "implement this test" );
 
   MITK_TEST_END()
 }
+
+bool AngleBetweenLinesTest()
+{
+  MITK_TEST_BEGIN (mitkAngelBetweenLinesTest);
+ 
+  double tolerance = 1e-6;
+  cv::Vec4i line1;
+  cv::Vec4i line2;
+
+  for ( unsigned int i = 0 ; i < 4 ; i++ )
+  {
+    line1[i] = 0;
+    line2[i] = 0;
+  }
+
+  MITK_TEST_CONDITION ( boost::math::isnan(mitk::AngleBetweenLines ( line1, line2)) , "Testing angle between 2 zero vectors " << mitk::AngleBetweenLines ( line1, line2) );
+
+  line1[1] = 1;
+  line2[3] = 1;
+
+  MITK_TEST_CONDITION ( ( fabs (mitk::AngleBetweenLines ( line1, line2) - 0.0) < tolerance  ) , "Testing angle between 2 parallel vectors " << mitk::AngleBetweenLines ( line1, line2) );
+
+  line2[1] = 1;
+  line2[0] = 1;
+  
+  MITK_TEST_CONDITION ( ( fabs (mitk::AngleBetweenLines ( line1, line2) - CV_PI/2.0 ) < tolerance ) , "Testing angle between 2 perpendicular vectors " << mitk::AngleBetweenLines ( line1, line2) );
+
+  line2[1]=2;
+  
+  MITK_TEST_CONDITION ( ( fabs (mitk::AngleBetweenLines ( line1, line2) - CV_PI/4.0) < tolerance ) , "Testing angle between 2 vectors at 45 degrees " << mitk::AngleBetweenLines ( line1, line2) );
+
+  for ( unsigned int i = 0 ; i < 4 ; i++ )
+  {
+    line1[i] = 0;
+    line2[i] = 0;
+  }
+
+  line1[0] = 1;
+  line2[2] = -1;
+
+  MITK_TEST_CONDITION ( ( fabs (mitk::AngleBetweenLines ( line1, line2) - 0.0 ) < tolerance ) , "Testing angle between 2 opposite parallel vectors " << mitk::AngleBetweenLines ( line1, line2) );
+
+  MITK_TEST_END();
+}
+
+bool CheckIfLinesArePerpendicularTest ( )
+{
+  MITK_TEST_BEGIN (mitkCheckIfLinesArePerpendicularTest);
+ 
+  double angleTolerance = 10.0;
+  cv::Vec4i line1;
+  cv::Vec4i line2;
+
+  for ( unsigned int i = 0 ; i < 4 ; i++ )
+  {
+    line1[i] = 0;
+    line2[i] = 0;
+  }
+
+  MITK_TEST_CONDITION ( (! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 zero vectors are not perpendicular" );
+
+  line1[1] = 1;
+  line2[3] = 1;
+
+  MITK_TEST_CONDITION ( (! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance) ), "Checking that 2 parallel vectors are not perpendicular" );
+
+  angleTolerance = 90.0;
+  
+  MITK_TEST_CONDITION ( ( mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance) ), "Checking that 2 parallel vectors are perpendicular within 90 degrees tolerance" );
+  
+  line1[1] = 0;
+  line2[3] = 0;
+  
+  MITK_TEST_CONDITION ( (! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 zero vectors are not perpendicular even when tolerance = 90 degrees" );
+  
+  angleTolerance = 0.0;
+
+  line1[0] = 1000;
+  line2[1] = -1000;
+  
+  MITK_TEST_CONDITION ( ( mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 perpendicular vectors are exactly  perpendicular" );
+
+  angleTolerance = 10.0;
+  line1[1]=-167;
+  
+  
+  MITK_TEST_CONDITION ( ( mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 80.5 degrees are perpendicular within 10 degrees" );
+
+  angleTolerance = 9.0;
+  
+  MITK_TEST_CONDITION ( ( ! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 80.5 degrees are not perpendicular within 9 degrees" );
+  
+  angleTolerance = 10.0;
+  line1[1]=167;
+  
+  MITK_TEST_CONDITION ( ( mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 99.5 degrees are perpendicular within 10 degrees" );
+
+  angleTolerance = 9.0;
+  
+  MITK_TEST_CONDITION ( ( ! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 99.5 degrees are not perpendicular within 9 degrees" );
+  
+
+  MITK_TEST_END();
+}
+
 
 int mitkOpenCVMathTests(int argc, char * argv[])
 {
@@ -140,6 +247,8 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   ArithmaticTests();
   RMSTest();
   FindIntersectTest();
+  AngleBetweenLinesTest();
+  CheckIfLinesArePerpendicularTest();
   MITK_TEST_END();
 }
 
