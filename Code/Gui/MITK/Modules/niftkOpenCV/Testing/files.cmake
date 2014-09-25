@@ -19,6 +19,7 @@ set(MODULE_TESTS
   UndistortionTest.cxx
   mitkMatrixInvertTest.cxx
   mitkOpenCVMathTests.cxx
+  mitkOpenCVImageProcessingTests.cxx
   mitkOpenCVPointTypesTest.cxx
   mitkTimeStampsContainerTest.cxx
   mitkTrackingAndTimeStampsContainerTest.cxx
