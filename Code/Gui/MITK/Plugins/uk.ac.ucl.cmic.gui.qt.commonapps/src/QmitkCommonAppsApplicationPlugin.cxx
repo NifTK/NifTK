@@ -671,6 +671,7 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
 
       bool ok = true;
       int argumentsAdded = 0;
+      int layer = 0;
 
       for (int i = 0; i < arguments.size(); ++i)
       {
@@ -745,6 +746,18 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
              if (node->GetData() != 0)
              {
                this->SetNodeProperties(node, properties);
+               bool hasLayerProperty = false;
+               int layerProperty = properties["layer"][""].toInt(&hasLayerProperty);
+               if (hasLayerProperty)
+               {
+                 layer = layerProperty;
+               }
+               else
+               {
+                 ++layer;
+               }
+               node->SetIntProperty("layer", layer);
+               node->SetBoolProperty("fixedLayer", true);
                dataStorage->Add(node);
                argumentsAdded++;
              }
