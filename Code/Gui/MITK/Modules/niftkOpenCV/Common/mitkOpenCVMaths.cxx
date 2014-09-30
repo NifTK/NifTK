@@ -542,10 +542,10 @@ bool CheckIfLinesArePerpendicular ( cv::Vec4i line1, cv::Vec4i line2 , double to
 //-----------------------------------------------------------------------------
 double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
 {
-  double u1 = line1[2] - line1[0];
-  double u2 = line1[3] - line1[1];
-  double v1 = line2[2] - line2[0];
-  double v2 = line2[3] - line2[1];
+  double u1 = static_cast<double>(line1[2]) - static_cast<double>(line1[0]);
+  double u2 = static_cast<double>(line1[3]) - static_cast<double>(line1[1]);
+  double v1 = static_cast<double>(line2[2]) - static_cast<double>(line2[0]);
+  double v2 = static_cast<double>(line2[3]) - static_cast<double>(line2[1]);
  
   double cosAngle = fabs ( u1 * v1 + u2 * v2 ) /
     ( (sqrt( u1*u1 + u2*u2)) * (sqrt( v1*v1 + v2*v2 )) );
