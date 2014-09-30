@@ -128,7 +128,38 @@ bool FindIntersectTest()
   }
   intersect = mitk::FindIntersect (line1, line2);
 
-  MITK_TEST_CONDITION ( intersect == cv::Point2d (0.0, 0.0 ), "IntersectTest: all zeros : " << intersect );
+  MITK_TEST_CONDITION ((boost::math::isnan(intersect.x) && boost::math::isnan(intersect.y)), "IntersectTest: all zeros : " << intersect );
+  //parallel vertical lines
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 0 ; line1[3] = 1; 
+  line2[0] = 1 ; line2[1] = 0 ; line2[2] = 1 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION ((boost::math::isnan(intersect.x) && boost::math::isnan(intersect.y)), "IntersectTest: parallel vertical lines" << intersect );
+  //parallel horizontal lines
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 1 ; line1[3] = 0; 
+  line2[0] = 0 ; line2[1] = 1 ; line2[2] = 1 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION ((boost::math::isnan(intersect.x) && boost::math::isnan(intersect.y)), "IntersectTest: parallel horizontal lines" << intersect );
+  //parallel oblique lines
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 1 ; line1[3] = 1; 
+  line2[0] = 1 ; line2[1] = 0 ; line2[2] = 2 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION ((boost::math::isnan(intersect.x) && boost::math::isnan(intersect.y)), "IntersectTest: parallel oblique lines" << intersect );
+  //simple intersection
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 1 ; line1[3] = 1; 
+  line2[0] = 1 ; line2[1] = 0 ; line2[2] = 0 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION (intersect == cv::Point2d(0.5,0.5), "IntersectTest: 45 degrees intersect at 0.5" << intersect );
+  //line1 vertical
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 0 ; line1[3] = 1; 
+  line2[0] = 1 ; line2[1] = 0 ; line2[2] = 0 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION (intersect == cv::Point2d(0.0,1.0), "IntersectTest: line 1 vertical " << intersect );
+  //line 2 vertical
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 1 ; line1[3] = 1; 
+  line2[0] = 1 ; line2[1] = 0 ; line2[2] = 1 ; line2[3] = 1;
+  intersect = mitk::FindIntersect (line1, line2);
+  MITK_TEST_CONDITION (intersect == cv::Point2d(1.0,1.0), "IntersectTest: line 2 vertical " << intersect );
+  
 }
 
 bool AngleBetweenLinesTest()
