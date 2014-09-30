@@ -539,11 +539,12 @@ std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  
     const bool& rejectIfNotPerpendicular, const double& angleTolerance) 
 {
   std::vector<cv::Point2d> returnPoints; 
-  for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < lines.size() - 1 ; i ++ ) 
   {
+
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      if ( rejectIfNotPerpendicular && CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
+      if ( (!rejectIfNotPerpendicular) || CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
       {
         cv::Point2d point =  FindIntersect (lines[i], lines[j]);
         if (  (! rejectIfPointNotOnBothLines) ||  
