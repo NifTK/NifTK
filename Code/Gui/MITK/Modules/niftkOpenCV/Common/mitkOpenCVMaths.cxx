@@ -452,9 +452,8 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
   returnPoint.x = std::numeric_limits<double>::quiet_NaN();
   returnPoint.y = std::numeric_limits<double>::quiet_NaN();
   
-  if ( fabs ( mitk::AngleBetweenLines(line1,line2) - 0.0 )  < 1e-6  )
+  if ( ! ( fabs ( mitk::AngleBetweenLines(line1,line2) ) > 1e-6 ) )
   {
-    MITK_INFO << "Parallel lines";
     return returnPoint;
   }
   if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  ) 
