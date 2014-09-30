@@ -127,6 +127,7 @@ bool FindIntersectTest()
   MITK_TEST_BEGIN(mitkFindInterectTest);
 
 
+
   MITK_TEST_CONDITION ( false, "implement this test" );
 
   MITK_TEST_END()
@@ -232,10 +233,52 @@ bool CheckIfLinesArePerpendicularTest ( )
   
   MITK_TEST_CONDITION ( ( ! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 99.5 degrees are not perpendicular within 9 degrees" );
   
-
   MITK_TEST_END();
 }
 
+
+bool PointInIntervalTest ( )
+{
+  MITK_TEST_BEGIN (mitkPointInInetervalTest);
+ 
+  cv::Vec4i line;
+
+  //when x2 and y2 are greater than x1 and x1
+
+  line[0] = -10;
+  line[1] = 5;
+  line[2] = 5; 
+  line[3] = 7;
+
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.1,6),line)), "Point just outside x bound" );
+  MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(-10.0,5),line)), "Point on x bound" );
+  MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(-9.9,5.5),line)), "Point just inside x bound" );
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.0,0),line)), "Point outside y bound" );
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(20.0,0),line)), "Point outside both bound" );
+
+  //when x1 and y1 are greater than x2 and x2
+
+  line[2] = -10;
+  line[3] = 5;
+  line[0] = 5; 
+  line[1] = 7;
+
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.1,6),line)), "Point just outside x bound" );
+  MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(-10.0,5),line)), "Point on x bound" );
+  MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(-9.9,5.5),line)), "Point just inside x bound" );
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.0,0),line)), "Point outside y bound" );
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(20.0,0),line)), "Point outside both bound" );
+
+  line[2] = 0;
+  line[3] = 0;
+  line[0] = 0; 
+  line[1] = 0;
+
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.1,6),line)), "Zero interval" );
+  MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(0.0,0.0),line)), "Zero interval and point" );
+ 
+  MITK_TEST_END();
+}
 
 int mitkOpenCVMathTests(int argc, char * argv[])
 {
@@ -249,6 +292,7 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   FindIntersectTest();
   AngleBetweenLinesTest();
   CheckIfLinesArePerpendicularTest();
+  PointInIntervalTest();
   MITK_TEST_END();
 }
 
