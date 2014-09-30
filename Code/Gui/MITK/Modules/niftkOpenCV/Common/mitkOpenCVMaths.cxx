@@ -451,13 +451,12 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
   cv::Point2d returnPoint;
   returnPoint.x = std::numeric_limits<double>::quiet_NaN();
   returnPoint.y = std::numeric_limits<double>::quiet_NaN();
-
-  if ( ( line1[2] == line1[0] ) && (line2[2] == line2[0]) )
+  
+  if ( fabs ( mitk::AngleBetweenLines(line1,line2) - 0.0 )  < 1e-6  )
   {
-    //parallel vertical lines return NaN
+    MITK_INFO << "Parallel lines";
     return returnPoint;
   }
-
   if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  ) 
   {
     if ( line1[2] == line1[0] )
@@ -487,9 +486,9 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
       ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
     b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
     b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
+    returnPoint.x = ( b2 - b1 )/(a1 - a2 );
+    returnPoint.y = a1 * returnPoint.x + b1;
   }
-  returnPoint.x = ( b2 - b1 )/(a1 - a2 );
-  returnPoint.y = a1 * returnPoint.x + b1;
 
   return returnPoint;
 }
