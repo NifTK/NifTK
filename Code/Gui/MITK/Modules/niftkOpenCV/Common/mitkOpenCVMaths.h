@@ -217,6 +217,12 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::v
     bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
 
 /**
+ * \ brief Returns true if the passed point falls within the limits defined by the passed interval
+ * x0,y0 = interval[0], interval[1], x1,y1 = interval[2], interval[3]
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool PointInInterval (const cv::Point2d& point , const cv::Vec4i& interval);
+
+/**
  * \ brief Finds the angle, in radians between two line segments
  */
 extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenLines(cv::Vec4i , cv::Vec4i); 

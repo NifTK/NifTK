@@ -511,7 +511,7 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   {
     //if there perpendicular a1 * a2 should be approximately 1
     double Angle = fabs(a1 * a2);
-    if ( ! ( (Angle < 3.0) && (Angle > 0.1) ) )
+    if ( ! ( mitk::CheckIfLinesArePerpendicular ( line1, line2, 45.0) ) )
     {
       ok = false;
     }
@@ -526,6 +526,21 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   }
 }
 
+//-----------------------------------------------------------------------------
+bool PointInInterval ( const cv::Point2d& point , const cv::Vec4i& interval ) 
+{
+  if ( (((point.x >= static_cast<double>(interval[2])) && (point.x <= static_cast<double>(interval[0]))) || 
+    ((point.x >= static_cast<double>(interval[0])) && (point.x <= static_cast<double>(interval[2]))))  &&
+    (((point.y >= static_cast<double>(interval[3])) && (point.y <= static_cast<double>(interval[1]))) ||
+    ((point.y >= static_cast<double>(interval[1])) && (point.y <= static_cast<double>(interval[3])))) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 //-----------------------------------------------------------------------------
 bool CheckIfLinesArePerpendicular ( cv::Vec4i line1, cv::Vec4i line2 , double tolerance )
 {
