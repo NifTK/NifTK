@@ -249,6 +249,7 @@ bool PointInIntervalTest ( )
   MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(-9.9,5.5),line)), "Point just inside x bound" );
   MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.0,0),line)), "Point outside y bound" );
   MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(20.0,0),line)), "Point outside both bound" );
+  MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(std::numeric_limits<double>::quiet_NaN(),0),line)), "Point is NaN" );
 
   line[2] = 0;
   line[3] = 0;
