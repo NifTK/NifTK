@@ -162,6 +162,54 @@ bool FindIntersectTest()
   
 }
 
+bool FindIntersectsTest()
+{
+  cv::Vec4i line1;
+  cv::Vec4i line2;
+  cv::Vec4i line3;
+  cv::Vec4i line4;
+
+  //line1 is degenerate
+  line1[0] = 0 ; line1[1] = 0 ; line1[2] = 0 ; line1[3] = 0;
+  //line2 y = 2x + 10
+  line2[0] = 0 ; line2[1] = 10 ; line2[2] = 10 ; line2[3] = 30;
+  //line3 y = -x ;
+  line3[0] = -5; line3[1] = 5 ; line3[2] = 5; line3[3] = -5;
+  //line4 y = x;
+  line4[0] = 0; line4[1] = 0 ; line4[2] = 15; line4[3] = 15;
+
+  std::vector <cv::Vec4i> lines;
+  lines.push_back(line1);
+  lines.push_back(line2);
+  lines.push_back(line3);
+  lines.push_back(line4);
+
+  bool rejectPointsNotOnBothLines = false;
+  bool rejectNonPerpendicularLines = false;
+  double perpendicularityTolerance = 20.0;
+  
+  std::vector <cv::Point2d> intersects;
+  intersects = mitk::FindIntersects ( lines, rejectPointsNotOnBothLines, rejectNonPerpendicularLines, perpendicularityTolerance );
+  // there should be 3 intersections, (-10/3, 10/3 ) , (-10,-10), and ( 0,0)
+  MITK_TEST_CONDITION ( intersects.size() == 3 , "Testing size of intesects vector with no conditions " << intersects.size());
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[0], cv::Point2d (-3.333333, 3.333333), 1e-6) , "Testing first intersect with no conditions " << intersects[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[1], cv::Point2d (-10.0, -10.0),1e-6) , "Testing second intersect with no conditions " << intersects[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[2], cv::Point2d (0.0, 0.0), 1e-6) , "Testing third intersect with no conditions " << intersects[2]);
+  // add a perpendicularity constraint should remove line 2 line 4
+  rejectNonPerpendicularLines = true;
+  perpendicularityTolerance = 20.0;
+  intersects = mitk::FindIntersects ( lines, rejectPointsNotOnBothLines, rejectNonPerpendicularLines, perpendicularityTolerance );
+  MITK_TEST_CONDITION ( intersects.size() == 2 , "Testing size of intesects vector with 20 degree perpendicularity" << intersects.size());
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[0], cv::Point2d (-3.333333, 3.333333), 1e-6) , "Testing first intersect with no conditions " << intersects[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[1], cv::Point2d (0.0, 0.0), 1e-6) , "Testing second intersect with no conditions " << intersects[1]);
+  // add an on both lines constraint should leave only line3 line4
+  rejectPointsNotOnBothLines = true;
+  intersects = mitk::FindIntersects ( lines, rejectPointsNotOnBothLines, rejectNonPerpendicularLines, perpendicularityTolerance );
+  MITK_TEST_CONDITION ( intersects.size() == 1 , "Testing size of intesects vector with 20 degree perpendicularity and on interval requirement" << intersects.size());
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( intersects[0], cv::Point2d (0.0, 0.0), 1e-6) , "Testing first intersect with all conditions " << intersects[0]);
+
+
+}
 bool AngleBetweenLinesTest()
 {
   double tolerance = 1e-6;
@@ -313,6 +361,7 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   ArithmaticTests();
   RMSTest();
   FindIntersectTest();
+  FindIntersectsTest();
   AngleBetweenLinesTest();
   CheckIfLinesArePerpendicularTest();
   PointInIntervalTest();
