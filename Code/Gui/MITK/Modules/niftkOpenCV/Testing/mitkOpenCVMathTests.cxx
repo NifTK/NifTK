@@ -29,8 +29,6 @@
 
 bool ArithmaticTests()
 {
-  MITK_TEST_BEGIN ("mitkOpenCVMathArithmaticTest");
-
   cv::Point2d point1 = cv::Point2d ( 1.0 , 1.0 );
   cv::Point2d point2 = cv::Point2d ( 0.5 , 0.3 );
   cv::Point2d point3 = cv::Point2d ( 0.7 , 1.4 );
@@ -41,14 +39,10 @@ bool ArithmaticTests()
   MITK_TEST_CONDITION (mitk::NearlyEqual (point1, point1, tolerance) , "Testing Nearly Equal " );
   MITK_TEST_CONDITION (mitk::NearlyEqual (( point1 + point2 ), cv::Point2d ( 1.5 , 1.3 ), tolerance), "Testing addition operator");
   MITK_TEST_CONDITION (mitk::NearlyEqual ((point4 - point3) ,cv::Point2d(0.8, 0.9), tolerance), "Testing subtraction operator");
-  MITK_TEST_END();
 }
 
 bool RMSTest()
 {
-  // always start with this!
-  MITK_TEST_BEGIN("mitkOpenCVMathRMSTest");
-
   //make some measured points
   std::vector < mitk::ProjectedPointPairsWithTimingError > measured;
   std::vector < mitk::ProjectedPointPairsWithTimingError > actual;
@@ -119,24 +113,15 @@ bool RMSTest()
   
   MITK_TEST_CONDITION ( mitk::NearlyEqual ( cv::Point2d(rmsError.first, rmsError.second) , cv::Point2d( 0.0, 0.0), tolerance) , "Testing RMSError culls outliers" );
 
-  MITK_TEST_END();
 }
 
 bool FindIntersectTest()
 {
-  MITK_TEST_BEGIN(mitkFindInterectTest);
-
-
-
   MITK_TEST_CONDITION ( false, "implement this test" );
-
-  MITK_TEST_END()
 }
 
 bool AngleBetweenLinesTest()
 {
-  MITK_TEST_BEGIN (mitkAngelBetweenLinesTest);
- 
   double tolerance = 1e-6;
   cv::Vec4i line1;
   cv::Vec4i line2;
@@ -174,12 +159,10 @@ bool AngleBetweenLinesTest()
 
   MITK_TEST_CONDITION ( ( fabs (mitk::AngleBetweenLines ( line1, line2) - 0.0 ) < tolerance ) , "Testing angle between 2 opposite parallel vectors " << mitk::AngleBetweenLines ( line1, line2) );
 
-  MITK_TEST_END();
 }
 
 bool CheckIfLinesArePerpendicularTest ( )
 {
-  MITK_TEST_BEGIN (mitkCheckIfLinesArePerpendicularTest);
  
   double angleTolerance = 10.0;
   cv::Vec4i line1;
@@ -233,13 +216,11 @@ bool CheckIfLinesArePerpendicularTest ( )
   
   MITK_TEST_CONDITION ( ( ! mitk::CheckIfLinesArePerpendicular(line1,line2, angleTolerance ) ), "Checking that 2 lines at 99.5 degrees are not perpendicular within 9 degrees" );
   
-  MITK_TEST_END();
 }
 
 
 bool PointInIntervalTest ( )
 {
-  MITK_TEST_BEGIN (mitkPointInInetervalTest);
  
   cv::Vec4i line;
 
@@ -277,7 +258,6 @@ bool PointInIntervalTest ( )
   MITK_TEST_CONDITION ( ( ! mitk::PointInInterval(cv::Point2d(-10.1,6),line)), "Zero interval" );
   MITK_TEST_CONDITION ( ( mitk::PointInInterval(cv::Point2d(0.0,0.0),line)), "Zero interval and point" );
  
-  MITK_TEST_END();
 }
 
 int mitkOpenCVMathTests(int argc, char * argv[])
