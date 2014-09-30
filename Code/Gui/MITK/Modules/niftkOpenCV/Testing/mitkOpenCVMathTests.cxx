@@ -117,7 +117,18 @@ bool RMSTest()
 
 bool FindIntersectTest()
 {
-  MITK_TEST_CONDITION ( false, "implement this test" );
+  cv::Vec4i line1;
+  cv::Vec4i line2;
+  cv::Point2d intersect;
+
+  for ( unsigned int i = 0 ; i < 4 ; i ++ )
+  {
+    line1[i] = 0;
+    line2[i] = 0;
+  }
+  intersect = mitk::FindIntersect (line1, line2);
+
+  MITK_TEST_CONDITION ( intersect == cv::Point2d (0.0, 0.0 ), "IntersectTest: all zeros : " << intersect );
 }
 
 bool AngleBetweenLinesTest()
