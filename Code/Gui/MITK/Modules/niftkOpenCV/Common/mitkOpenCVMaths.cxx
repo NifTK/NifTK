@@ -495,10 +495,8 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   bool ok = true;
   if ( RejectIfNotOnALine )
   {
-    if ( ((returnPoint.x >= line1[2]) && (returnPoint.x <= line1[0])) || 
-         ((returnPoint.x >= line1[0]) && (returnPoint.x <= line1[2])) ||
-         ((returnPoint.x >= line2[2]) && (returnPoint.x <= line2[0])) ||
-         ((returnPoint.x >= line2[0]) && (returnPoint.x <= line2[2])) )
+    //Whats the intent here, does it need to be on both lines or just one?
+    if ( ( mitk::PointInInterval ( returnPoint, line1 ) ) || ( PointInInterval ( returnPoint , line2 ) ) )
     {
       ok = true;
     }
@@ -509,8 +507,6 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   }
   if ( RejectIfNotPerpendicular ) 
   {
-    //if there perpendicular a1 * a2 should be approximately 1
-    double Angle = fabs(a1 * a2);
     if ( ! ( mitk::CheckIfLinesArePerpendicular ( line1, line2, 45.0) ) )
     {
       ok = false;
