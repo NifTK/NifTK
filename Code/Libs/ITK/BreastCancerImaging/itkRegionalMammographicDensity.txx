@@ -890,9 +890,15 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 ::Compute( boost::random::mt19937 &gen )
 {
   std::string fileMask;
-  std::string diagMaskSuffix( "_DiagMask.dcm" );
+  std::string fileRegnMask;
+
+  std::string diagMaskSuffix(       "_DiagMask.dcm" );
   std::string preDiagMaskSuffix( "_PreDiagMask.dcm" );
   std::string controlMaskSuffix( "_ControlMask.dcm" );
+
+  std::string diagRegnMaskSuffix(       "_DiagRegnMask.dcm" );
+  std::string preDiagRegnMaskSuffix( "_PreDiagRegnMask.dcm" );
+  std::string controlRegnMaskSuffix( "_ControlRegnMask.dcm" );
   
 
   // If this is a right mammogram then flip the tumour index in 'x'
@@ -942,6 +948,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImDiagnosticMask = reader->GetOutput();
     m_ImDiagnosticMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FileDiagnostic, diagRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the diagnostic registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImDiagnosticRegnMask = reader->GetOutput();
+        m_ImDiagnosticRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read diagnostic registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -979,6 +1017,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImPreDiagnosticMask = reader->GetOutput();
     m_ImPreDiagnosticMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the pre-diagnostic registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImPreDiagnosticRegnMask = reader->GetOutput();
+        m_ImPreDiagnosticRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read pre-diagnostic registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -1015,6 +1085,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImControlMask = reader->GetOutput();
     m_ImControlMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FileControl, controlRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the control registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImControlRegnMask = reader->GetOutput();
+        m_ImControlRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read control registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -1891,39 +1993,30 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       
       RemoveTumourFromRegnMask();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                                  std::string( "_DiagRegnMask.dcm" ), 
-                                                  "diagnostic pectoral registration mask",
-                                                  m_ImDiagnosticRegnMask, m_DiagDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
+                                                std::string( "_DiagRegnMask.dcm" ), 
+                                                "diagnostic pectoral registration mask",
+                                                m_ImDiagnosticRegnMask, m_DiagDictionary );
     }
     else if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       m_ImPreDiagnosticRegnMask = invertFilter->GetOutput();
       m_ImPreDiagnosticRegnMask->DisconnectPipeline();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                                  std::string( "_PreDiagRegnMask.dcm" ), 
-                                                  "pre-diagnostic registration mask", 
-                                                  m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
+                                                std::string( "_PreDiagRegnMask.dcm" ), 
+                                                "pre-diagnostic registration mask", 
+                                                m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
     }
     else
     {
       m_ImControlRegnMask = invertFilter->GetOutput();
       m_ImControlRegnMask->DisconnectPipeline();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                  std::string( "_ControlRegnMask.dcm" ), 
-                                                  "control registration mask", 
-                                                  m_ImControlRegnMask, m_ControlDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FileControl, 
+                                                std::string( "_ControlRegnMask.dcm" ), 
+                                                "control registration mask", 
+                                                m_ImControlRegnMask, m_ControlDictionary );
     }
   }
 
@@ -2770,7 +2863,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     filter->SetFixedMask(m_ImDiagnosticRegnMask);  
     if ( m_FlgDebug ) m_ImDiagnosticRegnMask->Print( std::cout );
 
-#if 0
     std::cout << "Setting moving mask"<< std::endl;
     if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
@@ -2782,7 +2874,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       filter->SetMovingMask(m_ImControlRegnMask);
       if ( m_FlgDebug ) m_ImControlRegnMask->Print( std::cout );
     }
-#endif
 
     // If we havent asked for output, turn off reslicing.
     filter->SetDoReslicing(true);
