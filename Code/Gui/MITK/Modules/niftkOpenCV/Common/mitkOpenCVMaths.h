@@ -206,15 +206,21 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d operator*(const cv::Point2d& p1, con
 
 
 /**
- * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
+ * \ brief Finds the intersection point of two 2D lines defined as cv::Vec4i
+ * x0,y1 = line1[0], line1[1], x1,y1 = line1[2],line1[3]
+ * x0,y1 = line2[0], line2[1], x1,y1 = line2[2],line2[3]
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(const cv::Vec4i& line1 , const cv::Vec4i& line2);
 
 /**
- * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
+ * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec4i
+ * \ param reject any points that don't fall on both lines
+ * \ param reject any points formed by non perpendicular lines
+ * \ param the tolerance to use for perpendicularity test
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i>, 
-    bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>&, 
+    const bool& RejectIfNotOnBothLines = false , const bool& RejectIfNotPerpendicular = false, 
+    const double& angleTolerance = 45.0);
 
 /**
  * \ brief Returns true if the passed point falls within the limits defined by the passed interval

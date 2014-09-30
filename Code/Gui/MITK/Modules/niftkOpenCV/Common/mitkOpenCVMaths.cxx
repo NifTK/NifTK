@@ -442,7 +442,7 @@ cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2)
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine)
+cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
 {
   double a1;
   double a2;
@@ -491,27 +491,7 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   returnPoint.x = ( b2 - b1 )/(a1 - a2 );
   returnPoint.y = a1 * returnPoint.x + b1;
 
-  bool ok = true;
-  if ( RejectIfNotOnALine )
-  {
-    //Whats the intent here, does it need to be on both lines or just one?
-    if ( ( mitk::PointInInterval ( returnPoint, line1 ) ) || ( PointInInterval ( returnPoint , line2 ) ) )
-    {
-      ok = true;
-    }
-    else
-    {
-      ok = false;
-    }
-  }
-  if ( ok == false ) 
-  {
-    return ( cv::Point2d (std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()) );
-  }
-  else 
-  {
-    return returnPoint;
-  }
+  return returnPoint;
 }
 
 //-----------------------------------------------------------------------------
@@ -557,19 +537,24 @@ double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
 
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  , const bool& rejectIfPointNotOnBothLines,
+    const bool& rejectIfNotPerpendicular, const double& angleTolerance) 
 {
   std::vector<cv::Point2d> returnPoints; 
   for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
   {
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      if ( RejectIfNotPerpendicular && CheckIfLinesArePerpendicular( lines[i], lines[j] , 45.0 ) )
+      if ( rejectIfNotPerpendicular && CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
       {
-        cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine);
-        if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
+        cv::Point2d point =  FindIntersect (lines[i], lines[j]);
+        if (  (! rejectIfPointNotOnBothLines) ||  
+          ( (mitk::PointInInterval ( point, lines[i] ) ) && ( PointInInterval ( point , lines[j] ) ) ) )
         {
-          returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine)) ;
+          if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
+          {
+            returnPoints.push_back ( point ) ;
+          }
         }
       }
     }
