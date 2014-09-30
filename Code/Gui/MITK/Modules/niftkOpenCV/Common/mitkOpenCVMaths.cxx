@@ -442,8 +442,7 @@ cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2)
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
-    bool RejectIfNotPerpendicular)
+cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine)
 {
   double a1;
   double a2;
@@ -501,13 +500,6 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
       ok = true;
     }
     else
-    {
-      ok = false;
-    }
-  }
-  if ( RejectIfNotPerpendicular ) 
-  {
-    if ( ! ( mitk::CheckIfLinesArePerpendicular ( line1, line2, 45.0) ) )
     {
       ok = false;
     }
@@ -572,10 +564,13 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
   {
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
-      if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
+      if ( RejectIfNotPerpendicular && CheckIfLinesArePerpendicular( lines[i], lines[j] , 45.0 ) )
       {
-        returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
+        cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine);
+        if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
+        {
+          returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine)) ;
+        }
       }
     }
   }
