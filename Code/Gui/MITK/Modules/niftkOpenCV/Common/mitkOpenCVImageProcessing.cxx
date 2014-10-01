@@ -29,6 +29,7 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
     const double& houghRho, const double& houghTheta, const int& houghThreshold, 
     const int& houghLineLength, const int& houghLineGap , cv::vector <cv::Vec4i>& lines)
 {
+  assert ( image.type() == CV_8UC3 );
   // is open cv built with CUDA support ?
   if ( cv::gpu::getCudaEnabledDeviceCount () != 0 ) 
   {
@@ -36,18 +37,14 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
     //we could switch to a GPU implementation, which might be faster
   }
 
-  cv::Mat hough;
-  cv::Mat canny;
-  //maybe it would be better to only accept gray images??
-  cv::cvtColor ( image, hough , CV_BGR2GRAY );
+  cv::Mat working1;
+  cv::Mat working2;
+  cv::cvtColor ( image, working1 , CV_BGR2GRAY );
+  assert ( working1.type() == CV_8UC1 );
 
-  int lowThreshold = 20;
-  int highThreshold = 70;
-  int kernel = 3;
-
-  cv::Canny ( hough, canny, cannyLowThreshold, cannyHighThreshold, cannyKernel);
-  cv::HoughLinesP ( canny, lines, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap);
-  std::vector <cv::Point2d> intersections = mitk::FindIntersects (lines, true, true);
+  cv::Canny ( working1, working2, cannyLowThreshold, cannyHighThreshold, cannyKernel);
+  cv::HoughLinesP ( working2, lines, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap);
+  std::vector <cv::Point2d> intersections = mitk::FindIntersects (lines, true, true, 60);
 
   return mitk::GetCentroid ( intersections, true);
 }
