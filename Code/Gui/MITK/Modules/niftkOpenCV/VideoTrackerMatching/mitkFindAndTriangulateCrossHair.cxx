@@ -15,6 +15,7 @@
 #include "mitkFindAndTriangulateCrossHair.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVImageProcessing.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkTimeStampsContainer.h>
 #include <cv.h>
@@ -187,17 +188,12 @@ void FindAndTriangulateCrossHair::Triangulate()
   {
     cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
     cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow ("Processed Left", CV_WINDOW_AUTOSIZE);
   }
   int framenumber = 0 ;
   int key = 0;
 
   cv::Mat leftFrame;
   cv::Mat rightFrame;
-  cv::Mat leftCanny;
-  cv::Mat rightCanny;
-  cv::Mat leftHough;
-  cv::Mat rightHough;
   m_ScreenPoints.clear();
   int terminator = m_TrackerMatcher->GetNumberOfFrames();
   TimeStampsContainer::TimeStamp timeStamp;
@@ -210,6 +206,7 @@ void FindAndTriangulateCrossHair::Triangulate()
   {
     cv::Mat videoImage;
     bool leftSuccess = m_Capture->read(videoImage);
+
     leftFrame = videoImage.clone();
     bool rightSuccess = m_Capture->read(videoImage);
     rightFrame = videoImage.clone();
@@ -227,29 +224,29 @@ void FindAndTriangulateCrossHair::Triangulate()
     }
     else
     {
-    
-      cv::cvtColor( leftFrame, leftHough, CV_BGR2GRAY );
-      cv::cvtColor( rightFrame, rightHough, CV_BGR2GRAY );
       int lowThreshold=20;
       int highThreshold = 70;
       int kernel = 3;
-      cv::Canny(leftHough,leftCanny, lowThreshold,highThreshold,kernel);
-      cv::Canny(rightHough,rightCanny, lowThreshold,highThreshold,kernel);
-      cv::vector<cv::Vec4i> linesleft;
-      cv::vector<cv::Vec4i> linesright;
-      cv::HoughLinesP (leftCanny, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
-      cv::HoughLinesP (rightCanny, linesright,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
-          std::vector <cv::Point2d> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
-      std::vector <cv::Point2d> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
-      screenPoints.m_Left = mitk::GetCentroid(leftIntersectionPoints,true);
-      screenPoints.m_Right = mitk::GetCentroid(rightIntersectionPoints,true);
+      cv::vector <cv::Vec4i> linesleft;
+      cv::vector <cv::Vec4i> linesright;
+
+      screenPoints.m_Left = mitk::FindCrosshairCentre ( leftFrame,
+        lowThreshold, highThreshold, kernel, 
+        m_HoughRho, m_HoughTheta, m_HoughThreshold , m_HoughLineLength, m_HoughLineGap, 
+        linesleft);
+
+      screenPoints.m_Right = mitk::FindCrosshairCentre ( rightFrame,
+        lowThreshold, highThreshold, kernel, 
+        m_HoughRho, m_HoughTheta, m_HoughThreshold , m_HoughLineLength, m_HoughLineGap,
+        linesright);
+
       screenPoints.SetTimeStamp(timeStamp);
       //push_back twice because we're jumping two frames
       m_ScreenPoints.push_back(screenPoints);
       m_ScreenPoints.push_back(screenPoints);
       if ( m_Visualise ) 
       {
-        for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ )
+       /* for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ )
         {
           cv::line(leftFrame,cvPoint(linesleft[i][0],linesleft[i][1]),
             cvPoint(linesleft[i][2],linesleft[i][3]),cvScalar(255,0,0));
@@ -258,23 +255,19 @@ void FindAndTriangulateCrossHair::Triangulate()
         {
           cv::line(rightFrame,cvPoint(linesright[i][0],linesright[i][1]),
             cvPoint(linesright[i][2],linesright[i][3]),cvScalar(255,0,0));
-        }
+        }*/
 
         cv::circle(leftFrame , screenPoints.m_Left,10, cvScalar(0,0,255),2,8,0);
         cv::circle(rightFrame , screenPoints.m_Right,10, cvScalar(0,255,0),2,8,0);
 
         IplImage leftIpl(leftFrame);
         IplImage rightIpl(rightFrame);
-        IplImage processedIpl(leftCanny);
         IplImage *smallleft = cvCreateImage (cvSize(960, 270), 8,3);
         cvResize (&leftIpl, smallleft,CV_INTER_LINEAR);
         IplImage *smallright = cvCreateImage (cvSize(960, 270), 8,3);
         cvResize (&rightIpl, smallright,CV_INTER_LINEAR);
-        IplImage *smallprocessed = cvCreateImage (cvSize(960, 270), 8,1);
-        cvResize (&processedIpl, smallprocessed , CV_INTER_LINEAR);
         cvShowImage("Left Channel" , smallleft);
         cvShowImage("Right Channel" , smallright);
-        cvShowImage("Processed Left", smallprocessed);
         key = cvWaitKey (20);
         if ( key == 's' )
         {
