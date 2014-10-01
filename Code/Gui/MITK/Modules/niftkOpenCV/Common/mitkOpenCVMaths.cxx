@@ -417,9 +417,9 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 }
 
 //-----------------------------------------------------------------------------
-bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2)
+bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance )
 {
-  if ( fabs(( ( p1.x - p2.x ) + ( p2.y - p2.y ) )) < 1e-6 )
+  if ( fabs(( ( p1.x - p2.x ) + ( p2.y - p2.y ) )) < tolerance )
   {
     return true;
   }
@@ -442,21 +442,40 @@ cv::Point2d operator*(const cv::Point2d& p1, const cv::Point2d& p2)
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
-    bool RejectIfNotPerpendicular)
+cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
 {
   double a1;
   double a2;
   double b1;
   double b2;
   cv::Point2d returnPoint;
-  returnPoint.x = -100.0;
-  returnPoint.y = -100.0;
-
-  if ( line1[2] == line1[0]  || line2[2] == line2[0]  ) 
+  returnPoint.x = std::numeric_limits<double>::quiet_NaN();
+  returnPoint.y = std::numeric_limits<double>::quiet_NaN();
+  
+  if ( ! ( fabs ( mitk::AngleBetweenLines(line1,line2) ) > 1e-6 ) )
   {
-    MITK_ERROR << "Intersect for vertical lines not implemented";
     return returnPoint;
+  }
+  if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  ) 
+  {
+    if ( line1[2] == line1[0] )
+    {
+      //line1 is vertical so substitute x = line1[0] into equation for line2
+      a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) /
+              ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
+      b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
+      returnPoint.x = line1[0];
+      returnPoint.y = a2 * returnPoint.x + b2;
+    }
+    else
+    {
+      //line2 is vertical so substitute x = line2[0] into equation for line1
+      a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) /
+              ( static_cast<double>(line1[2]) - static_cast<double>(line1[0]) );
+      b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
+      returnPoint.x = line2[0];
+      returnPoint.y = a1 * returnPoint.x + b1;
+    }
   }
   else
   {
@@ -466,58 +485,80 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
       ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
     b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
     b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
-  }
-  returnPoint.x = ( b2 - b1 )/(a1 - a2 );
-  returnPoint.y = a1 * returnPoint.x + b1;
-
-  bool ok = true;
-  if ( RejectIfNotOnALine )
-  {
-    if ( ((returnPoint.x >= line1[2]) && (returnPoint.x <= line1[0])) || 
-         ((returnPoint.x >= line1[0]) && (returnPoint.x <= line1[2])) ||
-         ((returnPoint.x >= line2[2]) && (returnPoint.x <= line2[0])) ||
-         ((returnPoint.x >= line2[0]) && (returnPoint.x <= line2[2])) )
-    {
-      ok = true;
-    }
-    else
-    {
-      ok = false;
-    }
-  }
-  if ( RejectIfNotPerpendicular ) 
-  {
-    //if there perpendicular a1 * a2 should be approximately 1
-    double Angle = fabs(a1 * a2);
-    if ( ! ( (Angle < 3.0) && (Angle > 0.1) ) )
-    {
-      ok = false;
-    }
-  }
-  if ( ok == false ) 
-  {
-    return ( cv::Point2d (-100.0, -100.0) );
-  }
-  else 
-  {
-    return returnPoint;
+    returnPoint.x = ( b2 - b1 )/(a1 - a2 );
+    returnPoint.y = a1 * returnPoint.x + b1;
   }
 
+  return returnPoint;
+}
+
+//-----------------------------------------------------------------------------
+bool PointInInterval ( const cv::Point2d& point , const cv::Vec4i& interval ) 
+{
+  if ( (((point.x >= static_cast<double>(interval[2])) && (point.x <= static_cast<double>(interval[0]))) || 
+    ((point.x >= static_cast<double>(interval[0])) && (point.x <= static_cast<double>(interval[2]))))  &&
+    (((point.y >= static_cast<double>(interval[3])) && (point.y <= static_cast<double>(interval[1]))) ||
+    ((point.y >= static_cast<double>(interval[1])) && (point.y <= static_cast<double>(interval[3])))) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+//-----------------------------------------------------------------------------
+bool CheckIfLinesArePerpendicular ( cv::Vec4i line1, cv::Vec4i line2 , double tolerance )
+{
+  if ( fabs ( mitk::AngleBetweenLines ( line1, line2 ) - (CV_PI/2.0) ) <= (tolerance * CV_PI/180.0) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+ 
+//-----------------------------------------------------------------------------
+double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
+{
+  double u1 = static_cast<double>(line1[2]) - static_cast<double>(line1[0]);
+  double u2 = static_cast<double>(line1[3]) - static_cast<double>(line1[1]);
+  double v1 = static_cast<double>(line2[2]) - static_cast<double>(line2[0]);
+  double v2 = static_cast<double>(line2[3]) - static_cast<double>(line2[1]);
+ 
+  double cosAngle = fabs ( u1 * v1 + u2 * v2 ) /
+    ( (sqrt( u1*u1 + u2*u2)) * (sqrt( v1*v1 + v2*v2 )) );
+  return acos (cosAngle);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  , const bool& rejectIfPointNotOnBothLines,
+    const bool& rejectIfNotPerpendicular, const double& angleTolerance) 
 {
-  std::vector<cv::Point2d> returnPoints; 
-  for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
+  std::vector<cv::Point2d> returnPoints;
+  if ( lines.size () < 2 ) 
+  {
+    MITK_WARN << "Called FindIntersects with only " << lines.size() << " lines";
+    return returnPoints;
+  }
+  for ( unsigned int i = 0 ; i < lines.size() - 1 ; i ++ ) 
   {
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
-      if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
+      if ( (!rejectIfNotPerpendicular) || CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
       {
-        returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
+        cv::Point2d point =  FindIntersect (lines[i], lines[j]);
+        if (  (! rejectIfPointNotOnBothLines) ||  
+          ( (mitk::PointInInterval ( point, lines[i] ) ) && ( PointInInterval ( point , lines[j] ) ) ) )
+        {
+          if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
+          {
+            returnPoints.push_back ( point ) ;
+          }
+        }
       }
     }
   }
@@ -1937,6 +1978,97 @@ void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44
   niftk::InterpolateTransformationMatrix(*b, *a, proportion, *interp);
 
   mitk::CopyToOpenCVMatrix(*interp, output);
+}
+
+//-----------------------------------------------------------------------------
+std::string MatrixType ( const cv::Mat& matrix)
+{
+  std::string returnString;
+  
+  switch ( matrix.type() ) 
+  {
+    case ( CV_8SC1 ): 
+      returnString = "CV_8SC1";
+      break;
+    case ( CV_8SC2 ): 
+      returnString = "CV_8SC2";
+      break;
+    case ( CV_8SC3 ): 
+      returnString = "CV_8SC3";
+      break;
+    case ( CV_8SC4 ): 
+      returnString = "CV_8SC4";
+      break;
+
+    case ( CV_8UC1 ): 
+      returnString = "CV_8UC1";
+      break;
+    case ( CV_8UC2 ): 
+      returnString = "CV_8UC2";
+      break;
+    case ( CV_8UC3 ): 
+      returnString = "CV_8UC3";
+      break;
+    case ( CV_8UC4 ): 
+      returnString = "CV_8UC4";
+      break;
+
+    case ( CV_16SC1 ): 
+      returnString = "CV_16SC1";
+      break;
+    case ( CV_16SC2 ): 
+      returnString = "CV_16SC2";
+      break;
+    case ( CV_16SC3 ): 
+      returnString = "CV_16SC3";
+      break;
+    case ( CV_16SC4 ): 
+      returnString = "CV_16SC4";
+      break;
+
+    case ( CV_16UC1 ): 
+      returnString = "CV_16UC1";
+      break;
+    case ( CV_16UC2 ): 
+      returnString = "CV_16UC2";
+      break;
+    case ( CV_16UC3 ): 
+      returnString = "CV_16UC3";
+      break;
+    case ( CV_16UC4 ): 
+      returnString = "CV_16UC4";
+      break;
+
+    case ( CV_32FC1 ): 
+      returnString = "CV_32FC1";
+      break;
+    case ( CV_32FC2 ): 
+      returnString = "CV_32FC2";
+      break;
+    case ( CV_32FC3 ): 
+      returnString = "CV_32FC3";
+      break;
+    case ( CV_32FC4 ): 
+      returnString = "CV_32FC4";
+      break;
+
+    case ( CV_64FC1 ): 
+      returnString = "CV_64FC1";
+      break;
+    case ( CV_64FC2 ): 
+      returnString = "CV_64FC2";
+      break;
+    case ( CV_64FC3 ): 
+      returnString = "CV_64FC3";
+      break;
+    case ( CV_64FC4 ): 
+      returnString = "CV_64FC4";
+      break;
+    default:
+      returnString = "Don't know";
+  }
+  return returnString;
+
 }
 
 } // end namespace
