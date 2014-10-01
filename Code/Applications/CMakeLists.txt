@@ -302,6 +302,7 @@ if(VTK_FOUND)
     niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
     niftkConvertNiftiVectorImage
+    niftkConvertPLYtoVTK
     niftkDecimatePolyData
     niftkGradientVectorField
     niftkMapVolumeDataToPolyDataVertices
