@@ -102,6 +102,13 @@ int DoMain(arguments args)
     imFixed->DisconnectPipeline();
     fixedImageReader = 0;
 
+    if ( args.flgDebug )
+    {
+      std::cout << "Fixed image: " << std::endl;
+      imFixed->Print( std::cout );
+      std::cout << std::endl;
+    }
+
     // The fixed image mask
 
     if (args.fileFixedMask.length() > 0)
@@ -137,6 +144,13 @@ int DoMain(arguments args)
     imMoving = movingImageReader->GetOutput();
     imMoving->DisconnectPipeline();
     movingImageReader = 0;
+
+    if ( args.flgDebug )
+    {
+      std::cout << "Moving image: " << std::endl;
+      imMoving->Print( std::cout );
+      std::cout << std::endl;
+    }
 
     // The moving image mask
          
@@ -183,6 +197,13 @@ int DoMain(arguments args)
   typename AffineTransformType::Pointer 
     fixedImageTransform = fixedImageMomentCalculator->GetPhysicalAxesToPrincipalAxesTransform();
 
+  if ( args.flgDebug )
+  {
+    std::cout << "Fixed image moments: " << std::endl;
+    fixedImageMomentCalculator->Print( std::cout );
+    std::cout << std::endl;
+  }
+
 
   // Compute the moving image principal axes to physical axes transform
 
@@ -194,6 +215,13 @@ int DoMain(arguments args)
   
   typename AffineTransformType::Pointer 
     movingImageTransform = movingImageMomentCalculator->GetPrincipalAxesToPhysicalAxesTransform();
+
+  if ( args.flgDebug )
+  {
+    std::cout << "Moving image moments: " << std::endl;
+    movingImageMomentCalculator->Print( std::cout );
+    std::cout << std::endl;
+  }
 
 
   // Compute the scale factors in 'x' and 'y' from the normalised principal moments
