@@ -1980,4 +1980,95 @@ void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44
   mitk::CopyToOpenCVMatrix(*interp, output);
 }
 
+//-----------------------------------------------------------------------------
+std::string MatrixType ( const cv::Mat& matrix)
+{
+  std::string returnString;
+  
+  switch ( matrix.type() ) 
+  {
+    case ( CV_8SC1 ): 
+      returnString = "CV_8SC1";
+      break;
+    case ( CV_8SC2 ): 
+      returnString = "CV_8SC2";
+      break;
+    case ( CV_8SC3 ): 
+      returnString = "CV_8SC3";
+      break;
+    case ( CV_8SC4 ): 
+      returnString = "CV_8SC4";
+      break;
+
+    case ( CV_8UC1 ): 
+      returnString = "CV_8UC1";
+      break;
+    case ( CV_8UC2 ): 
+      returnString = "CV_8UC2";
+      break;
+    case ( CV_8UC3 ): 
+      returnString = "CV_8UC3";
+      break;
+    case ( CV_8UC4 ): 
+      returnString = "CV_8UC4";
+      break;
+
+    case ( CV_16SC1 ): 
+      returnString = "CV_16SC1";
+      break;
+    case ( CV_16SC2 ): 
+      returnString = "CV_16SC2";
+      break;
+    case ( CV_16SC3 ): 
+      returnString = "CV_16SC3";
+      break;
+    case ( CV_16SC4 ): 
+      returnString = "CV_16SC4";
+      break;
+
+    case ( CV_16UC1 ): 
+      returnString = "CV_16UC1";
+      break;
+    case ( CV_16UC2 ): 
+      returnString = "CV_16UC2";
+      break;
+    case ( CV_16UC3 ): 
+      returnString = "CV_16UC3";
+      break;
+    case ( CV_16UC4 ): 
+      returnString = "CV_16UC4";
+      break;
+
+    case ( CV_32FC1 ): 
+      returnString = "CV_32FC1";
+      break;
+    case ( CV_32FC2 ): 
+      returnString = "CV_32FC2";
+      break;
+    case ( CV_32FC3 ): 
+      returnString = "CV_32FC3";
+      break;
+    case ( CV_32FC4 ): 
+      returnString = "CV_32FC4";
+      break;
+
+    case ( CV_64FC1 ): 
+      returnString = "CV_64FC1";
+      break;
+    case ( CV_64FC2 ): 
+      returnString = "CV_64FC2";
+      break;
+    case ( CV_64FC3 ): 
+      returnString = "CV_64FC3";
+      break;
+    case ( CV_64FC4 ): 
+      returnString = "CV_64FC4";
+      break;
+    default:
+      returnString = "Don't know";
+  }
+  return returnString;
+
+}
+
 } // end namespace

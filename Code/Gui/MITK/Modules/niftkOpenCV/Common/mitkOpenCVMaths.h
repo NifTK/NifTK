@@ -497,6 +497,11 @@ extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::M
  */
 extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44d& after, const double& proportion, cv::Matx44d& output);
 
+/**
+ * \brief returns the matrix type as a string
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::string MatrixType(const cv::Mat& matrix);
+
 } // end namespace
 
 #endif
