@@ -40,6 +40,9 @@
 
 struct arguments
 {
+  bool flgVerbose;
+  bool flgDebug;
+
   std::string fileFixedImage;
   std::string fileMovingImage;
 
@@ -49,6 +52,11 @@ struct arguments
   std::string fileOutputImage;
 
   std::string fileOutputTransformFile; 
+  
+  arguments() {
+    flgVerbose = false;
+    flgDebug = false;
+  }
 };
 
 template <int Dimension>
@@ -94,6 +102,13 @@ int DoMain(arguments args)
     imFixed->DisconnectPipeline();
     fixedImageReader = 0;
 
+    if ( args.flgDebug )
+    {
+      std::cout << "Fixed image: " << std::endl;
+      imFixed->Print( std::cout );
+      std::cout << std::endl;
+    }
+
     // The fixed image mask
 
     if (args.fileFixedMask.length() > 0)
@@ -129,6 +144,13 @@ int DoMain(arguments args)
     imMoving = movingImageReader->GetOutput();
     imMoving->DisconnectPipeline();
     movingImageReader = 0;
+
+    if ( args.flgDebug )
+    {
+      std::cout << "Moving image: " << std::endl;
+      imMoving->Print( std::cout );
+      std::cout << std::endl;
+    }
 
     // The moving image mask
          
@@ -175,6 +197,13 @@ int DoMain(arguments args)
   typename AffineTransformType::Pointer 
     fixedImageTransform = fixedImageMomentCalculator->GetPhysicalAxesToPrincipalAxesTransform();
 
+  if ( args.flgDebug )
+  {
+    std::cout << "Fixed image moments: " << std::endl;
+    fixedImageMomentCalculator->Print( std::cout );
+    std::cout << std::endl;
+  }
+
 
   // Compute the moving image principal axes to physical axes transform
 
@@ -186,6 +215,13 @@ int DoMain(arguments args)
   
   typename AffineTransformType::Pointer 
     movingImageTransform = movingImageMomentCalculator->GetPrincipalAxesToPhysicalAxesTransform();
+
+  if ( args.flgDebug )
+  {
+    std::cout << "Moving image moments: " << std::endl;
+    movingImageMomentCalculator->Print( std::cout );
+    std::cout << std::endl;
+  }
 
 
   // Compute the scale factors in 'x' and 'y' from the normalised principal moments
@@ -235,16 +271,21 @@ int DoMain(arguments args)
 
   resampleFilter->SetInput( imMoving );
 
+  if ( args.flgVerbose)
+  {
+    std::cout << "Fixed image spacing: " << imFixed->GetSpacing() << std::endl;
+  }
+
+  resampleFilter->UseReferenceImageOn();
+  resampleFilter->SetReferenceImage( imFixed );
+  resampleFilter->SetOutputParametersFromImage( imFixed );
+  resampleFilter->SetOutputParametersFromImage( imFixed );
+
   resampleFilter->SetTransform( movingImageTransform );
 
   resampleFilter->SetInterpolator( interpolator );
   resampleFilter->SetDefaultPixelValue( 0 );
 
-  resampleFilter->SetOutputOrigin( imFixed->GetOrigin() );
-  resampleFilter->SetOutputSpacing( imFixed->GetSpacing() );
-  resampleFilter->SetOutputDirection( imFixed->GetDirection() );
-  resampleFilter->SetSize( imFixed->GetLargestPossibleRegion().GetSize() );
-  
   try 
   { 
     resampleFilter->Update();             
@@ -317,7 +358,9 @@ int main(int argc, char** argv)
   // To pass around command line args
   struct arguments args;
 
-
+  args.flgVerbose      = flgVerbose;
+  args.flgDebug        = flgDebug;
+ 
   args.fileFixedImage  = fileFixedImage;
   args.fileMovingImage = fileMovingImage;
 

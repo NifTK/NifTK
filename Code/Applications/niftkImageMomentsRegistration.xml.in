@@ -55,6 +55,14 @@
     <label>Common Options</label>
     <description><![CDATA[Optional parameters]]></description>
 
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose</label>
+    </boolean>
+
     <image>
       <name>fileFixedMask</name>
       <longflag>tm</longflag>
@@ -72,5 +80,19 @@
     </image>
 
   </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+   <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
+
+  </parameters>
+
 
 </executable>
