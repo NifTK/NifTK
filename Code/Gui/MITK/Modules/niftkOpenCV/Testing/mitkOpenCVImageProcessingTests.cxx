@@ -20,6 +20,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVImageProcessing.h>
+#include <mitkOpenCVMaths.h>
 #include <cmath>
 
 /**
@@ -30,24 +31,35 @@ bool FindCrossHairTest()
 {
   MITK_TEST_BEGIN ("mitkOpenCVFindCrossHairTest");
 
-
-  int cannyLowThreshold = 0;
-  int cannyHighThreshold = 10;
-  int cannyKernel = 10;
-  double houghRho = 0;
-  double houghTheta = 0;
-  int houghThreshold = 0 ;
+  int cannyLowThreshold = 20;
+  int cannyHighThreshold = 70;
+  int cannyKernel = 3;
+  double houghRho = 1.0;
+  double houghTheta = CV_PI/180;
+  int houghThreshold = 50 ;
   int houghLineLength = 10;
-  int houghLineGap = 0 ;
+  int houghLineGap = 20 ;
   cv::vector <cv::Vec4i> lines;
 
-  cv::Mat image ( 100 , 100 , CV_64FC3 );
-  cv::line ( image, cvPoint ( 60 , 40 ) , cvPoint ( 60 , 60 ), cv::Scalar ( 0, 0, 0 ) );
+  cv::Mat image ( 100 , 100 , CV_8UC3 );
+  for ( unsigned int i = 0 ; i < 100 ; i ++ )
+  {
+    for ( unsigned int j = 0 ; j < 100 ; j ++ )
+    {
+      for ( unsigned int channel = 0 ; channel < 3 ; channel ++ )
+      {
+        image.at<cv::Vec3b>(i,j)[channel] = 0;
+      }
+    }
+  }
+ 
+  cv::line ( image, cvPoint ( 0 , 0 ) , cvPoint ( 100 , 100 ), cv::Scalar (255,  255, 255 ),1.0 ,1 );
+  cv::line ( image, cvPoint ( 100 , 10 ) , cvPoint ( 10 , 100 ), cv::Scalar (255, 255 , 255 ),1.0 ,1 );
 
   cv::Point2d intersect = mitk::FindCrosshairCentre (image, cannyLowThreshold, cannyHighThreshold,
       cannyKernel, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap , lines ); 
   
-  MITK_TEST_CONDITION ( intersect == cv::Point2d (60 , 50) , "Testing intersect for no noise state" );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual (intersect,cv::Point2d (55 , 55),0.6) , "Testing intersect for no noise state" << intersect );
   MITK_TEST_END();
 }
 
