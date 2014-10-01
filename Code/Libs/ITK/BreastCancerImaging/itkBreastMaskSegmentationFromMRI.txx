@@ -3085,7 +3085,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Downsample the image to istropic voxels with dimensions
 
-  double subsamplingResolution = 5.0; //The isotropic volume resolution in mm for sub-sampling
+  double subsamplingResolution = 3.0; //The isotropic volume resolution in mm for sub-sampling
   typedef itk::ResampleImageFilter< InternalImageType, InternalImageType > ResampleImageFilterType;
   typename ResampleImageFilterType::Pointer subsampleFilter = ResampleImageFilterType::New();
   
@@ -3137,9 +3137,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   subsampleFilter->Update();
 
   pipeITKImageDataConnector = subsampleFilter->GetOutput();
-
-  // ToDo: Check if the subsampling causes any issues?
-  WriteImageToFile(std::string("subsampled.nii.gz"), "sub", subsampleFilter->GetOutput(), false, false);
 
 
   // Create the ITK to VTK filter
