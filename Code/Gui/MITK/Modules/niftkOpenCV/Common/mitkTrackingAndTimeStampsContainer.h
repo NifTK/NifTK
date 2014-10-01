@@ -68,7 +68,12 @@ public:
   /**
    * \see mitk::TimeStampsContainer::GetFrameNumber().
    */
-  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStampsContainer::TimeStamp& timeStamp);
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStampsContainer::TimeStamp& timeStamp) const;
+
+  /**
+   * \see mitk::TimeStampsContainer::GetNearestTimeStamp()
+   */
+  TimeStampsContainer::TimeStamp GetNearestTimeStamp(const TimeStampsContainer::TimeStamp& timeStamp, long long *delta = NULL ) const;
 
   /**
    * \brief Extracts a matrix for the given time-stamp, by interpolating.
