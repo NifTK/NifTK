@@ -2969,7 +2969,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 	    << sz[0] << "," << sz[1] << "," << sz[2] << std::endl;
   
   // Estimate the image extent as an AABB in physical coordinates
-  InternalImageType::IndexType idx1, idx2, idx3, idx4, idx5, idx6, idx7, idx8;
+  typename InternalImageType::IndexType idx1, idx2, idx3, idx4, idx5, idx6, idx7, idx8;
   idx1[0] = sz[0];    idx1[1] = sz[1];    idx1[2] = sz[2];  // x+ y+ z+
   idx2[0] =     0;    idx2[1] = sz[1];    idx2[2] = sz[2];  // x- y+ z+
   idx3[0] = sz[0];    idx3[1] =     0;    idx3[2] = sz[2];  // x+ y- z+
@@ -2979,7 +2979,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   idx7[0] = sz[0];    idx7[1] =     0;    idx7[2] =     0;  // x+ y- z-
   idx8[0] =     0;    idx8[1] =     0;    idx8[2] =     0;  // x- y- z-
 
-  InternalImageType::PointType p1, p2, p3, p4, p5, p6, p7, p8;
+  typename InternalImageType::PointType p1, p2, p3, p4, p5, p6, p7, p8;
   pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx1, p1 );
   pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx2, p2 );
   pipeITKImageDataConnector->TransformIndexToPhysicalPoint( idx3, p3 );
@@ -3058,7 +3058,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   dZMax = dZMax > p7[2] ? dZMax : p7[2];
   dZMax = dZMax > p8[2] ? dZMax : p8[2];
 
-  // TODO: Use itk alternative, maybe using itkImageMaskSpatialObject
+  // Think about: Use itk alternative, maybe using itkImageMaskSpatialObject
   std::cout << "Bounding box of image: " << std::endl
     << " x:  " << dXMin << " --> " << dXMax << std::endl
     << " y:  " << dYMin << " --> " << dYMax << std::endl
