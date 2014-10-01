@@ -114,6 +114,11 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& inpu
 
 
 /**
+ * \brief Copies to OpenCV matrix, throwing exceptions if output is not 4x4.
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const cv::Matx44d& matrix, cv::Mat& output);
+
+/**
  * \brief Generates a rotation about X-axis, given a Euler angle in radians.
  * \param rx angle in radians
  * \return a new [3x3] rotation matrix
