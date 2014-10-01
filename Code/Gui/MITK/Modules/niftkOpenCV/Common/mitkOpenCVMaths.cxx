@@ -538,10 +538,14 @@ double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
 std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  , const bool& rejectIfPointNotOnBothLines,
     const bool& rejectIfNotPerpendicular, const double& angleTolerance) 
 {
-  std::vector<cv::Point2d> returnPoints; 
+  std::vector<cv::Point2d> returnPoints;
+  if ( lines.size () < 2 ) 
+  {
+    MITK_WARN << "Called FindIntersects with only " << lines.size() << " lines";
+    return returnPoints;
+  }
   for ( unsigned int i = 0 ; i < lines.size() - 1 ; i ++ ) 
   {
-
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
       if ( (!rejectIfNotPerpendicular) || CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
