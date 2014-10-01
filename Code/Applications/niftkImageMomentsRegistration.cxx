@@ -40,6 +40,9 @@
 
 struct arguments
 {
+  bool flgVerbose;
+  bool flgDebug;
+
   std::string fileFixedImage;
   std::string fileMovingImage;
 
@@ -49,6 +52,11 @@ struct arguments
   std::string fileOutputImage;
 
   std::string fileOutputTransformFile; 
+  
+  arguments() {
+    flgVerbose = false;
+    flgDebug = false;
+  }
 };
 
 template <int Dimension>
@@ -235,16 +243,21 @@ int DoMain(arguments args)
 
   resampleFilter->SetInput( imMoving );
 
+  if ( args.flgVerbose)
+  {
+    std::cout << "Fixed image spacing: " << imFixed->GetSpacing() << std::endl;
+  }
+
+  resampleFilter->UseReferenceImageOn();
+  resampleFilter->SetReferenceImage( imFixed );
+  resampleFilter->SetOutputParametersFromImage( imFixed );
+  resampleFilter->SetOutputParametersFromImage( imFixed );
+
   resampleFilter->SetTransform( movingImageTransform );
 
   resampleFilter->SetInterpolator( interpolator );
   resampleFilter->SetDefaultPixelValue( 0 );
 
-  resampleFilter->SetOutputOrigin( imFixed->GetOrigin() );
-  resampleFilter->SetOutputSpacing( imFixed->GetSpacing() );
-  resampleFilter->SetOutputDirection( imFixed->GetDirection() );
-  resampleFilter->SetSize( imFixed->GetLargestPossibleRegion().GetSize() );
-  
   try 
   { 
     resampleFilter->Update();             
@@ -317,7 +330,9 @@ int main(int argc, char** argv)
   // To pass around command line args
   struct arguments args;
 
-
+  args.flgVerbose      = flgVerbose;
+  args.flgDebug        = flgDebug;
+ 
   args.fileFixedImage  = fileFixedImage;
   args.fileMovingImage = fileMovingImage;
 
