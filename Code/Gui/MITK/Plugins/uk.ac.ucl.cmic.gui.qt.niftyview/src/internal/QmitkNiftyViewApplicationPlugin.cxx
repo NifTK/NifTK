@@ -41,13 +41,8 @@ QString QmitkNiftyViewApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
 {
-  /// Note:
-  /// This function has to be redefined so that the superclass
-  /// implementation does not run again. The overridden function 
-  /// has been executed when the commonapps plugin has been loaded.
+  QmitkCommonAppsApplicationPlugin::start(context);
 
-  this->SetPluginContext(context);
-  
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMinimalPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
@@ -60,10 +55,7 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPlugin::stop(ctkPluginContext* context)
 {
-  /// Note:
-  /// This function has to be redefined so that the superclass
-  /// implementation does not run again. The overridden function 
-  /// will be executed when the commonapps plugin gets unloaded.
+  this->UnregisterDataStorageListener();
 }
 
 
