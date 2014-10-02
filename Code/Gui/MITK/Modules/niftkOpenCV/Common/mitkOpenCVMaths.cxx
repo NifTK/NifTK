@@ -329,6 +329,28 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& input, cv::Mat& output)
 
 
 //-----------------------------------------------------------------------------
+void CopyToOpenCVMatrix(const cv::Matx44d& input, cv::Mat& output)
+{
+  if (output.rows != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 rows." << std::endl;
+  }
+  if (output.cols != 4)
+  {
+    mitkThrow() << "Output matrix does not have 4 columns." << std::endl;
+  }
+
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      output.at<double>(i,j) = input(i,j);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::WorldPoint > & p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );

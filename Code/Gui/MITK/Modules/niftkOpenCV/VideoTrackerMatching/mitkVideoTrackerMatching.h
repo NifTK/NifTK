@@ -133,8 +133,6 @@ private:
 
   std::vector<std::string>          FindFrameMaps();
   void                              FindTrackingMatrixDirectories();
-  TimeStampsContainer          FindTrackingTimeStamps(std::string directory);
-  bool                              CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                              ProcessFrameMapFile();
   bool                              CheckTimingErrorStats();
   bool                              m_HaltOnFrameSkip;
