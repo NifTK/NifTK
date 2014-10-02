@@ -78,6 +78,7 @@ if(SlicerExecutionModel_FOUND)
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
     niftkConvertImage
+    niftkConvertImageToDICOM
     niftkConvertRawDICOMMammogramsToPresentation
     niftkCreateMaskImage
     niftkCropImage
@@ -101,6 +102,7 @@ if(SlicerExecutionModel_FOUND)
     niftkN4BiasFieldCorrection
     niftkNegateImage
     niftkOtsuThresholdImage
+    niftkPrintDICOMSeries
     niftkRegionalMammographicDensity
     niftkScalarConnectedComponentImageFilter
     niftkSegmentForegroundFromBackground

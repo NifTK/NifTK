@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>DICOM Tools</category>
+  <title>Convert Image to DICOM</title>
+  <description><![CDATA[Convert an image to DICOM format by adding a DICOM header from an external source (e.g. an existing DICOM image from which the image was derived).]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <file>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileInputDICOM</name>
+      <flag>d</flag>
+      <longflag>dicom</longflag>
+      <description>The input DICOM meta data (e.g. existing DICOM image from which the input image was derived).</description>
+      <label>DICOM data</label>
+      <channel>input</channel>
+    </file>
+ 
+    <file>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output DICOM image</description>      
+      <label>Output DICOM image</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Common Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+   <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
+
+  </parameters>
+
+</executable>
