@@ -114,6 +114,9 @@ public:
 
   cudaStream_t GetStream(const std::string& name);
 
+  /**
+   * @throws std::runtime_error if lwci is not valid.
+   */
   ReadAccessor RequestReadAccess(const LightweightCUDAImage& lwci);
 
   WriteAccessor RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype);
@@ -123,6 +126,9 @@ public:
   // which in turn can go to a DataNode.
   LightweightCUDAImage Finalise(WriteAccessor& writeAccessor, cudaStream_t stream);
 
+  /**
+   * Combines Finalise() and Autorelease() into a single call.
+   */
   LightweightCUDAImage FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream);
 
   /**
@@ -132,9 +138,11 @@ public:
    */
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
+
 protected:
   CUDAManager();
   virtual ~CUDAManager();
+
 
   /**
    * Used by LightweightCUDAImage to notify us that all references to it have been dropped,
@@ -143,11 +151,18 @@ protected:
   void AllRefsDropped(LightweightCUDAImage& lwci);
 
 
+  /** Copy and assignment is not allowed. */
+  //@{
 private:
   CUDAManager(const CUDAManager& copyme);
   CUDAManager& operator=(const CUDAManager& assignme);
+  //@}
 
+
+  /** Convert a size-tier into a maximum byte size that would fit into that tier. */
   std::size_t TierToSize(unsigned int tier) const;
+
+  /** Convert a byte size into a tier that it falls into. */
   unsigned int SizeToTier(std::size_t size) const;
 
 

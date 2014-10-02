@@ -107,6 +107,7 @@ CUDAManager::CUDAManager()
 //-----------------------------------------------------------------------------
 CUDAManager::~CUDAManager()
 {
+  // FIXME: so far we never destructed it. should clean up memory.
 }
 
 

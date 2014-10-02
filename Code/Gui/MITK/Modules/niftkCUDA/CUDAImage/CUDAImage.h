@@ -20,7 +20,10 @@
 #include <mitkBaseData.h>
 
 
-// BaseData is rather fat. can we avoid it?
+/**
+ * A holder for LightweightCUDAImage so that it can be added to a DataNode
+ * and be made available via DataStorage.
+ */
 class NIFTKCUDA_EXPORT CUDAImage : public mitk::BaseData
 {
 
@@ -29,14 +32,30 @@ public:
 
   itkFactorylessNewMacro(Self);
 
-  // mitk stuff not applicable. will always throw an exception, or fail somehow.
+  /** @name MITK stuff not applicable. will always throw an exception, or fail somehow.*/
+  //@{
+  /** @throws std::runtime_error always */
   virtual void SetRequestedRegionToLargestPossibleRegion();
+  /** @throws std::runtime_error always */
   virtual bool RequestedRegionIsOutsideOfTheBufferedRegion();
+  /** @throws std::runtime_error always */
   virtual bool VerifyRequestedRegion();
+  /** @throws std::runtime_error always */
   virtual void SetRequestedRegion(const itk::DataObject* data);
+  //@}
 
-
+  /**
+   * Returns a copy of the LightweightCUDAImage. Remember: LightweightCUDAImage is merely some
+   * form of opaque handle.
+   * @throws nothing should not throw anything.
+   */
   LightweightCUDAImage GetLightweightCUDAImage() const;
+
+  /**
+   * Sets the LightweightCUDAImage handle.
+   * Remember: LightweightCUDAImage is merely some form of opaque handle.
+   * @throws nothing should not throw anything.
+   */
   void SetLightweightCUDAImage(const LightweightCUDAImage& lwci);
 
 
@@ -45,9 +64,12 @@ protected:
   virtual ~CUDAImage();
 
 
+  /** @name Copy and assignment not allowed. */
+  //@{
 private:
   CUDAImage(const CUDAImage& copyme);
   CUDAImage& operator=(const CUDAImage& assignme);
+  //@}
 
 
 private:
