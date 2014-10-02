@@ -16,7 +16,6 @@
 #include <QmitkCommonAppsIGIPerspective.h>
 #include "../QmitkNiftyIGIApplication.h"
 #include <QmitkNiftyViewApplicationPreferencePage.h>
-#include "QmitkInputDevicesPrefPage.h"
 
 //-----------------------------------------------------------------------------
 QmitkNiftyIGIApplicationPlugin::QmitkNiftyIGIApplicationPlugin()
@@ -50,7 +49,6 @@ void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkInputDevicesPrefPage, context);
 
   this->RegisterHelpSystem();
 }
