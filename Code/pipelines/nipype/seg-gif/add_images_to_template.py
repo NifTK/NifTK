@@ -183,15 +183,27 @@ parser.add_argument('-i', '--input',
                     metavar='input',
                     help='Input image',
                     required=True)
+parser.add_argument('--t1s',
+                    dest='t1s',
+                    metavar='t1s',
+                    help='Existing T1s',
+                    nargs='+',
+                    required=True)
+parser.add_argument('--affs',
+                    dest='affs',
+                    metavar='affs',
+                    help='Existing Affines',
+                    nargs='+',
+                    required=True)
 parser.add_argument('--t1_dir',
                     dest='t1_dir',
                     metavar='t1_dir',
-                    help='Existing T1s directory / output T1 directory',
+                    help='Output T1 directory',
                     required=True)
 parser.add_argument('--aff_dir',
                     dest='aff_dir',
                     metavar='aff_dir',
-                    help='Existing Affines directory / output Affines directory',
+                    help='Output Affines directory',
                     required=True)
 parser.add_argument('--mask_dir',
                     dest='mask_dir',
@@ -211,23 +223,14 @@ basename = os.path.basename(args.input)
 basename = basename.replace('.nii.gz', '')
 basename = basename.replace('.nii', '')
 
+t1s = [ os.path.abspath(f) for f in args.t1s ]
+affs = [ os.path.abspath(f) for f in args.affs ]
+
 input_cpp_dir = os.path.join(os.path.abspath(args.cpp_dir), basename)
 if not os.path.exists(input_cpp_dir):
     os.mkdir(input_cpp_dir)
 
 basedir = os.getcwd()
-
-grabber_images = pe.Node(interface = nio.DataGrabber(outfields=['images']), 
-                         name = 'grabber_images')
-grabber_images.inputs.template = '*.nii*'
-grabber_images.inputs.sort_filelist = True
-grabber_images.inputs.base_directory = os.path.abspath(args.t1_dir)
-
-grabber_affines = pe.Node(interface = nio.DataGrabber(outfields=['affines']), 
-                         name = 'grabber_affines')
-grabber_affines.inputs.template = '*.txt'
-grabber_affines.inputs.sort_filelist = True
-grabber_affines.inputs.base_directory = os.path.abspath(args.aff_dir)
 
 r = preprocessing_input_pipeline (name = 'add_image_to_template', 
                                   ref_file = mni_template, 
@@ -236,9 +239,8 @@ r = preprocessing_input_pipeline (name = 'add_image_to_template',
 r.base_dir = basedir
 
 r.inputs.input_node.in_file = os.path.abspath(args.input)
-r.connect(grabber_images, 'images', r.get_node('input_node'), 'in_images')
-r.connect(grabber_affines, 'affines', r.get_node('input_node'), 'in_affines')
-
+r.inputs.input_node.in_images = t1s
+r.inputs.input_node.in_affines = affs
 
 t1_sink = pe.Node(nio.DataSink(parameterization=False),
                   name = 't1_sink')
@@ -293,10 +295,10 @@ cpp_sink.inputs.base_directory = os.path.abspath(input_cpp_dir)
 r.connect(r.get_node('output_node'), 'out_cpps', cpp_sink, '@cpp')
 r.connect(r.get_node('output_node'), 'out_invcpps', cpp_sink, '@invcpp')
 
-
 r.write_graph(graph2use='hierarchical')
 
 qsub_exec=spawn.find_executable('qsub')
+
 if not qsub_exec == None:
     qsubargs='-l h_rt=05:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
     r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
