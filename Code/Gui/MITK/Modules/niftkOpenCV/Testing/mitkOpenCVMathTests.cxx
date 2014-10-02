@@ -27,7 +27,7 @@
  * \file Tests for some of the functions in openCVMaths.
  */
 
-bool ArithmaticTests()
+void ArithmaticTests()
 {
   cv::Point2d point1 = cv::Point2d ( 1.0 , 1.0 );
   cv::Point2d point2 = cv::Point2d ( 0.5 , 0.3 );
@@ -41,7 +41,7 @@ bool ArithmaticTests()
   MITK_TEST_CONDITION (mitk::NearlyEqual ((point4 - point3) ,cv::Point2d(0.8, 0.9), tolerance), "Testing subtraction operator");
 }
 
-bool RMSTest()
+void RMSTest()
 {
   //make some measured points
   std::vector < mitk::ProjectedPointPairsWithTimingError > measured;
@@ -115,7 +115,7 @@ bool RMSTest()
 
 }
 
-bool FindIntersectTest()
+void FindIntersectTest()
 {
   cv::Vec4i line1;
   cv::Vec4i line2;
@@ -162,7 +162,7 @@ bool FindIntersectTest()
   
 }
 
-bool FindIntersectsTest()
+void FindIntersectsTest()
 {
   cv::Vec4i line1;
   cv::Vec4i line2;
@@ -210,7 +210,7 @@ bool FindIntersectsTest()
 
 
 }
-bool AngleBetweenLinesTest()
+void AngleBetweenLinesTest()
 {
   double tolerance = 1e-6;
   cv::Vec4i line1;
@@ -251,7 +251,7 @@ bool AngleBetweenLinesTest()
 
 }
 
-bool CheckIfLinesArePerpendicularTest ( )
+void CheckIfLinesArePerpendicularTest ( )
 {
  
   double angleTolerance = 10.0;
@@ -309,7 +309,7 @@ bool CheckIfLinesArePerpendicularTest ( )
 }
 
 
-bool PointInIntervalTest ( )
+void PointInIntervalTest ( )
 {
  
   cv::Vec4i line;

@@ -27,9 +27,8 @@
  * \file Tests for some of the functions in openCVImageProcessing.
  */
 
-bool FindCrossHairTest()
+void FindCrossHairTest()
 {
-  MITK_TEST_BEGIN ("mitkOpenCVFindCrossHairTest");
 
   int cannyLowThreshold = 20;
   int cannyHighThreshold = 70;
@@ -60,7 +59,6 @@ bool FindCrossHairTest()
       cannyKernel, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap , lines ); 
   
   MITK_TEST_CONDITION ( mitk::NearlyEqual (intersect,cv::Point2d (55 , 55),0.6) , "Testing intersect for no noise state" << intersect );
-  MITK_TEST_END();
 }
 
 
