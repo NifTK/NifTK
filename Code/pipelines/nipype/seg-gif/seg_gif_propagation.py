@@ -383,7 +383,8 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     
     output_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['out_parc_file', 
+            fields=['out_cropped_file', 
+                    'out_parc_file', 
                     'out_geo_file', 
                     'out_prior_file',
                     'out_tiv_file',
@@ -392,6 +393,7 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
                     'out_bias_file']),
         name='output_node')
     
+    workflow.connect(bias_correction, 'out_file', output_node, 'out_cropped_file')
     workflow.connect(gif, 'parc_file', output_node, 'out_parc_file')
     workflow.connect(gif, 'geo_file', output_node, 'out_geo_file')
     workflow.connect(gif, 'prior_file', output_node, 'out_prior_file')

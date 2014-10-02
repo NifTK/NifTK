@@ -10,6 +10,23 @@ from distutils import spawn
 import nipype.interfaces.niftyreg as niftyreg
 import seg_gif_propagation as gif
 
+def find_data_directory_function(in_db_file):
+    def find_xml_data_path(in_file):
+        import xml.etree.ElementTree as ET
+        tree = ET.parse(in_file)
+        root = tree.getroot()
+        return root.findall('data')[0].findall('path')[0].text
+    import os
+    database_directory = os.path.dirname(in_db_file)
+    data_directory = find_xml_data_path(in_db_file)
+    ret = os.path.abspath(data_directory)
+    if os.path.exists(ret):
+        return ret
+    ret = os.path.join(data_directory, data_directory)
+    if os.path.exists(ret):
+        return ret
+    return None
+
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
 
@@ -56,13 +73,12 @@ if not os.path.exists(result_dir):
 
 basedir = os.getcwd()
 
-inputfiles = [os.path.abspath(f) for f in args.inputfile]
-cpps = [os.path.abspath(f) for f in args.cpp]
-
-
 infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile', 'mask', 'cpp']),
                      name = 'infosource',
                      synchronize=True)
+
+inputfiles = [os.path.abspath(f) for f in args.inputfile]
+cpps = [os.path.abspath(f) for f in args.cpp]
 
 if args.mask is None:
     infosource.iterables = [ ('inputfile', inputfiles), 
@@ -72,17 +88,12 @@ else:
     infosource.iterables = [ ('inputfile', inputfiles), 
                              ('mask', masks), 
                              ('cpp', cpps) ]
-                               
 
 r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow_s')
 r.base_dir = basedir
 
 r.connect(infosource, 'inputfile', r.get_node('input_node'), 'in_file')
 r.connect(infosource, 'cpp', r.get_node('input_node'), 'in_cpp_dir')
-
-r.inputs.input_node.in_db_file = os.path.abspath(args.database)
-r.inputs.input_node.out_dir = result_dir
-
 
 if args.mask is None:
     mni_to_input = pe.Node(interface=niftyreg.RegAladin(), 
@@ -95,12 +106,22 @@ if args.mask is None:
 
     r.connect(infosource, 'inputfile', mni_to_input, 'ref_file')
     r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
-    r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask_file')
+    r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask')
     
 else:
-    masks = [os.path.abspath(f) for f in args.mask]
-    r.connect(infosource, 'mask', r.get_node('input_node'), 'in_mask_file')
+    
+    r.connect(infosource, 'mask', r.get_node('input_node'), 'in_mask')
+    
+    
+find_data_directory = pe.Node(niu.Function(
+    input_names = ['in_db_file'],
+    output_names = ['directory'],
+    function = find_data_directory_function),
+                              name = 'find_data_directory')
+find_data_directory.inputs.in_db_file = os.path.abspath(args.database)
+r.connect(find_data_directory, 'directory', r.get_node('input_node'), in_t1s_dir)
 
+r.inputs.input_node.in_db_file = os.path.abspath(args.database)
 
 r.write_graph(graph2use='colored')
 
