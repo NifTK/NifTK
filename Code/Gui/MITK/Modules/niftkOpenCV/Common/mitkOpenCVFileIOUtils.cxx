@@ -182,17 +182,15 @@ bool SaveTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   }
 
   cv::Matx44d matrix;
-  isSuccessful = SaveTrackerMatrix(filename, matrix);
-  if (isSuccessful)
+  for ( int row = 0 ; row < 4 ; row ++ )
   {
-    for ( int row = 0 ; row < 4 ; row ++ )
+    for ( int col = 0 ; col < 4 ; col ++ )
     {
-      for ( int col = 0 ; col < 4 ; col ++ )
-      {
-        outputMatrix.at<double>(row,col) = matrix(row, col);
-      }
+      matrix(row, col) = outputMatrix.at<double>(row,col);
     }
   }
+
+  isSuccessful = SaveTrackerMatrix(filename, matrix);
   return isSuccessful;
 }
 
