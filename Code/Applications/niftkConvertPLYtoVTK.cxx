@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <niftkConversionUtils.h>
-#include <niftkImageMomentsRegistrationCLP.h>
 
 #include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
