@@ -2388,7 +2388,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   typename FactoryType::EulerAffineTransformType::ScaleType scaleFactor;
   scaleFactor.SetSize( InputDimension );
 
-  for ( unsigned int iDim; iDim<InputDimension; iDim++ )
+  for ( unsigned int iDim=0; iDim<InputDimension; iDim++ )
   {
     scaleFactor[ iDim ] = 
       sqrt(movingPrincipalMoments[ iDim ] / movingTotalMass )

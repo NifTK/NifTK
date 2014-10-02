@@ -240,7 +240,7 @@ int DoMain(arguments args)
   
   itk::FixedArray< double, Dimension > scaleFactor;
 
-  for ( unsigned int iDim; iDim<Dimension; iDim++ )
+  for ( unsigned int iDim=0; iDim<Dimension; iDim++ )
   {
     scaleFactor[ iDim ] = 
       sqrt(movingPrincipalMoments[ iDim ] / movingTotalMass )
