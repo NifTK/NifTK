@@ -46,15 +46,15 @@ TwoTrackerMatching::~TwoTrackerMatching ()
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::ConvertMatrices(const TrackingAndTimeStampsContainer& container1, TrackingMatrices& container2)
 {
-  cv::Mat outputMatrix ( 4, 4, CV_64FC1 );
-  std::vector<TimeStampsContainer::TimeStamp>::size_type i;
-
   container2.m_TrackingMatrices.clear();
   container2.m_TimingErrors.clear();
 
+  std::vector<TimeStampsContainer::TimeStamp>::size_type i;
   for (i = 0; i < container1.GetSize(); i++)
   {
+    cv::Mat outputMatrix ( 4, 4, CV_64FC1 );
     mitk::CopyToOpenCVMatrix(container1.GetMatrix(i), outputMatrix);
+
     container2.m_TrackingMatrices.push_back(outputMatrix);
   }
 }
@@ -65,13 +65,13 @@ void TwoTrackerMatching::LookupMatrices(const TrackingAndTimeStampsContainer& co
                                       const TrackingAndTimeStampsContainer& container2,
                                       TrackingMatrices& outputContainer)
 {
-  cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
-
   outputContainer.m_TimingErrors.clear();
   outputContainer.m_TrackingMatrices.clear();
 
   for ( unsigned int i = 0 ; i < container1.GetSize() ; i++ )
   {
+    cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
+
     long long timingError;
     unsigned long long targetTimeStamp;
 
