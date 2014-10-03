@@ -131,11 +131,34 @@ void WaitForResult(const mitk::StandaloneDataStorage::Pointer& datastorage)
 }
 
 
+void RefcountTest(const mitk::StandaloneDataStorage::Pointer& datastorage)
+{
+  CUDAManager*          cm = CUDAManager::GetInstance();
+
+  {
+    WriteAccessor         wa = cm->RequestOutputImage(1, 1, 4);
+    cudaStream_t          stream = cm->GetStream("refcount-test");
+    LightweightCUDAImage  lwci = cm->Finalise(wa, stream);
+
+    CUDAImage::Pointer    cudaImage(CUDAImage::New());
+    cudaImage->SetLightweightCUDAImage(lwci);
+
+    mitk::DataNode::Pointer   node(mitk::DataNode::New());
+    node->SetName("cudaimagetest");
+    node->SetData(cudaImage);
+    datastorage->Add(node);
+  }
+
+  // at this point, the above lwci should have a refcount of 1
+}
+
+
 int CUDAManagerTest(int /*argc*/, char* /*argv*/[])
 {
   MITK_TEST_BEGIN("CUDAManagerTest");
 
   mitk::StandaloneDataStorage::Pointer    datastorage(mitk::StandaloneDataStorage::New());
+  RefcountTest(datastorage);
   Producer(datastorage);
   Consumer(datastorage);
   AnotherConsumer(datastorage);

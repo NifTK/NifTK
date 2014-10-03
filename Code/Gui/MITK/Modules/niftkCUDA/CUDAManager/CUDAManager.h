@@ -65,6 +65,13 @@ struct WriteAccessor
 };
 
 
+// forward-decl
+namespace impldetail
+{
+struct ModuleCleanup;
+}
+
+
 /**
  * Singleton that owns all CUDA resources.
  * It manages images in a copy-on-write like fashion: you cannot write into an existing
@@ -101,6 +108,7 @@ struct WriteAccessor
 class NIFTKCUDA_EXPORT CUDAManager : public QThread
 {
   friend class LightweightCUDAImage;
+  friend struct impldetail::ModuleCleanup;
 
 public:
   /**
@@ -108,6 +116,7 @@ public:
    * @throws std::runtime_error if CUDA is not available on the system.
    */
   static CUDAManager* GetInstance();
+
 
   // FIXME: not yet implemented
   ScopedCUDADevice ActivateDevice(int dev);

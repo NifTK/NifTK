@@ -58,8 +58,40 @@ static bool CUDADelayLoadCheck()
 
 
 //-----------------------------------------------------------------------------
-CUDAManager*      CUDAManager::s_Instance = 0;
 QMutex            CUDAManager::s_Lock(QMutex::Recursive);
+CUDAManager*      CUDAManager::s_Instance = 0;
+
+
+namespace impldetail
+{
+
+/** Static initialiser to cleanup on module unload. */
+struct ModuleCleanup
+{
+  ModuleCleanup()
+  {
+    // nothing to do.
+  }
+
+  ~ModuleCleanup()
+  {
+    try
+    {
+      delete CUDAManager::s_Instance;
+      CUDAManager::s_Instance = 0;
+    }
+    catch (...)
+    {
+      // swallow it. never let exceptions escape from destructors.
+    }
+  }
+};
+
+} // namespace
+
+// remember: objects at file scope are constructed and cleared up int the order of declaration.
+// so this one will be done before the lock above goes away.
+impldetail::ModuleCleanup       s_ModuleCleaner;
 
 
 /**
@@ -107,7 +139,74 @@ CUDAManager::CUDAManager()
 //-----------------------------------------------------------------------------
 CUDAManager::~CUDAManager()
 {
-  // FIXME: so far we never destructed it. should clean up memory.
+  for (std::map<std::string, cudaStream_t>::iterator i = m_Streams.begin(); i != m_Streams.end(); ++i)
+  {
+    cudaError_t err;
+    err = cudaStreamDestroy(i->second);
+    assert(err == cudaSuccess);
+  }
+
+
+  // these should be empty! but depending on how other code uses datanodes etc it could
+  // leak a reference which then means that we also leak one here.
+  // in that case, simply clean up explicitly.
+  // that would make the LightweightCUDAImage instance still floating around invalid but hey too bad:
+  // the runtime lib is being unloaded, don't expect anything to work afterwards.
+
+  for (std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.begin(); i != m_ValidImages.end(); ++i)
+  {
+    // remember this odd one: the LightweightCUDAImage that sits on a DataNode increments the refcount for it.
+    // but that LightweightCUDAImage is only a handle, so we need to keep it here as well to manage it.
+    // images that are referenced somewhere sit in m_ValidImages, but to prevent that from never moving them
+    // back to m_AvailableImagePool, images in m_ValidImages do not have their refcount increased.
+
+    // instead of just inc'ing the refcount and leaving the cleanup for m_AvailableImagePool below deal with it,
+    // we free these explicitly to avoid recursive calls via AllRefsDropped() into mutative operations on m_ValidImages.
+
+    // FIXME: make sure to activate the correct device context.
+
+    cudaError_t err;
+    err = cudaEventDestroy(i->second.m_ReadyEvent);
+    assert(err == cudaSuccess);
+    i->second.m_ReadyEvent = 0;
+
+    err = cudaFree(i->second.m_DevicePtr);
+    assert(err == cudaSuccess);
+    i->second.m_DevicePtr = 0;
+
+    delete i->second.m_RefCount;
+    i->second.m_RefCount = 0;
+  }
+  // because the refcount for all images in m_ValidImages is gone now, this will not
+  // trigger a call to AllRefsDropped() (which would place them on m_AvailableImagePool correctly but) that
+  // double-modifies m_ValidImages and trashes its internal state leading to a crash.
+  m_ValidImages.clear();
+
+  //std::map<unsigned int, LightweightCUDAImage>    m_InFlightOutputImages
+
+
+  for (int i = 0; i < m_AvailableImagePool.size(); ++i)
+  {
+    for (std::list<LightweightCUDAImage>::iterator j = m_AvailableImagePool[i].begin(); j != m_AvailableImagePool[i].end(); ++j)
+    {
+      // FIXME: make sure to activate the correct device context.
+
+      cudaError_t err;
+      err = cudaEventDestroy(j->m_ReadyEvent);
+      assert(err == cudaSuccess);
+      j->m_ReadyEvent = 0;
+
+      err = cudaFree(j->m_DevicePtr);
+      assert(err == cudaSuccess);
+      j->m_DevicePtr = 0;
+
+      delete j->m_RefCount;
+      j->m_RefCount = 0;
+    }
+  }
+  // explicitly clear so we are independent of class member destruction order.
+  // (that sounds a bit like a bug...)
+  m_AvailableImagePool.clear();
 }
 
 
@@ -142,6 +241,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
 
   // round up the length of a line of pixels to make sure access is aligned.
   unsigned int  bytepitch = width * FIXME_pixeltype;
+  bytepitch = std::max(bytepitch, 64u);
   // 64 byte alignment sounds good.
   bytepitch += bytepitch % 64;
   assert((bytepitch % 64) == 0);
@@ -270,6 +370,8 @@ LightweightCUDAImage CUDAManager::Finalise(WriteAccessor& writeAccessor, cudaStr
 
   // while being held by m_ValidImages, refs in there dont count towards the reference count.
   // this is so that m_ValidImages does not keep them artificially alive.
+  // i.e. their refcount would never drop to zero if all datastorage nodes are gone, hence
+  // they'd never end up back on the m_AvailableImagePool.
   lwci.m_RefCount->deref();
 
   return lwci;
