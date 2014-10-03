@@ -19,6 +19,11 @@
 #include <mitkProperties.h>
 #include <Conversion/ImageConversion.h>
 #include <stdexcept>
+#ifdef _USE_CUDA
+#include <CUDAManager/CUDAManager.h>
+#include <CUDAImage/LightweightCUDAImage.h>
+#include <CameraCalibration/UndistortionKernel.h>
+#endif
 
 
 namespace niftk
@@ -283,6 +288,36 @@ void Undistortion::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer sourc
 //-----------------------------------------------------------------------------
 void Undistortion::Process(const IplImage* input, IplImage* output, bool recomputeCache)
 {
+  // an example of how to use the cuda interface.
+  // FIXME: this should be factored out into its own class.
+  //        it should probably go niftkCUDA
+#ifdef _USE_CUDA
+  CUDAManager*    cm = CUDAManager::GetInstance();
+  cudaStream_t    stream = cm->GetStream("undistortion");
+
+  // currently we don't have CUDAImages in datastorage.
+  // so just upload the mitk ones (wrapped nicely in IplImage).
+  assert(input->nChannels == 4);
+  assert(input->depth == 8);
+  assert(input->widthStep == (input->width * input->nChannels * input->depth / 8));
+  WriteAccessor inputWA = cm->RequestOutputImage(input->width, input->height, 4);
+
+  cudaError_t   err = cudaSuccess;
+  // source of memcpy is not page-locked, so would never be async.
+  err = cudaMemcpy(inputWA.m_DevicePointer, input->imageData, input->widthStep * input->height, cudaMemcpyHostToDevice);
+  assert(err == cudaSuccess);
+
+  RunDoNothingKernel(stream);
+
+  // even though we don't need the image that holds input data,
+  // we still have to finalise it. but we can simply discard the output LightweightCUDAImage.
+  cm->Finalise(inputWA, stream);
+
+  // ooooh, this is bad... but this class is 100% synchronous. so we have to wait here.
+  err = cudaStreamSynchronize(stream);
+  assert(err == cudaSuccess);
+
+#else
   if (recomputeCache)
   {
     if (m_MapX)
@@ -314,6 +349,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   }
 
   cvRemap(input, output, m_MapX, m_MapY, CV_INTER_LINEAR /*+CV_WARP_FILL_OUTLIERS*/, cvScalarAll(0));
+#endif // _USE_CUDA
 }
 
 
