@@ -5,6 +5,7 @@ import nipype.interfaces.io             as nio
 import nipype.pipeline.engine           as pe          
 import argparse
 import os
+import glob
 from distutils import spawn
 
 import nipype.interfaces.niftyreg as niftyreg
@@ -15,92 +16,71 @@ mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI1
 
 parser = argparse.ArgumentParser(description='GIF Propagation')
 
-parser.add_argument('-i', '--inputfile',
-                    dest='inputfile',
-                    metavar='inputfile',
-                    nargs='+',
-                    help='Input target image to propagate labels in',
+parser.add_argument('-i', '--input_dir',
+                    dest='input_dir',
+                    metavar='input_dir',
+                    help='Input directory where to find db.xml, T1s, masks, cpps, labels',
                     required=True)
 
-parser.add_argument('-m','--mask',
-                    dest='mask',
-                    metavar='mask',
-                    nargs='+',
-                    help='Mask image corresponding to inputfile',
-                    required=False)
-
-parser.add_argument('-c','--cpp',
-                    dest='cpp',
-                    metavar='cpp',
-                    nargs='+',
-                    help='cpp directory to store/read cpp files related to inputfile',
-                    required=True)
-
-parser.add_argument('-d','--database',
-                    dest='database',
-                    metavar='database',
-                    help='gif-based database xml file describing the inputs',
-                    required=True)
-
-parser.add_argument('-o','--output',
-                    dest='output',
-                    metavar='output',
-                    help='output directory to which the gif outputs are stored',
+parser.add_argument('-o','--output_dir',
+                    dest='output_dir',
+                    metavar='output_dir',
+                    help='Output directory where to put the labels',
                     required=True)
 
 args = parser.parse_args()
 
-result_dir = os.path.abspath(args.output)
-if not os.path.exists(result_dir):
-    os.mkdir(result_dir)
-
 basedir = os.getcwd()
 
-inputfiles = [os.path.abspath(f) for f in args.inputfile]
-cpps = [os.path.abspath(f) for f in args.cpp]
+# extracting the directory where the input file is (are)
+input_directory = os.path.abspath(args.input_dir)
+# extracting basename of the input file (list)
+input_files = [os.path.basename(f) for f in glob.glob(os.path.join(input_directory, 'T1s', '*.nii*'))]
+# extracting the 'subject list' simply for iterable purposes
+subject_list = [f.replace('.nii.gz','') for f in input_files]
 
+print 'input directory: ', input_directory
+print 'input files: ', input_files
+print 'subject list: ', subject_list
 
-infosource = pe.Node(niu.IdentityInterface(fields = ['inputfile', 'mask', 'cpp']),
-                     name = 'infosource',
-                     synchronize=True)
+# extracting the database file:
+database_file = os.path.join(input_directory, 'db.xml')
 
-if args.mask is None:
-    infosource.iterables = [ ('inputfile', inputfiles), 
-                             ('cpp', cpps) ]
-else:
-    masks = [os.path.abspath(f) for f in args.mask]
-    infosource.iterables = [ ('inputfile', inputfiles), 
-                             ('mask', masks), 
-                             ('cpp', cpps) ]
-                               
+# the dictionary to be used for iteration
+info = dict(target=[['subject_id']],
+            mask=[['subject_id']],
+            cpp_dir=[['subject_id']])
 
-r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_propagation_workflow_s')
+# the iterable node
+infosource = pe.Node(niu.IdentityInterface(fields = ['subject_id']),
+                     name = 'infosource')
+infosource.iterables = ('subject_id', subject_list)
+
+# a data grabber to get the actual image file
+datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id'],
+                                               outfields=info.keys()),
+                     name = 'datasource')
+# the template is a simple string 'subject_id.nii.gz'
+datasource.inputs.template = '%s'
+datasource.inputs.base_directory = input_directory
+# with these two lines the grabber should grab the file indicated by the iterable node
+datasource.inputs.field_template = dict(target='T1s/%s.nii.gz',
+                                        mask='masks/%s.nii.gz',
+                                        cpp_dir='cpps/%s')
+datasource.inputs.template_args = info
+datasource.inputs.sort_filelist = True
+
+# The processing pipeline itself is instantiated
+r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_iteration')
 r.base_dir = basedir
 
-r.connect(infosource, 'inputfile', r.get_node('input_node'), 'in_file')
-r.connect(infosource, 'cpp', r.get_node('input_node'), 'in_cpp_dir')
-
-r.inputs.input_node.in_db_file = os.path.abspath(args.database)
-r.inputs.input_node.out_dir = result_dir
-
-
-if args.mask is None:
-    mni_to_input = pe.Node(interface=niftyreg.RegAladin(), 
-                           name='mni_to_input')
-    mni_to_input.inputs.flo_file = mni_template
-    mask_resample  = pe.Node(interface = niftyreg.RegResample(), 
-                             name = 'mask_resample')
-    mask_resample.inputs.inter_val = 'NN'
-    mask_resample.inputs.flo_file = mni_template_mask
-
-    r.connect(infosource, 'inputfile', mni_to_input, 'ref_file')
-    r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
-    r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask_file')
-    
-else:
-    masks = [os.path.abspath(f) for f in args.mask]
-    r.connect(infosource, 'mask', r.get_node('input_node'), 'in_mask_file')
-
+# Connect all the nodes together
+r.connect(infosource, 'subject_id', datasource, 'subject_id')
+r.connect(datasource, 'target', r.get_node('input_node'), 'in_file')
+r.connect(datasource, 'mask', r.get_node('input_node'), 'in_mask_file')
+r.connect(datasource, 'cpp_dir', r.get_node('input_node'), 'in_cpp_dir')
+r.inputs.input_node.in_db_file = database_file
+r.inputs.input_node.out_dir = os.path.abspath(args.output_dir)
 
 r.write_graph(graph2use='colored')
 
