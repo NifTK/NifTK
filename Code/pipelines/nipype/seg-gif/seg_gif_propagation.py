@@ -214,24 +214,12 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     input_node = pe.Node(
         interface = niu.IdentityInterface(
             fields=['in_file',
-                    'in_mask',
-                    'in_t1s_dir',
+                    'in_mask_file',
+                    'in_templates',
                     'in_db_file',
-                    'out_cpp_dir']),
+                    'out_dir']),
         name='input_node')
 
-    '''
-    *****************************************************************************
-    Initial step: grab the input T1s towards which the input needs to be registered to
-    *****************************************************************************
-    '''
-    grabber_t1s = pe.Node(interface = nio.DataGrabber(outfields=['images']), 
-                          name = 'grabber_t1s')
-    grabber_t1s.inputs.template = '*.nii*'
-    grabber_t1s.inputs.sort_filelist = True
-
-    workflow.connect(input_node, 'in_t1s_dir', grabber_t1s, 'base_directory')
-    
 
     '''
     *****************************************************************************
@@ -259,7 +247,7 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
 
     '''
     *****************************************************************************
-    Second step: Affine register all T1s towards the input image
+    Second step: Affine register all templates towards the input image
     *****************************************************************************
     '''
     linear_registration = pe.MapNode(interface=niftyreg.RegAladin(), 
@@ -291,26 +279,30 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
 
 
 
+    gif_sink = pe.Node(nio.DataSink(), name='gif_sink')
+    gif_sink.inputs.parameterization = False
+
+
     '''
     *****************************************************************************
     First step: Cropping input according to 10 voxels surrounding the skull
     *****************************************************************************
     '''
-    workflow.connect(input_node, 'in_mask', dilate_image_mask, 'in_file')
+    workflow.connect(input_node, 'in_mask_file', dilate_image_mask, 'in_file')
     workflow.connect(input_node, 'in_file', crop_image_with_mask, 'in_file')
     workflow.connect(dilate_image_mask, 'out_file', crop_image_with_mask, 'mask_file')
     workflow.connect(crop_image_with_mask, 'out_file', resample_image_mask_to_cropped_image, 'ref_file')
-    workflow.connect(input_node, 'in_mask', resample_image_mask_to_cropped_image, 'flo_file')
+    workflow.connect(input_node, 'in_mask_file', resample_image_mask_to_cropped_image, 'flo_file')
     workflow.connect(crop_image_with_mask, 'out_file', bias_correction, 'in_file')
     workflow.connect(resample_image_mask_to_cropped_image, 'res_file', bias_correction, 'mask_file')
 
     '''
     *****************************************************************************
-    Second step: Affine register all T1s towards the input image
+    Second step: Affine register all templates towards the input image
     *****************************************************************************
     '''
     workflow.connect(bias_correction, 'out_file', linear_registration, 'ref_file')
-    workflow.connect(grabber_t1s, 'images', linear_registration, 'flo_file')
+    workflow.connect(input_node,'in_templates', linear_registration, 'flo_file')
 
     '''
     *****************************************************************************
@@ -318,7 +310,7 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     *****************************************************************************
     '''
     workflow.connect(bias_correction, 'out_file', non_linear_registration, 'ref_file')
-    workflow.connect(grabber_t1s, 'images', non_linear_registration, 'flo_file')
+    workflow.connect(input_node,'in_templates', non_linear_registration, 'flo_file')
     workflow.connect(linear_registration, 'aff_file', non_linear_registration, 'aff_file')
 
 
@@ -330,32 +322,33 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
 
     cpp_sink = pe.Node(nio.DataSink(parameterization=True),
                        name = 'cpp_sink')
-    workflow.connect(input_node, 'out_cpp_dir', cpp_sink, 'base_directory') 
-    workflow.connect(non_linear_registration, 'cpp_file', cpp_sink, '@cpps')
+    workflow.connect(input_node, 'out_dir', cpp_sink, 'base_directory') 
+    workflow.connect(non_linear_registration, 'cpp_file', cpp_sink, 'cpps')
     find_cpp_substitutions = pe.Node(niu.Function(
         input_names = ['in_files', 'out_files'],
         output_names = ['substitutions'],
         function = find_preprocessing_substitutions),
                                      name = 'find_cpp_substitutions')
     
-    workflow.connect(grabber_t1s, 'images', find_cpp_substitutions, 'in_files') 
+    workflow.connect(input_node, 'in_templates', find_cpp_substitutions, 'in_files') 
     workflow.connect(non_linear_registration, 'cpp_file', find_cpp_substitutions, 'out_files') 
     workflow.connect(find_cpp_substitutions, 'substitutions', cpp_sink, 'substitutions') 
 
     aff_sink = pe.Node(nio.DataSink(parameterization=True),
                        name = 'aff_sink')
-    workflow.connect(input_node, 'out_cpp_dir', aff_sink, 'base_directory') 
-    workflow.connect(linear_registration, 'aff_file', aff_sink, '@affs')
+    workflow.connect(input_node, 'out_dir', aff_sink, 'base_directory')
+    workflow.connect(linear_registration, 'aff_file', aff_sink, 'cpps.@affs')
     find_aff_substitutions = pe.Node(niu.Function(
         input_names = ['in_files', 'out_files'],
         output_names = ['substitutions'],
         function = find_preprocessing_substitutions_change_ext),
                                      name = 'find_aff_substitutions')
     
-    workflow.connect(grabber_t1s, 'images', find_aff_substitutions, 'in_files') 
+    workflow.connect(input_node, 'in_templates', find_aff_substitutions, 'in_files') 
     workflow.connect(linear_registration, 'aff_file', find_aff_substitutions, 'out_files') 
     workflow.connect(find_aff_substitutions, 'substitutions', aff_sink, 'substitutions') 
     
+
     find_cpp_dir = pe.Node(niu.Function(
         input_names = ['in_files'],
         output_names = ['out_dir'],
@@ -374,6 +367,30 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     workflow.connect(resample_image_mask_to_cropped_image, 'res_file', gif, 'mask_file')
     workflow.connect(input_node, 'in_db_file', gif, 'database_file')
 
+
+
+    '''
+    *****************************************************************************
+    Last step: Sink the GIF outputs
+    *****************************************************************************
+    '''
+    workflow.connect(input_node, 'out_dir',        gif_sink, 'base_directory')
+    workflow.connect(gif,        'parc_file',      gif_sink, 'labels')  
+    workflow.connect(gif,        'geo_file',       gif_sink, 'labels_geo')
+    workflow.connect(gif,        'prior_file',     gif_sink, 'priors')
+
+    '''
+    *****************************************************************************
+    Aux step: substitutions for the GIF outputs
+    *****************************************************************************
+    '''
+    find_gif_substitutions = pe.Node(interface = niu.Function(
+        input_names = ['in_db_file'],
+        output_names = ['substitutions'],
+        function=find_gif_substitutions_function),
+                                     name = 'find_gif_substitutions')
+    workflow.connect(input_node, 'in_db_file', find_gif_substitutions, 'in_db_file')
+    workflow.connect(find_gif_substitutions, 'substitutions', gif_sink, 'regexp_substitutions')
 
     '''
     *****************************************************************************
