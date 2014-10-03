@@ -307,14 +307,46 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   err = cudaMemcpy(inputWA.m_DevicePointer, input->imageData, input->widthStep * input->height, cudaMemcpyHostToDevice);
   assert(err == cudaSuccess);
 
-  RunDoNothingKernel(stream);
+  // we need another image, this time for actual output.
+  WriteAccessor outputWA = cm->RequestOutputImage(input->width, input->height, 4);
+
+  // wrap the linear memory with our input data in a texture object,
+  // so that we can read filtered results.
+  cudaResourceDesc    resdesc = {cudaResourceTypePitch2D, 0};
+  resdesc.res.pitch2D.devPtr = inputWA.m_DevicePointer;
+  resdesc.res.pitch2D.desc.x = resdesc.res.pitch2D.desc.y = resdesc.res.pitch2D.desc.z = resdesc.res.pitch2D.desc.w = 8;
+  resdesc.res.pitch2D.desc.f = cudaChannelFormatKindUnsigned;
+  resdesc.res.pitch2D.width  = input->width;
+  resdesc.res.pitch2D.height = input->height;
+  resdesc.res.pitch2D.pitchInBytes = input->widthStep;
+
+  cudaTextureDesc     texdesc = {cudaAddressModeWrap};
+  texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
+  texdesc.filterMode = cudaFilterModeLinear;
+  texdesc.readMode = cudaReadModeNormalizedFloat;//cudaReadModeElementType;     // could be cudaReadModeNormalizedFloat to have automatic conversion to floating point.
+
+  cudaTextureObject_t   texobj;
+  err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
+  assert(err == cudaSuccess);
+
+  RunUndistortionKernel((char*) outputWA.m_DevicePointer, texobj, stream);
 
   // even though we don't need the image that holds input data,
   // we still have to finalise it. but we can simply discard the output LightweightCUDAImage.
   cm->Finalise(inputWA, stream);
 
-  // ooooh, this is bad... but this class is 100% synchronous. so we have to wait here.
-  err = cudaStreamSynchronize(stream);
+  // this time, we do want to keep the result
+  LightweightCUDAImage    outputLWCI = cm->Finalise(outputWA, stream);
+
+
+  // the interface for CUDAManager does intentionally not have readback functionality.
+  // so we need to request read access to our own output.
+  // (obviously we could shortcut this, we have the device pointers. but this exercise is about api.)
+  ReadAccessor outputRA = cm->RequestReadAccess(outputLWCI);
+
+  // even though the name has async in it, it is synchronous because the destination is not page-locked.
+  // but we want the extra stream parameter so that it syncs onto our compute stream.
+  err = cudaMemcpyAsync(output->imageData, outputRA.m_DevicePointer, output->widthStep * output->height, cudaMemcpyDeviceToHost, stream);
   assert(err == cudaSuccess);
 
 #else

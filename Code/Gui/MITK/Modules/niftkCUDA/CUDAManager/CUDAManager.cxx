@@ -455,6 +455,13 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
   std::map<unsigned int, LightweightCUDAImage>::iterator  i = m_ValidImages.find(lwci.GetId());
   assert(i != m_ValidImages.end());
 
+  // FIXME: this needs a check whether the readyevent for lwci was ever signaled!
+  //        otherwise we have a race condition with someone requesting an output image,
+  //        queueing a kernel, finalising, and immediately dropping the result.
+  //        that would trigger a call to here, but the queued kernel is still running so the image
+  //        is not available yet!
+  //        how to go about this? queue a callback onto null stream?
+
   std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
   freeList.insert(freeList.begin(), lwci);
 

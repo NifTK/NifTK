@@ -33,7 +33,7 @@ __global__ void donothing_kernel()
 
 
 //-----------------------------------------------------------------------------
-void NIFTKCUDAKERNELS_WINEXPORT RunDoNothingKernel(cudaStream_t stream)
+void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, cudaTextureObject_t texture, cudaStream_t stream)
 {
   cudaError_t err = cudaSuccess;
 
