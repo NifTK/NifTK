@@ -1,18 +1,23 @@
 #!/bin/sh
 
-for b in dev sls midas thifu EpiNav
+git fetch origin
+
+git stash
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+for b in master sls thifu
 do
-  git checkout $b > /dev/null 2>&1
-  git branch -a --merged > /tmp/$b.txt
+  git branch -a --merged $b > /tmp/$b.txt
 done
 
-for b in `git branch -r | sed s,origin/,, | grep -v HEAD | grep -v ">" `
+for b in `git branch -r | grep "^\ *origin/" | sed s,origin/,, | grep -v HEAD | grep -v ">" | grep -v master | grep -v sls | grep -v thifu
 do
   FOUND_IT=0
-  for c in dev sls midas thifu EpiNav
+  for c in master sls thifu
   do
-    WC=`cat /tmp/$c.txt | grep $b`
-    if [ "x${WC}x" != "xx" ]; then 
+    if grep -q $b /tmp/$c.txt
+    then
       FOUND_IT=1
     fi
   done
@@ -21,16 +26,17 @@ do
     echo $b >> branches-merged.txt
   else
     echo $b >> branches-not-merged.txt
-    git checkout $b
-    git log --pretty=format:"%h - %an, %ar : %s" | head -3 >> branches-not-merged.txt
+    git log --pretty=format:"%h - %an, %ar : %s" $b | head -3 >> branches-not-merged.txt
   fi
 
 done
 
-for b in dev sls midas thifu EpiNav
+for b in master sls thifu
 do
   rm /tmp/$b.txt
 done
 
-git checkout dev
+git checkout $current_branch
+
+git stash pop
  
