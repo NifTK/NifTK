@@ -33,20 +33,11 @@ mark_as_advanced(NIFTK_VERSION_PATCH)
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-if(APPLE)
-  cmake_minimum_required(VERSION 2.8.8)
-else(APPLE)
-  cmake_minimum_required(VERSION 2.8.4)
-endif(APPLE)
-
-# If CMake is the version we're expecting, don't show the
-# CMAKE_BACKWARDS_COMPATIBILITY option. If the version is higher than the
-# minimal version required, then show the backward compatibility option.
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
-  mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
-else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
-  mark_as_advanced(CLEAR CMAKE_BACKWARDS_COMPATIBILITY)
-endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
+if(WIN32)
+  cmake_minimum_required(VERSION 2.8.11.2)
+else()
+  cmake_minimum_required(VERSION 2.8.9)
+endif()
 
 ######################################################################
 # Setting supported build types. Should ONLY be Debug or Release.
