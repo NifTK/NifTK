@@ -714,6 +714,18 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
            properties[propertyName][rendererName] = propertyTypedValue;
          }
        }
+       else if (arguments[i] == "--perspective" || arguments[i] == "--window-layout")
+       {
+         /// Note:
+         /// These arguments are processed by the NiftyMIDAS workbench advisor.
+         ++i;
+         if (i == arguments.size())
+         {
+           MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
+           ok = false;
+           break;
+         }
+       }
        else if (arguments[i].right(5) == ".mitk")
        {
          if (!properties.isEmpty())
