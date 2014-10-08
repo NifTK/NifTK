@@ -2,41 +2,46 @@
 
 git fetch origin
 
-git stash
+rm branches-merged.txt branches-not-merged.txt 2> /dev/null
+
+git stash save --include-untracked | grep -qv "No local changes to save"
+stashed_changes=$?
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
-for b in master sls thifu
+for main_branch in master sls thifu
 do
-  git branch -a --merged $b > /tmp/$b.txt
+  git branch -a --merged origin/$main_branch > /tmp/$main_branch.txt
 done
 
-for b in `git branch -r | grep "^\ *origin/" | sed s,origin/,, | grep -v HEAD | grep -v ">" | grep -v master | grep -v sls | grep -v thifu
+for feature_branch in `git branch -r | grep "^\ *origin/" | sed s,origin/,, | grep -v HEAD | grep -v ">" | grep -v master | grep -v sls | grep -v thifu`
 do
   FOUND_IT=0
-  for c in master sls thifu
+  for main_branch in master sls thifu
   do
-    if grep -q $b /tmp/$c.txt
+    if grep -q $feature_branch /tmp/$main_branch.txt
     then
       FOUND_IT=1
     fi
   done
 
   if [ $FOUND_IT -eq 1 ]; then
-    echo $b >> branches-merged.txt
+    echo $feature_branch >> branches-merged.txt
   else
-    echo $b >> branches-not-merged.txt
-    git log --pretty=format:"%h - %an, %ar : %s" $b | head -3 >> branches-not-merged.txt
+    echo $feature_branch >> branches-not-merged.txt
+    git log --pretty=format:"%h - %an, %ar : %s" "origin/$feature_branch" | head -3 >> branches-not-merged.txt
   fi
 
 done
 
-for b in master sls thifu
+for main_branch in master sls thifu
 do
-  rm /tmp/$b.txt
+  rm /tmp/$main_branch.txt
 done
 
 git checkout $current_branch
 
-git stash pop
- 
+if [ $stashed_changes -eq 0 ]
+then
+  git stash pop
+fi
