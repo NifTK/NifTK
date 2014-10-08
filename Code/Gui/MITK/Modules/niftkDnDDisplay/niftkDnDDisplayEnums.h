@@ -87,6 +87,70 @@ inline bool IsMultiWindowLayout(WindowLayout layout)
  */
 const int WINDOW_LAYOUT_NUMBER = 15;
 
+inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
+{
+  WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
+
+  if (windowLayoutName == "axial")
+  {
+    windowLayout = WINDOW_LAYOUT_AXIAL;
+  }
+  else if (windowLayoutName == "sagittal")
+  {
+    windowLayout = WINDOW_LAYOUT_SAGITTAL;
+  }
+  else if (windowLayoutName == "coronal")
+  {
+    windowLayout = WINDOW_LAYOUT_CORONAL;
+  }
+  else if (windowLayoutName == "2x2")
+  {
+    windowLayout = WINDOW_LAYOUT_ORTHO;
+  }
+  else if (windowLayoutName == "3D")
+  {
+    windowLayout = WINDOW_LAYOUT_3D;
+  }
+  else if (windowLayoutName == "3H")
+  {
+    windowLayout = WINDOW_LAYOUT_3H;
+  }
+  else if (windowLayoutName == "3V")
+  {
+    windowLayout = WINDOW_LAYOUT_3V;
+  }
+  else if (windowLayoutName == "as acquired")
+  {
+    windowLayout = WINDOW_LAYOUT_AS_ACQUIRED;
+  }
+  else if (windowLayoutName == "cor sag H")
+  {
+    windowLayout = WINDOW_LAYOUT_COR_SAG_H;
+  }
+  else if (windowLayoutName == "cor sag V")
+  {
+    windowLayout = WINDOW_LAYOUT_COR_SAG_V;
+  }
+  else if (windowLayoutName == "cor ax H")
+  {
+    windowLayout = WINDOW_LAYOUT_COR_AX_H;
+  }
+  else if (windowLayoutName == "cor ax V")
+  {
+    windowLayout = WINDOW_LAYOUT_COR_AX_V;
+  }
+  else if (windowLayoutName == "sag ax H")
+  {
+    windowLayout = WINDOW_LAYOUT_SAG_AX_H;
+  }
+  else if (windowLayoutName == "sag ax V")
+  {
+    windowLayout = WINDOW_LAYOUT_SAG_AX_V;
+  }
+
+  return windowLayout;
+}
+
 /*!
  * \enum DnDDisplayDropType
  * \brief Describes the different modes that can be used when drag and dropping

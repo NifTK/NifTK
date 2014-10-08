@@ -16,6 +16,8 @@
 #include "QmitkNiftyMIDASWorkbenchWindowAdvisor.h"
 
 #include <berryIWorkbenchConfigurer.h>
+#include <QmitkMultiViewerEditor.h>
+#include <niftkMultiViewerWidget.h>
 
 #include <mitkLogMacros.h>
 
@@ -46,6 +48,11 @@ QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyMIDASAppWorkbenchAdvisor::CreateQmitk
 void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 {
   std::vector<std::string> args = berry::Platform::GetApplicationArgs();
+
+  berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
+  berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
+  berry::IWorkbenchWindow::Pointer activeWorkbenchWindow = workbench->GetActiveWorkbenchWindow();
+
   for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
   {
     std::string arg = *it;
@@ -59,8 +66,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       std::string perspectiveLabel = *it;
 
-      berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
-      berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
       berry::IPerspectiveRegistry* perspectiveRegistry = workbench->GetPerspectiveRegistry();
       berry::IPerspectiveDescriptor::Pointer perspectiveDescriptor = perspectiveRegistry->FindPerspectiveWithLabel(perspectiveLabel);
 
@@ -70,12 +75,26 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         continue;
       }
 
-      std::vector<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
-      for (std::vector<berry::IWorkbenchWindow::Pointer>::iterator workbenchWindowIt = workbenchWindows.begin();
-           workbenchWindowIt != workbenchWindows.end();
-           ++workbenchWindowIt)
+      workbench->ShowPerspective(perspectiveDescriptor->GetId(), activeWorkbenchWindow);
+    }
+    else if (arg == "--window-layout")
+    {
+      ++it;
+      if (it == args.end())
       {
-        workbench->ShowPerspective(perspectiveDescriptor->GetId(), *workbenchWindowIt);
+        break;
+      }
+
+      std::string windowLayoutName = *it;
+
+      WindowLayout windowLayout = ::GetWindowLayout(windowLayoutName);
+
+      if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
+      {
+        berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+        QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+        niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+        multiViewer->SetDefaultWindowLayout(windowLayout);
       }
     }
   }
