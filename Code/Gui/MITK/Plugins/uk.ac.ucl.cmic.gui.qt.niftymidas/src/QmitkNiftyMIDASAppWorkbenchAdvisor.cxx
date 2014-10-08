@@ -20,7 +20,14 @@
 #include <niftkMultiViewerWidget.h>
 
 #include <mitkLogMacros.h>
+#include <mitkIDataStorageReference.h>
 
+#include <QMimeData>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QApplication>
+
+#include <QmitkCommonAppsApplicationPlugin.h>
 
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
@@ -97,5 +104,93 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         multiViewer->SetDefaultWindowLayout(windowLayout);
       }
     }
+    else if (arg == "--dnd" || arg == "--drag-and-drop")
+    {
+      ++it;
+      if (it == args.end())
+      {
+        break;
+      }
+
+      QString nodeNamesArg = QString::fromStdString(*it);
+
+      QStringList nodeNames = nodeNamesArg.split(",");
+
+      mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+      std::vector<mitk::DataNode*> nodes;
+
+      foreach (QString nodeName, nodeNames)
+      {
+        mitk::DataNode* node = dataStorage->GetNamedNode(nodeName.toStdString());
+        if (node)
+        {
+          nodes.push_back(node);
+        }
+      }
+
+      berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+
+      niftkSingleViewerWidget* viewer = multiViewer->GetSelectedViewer();
+
+      QmitkRenderWindow* selectedWindow = viewer->GetSelectedRenderWindow();
+
+      this->DropNodes(selectedWindow, nodes);
+    }
+  }
+}
+
+
+// --------------------------------------------------------------------------
+mitk::DataStorage* QmitkNiftyMIDASAppWorkbenchAdvisor::GetDataStorage()
+{
+  mitk::DataStorage::Pointer dataStorage = 0;
+
+  ctkPluginContext* context = QmitkCommonAppsApplicationPlugin::GetDefault()->GetPluginContext();
+  ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
+  if (dsServiceRef)
+  {
+    mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
+    if (dsService)
+    {
+      mitk::IDataStorageReference::Pointer dataStorageRef = dsService->GetActiveDataStorage();
+      dataStorage = dataStorageRef->GetDataStorage();
+    }
+  }
+
+  return dataStorage;
+}
+
+
+// --------------------------------------------------------------------------
+void QmitkNiftyMIDASAppWorkbenchAdvisor::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
+{
+  QMimeData* mimeData = new QMimeData;
+  QString dataNodeAddresses("");
+  for (int i = 0; i < nodes.size(); ++i)
+  {
+    long dataNodeAddress = reinterpret_cast<long>(nodes[i]);
+    QTextStream(&dataNodeAddresses) << dataNodeAddress;
+
+    if (i != nodes.size() - 1)
+    {
+      QTextStream(&dataNodeAddresses) << ",";
+    }
+  }
+  mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
+//  QStringList types;
+//  types << "application/x-mitk-datanodes";
+  QDragEnterEvent dragEnterEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  dropEvent.acceptProposedAction();
+  if (!qApp->notify(renderWindow, &dragEnterEvent))
+  {
+    MITK_WARN << "Drag enter event not accepted by receiving widget.";
+  }
+  if (!qApp->notify(renderWindow, &dropEvent))
+  {
+    MITK_WARN << "Drop event not accepted by receiving widget.";
   }
 }

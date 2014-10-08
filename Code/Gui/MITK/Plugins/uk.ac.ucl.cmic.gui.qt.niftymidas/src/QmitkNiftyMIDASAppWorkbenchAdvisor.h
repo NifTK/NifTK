@@ -25,6 +25,16 @@
 #include <uk_ac_ucl_cmic_gui_qt_niftymidas_Export.h>
 #include <QmitkBaseAppWorkbenchAdvisor.h>
 
+#include <vector>
+
+namespace mitk
+{
+class DataNode;
+class DataStorage;
+}
+
+class QmitkRenderWindow;
+
 /**
  * \class QmitkNiftyMIDASAppWorkbenchAdvisor
  * \brief Advisor class to set up the initial NiftyMIDAS workbench.
@@ -49,6 +59,12 @@ protected:
    */
   virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
       berry::IWorkbenchWindowConfigurer::Pointer configurer);
+
+private:
+
+  mitk::DataStorage* GetDataStorage();
+
+  void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
 };
 
