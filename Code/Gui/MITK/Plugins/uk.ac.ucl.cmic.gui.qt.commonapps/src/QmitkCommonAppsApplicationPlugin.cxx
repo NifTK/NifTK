@@ -714,10 +714,14 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
            properties[propertyName][rendererName] = propertyTypedValue;
          }
        }
-       else if (arguments[i] == "--perspective" || arguments[i] == "--window-layout")
+       else if (arguments[i] == "--perspective"
+                || arguments[i] == "--window-layout"
+                || arguments[i] == "--dnd"
+                || arguments[i] == "--drag-and-drop")
        {
          /// Note:
          /// These arguments are processed by the NiftyMIDAS workbench advisor.
+
          ++i;
          if (i == arguments.size())
          {
