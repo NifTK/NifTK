@@ -40,6 +40,8 @@ public:
   /// \brief Gets the resource name of the window icon.
   virtual std::string GetWindowIconResourcePath() const;
 
+  virtual void PostStartup();
+
 protected:
 
   /**
