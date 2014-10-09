@@ -717,7 +717,10 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
        else if (arguments[i] == "--perspective"
                 || arguments[i] == "--window-layout"
                 || arguments[i] == "--dnd"
-                || arguments[i] == "--drag-and-drop")
+                || arguments[i] == "--drag-and-drop"
+                || arguments[i] == "--viewer-rows"
+                || arguments[i] == "--viewer-columns"
+                )
        {
          /// Note:
          /// These arguments are processed by the NiftyMIDAS workbench advisor.

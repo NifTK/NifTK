@@ -75,8 +75,6 @@ public:
   niftkMultiViewerWidget(
       niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
-      int defaultViewerRows,
-      int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
@@ -86,6 +84,9 @@ public:
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
+
+  /// \brief Sets the number of viewers.
+  void SetViewerNumber(int viewerRows, int viewerColumns);
 
   /// \brief Set the background colour on all contained viewers, and we don't currently provide gradient backgrounds.
   void SetBackgroundColour(QColor backgroundColour);
@@ -176,11 +177,11 @@ public:
   /// \brief Shows or hides the cursor.
   virtual bool ToggleCursorVisibility();
 
-  /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
-  void SetThumbnailMode(bool enabled);
-
   /// \brief Gets the flag indicating whether this viewer is currently in thumnail mode.
   bool GetThumbnailMode() const;
+
+  /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
+  void SetThumbnailMode(bool thumbnailMode);
 
   /// \brief Returns the orientation from the window layout, or WINDOW_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
   WindowOrientation GetOrientation() const;
@@ -327,24 +328,6 @@ protected slots:
 
 private:
 
-  /// \brief Will return the index of the selected viewer or 0 if none is selected.
-  int GetSelectedViewerIndex() const;
-
-  /// \brief Gets the row number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
-  int GetViewerRowFromIndex(int index) const;
-
-  /// \brief Gets the column number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
-  int GetViewerColumnFromIndex(int index) const;
-
-  /// \brief Gets the index, given a row [0, m_MaxRows - 1] and column [0, m_MaxCols - 1] number.
-  int GetViewerIndexFromRowAndColumn(int row, int column) const;
-
-  /// \brief Main method to change the number of viewers.
-  void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
-
-  /// \brief Called from the QRadioButtons to set the layout.
-  void SetWindowLayout(WindowLayout windowLayout);
-
   /// \brief Creates a new viewer with the given name.
   /// The name is used to construct the name of the renderers, since the renderers must
   /// have a unique name.
@@ -383,15 +366,15 @@ private:
 
   // Member variables for control purposes.
   int m_SelectedViewerIndex;
-  int m_DefaultViewerRows;
-  int m_DefaultViewerColumns;
+  int m_ViewerRows;
+  int m_ViewerColumns;
   int m_ViewerRowsInNonThumbnailMode;
   int m_ViewerColumnsInNonThumbnailMode;
   bool m_Show3DWindowIn2x2WindowLayout;
   bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
-  bool m_IsThumbnailMode;
+  bool m_ThumbnailMode;
   bool m_LinkedNavigationEnabled;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;

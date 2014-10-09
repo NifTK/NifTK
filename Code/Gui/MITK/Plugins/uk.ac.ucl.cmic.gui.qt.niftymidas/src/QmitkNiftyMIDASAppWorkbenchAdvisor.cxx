@@ -60,6 +60,9 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
   berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
   berry::IWorkbenchWindow::Pointer activeWorkbenchWindow = workbench->GetActiveWorkbenchWindow();
 
+  int viewerRows = 0;
+  int viewerColumns = 0;
+
   for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
   {
     std::string arg = *it;
@@ -139,6 +142,49 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       this->DropNodes(selectedWindow, nodes);
     }
+    else if (arg == "--viewer-rows")
+    {
+      ++it;
+      if (it == args.end())
+      {
+        break;
+      }
+
+      QString viewerRowsArg = QString::fromStdString(*it);
+
+      bool ok = true;
+      viewerRows = viewerRowsArg.toInt(&ok);
+    }
+    else if (arg == "--viewer-columns")
+    {
+      ++it;
+      if (it == args.end())
+      {
+        break;
+      }
+
+      QString viewerColumnsArg = QString::fromStdString(*it);
+
+      bool ok = true;
+      viewerColumns = viewerColumnsArg.toInt(&ok);
+    }
+  }
+
+  if (viewerRows != 0 || viewerColumns != 0)
+  {
+    if (viewerRows == 0)
+    {
+      viewerRows = 1;
+    }
+    if (viewerColumns == 0)
+    {
+      viewerColumns = 1;
+    }
+
+    berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+    QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+    niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+    multiViewer->SetViewerNumber(viewerRows, viewerColumns);
   }
 }
 
