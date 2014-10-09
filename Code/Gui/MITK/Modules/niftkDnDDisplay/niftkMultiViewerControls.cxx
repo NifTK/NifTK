@@ -237,7 +237,6 @@ void niftkMultiViewerControls::SetViewerNumber(int rows, int columns)
   m_ViewerColumnsSpinBox->blockSignals(wasBlocked);
 
   m_ViewerBindingWidget->setEnabled(!singleViewer);
-  m_DropTypeWidget->setEnabled(!singleViewer);
 }
 
 

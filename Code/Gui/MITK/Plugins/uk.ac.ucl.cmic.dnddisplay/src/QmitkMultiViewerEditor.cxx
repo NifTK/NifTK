@@ -213,9 +213,9 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer = new niftkMultiViewerWidget(
         d->m_MultiViewerVisibilityManager,
         d->m_RenderingManager,
-        defaultNumberOfRows,
-        defaultNumberOfColumns,
         parent);
+
+    d->m_MultiViewer->SetViewerNumber(defaultNumberOfRows, defaultNumberOfColumns);
 
     // Setup GUI a bit more.
     d->m_MultiViewer->SetDropType(defaultDropType);
