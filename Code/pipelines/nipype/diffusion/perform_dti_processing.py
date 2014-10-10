@@ -12,10 +12,7 @@ help_message = \
 'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
 'Mandatory Inputs are the Diffusion Weighted Images and the bval/bvec pair. \n' + \
 'as well as a T1 image for reference space. \n\n' + \
-'If the Field maps are provided then Susceptibility correction is applied. \n' + \
-'Use the --model option to control which diffusion model to use (tensor or noddi)' 
-
-model_choices = ['tensor', 'noddi']
+'If the Field maps are provided then Susceptibility correction is applied.'
 
 parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-i', '--dwis',
@@ -23,12 +20,12 @@ parser.add_argument('-i', '--dwis',
                     metavar='dwis',
                     help='Diffusion Weighted Images in a 4D nifti file',
                     required=True)
-parser.add_argument('-l','--bvals',
+parser.add_argument('-a','--bvals',
                     dest='bvals',
                     metavar='bvals',
                     help='bval file to be associated with the DWIs',
                     required=True)
-parser.add_argument('-c','--bvecs',
+parser.add_argument('-e','--bvecs',
                     dest='bvecs',
                     metavar='bvecs',
                     help='bvec file to be associated with the DWIs',
@@ -48,13 +45,6 @@ parser.add_argument('-p','--fieldmapphase',
                     metavar='fieldmapphase',
                     help='Field Map Phase image file to be associated with the DWIs',
                     required=False)
-parser.add_argument('--model',
-                    dest='model',
-                    metavar='model',
-                    help='Diffusion Model to use, choices are ' + str(model_choices) + ' default: tensor',
-                    required=False,
-                    choices = model_choices,
-                    default = model_choices[0])
 parser.add_argument('--output_dir',dest='output_dir', type=str, \
                     metavar='directory', help='Output directory containing the registration result\n' + \
                     'Default is a directory called results', \
@@ -83,7 +73,7 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   dwi_interp_type = 'CUB',
                                                   t1_mask_provided = False,
                                                   ref_b0_provided = False,
-                                                  model = args.model)
+                                                  wls_tensor_fit = True)
 
 r.base_dir = os.getcwd()
 
@@ -103,16 +93,12 @@ r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
 r.connect(r.get_node('output_node'), 'MD', ds, '@md')
 r.connect(r.get_node('output_node'), 'COL_FA', ds, '@colfa')
 r.connect(r.get_node('output_node'), 'V1', ds, '@v1')
-r.connect(r.get_node('output_node'), 'predicted_image', ds, '@img')
-r.connect(r.get_node('output_node'), 'residual_image', ds, '@res')
-r.connect(r.get_node('output_node'), 'parameter_uncertainty_image', ds, '@unc')
+r.connect(r.get_node('output_node'), 'predicted_image_tensor', ds, '@img')
+r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res')
 r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
 r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
-
-if (args.model == 'noddi'):
-    r.connect(r.get_node('output_node'), 'mcmap', ds, '@mcmap')
 
 r.write_graph(graph2use = 'colored')
 

@@ -69,8 +69,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                              t1_mask_provided = False,
                                              ref_b0_provided = False,
                                              dwi_interp_type = 'CUB',
-                                             wls_tensor_fit = False,
-                                             model='tensor',
+                                             wls_tensor_fit = True,
                                              set_op_basename = False):
 
     """Creates a diffusion processing workflow. This initially performs a groupwise registration
@@ -112,10 +111,6 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
 
     """
 
-    if (model != 'tensor' and model != 'noddi' and model != 'both'):
-        print('ERROR: Unknown Diffusion model: ', model)  
-        return None
-
     workflow = pe.Workflow(name=name)
     workflow.base_output_dir=name
 
@@ -140,13 +135,13 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     split_fm_mag = pe.Node(interface = fsl.Split(dimension="t"), name='split_fm_mag')
     select_first_fm_mag = pe.Node(interface = niu.Select(index = 0), name = 'select_first_fm_mag')
 
-    #Node using niu.Select() to select only the B0 files
+    # Node using niu.Select() to select only the B0 files
     function_find_B0s = niu.Function(input_names=['bvals', 'bvecs'], output_names=['out'])
     function_find_B0s.inputs.function_str = str(inspect.getsource(get_B0s_from_bvals_bvecs))
     find_B0s = pe.Node(interface = function_find_B0s, name = 'find_B0s')
     select_B0s = pe.Node(interface = niu.Select(), name = 'select_B0s')
 
-    #Node using niu.Select() to select only the DWIs files
+    # Node using niu.Select() to select only the DWIs files
     function_find_DWIs = niu.Function(input_names=['bvals', 'bvecs'], output_names=['out'])
     function_find_DWIs.inputs.function_str = str(inspect.getsource(get_DWIs_from_bvals_bvecs))
     find_DWIs   = pe.Node(interface = function_find_DWIs, name = 'find_DWIs')
@@ -203,16 +198,15 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     T1_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_resampling')
     # Use nearest neighbour resampling for the mask image
     T1_mask_resampling = pe.Node(niftyreg.RegResample(inter_val = 'NN'), name = 'T1_mask_resampling')
-    # Fit the model
+    # Fit the tensor model
     diffusion_model_fitting_tensor = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_tensor')
     diffusion_model_fitting_tensor.inputs.dti_flag = True
     diffusion_model_fitting_tensor.inputs.wls_flag = wls_tensor_fit
 
-    diffusion_model_fitting_noddi = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_noddi')
-    diffusion_model_fitting_noddi.inputs.nod_flag = True    
-
-    diffusion_model_fitting_tensor.inputs.rotsform_flag = 1
-    diffusion_model_fitting_noddi.inputs.rotsform_flag = 1
+    # The reorientation of the tensors is not necessary.
+    # It is taken care of in the tensor resampling process itself (reg_resample)
+    # We force the reorientation flag to 0 just to be sure
+    diffusion_model_fitting_tensor.inputs.rotsform_flag = 0
     
     # Output node
     output_node = pe.Node( interface=niu.IdentityInterface(
@@ -223,8 +217,6 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                 'V1', 
                 'predicted_image_tensor',
                 'residual_image_tensor',
-                'predicted_image_noddi',
-                'residual_image_noddi',
                 'dwis',
                 'transformations',
                 'average_b0',
@@ -345,7 +337,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
 
     #############################################################
     #   Resample the DWIs with affine (+susceptibility)         #
-    #   transformations and merge bacj into a 4D image          #
+    #   transformations and merge back into a 4D image          #
     #############################################################
     
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', resampling, 'ref_file')
@@ -359,7 +351,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     workflow.connect(resampling, 'res_file',   merge_dwis, 'in_files')
 
     #############################################################
-    #   Fit the tensor or noddi model from the DWI data         #
+    #   Fit the tensor model from the DWI data                  #
     #############################################################
     # Set the op basename for the tensor
     if set_op_basename == True:
@@ -374,25 +366,14 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         # Connect up the correct image to the tensor fitting software
         workflow.connect(merge_dwis, 'merged_file', divide_dwis, 'in_file')
         workflow.connect(susceptibility_correction, 'output_node.out_jac', divide_dwis, 'operand_file')
-        if (model == 'tensor' or model == 'both'):
-            workflow.connect(divide_dwis,'out_file',  diffusion_model_fitting_tensor, 'source_file')
-        if (model == 'noddi' or model == 'both'):
-            workflow.connect(divide_dwis,'out_file',  diffusion_model_fitting_noddi, 'source_file')
+        workflow.connect(divide_dwis,'out_file',  diffusion_model_fitting_tensor, 'source_file')
     else:
-        if (model == 'tensor' or model == 'both'):
-            workflow.connect(merge_dwis, 'merged_file', diffusion_model_fitting_tensor, 'source_file')    
-        if (model == 'noddi' or model == 'both'):
-            workflow.connect(merge_dwis, 'merged_file', diffusion_model_fitting_noddi, 'source_file')
+        workflow.connect(merge_dwis, 'merged_file', diffusion_model_fitting_tensor, 'source_file')    
 
-    if (model == 'tensor' or model == 'both'):
-        workflow.connect(T1_mask_resampling, 'res_file', diffusion_model_fitting_tensor, 'mask_file')    
-        workflow.connect(input_node, 'in_bvec_file', diffusion_model_fitting_tensor, 'bvec_file')
-        workflow.connect(input_node, 'in_bval_file', diffusion_model_fitting_tensor, 'bval_file')        
-    if (model == 'noddi' or model == 'both'):
-        workflow.connect(T1_mask_resampling, 'res_file', diffusion_model_fitting_noddi, 'mask_file')    
-        workflow.connect(input_node, 'in_bvec_file', diffusion_model_fitting_noddi, 'bvec_file')
-        workflow.connect(input_node, 'in_bval_file', diffusion_model_fitting_noddi, 'bval_file')        
-
+    workflow.connect(T1_mask_resampling, 'res_file', diffusion_model_fitting_tensor, 'mask_file')    
+    workflow.connect(input_node, 'in_bvec_file', diffusion_model_fitting_tensor, 'bvec_file')
+    workflow.connect(input_node, 'in_bval_file', diffusion_model_fitting_tensor, 'bval_file')        
+    
     #############################################################
     #         Prepare data for output_node                      #
     #############################################################
@@ -403,49 +384,35 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     if resample_in_t1 == True:
 
-        if (model == 'tensor' or model == 'both'):
-            resamp_tensors = pe.Node(niftyreg.RegResample(), name='resamp_tensors')
-            resamp_tensors.inputs.tensor_flag = True
-            dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')
-            if set_op_basename == True:
-                workflow.connect(input_node, 'op_basename', dwi_tool, 'op_basename')
-            else:
-                dwi_tool.inputs.op_basename = 'dti'     
-            workflow.connect(input_node, 'in_t1_file', resamp_tensors, 'ref_file')
-            workflow.connect(diffusion_model_fitting_tensor, 'tenmap_file', resamp_tensors, 'flo_file')
-            workflow.connect(inv_T1_aff, 'out_file', resamp_tensors, 'trans_file')
-            workflow.connect(resamp_tensors, 'res_file', dwi_tool, 'source_file')
-            workflow.connect(resamp_tensors, 'res_file', output_node, 'tensor')
-            workflow.connect(dwi_tool, 'famap_file', output_node, 'FA')
-            workflow.connect(dwi_tool, 'mdmap_file', output_node, 'MD')
-            workflow.connect(dwi_tool, 'rgbmap_file', output_node, 'COL_FA')
-            workflow.connect(dwi_tool, 'v1map_file', output_node, 'V1')
-
-        if (model == 'noddi' or model == 'both'):
-            resamp_noddi = pe.Node(niftyreg.RegResample(), name='resamp_noddi')
-            workflow.connect(input_node, 'in_t1_file', resamp_noddi, 'ref_file')
-            workflow.connect(diffusion_model_fitting_noddi, 'mcmapmap_file', resamp_noddi, 'flo_file')
-            workflow.connect(inv_T1_aff, 'out_file', resamp_noddi, 'trans_file')
-            workflow.connect(resamp_noddi, 'res_file', output_node, 'mcmap')
+        resamp_tensors = pe.Node(niftyreg.RegResample(), name='resamp_tensors')
+        resamp_tensors.inputs.tensor_flag = True
+        dwi_tool = pe.Node(interface = niftyfit.DwiTool(dti_flag2 = True), name = 'dwi_tool')
+        
+        if set_op_basename == True:
+            workflow.connect(input_node, 'op_basename', dwi_tool, 'op_basename')
+        else:
+            dwi_tool.inputs.op_basename = 'dti'     
             
+        workflow.connect(input_node, 'in_t1_file', resamp_tensors, 'ref_file')
+        workflow.connect(diffusion_model_fitting_tensor, 'tenmap_file', resamp_tensors, 'flo_file')
+        workflow.connect(inv_T1_aff, 'out_file', resamp_tensors, 'trans_file')
+        workflow.connect(resamp_tensors, 'res_file', dwi_tool, 'source_file')
+        workflow.connect(resamp_tensors, 'res_file', output_node, 'tensor')
+        workflow.connect(dwi_tool, 'famap_file', output_node, 'FA')
+        workflow.connect(dwi_tool, 'mdmap_file', output_node, 'MD')
+        workflow.connect(dwi_tool, 'rgbmap_file', output_node, 'COL_FA')
+        workflow.connect(dwi_tool, 'v1map_file', output_node, 'V1')
+
     else:
         
-        if (model == 'tensor' or model == 'both'):
-            workflow.connect(diffusion_model_fitting_tensor, 'tenmap_file', output_node, 'tensor')
-            workflow.connect(diffusion_model_fitting_tensor, 'mdmap_file', output_node, 'MD')
-            workflow.connect(diffusion_model_fitting_tensor, 'famap_file', output_node, 'FA')
-            workflow.connect(diffusion_model_fitting_tensor, 'rgbmap_file', output_node, 'COL_FA')
-            workflow.connect(diffusion_model_fitting_tensor, 'v1map_file', output_node, 'V1')
+        workflow.connect(diffusion_model_fitting_tensor, 'tenmap_file', output_node, 'tensor')
+        workflow.connect(diffusion_model_fitting_tensor, 'mdmap_file', output_node, 'MD')
+        workflow.connect(diffusion_model_fitting_tensor, 'famap_file', output_node, 'FA')
+        workflow.connect(diffusion_model_fitting_tensor, 'rgbmap_file', output_node, 'COL_FA')
+        workflow.connect(diffusion_model_fitting_tensor, 'v1map_file', output_node, 'V1')
 
-        if (model == 'noddi' or model == 'both'):
-            workflow.connect(diffusion_model_fitting_noddi, 'mcmap_file', output_node, 'mcmap')
-
-    if (model == 'tensor' or model == 'both'):
-        workflow.connect(diffusion_model_fitting_tensor, 'res_file', output_node, 'residual_image_tensor')
-        workflow.connect(diffusion_model_fitting_tensor, 'syn_file', output_node, 'predicted_image_tensor')
-    if (model == 'noddi' or model == 'both'):
-        workflow.connect(diffusion_model_fitting_noddi, 'res_file', output_node, 'residual_image_noddi')
-        workflow.connect(diffusion_model_fitting_noddi, 'syn_file', output_node, 'predicted_image_noddi')
+    workflow.connect(diffusion_model_fitting_tensor, 'res_file', output_node, 'residual_image_tensor')
+    workflow.connect(diffusion_model_fitting_tensor, 'syn_file', output_node, 'predicted_image_tensor')
     
     workflow.connect(merge_dwis, 'merged_file', output_node, 'dwis')
     if correct_susceptibility == True:
