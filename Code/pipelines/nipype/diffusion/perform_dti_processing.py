@@ -72,6 +72,14 @@ if do_susceptibility_correction == True:
     if not os.path.exists(os.path.abspath(args.fieldmapmag)) or not os.path.exists(os.path.abspath(args.fieldmapphase)):
         do_susceptibility_correction = False
 
+# extracting basename of the input file (list)
+input_file = os.path.basename(args.dwis)
+# extracting the directory where the input file is (are)
+input_directory = os.path.abspath(os.path.dirname(args.dwis))
+# extracting the 'subject name simply for output name purposes
+subject_name = input_file.replace('.nii.gz','')
+subject_t1_name = os.path.basename(args.t1).replace('.nii.gz','')
+
 
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   resample_in_t1 = False,
@@ -80,7 +88,8 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   dwi_interp_type = 'CUB',
                                                   t1_mask_provided = True,
                                                   ref_b0_provided = False,
-                                                  wls_tensor_fit = False)
+                                                  wls_tensor_fit = False,
+                                                  set_op_basename = True)
 
 r.base_dir = os.getcwd()
 
@@ -90,6 +99,7 @@ r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals)
 r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
 r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
 r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
+r.inputs.input_node.op_basename = subject_name
 
 # the input image is registered to the MNI for masking purpose
 mni_to_input = pe.Node(interface=niftyreg.RegAladin(), 
@@ -113,6 +123,12 @@ r.connect(mask_eroder, 'out_file', r.get_node('input_node'), 'in_t1_mask')
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
+
+subs = []
+subs.append(('vol0000_res_merged_maths', subject_name + '_corrected'))
+subs.append(('average_output_res_maths', subject_name + '_average_b0'))
+subs.append((subject_t1_name+ '_aff_reg_transform', subject_name + '_t1_transform'))
+ds.inputs.regexp_substitutions = subs
 
 r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
 r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
