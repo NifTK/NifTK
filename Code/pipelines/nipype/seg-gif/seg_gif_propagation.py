@@ -31,7 +31,10 @@ def find_gif_substitutions_function(in_db_file):
     subs.append(('_'+in_fname+'_Parcellation', ''))
     subs.append(('_'+in_fname+'_prior', ''))
     subs.append(('_'+in_fname+'_geo', ''))
-    subs.append(('_'+in_fname+'_Sinth', ''))
+    subs.append(('_'+in_fname+'_TIV', ''))
+    subs.append(('_'+in_fname+'_Segmentation', ''))
+    subs.append(('_'+in_fname+'_Brain', ''))
+    subs.append(('_'+in_fname+'_BiasCorrected', ''))
     return subs
 
 def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagation'):
@@ -378,6 +381,10 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     workflow.connect(gif,        'parc_file',      gif_sink, 'labels')  
     workflow.connect(gif,        'geo_file',       gif_sink, 'labels_geo')
     workflow.connect(gif,        'prior_file',     gif_sink, 'priors')
+    workflow.connect(gif,        'tiv_file',     gif_sink, 'tivs')
+    workflow.connect(gif,        'seg_file',     gif_sink, 'segs')
+    workflow.connect(gif,        'brain_file',     gif_sink, 'brains')
+    workflow.connect(gif,        'bias_file',     gif_sink, '@bias')
 
     '''
     *****************************************************************************
@@ -414,9 +421,9 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     workflow.connect(gif, 'parc_file', output_node, 'out_parc_file')
     workflow.connect(gif, 'geo_file', output_node, 'out_geo_file')
     workflow.connect(gif, 'prior_file', output_node, 'out_prior_file')
-#    workflow.connect(gif, 'out_tiv',   output_node, 'out_tiv_file')
-#    workflow.connect(gif, 'out_seg',   output_node, 'out_seg_file')
-#    workflow.connect(gif, 'out_brain', output_node, 'out_brain_file')
-#    workflow.connect(gif, 'out_bias',  output_node, 'out_bias_file')
+    workflow.connect(gif, 'tiv_file',   output_node, 'out_tiv_file')
+    workflow.connect(gif, 'seg_file',   output_node, 'out_seg_file')
+    workflow.connect(gif, 'brain_file', output_node, 'out_brain_file')
+    workflow.connect(gif, 'bias_file',  output_node, 'out_bias_file')
 
     return workflow
