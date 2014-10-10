@@ -8,6 +8,12 @@ from distutils                          import spawn
 import argparse
 import os
 
+import nipype.interfaces.niftyreg as niftyreg
+import nipype.interfaces.niftyseg as niftyseg
+
+mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
+mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
+
 help_message = \
 'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
 'Mandatory Inputs are the Diffusion Weighted Images and the bval/bvec pair. \n' + \
@@ -66,14 +72,15 @@ if do_susceptibility_correction == True:
     if not os.path.exists(os.path.abspath(args.fieldmapmag)) or not os.path.exists(os.path.abspath(args.fieldmapphase)):
         do_susceptibility_correction = False
 
+
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
-                                                  resample_in_t1 = True,
+                                                  resample_in_t1 = False,
                                                   log_data = True,
                                                   correct_susceptibility = do_susceptibility_correction,
                                                   dwi_interp_type = 'CUB',
-                                                  t1_mask_provided = False,
+                                                  t1_mask_provided = True,
                                                   ref_b0_provided = False,
-                                                  wls_tensor_fit = True)
+                                                  wls_tensor_fit = False)
 
 r.base_dir = os.getcwd()
 
@@ -83,6 +90,25 @@ r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals)
 r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
 r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
 r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
+
+# the input image is registered to the MNI for masking purpose
+mni_to_input = pe.Node(interface=niftyreg.RegAladin(), 
+                       name='mni_to_input')
+mni_to_input.inputs.ref_file = os.path.abspath(args.t1)
+mni_to_input.inputs.flo_file = mni_template
+mask_resample  = pe.Node(interface = niftyreg.RegResample(), 
+                         name = 'mask_resample')
+mask_resample.inputs.inter_val = 'NN'
+mask_resample.inputs.ref_file = os.path.abspath(args.t1)
+mask_resample.inputs.flo_file = mni_template_mask
+mask_eroder = pe.Node(interface = niftyseg.BinaryMaths(), 
+                         name = 'mask_eroder')
+mask_eroder.inputs.operation = 'ero'
+mask_eroder.inputs.operand_value = 3
+
+r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
+r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
+r.connect(mask_eroder, 'out_file', r.get_node('input_node'), 'in_t1_mask')
 
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
