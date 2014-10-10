@@ -35,6 +35,7 @@ def find_gif_substitutions_function(in_db_file):
     subs.append(('_'+in_fname+'_Segmentation', ''))
     subs.append(('_'+in_fname+'_Brain', ''))
     subs.append(('_'+in_fname+'_BiasCorrected', ''))
+    subs.append(('_crop_image_corrected', ''))
     return subs
 
 def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagation'):
@@ -170,8 +171,10 @@ def find_preprocessing_substitutions(in_files, out_files):
     start_index = out_files[0].rfind('mapflow')+8
     for i in range(len(in_files)):
         subs.append(( out_files[i][start_index:], os.path.basename(in_files[i]) ))
-    return subs
+    subs.append(('_subject_id_',''))
 
+    return subs
+    
 
 '''
 Convenient function that generates the substitutions 
@@ -384,7 +387,7 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     workflow.connect(gif,        'tiv_file',     gif_sink, 'tivs')
     workflow.connect(gif,        'seg_file',     gif_sink, 'segs')
     workflow.connect(gif,        'brain_file',     gif_sink, 'brains')
-    workflow.connect(gif,        'bias_file',     gif_sink, '@bias')
+    workflow.connect(gif,        'bias_file',     gif_sink, 'bias_corrected')
 
     '''
     *****************************************************************************
