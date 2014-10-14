@@ -58,7 +58,20 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
   berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
   berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
-  berry::IWorkbenchWindow::Pointer activeWorkbenchWindow = workbench->GetActiveWorkbenchWindow();
+  berry::IWorkbenchWindow::Pointer workbenchWindow = workbench->GetActiveWorkbenchWindow();
+  if (!workbenchWindow)
+  {
+    std::vector<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
+    if (!workbenchWindows.empty())
+    {
+      workbenchWindow = workbenchWindows[0];
+    }
+    else
+    {
+      /// TODO there is no active workbench window.
+      MITK_INFO << "There is no active workbench window.";
+    }
+  }
 
   int viewerRows = 0;
   int viewerColumns = 0;
@@ -71,6 +84,8 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       ++it;
       if (it == args.end())
       {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for perspective.";
         break;
       }
 
@@ -85,13 +100,15 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         continue;
       }
 
-      workbench->ShowPerspective(perspectiveDescriptor->GetId(), activeWorkbenchWindow);
+      workbench->ShowPerspective(perspectiveDescriptor->GetId(), workbenchWindow);
     }
     else if (arg == "--window-layout")
     {
       ++it;
       if (it == args.end())
       {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for window layout.";
         break;
       }
 
@@ -101,7 +118,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
       {
-        berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+        berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
         QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
         niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
         multiViewer->SetDefaultWindowLayout(windowLayout);
@@ -132,7 +149,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         }
       }
 
-      berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
       QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
       niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
 
@@ -147,6 +164,8 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       ++it;
       if (it == args.end())
       {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for viewer rows.";
         break;
       }
 
@@ -160,6 +179,8 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       ++it;
       if (it == args.end())
       {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for viewer columns.";
         break;
       }
 
@@ -167,6 +188,165 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       bool ok = true;
       viewerColumns = viewerColumnsArg.toInt(&ok);
+    }
+    else if (arg == "--bind-viewers")
+    {
+      ++it;
+
+      if (it == args.end())
+      {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for viewer bindings.";
+        break;
+      }
+
+      QString viewerBindingArg = QString::fromStdString(*it);
+
+      QStringList viewerBindingOptions = viewerBindingArg.split(",");
+
+      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
+      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+
+      int bindingOptions = 0;
+
+      foreach (QString viewerBindingOption, viewerBindingOptions)
+      {
+        bool value;
+
+        QStringList viewerBindingOptionParts = viewerBindingOption.split("=");
+        if (viewerBindingOptionParts.size() != 1 && viewerBindingOptionParts.size() != 2)
+        {
+          /// TODO invalid argument
+          MITK_INFO << "Invalid argument format for viewer bindings.";
+          continue;
+        }
+
+        QString viewerBindingOptionName = viewerBindingOptionParts[0];
+
+        if (viewerBindingOptionParts.size() == 1)
+        {
+          value = true;
+        }
+        else if (viewerBindingOptionParts.size() == 2)
+        {
+          QString viewerBindingOptionValue = viewerBindingOptionParts[1];
+
+          if (viewerBindingOptionValue == QString("1")
+              || viewerBindingOptionValue == QString("true")
+              || viewerBindingOptionValue == QString("on")
+              || viewerBindingOptionValue == QString("yes")
+              )
+          {
+            value = true;
+          }
+          else if (viewerBindingOptionValue == QString("0")
+              || viewerBindingOptionValue == QString("false")
+              || viewerBindingOptionValue == QString("off")
+              || viewerBindingOptionValue == QString("no")
+              )
+          {
+            value = false;
+          }
+          else
+          {
+            /// TODO invalid argument
+            MITK_INFO << "Invalid argument format for viewer bindings.";
+            continue;
+          }
+        }
+        else
+        {
+          /// TODO invalid argument
+          MITK_INFO << "Invalid argument format for viewer bindings.";
+          continue;
+        }
+
+
+        if (viewerBindingOptionName == QString("position"))
+        {
+          if (value)
+          {
+            bindingOptions |= niftkMultiViewerWidget::PositionBinding;
+          }
+          else
+          {
+            bindingOptions &= ~niftkMultiViewerWidget::PositionBinding;
+          }
+        }
+        else if (viewerBindingOptionName == QString("cursor"))
+        {
+          if (value)
+          {
+            bindingOptions |= niftkMultiViewerWidget::CursorBinding;
+          }
+          else
+          {
+            bindingOptions &= ~niftkMultiViewerWidget::CursorBinding;
+          }
+        }
+        else if (viewerBindingOptionName == QString("magnification"))
+        {
+          if (value)
+          {
+            bindingOptions |= niftkMultiViewerWidget::MagnificationBinding;
+          }
+          else
+          {
+            bindingOptions &= ~niftkMultiViewerWidget::MagnificationBinding;
+          }
+        }
+        else if (viewerBindingOptionName == QString("layout"))
+        {
+          if (value)
+          {
+            bindingOptions |= niftkMultiViewerWidget::WindowLayoutBinding;
+          }
+          else
+          {
+            bindingOptions &= ~niftkMultiViewerWidget::WindowLayoutBinding;
+          }
+        }
+        else if (viewerBindingOptionName == QString("geometry"))
+        {
+          if (value)
+          {
+            bindingOptions |= niftkMultiViewerWidget::GeometryBinding;
+          }
+          else
+          {
+            bindingOptions &= ~niftkMultiViewerWidget::GeometryBinding;
+          }
+        }
+        else if (viewerBindingOptionName == QString("all"))
+        {
+          if (value)
+          {
+            bindingOptions =
+                niftkMultiViewerWidget::PositionBinding
+                | niftkMultiViewerWidget::CursorBinding
+                | niftkMultiViewerWidget::MagnificationBinding
+                | niftkMultiViewerWidget::WindowLayoutBinding
+                | niftkMultiViewerWidget::GeometryBinding
+                ;
+          }
+          else
+          {
+            bindingOptions = 0;
+          }
+        }
+        else if (viewerBindingOptionName == QString("none"))
+        {
+          bindingOptions = 0;
+        }
+        else
+        {
+          /// TODO invalid argument
+          continue;
+        }
+      }
+
+      multiViewer->SetBindingOptions(bindingOptions);
     }
   }
 
@@ -181,7 +361,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       viewerColumns = 1;
     }
 
-    berry::IEditorPart::Pointer activeEditor = activeWorkbenchWindow->GetActivePage()->GetActiveEditor();
+    berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
     QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
     niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
     multiViewer->SetViewerNumber(viewerRows, viewerColumns);

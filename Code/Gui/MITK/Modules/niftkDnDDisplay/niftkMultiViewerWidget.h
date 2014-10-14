@@ -69,6 +69,15 @@ class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 
 public:
 
+  enum ViewerBindingOption
+  {
+    PositionBinding = 1,
+    CursorBinding = 2,
+    MagnificationBinding = 4,
+    WindowLayoutBinding = 8,
+    GeometryBinding = 16
+  };
+
   /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
   /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
@@ -87,6 +96,12 @@ public:
 
   /// \brief Sets the number of viewers.
   void SetViewerNumber(int viewerRows, int viewerColumns);
+
+  /// \brief Gets the viewer binding options.
+  int GetBindingOptions() const;
+
+  /// \brief Sets the viewer binding options.
+  void SetBindingOptions(int bindingOptions);
 
   /// \brief Set the background colour on all contained viewers, and we don't currently provide gradient backgrounds.
   void SetBackgroundColour(QColor backgroundColour);
@@ -235,6 +250,10 @@ public:
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
 
+signals:
+
+  void BindingOptionsChanged(int bindingOptions);
+
 protected slots:
 
   /// \brief Called when the selected slice has been changed through the control panel.
@@ -379,6 +398,8 @@ private:
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
+
+  int m_BindingOptions;
 
   niftkMultiViewerControls* m_ControlPanel;
 
