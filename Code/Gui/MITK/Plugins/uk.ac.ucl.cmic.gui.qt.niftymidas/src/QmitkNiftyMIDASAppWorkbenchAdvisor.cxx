@@ -73,9 +73,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     }
   }
 
-  int viewerRows = 0;
-  int viewerColumns = 0;
-
   for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
   {
     std::string arg = *it;
@@ -124,6 +121,45 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         multiViewer->SetDefaultWindowLayout(windowLayout);
       }
     }
+    else if (arg == "--viewer-number")
+    {
+      ++it;
+      if (it == args.end())
+      {
+        /// TODO invalid argument
+        MITK_INFO << "Missing argument for viewer number.";
+        continue;
+      }
+
+      QString viewerNumberArg = QString::fromStdString(*it);
+
+      int viewerRows = 0;
+      int viewerColumns = 0;
+
+      QStringList viewerNumberArgParts = viewerNumberArg.split("x");
+      if (viewerNumberArgParts.size() == 2)
+      {
+        viewerRows = viewerNumberArgParts[0].toInt();
+        viewerColumns = viewerNumberArgParts[1].toInt();
+      }
+      else if (viewerNumberArgParts.size() == 1)
+      {
+        viewerRows = 1;
+        viewerColumns = viewerNumberArg.toInt();
+      }
+
+      if (viewerRows == 0 || viewerColumns == 0)
+      {
+        /// TODO invalid argument
+        MITK_INFO << "Invalid viewer number.";
+        continue;
+      }
+
+      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
+      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+      multiViewer->SetViewerNumber(viewerRows, viewerColumns);
+    }
     else if (arg == "--dnd" || arg == "--drag-and-drop")
     {
       ++it;
@@ -132,7 +168,65 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         break;
       }
 
-      QString nodeNamesArg = QString::fromStdString(*it);
+      QString dndArg = QString::fromStdString(*it);
+      QStringList dndArgParts = dndArg.split(":");
+      QString nodeNamesArg;
+
+      int viewerRow = 0;
+      int viewerColumn = 0;
+
+      if (dndArgParts.size() == 1)
+      {
+        nodeNamesArg = dndArgParts[0];
+      }
+      else if (dndArgParts.size() == 2)
+      {
+        QString viewerIndexArg = dndArgParts[0];
+        nodeNamesArg = dndArgParts[1];
+
+        QStringList viewerIndexArgParts = viewerIndexArg.split(",");
+        if (viewerIndexArgParts.size() == 1)
+        {
+          bool ok;
+          viewerColumn = viewerIndexArgParts[0].toInt(&ok) - 1;
+          if (!ok || viewerColumn < 0)
+          {
+            /// TODO invalid argument
+            MITK_INFO << "Invalid viewer index.";
+            continue;
+          }
+        }
+        else if (viewerIndexArgParts.size() == 2)
+        {
+          bool ok1, ok2;
+          viewerRow = viewerIndexArgParts[0].toInt(&ok1) - 1;
+          viewerColumn = viewerIndexArgParts[1].toInt(&ok2) - 1;
+          if (!ok1 || !ok2 || viewerRow < 0 || viewerColumn < 0)
+          {
+            /// TODO invalid argument
+            MITK_INFO << "Invalid viewer index.";
+            continue;
+          }
+        }
+      }
+      else
+      {
+        /// TODO invalid argument
+        MITK_INFO << "Too many arguments for drag and drop.";
+        continue;
+      }
+
+      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
+      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+      niftkSingleViewerWidget* viewer = multiViewer->GetViewer(viewerRow, viewerColumn);
+
+      if (!viewer)
+      {
+        /// TODO invalid argument
+        MITK_INFO << "The viewer does not exist.";
+        continue;
+      }
 
       QStringList nodeNames = nodeNamesArg.split(",");
 
@@ -149,45 +243,9 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         }
       }
 
-      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
-      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
-      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
-
-      niftkSingleViewerWidget* viewer = multiViewer->GetSelectedViewer();
-
       QmitkRenderWindow* selectedWindow = viewer->GetSelectedRenderWindow();
 
       this->DropNodes(selectedWindow, nodes);
-    }
-    else if (arg == "--viewer-rows")
-    {
-      ++it;
-      if (it == args.end())
-      {
-        /// TODO invalid argument
-        MITK_INFO << "Missing argument for viewer rows.";
-        break;
-      }
-
-      QString viewerRowsArg = QString::fromStdString(*it);
-
-      bool ok = true;
-      viewerRows = viewerRowsArg.toInt(&ok);
-    }
-    else if (arg == "--viewer-columns")
-    {
-      ++it;
-      if (it == args.end())
-      {
-        /// TODO invalid argument
-        MITK_INFO << "Missing argument for viewer columns.";
-        break;
-      }
-
-      QString viewerColumnsArg = QString::fromStdString(*it);
-
-      bool ok = true;
-      viewerColumns = viewerColumnsArg.toInt(&ok);
     }
     else if (arg == "--bind-viewers")
     {
@@ -348,23 +406,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       multiViewer->SetBindingOptions(bindingOptions);
     }
-  }
-
-  if (viewerRows != 0 || viewerColumns != 0)
-  {
-    if (viewerRows == 0)
-    {
-      viewerRows = 1;
-    }
-    if (viewerColumns == 0)
-    {
-      viewerColumns = 1;
-    }
-
-    berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
-    QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
-    niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
-    multiViewer->SetViewerNumber(viewerRows, viewerColumns);
   }
 }
 

@@ -718,8 +718,7 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
                 || arguments[i] == "--window-layout"
                 || arguments[i] == "--dnd"
                 || arguments[i] == "--drag-and-drop"
-                || arguments[i] == "--viewer-rows"
-                || arguments[i] == "--viewer-columns"
+                || arguments[i] == "--viewer-number"
                 || arguments[i] == "--bind-viewers"
                 )
        {
