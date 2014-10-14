@@ -708,6 +708,18 @@ void niftkMultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
 
 
 //-----------------------------------------------------------------------------
+niftkSingleViewerWidget* niftkMultiViewerWidget::GetViewer(int row, int column) const
+{
+  niftkSingleViewerWidget* viewer = 0;
+  if (row >= 0 && row < m_ViewerRows && column >= 0 && column < m_ViewerColumns)
+  {
+    viewer = m_Viewers[row * m_ViewerColumns + column];
+  }
+  return viewer;
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
 {
   // If we have the right number of viewers, there is nothing to do, so early exit.
@@ -847,13 +859,16 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
     const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
 
-    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    if (timeGeometry)
     {
-      if (otherViewer != selectedViewer)
+      foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
       {
-        bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetBoundTimeGeometry(timeGeometry);
-        otherViewer->blockSignals(signalsWereBlocked);
+        if (otherViewer != selectedViewer)
+        {
+          bool signalsWereBlocked = otherViewer->blockSignals(true);
+          otherViewer->SetBoundTimeGeometry(timeGeometry);
+          otherViewer->blockSignals(signalsWereBlocked);
+        }
       }
     }
   }

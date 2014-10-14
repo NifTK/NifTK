@@ -97,6 +97,10 @@ public:
   /// \brief Sets the number of viewers.
   void SetViewerNumber(int viewerRows, int viewerColumns);
 
+  /// \brief Gets the viewer in the given row and column.
+  /// Indexing starts from 0.
+  niftkSingleViewerWidget* GetViewer(int row, int column) const;
+
   /// \brief Gets the viewer binding options.
   int GetBindingOptions() const;
 
