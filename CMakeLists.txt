@@ -152,6 +152,7 @@ option(BUILD_NIFTYSIM "Build NiftySim." ON)
 option(BUILD_NIFTYSEG "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
+option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
 option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
@@ -174,7 +175,7 @@ option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 option(NIFTK_DELAYLOAD_CUDA "(Windows only) If enabled the CUDA DLLs will be a soft delay-load dependency and NifTK can run without them." OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
-
+option(NIFTK_VL_DEV "Build VisualizationLibrary development branch" OFF)
 ######################################################################
 # Meshing module-related checks and options
 ######################################################################
@@ -221,6 +222,7 @@ set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
+set(NIFTK_VERSION_VL "ebfac46158" CACHE STRING "Version of VL" FORCE)
 set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
@@ -268,6 +270,8 @@ set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nif
 set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
 set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
 set(NIFTK_LOCATION_qRestAPI "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
+set(NIFTK_LOCATION_VL_TARBALL "" CACHE STRING "Location of NiftyLink tarball" FORCE)
+set(NIFTK_LOCATION_VL_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/visualizationlibrary" CACHE STRING "Location of VisualizationLibrary repository")
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -358,6 +362,9 @@ mark_as_advanced(NIFTK_LOCATION_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(NIFTK_VERSION_RTK)
 mark_as_advanced(NIFTK_LOCATION_RTK)
+mark_as_advanced(BUILD_VL)
+mark_as_advanced(NIFTK_LOCATION_VL_TARBALL)
+mark_as_advanced(NIFTK_LOCATION_VL_REPOSITORY)
 mark_as_advanced(BUILD_ITKFFTW)
 
 # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
@@ -1037,6 +1044,18 @@ if(BUILD_RTK)
 endif(BUILD_RTK)
 
 ######################################################################
+# Find VL
+######################################################################
+
+if(BUILD_VL)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume REQUIRED)
+  if(VL_FOUND)
+    message("Found VL")
+    #include(${VL_USE_FILE})
+  endif(VL_FOUND)
+endif(BUILD_VL)
+
+######################################################################
 # Find SlicerExecutionModel
 ######################################################################
 if(BUILD_COMMAND_LINE_PROGRAMS)
@@ -1211,6 +1230,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LI
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt ${CMAKE_BINARY_DIR}/LICENSE_VL.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
@@ -1241,6 +1261,7 @@ set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISuppo
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
