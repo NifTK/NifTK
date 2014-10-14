@@ -720,6 +720,7 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
                 || arguments[i] == "--drag-and-drop"
                 || arguments[i] == "--viewer-rows"
                 || arguments[i] == "--viewer-columns"
+                || arguments[i] == "--bind-viewers"
                 )
        {
          /// Note:
@@ -813,11 +814,15 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
 
   if (propertyType.isEmpty())
   {
-    if (propertyValue == "true")
+    if (propertyValue == QString("true")
+        || propertyValue == QString("on")
+        || propertyValue == QString("yes"))
     {
       propertyTypedValue = QVariant(true);
     }
-    else if (propertyValue == "false")
+    else if (propertyValue == QString("false")
+             || propertyValue == QString("off")
+             || propertyValue == QString("no"))
     {
       propertyTypedValue = QVariant(false);
     }
@@ -845,11 +850,17 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
   }
   else if (propertyType == "bool")
   {
-    if (propertyValue == "true" || propertyValue == "1")
+    if (propertyValue == "true"
+        || propertyValue == "1"
+        || propertyValue == "on"
+        || propertyValue == "yes")
     {
       propertyTypedValue = QVariant(true);
     }
-    else if (propertyValue == "false" || propertyValue == "0")
+    else if (propertyValue == "false"
+             || propertyValue == "0"
+             || propertyValue == "off"
+             || propertyValue == "no")
     {
       propertyTypedValue = QVariant(true);
     }
