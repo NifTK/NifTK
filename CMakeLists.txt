@@ -362,9 +362,11 @@ mark_as_advanced(NIFTK_LOCATION_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(NIFTK_VERSION_RTK)
 mark_as_advanced(NIFTK_LOCATION_RTK)
-mark_as_advanced(BUILD_VL)
+#mark_as_advanced(BUILD_VL)
 mark_as_advanced(NIFTK_LOCATION_VL_TARBALL)
 mark_as_advanced(NIFTK_LOCATION_VL_REPOSITORY)
+mark_as_advanced(NIFTK_VERSION_VL)
+mark_as_advanced(NIFTK_VL_DEV)
 mark_as_advanced(BUILD_ITKFFTW)
 
 # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
