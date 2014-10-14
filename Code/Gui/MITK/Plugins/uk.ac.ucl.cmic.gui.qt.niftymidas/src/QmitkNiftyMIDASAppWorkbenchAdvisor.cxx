@@ -69,7 +69,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     else
     {
       /// TODO there is no active workbench window.
-      MITK_INFO << "There is no active workbench window.";
+      MITK_ERROR << "There is no active workbench window.";
     }
   }
 
@@ -82,7 +82,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (it == args.end())
       {
         /// TODO invalid argument
-        MITK_INFO << "Missing argument for perspective.";
+        MITK_ERROR << "Invalid arguments: perspective name missing.";
         break;
       }
 
@@ -93,7 +93,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       if (perspectiveDescriptor.IsNull())
       {
-        MITK_ERROR << "Unknown perspective.";
+        MITK_ERROR << "Invalid arguments: unknown perspective.";
         continue;
       }
 
@@ -105,7 +105,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (it == args.end())
       {
         /// TODO invalid argument
-        MITK_INFO << "Missing argument for window layout.";
+        MITK_ERROR << "Invalid arguments: window layout name missing..";
         break;
       }
 
@@ -127,7 +127,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (it == args.end())
       {
         /// TODO invalid argument
-        MITK_INFO << "Missing argument for viewer number.";
+        MITK_ERROR << "Invalid arguments: viewer number missing..";
         continue;
       }
 
@@ -151,7 +151,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (viewerRows == 0 || viewerColumns == 0)
       {
         /// TODO invalid argument
-        MITK_INFO << "Invalid viewer number.";
+        MITK_ERROR << "Invalid viewer number.";
         continue;
       }
 
@@ -175,14 +175,17 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       int viewerRow = 0;
       int viewerColumn = 0;
 
-      if (dndArgParts.size() == 1)
+      if (dndArgParts.size() == 0)
       {
-        nodeNamesArg = dndArgParts[0];
+        MITK_ERROR << "Invalid argument: No data specified to drag.";
+        continue;
       }
-      else if (dndArgParts.size() == 2)
+
+      nodeNamesArg = dndArgParts[0];
+
+      if (dndArgParts.size() == 2)
       {
-        QString viewerIndexArg = dndArgParts[0];
-        nodeNamesArg = dndArgParts[1];
+        QString viewerIndexArg = dndArgParts[1];
 
         QStringList viewerIndexArgParts = viewerIndexArg.split(",");
         if (viewerIndexArgParts.size() == 1)
@@ -192,7 +195,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           if (!ok || viewerColumn < 0)
           {
             /// TODO invalid argument
-            MITK_INFO << "Invalid viewer index.";
+            MITK_ERROR << "Invalid viewer index.";
             continue;
           }
         }
@@ -204,15 +207,21 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           if (!ok1 || !ok2 || viewerRow < 0 || viewerColumn < 0)
           {
             /// TODO invalid argument
-            MITK_INFO << "Invalid viewer index.";
+            MITK_ERROR << "Invalid viewer index.";
             continue;
           }
         }
       }
-      else
+      else if (dndArgParts.size() > 2)
       {
-        /// TODO invalid argument
-        MITK_INFO << "Too many arguments for drag and drop.";
+        MITK_ERROR << "Invalid syntax for the --drag-and-drop option.";
+        continue;
+      }
+
+      QStringList nodeNames = nodeNamesArg.split(",");
+      if (nodeNames.empty())
+      {
+        MITK_ERROR << "Invalid arguments: No data specified to drag.";
         continue;
       }
 
@@ -224,11 +233,9 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (!viewer)
       {
         /// TODO invalid argument
-        MITK_INFO << "The viewer does not exist.";
+        MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
         continue;
       }
-
-      QStringList nodeNames = nodeNamesArg.split(",");
 
       mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
 
@@ -240,6 +247,12 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         if (node)
         {
           nodes.push_back(node);
+        }
+        else
+        {
+          /// TODO invalid argument
+          MITK_ERROR << "Invalid argument: unknown data to drag: " << nodeName.toStdString();
+          continue;
         }
       }
 
@@ -254,7 +267,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       if (it == args.end())
       {
         /// TODO invalid argument
-        MITK_INFO << "Missing argument for viewer bindings.";
+        MITK_ERROR << "Invalid arguments: missing argument for viewer bindings.";
         break;
       }
 
@@ -276,7 +289,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         if (viewerBindingOptionParts.size() != 1 && viewerBindingOptionParts.size() != 2)
         {
           /// TODO invalid argument
-          MITK_INFO << "Invalid argument format for viewer bindings.";
+          MITK_ERROR << "Invalid argument format for viewer bindings.";
           continue;
         }
 
@@ -309,14 +322,14 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           else
           {
             /// TODO invalid argument
-            MITK_INFO << "Invalid argument format for viewer bindings.";
+            MITK_ERROR << "Invalid argument format for viewer bindings.";
             continue;
           }
         }
         else
         {
           /// TODO invalid argument
-          MITK_INFO << "Invalid argument format for viewer bindings.";
+          MITK_ERROR << "Invalid argument format for viewer bindings.";
           continue;
         }
 
