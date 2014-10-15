@@ -9,9 +9,6 @@ import getpass
 
 import nipype.interfaces.dcm2nii        as mricron
 
-
-
-
 def get_sink_container_function(directory, project, subject, experiment, scan):
     import os    
     return os.path.join(directory,
@@ -25,19 +22,27 @@ description = ' XNAT Downloader:: ' + \
               ' The script will download all data in the provided result directory.' + \
               ' Make sure all the XNAT resources exist.' \
               ' CAUTION: if you desire the DICOM to be downloaded, please' + \
-              ' add the -d option'
+              ' add the -d option. ' + \
+              ' Provide a config file for convenience. it is a simple text file with: ' + \
+              '{"server":"https://myserver","user":"myusername","password":"mypassword","cachedir":"/tmp/"}' + \
+              '.'
+
 
 parser = argparse.ArgumentParser(description=description)
+
 parser.add_argument('-i', '--server',
                     dest='server',
                     metavar='server',
-                    help='XNAT server from where the data is taken',
-                    required=True)
+                    help='XNAT server from where the data is taken')
 parser.add_argument('-u', '--username',
                     dest='username',
                     metavar='username',
-                    help='xnat server username',
-                    required=True)
+                    help='xnat server username')
+parser.add_argument('-c', '--config',
+                    dest='config',
+                    metavar='config',
+                    help='xnat configuration file: \n{"server":"https://myserver","user":"myusername","password":"mypassword","cachedir":"/tmp/"}')
+
 parser.add_argument('-p', '--project',
                     dest='project',
                     metavar='project',
@@ -49,38 +54,44 @@ parser.add_argument('-s', '--subject',
                     metavar='subject',
                     nargs = '+',
                     help='xnat server subject',
-                    required=True
-                )
+                    required=True)
 parser.add_argument('-e', '--experiment',
                     dest='experiment',
                     metavar='experiment',
                     nargs = '+',
                     help='xnat server experiment',
-                    required=True
-                )
+                    required=True)
 parser.add_argument('-a', '--scan',
                     dest='scan',
                     metavar='scan',
                     nargs = '+',
                     help='xnat server scan',
-                    required=True
-                )
+                    required=True)
+
 parser.add_argument('-d', '--dicom',
                     dest='dicom',
                     help='Download the DICOM (default is NIFTI) and convert to nifti',
                     required=False,
                     action='store_true')
+
 parser.add_argument('-o', '--output',
                     dest='output',
                     metavar='output',
-                    help='output',
+                    help='Output directory to store the data. The data is stored as project/subject/experiment/scan/[dicom/nifti]',
                     default = 'results',
                     required=False)
 
-args = parser.parse_args()
+args = parser.parse_args()              
 
+if args.config == None:
+  if (args.server == None) or (args.username == None):
+    print 'ERROR: Please provide either a config file or a server and username'
+    exit
+else:
+  if (args.server != None) or (args.username != None):
+    print 'ERROR: Please provide either a config file or a server and username'
+    exit
 
-password = getpass.getpass()
 
 result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
@@ -88,7 +99,7 @@ if not os.path.exists(result_dir):
 
     
 infosource = pe.Node(niu.IdentityInterface(fields = ['projects', 'subjects', 'experiments', 'scans']),
-                     name = 'infosource')
+                     name = 'infosource', synchronize=True)
 infosource.iterables = [('projects', args.project),
                         ('subjects', args.subject),
                         ('experiments', args.experiment),
@@ -109,9 +120,16 @@ else:
 
 dg.inputs.query_template = '/projects/%s/subjects/%s/experiments/%s/scans/%s/resources/'+resource
 dg.inputs.query_template_args['output'] = [['project','subject','experiment', 'scan']]
-dg.inputs.user = args.username
-dg.inputs.pwd = password
-dg.inputs.server = args.server.strip('/')
+
+if args.config == None:
+  dg.inputs.user = args.username
+  dg.inputs.pwd = getpass.getpass()
+  dg.inputs.server = args.server.strip('/')
+else:
+  dg.inputs.config = os.path.abspath(args.config)
+
+dg.inputs.cache_dir = '/tmp/'
+
 r.connect(infosource, 'projects', dg, 'project')
 r.connect(infosource, 'subjects', dg, 'subject')
 r.connect(infosource, 'experiments', dg, 'experiment')
