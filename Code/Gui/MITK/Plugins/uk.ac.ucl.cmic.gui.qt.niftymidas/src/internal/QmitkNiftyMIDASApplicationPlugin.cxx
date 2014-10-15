@@ -76,12 +76,4 @@ void QmitkNiftyMIDASApplicationPlugin::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.gui.qt.niftymidas", node);
-}
-
-
-//-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftymidas, QmitkNiftyMIDASApplicationPlugin)

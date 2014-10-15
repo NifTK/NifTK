@@ -264,6 +264,7 @@ void QmitkCommonAppsApplicationPlugin::NodeAdded(const mitk::DataNode *constNode
   this->RegisterInterpolationProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
   this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.gui.qt.commonapps", node);
+  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.gui.qt.commonapps", node);
 }
 
 

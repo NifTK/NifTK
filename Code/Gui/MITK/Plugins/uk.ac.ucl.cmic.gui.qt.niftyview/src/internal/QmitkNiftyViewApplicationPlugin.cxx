@@ -68,12 +68,4 @@ void QmitkNiftyViewApplicationPlugin::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyViewApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.gui.qt.niftyview", node);
-}
-
-
-//-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyview, QmitkNiftyViewApplicationPlugin)

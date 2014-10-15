@@ -65,12 +65,4 @@ void QmitkNiftyIGIApplicationPlugin::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyIGIApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.gui.qt.niftyigi", node);
-}
-
-
-//-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyigi, QmitkNiftyIGIApplicationPlugin)
