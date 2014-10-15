@@ -678,7 +678,8 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
         {
           /// --open should be followed by a file path, not an option.
           if (i + 1 == arguments.size()
-              || arguments[i + 1].startsWith("-"))
+              || arguments[i + 1].isEmpty()
+              || arguments[i + 1][0] == '-')
           {
             MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
             continue;
@@ -689,7 +690,8 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
         {
           /// --properties should be followed by property values, not an option.
           if (i + 1 == arguments.size()
-              || arguments[i + 1].startsWith("-"))
+              || arguments[i + 1].isEmpty()
+              || arguments[i + 1][0] == '-')
           {
             MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
             continue;
@@ -769,7 +771,8 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
           /// These arguments are processed by the NiftyMIDAS workbench advisor.
 
           if (i + 1 == arguments.size()
-              || arguments[i + 1].startsWith("-"))
+              || arguments[i + 1].isEmpty()
+              || arguments[i + 1][0] == '-')
           {
             MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
             continue;
