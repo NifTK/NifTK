@@ -668,23 +668,34 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
 
       std::vector<mitk::DataNode::Pointer> lastOpenedNodes;
 
-      bool ok = true;
-      int argumentsAdded = 0;
+      int filesOpened = 0;
       int layer = 0;
 
       for (int i = 0; i < arguments.size(); ++i)
       {
-        if (arguments[i] == "-P"
-            || arguments[i] == "--properties")
+        if (arguments[i] == "-o"
+            || arguments[i] == "--open")
         {
-          ++i;
-          if (i == arguments.size())
+          /// --open should be followed by a file path, not an option.
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
           {
-            MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
-            ok = false;
-            break;
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
+          }
+        }
+        else if (arguments[i] == "-P"
+                 || arguments[i] == "--properties")
+        {
+          /// --properties should be followed by property values, not an option.
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
+          {
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
           }
 
+          ++i;
           QString propertiesArg = arguments[i];
           QStringList propertiesArgParts = propertiesArg.split(":");
           QString propertyKeysAndValuesPart;
@@ -695,7 +706,7 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
             nodesToSet = lastOpenedNodes;
             propertyKeysAndValuesPart = propertiesArgParts[0];
           }
-          if (propertiesArgParts.size() == 2)
+          else if (propertiesArgParts.size() == 2)
           {
             QString nodeNamesPart = propertiesArgParts[0];
             QStringList nodeNames = nodeNamesPart.split(",");
@@ -712,12 +723,16 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
 
             propertyKeysAndValuesPart = propertiesArgParts[1];
           }
+          else
+          {
+            MITK_ERROR << "Invalid syntax for the " << arguments[i - 1].toStdString() << " option.";
+            continue;
+          }
 
           QStringList propertyKeyAndValueParts = propertyKeysAndValuesPart.split(",");
           if (propertyKeyAndValueParts.empty())
           {
-            MITK_WARN << "Invalid argument: You must specify properties with the --properties option.";
-            ok = false;
+            MITK_ERROR << "Invalid argument: You must specify properties with the " << arguments[i - 1].toStdString() << " option.";
             continue;
           }
 
@@ -726,8 +741,7 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
             QStringList propertyKeyAndValue = propertyKeyAndValuePart.split("=");
             if (propertyKeyAndValue.size() != 2)
             {
-              MITK_WARN << "Invalid argument: You must specify property values in the form <property name>=<value>.";
-              ok = false;
+              MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
               continue;
             }
 
@@ -743,91 +757,6 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
             }
           }
         }
-        else if (arguments[i] == "--open")
-        {
-          /// Note:
-          /// These arguments are processed by the NiftyMIDAS workbench advisor.
-
-          ++i;
-          if (i == arguments.size())
-          {
-            MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
-            ok = false;
-            break;
-          }
-
-          QString openArg = arguments[i];
-
-          if (openArg.endsWith(".mitk"))
-          {
-            lastOpenedNodes.clear();
-
-            mitk::SceneIO::Pointer sceneIO = mitk::SceneIO::New();
-
-            bool clearDataStorageFirst(false);
-            mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
-            dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
-            mitk::ProgressBar::GetInstance()->Progress(2);
-            argumentsAdded++;
-          }
-          else
-          {
-            QStringList openArgParts = openArg.split(":");
-            QString nodeName;
-            QString fileName;
-            if (openArgParts.size() == 1)
-            {
-              fileName = openArgParts[0];
-            }
-            else if (openArgParts.size() == 2)
-            {
-              nodeName = openArgParts[0];
-              fileName = openArgParts[1];
-            }
-
-            mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
-            try
-            {
-              nodeReader->SetFileName(fileName.toStdString());
-              nodeReader->Update();
-
-              lastOpenedNodes.clear();
-
-              for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs(); ++j)
-              {
-                mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
-                
-                if (node->GetData() != 0)
-                {
-                  lastOpenedNodes.push_back(node);
-
-                  if (!nodeName.isEmpty())
-                  {
-                    if (j == 0)
-                    {
-                      node->SetName(nodeName.toStdString().c_str());
-                    }
-                    else
-                    {
-                      node->SetName(QString("%1 #%2").arg(nodeName, j + 1).toStdString().c_str());
-                    }
-                  }
-                  
-                  ++layer;
-                  node->SetIntProperty("layer", layer);
-                  node->SetBoolProperty("fixedLayer", true);
-                  dataStorage->Add(node);
-                  argumentsAdded++;
-                }
-              }
-            }
-            catch (...)
-            {
-              MITK_WARN << "Failed to load command line argument: " << arguments[i].toStdString();
-              ok = false;
-            }
-          }
-        }
         else if (arguments[i] == "--perspective"
                  || arguments[i] == "--window-layout"
                  || arguments[i] == "--dnd"
@@ -839,13 +768,14 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
           /// Note:
           /// These arguments are processed by the NiftyMIDAS workbench advisor.
 
-          ++i;
-          if (i == arguments.size())
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
           {
-            MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
-            ok = false;
-            break;
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
           }
+
+          ++i;
         }
         else if (arguments[i].right(5) == ".mitk")
         {
@@ -857,41 +787,72 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
           mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
           dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
           mitk::ProgressBar::GetInstance()->Progress(2);
-          argumentsAdded++;
+          ++filesOpened;
         }
         else
         {
+          QString fileArg = arguments[i];
+
+          QStringList fileArgParts = fileArg.split(":");
+          QString nodeName;
+          QString filePath;
+          if (fileArgParts.size() == 1)
+          {
+            filePath = fileArgParts[0];
+          }
+          else if (fileArgParts.size() == 2)
+          {
+            nodeName = fileArgParts[0];
+            filePath = fileArgParts[1];
+          }
+          else
+          {
+            MITK_ERROR << "Invalid syntax for specifying input file.";
+            break;
+          }
+
           lastOpenedNodes.clear();
 
           mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
           try
           {
-            nodeReader->SetFileName(arguments[i].toStdString());
+            nodeReader->SetFileName(filePath.toStdString());
             nodeReader->Update();
-            for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs( ); ++j)
+            for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs(); ++j)
             {
               mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
               if (node->GetData() != 0)
               {
                 lastOpenedNodes.push_back(node);
 
+                if (!nodeName.isEmpty())
+                {
+                  if (j == 0)
+                  {
+                    node->SetName(nodeName.toStdString().c_str());
+                  }
+                  else
+                  {
+                    node->SetName(QString("%1 #%2").arg(nodeName, j + 1).toStdString().c_str());
+                  }
+                  ++filesOpened;
+                }
+
                 ++layer;
                 node->SetIntProperty("layer", layer);
                 node->SetBoolProperty("fixedLayer", true);
                 dataStorage->Add(node);
-                argumentsAdded++;
               }
             }
           }
-          catch(...)
+          catch (...)
           {
-            MITK_WARN << "Failed to load command line argument: " << arguments[i].toStdString();
-            ok = false;
+            MITK_ERROR << "Failed to open file: " << filePath.toStdString();
           }
         }
       } // end for each command line argument
 
-      if (ok && argumentsAdded > 0 && globalReinit)
+      if (filesOpened > 0 && globalReinit)
       {
         // calculate bounding geometry
         mitk::RenderingManager::GetInstance()->InitializeViews(dataStorage->ComputeBoundingGeometry3D());
