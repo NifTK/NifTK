@@ -666,136 +666,196 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
       mitk::IDataStorageService* dataStorageService = m_Context->getService<mitk::IDataStorageService>(serviceRef);
       mitk::DataStorage::Pointer dataStorage = dataStorageService->GetDefaultDataStorage()->GetDataStorage();
 
-      QRegExp propertyFormat("^([^/:=]*)(/([^/:=]*))?(:([^/:=]*))?=([^/:=]*)$");
-      QMap<QString, QMap<QString, QVariant> > properties;
+      std::vector<mitk::DataNode::Pointer> lastOpenedNodes;
 
-      bool ok = true;
-      int argumentsAdded = 0;
+      int filesOpened = 0;
       int layer = 0;
 
       for (int i = 0; i < arguments.size(); ++i)
       {
-       if (arguments[i] == "-p" || arguments[i] == "--property")
-       {
-         ++i;
-         if (i == arguments.size())
-         {
-           MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
-           ok = false;
-           break;
-         }
+        if (arguments[i] == "-o"
+            || arguments[i] == "--open")
+        {
+          /// --open should be followed by a file path, not an option.
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
+          {
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
+          }
+        }
+        else if (arguments[i] == "-P"
+                 || arguments[i] == "--properties")
+        {
+          /// --properties should be followed by property values, not an option.
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
+          {
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
+          }
 
-         int index = propertyFormat.indexIn(arguments[i]);
-         if (index != 0)
-         {
-           MITK_WARN << "Invalid syntax for image properties: " << arguments[i].toStdString();
-           ok = false;
-           break;
-         }
-         QString propertyName = propertyFormat.cap(1);
-         QString rendererName = propertyFormat.cap(3);
-         QString propertyType = propertyFormat.cap(5);
-         QString propertyValue = propertyFormat.cap(6);
+          ++i;
+          QString propertiesArg = arguments[i];
+          QStringList propertiesArgParts = propertiesArg.split(":");
+          QString propertyKeysAndValuesPart;
+          
+          std::vector<mitk::DataNode::Pointer> nodesToSet;
+          if (propertiesArgParts.size() == 1)
+          {
+            nodesToSet = lastOpenedNodes;
+            propertyKeysAndValuesPart = propertiesArgParts[0];
+          }
+          else if (propertiesArgParts.size() == 2)
+          {
+            QString nodeNamesPart = propertiesArgParts[0];
+            QStringList nodeNames = nodeNamesPart.split(",");
+            foreach (QString nodeName, nodeNames)
+            {
+              mitk::DataNode::Pointer node = dataStorage->GetNamedNode(nodeName.toStdString());
+              if (node.IsNull())
+              {
+                MITK_ERROR << "The name has not be given to any data: " << nodeName.toStdString();
+                continue;
+              }
+              nodesToSet.push_back(node);
+            }
 
-         QVariant propertyTypedValue = this->ParsePropertyValue(propertyValue, propertyType);
-         if (propertyTypedValue.isNull())
-         {
-           MITK_WARN << "Invalid syntax for command line argument: " << arguments[i].toStdString();
-           ok = false;
-           break;
-         }
+            propertyKeysAndValuesPart = propertiesArgParts[1];
+          }
+          else
+          {
+            MITK_ERROR << "Invalid syntax for the " << arguments[i - 1].toStdString() << " option.";
+            continue;
+          }
 
-         if (rendererName.isEmpty())
-         {
-           properties[propertyName][""] = propertyTypedValue;
-         }
-         else
-         {
-           properties[propertyName][rendererName] = propertyTypedValue;
-         }
-       }
-       else if (arguments[i] == "--perspective"
-                || arguments[i] == "--window-layout"
-                || arguments[i] == "--dnd"
-                || arguments[i] == "--drag-and-drop"
-                || arguments[i] == "--viewer-number"
-                || arguments[i] == "--bind-viewers"
-                )
-       {
-         /// Note:
-         /// These arguments are processed by the NiftyMIDAS workbench advisor.
+          QStringList propertyKeyAndValueParts = propertyKeysAndValuesPart.split(",");
+          if (propertyKeyAndValueParts.empty())
+          {
+            MITK_ERROR << "Invalid argument: You must specify properties with the " << arguments[i - 1].toStdString() << " option.";
+            continue;
+          }
 
-         ++i;
-         if (i == arguments.size())
-         {
-           MITK_WARN << "Missing command line argument after " << arguments[i - 1].toStdString();
-           ok = false;
-           break;
-         }
-       }
-       else if (arguments[i].right(5) == ".mitk")
-       {
-         if (!properties.isEmpty())
-         {
-           MITK_WARN << "Properties cannot be specified for project files.";
-           ok = false;
-           break;
-         }
-         else
-         {
-           mitk::SceneIO::Pointer sceneIO = mitk::SceneIO::New();
+          foreach (QString propertyKeyAndValuePart, propertyKeyAndValueParts)
+          {
+            QStringList propertyKeyAndValue = propertyKeyAndValuePart.split("=");
+            if (propertyKeyAndValue.size() != 2)
+            {
+              MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
+              continue;
+            }
 
-           bool clearDataStorageFirst(false);
-           mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
-           dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
-           mitk::ProgressBar::GetInstance()->Progress(2);
-           argumentsAdded++;
-         }
-       }
-       else
-       {
-         mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
-         try
-         {
-           nodeReader->SetFileName(arguments[i].toStdString());
-           nodeReader->Update();
-           for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs( ); ++j)
-           {
-             mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
-             if (node->GetData() != 0)
-             {
-               this->SetNodeProperties(node, properties);
-               bool hasLayerProperty = false;
-               int layerProperty = properties["layer"][""].toInt(&hasLayerProperty);
-               if (hasLayerProperty)
-               {
-                 layer = layerProperty;
-               }
-               else
-               {
-                 ++layer;
-               }
-               node->SetIntProperty("layer", layer);
-               node->SetBoolProperty("fixedLayer", true);
-               dataStorage->Add(node);
-               argumentsAdded++;
-             }
-           }
-         }
-         catch(...)
-         {
-           MITK_WARN << "Failed to load command line argument: " << arguments[i].toStdString();
-           ok = false;
-         }
+            QString propertyKey = propertyKeyAndValue[0];
+            QString propertyValue = propertyKeyAndValue[1];
 
-         properties.clear();
-       }
+            for (std::vector<mitk::DataNode::Pointer>::iterator nodesIt = nodesToSet.begin();
+                 nodesIt != nodesToSet.end();
+                 ++nodesIt)
+            {
+              QVariant value = this->ParsePropertyValue(propertyValue);
+              this->SetNodeProperty(*nodesIt, propertyKey, value);
+            }
+          }
+        }
+        else if (arguments[i] == "--perspective"
+                 || arguments[i] == "--window-layout"
+                 || arguments[i] == "--dnd"
+                 || arguments[i] == "--drag-and-drop"
+                 || arguments[i] == "--viewer-number"
+                 || arguments[i] == "--bind-viewers"
+                 )
+        {
+          /// Note:
+          /// These arguments are processed by the NiftyMIDAS workbench advisor.
+
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].startsWith("-"))
+          {
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
+          }
+
+          ++i;
+        }
+        else if (arguments[i].right(5) == ".mitk")
+        {
+          lastOpenedNodes.clear();
+
+          mitk::SceneIO::Pointer sceneIO = mitk::SceneIO::New();
+
+          bool clearDataStorageFirst(false);
+          mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
+          dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
+          mitk::ProgressBar::GetInstance()->Progress(2);
+          ++filesOpened;
+        }
+        else
+        {
+          QString fileArg = arguments[i];
+
+          QStringList fileArgParts = fileArg.split(":");
+          QString nodeName;
+          QString filePath;
+          if (fileArgParts.size() == 1)
+          {
+            filePath = fileArgParts[0];
+          }
+          else if (fileArgParts.size() == 2)
+          {
+            nodeName = fileArgParts[0];
+            filePath = fileArgParts[1];
+          }
+          else
+          {
+            MITK_ERROR << "Invalid syntax for specifying input file.";
+            break;
+          }
+
+          lastOpenedNodes.clear();
+
+          mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
+          try
+          {
+            nodeReader->SetFileName(filePath.toStdString());
+            nodeReader->Update();
+            for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs(); ++j)
+            {
+              mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
+              if (node->GetData() != 0)
+              {
+                lastOpenedNodes.push_back(node);
+
+                if (!nodeName.isEmpty())
+                {
+                  if (j == 0)
+                  {
+                    node->SetName(nodeName.toStdString().c_str());
+                  }
+                  else
+                  {
+                    node->SetName(QString("%1 #%2").arg(nodeName, j + 1).toStdString().c_str());
+                  }
+                  ++filesOpened;
+                }
+
+                ++layer;
+                node->SetIntProperty("layer", layer);
+                node->SetBoolProperty("fixedLayer", true);
+                dataStorage->Add(node);
+              }
+            }
+          }
+          catch (...)
+          {
+            MITK_ERROR << "Failed to open file: " << filePath.toStdString();
+          }
+        }
       } // end for each command line argument
 
-      if (ok && argumentsAdded > 0 && globalReinit)
+      if (filesOpened > 0 && globalReinit)
       {
-       // calculate bounding geometry
-       mitk::RenderingManager::GetInstance()->InitializeViews(dataStorage->ComputeBoundingGeometry3D());
+        // calculate bounding geometry
+        mitk::RenderingManager::GetInstance()->InitializeViews(dataStorage->ComputeBoundingGeometry3D());
       }
     }
     else
@@ -807,68 +867,29 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
 
 
 //-----------------------------------------------------------------------------
-QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& propertyValue, const QString& propertyType)
+QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& propertyValue)
 {
   QVariant propertyTypedValue;
 
-  if (propertyType.isEmpty())
+  if (propertyValue == QString("true")
+      || propertyValue == QString("on")
+      || propertyValue == QString("yes"))
   {
-    if (propertyValue == QString("true")
-        || propertyValue == QString("on")
-        || propertyValue == QString("yes"))
-    {
-      propertyTypedValue = QVariant(true);
-    }
-    else if (propertyValue == QString("false")
-             || propertyValue == QString("off")
-             || propertyValue == QString("no"))
-    {
-      propertyTypedValue = QVariant(false);
-    }
-    else
-    {
-      bool ok = false;
-      int intValue = propertyValue.toInt(&ok);
-      if (ok)
-      {
-        propertyTypedValue = QVariant(intValue);
-      }
-      else
-      {
-        int floatValue = propertyValue.toFloat(&ok);
-        if (ok)
-        {
-          propertyTypedValue = QVariant(floatValue);
-        }
-        else
-        {
-          propertyTypedValue = QVariant(propertyValue);
-        }
-      }
-    }
+    propertyTypedValue = QVariant(true);
   }
-  else if (propertyType == "bool")
+  else if (propertyValue == QString("false")
+           || propertyValue == QString("off")
+           || propertyValue == QString("no"))
   {
-    if (propertyValue == "true"
-        || propertyValue == "1"
-        || propertyValue == "on"
-        || propertyValue == "yes")
-    {
-      propertyTypedValue = QVariant(true);
-    }
-    else if (propertyValue == "false"
-             || propertyValue == "0"
-             || propertyValue == "off"
-             || propertyValue == "no")
-    {
-      propertyTypedValue = QVariant(true);
-    }
-    else
-    {
-      MITK_WARN << "Specified property value is not boolean number: " << propertyValue.toStdString();
-    }
+    propertyTypedValue = QVariant(false);
   }
-  else if (propertyType == "int")
+  else if (propertyValue.size() >= 2
+           && ((propertyValue[0] == '\'' && propertyValue[propertyValue.size() - 1] == '\'')
+               || (propertyValue[0] == '"' && propertyValue[propertyValue.size() - 1] == '"')))
+  {
+    propertyTypedValue = QVariant(propertyValue.mid(1, propertyValue.size() - 2));
+  }
+  else
   {
     bool ok = false;
     int intValue = propertyValue.toInt(&ok);
@@ -878,30 +899,16 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
     }
     else
     {
-      MITK_WARN << "Specified property value is not integer number: " << propertyValue.toStdString();
+      double doubleValue = propertyValue.toDouble(&ok);
+      if (ok)
+      {
+        propertyTypedValue = QVariant(doubleValue);
+      }
+      else
+      {
+        propertyTypedValue = QVariant(propertyValue);
+      }
     }
-  }
-  else if (propertyType == "float")
-  {
-    bool ok = false;
-    int floatValue = propertyValue.toFloat(&ok);
-    if (ok)
-    {
-      propertyTypedValue = QVariant(floatValue);
-    }
-    else
-    {
-      MITK_WARN << "Specified property value is not floating point number: " << propertyValue.toStdString();
-    }
-  }
-  else if (propertyType == "string")
-  {
-    propertyTypedValue = QVariant(propertyValue);
-  }
-  else
-  {
-    MITK_WARN << "Unknown property type: " << propertyType.toStdString() << std::endl
-              << "Supported types are: bool, int, float and string.";
   }
 
   return propertyTypedValue;
@@ -909,49 +916,33 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::SetNodeProperties(mitk::DataNode* node, const QMap<QString, QMap<QString, QVariant> >& properties)
+void QmitkCommonAppsApplicationPlugin::SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName)
 {
-  for (QMap<QString, QMap<QString, QVariant> >::ConstIterator it = properties.begin();
-       it != properties.end();
-       ++it)
+  mitk::BaseProperty::Pointer mitkProperty;
+  if (propertyValue.type() == QVariant::Bool)
   {
-    const QString& propertyName = it.key();
-    const QMap<QString, QVariant>& propertyValuesPerRenderer = it.value();
-    for (QMap<QString, QVariant>::ConstIterator it2 = propertyValuesPerRenderer.begin();
-         it2 != propertyValuesPerRenderer.end();
-         ++it2)
-    {
-      const QString& rendererName = it2.key();
-      const QVariant& propertyValue = it2.value();
+    mitkProperty = mitk::BoolProperty::New(propertyValue.toBool());
+  }
+  else if (propertyValue.type() == QVariant::Int)
+  {
+    mitkProperty = mitk::IntProperty::New(propertyValue.toInt());
+  }
+  else if (propertyValue.type() == QVariant::Double)
+  {
+    mitkProperty = mitk::FloatProperty::New(propertyValue.toFloat());
+  }
+  else if (propertyValue.type() == QVariant::String)
+  {
+    mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
+  }
 
-      mitk::BaseProperty::Pointer mitkProperty;
-      if (propertyValue.type() == QVariant::Bool)
-      {
-        mitkProperty = mitk::BoolProperty::New(propertyValue.toBool());
-      }
-      if (propertyValue.type() == QVariant::Int)
-      {
-        mitkProperty = mitk::IntProperty::New(propertyValue.toInt());
-      }
-      if (propertyValue.type() == QVariant::Double)
-      {
-        mitkProperty = mitk::FloatProperty::New(propertyValue.toFloat());
-      }
-      if (propertyValue.type() == QVariant::String)
-      {
-        mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
-      }
-
-      if (rendererName.isEmpty())
-      {
-        node->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
-      }
-      else
-      {
-        MITK_WARN << "Renderer specific properties are not supported yet.";
-//        node->SetProperty(propertyName.toStdString(), mitkProperty, rendererName.toStdString());
-      }
-    }
+  if (rendererName.isEmpty())
+  {
+    node->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
+  }
+  else
+  {
+    node->GetPropertyList(rendererName.toStdString())->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
   }
 }
 
