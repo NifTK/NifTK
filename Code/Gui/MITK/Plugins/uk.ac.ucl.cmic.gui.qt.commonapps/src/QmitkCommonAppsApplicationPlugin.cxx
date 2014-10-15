@@ -685,6 +685,51 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
             continue;
           }
         }
+        else if (arguments[i] == "-p"
+                 || arguments[i] == "--parents")
+        {
+          /// --parents should be followed by data node names, not by an option.
+          if (i + 1 == arguments.size()
+              || arguments[i + 1].isEmpty()
+              || arguments[i + 1][0] == '-')
+          {
+            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
+            continue;
+          }
+
+          ++i;
+          QString sourcesArg = arguments[i];
+
+          QStringList sourceNodeNames = sourcesArg.split(",");
+          if (sourceNodeNames.empty())
+          {
+            MITK_ERROR << "Invalid argument: You must specify data names with the " << arguments[i - 1].toStdString() << " option.";
+            continue;
+          }
+
+          mitk::DataStorage::SetOfObjects::Pointer lastOpenedNodesSources = mitk::DataStorage::SetOfObjects::New();
+          foreach (QString sourceNodeName, sourceNodeNames)
+          {
+            mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceNodeName.toStdString());
+            if (sourceNode.IsNull())
+            {
+              MITK_ERROR << "The name has not be given to any data: " << sourceNodeName.toStdString();
+              continue;
+            }
+            lastOpenedNodesSources->push_back(sourceNode);
+          }
+
+          for (std::vector<mitk::DataNode::Pointer>::iterator lastOpenedNodesIt = lastOpenedNodes.begin();
+               lastOpenedNodesIt != lastOpenedNodes.end();
+               ++lastOpenedNodesIt)
+          {
+            if (dataStorage->Exists(*lastOpenedNodesIt))
+            {
+              dataStorage->Remove(*lastOpenedNodesIt);
+            }
+            dataStorage->Add(*lastOpenedNodesIt, lastOpenedNodesSources);
+          }
+        }
         else if (arguments[i] == "-P"
                  || arguments[i] == "--properties")
         {
@@ -816,6 +861,22 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
 
           lastOpenedNodes.clear();
 
+          /// If parents are specified for these nodes then the --parents option should follow
+          /// this argument either directly or after the properties option.
+          bool parentsSpecified;
+          if ((i + 1 < arguments.size()
+               && (arguments[i + 1] == "-p" || arguments[i + 1] == "--parents"))
+              || (i + 3 < arguments.size()
+                  && (arguments[i + 1] == "-P" || arguments[i + 1] == "--properties")
+                  && (arguments[i + 3] == "-p" || arguments[i + 3] == "--parents")))
+          {
+            parentsSpecified = true;
+          }
+          else
+          {
+            parentsSpecified = false;
+          }
+
           mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
           try
           {
@@ -844,7 +905,11 @@ void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &argum
                 ++layer;
                 node->SetIntProperty("layer", layer);
                 node->SetBoolProperty("fixedLayer", true);
-                dataStorage->Add(node);
+
+                if (!parentsSpecified)
+                {
+                  dataStorage->Add(node);
+                }
               }
             }
           }
