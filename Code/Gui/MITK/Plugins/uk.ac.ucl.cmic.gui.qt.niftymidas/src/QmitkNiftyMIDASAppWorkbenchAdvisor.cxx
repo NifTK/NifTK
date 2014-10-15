@@ -78,14 +78,15 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     std::string arg = *it;
     if (arg == "--perspective")
     {
-      ++it;
-      if (it == args.end())
+      if (it + 1 == args.end()
+          || (it + 1)->empty()
+          || (*(it + 1))[0] == '-')
       {
-        /// TODO invalid argument
         MITK_ERROR << "Invalid arguments: perspective name missing.";
-        break;
+        continue;
       }
 
+      ++it;
       std::string perspectiveLabel = *it;
 
       berry::IPerspectiveRegistry* perspectiveRegistry = workbench->GetPerspectiveRegistry();
@@ -101,36 +102,88 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     }
     else if (arg == "--window-layout")
     {
-      ++it;
-      if (it == args.end())
+      if (it + 1 == args.end()
+          || (it + 1)->empty()
+          || (*(it + 1))[0] == '-')
       {
-        /// TODO invalid argument
-        MITK_ERROR << "Invalid arguments: window layout name missing..";
-        break;
-      }
-
-      std::string windowLayoutName = *it;
-
-      WindowLayout windowLayout = ::GetWindowLayout(windowLayoutName);
-
-      if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
-      {
-        berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
-        QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
-        niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
-        multiViewer->SetDefaultWindowLayout(windowLayout);
-      }
-    }
-    else if (arg == "--viewer-number")
-    {
-      ++it;
-      if (it == args.end())
-      {
-        /// TODO invalid argument
-        MITK_ERROR << "Invalid arguments: viewer number missing..";
+        MITK_ERROR << "Invalid arguments: window layout name missing.";
         continue;
       }
 
+      ++it;
+      QString windowLayoutArg = QString::fromStdString(*it);
+      QStringList windowLayoutArgParts = windowLayoutArg.split(":");
+
+      int viewerRow = 0;
+      int viewerColumn = 0;
+      QString windowLayoutName;
+      if (windowLayoutArgParts.size() == 1)
+      {
+        windowLayoutName = windowLayoutArgParts[0];
+
+        viewerRow = 1;
+        viewerColumn = 1;
+      }
+      else if (windowLayoutArgParts.size() == 2)
+      {
+        QString viewerName = windowLayoutArgParts[0];
+        windowLayoutName = windowLayoutArgParts[1];
+
+        QStringList viewerNameParts = viewerName.split(",");
+        if (viewerNameParts.size() == 1)
+        {
+          viewerRow = 1;
+          viewerColumn = viewerNameParts[0].toInt();
+        }
+        else if (viewerNameParts.size() == 2)
+        {
+          viewerRow = viewerNameParts[0].toInt();
+          viewerColumn = viewerNameParts[1].toInt();
+        }
+      }
+
+      if (viewerRow == 0
+          || viewerColumn == 0)
+      {
+        MITK_ERROR << "Invalid arguments: invalid viewer name for the --window-layout option.";
+        continue;
+      }
+
+      --viewerRow;
+      --viewerColumn;
+
+      WindowLayout windowLayout = ::GetWindowLayout(windowLayoutName.toStdString());
+
+      if (windowLayout == WINDOW_LAYOUT_UNKNOWN)
+      {
+        MITK_ERROR << "Invalid arguments: invalid window layout name.";
+        continue;
+      }
+
+      berry::IEditorPart::Pointer activeEditor = workbenchWindow->GetActivePage()->GetActiveEditor();
+      QmitkMultiViewerEditor* dndDisplay = dynamic_cast<QmitkMultiViewerEditor*>(activeEditor.GetPointer());
+      niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
+      niftkSingleViewerWidget* viewer = multiViewer->GetViewer(viewerRow, viewerColumn);
+
+      if (!viewer)
+      {
+        MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
+        continue;
+      }
+
+      viewer->SetWindowLayout(windowLayout);
+    }
+    else if (arg == "--viewer-number")
+    {
+      if (it + 1 == args.end()
+          || (it + 1)->empty()
+          || (*(it + 1))[0] == '-')
+      {
+        MITK_ERROR << "Invalid arguments: viewer number missing.";
+        continue;
+      }
+
+      ++it;
       QString viewerNumberArg = QString::fromStdString(*it);
 
       int viewerRows = 0;
@@ -150,7 +203,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       if (viewerRows == 0 || viewerColumns == 0)
       {
-        /// TODO invalid argument
         MITK_ERROR << "Invalid viewer number.";
         continue;
       }
@@ -162,26 +214,22 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     }
     else if (arg == "--dnd" || arg == "--drag-and-drop")
     {
-      ++it;
-      if (it == args.end())
+      if (it + 1 == args.end()
+          || (it + 1)->empty()
+          || (*(it + 1))[0] == '-')
       {
-        break;
+        MITK_ERROR << "Invalid arguments: no data specified to drag.";
+        continue;
       }
 
+      ++it;
       QString dndArg = QString::fromStdString(*it);
       QStringList dndArgParts = dndArg.split(":");
-      QString nodeNamesArg;
 
       int viewerRow = 0;
       int viewerColumn = 0;
 
-      if (dndArgParts.size() == 0)
-      {
-        MITK_ERROR << "Invalid argument: No data specified to drag.";
-        continue;
-      }
-
-      nodeNamesArg = dndArgParts[0];
+      QString nodeNamesArg = dndArgParts[0];
 
       if (dndArgParts.size() == 2)
       {
@@ -194,7 +242,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           viewerColumn = viewerIndexArgParts[0].toInt(&ok) - 1;
           if (!ok || viewerColumn < 0)
           {
-            /// TODO invalid argument
             MITK_ERROR << "Invalid viewer index.";
             continue;
           }
@@ -206,7 +253,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           viewerColumn = viewerIndexArgParts[1].toInt(&ok2) - 1;
           if (!ok1 || !ok2 || viewerRow < 0 || viewerColumn < 0)
           {
-            /// TODO invalid argument
             MITK_ERROR << "Invalid viewer index.";
             continue;
           }
@@ -232,7 +278,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       if (!viewer)
       {
-        /// TODO invalid argument
         MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
         continue;
       }
@@ -250,7 +295,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         }
         else
         {
-          /// TODO invalid argument
           MITK_ERROR << "Invalid argument: unknown data to drag: " << nodeName.toStdString();
           continue;
         }
@@ -262,15 +306,15 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     }
     else if (arg == "--bind-viewers")
     {
-      ++it;
-
-      if (it == args.end())
+      if (it + 1 == args.end()
+          || (it + 1)->empty()
+          || (*(it + 1))[0] == '-')
       {
-        /// TODO invalid argument
         MITK_ERROR << "Invalid arguments: missing argument for viewer bindings.";
-        break;
+        continue;
       }
 
+      ++it;
       QString viewerBindingArg = QString::fromStdString(*it);
 
       QStringList viewerBindingOptions = viewerBindingArg.split(",");
@@ -288,7 +332,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         QStringList viewerBindingOptionParts = viewerBindingOption.split("=");
         if (viewerBindingOptionParts.size() != 1 && viewerBindingOptionParts.size() != 2)
         {
-          /// TODO invalid argument
           MITK_ERROR << "Invalid argument format for viewer bindings.";
           continue;
         }
@@ -321,14 +364,12 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
           }
           else
           {
-            /// TODO invalid argument
             MITK_ERROR << "Invalid argument format for viewer bindings.";
             continue;
           }
         }
         else
         {
-          /// TODO invalid argument
           MITK_ERROR << "Invalid argument format for viewer bindings.";
           continue;
         }
@@ -412,7 +453,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
         }
         else
         {
-          /// TODO invalid argument
           continue;
         }
       }
