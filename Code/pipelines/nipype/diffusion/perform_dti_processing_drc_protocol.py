@@ -18,7 +18,7 @@ def gen_substitutions(op_basename):
     subs = []
     
     subs.append(('average_output_res_maths', op_basename+'_averageb0'))
-    subs.append(('vol0000_res_merged', op_basename+'_corrected_dwi'))
+    subs.append(('vol0000_res_merged_maths', op_basename+'_corrected_dwi'))
 
     return subs
 
@@ -133,7 +133,6 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
                                                           t1_mask_provided = True,
                                                           ref_b0_provided = False,
                                                           wls_tensor_fit = False,
-                                                          model = args.model,
                                                           set_op_basename = True)
 	r.base_dir = os.getcwd()
 
@@ -206,26 +205,17 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 
 	
 
-	if (args.model == 'tensor' or args.model == 'both'):		  
-		  r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
-		  r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
-		  r.connect(r.get_node('output_node'), 'MD', ds, '@md')
-		  r.connect(r.get_node('output_node'), 'COL_FA', ds, '@colfa')
-		  r.connect(r.get_node('output_node'), 'V1', ds, '@v1')
-		  r.connect(r.get_node('output_node'), 'predicted_image_tensor', ds, '@img_tensor')
-		  r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res_tensor')
-
-	if (args.model == 'noddi' or args.model == 'both'):
-
-		  r.connect(r.get_node('output_node'), 'mcmap', ds, '@mcmap')
-		  r.connect(r.get_node('output_node'), 'predicted_image_noddi', ds, '@img_noddi')
-		  r.connect(r.get_node('output_node'), 'residual_image_noddi', ds, '@res_noddi')
-
+	r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
+	r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
+	r.connect(r.get_node('output_node'), 'MD', ds, '@md')
+	r.connect(r.get_node('output_node'), 'COL_FA', ds, '@colfa')
+	r.connect(r.get_node('output_node'), 'V1', ds, '@v1')
+	r.connect(r.get_node('output_node'), 'predicted_image_tensor', ds, '@img')
+	r.connect(r.get_node('output_node'), 'residual_image_tensor', ds, '@res')
 	r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
-	r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+	r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 	r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
-
-        # r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
+	r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
 
 	return r
 
@@ -233,10 +223,7 @@ help_message = \
 'Perform Diffusion Model Fitting with pre-processing steps. \n\n' + \
 'Mandatory Input is the 4/5 MIDAS code from which the DWIs, bval bvecs \n' + \
 'as well as a T1 image are extracted for reference space. \n\n' + \
-'The Field maps are provided so susceptibility correction is applied. \n' + \
-'Use the --model option to control which diffusion model to use (tensor or noddi)' 
-
-model_choices = ['tensor', 'noddi', 'both']
+'The Field maps are provided so susceptibility correction is applied.'
 
 parser = argparse.ArgumentParser(description=help_message)
 
@@ -245,13 +232,6 @@ parser.add_argument('-m', '--midas_code',
                    nargs='+',
                    required=True,
                    help='MIDAS code of the subject image')
-parser.add_argument('--model',
-                    dest='model',
-                    metavar='model',
-                    help='Diffusion Model to use, choices are ' + str(model_choices) + ' default: tensor',
-                    required=False,
-                    choices = model_choices,
-                    default = model_choices[0])
 parser.add_argument('-o', '--output',
                     dest='output',
                     metavar='output',
