@@ -55,6 +55,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
+  Plugins/uk.ac.ucl.cmic.newvisualization:ON              # Prototype
 )
 
 # ---------------------------------------------------------------------------------------------------

@@ -43,6 +43,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
   uk.ac.ucl.cmic.xnat
+  uk.ac.ucl.cmic.newvisualization
 )
 
 NIFTK_CREATE_GUI_APPLICATION(
