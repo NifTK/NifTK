@@ -17,7 +17,7 @@
 #define NewVisualizationPluginActivator_h
 
 #include <ctkPluginActivator.h>
-#include <mitkOCLResourceService.h>
+#include <mitkOclResourceService.h>
 
 namespace mitk {
 
@@ -42,7 +42,7 @@ public:
 private:
   static NewVisualizationPluginActivator* s_Inst;
   ctkPluginContext* m_Context;
-}; // RiskVisulaizationPluginActivator
+};
 
 }
 

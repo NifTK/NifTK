@@ -25,7 +25,7 @@
 #include <QmitkRenderWindow.h>
 
 #include <mitkDataNode.h>
-#include <mitkOCLResourceService.h>
+#include <mitkOclResourceService.h>
 #include <mitkSurface.h>
 #include <mitkImage.h>
 
