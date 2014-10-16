@@ -26,8 +26,14 @@
 
 #include <mitkDataNode.h>
 #include <mitkOCLResourceService.h>
+#include <mitkSurface.h>
+#include <mitkImage.h>
 
-#include <e:\Niftike-r\VL-src\src\examples\Applets\App_VolumeSliced.cpp>
+// VL includes
+#include <vlCore/VisualizationLibrary.hpp>
+#include <vlQt4/Qt4Widget.hpp>
+
+#include "VLRenderingApplet.h"
 
 /**
  * \class NewVisualizationView
@@ -48,6 +54,8 @@ public:
 
 
 protected slots:
+  /// \brief Slider moved
+  void On_SliderMoved(int val);
 
 protected:
 
@@ -72,6 +80,8 @@ private slots:
 
 
 private: 
+  void InitVLRendering();
+
   /// \brief 
   void UpdateDisplay(bool viewEnabled = true);
 
@@ -80,9 +90,9 @@ private:
 
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
-  QmitkRenderWindow * m_RenderWindow;
 
-  vl::ref<App_VolumeSliced> m_RenderApplet;
+  vl::ref<vlQt4::Qt4Widget>  m_VLQtRenderWindow;
+  vl::ref<VLRenderingApplet> m_RenderApplet;
 };
 
 #endif // NewVisualizationView_h
