@@ -56,6 +56,22 @@ ctkPluginContext* NewVisualizationPluginActivator::GetPluginContext() const
   return m_Context;
 }
 
+OclResourceService* NewVisualizationPluginActivator::GetOpenCLService()
+{
+  ctkPluginContext* context = NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
+
+  ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
+  OclResourceService* oclService = context->getService<OclResourceService>(serviceRef);
+
+  if (oclService == NULL)
+  {
+    mitkThrow() << "Failed to find OpenCL Service." << std::endl;
+  }
+
+  return oclService;
+}
+
+
 }
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_NewVisualization, mitk::NewVisualizationPluginActivator)

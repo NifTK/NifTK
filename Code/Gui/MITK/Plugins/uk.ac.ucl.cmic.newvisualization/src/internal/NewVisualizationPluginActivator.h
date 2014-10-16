@@ -17,7 +17,7 @@
 #define NewVisualizationPluginActivator_h
 
 #include <ctkPluginActivator.h>
-//#include <PlanningManagerService.h>
+#include <mitkOCLResourceService.h>
 
 namespace mitk {
 
@@ -36,6 +36,8 @@ public:
 
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
+
+  static OclResourceService * GetOpenCLService();
 
 private:
   static NewVisualizationPluginActivator* s_Inst;
