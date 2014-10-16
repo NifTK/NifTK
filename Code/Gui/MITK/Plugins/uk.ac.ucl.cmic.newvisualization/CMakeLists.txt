@@ -12,6 +12,7 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
 
   target_link_libraries(${PROJECT_NAME}
     ${VL_LIBRARIES}
+    CppMicroServices
     )
 
 #VLVG VLVolume VLGraphics VLCore 
