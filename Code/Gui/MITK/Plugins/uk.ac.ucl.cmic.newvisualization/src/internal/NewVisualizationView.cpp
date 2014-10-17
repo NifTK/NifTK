@@ -176,7 +176,7 @@ void NewVisualizationView::OnSelectionChanged( berry::IWorkbenchPart::Pointer so
   // Update visibility settings
  // UpdateDisplay();
 }
-void NewVisualizationView::NodeAdded(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeAdded(const mitk::DataNode* node)
 {
   if (node == 0)
     return;
@@ -184,7 +184,7 @@ void NewVisualizationView::NodeAdded(const mitk::DataNode* node)
   UpdateDisplay();
 }
 
-void NewVisualizationView::NodeChanged(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeChanged(const mitk::DataNode* node)
 {
   if (node == 0 || m_Controls == 0)
     return;
@@ -193,13 +193,22 @@ void NewVisualizationView::NodeChanged(const mitk::DataNode* node)
 
 }
 
-void NewVisualizationView::NodeRemoved(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeRemoved(const mitk::DataNode* node)
 {
   if (node == 0 || m_Controls == 0)
     return;
 
   UpdateDisplay();
 }
+
+void NewVisualizationView::OnNodeDeleted(const mitk::DataNode* node)
+{
+  if (node == 0 || m_Controls == 0)
+    return;
+
+  UpdateDisplay();
+}
+
 
 
 void NewVisualizationView::UpdateDisplay(bool viewEnabled)

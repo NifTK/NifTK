@@ -31,7 +31,7 @@
 
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodePropertyListener.h>
+//#include <mitkDataNodePropertyListener.h>
 
 // VL includes
 #include <vlCore/VisualizationLibrary.hpp>
@@ -101,9 +101,9 @@ private:
   vl::ref<VLRenderingApplet> m_RenderApplet;
 
   
-  mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
-  mitk::DataNodePropertyListener::Pointer    m_VisibilityListener;
-  mitk::DataNodePropertyListener::Pointer    m_PropertyListener;
+  //mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
+  //mitk::DataNodePropertyListener::Pointer    m_VisibilityListener;
+  //mitk::DataNodePropertyListener::Pointer    m_PropertyListener;
 };
 
 #endif // NewVisualizationView_h
