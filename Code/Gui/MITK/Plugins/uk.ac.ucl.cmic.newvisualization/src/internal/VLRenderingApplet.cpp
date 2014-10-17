@@ -341,6 +341,13 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
     vlImg = new Image(dims[0], dims[1], dims[2], bytealign, format, type);
     memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
 
+    vlImg = vlImg->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
+/*
+    ref<KeyValues> tags = new KeyValues;
+    tags->set("Origin")    = Say("%n %n %n") << mitkImg->GetGeometry()->GetOrigin()[0]  << mitkImg->GetGeometry()->GetOrigin()[1]  << mitkImg->GetGeometry()->GetOrigin()[2];
+    tags->set("Spacing")   = Say("%n %n %n") << mitkImg->GetGeometry()->GetSpacing()[0] << mitkImg->GetGeometry()->GetSpacing()[1] << mitkImg->GetGeometry()->GetSpacing()[2];
+    vlImg->setTags(tags.get());
+*/
   }
   catch(mitk::Exception& e)
   {
@@ -366,7 +373,6 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   fx->shader()->enable(EN_BLEND);
   fx->shader()->setRenderState(m_Light.get(), 0 );
   fx->shader()->enable(EN_LIGHTING);
-  fx->shader()->setRenderState( m_Light.get(), 0 );
   fx->shader()->gocMaterial()->setDiffuse(color);
   fx->shader()->gocMaterial()->setTransparency(1.0f- opacity);
 
@@ -393,8 +399,27 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   ref<vl::RaycastVolume> mRaycastVolume;
   mRaycastVolume = new vl::RaycastVolume;
   mRaycastVolume->bindActor( imageActor.get() );
-  AABB volume_box( vec3( -10,-10,-10 ), vec3( +10,+10,+10 ) );
+  //mitkImg->GetDimensions();
+  //AABB volume_box( vec3( -10,-10,-10 ), vec3( +10,+10,+10 ) );
+  //mRaycastVolume->setBox( volume_box );
+
+
+  unsigned int * dims = mitkImg->GetDimensions();
+  const float * spacing = const_cast<float *>(mitkImg->GetGeometry()->GetFloatSpacing());
+  
+  MITK_INFO <<"DIMMMSS: "<<dims[0] <<" " <<dims[1] <<" " <<dims[2];
+  float dimX = (float)dims[0]*spacing[0] / 2.0f;
+  float dimY = (float)dims[1]*spacing[1] / 2.0f;
+  float dimZ = (float)dims[2]*spacing[2] / 2.0f;
+
+  float shiftX = 0.0f;//0.5f * spacing[0];
+  float shiftY = 0.0f;//0.5f * spacing[1];
+  float shiftZ = 0.0f;//0.5f * spacing[2];
+
+  MITK_INFO <<"DIMMMSS: "<<dimX <<" " <<dimY <<" " <<dimZ;
+  AABB volume_box( vec3( -dimX+shiftX,-dimY+shiftY,-dimZ+shiftZ), vec3(dimX+shiftX,dimY+shiftY,dimZ+shiftZ) );
   mRaycastVolume->setBox( volume_box );
+
 
   // Setup image
   
