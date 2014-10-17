@@ -39,6 +39,7 @@
 #include <vlGraphics/Text.hpp>
 #include <vlGraphics/FontManager.hpp>
 #include <vlCore/String.hpp>
+#include <vlGraphics/Camera.hpp>
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -87,143 +88,34 @@ void VLRenderingApplet::initEvent()
   // scrap previous scene
   sceneManager()->tree()->eraseAllChildren();
   sceneManager()->tree()->actors()->clear();
-  m_Light->bindTransform( NULL );
 
   m_Light->setAmbient( fvec4( 0.1f, 0.1f, 0.1f, 1.0f ) );
-  m_Light->setDiffuse( vl::gold );
+  m_Light->setDiffuse( vl::white );
   m_Light->bindTransform( m_LightTr.get() );
-  
-  populateScene();
+
+  vec3 cameraPos = rendering()->as<vl::Rendering>()->camera()->modelingMatrix().getT();
+
+  vec4 lightPos;
+  lightPos[0] = cameraPos[0];
+  lightPos[1] = cameraPos[1];
+  lightPos[2] = cameraPos[2];
+  lightPos[3] = 0;
+  m_Light->setPosition(lightPos);
 }
 
-void VLRenderingApplet::populateScene()
-{
-  // erase the scene
-
-  sceneManager()->tree()->actors()->clear();
-
-  // regenerate the scene
-
-  ref<Effect> text_fx = new Effect;
-  text_fx->shader()->enable(EN_BLEND);
-  sceneManager()->tree()->addActor(mText.get(), text_fx.get());
-
-  ref<Geometry> box    = makeBox(vec3(0,0,-2), 1,1,1);
-  ref<Geometry> sphere = makeUVSphere(vec3(0,0,0),0.5f);
-  ref<Geometry> cone   = makeCone(vec3(0,0,+2), 1, 1, 10, true);
-  box   ->computeNormals();
-  sphere->computeNormals();
-  cone  ->computeNormals();
-
-  ref<Light> light = new Light;
-
-    // rendering order: 
-    // red -> yellow
-    // box -> sphere -> cone
-    mText->setText("red -> yellow\nbox -> sphere -> cone");
-
-    ref<Effect> red_fx = new Effect;
-    red_fx->setRenderRank(1);
-    red_fx->shader()->disable(EN_DEPTH_TEST);
-    red_fx->shader()->enable(EN_CULL_FACE);
-    red_fx->shader()->enable(EN_LIGHTING);
-    red_fx->shader()->setRenderState( light.get(), 0 );
-    red_fx->shader()->gocMaterial()->setDiffuse(red);
-
-    sceneManager()->tree()->addActor( box.get(),    red_fx.get(), mTransform1.get() )->setRenderRank( 1 );
-    sceneManager()->tree()->addActor( sphere.get(), red_fx.get(), mTransform1.get() )->setRenderRank( 2 );
-    sceneManager()->tree()->addActor( cone.get(),   red_fx.get(), mTransform1.get() )->setRenderRank( 3 );
-
-    ref<Effect> yellow_fx = new Effect;
-    yellow_fx->setRenderRank(2);
-    yellow_fx->shader()->disable(EN_DEPTH_TEST);
-    yellow_fx->shader()->enable(EN_CULL_FACE);
-    yellow_fx->shader()->enable(EN_LIGHTING);
-    yellow_fx->shader()->setRenderState( light.get(), 0 );
-    yellow_fx->shader()->gocMaterial()->setDiffuse(yellow);
-
-    sceneManager()->tree()->addActor( box.get(),  yellow_fx.get(), mTransform2.get() )->setRenderRank( 1 );
-    sceneManager()->tree()->addActor( cone.get(), yellow_fx.get(), mTransform2.get() )->setRenderRank( 2 );
-/*
-  else
-  {
-    // transp_fx
-
-    ref<Effect> transp_fx = new Effect;
-    transp_fx->shader()->enable(EN_BLEND);
-    transp_fx->shader()->enable(EN_DEPTH_TEST);
-    transp_fx->shader()->enable(EN_CULL_FACE);
-    transp_fx->shader()->enable(EN_LIGHTING);
-    transp_fx->shader()->setRenderState( light.get(), 0 );
-    transp_fx->shader()->gocMaterial()->setDiffuse(blue);
-    transp_fx->shader()->gocMaterial()->setTransparency(0.5f);
-
-    // solid_fx
-
-    ref<Effect> solid_fx = new Effect;
-    solid_fx->shader()->enable(EN_DEPTH_TEST);
-    solid_fx->shader()->enable(EN_CULL_FACE);
-    solid_fx->shader()->enable(EN_LIGHTING);
-    solid_fx->shader()->setRenderState( light.get(), 0 );
-    solid_fx->shader()->gocMaterial()->setDiffuse(yellow);
-
-    // add to the scene in an intertwined way
-    sceneManager()->tree()->addActor( box.get(),    transp_fx.get(), mTransform1.get() );
-    sceneManager()->tree()->addActor( box.get(),    solid_fx.get(), mTransform2.get() );
-    sceneManager()->tree()->addActor( sphere.get(), transp_fx.get(), mTransform1.get() );
-    sceneManager()->tree()->addActor( cone.get(),   solid_fx.get(), mTransform2.get() );
-    sceneManager()->tree()->addActor( cone.get(),   transp_fx.get(), mTransform1.get() );
-
-    if (mTestNumber == 1) // depth-sort only alpha blended objects (default settings)
-    {
-      mText->setText("depth-sort only alpha blended objects (default settings)");
-      ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
-      list_sorter->setDepthSortMode(AlphaDepthSort);
-      rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-    }
-    else
-      if (mTestNumber == 2) // depth-sort solid and alpha blended objects
-      {
-        solid_fx->shader()->disable(EN_DEPTH_TEST);
-        mText->setText("depth-sort solid and alpha blended objects");
-        ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
-        list_sorter->setDepthSortMode(AlwaysDepthSort);
-        rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-      }
-      else
-        if (mTestNumber == 3) // depth-sort alpha blended back to front | depth-sort solid object front to back
-        {
-          mText->setText("depth-sort alpha blended back to front\ndepth-sort solid object front to back");
-          ref<RenderQueueSorterOcclusion> list_sorter = new RenderQueueSorterOcclusion;
-          rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-        }
-        else
-          if (mTestNumber == 4) // no depth sorting
-          {
-            mText->setText("no depth sorting");
-            ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
-            list_sorter->setDepthSortMode(NeverDepthSort);
-            rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-          }
-          else
-            if (mTestNumber == 5) // no sorting at all
-            {
-              mText->setText("no sorting at all");
-              rendering()->as<Rendering>()->setRenderQueueSorter( NULL );
-            }
-  }
-*/
-}
 
 void VLRenderingApplet::updateScene()
 {
-  mTransform1->setLocalMatrix( mat4::getRotation(Time::currentTime() * 5,      0, 1, 0 ) );
-  mTransform2->setLocalMatrix( mat4::getRotation(Time::currentTime() * 5 + 90, 0, 1, 0 ) );
+  mat4 cameraMatrix = rendering()->as<vl::Rendering>()->camera()->modelingMatrix();
+  m_LightTr->setLocalMatrix(cameraMatrix);
 
-  mat4 mat;
-  // light 0 transform.
-  mat = mat4::getRotation( Time::currentTime()*43, 0,1,0 ) * mat4::getTranslation( 20,20,20 );
-  m_LightTr->setLocalMatrix( mat );
+  //mTransform1->setLocalMatrix( mat4::getRotation(Time::currentTime() * 5,      0, 1, 0 ) );
+  //mTransform2->setLocalMatrix( mat4::getRotation(Time::currentTime() * 5 + 90, 0, 1, 0 ) );
+
+  //mat4 mat;
+  //// light 0 transform.
+  //mat = mat4::getRotation( Time::currentTime()*43, 0,1,0 ) * mat4::getTranslation( 20,20,20 );
+  //m_LightTr->setLocalMatrix( mat );
 }
 
 void VLRenderingApplet::keyPressEvent(unsigned short, EKey key)
@@ -277,32 +169,28 @@ void VLRenderingApplet::AddDataNode(mitk::DataNode::Pointer node)
 
 void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
 {
-  ref<Geometry> vlSurf;
+  ref<Geometry> vlSurf = new Geometry();
   ref<Effect> fx; 
   ref<Transform> tr;
 
-/*
-  try
-  {
-    mitk::ImageReadAccessor readAccess(mitkImg, mitkImg->GetVolumeData(0));
-    const void* cPointer = readAccess.GetData();
-    unsigned int * dims = new unsigned int[3];
-    dims = mitkImg->GetDimensions();
-    int bytealign = 1;
-    EImageFormat format = IF_LUMINANCE;
-    EImageType type = IT_UNSIGNED_SHORT;
+  ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
 
-    unsigned int size = (dims[0] * dims[1] * dims[2]) * sizeof(unsigned char);
+  MITK_INFO <<"Num of vertices: " <<vlSurf->vertexArray()->size();
+  //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
+  if (!vlSurf->normalArray())
+    vlSurf->computeNormals();
 
-    vlImg = new Image(dims[0], dims[1], dims[2], bytealign, format, type);
-    memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
+  //vl::ref<vl::ResourceDatabase> res_cortex;
+  //res_cortex = vl::loadResource(vl::String("d://_boad_cortex2.stl"));
+  //if ( res_cortex && res_cortex->count<vl::Geometry>() )
+  //  vlSurf  = res_cortex->get<vl::Geometry>(0);
 
-  }
-  catch(mitk::Exception& e)
-  {
-    // deal with the situation not to have access
-  }
-*/
+  //if (!vlSurf->normalArray())
+  //  vlSurf->computeNormals();
+  ////vlSurf->flipNormals();
+
+
+
   fx = new Effect;
 
   float opacity;
@@ -323,7 +211,7 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
     fx->shader()->enable(EN_DEPTH_TEST);
     fx->shader()->enable(EN_CULL_FACE);
     fx->shader()->enable(EN_LIGHTING);
-    //fx->shader()->setRenderState( light.get(), 0 );
+    fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
   }
   else
@@ -332,10 +220,17 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
     fx->shader()->enable(EN_DEPTH_TEST);
     fx->shader()->enable(EN_CULL_FACE);
     fx->shader()->enable(EN_LIGHTING);
-    //fx->shader()->setRenderState( light.get(), 0 );
+    fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
     fx->shader()->gocMaterial()->setTransparency(1.0f- opacity);
   }
+
+  sceneManager()->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+
+  //ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
+  //list_sorter->setDepthSortMode(AlwaysDepthSort);
+  //rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
+
 
   tr = new Transform();
 
@@ -356,11 +251,7 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
   vl::mat4 mat(vals);
   tr->setLocalMatrix(mat);
 
-  ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
-  list_sorter->setDepthSortMode(AlwaysDepthSort);
-  rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-
-  sceneManager()->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+  trackball()->adjustView( sceneManager(), vl::vec3(0,0,1), vl::vec3(0,1,0), 1.0f );
 
   // refresh window
   openglContext()->update();
@@ -371,7 +262,20 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   ref<Image>     vlImg;
   ref<Effect>    fx; 
   ref<Transform> tr;
+  EImageFormat   format; 
+  EImageType     type;
+  
+  mitk::PixelType pixType = mitkImg->GetPixelType();
+  size_t numOfComponents = pixType.GetNumberOfComponents();
 
+  /*
+  mitk::PixelTypepixType = mitkImg->GetPixelType();
+  std::cout << "Original pixel type:" << std::endl;
+  std::cout << " PixelType: " <<pixType.GetTypeAsString() << std::endl;
+  std::cout << " BitsPerElement: " <<pixType.GetBpe() << std::endl;
+  std::cout << " NumberOfComponents: " <<pixType.GetNumberOfComponents() << std::endl;
+  std::cout << " BitsPerComponent: " <<pixType.GetBitsPerComponent() << std::endl;
+*/
   try
   {
     mitk::ImageReadAccessor readAccess(mitkImg, mitkImg->GetVolumeData(0));
@@ -379,10 +283,60 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
     unsigned int * dims = new unsigned int[3];
     dims = mitkImg->GetDimensions();
     int bytealign = 1;
-    EImageFormat format = IF_LUMINANCE;
-    EImageType type = IT_UNSIGNED_SHORT;
 
-    unsigned int size = (dims[0] * dims[1] * dims[2]) * sizeof(unsigned char);
+    if (pixType.GetComponentType() == itk::ImageIOBase::CHAR )
+    {
+      type = IT_BYTE;
+    }
+    else if (pixType.GetComponentType() == itk::ImageIOBase::UCHAR)
+    {
+      type = IT_UNSIGNED_BYTE;
+    }
+    else if ( pixType.GetComponentType() == itk::ImageIOBase::SHORT )
+    {
+      type = IT_SHORT;
+    }
+    else if (  pixType.GetComponentType() == itk::ImageIOBase::USHORT )
+    {
+      type = IT_UNSIGNED_SHORT;
+    }
+    else if ( pixType.GetComponentType() == itk::ImageIOBase::INT )
+    {
+      type = IT_INT;
+    }
+    else if (  pixType.GetComponentType() == itk::ImageIOBase::UINT )
+    {
+      type = IT_UNSIGNED_INT;
+    }
+    else if ( pixType.GetComponentType() == itk::ImageIOBase::FLOAT  )
+    {
+      type = IT_FLOAT;
+    }
+
+    if (type != IT_FLOAT)
+    {
+      if (numOfComponents == 1)
+        format = IF_LUMINANCE;
+      else if (numOfComponents == 2)
+        format = IF_RG_INTEGER;
+      else if (numOfComponents == 3)
+        format = IF_RGB_INTEGER;
+      else if (numOfComponents == 4)
+        format = IF_RGBA_INTEGER;
+    }
+    else if (type == IT_FLOAT)
+    {
+      if (numOfComponents == 1)
+        format = IF_LUMINANCE;
+      else if (numOfComponents == 2)
+        format = IF_RG;
+      else if (numOfComponents == 3)
+        format = IF_RGB;
+      else if (numOfComponents == 4)
+        format = IF_RGBA;
+    }
+
+    unsigned int size = (dims[0] * dims[1] * dims[2]) * sizeof(pixType.GetSize());
 
     vlImg = new Image(dims[0], dims[1], dims[2], bytealign, format, type);
     memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
@@ -452,13 +406,21 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   fx = imageActor->effect();
 
   // install volume image as textue #0
+  //if (format == IF_LUMINANCE_INTEGER)
+  //  fx->shader()->gocTextureSampler( 0 )->setTexture( new vl::Texture( vlImg.get(), TF_LUMINANCE8, false, false ) );
+  //else if (format == IF_RG_INTEGER)
+  //  fx->shader()->gocTextureSampler( 0 )->setTexture( new vl::Texture( vlImg.get(), TF_LUMINANCE16UI_EXT, false, false ) );
+  //else if (format == IF_LUMINANCE)
+  //  fx->shader()->gocTextureSampler( 0 )->setTexture( new vl::Texture( vlImg.get(), TF_LUMINANCE, false, false ) );
+
   fx->shader()->gocTextureSampler( 0 )->setTexture( new vl::Texture( vlImg.get(), TF_LUMINANCE8, false, false ) );
+
   fx->shader()->gocUniform( "volume_texunit" )->setUniformI( 0 );
   mRaycastVolume->generateTextureCoordinates( ivec3(vlImg->width(), vlImg->height(), vlImg->depth()) );
 
   // generate a simple colored transfer function
   ref<Image> trfunc;
-  trfunc = vl::makeColorSpectrum( 128, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson );
+  trfunc = vl::makeColorSpectrum( 1024, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson );
 
   // installs the transfer function as texture #1
   fx->shader()->gocTextureSampler( 1 )->setTexture( new Texture( trfunc.get() ) );
@@ -535,4 +497,273 @@ void VLRenderingApplet::LoadGLSLSourceFromResources(const char* filename, vl::St
 
   vlStringSource = vl::String(sourceCode.c_str());
 }
+
+void VLRenderingApplet::ConvertVTKPolyData(vtkPolyData * vtkPoly, ref<vl::Geometry> vlPoly)
+{
+
+  if (vtkPoly == 0)
+    return;
+
+  /// \brief Buffer in host memory to store cell info
+  unsigned int * m_IndexBuffer = 0;
+  
+  /// \brief Buffer in host memory to store vertex points
+  float * m_PointBuffer = 0;
+  
+  /// \brief Buffer in host memory to store normals associated with vertices
+  float * m_NormalBuffer = 0;
+
+  /// \brief Buffer in host memory to store scalar info associated with vertices
+  char * m_ScalarBuffer = 0;
+
+
+  unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
+
+  // A polydata will always have point data
+  int pointArrayNum = vtkPoly->GetPointData()->GetNumberOfArrays();
+
+  if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
+  {
+    MITK_ERROR <<"No points detected in the vtkPoly data!\n";
+    return;
+  }
+
+  // We'll have to build the cell data if not present already
+  int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
+  if (cellArrayNum == 0)
+    vtkPoly->BuildCells();
+
+  vtkSmartPointer<vtkCellArray> verts;
+
+  // Try to get access to cells
+  if (vtkPoly->GetVerts() != 0 && vtkPoly->GetVerts()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetVerts();
+  else if (vtkPoly->GetLines() != 0 && vtkPoly->GetLines()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetLines();
+  else if (vtkPoly->GetPolys() != 0 && vtkPoly->GetPolys()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetPolys();
+  else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetStrips();
+
+  if (verts->GetMaxCellSize() > 4)
+  {
+    // Panic and return
+    MITK_ERROR <<"More than four vertices / cell detected, can't handle this data type!\n";
+    return;
+  }
+  
+  vtkSmartPointer<vtkPoints>     points = vtkPoly->GetPoints();
+
+  if (points == 0)
+  {
+    MITK_ERROR <<"Corrupt vtkPoly, returning! \n";
+    return;
+  }
+
+  // Deal with normals
+  vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
+
+  if (normals == 0)
+  {
+    MITK_INFO <<"Generating normals for the vtkPoly data (mitk::OclSurface)";
+    
+    vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
+    normalGen->SetInputData(vtkPoly);
+    normalGen->AutoOrientNormalsOn();
+    normalGen->Update();
+
+    normals = normalGen->GetOutput()->GetPointData()->GetNormals();
+
+    if (normals == 0)
+    {
+      MITK_ERROR <<"Couldn't generate normals, returning! \n";
+      return;
+    }
+
+    vtkPoly->GetPointData()->SetNormals(normals);
+    vtkPoly->GetPointData()->GetNormals()->Modified();
+    vtkPoly->GetPointData()->Modified();
+  }
+ 
+  // Check if we have scalars
+  vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
+
+  bool pointsValid  = (points.GetPointer() == 0) ? false : true;
+  bool normalsValid = (normals.GetPointer() == 0) ? false : true;
+  bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
+  
+  unsigned int pointBufferSize = 0;
+  unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
+  pointBufferSize = numOfPoints * sizeof(float) *3;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with points
+
+
+  // Allocate memory
+  m_PointBuffer = new float[numOfPoints*3];
+
+  // Copy data to buffer
+  memcpy(m_PointBuffer, points->GetVoidPointer(0), pointBufferSize);
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with normals
+
+  if (normalsValid)
+  {
+    // Get the number of normals we have to deal with
+    int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
+
+    // Size of the buffer that is required to store all the normals
+    unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
+
+    // Allocate memory
+    m_NormalBuffer = new float[numOfPoints*3];
+
+    // Copy data to buffer
+    memcpy(m_NormalBuffer, normals->GetVoidPointer(0), normalBufferSize);
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with scalars (colors or texture coordinates)
+  if (scalarsValid)
+  {
+
+    // Get the number of scalars we have to deal with
+    int m_ScalarCount = static_cast<unsigned int> (scalars->GetNumberOfTuples());
+
+    // Size of the buffer that is required to store all the scalars
+    unsigned int scalarBufferSize = numOfPoints * sizeof(char) * 1;
+
+    // Allocate memory
+    m_ScalarBuffer = new char[numOfPoints];
+
+    // Copy data to buffer
+    memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
+  }
+
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with cells - initialize index buffer
+  vtkIdType npts;
+  vtkIdType *pts;
+
+  // Get the number of indices we have to deal with
+  unsigned int m_IndexCount = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+  // Get the max number of vertices / cell
+  int maxPointsPerCell = verts->GetMaxCellSize();
+
+
+  // Get the number of indices we have to deal with
+  unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+  // Allocate memory for the index buffer
+  m_IndexBuffer = new unsigned int[numOfTriangles*3];
+  memset(m_IndexBuffer, 0, numOfTriangles*3*sizeof(unsigned int));
+
+  verts->InitTraversal();
+
+  unsigned int cellIndex = 0;
+  // Iterating through all the cells
+  while (cellIndex < numOfTriangles)
+  {
+    verts->GetNextCell(npts, pts);
+
+    // Copy the indices into the index buffer
+    for (size_t i = 0; i < static_cast<size_t>(npts); i++)
+      m_IndexBuffer[cellIndex*3 +i] = pts[i];
+
+    cellIndex++;
+  }
+  MITK_INFO <<"Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() <<" Num of Cells: " <<verts->GetNumberOfCells() <<"\n";
+
+  ref<ArrayFloat3>  vlVerts   = new ArrayFloat3;
+  ref<ArrayFloat3>  vlNormals = new ArrayFloat3;
+
+  //vlVerts->resize(numOfPoints *3);
+  //vlNormals->resize(numOfPoints *3);
+  //ref<DrawArrays> de = new DrawArrays(PT_TRIANGLES,0,numOfPoints*3);
+
+  vlVerts->resize(numOfTriangles *3);
+  vlNormals->resize(numOfTriangles *3);
+  ref<DrawArrays> de = new DrawArrays(PT_TRIANGLES,0,numOfTriangles*3);
+   
+  vlPoly->drawCalls()->push_back(de.get());
+  vlPoly->setVertexArray(vlVerts.get());
+  vlPoly->setNormalArray(vlNormals.get());
+
+/*
+    // read triangles
+  for(unsigned int i=0; i<numOfPoints; ++i)
+  {
+    fvec3 n0, n1, n2, v1,v2,v0;
+    n0.x() = m_NormalBuffer[i*3 +0];
+    n0.y() = m_NormalBuffer[i*3 +1];
+    n0.z() = m_NormalBuffer[i*3 +2];
+    v0.x() = m_PointBuffer[i*3 +0];
+    v0.y() = m_PointBuffer[i*3 +1];
+    v0.z() = m_PointBuffer[i*3 +2];
+
+    vlNormals->at(i*3+0) = n0;
+    vlVerts->at(i*3+0) = v0;
+  }
+*/
+
+  // read triangles
+  for(unsigned int i=0; i<numOfTriangles; ++i)
+  {
+    fvec3 n0, n1, n2, v1,v2,v0;
+    unsigned int vertIndex = m_IndexBuffer[i*3 +0];
+    n0.x() = m_NormalBuffer[vertIndex*3 +0];
+    n0.y() = m_NormalBuffer[vertIndex*3 +1];
+    n0.z() = m_NormalBuffer[vertIndex*3 +2];
+    v0.x() = m_PointBuffer[vertIndex*3 +0];
+    v0.y() = m_PointBuffer[vertIndex*3 +1];
+    v0.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vertIndex = m_IndexBuffer[i*3 +1];
+    n1.x() = m_NormalBuffer[vertIndex*3 +0];
+    n1.y() = m_NormalBuffer[vertIndex*3 +1];
+    n1.z() = m_NormalBuffer[vertIndex*3 +2];
+    v1.x() = m_PointBuffer[vertIndex*3 +0];
+    v1.y() = m_PointBuffer[vertIndex*3 +1];
+    v1.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vertIndex = m_IndexBuffer[i*3 +2];
+    n2.x() = m_NormalBuffer[vertIndex*3 +0];
+    n2.y() = m_NormalBuffer[vertIndex*3 +1];
+    n2.z() = m_NormalBuffer[vertIndex*3 +2];
+    v2.x() = m_PointBuffer[vertIndex*3 +0];
+    v2.y() = m_PointBuffer[vertIndex*3 +1];
+    v2.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vlNormals->at(i*3+0) = n0;
+    vlVerts->at(i*3+0) = v0;
+    vlNormals->at(i*3+1) = n1;
+    vlVerts->at(i*3+1) = v1;
+    vlNormals->at(i*3+2) = n2;
+    vlVerts->at(i*3+2) = v2;
+  }
+
+  /// \brief Buffer in host memory to store cell info
+  if (m_IndexBuffer != 0)
+    delete m_IndexBuffer;
+  
+  /// \brief Buffer in host memory to store vertex points
+  if (m_PointBuffer != 0)
+    delete m_PointBuffer;
+  
+  /// \brief Buffer in host memory to store normals associated with vertices
+  if (m_NormalBuffer != 0)
+    delete m_NormalBuffer;
+
+  /// \brief Buffer in host memory to store scalar info associated with vertices
+  if (m_ScalarBuffer != 0)
+    delete m_ScalarBuffer;
+
+
+  MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size();
+}
+
 

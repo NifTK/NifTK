@@ -63,7 +63,17 @@
 #include <usModuleResource.h>
 #include <usModuleResourceStream.h>
 
-#include <usModule.h>
+// VTK
+#include <vtkPolyData.h>
+#include <vtkPoints.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkSmartPointer.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkPolyDataNormals.h>
+#include <vtkCleanPolyData.h>
 
 using namespace vl;
 
@@ -76,8 +86,6 @@ public:
   void initEvent();
   void updateEvent();
   virtual vl::String appletInfo();
-
-  void populateScene();
 
   void updateScene();
 
@@ -95,6 +103,8 @@ private:
   void AddImageActor(mitk::Image::Pointer mitkImg);
   void AddSurfaceActor(mitk::Surface::Pointer mitkSurf);
   void LoadGLSLSourceFromResources(const char* filename, vl::String &source);
+
+  void ConvertVTKPolyData(vtkPolyData * vtkPoly, ref<vl::Geometry> vlPoly);
 
 private:
   Time           m_FPSTimer;
