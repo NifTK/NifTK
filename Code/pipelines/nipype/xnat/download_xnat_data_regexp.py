@@ -95,7 +95,7 @@ projects = []
 subjects = []
 experiments = []
 scans = []
-regexp = args.scan
+regexp = args.regexp
 
 for experiment in experiments_list:
     for scan in experiment.scans().get('obj'):
