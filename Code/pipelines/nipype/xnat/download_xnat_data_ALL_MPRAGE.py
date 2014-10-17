@@ -3,114 +3,183 @@
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe
-import nipype.interfaces.dcm2nii        as mricron
-import nipype.interfaces.niftyreg       as niftyreg
-import nipype.interfaces.niftyseg       as niftyseg
-import diffusion_mri_processing         as dmri
 import argparse
 import os, sys
+import getpass
 import pyxnat
+import nipype.interfaces.dcm2nii        as mricron
+
+def get_sink_container_function(directory, project, subject, experiment, scan):
+    import os    
+    return os.path.join(directory,
+                        project,
+                        subject,
+                        experiment,
+                        scan)
+    
+description = ' XNAT Downloader:: ' + \
+              ' List projects / subjects / experiments / scans you require.'+ \
+              ' The script will download all data in the provided result directory.' + \
+              ' Make sure all the XNAT resources exist.' \
+              ' CAUTION: if you desire the DICOM to be downloaded, please' + \
+              ' add the -d option. ' + \
+              ' Provide a config file for convenience. it is a simple text file with: ' + \
+              '{"server":"https://myserver","user":"myusername","password":"mypassword","cachedir":"/tmp/"}' + \
+              '.'
 
 
-parser = argparse.ArgumentParser(description='Diffusion usage example')
+parser = argparse.ArgumentParser(description=description)
+
 parser.add_argument('-i', '--server',
                     dest='server',
                     metavar='server',
-                    help='XNAT server from where the data is taken',
-                    required=True)
+                    help='XNAT server from where the data is taken')
 parser.add_argument('-u', '--username',
                     dest='username',
                     metavar='username',
-                    help='xnat server username',
-                    required=True)
-parser.add_argument('-q', '--password',
-                    dest='password',
-                    metavar='password',
-                    help='xnat server password',
-                    required=True)
+                    help='xnat server username')
+parser.add_argument('-c', '--config',
+                    dest='config',
+                    metavar='config',
+                    help='xnat configuration file: \n{"server":"https://myserver","user":"myusername","password":"mypassword","cachedir":"/tmp/"}')
+
 parser.add_argument('-p', '--project',
                     dest='project',
                     metavar='project',
                     help='xnat server project',
                     required=True)
-parser.add_argument('-s', '--subjects',
-                    dest='subjects',
-                    metavar='subjects',
-                    help='xnat server subjects',
-                    required=True,
-                    nargs='+')
+parser.add_argument('-s', '--scan',
+                    dest='scan',
+                    metavar='scan',
+                    help='xnat server scan',
+                    required=True)
+
+parser.add_argument('-d', '--dicom',
+                    dest='dicom',
+                    help='Download the DICOM (default is NIFTI) and convert to nifti',
+                    required=False,
+                    action='store_true')
+
 parser.add_argument('-o', '--output',
                     dest='output',
                     metavar='output',
-                    help='output',
+                    help='Output directory to store the data. The data is stored as project/subject/experiment/scan/[dicom/nifti]',
                     default = 'results',
                     required=False)
 
-args = parser.parse_args()
+args = parser.parse_args()              
 
-current_dir = os.getcwd()
+if args.config == None:
+  if (args.server == None) or (args.username == None):
+    print 'ERROR: Please provide either a config file or a server and username'
+    sys.exit()
+  pwd = getpass.getpass()
+  server = pyxnat.Interface(server=args.server, user=args.username, password=pwd)
 
-result_dir = os.path.join(current_dir, args.output)
+else:
+  if (args.server != None) or (args.username != None):
+    print 'ERROR: Please provide either a config file or a server and username'
+    sys.exit()
+
+result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-xnat = pyxnat.Interface(args.server, args.username, args.password, '/tmp/')
 
-i = 0
-for subject in args.subjects:
+experiments_list = server.select('/project/'+args.project+'/subjects/*/experiments/*').get('obj')
 
-    experiments = xnat.select('/project/' + args.project + '/subjects/' + subject + '/experiments/*').get('obj')
-    first_mr_experiment = None
-    for exp in experiments:
-        if exp.label().find('MR00') > -1:
-            first_mr_experiment = exp
-            break
+print 'experiment list is of length ', len(experiments_list)
 
-    if first_mr_experiment != None:
-        for scan in first_mr_experiment.scans():
-            if scan.label().find('MPRAGE') > -1:
-                first_mprage_scan = scan
-                break
-            if scan.attrs.get('type').find('MPRAGE') > -1:
-                first_mprage_scan = scan
-                break
-        
-    if first_mprage_scan == None:
-        print 'No MP-RAGE found for subject ', subject, ' continuing...'
-        continue
+scans = []
+projects = []
+subjects = []
+experiments = []
+scans = []
+regexp = args.scan
 
-    i = i+1
-    r = pe.Workflow(name='xnat_grabber_'+str(i))
-    r.base_output_dir='xnat_grabber'
-    r.base_dir = current_dir
+for experiment in experiments_list:
+    for scan in experiment.scans().get('obj'):
+        description = scan.attrs.get('type')
+        if ( description.find(regexp) > -1 ):
+            
+            print 'subj: ', scan.parent().parent().label(), ' -- matching scan found: ', description, ' -- URI: ', scan.attrs.get('URI')
+            scans.append(scan.label())
+            experiments.append(scan.parent().label())
+            subjects.append(scan.parent().parent().label())
+            projects.append(args.project)
+            
+
+
     
-    dg = pe.Node(interface = nio.XNATSource(infields=['project','subject'],
-                                            outfields = ['struct']),
-                 name = 'dg')
-    dg.inputs.query_template = '/projects/%s/subjects/%s/experiments/%s/scans/%s/resources/DICOM'
-    dg.inputs.query_template_args['struct'] = [['project','subject',first_mr_experiment.label(), first_mprage_scan.label()]]
-    dg.inputs.user = args.username
-    dg.inputs.pwd = args.password
-    dg.inputs.server = args.server
-    dg.inputs.project = args.project
-    dg.inputs.subject = subject
+infosource = pe.Node(niu.IdentityInterface(fields = ['projects', 'subjects', 'experiments', 'scans']),
+                     name = 'infosource', synchronize=True)
+infosource.iterables = [('projects', projects),
+                        ('subjects', subjects),
+                        ('experiments', experiments),
+                        ('scans', scans)]
 
-    dcm2nii = pe.Node(interface = mricron.Dcm2nii(), 
-                      name = 'dcm2nii')
-    dcm2nii.inputs.args = '-d n'
-    dcm2nii.inputs.gzip_output = True
-    dcm2nii.inputs.anonymize = False
-    dcm2nii.inputs.reorient = True
-    dcm2nii.inputs.reorient_and_crop = False
-    ds = pe.Node(nio.DataSink(), name='ds')
+r = pe.Workflow(name='xnat_downloader')
+r.base_output_dir='xnat_grabber'
+r.base_dir = os.getcwd()
 
-    ds.inputs.base_directory = result_dir
-    ds.inputs.parameterization = False
-    subs = []
-    subs.append (('.*', result_dir + os.sep + subject + '.nii.gz'))
-    ds.inputs.regexp_substitutions = subs
-    
-    r.connect(dg, 'struct', dcm2nii, 'source_names')
-    r.connect(dcm2nii, 'converted_files', ds, '@xnat_data')
-    r.run(plugin='Linear')
+dg = pe.Node(interface = nio.XNATSource(infields=['project','subject', 'experiment', 'scan'],
+                                        outfields = ['output']),
+             name = 'dg')
+
+if args.dicom == True:
+    resource = 'DICOM'
+else:
+    resource = 'NIFTI'
+
+dg.inputs.query_template = '/projects/%s/subjects/%s/experiments/%s/scans/%s/resources/'+resource
+dg.inputs.query_template_args['output'] = [['project','subject','experiment', 'scan']]
+
+if args.config == None:
+  dg.inputs.user = args.username
+  dg.inputs.pwd = pwd
+  dg.inputs.server = args.server.strip('/')
+else:
+  dg.inputs.config = os.path.abspath(args.config)
+
+r.connect(infosource, 'projects', dg, 'project')
+r.connect(infosource, 'subjects', dg, 'subject')
+r.connect(infosource, 'experiments', dg, 'experiment')
+r.connect(infosource, 'scans', dg, 'scan')
+
+dg.inputs.project = projects
+dg.inputs.subject = subjects
+dg.inputs.experiment = experiments
+dg.inputs.scan = scans
+
+dcm2nii = pe.Node(interface = mricron.Dcm2nii(), 
+                  name = 'dcm2nii')
+dcm2nii.inputs.args = '-d n'
+dcm2nii.inputs.gzip_output = True
+dcm2nii.inputs.anonymize = True
+dcm2nii.inputs.reorient = True
+dcm2nii.inputs.reorient_and_crop = True
+
+ds = pe.Node(nio.DataSink(), name='ds')
+ds.inputs.parameterization = False
+
+get_sink_container = pe.Node(interface = niu.Function(input_names = ['directory', 'project', 'subject', 'experiment', 'scan'],
+                                                       output_names = ['container'],
+                                                       function = get_sink_container_function),
+                              name = 'get_sink_container')
+get_sink_container.inputs.directory = result_dir
+
+r.connect(infosource, 'projects', get_sink_container, 'project')
+r.connect(infosource, 'subjects', get_sink_container, 'subject')
+r.connect(infosource, 'experiments', get_sink_container, 'experiment')
+r.connect(infosource, 'scans', get_sink_container, 'scan')
+r.connect(get_sink_container, 'container', ds, 'base_directory')
+
+if args.dicom == True:
+    r.connect(dg, 'output', dcm2nii, 'source_names')
+    r.connect(dcm2nii, 'converted_files', ds, 'nifti')
+    r.connect(dg, 'output', ds, 'dicom')
+else:
+    r.connect(dg, 'output', ds, 'nifti')
+
+r.run(plugin='MultiProc')
 
