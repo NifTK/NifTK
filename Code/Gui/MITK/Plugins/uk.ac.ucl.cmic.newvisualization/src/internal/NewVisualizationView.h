@@ -29,6 +29,10 @@
 #include <mitkSurface.h>
 #include <mitkImage.h>
 
+#include <mitkDataStorage.h>
+#include <mitkDataNode.h>
+#include <mitkDataNodePropertyListener.h>
+
 // VL includes
 #include <vlCore/VisualizationLibrary.hpp>
 #include <vlQt4/Qt4Widget.hpp>
@@ -68,13 +72,15 @@ protected:
                                      const QList<mitk::DataNode::Pointer>& nodes );
 
   /// \brief Called by framework when a node was modified in the datastorage
-  virtual void NodeChanged(const mitk::DataNode* node);
+  virtual void OnNodeChanged(const mitk::DataNode* node);
 
   /// \brief Called by framework when a node was removed from the datastorage
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void OnNodeRemoved(const mitk::DataNode* node);
 
   /// \brief Called by framework when a node was added to the datastorage
-  virtual void NodeAdded(const mitk::DataNode* node);
+  virtual void OnNodeAdded(const mitk::DataNode* node);
+
+  virtual void OnNodeDeleted(const mitk::DataNode* node);
 
 private slots: 
 
@@ -93,6 +99,11 @@ private:
 
   vl::ref<vlQt4::Qt4Widget>  m_VLQtRenderWindow;
   vl::ref<VLRenderingApplet> m_RenderApplet;
+
+  
+  mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
+  mitk::DataNodePropertyListener::Pointer    m_VisibilityListener;
+  mitk::DataNodePropertyListener::Pointer    m_PropertyListener;
 };
 
 #endif // NewVisualizationView_h

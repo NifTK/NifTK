@@ -45,6 +45,18 @@ NewVisualizationView::NewVisualizationView()
 
 NewVisualizationView::~NewVisualizationView()
 {
+/*
+  if (m_SelectionListener)
+  {
+    m_SelectionListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
+    m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeAdded);
+    m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
+    m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
+  }
+
+  if (m_VisibilityListener)
+    m_VisibilityListener->NodePropertyChanged -=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnVisibilityChanged);
+*/
 }
 
 void NewVisualizationView::SetFocus()
@@ -65,7 +77,23 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 
     connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
 
+/*
+    // Init listener
+    m_SelectionListener = mitk::DataNodePropertyListener::New(dataStorage, "selected", false);
+    
+    m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnSelectionChanged);
+    m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeAdded);
+    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeRemoved);
+    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeDeleted);
+
+    m_VisibilityListener = mitk::DataNodePropertyListener::New(dataStorage, "visible");
+    m_VisibilityListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnVisibilityChanged);
+
+    m_PropertyListener = mitk::DataNodePropertyListener::New(dataStorage, "name");
+    m_PropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnPropertyChanged);
+*/
     InitVLRendering();
+
 /*
     OclResourceService* oclService =  mitk::NewVisualizationPluginActivator::GetOpenCLService();
 
