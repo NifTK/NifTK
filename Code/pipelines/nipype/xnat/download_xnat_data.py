@@ -4,7 +4,7 @@ import nipype.interfaces.utility        as niu
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe
 import argparse
-import os
+import os, sys
 import getpass
 
 import nipype.interfaces.dcm2nii        as mricron
@@ -86,12 +86,11 @@ args = parser.parse_args()
 if args.config == None:
   if (args.server == None) or (args.username == None):
     print 'ERROR: Please provide either a config file or a server and username'
-    exit
+    sys.exit()
 else:
   if (args.server != None) or (args.username != None):
     print 'ERROR: Please provide either a config file or a server and username'
-    exit
-
+    sys.exit()
 
 result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
@@ -127,8 +126,6 @@ if args.config == None:
   dg.inputs.server = args.server.strip('/')
 else:
   dg.inputs.config = os.path.abspath(args.config)
-
-dg.inputs.cache_dir = '/tmp/'
 
 r.connect(infosource, 'projects', dg, 'project')
 r.connect(infosource, 'subjects', dg, 'subject')
