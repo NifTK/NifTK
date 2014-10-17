@@ -18,8 +18,8 @@ def get_sink_container_function(directory, project, subject, experiment, scan):
                         scan)
     
 description = ' XNAT Downloader:: ' + \
-              ' List projects / subjects / experiments / scans you require.'+ \
-              ' The script will download all data in the provided result directory.' + \
+              'Downloads all scans that match a specific regular expression provided, browsing all subjects and experiments' + \
+              ' The script will store the data in the provided result directory.' + \
               ' Make sure all the XNAT resources exist.' \
               ' CAUTION: if you desire the DICOM to be downloaded, please' + \
               ' add the -d option. ' + \
@@ -48,15 +48,15 @@ parser.add_argument('-p', '--project',
                     metavar='project',
                     help='xnat server project',
                     required=True)
-parser.add_argument('-s', '--scan',
-                    dest='scan',
-                    metavar='scan',
-                    help='xnat server scan',
+parser.add_argument('-r', '--regexp',
+                    dest='regexp',
+                    metavar='regexp',
+                    help='regular expression to match the scan name / description',
                     required=True)
 
 parser.add_argument('-d', '--dicom',
                     dest='dicom',
-                    help='Download the DICOM (default is NIFTI) and convert to nifti',
+                    help='Download the DICOM (default is NIFTI ONLY) and convert to nifti',
                     required=False,
                     action='store_true')
 

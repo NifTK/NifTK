@@ -70,7 +70,7 @@ parser.add_argument('-a', '--scan',
 
 parser.add_argument('-d', '--dicom',
                     dest='dicom',
-                    help='Download the DICOM (default is NIFTI) and convert to nifti',
+                    help='Download the DICOM (default is NIFTI only) and convert to nifti',
                     required=False,
                     action='store_true')
 
