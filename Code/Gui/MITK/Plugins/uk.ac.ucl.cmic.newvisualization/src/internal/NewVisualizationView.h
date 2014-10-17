@@ -72,13 +72,23 @@ protected:
                                      const QList<mitk::DataNode::Pointer>& nodes );
 
   /// \brief Called by framework when a node was modified in the datastorage
-  virtual void OnNodeChanged(const mitk::DataNode* node);
+  virtual void NodeChanged(const mitk::DataNode* node);
 
   /// \brief Called by framework when a node was removed from the datastorage
-  virtual void OnNodeRemoved(const mitk::DataNode* node);
+  virtual void NodeRemoved(const mitk::DataNode* node);
 
   /// \brief Called by framework when a node was added to the datastorage
-  virtual void OnNodeAdded(const mitk::DataNode* node);
+  virtual void NodeAdded(const mitk::DataNode* node);
+
+
+  /// \brief Called by framework when a node was modified in the datastorage
+  virtual void OnNodeChanged(const mitk::DataNode* node) {}
+
+  /// \brief Called by framework when a node was removed from the datastorage
+  virtual void OnNodeRemoved(const mitk::DataNode* node) {}
+
+  /// \brief Called by framework when a node was added to the datastorage
+  virtual void OnNodeAdded(const mitk::DataNode* node) {}
 
   virtual void OnNodeDeleted(const mitk::DataNode* node);
 
