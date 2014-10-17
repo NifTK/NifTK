@@ -16,6 +16,7 @@ template <class TInputImageType, class TOutputImageType>
 MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter()
 : m_Capacity(1)
+, m_NumberOfConnectedComponents(0)
 {
   m_NumberOfLabelledPixelsPerThread.clear();
 }
@@ -24,6 +25,7 @@ template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
 ::BeforeThreadedGenerateData()
 {
+  std::cout << "MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter::BeforeThreadedGenerateData() this: " << ((void*)this) << std::endl;
   m_NumberOfLabelledPixelsPerThread.resize(this->GetNumberOfThreads());
 }
 
@@ -42,11 +44,15 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
   /*
    * Mark unvisited foreground regions with a value < 0. Visited foreground components have values > 0
    */   
-  for (ic_input.GoToBegin(), i_componentPx.GoToBegin(); !ic_input.IsAtEnd(); ++ic_input, ++i_componentPx) {
-    if (ic_input.Get() != inputBackground) {
+  for (ic_input.GoToBegin(), i_componentPx.GoToBegin(); !ic_input.IsAtEnd(); ++ic_input, ++i_componentPx)
+  {
+    if (ic_input.Get() != inputBackground)
+    {
       i_componentPx.Set(outputForeground);
       numLabelPxs += 1;
-    } else {
+    }
+    else
+    {
       i_componentPx.Set(outputBackground);
     }
   }
@@ -81,32 +87,39 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
 
   const typename OutputImageType::SizeType imgSize = this->GetOutput()->GetLargestPossibleRegion().GetSize();
     
+  m_NumberOfConnectedComponents = 0;
   activeComponentIndexBuffer = 0;
   currComponentIndices = &componentIndicies[0];
   largestComponentIndices = &componentIndicies[1];
 
-  for (outputIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter) {
-    if (outputIter.Get() == outputForeground) {
+  for (outputIter.GoToBegin(); !outputIter.IsAtEnd(); ++outputIter)
+  {
+    if (outputIter.Get() == outputForeground)
+    {
+      ++m_NumberOfConnectedComponents;
       currComponentIndices->clear();
       voxelIndex = outputIter.GetIndex();
-      voxelNumber = voxelIndex[2]*imgSize[0]*imgSize[1] + voxelIndex[1]*imgSize[0] + voxelIndex[0];
+      voxelNumber = voxelIndex[2] * imgSize[0] * imgSize[1] + voxelIndex[1] * imgSize[0] + voxelIndex[0];
       _ProcessRegion(*currComponentIndices, voxelNumber);
       numLabelPxs -= currComponentIndices->size();
       assert(numLabelPxs >= 0);
-      if (currComponentIndices->size() > largestComponentIndices->size()) {
+      if (currComponentIndices->size() > largestComponentIndices->size())
+      {
         largestComponentIndices = currComponentIndices;
         activeComponentIndexBuffer = (activeComponentIndexBuffer + 1) % 2;
         currComponentIndices = &componentIndicies[activeComponentIndexBuffer];
       }
 
-      if (numLabelPxs < (int)largestComponentIndices->size()) {
+      if (numLabelPxs < (int)largestComponentIndices->size())
+      {
         /* There are less set pixels left than there are in the original picture */
         break;
       }
     }
   }
 
-  if (numLabelPxs > 0) {
+  if (numLabelPxs > 0)
+  {
     this->GetOutput()->FillBuffer(outputBackground);
   }
 
@@ -115,8 +128,8 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
 
 template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
-::_ProcessRegion(std::vector<unsigned int> &componentIndices, const unsigned int &startIndex) {
-
+::_ProcessRegion(std::vector<unsigned int> &componentIndices, const unsigned int &startIndex)
+{
   // Get a pointer directly to the image buffer.
   OutputImagePixelType* imageBuffer      = this->GetOutput()->GetBufferPointer();
   OutputImagePixelType  outputForeground = this->GetOutputForegroundValue();
@@ -143,7 +156,8 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
   componentIndexStack.push(currIndex);
   imageBuffer[currIndex] = outputBackground;
   
-  do {
+  do
+  {
     currIndex = componentIndexStack.top();
     componentIndices.push_back(currIndex);
     componentIndexStack.pop();
@@ -152,7 +166,7 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
     {
       for (directionCounter = -1; directionCounter <= 1; directionCounter += 2)
       {
-        nextIndex = currIndex + directionCounter*offsets[dimCounter];
+        nextIndex = currIndex + directionCounter * offsets[dimCounter];
         if (nextIndex >= 0 && nextIndex < numberOfVoxels && imageBuffer[nextIndex] == outputForeground)
         {
           imageBuffer[nextIndex] = outputBackground;
@@ -165,14 +179,16 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
 
 template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
-::_SetComponentPixels(const std::vector<unsigned int> &regionIndices) {
+::_SetComponentPixels(const std::vector<unsigned int> &regionIndices)
+{
 
   typename std::vector<unsigned int>::const_iterator iter;
  
   OutputImagePixelType outputForeground = this->GetOutputForegroundValue();
   OutputImagePixelType* imageBuffer = this->GetOutput()->GetBufferPointer();
   
-  for (iter = regionIndices.begin(); iter < regionIndices.end(); iter++) {
+  for (iter = regionIndices.begin(); iter < regionIndices.end(); iter++)
+  {
     imageBuffer[*iter] = outputForeground;
   }
 }

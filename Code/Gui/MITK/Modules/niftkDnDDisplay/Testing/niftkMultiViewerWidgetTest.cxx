@@ -42,7 +42,7 @@ public:
   mitk::DataNode::Pointer ImageNode;
 
   niftkMultiViewerWidget* MultiViewer;
-  niftkMultiViewerVisibilityManager* VisibilityManager;
+  niftkMultiViewerVisibilityManager::Pointer VisibilityManager;
 
   bool InteractiveMode;
 };
@@ -115,7 +115,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 
   d->ImageNode = (*allImages)[0];
 
-  d->VisibilityManager = new niftkMultiViewerVisibilityManager(d->DataStorage);
+  d->VisibilityManager = niftkMultiViewerVisibilityManager::New(d->DataStorage);
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
   d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -126,7 +126,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 void niftkMultiViewerWidgetTestClass::cleanupTestCase()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
-  delete d->VisibilityManager;
+  d->VisibilityManager = 0;
 }
 
 
@@ -136,7 +136,7 @@ void niftkMultiViewerWidgetTestClass::init()
   Q_D(niftkMultiViewerWidgetTestClass);
 
   // Create the niftkMultiViewerWidget
-  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, d->DataStorage, 1, 1);
+  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, 1, 1);
 
   // Setup GUI a bit more.
   d->MultiViewer->SetDropType(DNDDISPLAY_DROP_SINGLE);

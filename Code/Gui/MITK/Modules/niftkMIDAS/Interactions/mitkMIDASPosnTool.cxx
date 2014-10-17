@@ -24,14 +24,13 @@ namespace mitk
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
 }
 
-mitk::MIDASPosnTool::MIDASPosnTool() : MIDASTool("dummy")
+mitk::MIDASPosnTool::MIDASPosnTool()
+: MIDASTool()
 {
-
 }
 
 mitk::MIDASPosnTool::~MIDASPosnTool()
 {
-
 }
 
 const char* mitk::MIDASPosnTool::GetName() const

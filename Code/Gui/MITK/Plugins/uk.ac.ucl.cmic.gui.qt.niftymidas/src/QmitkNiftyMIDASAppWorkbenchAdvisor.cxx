@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
-  return "uk.ac.ucl.cmic.gui.qt.niftymidas.midasperspective";
+  return "uk.ac.ucl.cmic.gui.qt.niftymidas.segmentation_perspective";
 }
 
 
