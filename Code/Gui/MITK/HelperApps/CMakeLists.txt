@@ -158,6 +158,7 @@ if(SlicerExecutionModel_FOUND)
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
       niftkMakeChessBoardPointSet
       niftkBifurcationToPointSet
+      niftkSURF
     )
     
     if(BUILD_PCL)
