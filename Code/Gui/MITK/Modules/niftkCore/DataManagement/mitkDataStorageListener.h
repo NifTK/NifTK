@@ -39,14 +39,10 @@ class NIFTKCORE_EXPORT DataStorageListener : public itk::LightObject
 public:
 
   mitkClassMacro(DataStorageListener, itk::LightObject);
-  itkNewMacro(DataStorageListener);
   mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer);
 
-  /// \brief Get the data storage.
-  itkGetMacro(DataStorage, mitk::DataStorage::Pointer);
-
-  /// \brief Set the data storage.
-  void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
+  /// \brief Gets the data storage.
+  mitk::DataStorage::Pointer GetDataStorage() const;
 
   /// \brief Adds a filter.
   ///
@@ -56,26 +52,51 @@ public:
   /// \brief Clears all filters.
   void ClearFilters();
 
-  /// \brief Gets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
+  /// \brief Tells if the listener is blocked, i.e. the processing of signals is suppressed.
   bool IsBlocked() const;
 
-  /// \brief Sets the blocked variable to determine if we are blocking the NodeAdded, NodeChanged etc calls. Default is false.
-  void SetBlocked(bool blocked);
+  /// \brief Blocks the processing of signals.
+  /// This can be used to avoid eventual infinite recursion.
+  /// Returns true if the listener was already blocked, otherwise false.
+  bool SetBlocked(bool blocked);
 
 protected:
 
-  DataStorageListener();
   DataStorageListener(const mitk::DataStorage::Pointer);
   virtual ~DataStorageListener();
 
   DataStorageListener(const DataStorageListener&); // Purposefully not implemented.
   DataStorageListener& operator=(const DataStorageListener&); // Purposefully not implemented.
 
+  /// \brief Called when the given node is added to the data storage.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void OnNodeAdded(mitk::DataNode* node);
+
+  /// \brief Called when the given node has been changed.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void OnNodeChanged(mitk::DataNode* node);
+
+  /// \brief Called when the given node is removed from the data storage.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void OnNodeRemoved(mitk::DataNode* node);
+
+  /// \brief Called when the given node is deleted.
+  /// Empty implementation, subclasses can redefine it.
+  virtual void OnNodeDeleted(mitk::DataNode* node);
+
+private:
+
   /// \brief Called to register to the data storage.
-  virtual void Activate(const mitk::DataStorage::Pointer storage);
+  void AddListeners();
 
   /// \brief Called to un-register from the data storage.
-  virtual void Deactivate();
+  void RemoveListeners();
+
+  /// \brief Checks the node against the list of filters.
+  ///
+  /// \param node A data node to check
+  /// \return true if the data node passess all filters and false otherwise.
+  bool Pass(const mitk::DataNode* node) const;
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards,
   /// and subclasses should override the NodeAdded event.
@@ -92,30 +113,6 @@ protected:
   /// \brief Called when a DataStorage DeleteNodeEvent was emmitted and calls NodeDeleted afterwards,
   /// and subclasses should override the NodeDeleted event.
   virtual void NodeDeletedProxy(const mitk::DataNode* node);
-
-  /// \brief Called when the given node is added to the data storage.
-  /// Empty implementation, subclasses can redefine it.
-  virtual void NodeAdded(mitk::DataNode* node);
-
-  /// \brief Called when the given node has been changed.
-  /// Empty implementation, subclasses can redefine it.
-  virtual void NodeChanged(mitk::DataNode* node);
-
-  /// \brief Called when the given node is removed from the data storage.
-  /// Empty implementation, subclasses can redefine it.
-  virtual void NodeRemoved(mitk::DataNode* node);
-
-  /// \brief Called when the given node is deleted.
-  /// Empty implementation, subclasses can redefine it.
-  virtual void NodeDeleted(mitk::DataNode* node);
-
-private:
-
-  /// \brief Checks the node against the list of filters.
-  ///
-  /// \param node A data node to check
-  /// \return true if the data node passess all filters and false otherwise.
-  bool Pass(const mitk::DataNode* node);
 
   /// \brief  This object MUST be connected to a datastorage for it to work.
   mitk::DataStorage::Pointer m_DataStorage;

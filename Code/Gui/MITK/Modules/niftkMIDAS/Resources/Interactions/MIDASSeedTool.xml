@@ -1,0 +1,3 @@
+<statemachine>
+  <state name="start" startstate="true" />
+</statemachine>

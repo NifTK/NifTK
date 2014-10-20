@@ -21,10 +21,6 @@ set(INTERNAL_CPP_FILES
   ThumbnailView.cxx
 )
 
-set(UI_FILES
-  src/internal/ThumbnailViewControls.ui
-)
-
 set(MOC_H_FILES
   src/internal/QmitkThumbnailViewPreferencePage.h
   src/internal/ThumbnailViewActivator.h

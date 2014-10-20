@@ -20,7 +20,7 @@ MITK_CREATE_MODULE_TESTS(LABELS niftkMIDAS)
 
 # Trac 1683 - When nodes created via segmentation tools, the data sets much be visible in viewers
 #             such as the thumbnail viewer, and the segmentation views.
-mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
+#mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
 
 # Trac 1695 - Main Unit Test for the Whole MIDAS Morphological Segmentor Pipeline
 mitkAddCustomModuleTest(MIDAS-mitkMIDASMorphologicalSegmentorPipelineManagerTest mitkMIDASMorphologicalSegmentorPipelineManagerTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)

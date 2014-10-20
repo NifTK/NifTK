@@ -23,8 +23,6 @@
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
-#include "Interactions/mitkDnDDisplayInteractor.h"
-
 #include <niftkDnDDisplayEnums.h>
 
 class QGridLayout;
@@ -197,7 +195,13 @@ public:
 
   /// \brief Move n slices towards or opposite of the up direction.
   /// If delta is positive, the direction is the up direction.
-  void MoveAnteriorOrPosterior(int windowIndex, int delta);
+  /// \param windowIndex the index of the 2D window that determines the orientation
+  ///                    (axial = 0, sagittal = 1, coronal = 2)
+  /// \param delta  tells how many slices to move. Negative value means moving backwards.
+  ///               i.e. against the up direction.
+  /// \param loop   tells if the next slice should be taken from the beginning if the last
+  ///               slice has been reached or vice versa.
+  void MoveSlice(int windowIndex, int delta, bool restart = false);
 
   /// \brief Get the current time step.
   int GetTimeStep() const;
@@ -309,21 +313,13 @@ public:
   void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility);
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
 
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
-  ///
-  /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(int orientation) const;
-
-  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
-  void SetDisplayInteractionsEnabled(bool enabled);
-
-  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
-  bool AreDisplayInteractionsEnabled() const;
+  int GetSliceUpDirection(WindowOrientation orientation) const;
 
   /// \brief Gets the flag that controls whether the cursor position is bound between the 2D render windows.
   bool GetCursorPositionBinding() const;
@@ -365,6 +361,11 @@ signals:
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
+
+  /// \brief Emitted when the selected time step has changed in the rendering manager.
+  /// Note that the time navigation controller is unique for the rendering manager,
+  /// not only for this viewer.
+  void TimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in a render window.
   void CursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition);
@@ -409,6 +410,9 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject& geometrySliceEvent);
 
+  /// \brief Callback from the time navigation controller of the rendering manager
+  void OnTimeStepChanged(const itk::EventObject& geometryTimeEvent);
+
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged.
   /// The parameter describes which coordinate of the selected position has changed.
   void OnSelectedPositionChanged(int orientation);
@@ -422,7 +426,7 @@ private:
   void Update3DWindowVisibility();
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
-  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
+  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(int windowIndex);
@@ -454,9 +458,10 @@ private:
 
   QColor m_BackgroundColour;
   QGridLayout* m_GridLayout;
-  unsigned long m_AxialSliceTag;
-  unsigned long m_SagittalSliceTag;
-  unsigned long m_CoronalSliceTag;
+  unsigned long m_AxialSliceObserverTag;
+  unsigned long m_SagittalSliceObserverTag;
+  unsigned long m_CoronalSliceObserverTag;
+  unsigned long m_TimeStepObserverTag;
   bool m_IsFocused;
   bool m_LinkedNavigationEnabled;
   bool m_Enabled;
@@ -465,7 +470,11 @@ private:
   bool m_CursorVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
+
   mitk::Point3D m_SelectedPosition;
+
+  int m_TimeStep;
+
   std::vector<mitk::Vector2D> m_CursorPositions;
 
   std::vector<const mitk::Geometry2D*> m_WorldGeometries;
@@ -552,8 +561,8 @@ private:
   bool m_FocusHasChanged;
   bool m_GeometryHasChanged;
   bool m_WindowLayoutHasChanged;
-  bool m_TimeStepHasChanged;
   std::vector<bool> m_SelectedSliceHasChanged;
+  bool m_TimeStepHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
   std::vector<bool> m_ScaleFactorHasChanged;
   bool m_CursorPositionBindingHasChanged;
@@ -561,13 +570,6 @@ private:
 
   friend class DisplayGeometryModificationCommand;
 
-  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
-
-  /**
-   * Reference to the service registration of the display interactor.
-   * It is needed to unregister the observer on unload.
-   */
-  us::ServiceRegistrationU m_DisplayInteractorService;
 };
 
 #endif

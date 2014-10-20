@@ -18,6 +18,7 @@
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASPointSetInteractor.h"
+//#include "mitkMIDASPointSetDataInteractor.h"
 
 namespace mitk {
 
@@ -53,10 +54,10 @@ public:
   /// \see mitk::Tool::GetXPM()
   virtual const char** GetXPM() const;
 
-  /// \brief When called, we create and register an mitkPointSetInteractor.
+  /// \brief When called, we create and register a point set interactor.
   virtual void Activated();
 
-  /// \brief When called, we unregister the mitkPointSetInteractor.
+  /// \brief When called, we unregister the point set interactor.
   virtual void Deactivated();
 
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
@@ -77,6 +78,7 @@ protected:
 private:
 
   mitk::MIDASPointSetInteractor::Pointer m_PointSetInteractor;
+//  mitk::MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
 
 };
 

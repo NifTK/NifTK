@@ -14,20 +14,39 @@
 
 #include "mitkMIDASContourToolOpAccumulateContour.h"
 
-namespace mitk {
+namespace mitk
+{
 
 MIDASContourToolOpAccumulateContour::MIDASContourToolOpAccumulateContour(
   mitk::OperationType type,
   bool redo,
-  int dataSetNumber,
+  int dataIndex,
   mitk::ContourModelSet::Pointer contourSet
   )
 : mitk::Operation(type)
 , m_Redo(redo)
-, m_DataSetNumber(dataSetNumber)
+, m_DataIndex(dataIndex)
 , m_ContourSet(contourSet)
 {
-
 }
 
-} // end namespace
+MIDASContourToolOpAccumulateContour::~MIDASContourToolOpAccumulateContour()
+{
+}
+
+bool MIDASContourToolOpAccumulateContour::IsRedo() const
+{
+  return m_Redo;
+}
+
+int MIDASContourToolOpAccumulateContour::GetDataIndex() const
+{
+  return m_DataIndex;
+}
+
+mitk::ContourModelSet::Pointer MIDASContourToolOpAccumulateContour::GetContourSet() const
+{
+  return m_ContourSet;
+}
+
+}
