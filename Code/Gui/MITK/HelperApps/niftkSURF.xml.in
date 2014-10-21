@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>SIFT</title>
+  <description><![CDATA[Takes an image and runs OpenCV SURF.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Mandatory Input/Output parameters]]></description>
+    <file fileExtensions=".png,.jpg,.bmp">
+      <name>input</name>
+      <longflag>input</longflag>
+      <description>Input image</description>
+      <label>Input Image</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".png,.jpg,.bmp">
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>Output Image</description>
+      <label>Output Image</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+</executable>
