@@ -14,18 +14,32 @@
 
 #include "mitkMIDASDrawToolOpEraseContour.h"
 
-namespace mitk {
+namespace mitk
+{
 
 MIDASDrawToolOpEraseContour::MIDASDrawToolOpEraseContour(
   mitk::OperationType type,
   mitk::ContourModelSet* contourModelSet,
-  const int& workingNodeNumber
+  int dataIndex
   )
 : mitk::Operation(type)
 , m_ContourModelSet(contourModelSet)
-, m_WorkingNodeNumber(workingNodeNumber)
+, m_DataIndex(dataIndex)
 {
-
 }
 
-} // end namespace
+MIDASDrawToolOpEraseContour::~MIDASDrawToolOpEraseContour()
+{
+}
+
+mitk::ContourModelSet* MIDASDrawToolOpEraseContour::GetContourModelSet() const
+{
+  return m_ContourModelSet;
+}
+
+int MIDASDrawToolOpEraseContour::GetDataIndex() const
+{
+  return m_DataIndex;
+}
+
+}

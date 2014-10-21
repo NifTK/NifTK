@@ -30,7 +30,7 @@ class NIFTKCOREGUI_EXPORT QmitkMouseEventEater : public QObject
 
 public:
   QmitkMouseEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkMouseEventEater() {};
+  ~QmitkMouseEventEater() {}
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
  protected:

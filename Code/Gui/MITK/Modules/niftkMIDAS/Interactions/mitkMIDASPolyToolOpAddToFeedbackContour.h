@@ -41,17 +41,22 @@ public:
       mitk::ContourModel* contour,
       const mitk::PlaneGeometry* geometry
       );
-  ~MIDASPolyToolOpAddToFeedbackContour() {};
-  mitk::Point3D GetPoint() const { return m_Point;}
-  mitk::ContourModel* GetContour() const { return m_Contour.GetPointer();}
-  const mitk::PlaneGeometry* GetPlaneGeometry() { return m_PlaneGeometry; }
+
+  ~MIDASPolyToolOpAddToFeedbackContour();
+
+  mitk::Point3D GetPoint() const;
+
+  mitk::ContourModel* GetContour() const;
+
+  const mitk::PlaneGeometry* GetPlaneGeometry();
 
 private:
+
   mitk::Point3D m_Point;
   mitk::ContourModel::Pointer m_Contour;
   const mitk::PlaneGeometry* m_PlaneGeometry;
 };
 
-} // end namespace
+}
 
 #endif

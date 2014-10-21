@@ -81,6 +81,11 @@ public:
   virtual bool IsVisible();
 
   /**
+   * \brief Gets the currently active data storage.
+   */
+  mitk::DataStorage::Pointer GetDataStorage() const;
+
+  /**
    * \brief Selects the data node in this view and also in the data manager.
    * It sets the "selected" property of the node. As a (positive) side effect
    * of changing the data manager selection, the "selected" property of the

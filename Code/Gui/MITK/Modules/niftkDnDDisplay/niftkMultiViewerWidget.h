@@ -24,10 +24,10 @@
 
 #include <mitkBaseProperty.h>
 #include <mitkRenderingManager.h>
-#include <mitkMIDASEnums.h>
 
-#include <niftkSingleViewerWidget.h>
-#include <niftkMultiViewerVisibilityManager.h>
+#include "niftkDnDDisplayEnums.h"
+#include "niftkSingleViewerWidget.h"
+#include "niftkMultiViewerVisibilityManager.h"
 
 class QSpinBox;
 class QGridLayout;
@@ -75,7 +75,6 @@ public:
   niftkMultiViewerWidget(
       niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
-      mitk::DataStorage::Pointer dataStorage,
       int defaultViewerRows,
       int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
@@ -169,7 +168,7 @@ public:
   void SetMagnificationTracking(bool tracking);
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
-  void SetSelectedTimeStep(int timeStep);
+  void SetTimeStep(int timeStep);
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
@@ -183,8 +182,8 @@ public:
   /// \brief Gets the flag indicating whether this viewer is currently in thumnail mode.
   bool GetThumbnailMode() const;
 
-  /// \brief Returns the orientation from the window layout, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
-  MIDASOrientation GetOrientation() const;
+  /// \brief Returns the orientation from the window layout, or WINDOW_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
+  WindowOrientation GetOrientation() const;
 
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   niftkSingleViewerWidget* GetSelectedViewer() const;
@@ -235,103 +234,96 @@ public:
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
 
-signals:
-
 protected slots:
 
   /// \brief Called when the selected slice has been changed through the control panel.
-  void OnSelectedSliceChanged(int selectedSlice);
+  void OnSelectedSliceControlChanged(int selectedSlice);
 
   /// \brief Called when the time step has been changed through the control panel.
-  void OnTimeStepChanged(int timeStep);
+  void OnTimeStepControlChanged(int timeStep);
 
   /// \brief Called when the magnification has been changed through the control panel.
-  void OnMagnificationChanged(double magnification);
+  void OnMagnificationControlChanged(double magnification);
 
   /// \brief Called when the show cursor option has been changed through the control panel.
-  void OnCursorVisibilityChanged(bool visible);
+  void OnCursorVisibilityControlChanged(bool visible);
 
   /// \brief Called when the show direction annotations option has been changed through the control panel.
-  void OnShowDirectionAnnotationsChanged(bool visible);
+  void OnShowDirectionAnnotationsControlsChanged(bool visible);
 
   /// \brief Called when the show 3D window option has been changed through the control panel.
-  void OnShow3DWindowChanged(bool visible);
+  void OnShow3DWindowControlChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnWindowLayoutChanged(WindowLayout windowLayout);
+  void OnWindowLayoutControlChanged(WindowLayout windowLayout);
 
   /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
-  void OnWindowCursorBindingChanged(bool);
+  void OnWindowCursorBindingControlChanged(bool);
 
   /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
-  void OnWindowMagnificationBindingChanged(bool);
+  void OnWindowMagnificationBindingControlChanged(bool);
 
   /// \brief Called when the number of viewers has been changed through the control panel.
-  void OnViewerNumberChanged(int rows, int columns);
+  void OnViewerNumberControlChanged(int rows, int columns);
 
   /// \brief Called when the viewer position binding has been changed through the control panel.
-  void OnViewerPositionBindingChanged(bool bound);
+  void OnViewerPositionBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer cursor binding has been changed through the control panel.
-  void OnViewerCursorBindingChanged(bool bound);
+  void OnViewerCursorBindingControlChanged(bool bound);
 
   /// \brief Called when the window layout binding across the viewers has been changed through the control panel.
-  void OnViewerWindowLayoutBindingChanged(bool bound);
+  void OnViewerWindowLayoutBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
-  void OnViewerMagnificationBindingChanged(bool bound);
+  void OnViewerMagnificationBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer geometry binding has been changed through the control panel.
-  void OnViewerGeometryBindingChanged(bool bound);
+  void OnViewerGeometryBindingControlChanged(bool bound);
 
   /// \brief Called when the drop type has been changed through the control panel.
-  void OnDropTypeChanged(DnDDisplayDropType dropType);
+  void OnDropTypeControlChanged(DnDDisplayDropType dropType);
 
   /// \brief Called when the drop accumulation has been changed through the control panel.
-  void OnDropAccumulateChanged(bool checked);
-
-  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
+  void OnDropAccumulateControlChanged(bool checked);
 
   /// \brief Called when one of the viewers receives the focus.
   void OnFocusChanged();
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the selected time step has changed in a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+  void OnTimeStepChanged(int timeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void OnCursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
-  void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
+  void OnTimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Called when the cursor position binding has changed in a viewer.
-  void OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+  void OnCursorPositionBindingChanged(bool bound);
 
   /// \brief Called when the scale factor binding has changed in a viewer.
-  void OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+  void OnScaleFactorBindingChanged(bool bound);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
-  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
+  void OnCursorVisibilityChanged(bool visible);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);
 
   /// \brief Called when the pin button is toggled.
   void OnPinButtonToggled(bool checked);
-
-protected:
 
 private:
 
@@ -387,7 +379,6 @@ private:
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
   niftkMultiViewerVisibilityManager* m_VisibilityManager;
-  mitk::DataStorage* m_DataStorage;
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.

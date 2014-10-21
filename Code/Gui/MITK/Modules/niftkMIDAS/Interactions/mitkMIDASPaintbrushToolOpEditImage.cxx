@@ -32,3 +32,37 @@ mitk::MIDASPaintbrushToolOpEditImage::MIDASPaintbrushToolOpEditImage(
 , m_Processor(processor)
 {
 }
+
+mitk::MIDASPaintbrushToolOpEditImage::~MIDASPaintbrushToolOpEditImage()
+{
+}
+
+bool mitk::MIDASPaintbrushToolOpEditImage::IsRedo() const
+{
+  return m_Redo;
+}
+
+int mitk::MIDASPaintbrushToolOpEditImage::GetImageNumber() const
+{
+  return m_ImageNumber;
+}
+
+unsigned char mitk::MIDASPaintbrushToolOpEditImage::GetValueToWrite() const
+{
+  return m_ValueToWrite;
+}
+
+mitk::Image* mitk::MIDASPaintbrushToolOpEditImage::GetImageToEdit() const
+{
+  return m_ImageToEdit;
+}
+
+mitk::DataNode* mitk::MIDASPaintbrushToolOpEditImage::GetNodeToEdit() const
+{
+  return m_NodeToEdit;
+}
+
+mitk::MIDASPaintbrushToolOpEditImage::ProcessorType::Pointer mitk::MIDASPaintbrushToolOpEditImage::GetProcessor() const
+{
+  return m_Processor;
+}

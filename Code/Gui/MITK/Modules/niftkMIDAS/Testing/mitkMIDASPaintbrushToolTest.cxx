@@ -60,7 +60,7 @@ public:
   void SetupNode(const mitk::DataNode::Pointer node, std::string name)
   {
     mitk::ITKRegionParametersDataNodeProperty::Pointer prop = mitk::ITKRegionParametersDataNodeProperty::New();
-    prop->SetSize(1,1,1);
+    prop->SetSize(1, 1, 1);
     prop->SetValid(false);
 
     node->SetName(name);
@@ -89,16 +89,16 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
     const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];
-    this->SetupNode(erodeAdditionsNode, mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
+    this->SetupNode(erodeAdditionsNode, mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer erodeSubtractionsNode = (*allImages)[1];
-    this->SetupNode(erodeSubtractionsNode, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+    this->SetupNode(erodeSubtractionsNode, mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
 
     const mitk::DataNode::Pointer dilateAdditionsNode = (*allImages)[2];
-    this->SetupNode(dilateAdditionsNode, mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
+    this->SetupNode(dilateAdditionsNode, mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
-    this->SetupNode(dilateSubtractionsNode, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
+    this->SetupNode(dilateSubtractionsNode, mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
 
     mitk::ToolManager::DataVectorType vector;
     vector.push_back(erodeAdditionsNode);

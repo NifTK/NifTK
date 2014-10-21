@@ -65,6 +65,30 @@ class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D//, public MIDASSt
 {
 
 public:
+
+  /// \brief Constants that identify the data needed for the morphological edit tools.
+  /// They should be used for indexing the vector of working data.
+  enum
+  {
+    EROSIONS_ADDITIONS,
+    EROSIONS_SUBTRACTIONS,
+    DILATIONS_ADDITIONS,
+    DILATIONS_SUBTRACTIONS
+  };
+
+  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
+  static const std::string EROSIONS_ADDITIONS_NAME;
+
+  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
+  static const std::string EROSIONS_SUBTRACTIONS_NAME;
+
+  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
+  static const std::string DILATIONS_ADDITIONS_NAME;
+
+  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
+  static const std::string DILATIONS_SUBTRACTIONS_NAME;
+
+
   mitkClassMacro(MIDASPaintbrushTool, SegTool2D);
   itkNewMacro(MIDASPaintbrushTool);
 
@@ -162,20 +186,20 @@ private:
       ProcessorType &processor);
 
   /// \brief Marks the initial mouse position when any of the left/middle/right mouse buttons are pressed.
-  bool MarkInitialPosition(unsigned int imageNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  bool MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Sets an invalid region (indicating that we are not editing) on the chosen image number data node.
-  void SetInvalidRegion(unsigned int imageNumber);
+  void SetInvalidRegion(unsigned int dataIndex);
 
   /// \brief Sets a valid region property, taken from the bounding box of edited voxels, indicating that we are editing the given image number.
-  void SetValidRegion(unsigned int imageNumber, std::vector<int>& boundingBox);
+  void SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox);
 
   /// \brief Method that actually sets the region property on a working image.
-  void SetRegion(unsigned int imageNumber, bool valid, std::vector<int>& boundingBox);
+  void SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox = std::vector<int>());
 
   /// \brief Does the main functionality when the mouse moves.
   bool DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
-      int imageNumber,
+      int dataIndex,
       unsigned char valueForRedo,
       unsigned char valueForUndo
       );
@@ -193,7 +217,7 @@ private:
   MIDASPaintbrushToolEventInterface::Pointer m_Interface;
 
   /// \brief Calculates the current image number.
-  int GetImageNumber(bool isLeftMouseButton);
+  int GetDataIndex(bool isLeftMouseButton);
 
   // Cursor size for editing, and cursor type is currently always a cross.
   int m_CursorSize;

@@ -19,12 +19,13 @@
 #include <mitkBaseProperty.h>
 #include <algorithm>
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \class ITKRegionParametersDataNodeProperty
  * \brief MITK data-node property suitable for holding an ITK Region, consisting of a "valid" flag,
- * plus 6 parameters containing Size and Index, as a simple vector of integers.
+ * plus 6 parameters containing the index and size, as a simple vector of integers.
  */
 class NIFTKCORE_EXPORT ITKRegionParametersDataNodeProperty : public BaseProperty
 {
@@ -35,17 +36,17 @@ public:
   itkNewMacro(ITKRegionParametersDataNodeProperty);
 
   /**
-   * \brief Parameters are 6 integers, corresponding to size[X,Y,Z], index[X,Y,Z].
+   * \brief Parameters are 6 integers, corresponding to index[X, Y, Z] and size[X, Y, Z].
    */
   typedef std::vector<int> ParametersType;
 
   /**
-   * \brief Get the region parameters from this property object where size[X,Y,Z] = [0-2], and index[X,Y,Z] = [3-5].
+   * \brief Get the region parameters from this property object where index[X, Y, Z] = [0-2], and size[X, Y, Z] = [3-5].
    */
   const ParametersType& GetITKRegionParameters() const;
 
   /**
-   * \brief Set the region parameters on this property object where size[X,Y,Z] = [0-2], and index[X,Y,Z] = [3-5].
+   * \brief Set the region parameters on this property object where index[X, Y, Z] = [0-2], and size[X, Y, Z] = [3-5].
    */
   void SetITKRegionParameters(const ParametersType& parameters);
 
@@ -55,17 +56,22 @@ public:
   bool HasVolume() const;
 
   /**
-   * \brief Method to set the size.
+   * \brief Sets the index.
+   */
+  void SetIndex(int x, int y, int z);
+
+  /**
+   * \brief Sets the size.
    */
   void SetSize(int x, int y, int z);
 
   /**
-   * \brief Get the m_IsValid status flag.
+   * \brief Gets the 'valid' status flag.
    */
   bool IsValid() const;
 
   /**
-   * \brief Set the isValid status flag.
+   * \brief Sets the 'valid' status flag.
    */
   void SetValid(bool valid);
 
@@ -75,7 +81,7 @@ public:
   virtual std::string GetValueAsString() const;
 
   /**
-   * \brief Method to set these parameters back to identity, which is [false, 0,0,0,0,0,0].
+   * \brief Method to set these parameters back to identity, which is [false, 0, 0, 0, 0, 0, 0].
    */
   virtual void Identity();
 
@@ -101,7 +107,7 @@ private:
   itk::LightObject::Pointer InternalClone() const;
 
   ParametersType m_Parameters;
-  bool           m_IsValid;
+  bool m_IsValid;
 };
 
 } // namespace mitk

@@ -26,12 +26,21 @@
 #include <mitkGeometry3D.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkIRenderWindowPart.h>
+#include <mitkRenderingManager.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QHBoxLayout>
-#include <QSpacerItem>
-#include <QVBoxLayout>
+#include <QmitkRenderWindow.h>
 
+#include <niftkSingleViewerWidget.h>
+
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QRadioButton>
+#include <QSpacerItem>
+#include <QSpinBox>
+#include <QVBoxLayout>
 
 class EditorLifeCycleListener : public berry::IPartListener
 {
@@ -91,10 +100,12 @@ private:
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent)
-: m_ContainingView(view)
+QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager)
+: QWidget(parent)
+, m_ContainingView(view)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
+, m_MainRenderingManager(0)
 , m_MainWindow(0)
 , m_MainAxialWindow(0)
 , m_MainSagittalWindow(0)
@@ -103,26 +114,28 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_MainAxialSnc(0)
 , m_MainSagittalSnc(0)
 , m_MainCoronalSnc(0)
-, m_NodeAddedSetter(0)
 , m_VisibilityTracker(0)
 , m_Magnification(0.0)
-, m_MainWindowOrientation(MIDAS_ORIENTATION_UNKNOWN)
+, m_MainWindowOrientation(WINDOW_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
 , m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
+, m_RenderingManager(renderingManager)
 {
-  this->setupUi(parent);
-
-  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+  this->SetupUi(parent);
 
   m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
+  m_Viewer->SetCursorVisible(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
+  m_Viewer->SetDisplayInteractionsEnabled(true);
+  m_Viewer->SetCursorPositionBinding(false);
+  m_Viewer->SetScaleFactorBinding(true);
 
   m_CoronalWindowRadioButton->setChecked(true);
 
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
-  m_SingleWindowLayouts[MIDAS_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_AXIAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_SAGITTAL] = WINDOW_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[WINDOW_ORIENTATION_CORONAL] = WINDOW_LAYOUT_SAGITTAL;
 
   m_MagnificationSpinBox->setDecimals(2);
   m_MagnificationSpinBox->setSingleStep(1.0);
@@ -135,50 +148,63 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 
   m_ControlsWidget->setEnabled(false);
 
-  std::vector<const mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
-  renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
-  renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
-
-  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
-  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
-  m_NodeAddedSetter->SetRenderers(renderers);
-  m_NodeAddedSetter->SetVisibility(false);
-
-  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
-  m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
-  m_VisibilityTracker->SetManagedRenderers(renderers);
-
-  m_Viewer->SetCursorVisible(true);
-  m_Viewer->SetRememberSettingsPerWindowLayout(false);
-  m_Viewer->SetDisplayInteractionsEnabled(true);
-  m_Viewer->SetCursorPositionBinding(false);
-  m_Viewer->SetScaleFactorBinding(true);
-
   this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
   this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));
   this->connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnCoronalWindowRadioButtonToggled(bool)));
   this->connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnMultiWindowRadioButtonToggled(bool)));
   this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
-  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+  this->connect(m_Viewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
 
   this->connect(m_SliceSpinBox, SIGNAL(valueChanged(int)), SLOT(OnSliceSpinBoxValueChanged(int)));
-  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(m_Viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationSpinBoxValueChanged(double)));
-  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
 
-  // Register focus observer.
+  mitk::DataStorage::Pointer dataStorage = view->GetDataStorage();
+
+  /// Note:
+  /// We do not set the data storage for the viewer because that would recalculate
+  /// the time geometry based on the globally visible data nodes in the data storage.
+  /// This is wrong for us, since we want to see the nodes that are visible in the
+  /// tracked window, and hence we want to set the time geometry of the track window
+  /// to the viewer of this widget.
+  /// The viewer gets the data storage from the rendering manager that is set through
+  /// its constructor.
+
+  std::vector<const mitk::BaseRenderer*> renderers;
+  renderers.push_back(m_Viewer->GetAxialWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetSagittalWindow()->GetRenderer());
+  renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
+
+  /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
+//    mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+
+  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_MIDASToolNodeNameFilter->SetPropertyName("name");
+  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
+  m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
+  m_VisibilityTracker->SetManagedRenderers(renderers);
+  m_VisibilityTracker->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
+
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
-
-    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-  }
 
   mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
   if (selectedEditor)
@@ -210,15 +236,52 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
       }
     }
   }
+
+  // Register focus observer.
+  if (focusManager)
+  {
+    itk::SimpleMemberCommand<QmitkSideViewerWidget>::Pointer onFocusChangedCommand =
+      itk::SimpleMemberCommand<QmitkSideViewerWidget>::New();
+    onFocusChangedCommand->SetCallbackFunction( this, &QmitkSideViewerWidget::OnFocusChanged );
+
+    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+  }
+
+  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+
+  /// Note:
+  /// Direct call to m_Viewer->FitToDisplay() does not work because the function
+  /// computes the desired scale factor for the visible render windows. At this time,
+  /// however, no renderer window is visible, since the widget is just being constructed.
+  QTimer::singleShot(0, this, SLOT(FitToDisplay()));
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkSideViewerWidget::~QmitkSideViewerWidget()
 {
+  if (m_MainRenderingManager)
+  {
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    m_MainRenderingManager = 0;
+  }
+
   m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
 
+  // Deregister focus observer.
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+  }
+
   m_VisibilityTracker->SetTrackedRenderer(0);
+  m_VisibilityTracker = 0;
+
   m_Viewer->SetEnabled(false);
 
   if (m_MainWindow)
@@ -240,35 +303,102 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     m_MainCoronalSnc->Disconnect(m_Viewer->GetCoronalWindow()->GetSliceNavigationController());
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
   }
-
-  // Deregister focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-  }
-
-  /// m_NodeAddedSetter deleted by smart pointer.
-  /// m_VisibilityTracker deleted by smart pointer.
 }
 
 
-//-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::SetDataStorage(mitk::DataStorage* dataStorage)
+void QmitkSideViewerWidget::SetFocused()
 {
-  if (dataStorage)
-  {
-    m_Viewer->SetDataStorage(dataStorage);
-
-    m_NodeAddedSetter->SetDataStorage(dataStorage);
-    m_VisibilityTracker->SetDataStorage(dataStorage);
-  }
+  m_Viewer->setFocus();
 }
 
+
+void QmitkSideViewerWidget::SetupUi(QWidget *parent)
+{
+    QVBoxLayout* verticalLayout = new QVBoxLayout(parent);
+    verticalLayout->setSpacing(3);
+    verticalLayout->setContentsMargins(0, 0, 0, 0);
+    m_Viewer = new niftkSingleViewerWidget(parent, m_RenderingManager, "side viewer");
+
+    verticalLayout->addWidget(m_Viewer);
+
+    m_ControlsWidget = new QWidget(parent);
+    QHBoxLayout* horizontalLayout_2 = new QHBoxLayout(m_ControlsWidget);
+    horizontalLayout_2->setSpacing(0);
+    horizontalLayout_2->setContentsMargins(3, 0, 0, 3);
+    m_LayoutWidget = new QWidget(m_ControlsWidget);
+    QHBoxLayout* horizontalLayout = new QHBoxLayout(m_LayoutWidget);
+    horizontalLayout->setSpacing(0);
+    horizontalLayout->setContentsMargins(0, 0, 0, 0);
+
+    m_AxialWindowRadioButton = new QRadioButton(m_LayoutWidget);
+    m_AxialWindowRadioButton->setText("ax");
+
+    horizontalLayout->addWidget(m_AxialWindowRadioButton);
+
+    m_SagittalWindowRadioButton = new QRadioButton(m_LayoutWidget);
+    m_SagittalWindowRadioButton->setText("sag");
+
+    horizontalLayout->addWidget(m_SagittalWindowRadioButton);
+    m_CoronalWindowRadioButton = new QRadioButton(m_LayoutWidget);
+    m_CoronalWindowRadioButton->setText("cor");
+
+    horizontalLayout->addWidget(m_CoronalWindowRadioButton);
+
+    m_MultiWindowRadioButton = new QRadioButton(m_LayoutWidget);
+
+    horizontalLayout->addWidget(m_MultiWindowRadioButton);
+
+    m_MultiWindowComboBox = new QComboBox(m_LayoutWidget);
+    m_MultiWindowComboBox->addItem("2H");
+    m_MultiWindowComboBox->addItem("2V");
+    m_MultiWindowComboBox->setMaximumSize(QSize(52, 16777215));
+
+    horizontalLayout->addWidget(m_MultiWindowComboBox);
+
+    horizontalLayout_2->addWidget(m_LayoutWidget);
+
+    m_SliceLabel = new QLabel(m_ControlsWidget);
+    m_SliceLabel->setText("slice:");
+
+    horizontalLayout_2->addWidget(m_SliceLabel);
+
+    m_SliceSpinBox = new QSpinBox(m_ControlsWidget);
+    m_SliceSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+    m_SliceSpinBox->setMaximum(999);
+
+    horizontalLayout_2->addWidget(m_SliceSpinBox);
+
+    m_MagnificationLabel = new QLabel(m_ControlsWidget);
+    m_MagnificationLabel->setText("magn.:");
+
+    horizontalLayout_2->addWidget(m_MagnificationLabel);
+
+    m_MagnificationSpinBox = new QDoubleSpinBox(m_ControlsWidget);
+    m_MagnificationSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+
+    horizontalLayout_2->addWidget(m_MagnificationSpinBox);
+
+    QSpacerItem* horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    horizontalLayout_2->addItem(horizontalSpacer);
+
+    verticalLayout->addWidget(m_ControlsWidget);
+
+    verticalLayout->setStretch(0, 1);
+}
 
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
+  if (m_MainRenderingManager)
+  {
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    m_MainRenderingManager = 0;
+  }
+
   if (mainWindow == m_MainWindow)
   {
     m_VisibilityTracker->SetTrackedRenderer(0);
@@ -302,6 +432,13 @@ void QmitkSideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
   }
 
   m_Viewer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSideViewerWidget::FitToDisplay()
+{
+  m_Viewer->FitToDisplay();
 }
 
 
@@ -365,22 +502,22 @@ void QmitkSideViewerWidget::OnMultiWindowComboBoxIndexChanged()
 
 
 //-----------------------------------------------------------------------------
-WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation)
+WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(WindowOrientation mainWindowOrientation)
 {
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
   // 2H
   if (m_MultiWindowComboBox->currentIndex() == 0)
   {
-    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    if (mainWindowOrientation == WINDOW_ORIENTATION_AXIAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_SAG_H;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_AX_H;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_CORONAL)
     {
       windowLayout = WINDOW_LAYOUT_SAG_AX_H;
     }
@@ -388,15 +525,15 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
   // 2V
   else if (m_MultiWindowComboBox->currentIndex() == 1)
   {
-    if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
+    if (mainWindowOrientation == WINDOW_ORIENTATION_AXIAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_SAG_V;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_SAGITTAL)
     {
       windowLayout = WINDOW_LAYOUT_COR_AX_V;
     }
-    else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
+    else if (mainWindowOrientation == WINDOW_ORIENTATION_CORONAL)
     {
       windowLayout = WINDOW_LAYOUT_SAG_AX_V;
     }
@@ -407,7 +544,7 @@ WindowLayout QmitkSideViewerWidget::GetMultiWindowLayoutForOrientation(MIDASOrie
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation mainWindowOrientation)
+void QmitkSideViewerWidget::OnMainWindowOrientationChanged(WindowOrientation mainWindowOrientation)
 {
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
 
@@ -425,9 +562,9 @@ void QmitkSideViewerWidget::OnMainWindowOrientationChanged(MIDASOrientation main
     }
 
     m_ControlsWidget->setEnabled(true);
-    m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_AXIAL);
-    m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_SAGITTAL);
-    m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != MIDAS_ORIENTATION_CORONAL);
+    m_AxialWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_AXIAL);
+    m_SagittalWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_SAGITTAL);
+    m_CoronalWindowRadioButton->setEnabled(m_MainWindowOrientation != WINDOW_ORIENTATION_CORONAL);
   }
   else
   {
@@ -479,9 +616,9 @@ void QmitkSideViewerWidget::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnViewerWindowChanged()
 {
-  MIDASOrientation orientation = m_Viewer->GetOrientation();
+  WindowOrientation orientation = m_Viewer->GetOrientation();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     int selectedSlice = m_Viewer->GetSelectedSlice(m_Viewer->GetOrientation());
     int maxSlice = m_Viewer->GetMaxSlice(m_Viewer->GetOrientation());
@@ -520,6 +657,28 @@ void QmitkSideViewerWidget::OnViewerWindowChanged()
 //-----------------------------------------------------------------------------
 void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindowPart, QmitkRenderWindow* mainWindow)
 {
+  mitk::RenderingManager* mainRenderingManager = mainWindow->GetRenderer()->GetRenderingManager();
+  if (mainRenderingManager != m_MainRenderingManager)
+  {
+    if (m_MainRenderingManager)
+    {
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    }
+
+    m_MainRenderingManager = mainRenderingManager;
+
+    if (m_MainRenderingManager)
+    {
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
+      m_MainRenderingManager->AddRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    }
+  }
+
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
   QmitkRenderWindow* mainAxialWindow = renderWindowPart->GetQmitkRenderWindow("axial");
   QmitkRenderWindow* mainSagittalWindow = renderWindowPart->GetQmitkRenderWindow("sagittal");
@@ -580,19 +739,11 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     m_MainSagittalSnc = 0;
     m_MainCoronalSnc = 0;
 
-    m_MainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    m_MainWindowOrientation = WINDOW_ORIENTATION_UNKNOWN;
 
     m_Viewer->RequestUpdate();
 
     return;
-  }
-
-  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
-
-  if (geometry && geometry != m_TimeGeometry)
-  {
-    m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
-    m_VisibilityTracker->NotifyAll();
   }
 
   m_MainWindow = mainWindow;
@@ -606,25 +757,23 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   m_MainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
   m_MainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
 
-  MIDASOrientation mainWindowOrientation;
+  WindowOrientation mainWindowOrientation;
   if (mainWindow == mainAxialWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_AXIAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_AXIAL;
   }
   else if (mainWindow == mainSagittalWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_SAGITTAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_SAGITTAL;
   }
   else if (mainWindow == mainCoronalWindow)
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_CORONAL;
+    mainWindowOrientation = WINDOW_ORIENTATION_CORONAL;
   }
   else
   {
-    mainWindowOrientation = MIDAS_ORIENTATION_UNKNOWN;
+    mainWindowOrientation = WINDOW_ORIENTATION_UNKNOWN;
   }
-
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
 
   /// Note:
   /// The SetWindowLayout function does not change the layout if the viewer has not got
@@ -632,6 +781,8 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   /// first time, we need to set the window layout again, according to the main window
   /// orientation.
   bool geometryFirstInitialised = false;
+
+  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
   if (timeGeometry != m_TimeGeometry)
   {
     if (!m_TimeGeometry)
@@ -643,6 +794,7 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
     if (timeGeometry)
     {
       m_Viewer->SetTimeGeometry(timeGeometry);
+      m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
     }
     else
     {
@@ -722,10 +874,12 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
+void QmitkSideViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
-  MIDASOrientation orientation = m_Viewer->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
     bool wasBlocked = m_SliceSpinBox->blockSignals(true);
     m_SliceSpinBox->setValue(m_Viewer->GetSelectedSlice(orientation));
@@ -735,7 +889,7 @@ void QmitkSideViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* v
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
+void QmitkSideViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor)
 {
   double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
@@ -748,7 +902,7 @@ void QmitkSideViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDAS
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout windowLayout)
+void QmitkSideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
   bool axialWindowRadioButtonWasBlocked = m_AxialWindowRadioButton->blockSignals(true);
   bool sagittalWindowRadioButtonWasBlocked = m_SagittalWindowRadioButton->blockSignals(true);

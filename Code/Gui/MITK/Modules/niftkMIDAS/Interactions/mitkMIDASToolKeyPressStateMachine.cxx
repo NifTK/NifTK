@@ -15,8 +15,23 @@
 #include "mitkMIDASToolKeyPressStateMachine.h"
 #include <mitkWheelEvent.h>
 
+#include <usGetModuleContext.h>
+
+
 namespace mitk
 {
+
+//-----------------------------------------------------------------------------
+void MIDASToolKeyPressStateMachine::Notify(mitk::InteractionEvent* interactionEvent, bool isHandled)
+{
+  // to use the state machine pattern,
+  // the event is passed to the state machine interface to be handled
+  if (!isHandled)
+  {
+    this->HandleEvent(interactionEvent, NULL);
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressResponder* responder)
@@ -24,12 +39,22 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressRe
 {
   assert(responder);
   m_Responder = responder;
+
+  this->LoadStateMachine("MIDASToolKeyPressStateMachine.xml", us::GetModuleContext()->GetModule());
+  this->SetEventConfig("MIDASToolKeyPressStateMachineConfig.xml", us::GetModuleContext()->GetModule());
+
+  // Register as listener via micro services
+  us::ServiceProperties props;
+  props["name"] = std::string("MIDASToolKeyPressStateMachine");
+
+  m_ServiceRegistration = us::GetModuleContext()->RegisterService<mitk::InteractionEventObserver>(this, props);
 }
 
 
 //-----------------------------------------------------------------------------
 MIDASToolKeyPressStateMachine::~MIDASToolKeyPressStateMachine()
 {
+  m_ServiceRegistration.Unregister();
 }
 
 

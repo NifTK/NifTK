@@ -25,11 +25,11 @@
 namespace mitk
 {
 
-class VisibilityChangedCommand;
+class PropertyChangedCommand;
 
 /**
  * \class DataStoragePropertyListener
- * \brief Base class for objects that Listen to data storage for a specific property such as "visibility".
+ * \brief Base class for objects that Listen to data storage for a specific property such as "visible".
  *
  * This class is derived from itk::Object so we can use things like the ITK setter/getter macros, listening to
  * Modified events via the Observer pattern etc.
@@ -39,57 +39,42 @@ class VisibilityChangedCommand;
  * The event listening can be restricted to a set of renderers. It is the resposibility of the user of this
  * class to remove the renderer from the DataStoragePropertyListener objects when the renderer is deleted.
  */
-class NIFTKCORE_EXPORT DataStoragePropertyListener : public mitk::DataStorageListener
+class NIFTKCORE_EXPORT DataNodePropertyListener : public mitk::DataStorageListener
 {
 
 public:
 
-  mitkClassMacro(DataStoragePropertyListener, mitk::DataStorageListener);
-  mitkNewMacro1Param(DataStoragePropertyListener, const std::string&);
+  mitkClassMacro(DataNodePropertyListener, mitk::DataStorageListener);
+  mitkNewMacro2Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&);
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
 
-  /// \brief GUI independent message callback.
-  Message2<mitk::DataNode*, const mitk::BaseRenderer*> PropertyChanged;
-
-  /// \brief Called when the global or a renderer specific property of the node has changed or removed.
-  void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
-
-  /// \brief Sends a signal with current the property value of the given node to the registered listeners.
-  void Notify(mitk::DataNode* node);
-
-  /// \brief Sends a signal with current the property value of all nodes to the registered listeners.
-  void NotifyAll();
-
 protected:
 
-  DataStoragePropertyListener(const std::string& propertyName);
-  virtual ~DataStoragePropertyListener();
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName);
+  virtual ~DataNodePropertyListener();
 
-  DataStoragePropertyListener(const DataStoragePropertyListener&); // Purposefully not implemented.
-  DataStoragePropertyListener& operator=(const DataStoragePropertyListener&); // Purposefully not implemented.
-
-  /// \brief Called to register to the data storage.
-  virtual void Activate(const mitk::DataStorage::Pointer storage);
-
-  /// \brief Called to un-register from the data storage.
-  virtual void Deactivate();
+  DataNodePropertyListener(const DataNodePropertyListener&); // Purposefully not implemented.
+  DataNodePropertyListener& operator=(const DataNodePropertyListener&); // Purposefully not implemented.
 
   /// \brief Called when a node is added to the data storage.
   /// Adds the observers for the node then notifies them.
   /// \see DataStoragePropertyListener::NodeAdded
-  virtual void NodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node);
 
   /// \brief Called when a node is removed from the data storage.
   /// Notifies the observers for the node then removes them.
   /// \see DataStoragePropertyListener::NodeRemoved
-  virtual void NodeRemoved(mitk::DataNode* node);
+  virtual void OnNodeRemoved(mitk::DataNode* node);
 
   /// \brief Called when a node is deleted.
   /// Notifies the observers for the node then removes them.
   /// \see DataStoragePropertyListener::NodeDeleted
-  virtual void NodeDeleted(mitk::DataNode* node);
+  virtual void OnNodeDeleted(mitk::DataNode* node);
+
+  /// \brief Called when the global or a renderer specific property of the node has changed or removed.
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
 private:
 
@@ -120,8 +105,10 @@ private:
   /// The observers are notified when a property of a node is changed or removed.
   NodePropertyObserverTags m_PropertyObserverTagsPerNode;
 
+friend class PropertyChangedCommand;
+
 };
 
-} // end namespace
+}
 
 #endif

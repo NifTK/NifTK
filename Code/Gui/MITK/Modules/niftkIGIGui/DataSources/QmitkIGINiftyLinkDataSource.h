@@ -106,7 +106,7 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {};
+  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {}
 
 private:
 

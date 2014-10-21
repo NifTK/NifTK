@@ -38,6 +38,18 @@ mitk::MIDASStateMachine::~MIDASStateMachine()
 
 
 //-----------------------------------------------------------------------------
+float mitk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  if (this->IsFiltered(stateEvent))
+  {
+    return 0.0;
+  }
+
+  return this->CanHandle(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
 bool mitk::MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 {
   if (this->IsFiltered(event))
@@ -79,6 +91,30 @@ void mitk::MIDASStateMachine::RemoveEventFilter(mitk::MIDASEventFilter* eventFil
 std::vector<mitk::MIDASEventFilter*> mitk::MIDASStateMachine::GetEventFilters() const
 {
   return m_EventFilters;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
+{
+  /// Sanity check.
+  if (!stateEvent || !stateEvent->GetEvent()->GetSender())
+  {
+    return true;
+  }
+
+  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
+
+  for ( ; it != itEnd; ++it)
+  {
+    if ((*it)->EventFilter(stateEvent))
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 

@@ -1,5 +1,5 @@
 <config>
-  <event_variant class="MouseReleaseEvent" name="AddingPoint">
+  <event_variant class="MousePressEvent" name="AddPointClick">
     <attribute name="EventButton" value="RightMouseButton"/>
   </event_variant>
 </config>

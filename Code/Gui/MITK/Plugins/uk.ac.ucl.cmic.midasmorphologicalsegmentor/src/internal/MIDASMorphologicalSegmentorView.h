@@ -83,7 +83,7 @@ protected slots:
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when dilation sliders or spin boxes changed.
-  void OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when re-thresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);
@@ -121,10 +121,10 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node);
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
   /// \brief Method to enable this and derived classes to turn widgets off/on
   virtual void EnableSegmentationWidgets(bool b);
@@ -149,13 +149,13 @@ private:
   mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(mitk::Image* referenceImage);
 
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
-  void SetDefaultParameterValuesFromReferenceImage();
+  void SetSegmentationNodePropsFromReferenceImage();
 
   /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
-  void SetControlsByImageData();
+  void SetControlsFromReferenceImage();
 
   /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
-  void SetControlsByParameterValues();
+  void SetControlsFromSegmentationNodeProps();
 
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
@@ -170,7 +170,7 @@ private:
   mitk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
-  int m_TabCounter;
+  int m_TabIndex;
 };
 
 #endif

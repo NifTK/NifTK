@@ -76,7 +76,7 @@ public:
 protected:  
 
   vtkOpenGLMatrixDrivenCamera();
-  ~vtkOpenGLMatrixDrivenCamera() {};
+  ~vtkOpenGLMatrixDrivenCamera() {}
 
 private:
 

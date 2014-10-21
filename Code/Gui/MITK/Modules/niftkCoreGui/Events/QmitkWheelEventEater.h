@@ -29,7 +29,7 @@ class NIFTKCOREGUI_EXPORT QmitkWheelEventEater : public QObject
 
 public:
   QmitkWheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkWheelEventEater() {};
+  ~QmitkWheelEventEater() {}
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
  protected:

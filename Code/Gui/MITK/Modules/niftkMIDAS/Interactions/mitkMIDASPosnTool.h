@@ -18,33 +18,34 @@
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"
 
-namespace mitk {
+namespace mitk
+{
 
-  /**
-   * \class MIDASPosnTool
-   * \brief Dummy class, as the MIDAS posn tool, just enables you to change the
-   * position of the slices in 2 or 3 windows, which is the default behaviour of
-   * the MITK ortho-viewer anyway.
-   */
-  class NIFTKMIDAS_EXPORT MIDASPosnTool : public MIDASTool {
+/**
+ * \class MIDASPosnTool
+ * \brief Dummy class, as the MIDAS posn tool, just enables you to change the
+ * position of the slices in 2 or 3 windows, which is the default behaviour of
+ * the MITK ortho-viewer anyway.
+ */
+class NIFTKMIDAS_EXPORT MIDASPosnTool : public MIDASTool
+{
 
-  public:
-    mitkClassMacro(MIDASPosnTool, MIDASTool);
-    itkNewMacro(MIDASPosnTool);
+public:
+  mitkClassMacro(MIDASPosnTool, MIDASTool);
+  itkNewMacro(MIDASPosnTool);
 
-    virtual const char* GetName() const;
-    virtual const char** GetXPM() const;
+  virtual const char* GetName() const;
+  virtual const char** GetXPM() const;
 
-  protected:
+protected:
 
-    MIDASPosnTool(); // purposefully hidden
-    virtual ~MIDASPosnTool(); // purposefully hidden
+  MIDASPosnTool(); // purposefully hidden
+  virtual ~MIDASPosnTool(); // purposefully hidden
 
-  private:
+private:
 
-  };//class
+};
 
-
-}//namespace
+}
 
 #endif
