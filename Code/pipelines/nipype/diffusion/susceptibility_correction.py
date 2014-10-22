@@ -62,7 +62,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     reg_fm_to_b0 = pe.Node(interface=RegAladin(), name='reg_fm_to_b0')
     reg_fm_to_b0.inputs.rig_only_flag = True
     invert_aff = pe.Node(interface=RegTransform(), name='invert_fm_to_b0' )
-    resample_mask = pe.Node(interface=RegResample(), name='resample_mask', interp='NN')
+    resample_mask = pe.Node(interface=RegResample(inter_val = 'NN'), name='resample_mask')
     resample_epi = pe.Node(interface=RegResample(), name='resample_epi')
     transform_def_to_b0 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0')
     reg_jacobian = pe.Node(interface=RegJacobian(), name='calc_transform_jac')
