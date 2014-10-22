@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MRI . Directories of images</category>
+
+  <title>Breast Density from MR Images</title>
+
+  <description><![CDATA[Compute breast density for directories of DICOM MR images.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters advanced="false">
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <directory>
+      <name>dirInput</name>
+      <longflag>inDir</longflag>
+      <description>Input top-level directory to search for MRI studies</description>
+      <label>Input directory to search</label>
+      <channel>input</channel>
+    </directory>
+
+    <file>
+      <name>fileLog</name>
+      <longflag>log</longflag>
+      <description>Output file to store progress logging info.</description>
+      <label>Log file</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>fileOutputCSV</name>
+      <flag>o</flag>
+      <description>Output csv file containing density measurements.</description>
+      <label>Output csv file</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Print verbose information?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgSaveImages</name>
+      <flag>s</flag>
+      <longflag>save</longflag>
+      <description>Save all the intermediate images used in the processing pipeline.</description>
+      <label>Save images?</label>
+    </boolean>
+
+    <string>
+      <name>dirSub</name>
+      <longflag>dirSub</longflag>
+      <description>The sub-directory within each directory to which intermediate images and data are saved.</description>
+      <label>Data sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirPrefix</name>
+      <longflag>dirPrefix</longflag>
+      <description>Only study directories with this prefix will be included in processing.</description>
+      <label>Study directory prefix</label>
+    </string>
+ 
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgCompression</name>
+      <longflag>compress</longflag>
+      <description>Select this checkbox to compress all the saved images and hence save on disk space.</description>
+      <label>Compress images?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output (i.e. print the DICOM header).</description>
+      <label>Print debugging output?</label>
+    </boolean>
+
+  </parameters>
+
+</executable>
