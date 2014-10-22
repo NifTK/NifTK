@@ -177,6 +177,8 @@ r.connect(get_sink_container, 'container', ds, 'base_directory')
 if args.dicom == True:
     r.connect(dg, 'output', dcm2nii, 'source_names')
     r.connect(dcm2nii, 'converted_files', ds, 'nifti')
+    r.connect(dcm2nii, 'bvals', ds, 'nifti.@bvals')
+    r.connect(dcm2nii, 'bvecs', ds, 'nifti.@bvecs')
     r.connect(dg, 'output', ds, 'dicom')
 else:
     r.connect(dg, 'output', ds, 'nifti')
