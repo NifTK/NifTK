@@ -224,6 +224,10 @@ public:
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
 
+  typename InternalImageType::Pointer GetSegmentedImage( void ) {
+    return imSegmented;
+  };
+
   /// Write the segmented image to a file
   void WriteSegmentationToAFile( std::string fileOutput ) {
     WriteBinaryImageToUCharFile( fileOutput, "final segmented image", 
@@ -403,6 +407,9 @@ protected:
 
   /// Smooth the image to increase separation of the background
   void SmoothMaxImageToIncreaseSeparationOfTheBackground( void );
+
+  /// Segment the backgound using itkForegroundFromBackgroundImageThresholdCalculator
+  void SegmentForegroundFromBackground( void );
 
   /// Segment the backgound using the maximum image histogram
   void SegmentBackground( void );
