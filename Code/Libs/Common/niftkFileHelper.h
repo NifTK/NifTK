@@ -92,6 +92,11 @@ namespace niftk
   NIFTKCOMMON_WINEXPORT bool FileExists(const std::string& fileName);
 
   /**
+   * \return Delete a file and return true if successfull, false otherwise.
+   */
+  NIFTKCOMMON_WINEXPORT bool FileDelete(const std::string& fileName);
+
+  /**
    * \return True if file has size of zero, and false otherwise.
    */
   NIFTKCOMMON_WINEXPORT bool FileIsEmpty(const std::string& fileName);
@@ -144,6 +149,14 @@ namespace niftk
    * \return a list of files within that folder.
    */
   NIFTKCOMMON_WINEXPORT std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryName);
+
+  /**
+   * Returns all directories in a given directory, or empty list if none found.
+   * \param fullDirectoryName Directory name
+   * \throw logic_error if directory name is invalid
+   * \return a list of directories within that folder.
+   */
+  NIFTKCOMMON_WINEXPORT std::vector<std::string> GetDirectoriesInDirectory(const std::string& fullDirectoryName);
 
   /**
    * Returns all files in a given directory and recursively in all sub-directories, or empty list if none found.
