@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <niftkSiftCLP.h>
+#include <niftkSURFCLP.h>
 #include <mitkExceptionMacro.h>
 #include <cv.h>
 #include <highgui.h>
