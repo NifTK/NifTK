@@ -21,17 +21,19 @@ processing diffusion MRI images.
 
 def get_B0s_from_bvals_bvecs(bvals, bvecs):
     import dipy.core.gradients as gradients
-    gtab = gradients.gradient_table(bvals, bvecs)
+    gtab = gradients.gradient_table(bvals, bvecs, b0_threshold=20)
     masklist = list(gtab.b0s_mask)
     ret_val = []
     for i in range(len(masklist)):
         if masklist[i] == True:
             ret_val.append(i)
+
+    
     return ret_val
 
 def get_DWIs_from_bvals_bvecs(bvals, bvecs):
     import dipy.core.gradients as gradients
-    gtab = gradients.gradient_table(bvals, bvecs)
+    gtab = gradients.gradient_table(bvals, bvecs, b0_threshold=20)
     masklist = list(gtab.b0s_mask)
     ret_val = []
     for i in range(len(masklist)):
@@ -41,7 +43,7 @@ def get_DWIs_from_bvals_bvecs(bvals, bvecs):
 
 def reorder_list_from_bval_bvecs(B0s, DWIs, bvals, bvecs):
     import dipy.core.gradients as gradients
-    gtab = gradients.gradient_table(bvals, bvecs)
+    gtab = gradients.gradient_table(bvals, bvecs, b0_threshold=20)
     masklist = list(gtab.b0s_mask)
     B0s_indices  = []
     DWIs_indices = []
