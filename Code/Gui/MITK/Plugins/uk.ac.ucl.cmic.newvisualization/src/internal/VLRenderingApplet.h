@@ -55,6 +55,7 @@
 #include <mitkImage.h>
 #include <mitkSurface.h>
 #include <mitkBaseData.h>
+#include <mitkProperties.h>
 
 // Microservices
 #include <usModuleContext.h>
@@ -92,6 +93,8 @@ public:
   void keyPressEvent(unsigned short, EKey key);
 
   void AddDataNode(mitk::DataNode::Pointer node);
+  void RemoveDataNode(mitk::DataNode::Pointer node);
+  void UpdateDataNode(mitk::DataNode::Pointer node);
 
   void UpdateThresholdVal( int val );
 
@@ -100,8 +103,8 @@ protected:
   typedef std::vector<size_t> ClSizeList;
 
 private:
-  void AddImageActor(mitk::Image::Pointer mitkImg);
-  void AddSurfaceActor(mitk::Surface::Pointer mitkSurf);
+  ref<Actor> AddImageActor(mitk::Image::Pointer mitkImg);
+  ref<Actor> AddSurfaceActor(mitk::Surface::Pointer mitkSurf);
   void LoadGLSLSourceFromResources(const char* filename, vl::String &source);
 
   void ConvertVTKPolyData(vtkPolyData * vtkPoly, ref<vl::Geometry> vlPoly);
@@ -114,6 +117,8 @@ private:
   ref<Transform> mTransform2;
   ref<Light>     m_Light;
   ref<Transform> m_LightTr;
+
+  std::map< mitk::DataNode::Pointer, ref<Actor>  > m_NodeToActorMap;
 };
 
 #endif

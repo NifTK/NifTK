@@ -156,22 +156,109 @@ void VLRenderingApplet::AddDataNode(mitk::DataNode::Pointer node)
   // Propagate color and opacity down to basedata
   node->GetData()->SetProperty("color", node->GetProperty("color"));
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
+  node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
   mitk::Image::Pointer mitkImg = dynamic_cast<mitk::Image *>(node->GetData());
 
+  ref<Actor> newActor;
+
   if (mitkImg.IsNotNull())
-    AddImageActor(mitkImg);
+    newActor = AddImageActor(mitkImg);
   
   mitk::Surface::Pointer mitkSurf = dynamic_cast<mitk::Surface *>(node->GetData());
   if (mitkSurf.IsNotNull())
-    AddSurfaceActor(mitkSurf);
+    newActor = AddSurfaceActor(mitkSurf);
+
+  if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
+    m_NodeToActorMap[node] = newActor;
 }
 
-void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
+void VLRenderingApplet::RemoveDataNode(mitk::DataNode::Pointer node)
 {
-  ref<Geometry> vlSurf = new Geometry();
-  ref<Effect> fx; 
-  ref<Transform> tr;
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  std::map< mitk::DataNode::Pointer, ref<Actor> >::iterator it;
+
+  it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+
+  ref<Actor> vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
+  sceneManager()->tree()->eraseActor(vlActor.get());
+  m_NodeToActorMap.erase(it);
+}
+
+void VLRenderingApplet::UpdateDataNode(mitk::DataNode::Pointer node)
+{
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  std::map< mitk::DataNode::Pointer, ref<Actor> >::iterator it;
+
+  MITK_INFO <<m_NodeToActorMap.size();
+
+  it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+
+  ref<Actor> vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
+  mitk::BoolProperty  * visibleProp = dynamic_cast<mitk::BoolProperty *>( node->GetProperty("visible"));
+
+  if (visibleProp->GetValue() == false)
+  {
+    vlActor->setEnableMask(0);
+    return;
+  }
+  else
+    vlActor->setEnableMask(0xFFFFFFFF);
+
+  ref<Effect> fx = vlActor->effect();
+
+  mitk::ColorProperty * colorProp = dynamic_cast<mitk::ColorProperty*>( node->GetProperty("color"));
+  mitk::Color mitkColor = colorProp->GetColor();
+
+  vl::fvec4 color;
+  color[0] = mitkColor[0];
+  color[1] = mitkColor[1];
+  color[2] = mitkColor[2];
+
+  //  SURFACE ONLY
+  mitk::FloatProperty * opacityProp = dynamic_cast<mitk::FloatProperty *>( node->GetProperty("opacity"));
+  float opacity = opacityProp->GetValue();
+  //if (opacity == 1.0f)
+  //{
+  //  fx->shader()->enable(EN_DEPTH_TEST);
+  //  fx->shader()->enable(EN_CULL_FACE);
+  //  fx->shader()->enable(EN_LIGHTING);
+  //  fx->shader()->setRenderState(m_Light.get(), 0 );
+  //  fx->shader()->gocMaterial()->setDiffuse(color);
+  //  fx->shader()->gocMaterial()->setTransparency(1.0f);
+  //}
+  //else
+  {
+    fx->shader()->enable(EN_BLEND);
+    fx->shader()->enable(EN_DEPTH_TEST);
+    fx->shader()->enable(EN_CULL_FACE);
+    fx->shader()->enable(EN_LIGHTING);
+    fx->shader()->setRenderState(m_Light.get(), 0 );
+    fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->gocMaterial()->setTransparency(1.0f- opacity);
+  }
+
+}
+
+ref<Actor> VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
+{
+  ref<Geometry>  vlSurf = new Geometry();
+  ref<Effect>    fx     = new Effect;
+  ref<Transform> tr     = new Transform();
 
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
 
@@ -189,10 +276,6 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
   //  vlSurf->computeNormals();
   ////vlSurf->flipNormals();
 
-
-
-  fx = new Effect;
-
   float opacity;
   mitkSurf->GetPropertyList()->GetFloatProperty("opacity", opacity);
 
@@ -206,15 +289,16 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
 
   //  SURFACE ONLY
 
-  if (opacity == 1.0f)
-  {
-    fx->shader()->enable(EN_DEPTH_TEST);
-    fx->shader()->enable(EN_CULL_FACE);
-    fx->shader()->enable(EN_LIGHTING);
-    fx->shader()->setRenderState(m_Light.get(), 0 );
-    fx->shader()->gocMaterial()->setDiffuse(color);
-  }
-  else
+  //if (opacity == 1.0f)
+  //{
+  //  fx->shader()->enable(EN_DEPTH_TEST);
+  //  fx->shader()->enable(EN_CULL_FACE);
+  //  fx->shader()->enable(EN_LIGHTING);
+  //  fx->shader()->setRenderState(m_Light.get(), 0 );
+  //  fx->shader()->gocMaterial()->setDiffuse(color);
+  //  fx->shader()->gocMaterial()->setTransparency(0.5f);
+  //}
+  //else
   {
     fx->shader()->enable(EN_BLEND);
     fx->shader()->enable(EN_DEPTH_TEST);
@@ -225,14 +309,11 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
     fx->shader()->gocMaterial()->setTransparency(1.0f- opacity);
   }
 
-  sceneManager()->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+  ref<Actor> surfActor = sceneManager()->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
 
   //ref<RenderQueueSorterStandard> list_sorter = new RenderQueueSorterStandard;
   //list_sorter->setDepthSortMode(AlwaysDepthSort);
   //rendering()->as<Rendering>()->setRenderQueueSorter( list_sorter.get() );
-
-
-  tr = new Transform();
 
   vtkLinearTransform * nodeVtkTr = mitkSurf->GetGeometry()->GetVtkTransform();
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -255,9 +336,11 @@ void VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
 
   // refresh window
   openglContext()->update();
+
+  return surfActor;
 }
 
-void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
+ref<Actor> VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
 {
   ref<Image>     vlImg;
   ref<Effect>    fx; 
@@ -357,7 +440,8 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   //vlImg = loadImage( "e:/Niftike-r/VL-src/data/volume/VLTest.dat" );
 
   fx = new Effect;
-
+  tr = new Transform();
+  
   float opacity;
   mitkImg->GetPropertyList()->GetFloatProperty("opacity", opacity);
 
@@ -460,7 +544,6 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   fx->shader()->gocUniform( "gradient_delta" )->setUniform( fvec3( 0.5f/vlImg->width(), 0.5f/vlImg->height(), 0.5f/vlImg->depth() ) );
   
   fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
-  tr = new Transform();
 
   vtkLinearTransform * nodeVtkTr = mitkImg->GetGeometry()->GetVtkTransform();
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -480,6 +563,8 @@ void VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
 
   // refresh window
   openglContext()->update();
+
+  return imageActor;
 }
 
 void VLRenderingApplet::UpdateThresholdVal( int val )

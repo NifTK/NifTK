@@ -187,27 +187,53 @@ void NewVisualizationView::On_SliderMoved(int val)
 
 void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
 {
-  if (node == 0)
+  if (node == 0 || node->GetData()== 0)
     return;
- 
-  UpdateDisplay();
+
+  bool isHelper = false;
+  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
+
+  if (isHelper)
+    return;
+
+  bool isVisible = false;
+  node->GetVisibility(isVisible, 0);
+
+  if (!isVisible)
+    return;
+
+  m_RenderApplet->AddDataNode(node);
+  m_RenderApplet->rendering()->render();
+
+  MITK_INFO <<"Node added";
 }
 
 void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
 {
-  if (node == 0 || m_Controls == 0)
+  if (node == 0 || node->GetData()== 0)
     return;
-  
-  m_RenderApplet->sceneManager()->tree()->actors()->clear();
-  UpdateDisplay();
+
+  bool isHelper = false;
+  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
+
+  if (isHelper)
+    return;
+
+  m_RenderApplet->RemoveDataNode(node);
+  m_RenderApplet->rendering()->render();
+
+  MITK_INFO <<"Node removed";
 }
 
 void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
 {
-  if (node == 0 || m_Controls == 0)
+  if (node == 0 || node->GetData()== 0)
     return;
 
-  UpdateDisplay();
+  m_RenderApplet->RemoveDataNode(node);
+  m_RenderApplet->rendering()->render();
+
+  MITK_INFO <<"Node deleted";
 }
 
 void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
@@ -216,49 +242,67 @@ void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mit
 
 void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+  if (node == 0 || node->GetData()== 0)
+    return;
+
+  m_RenderApplet->UpdateDataNode(node);
+  m_RenderApplet->rendering()->render();
+  MITK_INFO <<"Visibility Change";
 }
 
 void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+  if (node == 0 || node->GetData()== 0)
+    return;
+
+  m_RenderApplet->UpdateDataNode(node);
+  m_RenderApplet->rendering()->render();
+  MITK_INFO <<"Color Change";
 }
 
 void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+  if (node == 0 || node->GetData()== 0)
+    return;
+
+  m_RenderApplet->UpdateDataNode(node);
+  m_RenderApplet->rendering()->render();
+  MITK_INFO <<"Opacity Change";
 }
 
-void NewVisualizationView::UpdateDisplay(bool viewEnabled)
-{
+//void NewVisualizationView::UpdateDisplay(bool viewEnabled)
+//{
   //m_RenderApplet->sceneManager()->tree()->actors()->clear();
 
-    // Set DataNode property accordingly
-  typedef mitk::DataNode::Pointer dataNodePointer;
-  typedef itk::VectorContainer<unsigned int, dataNodePointer> nodesContainerType;
-  nodesContainerType::ConstPointer vc = this->GetDataStorage()->GetAll();
+  //  // Set DataNode property accordingly
+  //typedef mitk::DataNode::Pointer dataNodePointer;
+  //typedef itk::VectorContainer<unsigned int, dataNodePointer> nodesContainerType;
+  //nodesContainerType::ConstPointer vc = this->GetDataStorage()->GetAll();
 
-  // Iterate through the DataNodes
-  for (unsigned int i = 0; i < vc->Size(); i++)
-  {
-    dataNodePointer currentDataNode = vc->ElementAt(i);
-    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
-      continue;
+  //// Iterate through the DataNodes
+  //for (unsigned int i = 0; i < vc->Size(); i++)
+  //{
+  //  dataNodePointer currentDataNode = vc->ElementAt(i);
+  //  if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
+  //    continue;
 
-    bool isHelper = false;
-    currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
+  //  bool isHelper = false;
+  //  currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
 
-    if (isHelper)
-      continue;
+  //  if (isHelper)
+  //    continue;
 
-    bool isVisible = false;
-    currentDataNode->GetVisibility(isVisible, 0);
+  //  bool isVisible = false;
+  //  currentDataNode->GetVisibility(isVisible, 0);
 
-    if (!isVisible)
-      continue;
+  //  if (!isVisible)
+  //    continue;
 
-    // Get name of the current node
-    QString currNodeName(currentDataNode->GetPropertyList()->GetProperty("name")->GetValueAsString().c_str() );
-    
-    m_RenderApplet->AddDataNode(currentDataNode);
-  }
+  //  // Get name of the current node
+  //  QString currNodeName(currentDataNode->GetPropertyList()->GetProperty("name")->GetValueAsString().c_str() );
+  //  
+  //  m_RenderApplet->AddDataNode(currentDataNode);
+  //}
 
-  m_RenderApplet->rendering()->render();
-}
+  //m_RenderApplet->rendering()->render();
+//}

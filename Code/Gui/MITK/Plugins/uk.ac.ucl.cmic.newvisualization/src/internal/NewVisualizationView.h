@@ -86,7 +86,7 @@ private:
   void InitVLRendering();
 
   /// \brief 
-  void UpdateDisplay(bool viewEnabled = true);
+  //void UpdateDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
   Ui::NewVisualizationViewControls* m_Controls;
