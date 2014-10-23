@@ -136,8 +136,19 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   connectedSurfacePoints->SetUpper( 1000 );
   connectedSurfacePoints->SetReplaceValue( 1000 );
   connectedSurfacePoints->SetSeed( this->idxMidSternum  );
+
   connectedSurfacePoints->AddSeed( this->idxNippleLeft  );
   connectedSurfacePoints->AddSeed( this->idxNippleRight );
+
+  connectedSurfacePoints->AddSeed( this->idxAreolarLeft[0] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarLeft[1] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarLeft[2] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarLeft[3] );
+
+  connectedSurfacePoints->AddSeed( this->idxAreolarRight[0] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarRight[1] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarRight[2] );
+  connectedSurfacePoints->AddSeed( this->idxAreolarRight[3] );
 
   std::cout << "Region-growing the skin surface" << std::endl;
   connectedSurfacePoints->Update();

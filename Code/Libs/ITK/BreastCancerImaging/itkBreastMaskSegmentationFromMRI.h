@@ -366,6 +366,9 @@ protected:
   typename InternalImageType::IndexType idxLeftPosterior;
   typename InternalImageType::IndexType idxRightPosterior;
 
+  typename InternalImageType::IndexType idxAreolarRight[4];
+  typename InternalImageType::IndexType idxAreolarLeft[4];
+
 
   /// Constructor
   BreastMaskSegmentationFromMRI();
@@ -416,6 +419,11 @@ protected:
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
   void ComputeElevationOfAnteriorSurface( void );
+
+  /// Find a point in the surface offset from the nipple
+  typename InternalImageType::IndexType 
+    FindSurfacePoint( typename InternalImageType::IndexType idxNipple,
+                      float deltaXinMM, float deltaZinMM );
 
   /// Find the nipple and mid-sternum landmarks
   void FindBreastLandmarks( void );
