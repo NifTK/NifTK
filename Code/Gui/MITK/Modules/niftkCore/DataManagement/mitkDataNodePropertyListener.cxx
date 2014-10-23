@@ -357,6 +357,10 @@ void DataNodePropertyListener::RemoveAllObservers()
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+  if (!this->IsBlocked())
+  {
+    NodePropertyChanged.Send(node, renderer);
+  }
 }
 
 }
