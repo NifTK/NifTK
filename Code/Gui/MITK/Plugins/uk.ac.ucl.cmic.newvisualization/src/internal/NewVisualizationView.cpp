@@ -25,6 +25,10 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkImageReadAccessor.h>
 
+// THIS IS VERY IMPORTANT
+// If nothing is included from the mitk::OpenCL module the resource service will not get registered
+#include <mitkOpenCLActivator.h>
+
 // Qt
 #include <QMessageBox>
 
@@ -92,26 +96,30 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_PropertyListener = mitk::DataNodePropertyListener::New(dataStorage, "name");
     m_PropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnPropertyChanged);
 */
-    InitVLRendering();
+  InitVLRendering();
 
-/*
-    OclResourceService* oclService =  mitk::NewVisualizationPluginActivator::GetOpenCLService();
 
-    if (oclService == NULL)
-    {
-      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
-    }
 
-    vl::OpenGLContext * glContext = m_RenderApplet->openglContext();
-    glContext->makeCurrent();
 
-    // Force tests to run on the ATI GPU
-    oclService->SpecifyPlatformAndDevice(0, 0, true);
+  ctkPluginContext* context = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
 
+  ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
+  OclResourceService* oclService = context->getService<OclResourceService>(serviceRef);
+  
+  if (oclService == NULL)
+  {
+    mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
+  }
+
+  vl::OpenGLContext * glContext = m_RenderApplet->openglContext();
+  glContext->makeCurrent();
+
+  // Force tests to run on the ATI GPU
+  oclService->SpecifyPlatformAndDevice(0, 0, true);
 
     // Get context 
     cl_context gpuContext = oclService->GetContext();
-*/
+
   }
 
   // Redraw screen
