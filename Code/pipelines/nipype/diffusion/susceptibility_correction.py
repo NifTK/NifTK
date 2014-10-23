@@ -115,9 +115,11 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     pipeline.connect(invert_aff, 'out_file',transform_def_to_b0_1, 'comp_input')
     pipeline.connect(gen_fm, 'out_field', transform_def_to_b0_1, 'comp_input2')
     pipeline.connect(input_node, 'mag_image', transform_def_to_b0_1,'ref1_file')
+    pipeline.connect(input_node, 'mag_image', transform_def_to_b0_1,'ref2_file')
 
     pipeline.connect(transform_def_to_b0_1, 'out_file',transform_def_to_b0_2, 'comp_input')
     pipeline.connect(reg_fm_to_b0, 'aff_file', transform_def_to_b0_2, 'comp_input2')
+    pipeline.connect(input_node, 'mag_image', transform_def_to_b0_2,'ref1_file')
     pipeline.connect(input_node, 'epi_image', transform_def_to_b0_2,'ref2_file')
     
     # Resample the epi image using the new deformation
