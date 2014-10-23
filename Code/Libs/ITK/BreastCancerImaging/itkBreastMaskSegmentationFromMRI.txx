@@ -1088,6 +1088,70 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
 
 // --------------------------------------------------------------------------
+// Find a point in the surface offset from the nipple
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::IndexType 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::FindSurfacePoint( typename InternalImageType::IndexType idxNipple,
+                    float deltaXinMM, float deltaZinMM )
+{
+  typename InternalImageType::IndexType idx;
+  typename InternalImageType::IndexType idxDelta;
+
+  typename InternalImageType::SpacingType spacing3D;
+  spacing3D = imSegmented->GetSpacing();
+
+  idxDelta[0] = static_cast<typename InternalImageType::IndexValueType>( deltaXinMM / spacing3D[0] );
+  idxDelta[1] = 0;
+  idxDelta[2] = static_cast<typename InternalImageType::IndexValueType>( deltaZinMM / spacing3D[2] );
+
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
+  region = imSegmented->GetLargestPossibleRegion();
+  size = region.GetSize();
+
+  start[0] = idxNipple[0] + idxDelta[0];
+  start[1] = idxNipple[1] + idxDelta[1];
+  start[2] = idxNipple[2] + idxDelta[2];
+
+  region.SetIndex( start );
+
+  size[0] = 1;
+  size[1] = size[1] - start[1];
+  size[2] = 1;
+
+  region.SetSize( size );
+
+  if (flgVerbose) 
+    std::cout << "Searching for surface point from: " << start << std::endl;
+
+  LineIteratorType itSegLinear( imSegmented, region );
+  itSegLinear.SetDirection( 1 );
+
+  while ( ! itSegLinear.IsAtEndOfLine() )
+  {
+    idx = itSegLinear.GetIndex();
+
+    if ( itSegLinear.Get() ) 
+    {
+      break;
+    }
+    ++itSegLinear;
+  }
+
+  if (flgVerbose) 
+    std::cout << "   surface point found: " << idx << std::endl;
+ 
+
+  return idx;
+}
+
+
+// --------------------------------------------------------------------------
 // Find the nipple and mid-sternum landmarks
 // --------------------------------------------------------------------------
 
@@ -1285,6 +1349,20 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   if (flgVerbose) 
     std::cout << "Right nipple location: " << idxNippleRight << std::endl;
+
+
+  // Find four 'areolar' points around the nipple to use as chest surfaces seeds later
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  idxAreolarLeft[0] = FindSurfacePoint( idxNippleLeft, -10,   0 ); 
+  idxAreolarLeft[1] = FindSurfacePoint( idxNippleLeft,   0, -10 ); 
+  idxAreolarLeft[2] = FindSurfacePoint( idxNippleLeft,  10,   0 ); 
+  idxAreolarLeft[3] = FindSurfacePoint( idxNippleLeft,   0,  10 ); 
+
+  idxAreolarRight[0] = FindSurfacePoint( idxNippleRight, -10,   0 ); 
+  idxAreolarRight[1] = FindSurfacePoint( idxNippleRight,   0, -10 ); 
+  idxAreolarRight[2] = FindSurfacePoint( idxNippleRight,   5,   0 ); 
+  idxAreolarRight[3] = FindSurfacePoint( idxNippleRight,   0,   5 ); 
 
 
   // Find the mid-point on the sternum between the nipples
