@@ -52,17 +52,29 @@ namespace niftk
 class NIFTKCOMMON_WINEXPORT CSVRow
 {
 public:
- 
+
+  /** Construct CSVRow by allocating the vector */
+  CSVRow()
+  {
+    m_data = new std::vector<std::string>();
+  }
+
+  /** Destructor */
+  ~CSVRow()
+  {
+    delete m_data;
+  }
+
   /** Get an element of the row. */
   std::string const &operator[]( std::size_t index ) const
   {
-    return m_data[index];
+    return (*m_data)[index];
   }
 
   /** Return the size of the row (number of elements). */
   std::size_t size() const
   {
-    return m_data.size();
+    return m_data->size();
   }
 
   /** Read the next row in the input stream */
@@ -74,16 +86,16 @@ public:
     std::stringstream ssRow( strRowRead );
     std::string strElement;
 
-    m_data.clear();
+    m_data->clear();
     while( std::getline( ssRow, strElement, ',' ) )
     {
-      m_data.push_back( strElement );
+      m_data->push_back( strElement );
     }
   }
 
 private:
 
-  std::vector<std::string> m_data;
+  std::vector<std::string> *m_data;
 };
 
 
