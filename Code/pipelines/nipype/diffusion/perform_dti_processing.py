@@ -125,7 +125,7 @@ ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
 
 subs = []
-subs.append(('vol0000_res_merged_maths', subject_name + '_corrected'))
+subs.append(('vol0000_maths_res_merged_thresh_maths', subject_name + '_corrected_dwi'))
 subs.append(('average_output_res_maths', subject_name + '_average_b0'))
 subs.append((subject_t1_name+ '_aff_reg_transform', subject_name + '_t1_transform'))
 ds.inputs.regexp_substitutions = subs

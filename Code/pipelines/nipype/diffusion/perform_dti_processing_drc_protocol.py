@@ -17,8 +17,8 @@ def gen_substitutions(op_basename):
     from nipype.utils.filemanip import split_filename
     subs = []
     
-    subs.append(('average_output_res_maths', op_basename+'_averageb0'))
-    subs.append(('vol0000_res_merged_maths', op_basename+'_corrected_dwi'))
+    subs.append(('average_output_res_maths', op_basename+'_average_b0'))
+    subs.append(('vol0000_maths_res_merged_thresh_maths', op_basename+'_corrected_dwi'))
 
     return subs
 
