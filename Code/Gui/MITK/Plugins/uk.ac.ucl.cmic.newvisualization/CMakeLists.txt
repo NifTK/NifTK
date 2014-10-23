@@ -7,12 +7,10 @@ include_directories(${VL_INCLUDE_DIRS})
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt MitkSceneSerializationBase MitkOpenCL MitkDataTypesExt MitkAlgorithmsExt niftkCore 
+  MODULE_DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt MitkOpenCL niftkCore 
 )
 
   target_link_libraries(${PROJECT_NAME}
     ${VL_LIBRARIES}
-    CppMicroServices
+    #CppMicroServices
     )
-
-#VLVG VLVolume VLGraphics VLCore 
