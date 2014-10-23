@@ -17,7 +17,6 @@
 #define NewVisualizationPluginActivator_h
 
 #include <ctkPluginActivator.h>
-#include <mitkOclResourceService.h>
 
 namespace mitk {
 
@@ -37,12 +36,10 @@ public:
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-  static OclResourceService * GetOpenCLService();
-
 private:
   static NewVisualizationPluginActivator* s_Inst;
   ctkPluginContext* m_Context;
-};
+}; 
 
 }
 
