@@ -112,7 +112,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     
     # Finally, we need to resample the deformation field in the averageb0
 
-    pipeline.connect(invert_aff, 'aff_file',transform_def_to_b0_1, 'comp_input')
+    pipeline.connect(invert_aff, 'out_file',transform_def_to_b0_1, 'comp_input')
     pipeline.connect(gen_fm, 'out_field', transform_def_to_b0_1, 'comp_input2')
     pipeline.connect(input_node, 'mag_image', transform_def_to_b0_1,'ref1_file')
 
