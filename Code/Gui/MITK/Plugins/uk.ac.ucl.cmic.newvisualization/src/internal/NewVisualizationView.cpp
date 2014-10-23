@@ -24,6 +24,12 @@
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkImageReadAccessor.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkDataStorage.h>
+#include <mitkDataNode.h>
+#include <mitkDataNodePropertyListener.h>
+#include <mitkMessage.h>
 
 // THIS IS VERY IMPORTANT
 // If nothing is included from the mitk::OpenCL module the resource service will not get registered
@@ -60,6 +66,9 @@ NewVisualizationView::~NewVisualizationView()
 
   if (m_VisibilityListener)
     m_VisibilityListener->NodePropertyChanged -=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnVisibilityChanged);
+
+  if (m_PropertyListener)
+    m_PropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnPropertyChanged);
 */
 }
 
@@ -81,41 +90,43 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 
     connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
 
-/*
     // Init listener
-    m_SelectionListener = mitk::DataNodePropertyListener::New(dataStorage, "selected", false);
-    
-    m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnSelectionChanged);
-    m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeAdded);
-    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<PlanningManager, mitk::DataNode*>(this, &PlanningManager::OnNodeDeleted);
+    m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
+   // m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, const mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
 
-    m_VisibilityListener = mitk::DataNodePropertyListener::New(dataStorage, "visible");
-    m_VisibilityListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnVisibilityChanged);
+    m_SelectionListener-> NodeAdded  +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeAdded);
+    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
+    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
 
-    m_PropertyListener = mitk::DataNodePropertyListener::New(dataStorage, "name");
-    m_PropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnPropertyChanged);
-*/
-  InitVLRendering();
+    m_VisibilityListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "visible");
+    m_VisibilityListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnVisibilityPropertyChanged);
 
+    m_NamePropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "name");
+    m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
 
+    m_ColorPropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "color");
+    m_ColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnColorPropertyChanged);
 
+    m_OpacityPropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "opacity");
+    m_OpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
 
-  ctkPluginContext* context = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
+    InitVLRendering();
 
-  ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
-  OclResourceService* oclService = context->getService<OclResourceService>(serviceRef);
-  
-  if (oclService == NULL)
-  {
-    mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
-  }
+    ctkPluginContext* context = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
 
-  vl::OpenGLContext * glContext = m_RenderApplet->openglContext();
-  glContext->makeCurrent();
+    ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
+    OclResourceService* oclService = context->getService<OclResourceService>(serviceRef);
 
-  // Force tests to run on the ATI GPU
-  oclService->SpecifyPlatformAndDevice(0, 0, true);
+    if (oclService == NULL)
+    {
+      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
+    }
+
+    vl::OpenGLContext * glContext = m_RenderApplet->openglContext();
+    glContext->makeCurrent();
+
+    // Force tests to run on the ATI GPU
+    oclService->SpecifyPlatformAndDevice(0, 0, true);
 
     // Get context 
     cl_context gpuContext = oclService->GetContext();
@@ -174,17 +185,7 @@ void NewVisualizationView::On_SliderMoved(int val)
   m_RenderApplet->UpdateThresholdVal(val);
 }
 
-
-
-void NewVisualizationView::OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                             const QList<mitk::DataNode::Pointer>& nodes )
-{
-
- 
-  // Update visibility settings
- // UpdateDisplay();
-}
-void NewVisualizationView::NodeAdded(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
 {
   if (node == 0)
     return;
@@ -192,16 +193,7 @@ void NewVisualizationView::NodeAdded(const mitk::DataNode* node)
   UpdateDisplay();
 }
 
-void NewVisualizationView::NodeChanged(const mitk::DataNode* node)
-{
-  if (node == 0 || m_Controls == 0)
-    return;
-
-  //UpdateDisplay();
-
-}
-
-void NewVisualizationView::NodeRemoved(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
 {
   if (node == 0 || m_Controls == 0)
     return;
@@ -210,7 +202,7 @@ void NewVisualizationView::NodeRemoved(const mitk::DataNode* node)
   UpdateDisplay();
 }
 
-void NewVisualizationView::OnNodeDeleted(const mitk::DataNode* node)
+void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
 {
   if (node == 0 || m_Controls == 0)
     return;
@@ -218,7 +210,21 @@ void NewVisualizationView::OnNodeDeleted(const mitk::DataNode* node)
   UpdateDisplay();
 }
 
+void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+}
 
+void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+}
+
+void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+}
+
+void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+}
 
 void NewVisualizationView::UpdateDisplay(bool viewEnabled)
 {
