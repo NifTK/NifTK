@@ -16,7 +16,7 @@
 #define mitkDataStorageVisibilityTracker_h
 
 #include "niftkCoreExports.h"
-#include "mitkDataStoragePropertyListener.h"
+#include "mitkDataNodePropertyListener.h"
 #include <itkObject.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
@@ -36,18 +36,13 @@ class BaseRenderer;
  * them to a single render window, and also the MIDAS Segmentation Viewer widget which tracks
  * visibility properties, and applies them to another viewer.
  */
-class NIFTKCORE_EXPORT DataStorageVisibilityTracker : public itk::LightObject
+class NIFTKCORE_EXPORT DataNodeVisibilityTracker : public mitk::DataNodePropertyListener
 {
 
 public:
 
-  mitkClassMacro(DataStorageVisibilityTracker, itk::LightObject);
-  itkNewMacro(DataStorageVisibilityTracker);
-
-  /// \brief Set the data storage, passing it onto the contained DataStoragePropertyListener.
-  ///
-  /// \see DataStorageListener::SetDataStorage
-  void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
+  mitkClassMacro(DataNodeVisibilityTracker, mitk::DataNodePropertyListener);
+  mitkNewMacro1Param(DataNodeVisibilityTracker, const mitk::DataStorage::Pointer);
 
   /// \brief Sets the renderer we are tracking.
   void SetTrackedRenderer(const mitk::BaseRenderer* trackedRenderer);
@@ -62,31 +57,28 @@ public:
   /// \brief Tells if a node is ignored, i.e its visibility is not tracked.
   bool IsIgnored(mitk::DataNode* node);
 
-  /// \brief Called when the property value has changed globally or for the given renderer.
-  /// If the global property has changed, renderer is NULL.
-  void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
-
-  /// \brief Sends a signal with current the property value of all nodes  to the registered listeners.
-  void NotifyAll();
-
 protected:
 
-  DataStorageVisibilityTracker();
-  virtual ~DataStorageVisibilityTracker();
+  DataNodeVisibilityTracker(const mitk::DataStorage::Pointer dataStorage);
+  virtual ~DataNodeVisibilityTracker();
 
-  DataStorageVisibilityTracker(const DataStorageVisibilityTracker&); // Purposefully not implemented.
-  DataStorageVisibilityTracker& operator=(const DataStorageVisibilityTracker&); // Purposefully not implemented.
+  DataNodeVisibilityTracker(const DataNodeVisibilityTracker&); // Purposefully not implemented.
+  DataNodeVisibilityTracker& operator=(const DataNodeVisibilityTracker&); // Purposefully not implemented.
+
+  /// \see DataStorageListener::NodeAdded
+  virtual void OnNodeAdded(mitk::DataNode* node);
+
+  /// \brief Called when the property value has changed globally or for the given renderer.
+  /// If the global property has changed, renderer is NULL.
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
 private:
 
-  mitk::DataStorage::Pointer m_DataStorage;
   const mitk::BaseRenderer* m_TrackedRenderer;
   std::vector<const mitk::BaseRenderer*> m_ManagedRenderers;
   std::vector<mitk::DataNode*> m_NodesToIgnore;
-
-  mitk::DataStoragePropertyListener::Pointer m_Listener;
 };
 
-} // end namespace
+}
 
 #endif

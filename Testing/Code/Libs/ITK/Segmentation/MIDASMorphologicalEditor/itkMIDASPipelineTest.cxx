@@ -36,7 +36,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
 
   if (argc != 13)
   {
-    std::cerr << "Usage: itkMIDASPipelineTest inImage.img outImage.img stage lowThreshold upperThreshold axialCutoff upperErosionThreshold numberErosions lowDilationsPercentage highDilationsPercentage numberDilations rethresholdingBox" << std::endl;
+    std::cerr << "Usage: itkMIDASPipelineTest inImage.img outImage.img stage lowThreshold upperThreshold axialCutOff upperErosionThreshold numberErosions lowDilationsPercentage highDilationsPercentage numberDilations rethresholdingBox" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -45,7 +45,7 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   int stage = atoi(argv[3]);
   int lowThreshold = atoi(argv[4]);
   int upperThreshold = atoi(argv[5]);
-  int axialCutoff = atoi(argv[6]);
+  int axialCutOff = atoi(argv[6]);
   int upperErosions = atoi(argv[7]);
   int numberErosions = atoi(argv[8]);
   int lowDilationsPercentage = atoi(argv[9]);
@@ -68,6 +68,9 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   reader->SetFileName(argv[1]);
   reader->Update();
 
+  OutputImageType::Pointer segmentationInput;
+  OutputImageType::Pointer thresholdingMask;
+
   // Not used in this test. This test is only for when not editing.
   std::vector<bool> editingFlags;
   editingFlags.push_back(false);
@@ -85,42 +88,42 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   editingRegion.push_back(1);
 
   // Not used in this test, but we must create memory.
-  OutputImageType::Pointer erodeEdits = OutputImageType::New();
-  erodeEdits->SetOrigin(reader->GetOutput()->GetOrigin());
-  erodeEdits->SetDirection(reader->GetOutput()->GetDirection());
-  erodeEdits->SetSpacing(reader->GetOutput()->GetSpacing());
-  erodeEdits->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
-  erodeEdits->Allocate();
-  erodeEdits->FillBuffer(0);
+  OutputImageType::Pointer erosionsSubtractions = OutputImageType::New();
+  erosionsSubtractions->SetOrigin(reader->GetOutput()->GetOrigin());
+  erosionsSubtractions->SetDirection(reader->GetOutput()->GetDirection());
+  erosionsSubtractions->SetSpacing(reader->GetOutput()->GetSpacing());
+  erosionsSubtractions->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
+  erosionsSubtractions->Allocate();
+  erosionsSubtractions->FillBuffer(0);
 
-  OutputImageType::Pointer erodeAdds = OutputImageType::New();
-  erodeAdds->SetOrigin(reader->GetOutput()->GetOrigin());
-  erodeAdds->SetDirection(reader->GetOutput()->GetDirection());
-  erodeAdds->SetSpacing(reader->GetOutput()->GetSpacing());
-  erodeAdds->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
-  erodeAdds->Allocate();
-  erodeAdds->FillBuffer(0);
+  OutputImageType::Pointer erosionsAdditions = OutputImageType::New();
+  erosionsAdditions->SetOrigin(reader->GetOutput()->GetOrigin());
+  erosionsAdditions->SetDirection(reader->GetOutput()->GetDirection());
+  erosionsAdditions->SetSpacing(reader->GetOutput()->GetSpacing());
+  erosionsAdditions->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
+  erosionsAdditions->Allocate();
+  erosionsAdditions->FillBuffer(0);
 
-  OutputImageType::Pointer dilateEdits = OutputImageType::New();
-  dilateEdits->SetOrigin(reader->GetOutput()->GetOrigin());
-  dilateEdits->SetDirection(reader->GetOutput()->GetDirection());
-  dilateEdits->SetSpacing(reader->GetOutput()->GetSpacing());
-  dilateEdits->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
-  dilateEdits->Allocate();
-  dilateEdits->FillBuffer(0);
+  OutputImageType::Pointer dilationSubtractions = OutputImageType::New();
+  dilationSubtractions->SetOrigin(reader->GetOutput()->GetOrigin());
+  dilationSubtractions->SetDirection(reader->GetOutput()->GetDirection());
+  dilationSubtractions->SetSpacing(reader->GetOutput()->GetSpacing());
+  dilationSubtractions->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
+  dilationSubtractions->Allocate();
+  dilationSubtractions->FillBuffer(0);
 
-  OutputImageType::Pointer dilateAdds = OutputImageType::New();
-  dilateAdds->SetOrigin(reader->GetOutput()->GetOrigin());
-  dilateAdds->SetDirection(reader->GetOutput()->GetDirection());
-  dilateAdds->SetSpacing(reader->GetOutput()->GetSpacing());
-  dilateAdds->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
-  dilateAdds->Allocate();
-  dilateAdds->FillBuffer(0);
+  OutputImageType::Pointer dilationsAdditions = OutputImageType::New();
+  dilationsAdditions->SetOrigin(reader->GetOutput()->GetOrigin());
+  dilationsAdditions->SetDirection(reader->GetOutput()->GetDirection());
+  dilationsAdditions->SetSpacing(reader->GetOutput()->GetSpacing());
+  dilationsAdditions->SetRegions(reader->GetOutput()->GetLargestPossibleRegion());
+  dilationsAdditions->Allocate();
+  dilationsAdditions->FillBuffer(0);
 
   MorphologicalSegmentorPipelineParams params;
   params.m_LowerIntensityThreshold = lowThreshold;
   params.m_UpperIntensityThreshold = upperThreshold;
-  params.m_AxialCutoffSlice = axialCutoff;
+  params.m_AxialCutOffSlice = axialCutOff;
   params.m_UpperErosionsThreshold = upperErosions;
   params.m_NumberOfErosions = numberErosions;
   params.m_LowerPercentageThresholdForDilations = lowDilationsPercentage;
@@ -133,20 +136,20 @@ int itkMIDASPipelineTest(int argc, char * argv[])
   pipeline->SetForegroundValue((unsigned char)255);
   pipeline->SetBackgroundValue((unsigned char)0);
 
+  pipeline->SetInputs(reader->GetOutput(),
+                      erosionsAdditions,
+                      erosionsSubtractions,
+                      dilationsAdditions,
+                      dilationSubtractions);
   for (int i = 0; i <= stage; i++)
   {
     params.m_Stage = i;
-    pipeline->SetParam(reader->GetOutput(),
-                       erodeAdds,
-                       erodeEdits,
-                       dilateAdds,
-                       dilateEdits,
-                       params);
+    pipeline->SetParams(params);
     pipeline->Update(editingFlags, editingRegion);
   }
 
   ImageFileWriterType::Pointer writer = ImageFileWriterType::New();
-  writer->SetInput(pipeline->GetOutput(editingFlags).GetPointer());
+  writer->SetInput(pipeline->GetOutput().GetPointer());
   writer->SetFileName(outputFileName);
   writer->Update();
 

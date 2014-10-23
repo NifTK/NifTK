@@ -49,10 +49,10 @@ public:
   itkSetObjectMacro(TimeGeometry, mitk::TimeGeometry);
 
   /// \brief Gets the orientation of the viewer.
-  itkGetConstMacro(Orientation, MIDASOrientation);
+  itkGetConstMacro(Orientation, WindowOrientation);
 
   /// \brief Sets the orientation of the viewer.
-  itkSetMacro(Orientation, MIDASOrientation);
+  itkSetMacro(Orientation, WindowOrientation);
 
   /// \brief Gets the window layout of the viewer.
   itkGetConstMacro(WindowLayout, WindowLayout);
@@ -277,13 +277,13 @@ public:
     /// depending on the input geometry.
     /// The 'flipped' property of the axes is stored in m_WorldFlippedAxes.
 
-    int axialSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
-    int sagittalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
-    int coronalSliceIndex = m_Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
+    int axialSliceIndex = m_Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
+    int sagittalSliceIndex = m_Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
+    int coronalSliceIndex = m_Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
 
-    int axialMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_AXIAL);
-    int sagittalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_SAGITTAL);
-    int coronalMaxSliceIndex = m_Viewer->GetMaxSlice(MIDAS_ORIENTATION_CORONAL);
+    int axialMaxSliceIndex = m_Viewer->GetMaxSlice(WINDOW_ORIENTATION_AXIAL);
+    int sagittalMaxSliceIndex = m_Viewer->GetMaxSlice(WINDOW_ORIENTATION_SAGITTAL);
+    int coronalMaxSliceIndex = m_Viewer->GetMaxSlice(WINDOW_ORIENTATION_CORONAL);
 
     mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
     mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
@@ -334,9 +334,9 @@ protected:
   , m_CursorPositionBinding(viewer->GetCursorPositionBinding())
   , m_ScaleFactorBinding(viewer->GetScaleFactorBinding())
   {
-    m_UpDirections[0] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_SAGITTAL);
-    m_UpDirections[1] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_CORONAL);
-    m_UpDirections[2] = m_Viewer->GetSliceUpDirection(MIDAS_ORIENTATION_AXIAL);
+    m_UpDirections[0] = m_Viewer->GetSliceUpDirection(WINDOW_ORIENTATION_SAGITTAL);
+    m_UpDirections[1] = m_Viewer->GetSliceUpDirection(WINDOW_ORIENTATION_CORONAL);
+    m_UpDirections[2] = m_Viewer->GetSliceUpDirection(WINDOW_ORIENTATION_AXIAL);
   }
 
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
@@ -393,7 +393,7 @@ private:
   const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief The orientation of the viewer.
-  MIDASOrientation m_Orientation;
+  WindowOrientation m_Orientation;
 
   /// \brief The window layout of the viewer.
   WindowLayout m_WindowLayout;

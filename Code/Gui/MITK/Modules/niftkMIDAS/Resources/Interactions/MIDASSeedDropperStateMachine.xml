@@ -1,8 +1,0 @@
-<statemachine>
-   <state name="start" startstate="true">
-     <transition event_class="MousePressEvent" event_variant="AddingPoint" target="start">
-       <action name="addPoint"/>
-       <action name="deselectAll"/>
-     </transition>
-   </state>
-</statemachine>

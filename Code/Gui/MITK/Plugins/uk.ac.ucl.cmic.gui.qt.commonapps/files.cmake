@@ -21,7 +21,7 @@ set(SRC_CPP_FILES
   QmitkNiftyViewApplicationPreferencePage.cxx
   QmitkCommonAppsMinimalPerspective.cxx
   QmitkCommonAppsIGIPerspective.cxx
-  QmitkCommonAppsMIDASPerspective.cxx
+  QmitkMIDASSegmentationPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -35,7 +35,7 @@ set(MOC_H_FILES
   src/QmitkNiftyViewApplicationPreferencePage.h
   src/QmitkCommonAppsMinimalPerspective.h
   src/QmitkCommonAppsIGIPerspective.h
-  src/QmitkCommonAppsMIDASPerspective.h
+  src/QmitkMIDASSegmentationPerspective.h
 )
 
 set(CACHED_RESOURCE_FILES

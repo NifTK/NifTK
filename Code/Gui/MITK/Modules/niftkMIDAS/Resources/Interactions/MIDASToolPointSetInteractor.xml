@@ -1,0 +1,10 @@
+<stateMachine NAME="MIDASToolPointSetInteractor">
+  <state NAME="stateStart" START_STATE="TRUE" ID="1">
+    <transition NAME="rightButtonDown" NEXT_STATE_ID="1" EVENT_ID="2">
+      <!-- 10 = AcADDPOINT -->
+      <action ID="10" />
+      <!-- 72 = AcDESELECTALL -->
+      <action ID="72" />
+    </transition>
+  </state>
+</stateMachine>

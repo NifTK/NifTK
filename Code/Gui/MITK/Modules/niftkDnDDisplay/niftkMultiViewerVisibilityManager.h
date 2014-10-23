@@ -16,34 +16,61 @@
 #define niftkMultiViewerVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
-#include <mitkMIDASEnums.h>
-#include "niftkSingleViewerWidget.h"
-#include <QWidget>
-#include <mitkDataStorage.h>
-#include <mitkBaseProperty.h>
-#include <mitkProperties.h>
+
+#include <QObject>
+
 #include <itkImage.h>
 
-class QmitkRenderWindow;
+#include <mitkDataStorage.h>
+#include <mitkProperties.h>
+
+#include <mitkDataNodePropertyListener.h>
+
+#include "niftkDnDDisplayEnums.h"
+
 class niftkSingleViewerWidget;
 
 /**
  * \class niftkMultiViewerVisibilityManager
  * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
- * to Modified events from the nodes "visibility" property in DataStorage.
+ * to Modified events from the nodes "visible" property in DataStorage.
+ *
+ * The strategy is the following:
+ *
+ * If a new data node is added to the data storage, a renderer specific visibility
+ * property is created for the render windows of each registered viewer. The initial
+ * visibility is false.
+ * At the same time, an observer is registered to listen to the change of the global
+ * visibility of the node.
+ * When the global visibility of a node changes, its visibility specific to the renderer
+ * of th selected window is turned to the same as the global visibility.
+ * Similarly in the other around, when the selected window changes, the global visibility
+ * of the data nodes is set to the same as the visibility specific to the selected
+ * window.
+ *
+ * Note:
+ * Since this class will change the global visibility, it cannot be used together with
+ * the MITK display that does not maintain renderer specific visibilities to its render
+ * windows.
  */
-class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject
+class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject, public mitk::DataNodePropertyListener
 {
   Q_OBJECT
 
 public:
+
+  mitkClassMacro(niftkMultiViewerVisibilityManager, mitk::DataNodePropertyListener);
+  mitkNewMacro1Param(niftkMultiViewerVisibilityManager, const mitk::DataStorage::Pointer);
 
   /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
   niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Destructor, which unregisters all the listeners.
   virtual ~niftkMultiViewerVisibilityManager();
+
+  niftkMultiViewerVisibilityManager(const niftkMultiViewerVisibilityManager&); // Purposefully not implemented.
+  niftkMultiViewerVisibilityManager& operator=(const niftkMultiViewerVisibilityManager&); // Purposefully not implemented.
 
   /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterViewer(niftkSingleViewerWidget *viewer);
@@ -56,63 +83,56 @@ public:
   /// Start index inclusive, end index exclusive.
   void ClearViewers(std::size_t startIndex = 0, std::size_t endIndex = -1);
 
-  /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
-  void NodeAddedProxy(const mitk::DataNode* node);
-
-  /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and calls NodeRemoved afterwards.
-  void NodeRemovedProxy(const mitk::DataNode* node);
-
-  /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
-  void OnGlobalVisibilityChanged(mitk::DataNode* node);
+  /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
+  DnDDisplayDropType GetDropType() const { return m_DropType; }
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
   void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
 
-  /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
-  DnDDisplayDropType GetDropType() const { return m_DropType; }
+  /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
+  DnDDisplayInterpolationType GetInterpolationType() const { return m_InterpolationType; }
 
   /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
   void SetInterpolationType(DnDDisplayInterpolationType interpolationType) { m_InterpolationType = interpolationType; }
 
-  /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
-  DnDDisplayInterpolationType GetInterpolationType() const { return m_InterpolationType; }
+  /// \brief Returns the default render window layout for when images are dropped into a render window.
+  WindowLayout GetDefaultWindowLayout() const { return m_DefaultWindowLayout; }
 
   /// \brief Sets the default render window layout for when images are dropped into a render window.
   void SetDefaultWindowLayout(WindowLayout windowLayout) { m_DefaultWindowLayout = windowLayout; }
 
-  /// \brief Returns the default render window layout for when images are dropped into a render window.
-  WindowLayout GetDefaultWindowLayout() const { return m_DefaultWindowLayout; }
+  /// \brief When we drop nodes onto a window, if true, we add all the children.
+  bool GetAutomaticallyAddChildren() const { return m_AutomaticallyAddChildren; }
 
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
 
-  /// \brief When we drop nodes onto a window, if true, we add all the children.
-  bool GetAutomaticallyAddChildren() const { return m_AutomaticallyAddChildren; }
+  /// \brief Gets the flag deciding whether we accumulate images each time we drop.
+  bool GetAccumulateWhenDropped() const { return m_Accumulate; }
 
   /// \brief Sets the flag deciding whether we prefer to accumulate images each time they are dropped.
   void SetAccumulateWhenDropping(bool accumulate) { m_Accumulate = accumulate; }
 
-  /// \brief Gets the flag deciding whether we accumulate images each time we drop.
-  bool GetAccumulateWhenDropped() const { return m_Accumulate; }
-
-  /// \brief Gets the number of nodes currently visible in a window.
-  virtual int GetNodesInViewer(int windowIndex);
+  /// \brief Called when one of the viewers receives the focus.
+  void OnFocusChanged();
 
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
-
-signals:
+  void OnNodesDropped(std::vector<mitk::DataNode*> nodes);
 
 protected:
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
   /// to false for all registered windows, plus other default properties such as interpolation type.
-  virtual void NodeAdded(const mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node);
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void OnNodeRemoved(mitk::DataNode* node);
+
+  /// \brief Called when the property value has changed globally or for the given renderer.
+  /// If the global property has changed, renderer is NULL.
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
   virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool visibility=true);
@@ -120,19 +140,21 @@ protected:
   /// \brief For a given window (denoted by its windowIndex, or index number in m_Viewers), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromViewer(int windowIndex);
 
-protected slots:
-
 private:
+
+  /// \brief Updates the global visibilities of every node to the same as in the given renderer.
+  /// The function ignores the crosshair plane nodes.
+  void UpdateGlobalVisibilities(mitk::BaseRenderer* renderer);
+
+  /// \brief Gets the number of nodes currently visible in a window.
+  virtual int GetNodesInViewer(int windowIndex);
 
   /// \brief Works out the correct window layout from the data, and from the preferences.
   WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);
 
   /// \brief ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
   template<typename TPixel, unsigned int VImageDimension>
-  void GetAsAcquiredOrientation(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      MIDASOrientation &outputOrientation
-      );
+  void GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation);
 
   // Will retrieve the correct geometry from a list of nodes.
   // If nodeIndex < 0 (for single drop case).
@@ -144,21 +166,12 @@ private:
   //   Picks out the first geometry.
   mitk::TimeGeometry::Pointer GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
-  // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
-  mitk::DataStorage::Pointer m_DataStorage;
-
   // We maintain a set of data nodes present in each window.
   // So, it's a vector, as we have one set for each of the registered windows.
   std::vector< std::set<mitk::DataNode*> > m_DataNodesPerViewer;
 
   // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
   std::vector< niftkSingleViewerWidget* > m_Viewers;
-
-  // We also observe all the global visibility properties for each registered node.
-  std::map<mitk::BaseProperty*, unsigned long> m_GlobalVisibilityObserverTags;
-
-  // Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
-  bool m_BlockDataStorageEvents;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;
@@ -176,6 +189,7 @@ private:
   // Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
 
+  unsigned long m_FocusManagerObserverTag;
 };
 
 #endif

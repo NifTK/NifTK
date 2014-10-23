@@ -27,7 +27,6 @@ class QAbstractButton;
  */
 class MIDASMorphologicalSegmentorViewControlsImpl : public QWidget, public Ui_MIDASMorphologicalSegmentorViewControls
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
@@ -36,33 +35,30 @@ public:
   MIDASMorphologicalSegmentorViewControlsImpl();
 
   /// \brief Destructor.
-  ~MIDASMorphologicalSegmentorViewControlsImpl();
+  virtual ~MIDASMorphologicalSegmentorViewControlsImpl();
 
   /// \brief Creates the GUI, initialising everything to off.
-  void setupUi(QWidget*);
+  void setupUi(QWidget* parent);
 
-  /// \brief Get the current tab number.
-  int GetTabNumber();
-
-  /// \brief Set the current tab number, which enables and disables widgets appropriately.
-  void SetTabIndex(int i);
+  /// \brief Get the current tab index.
+  int GetTabIndex();
 
   /// \brief Enables/disables all controls.
-  void EnableControls(bool b);
+  void SetEnabled(bool enabled);
 
   /// \brief Set the dialog according to relevant image data.
-  void SetControlsByImageData(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
+  void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
-  void SetControlsByParameterValues(MorphologicalSegmentorPipelineParams &params);
+  void SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params);
 
 signals:
 
   void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
   void ErosionsValuesChanged(double upperThreshold, int numberOfErosions);
-  void DilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+  void DilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
-  void TabChanged(int tabNumber);
+  void TabChanged(int tabIndex);
   void OKButtonClicked();
   void CancelButtonClicked();
   void RestartButtonClicked();
@@ -71,7 +67,7 @@ protected slots:
 
   void OnThresholdLowerValueChanged();
   void OnThresholdUpperValueChanged();
-  void OnAxialCuttoffSliderChanged();
+  void OnAxialCutOffSliderChanged();
   void OnBackButtonClicked();
   void OnNextButtonClicked();
   void OnErosionsUpperThresholdChanged();
@@ -82,22 +78,13 @@ protected slots:
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
 
-protected:
-
 private:
-
-  void EnableTab1Thresholding(bool enable);
-  void EnableTab2Erosions(bool enable);
-  void EnableTab3Dilations(bool enable);
-  void EnableTab4ReThresholding(bool enable);
-  void EnableCancelButton(bool enable);
-  void EnableRestartButton(bool enable);
-  void EnableByTabIndex(int i);
 
   void EmitThresholdingValues();
   void EmitErosionValues();
   void EmitDilationValues();
   void EmitRethresholdingValues();
+
 };
 
 #endif

@@ -34,10 +34,10 @@
 
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
 
-#include <niftkMultiViewerVisibilityManager.h>
 
-namespace mitk {
-  class DataNode;
+namespace mitk
+{
+class DataNode;
 }
 
 /**

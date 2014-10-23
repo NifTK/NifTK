@@ -38,7 +38,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="m_ThresholdingTab">
       <attribute name="title">
@@ -61,17 +61,17 @@
         <number>3</number>
        </property>
        <item row="2" column="0">
-        <widget class="QLabel" name="m_ThresholdingAxialCutoffLabel">
+        <widget class="QLabel" name="m_ThresholdingAxialCutOffLabel">
          <property name="text">
           <string>Axial cut-off:</string>
          </property>
          <property name="buddy">
-          <cstring>m_ThresholdingAxialCutoffSlider</cstring>
+          <cstring>m_ThresholdingAxialCutOffSlider</cstring>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="ctkSliderWidget" name="m_ThresholdingAxialCutoffSlider" native="true">
+        <widget class="ctkSliderWidget" name="m_ThresholdingAxialCutOffSlider" native="true">
          <property name="focusPolicy">
           <enum>Qt::WheelFocus</enum>
          </property>

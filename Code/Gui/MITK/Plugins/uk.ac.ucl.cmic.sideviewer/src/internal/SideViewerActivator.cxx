@@ -16,7 +16,6 @@
 
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
-#include <mitkMIDASTool.h>
 #include "QmitkSideViewerView.h"
 
 namespace mitk
@@ -29,8 +28,6 @@ void SideViewerActivator::start(ctkPluginContext* context)
 {
   s_PluginContext = context;
   BERRY_REGISTER_EXTENSION_CLASS(QmitkSideViewerView, context);
-
-  mitk::MIDASTool::LoadBehaviourStrings();
 }
 
 

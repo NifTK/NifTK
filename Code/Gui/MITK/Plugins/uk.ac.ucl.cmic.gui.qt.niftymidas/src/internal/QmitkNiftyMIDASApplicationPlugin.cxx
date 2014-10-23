@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "QmitkNiftyMIDASApplicationPlugin.h"
-#include <QmitkCommonAppsMIDASPerspective.h>
+#include <QmitkMIDASSegmentationPerspective.h>
+#include <QmitkMIDASQCPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyMIDASApplication.h"
 
@@ -42,10 +43,19 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
   QmitkCommonAppsApplicationPlugin::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMIDASPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASSegmentationPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASQCPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
+  /// Note:
+  /// By default there is a global reinit after file open what reinitialises the global
+  /// rendering manager. The ideal would be if the DnD Display could use its own rendering
+  /// manager (RM), not the global one. This, however, does not work now because many MITK
+  /// views have hard coded reference to the global RM, and they call RequestUpdate on that,
+  /// not on the RM of the focused renderer. Until this is fixed in MITK, we have to suppress
+  /// the global reinit after file open, and should not use the MITK Display and the DnD Display
+  /// together in the same application.
   this->SetFileOpenTriggersReinit(false);
 }
 

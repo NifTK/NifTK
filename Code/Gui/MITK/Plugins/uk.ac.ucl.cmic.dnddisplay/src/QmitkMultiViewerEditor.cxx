@@ -38,7 +38,7 @@ public:
   ~QmitkMultiViewerEditorPrivate();
 
   niftkMultiViewerWidget* m_MultiViewer;
-  niftkMultiViewerVisibilityManager* m_MultiViewerVisibilityManager;
+  niftkMultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   berry::IPartListener::Pointer m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -124,6 +124,20 @@ QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate()
 , m_PartListener(new QmitkMultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 {
+  /// Note:
+  /// The DnD Display should use its own rendering manager, not the global one
+  /// returned by mitk::RenderingManager::GetInstance(). The reason is that
+  /// the global rendering manager is reinitialised by its InitializeViewsByBoundingObjects
+  /// function whenever a new file is opened, recalculating a new bounding box
+  /// based on all the globally visible nodes in the data storage.
+  /// However, many MITK modules and plugins call RequestUpdate on the global
+  /// rendering manager (RM), not on that of the focused renderer. This causes that
+  /// if the DnD Display uses its own RM, it won't be updated by those plugins.
+  /// An example is the Volume Visualization view. Therefore, until this is fixed
+  /// in MITK, we need to use the global rendering manager, suppress the reinitialisation
+  /// after file open by a preference, and should not use the MITK display and
+  /// the DnD Display together in the same application.
+//  m_RenderingManager = mitk::RenderingManager::New();
   m_RenderingManager = mitk::RenderingManager::GetInstance();
   m_RenderingManager->SetConstrainedPaddingZooming(false);
   m_RenderingManagerInterface = mitk::MakeRenderingManagerInterface(m_RenderingManager);
@@ -133,11 +147,6 @@ QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate()
 //-----------------------------------------------------------------------------
 QmitkMultiViewerEditorPrivate::~QmitkMultiViewerEditorPrivate()
 {
-  if (m_MultiViewerVisibilityManager != NULL)
-  {
-    delete m_MultiViewerVisibilityManager;
-  }
-
   if (m_RenderingManagerInterface != NULL)
   {
     delete m_RenderingManagerInterface;
@@ -193,7 +202,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_MultiViewerVisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
+    d->m_MultiViewerVisibilityManager = niftkMultiViewerVisibilityManager::New(dataStorage);
     d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_MultiViewerVisibilityManager->SetDefaultWindowLayout(defaultLayout);
     d->m_MultiViewerVisibilityManager->SetDropType(defaultDropType);
@@ -204,7 +213,6 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer = new niftkMultiViewerWidget(
         d->m_MultiViewerVisibilityManager,
         d->m_RenderingManager,
-        dataStorage,
         defaultNumberOfRows,
         defaultNumberOfColumns,
         parent);
