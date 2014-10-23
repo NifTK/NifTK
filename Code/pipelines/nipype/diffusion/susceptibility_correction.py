@@ -67,7 +67,11 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     transform_def_to_b0_1 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0_1')
     transform_def_to_b0_2 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0_2')
     reg_jacobian = pe.Node(interface=RegJacobian(), name='calc_transform_jac')
-    thr_jac = pe.Node(interface=BinaryMaths(operation='thr', operand_value = 0.1), name='thr_jac')
+    pe.Node(interface=fsl.maths.Threshold(thresh = 0.0, direction = 'below'), 
+                             name='threshold_dwis')
+    thr_jac_1 = pe.Node(interface=BinaryMaths(operation='sub', operand_value = 0.1), name='thr_jac_1')
+    thr_jac_2 = pe.Node(interface=fsl.maths.Threshold(thresh = 0.0, direction = 'below'), name='thr_jac_2')
+    thr_jac_3 = pe.Node(interface=BinaryMaths(operation='add', operand_value = 0.1), name='thr_jac_3')
     div_jac = pe.Node(interface=BinaryMaths(operation= 'div'), name='div_jac')
         
     output_node = pe.Node(niu.IdentityInterface(
@@ -163,14 +167,16 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
         pipeline.connect(resample_epi, 'res_file', div_jac, 'in_file')    
 
     # Measure the Jacobian determinant of the transformation    
-    pipeline.connect(reg_jacobian, 'jac_det_file', thr_jac, 'in_file')
+    pipeline.connect(reg_jacobian, 'jac_det_file', thr_jac_1, 'in_file')
+    pipeline.connect(thr_jac_1, 'out_file', thr_jac_2, 'in_file')
+    pipeline.connect(thr_jac_2, 'out_file', thr_jac_3, 'in_file')
     
     # Divide the resampled epi image by the Jacobian image
-    pipeline.connect(thr_jac, 'out_file', div_jac, 'operand_file')
+    pipeline.connect(thr_jac_3, 'out_file', div_jac, 'operand_file')
     
     # Fill out the information in the output node
     pipeline.connect(div_jac, 'out_file', output_node, 'out_epi')
-    pipeline.connect(thr_jac, 'out_file', output_node, 'out_jac')
+    pipeline.connect(thr_jac_3, 'out_file', output_node, 'out_jac')
     
     return pipeline
 
