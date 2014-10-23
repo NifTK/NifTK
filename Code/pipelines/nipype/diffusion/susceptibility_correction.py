@@ -64,7 +64,8 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     invert_aff = pe.Node(interface=RegTransform(), name='invert_fm_to_b0' )
     resample_mask = pe.Node(interface=RegResample(inter_val = 'NN'), name='resample_mask')
     resample_epi = pe.Node(interface=RegResample(), name='resample_epi')
-    transform_def_to_b0 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0')
+    transform_def_to_b0_1 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0_1')
+    transform_def_to_b0_2 = pe.Node(interface=RegTransform(), name='transform_fm_def_in_b0_2')
     reg_jacobian = pe.Node(interface=RegJacobian(), name='calc_transform_jac')
     thr_jac = pe.Node(interface=BinaryMaths(operation='thr', operand_value = 0.1), name='thr_jac')
     div_jac = pe.Node(interface=BinaryMaths(operation= 'div'), name='div_jac')
@@ -109,16 +110,20 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     pipeline.connect(input_node, 'ped', gen_fm, 'in_ped')  
     pipeline.connect(pm_unwrap, 'out_fm', gen_fm, 'in_ufm')
     
-     # Finally, we need to resample the deformation field in the averageb0
-    pipeline.connect(gen_fm, 'out_field', transform_def_to_b0, 'comp_input2')
-    pipeline.connect(reg_fm_to_b0, 'aff_file',transform_def_to_b0, 'comp_input')
-    pipeline.connect(input_node, 'mag_image', transform_def_to_b0,'ref2_file')
-    pipeline.connect(input_node, 'epi_image', transform_def_to_b0,'ref1_file')
+    # Finally, we need to resample the deformation field in the averageb0
+
+    pipeline.connect(invert_aff, 'aff_file',transform_def_to_b0_1, 'comp_input')
+    pipeline.connect(gen_fm, 'out_field', transform_def_to_b0_1, 'comp_input2')
+    pipeline.connect(input_node, 'mag_image', transform_def_to_b0_1,'ref1_file')
+
+    pipeline.connect(transform_def_to_b0_1, 'out_file',transform_def_to_b0_2, 'comp_input')
+    pipeline.connect(reg_fm_to_b0, 'aff_file', transform_def_to_b0_2, 'comp_input2')
+    pipeline.connect(input_node, 'epi_image', transform_def_to_b0_2,'ref2_file')
     
     # Resample the epi image using the new deformation
     pipeline.connect(input_node, 'epi_image',resample_epi,'flo_file')
     pipeline.connect(input_node, 'epi_image', resample_epi,'ref_file')
-    pipeline.connect(transform_def_to_b0, 'out_file', resample_epi,'trans_file')
+    pipeline.connect(transform_def_to_b0_2, 'out_file', resample_epi,'trans_file')
     
     if reg_to_t1:
 
@@ -139,7 +144,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
             pipeline.connect(input_node, 'mask_image', reg_f3d, 'rmask_file')
             
         pipeline.connect(reg_f3d, 'cpp_file', comp_def, 'comp_input')
-        pipeline.connect(transform_def_to_b0, 'out_file', comp_def, 'comp_input2')
+        pipeline.connect(transform_def_to_b0_2, 'out_file', comp_def, 'comp_input2')
         pipeline.connect(input_node, 't1', comp_def, 'ref1_file')
 
         pipeline.connect(input_node, 'epi_image',resample_epi_2,'flo_file')
@@ -151,8 +156,8 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
         pipeline.connect(resample_epi_2, 'res_file', div_jac, 'in_file')
 
     else:
-        pipeline.connect(transform_def_to_b0, 'out_file', output_node, 'out_field')
-        pipeline.connect(transform_def_to_b0, 'out_file', reg_jacobian, 'trans_file')
+        pipeline.connect(transform_def_to_b0_2, 'out_file', output_node, 'out_field')
+        pipeline.connect(transform_def_to_b0_2, 'out_file', reg_jacobian, 'trans_file')
         pipeline.connect(resample_epi, 'res_file', div_jac, 'in_file')    
 
     # Measure the Jacobian determinant of the transformation    
@@ -163,7 +168,7 @@ def create_fieldmap_susceptibility_workflow(name='susceptibility', mask_exists =
     
     # Fill out the information in the output node
     pipeline.connect(div_jac, 'out_file', output_node, 'out_epi')
-    pipeline.connect(thr_jac, 'out_file', output_node, 'out_jac')   
+    pipeline.connect(thr_jac, 'out_file', output_node, 'out_jac')
     
     return pipeline
 
