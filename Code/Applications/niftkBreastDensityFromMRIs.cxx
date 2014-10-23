@@ -36,7 +36,6 @@
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>
 #include <niftkCSVRow.h>
-#include <niftkCSVIterator.h>
 #include <itkCommandLineHelper.h>
 
 #include <itkLogHelper.h>
