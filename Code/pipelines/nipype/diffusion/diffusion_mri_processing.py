@@ -27,8 +27,6 @@ def get_B0s_from_bvals_bvecs(bvals, bvecs):
     for i in range(len(masklist)):
         if masklist[i] == True:
             ret_val.append(i)
-
-    
     return ret_val
 
 def get_DWIs_from_bvals_bvecs(bvals, bvecs):
@@ -129,7 +127,7 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                     'in_ref_b0',
                     'op_basename'], mandatory_inputs=False),
         name='input_node')
-    
+
     #Node using fslsplit() to split the 4D file, separate the B0 and DWIs
     split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis')
     
@@ -161,7 +159,12 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                                                                         mask_exists = True,
                                                                         reg_to_t1 = True)
     susceptibility_correction.inputs.input_node.etd = 2.46
+
+    # rot value for the DRC
     susceptibility_correction.inputs.input_node.rot = 34.56
+    # rot value for the 1946
+    # susceptibility_correction.inputs.input_node.rot = 25.92
+
     susceptibility_correction.inputs.input_node.ped = '-y'
     
     # As we're trying to estimate an affine transformation, and rotations and shears are confounded
@@ -181,7 +184,15 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     
     # Compose the nonlinear and linear deformations to correct the DWI
     transformation_composition = pe.MapNode(niftyreg.RegTransform(),
-                                            name = 'transformation_composition', iterfield=['comp_input2'])
+                                            name = 'transformation_composition', 
+                                            iterfield=['comp_input2'])
+
+    change_datatype = pe.MapNode(interface=niftyseg.BinaryMaths(operation='add', 
+                                                                operand_value = 0.0, 
+                                                                output_datatype = 'float'), 
+                                 name='change_datatype',
+                                 iterfield = ['in_file'])
+    
     # Resample the DWI and B0s
     resampling = pe.MapNode(niftyreg.RegResample(), name = 'resampling', iterfield=['trans_file', 'flo_file'])
     resampling.inputs.inter_val = dwi_interp_type
@@ -200,6 +211,15 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     T1_resampling = pe.Node(niftyreg.RegResample(), name = 'T1_resampling')
     # Use nearest neighbour resampling for the mask image
     T1_mask_resampling = pe.Node(niftyreg.RegResample(inter_val = 'NN'), name = 'T1_mask_resampling')
+
+    # Threshold the DWIs to 0: if we use cubic or sync interpolation we may end up with
+    # negative DWi values at sharp edges, which is not physically possible.
+#    threshold_dwis = pe.Node(interface=niftyseg.BinaryMaths(operation='thr', 
+#                                                            operand_value = 0.0), 
+#                             name='threshold_dwis')
+    threshold_dwis = pe.Node(interface=fsl.maths.Threshold(thresh = 0.0, direction = 'below'), 
+                             name='threshold_dwis')
+
     # Fit the tensor model
     diffusion_model_fitting_tensor = pe.Node(interface=niftyfit.FitDwi(),name='diffusion_model_fitting_tensor')
     diffusion_model_fitting_tensor.inputs.dti_flag = True
@@ -343,7 +363,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     #############################################################
     
     workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', resampling, 'ref_file')
-    workflow.connect(split_dwis, 'out_files', resampling, 'flo_file')
+    workflow.connect(split_dwis, 'out_files', change_datatype, 'in_file')
+    workflow.connect(change_datatype, 'out_file', resampling, 'flo_file')
     
     if correct_susceptibility ==True:
         workflow.connect(transformation_composition, 'out_file', resampling, 'trans_file')
@@ -361,16 +382,17 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     else:
         diffusion_model_fitting_tensor.inputs.op_basename = 'dti'
         
-
+    workflow.connect(merge_dwis, 'merged_file', threshold_dwis, 'in_file')    
+    
     if correct_susceptibility == True:
         # If we're correcting for susceptibility distortions, need to divide by the
         # jacobian of the distortion field
         # Connect up the correct image to the tensor fitting software
-        workflow.connect(merge_dwis, 'merged_file', divide_dwis, 'in_file')
+        workflow.connect(threshold_dwis, 'out_file', divide_dwis, 'in_file')
         workflow.connect(susceptibility_correction, 'output_node.out_jac', divide_dwis, 'operand_file')
         workflow.connect(divide_dwis,'out_file',  diffusion_model_fitting_tensor, 'source_file')
     else:
-        workflow.connect(merge_dwis, 'merged_file', diffusion_model_fitting_tensor, 'source_file')    
+        workflow.connect(threshold_dwis, 'out_file', diffusion_model_fitting_tensor, 'source_file')
 
     workflow.connect(T1_mask_resampling, 'res_file', diffusion_model_fitting_tensor, 'mask_file')    
     workflow.connect(input_node, 'in_bvec_file', diffusion_model_fitting_tensor, 'bvec_file')
@@ -416,11 +438,13 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     workflow.connect(diffusion_model_fitting_tensor, 'res_file', output_node, 'residual_image_tensor')
     workflow.connect(diffusion_model_fitting_tensor, 'syn_file', output_node, 'predicted_image_tensor')
     
-    workflow.connect(divide_dwis,'out_file', output_node, 'dwis')
     if correct_susceptibility == True:
         workflow.connect(susceptibility_correction, 'output_node.out_epi', output_node, 'average_b0')
+        workflow.connect(divide_dwis,'out_file',  output_node, 'dwis')
     else:
         workflow.connect(groupwise_B0_coregistration, 'output_node.average_image', output_node, 'average_b0')    
+        workflow.connect(threshold_dwis, 'out_file', output_node, 'dwis')
+
     workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
     
     return workflow    
