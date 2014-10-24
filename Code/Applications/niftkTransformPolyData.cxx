@@ -118,9 +118,9 @@ int main(int argc, char** argv)
             }
         }
       vtkTransform->Concatenate(vtkMatrix);
-    }
-  
-  std::cout << "Loading PolyData:" << args.inputPolyDataFile << std::endl;
+
+      std::cout << "Loading Transform:" << args.transformNames[i] << std::endl;
+  }
   
   vtkPolyDataReader *reader = vtkPolyDataReader::New();
   reader->SetFileName(args.inputPolyDataFile.c_str());
@@ -131,7 +131,8 @@ int main(int argc, char** argv)
   vtkTransformPolyDataFilter *filter = vtkTransformPolyDataFilter::New();
   filter->SetInputDataObject(reader->GetOutput());
   filter->SetTransform(vtkTransform);
-  
+  filter->Update();
+
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
   writer->SetInputDataObject(filter->GetOutput());
   writer->SetFileName(args.outputPolyDataFile.c_str());
