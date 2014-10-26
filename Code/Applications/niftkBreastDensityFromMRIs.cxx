@@ -584,7 +584,7 @@ int main( int argc, char *argv[] )
     dirFullPath = *iterDirectoryNames;
     dirBaseName = niftk::Basename( dirFullPath );
 
-    if ( ! dirBaseName.compare( 0, args.dirPrefix.length(), args.dirPrefix ) == 0 )
+    if ( ! (dirBaseName.compare( 0, args.dirPrefix.length(), args.dirPrefix ) == 0) )
     {
       message << std::endl << "Skipping directory: " << dirFullPath << std::endl << std::endl;
       args.PrintMessage( message );
@@ -1208,8 +1208,8 @@ int main( int argc, char *argv[] )
                 << std::endl << "   " << commandNiftySeg.str() << std::endl << std::endl;
         args.PrintMessage( message );
 
-        system( commandNiftySeg.str().c_str() );
-
+        int ret = system( commandNiftySeg.str().c_str() );
+        message << std::endl << "Returned: " << ret << std::endl;
       }
 
 #endif
