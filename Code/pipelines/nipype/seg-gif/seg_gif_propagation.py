@@ -188,6 +188,7 @@ def find_preprocessing_substitutions_change_ext(in_files, out_files):
         replacement = os.path.basename(in_files[i])
         replacement = replacement.replace('.nii.gz', '.txt')
         subs.append(( out_files[i][start_index:], replacement))
+    subs.append(('_subject_id_',''))
     return subs
 
 
