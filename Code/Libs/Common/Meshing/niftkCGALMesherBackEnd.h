@@ -16,11 +16,10 @@
 #define niftkCGALMesherBackEnd_h
 
 #include <niftkIOException.h>
+#include <niftkCommonWin32ExportHeader.h>
 
 #include <stdexcept>
 #include <string>
-
-#include <niftkCommonWin32ExportHeader.h>
 
 namespace niftk {
   /**

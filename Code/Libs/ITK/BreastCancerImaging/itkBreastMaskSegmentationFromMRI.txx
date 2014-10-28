@@ -18,6 +18,7 @@
 #include <itkRelabelComponentImageFilter.h>
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
 #include <itkImageMaskSpatialObject.h>
+#include <itkForegroundFromBackgroundImageThresholdCalculator.h>
 
 namespace itk
 {
@@ -210,7 +211,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename SmoothingFilterType::Pointer smoothing = SmoothingFilterType::New();
     
-  smoothing->SetTimeStep( 0.0625 );
+  smoothing->SetTimeStep( 0.046 );
   smoothing->SetNumberOfIterations(  5 );
   smoothing->SetConductanceParameter( 3.0 );
     
@@ -694,6 +695,143 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
 
 // --------------------------------------------------------------------------
+// Segment the backgound using itkForegroundFromBackgroundImageThresholdCalculator
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::SegmentForegroundFromBackground( void )
+{
+  typedef unsigned int LabelPixelType;
+  typedef itk::Image< LabelPixelType, ImageDimension> LabelImageType;
+
+
+  // Find threshold , t, that maximises:
+  // ( MaxIntensity - t )*( CDF( t ) - Variance( t )/Max_Variance ) 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::ForegroundFromBackgroundImageThresholdCalculator< InternalImageType > ThresholdCalculatorType;
+
+  typename ThresholdCalculatorType::Pointer 
+    thresholdCalculator = ThresholdCalculatorType::New();
+
+  thresholdCalculator->SetImage( imStructural );
+
+  thresholdCalculator->SetVerbose( flgVerbose );
+
+  thresholdCalculator->Compute();
+
+  double intThreshold = thresholdCalculator->GetThreshold();
+
+  if ( flgVerbose )
+  {
+    std::cout << "Threshold: " << intThreshold << std::endl;
+  }
+
+
+  // Threshold the image
+  // ~~~~~~~~~~~~~~~~~~~
+
+  typedef typename itk::BinaryThresholdImageFilter< InternalImageType, LabelImageType > BinaryThresholdFilterType;
+
+  typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
+
+  thresholder->SetInput( imStructural );
+
+  thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue( 1000 );
+
+  thresholder->SetLowerThreshold( intThreshold );
+
+  std::cout << "Thresholding the image" << std::endl;
+  thresholder->Update();
+  
+  typename LabelImageType::Pointer mask = thresholder->GetOutput();
+  mask->DisconnectPipeline();
+
+
+  // Label the image
+  // ~~~~~~~~~~~~~~~
+
+  LabelPixelType distanceThreshold = 0;
+ 
+  typedef typename itk::ScalarConnectedComponentImageFilter<LabelImageType, LabelImageType, LabelImageType >
+    ConnectedComponentImageFilterType;
+  
+  typename ConnectedComponentImageFilterType::Pointer connected =
+    ConnectedComponentImageFilterType::New ();
+  
+  connected->SetInput( mask );
+  connected->SetMaskImage( mask );
+  connected->SetDistanceThreshold( distanceThreshold );
+  
+  typedef itk::RelabelComponentImageFilter< LabelImageType, LabelImageType >
+    RelabelFilterType;
+
+  typename RelabelFilterType::Pointer relabel = RelabelFilterType::New();
+  typename RelabelFilterType::ObjectSizeType minSize;
+  
+  unsigned int i;
+
+  relabel->SetInput(connected->GetOutput());
+
+  std::cout << "Computing connected labels" << std::endl;
+  relabel->Update();
+
+  std::cout << "Number of connected objects: " << relabel->GetNumberOfObjects() 
+            << std::endl
+            << "Size of smallest object: " 
+            << relabel->GetSizeOfObjectsInPixels()[ relabel->GetNumberOfObjects() - 1 ] 
+            << std::endl
+            << "Size of largest object: " << relabel->GetSizeOfObjectsInPixels()[0] 
+            << std::endl << std::endl;
+
+  mask = relabel->GetOutput();
+  mask->DisconnectPipeline();
+
+  // Only keep the largest object
+
+  typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage( imStructural );
+  duplicator->Update();
+
+  imSegmented = duplicator->GetOutput();
+  imSegmented->DisconnectPipeline();
+
+  typedef itk::ImageRegionIterator< LabelImageType > LabelIteratorType;
+  
+  LabelIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
+  IteratorType itImage( imSegmented, imSegmented->GetLargestPossibleRegion() );
+
+  itMask.GoToBegin();
+  itImage.GoToBegin();
+
+  while (! itMask.IsAtEnd() ) 
+  {
+    if ( ( itMask.Get() == 1 ) )
+    {
+      itImage.Set( 1000.);
+    }
+    else
+    {
+      itImage.Set( 0. );
+    }
+    
+    ++itMask;
+    ++itImage;
+  }
+
+  // Write the background mask to a file?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  WriteBinaryImageToUCharFile( fileOutputBackground, "background image", 
+                               imSegmented, flgLeft, flgRight );
+};
+
+
+// --------------------------------------------------------------------------
 // Segment the backgound using the maximum image histogram
 // --------------------------------------------------------------------------
 
@@ -950,6 +1088,70 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
 
 // --------------------------------------------------------------------------
+// Find a point in the surface offset from the nipple
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::IndexType 
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::FindSurfacePoint( typename InternalImageType::IndexType idxNipple,
+                    float deltaXinMM, float deltaZinMM )
+{
+  typename InternalImageType::IndexType idx;
+  typename InternalImageType::IndexType idxDelta;
+
+  typename InternalImageType::SpacingType spacing3D;
+  spacing3D = imSegmented->GetSpacing();
+
+  idxDelta[0] = static_cast<typename InternalImageType::IndexValueType>( deltaXinMM / spacing3D[0] );
+  idxDelta[1] = 0;
+  idxDelta[2] = static_cast<typename InternalImageType::IndexValueType>( deltaZinMM / spacing3D[2] );
+
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
+  region = imSegmented->GetLargestPossibleRegion();
+  size = region.GetSize();
+
+  start[0] = idxNipple[0] + idxDelta[0];
+  start[1] = idxNipple[1] + idxDelta[1];
+  start[2] = idxNipple[2] + idxDelta[2];
+
+  region.SetIndex( start );
+
+  size[0] = 1;
+  size[1] = size[1] - start[1];
+  size[2] = 1;
+
+  region.SetSize( size );
+
+  if (flgVerbose) 
+    std::cout << "Searching for surface point from: " << start << std::endl;
+
+  LineIteratorType itSegLinear( imSegmented, region );
+  itSegLinear.SetDirection( 1 );
+
+  while ( ! itSegLinear.IsAtEndOfLine() )
+  {
+    idx = itSegLinear.GetIndex();
+
+    if ( itSegLinear.Get() ) 
+    {
+      break;
+    }
+    ++itSegLinear;
+  }
+
+  if (flgVerbose) 
+    std::cout << "   surface point found: " << idx << std::endl;
+ 
+
+  return idx;
+}
+
+
+// --------------------------------------------------------------------------
 // Find the nipple and mid-sternum landmarks
 // --------------------------------------------------------------------------
 
@@ -1149,6 +1351,20 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     std::cout << "Right nipple location: " << idxNippleRight << std::endl;
 
 
+  // Find four 'areolar' points around the nipple to use as chest surfaces seeds later
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  idxAreolarLeft[0] = FindSurfacePoint( idxNippleLeft, -10,   0 ); 
+  idxAreolarLeft[1] = FindSurfacePoint( idxNippleLeft,   0, -10 ); 
+  idxAreolarLeft[2] = FindSurfacePoint( idxNippleLeft,  10,   0 ); 
+  idxAreolarLeft[3] = FindSurfacePoint( idxNippleLeft,   0,  10 ); 
+
+  idxAreolarRight[0] = FindSurfacePoint( idxNippleRight, -10,   0 ); 
+  idxAreolarRight[1] = FindSurfacePoint( idxNippleRight,   0, -10 ); 
+  idxAreolarRight[2] = FindSurfacePoint( idxNippleRight,   5,   0 ); 
+  idxAreolarRight[3] = FindSurfacePoint( idxNippleRight,   0,   5 ); 
+
+
   // Find the mid-point on the sternum between the nipples
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1177,13 +1393,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     std::cout << "Searching for sternum starting from: " << start << std::endl;
 
   LineIteratorType itSegLinear( imSegmented, region );
-
   itSegLinear.SetDirection( 1 );
 
   while ( ! itSegLinear.IsAtEndOfLine() )
   {
-    if ( itSegLinear.Get() ) {
-      idxMidSternum = itSegLinear.GetIndex();
+    idxMidSternum = itSegLinear.GetIndex();
+
+    if ( itSegLinear.Get() ) 
+    {
       break;
     }
     ++itSegLinear;
@@ -1222,8 +1439,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   while ( ! itSegLinearLeftPosterior.IsAtEndOfLine() )
   {
-    if ( ! itSegLinearLeftPosterior.Get() ) {
-      idxLeftPosterior = itSegLinearLeftPosterior.GetIndex();
+    idxLeftPosterior = itSegLinearLeftPosterior.GetIndex();
+
+    if ( ! itSegLinearLeftPosterior.Get() ) 
+    {
       break;
     }
 
@@ -1259,8 +1478,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   while ( ! itSegLinearRightPosterior.IsAtEndOfLine() )
   {
-    if ( ! itSegLinearRightPosterior.Get() ) {
-      idxRightPosterior = itSegLinearRightPosterior.GetIndex();
+    idxRightPosterior = itSegLinearRightPosterior.GetIndex();
+
+    if ( ! itSegLinearRightPosterior.Get() ) 
+    {
       break;
     }
 
@@ -1274,7 +1495,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   if (flgVerbose)  
     std::cout << "Right posterior breast location: " << idxRightPosterior << std::endl
 	      << "Left breast center: " << idxLeftBreastMidPoint << std::endl;
-
 }
 
 
@@ -1356,8 +1576,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
     while ( ! itSegLinear.IsAtEndOfLine() )
     {
-      if ( itSegLinear.Get() ) {
-        idx = itSegLinear.GetIndex();
+      idx = itSegLinear.GetIndex();
+
+      if ( itSegLinear.Get() ) 
+      {
         flgFoundSurface = true;
         break;
       }
@@ -1655,8 +1877,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
   while ( ! itBIFsLinear.IsAtEndOfLine() )
   {
-    if ( itBIFsLinear.Get() == 15 ) {
-      idxMidPectoral = itBIFsLinear.GetIndex();
+    idxMidPectoral = itBIFsLinear.GetIndex();
+
+    if ( itBIFsLinear.Get() == 15 ) 
+    {
       break;
     }
     ++itBIFsLinear;
@@ -1861,8 +2085,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
   while ( ! itBIFsLinear2.IsAtEndOfLine() )
   {
-    if ( itBIFsLinear2.Get() ) {
-      idxMidPectoral = itBIFsLinear2.GetIndex();
+    idxMidPectoral = itBIFsLinear2.GetIndex();
+
+    if ( itBIFsLinear2.Get() ) 
+    {
       break;
     }
     ++itBIFsLinear2;

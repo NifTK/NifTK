@@ -224,6 +224,10 @@ public:
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
 
+  typename InternalImageType::Pointer GetSegmentedImage( void ) {
+    return imSegmented;
+  };
+
   /// Write the segmented image to a file
   void WriteSegmentationToAFile( std::string fileOutput ) {
     WriteBinaryImageToUCharFile( fileOutput, "final segmented image", 
@@ -362,6 +366,9 @@ protected:
   typename InternalImageType::IndexType idxLeftPosterior;
   typename InternalImageType::IndexType idxRightPosterior;
 
+  typename InternalImageType::IndexType idxAreolarRight[4];
+  typename InternalImageType::IndexType idxAreolarLeft[4];
+
 
   /// Constructor
   BreastMaskSegmentationFromMRI();
@@ -404,11 +411,19 @@ protected:
   /// Smooth the image to increase separation of the background
   void SmoothMaxImageToIncreaseSeparationOfTheBackground( void );
 
+  /// Segment the backgound using itkForegroundFromBackgroundImageThresholdCalculator
+  void SegmentForegroundFromBackground( void );
+
   /// Segment the backgound using the maximum image histogram
   void SegmentBackground( void );
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
   void ComputeElevationOfAnteriorSurface( void );
+
+  /// Find a point in the surface offset from the nipple
+  typename InternalImageType::IndexType 
+    FindSurfacePoint( typename InternalImageType::IndexType idxNipple,
+                      float deltaXinMM, float deltaZinMM );
 
   /// Find the nipple and mid-sternum landmarks
   void FindBreastLandmarks( void );

@@ -95,9 +95,13 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
     return isValid;
   }
 
-  std::vector<unsigned long long>::const_iterator iter = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
+  if (input < *(m_TimeStamps.begin()))
+  {
+    after = *(m_TimeStamps.begin());
+    return isValid;
+  }
 
-  if (*iter == input)
+  if (input == *(m_TimeStamps.begin()))
   {
     before = input;
     after = input;
@@ -105,6 +109,9 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
     isValid = true;
     return isValid;
   }
+
+  // This assumes that the value tested for is within the range.
+  std::vector<unsigned long long>::const_iterator iter = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
 
   if (iter == m_TimeStamps.end())
   {
@@ -116,6 +123,15 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
   if (iter == m_TimeStamps.begin())
   {
     after = *iter;
+    return isValid;
+  }
+
+  if (*iter == input)
+  {
+    before = input;
+    after = input;
+    proportion = 0;
+    isValid = true;
     return isValid;
   }
 
