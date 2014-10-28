@@ -69,8 +69,12 @@ public:
   video::SDIInput::InterlacedBehaviour GetFieldMode() const;
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
-  std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
-  // returns number of channels
+  /**
+   * targetbuffer needs to have the correct(!) size to fit all channels stacked
+   * together. Try something like cvCreateImage(cvSize(GetCaptureFormat().first, GetCaptureFormat().second * numstreams), IPL_DEPTH_8U, 4).
+   * @returns number of channels, or zero in case of some error.
+   * @throws nothing
+   */
   int GetRGBAImage(unsigned int sequencenumber, IplImage* targetbuffer);
 
   // returns the next sequence number that has already been captured
