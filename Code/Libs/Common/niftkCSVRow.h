@@ -54,16 +54,10 @@ class NIFTKCOMMON_WINEXPORT CSVRow
 public:
 
   /** Construct CSVRow by allocating the vector */
-  CSVRow()
-  {
-    m_data = new std::vector<std::string>();
-  }
+  CSVRow();
 
   /** Destructor */
-  ~CSVRow()
-  {
-    delete m_data;
-  }
+  ~CSVRow();
 
   /** Get an element of the row. */
   std::string const &operator[]( std::size_t index ) const
@@ -78,20 +72,7 @@ public:
   }
 
   /** Read the next row in the input stream */
-  void ReadNextRow( std::istream& inStream )
-  {
-    std::string strRowRead;
-    std::getline( inStream, strRowRead );
-
-    std::stringstream ssRow( strRowRead );
-    std::string strElement;
-
-    m_data->clear();
-    while( std::getline( ssRow, strElement, ',' ) )
-    {
-      m_data->push_back( strElement );
-    }
-  }
+  void ReadNextRow( std::istream& inStream );
 
 private:
 
