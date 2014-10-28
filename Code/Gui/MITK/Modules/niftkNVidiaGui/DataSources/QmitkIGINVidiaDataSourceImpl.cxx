@@ -820,13 +820,30 @@ void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, I
 {
   // has to be called with lock held!
 
+  assert(img != 0);
+  assert(streamcountinimg != 0);
+  // nothing to be done.
+  if (*img == 0)
+  {
+    *streamcountinimg = 0;
+    return;
+  }
+
   // these are display dimenions (what we are interested in).
   int   w = decompressor->get_width();
   int   h = decompressor->get_height();
 
-  IplImage* frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
-  // mark layout as rgba instead of the opencv-default bgr
-  std::memcpy(&frame->channelSeq[0], "RGBA", 4);
+  if (((*img)->width  != w) ||
+      ((*img)->height != (h * streamcount)))
+  {
+    // decompressor will not crop its output if it doesnt fit, it will simply fail.
+    *streamcountinimg = 0;
+    return;
+  }
+
+  // mark layout as rgba instead of the opencv-default bgr.
+  // (this is not used/supported by opencv itself.)
+  std::memcpy(&((*img)->channelSeq[0]), "RGBA", 4);
 
   // during playback there are no proper sequence numbers. instead, we repurpose
   // these as a frame number (quite similar anyway).
@@ -834,10 +851,10 @@ void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, I
   for (int i = 0; i < streamcount; ++i)
   {
     // note: opencv's widthStep is in bytes.
-    char* subimg = &(frame->imageData[i * h * frame->widthStep]);
+    char* subimg = &((*img)->imageData[i * h * (*img)->widthStep]);
     try
     {
-      ok &= decompressor->decompress(sequencenumber + i, subimg, frame->widthStep * h, frame->widthStep);
+      ok &= decompressor->decompress(sequencenumber + i, subimg, (*img)->widthStep * h, (*img)->widthStep);
     }
     catch (const std::exception& e)
     {
@@ -849,17 +866,10 @@ void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, I
 
   if (ok)
   {
-    if (*img)
-    {
-      cvReleaseImage(img);
-    }
-    *img = frame;
     *streamcountinimg = streamcount;
   }
   else
   {
-    cvReleaseImage(&frame);
-    *img = 0;
     *streamcountinimg = 0;
   }
 }
@@ -913,7 +923,6 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   // mark layout as rgba instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
-  //ReadbackRGBA(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
   ReadbackViaPBO(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
 
   *img = frame;
@@ -922,6 +931,7 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
 
 
 //-----------------------------------------------------------------------------
+#if 0
 std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned int sequencenumber)
 {
   IplImage*     img = 0;
@@ -931,6 +941,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned in
 
   return std::make_pair(img, streamcount);
 }
+#endif
 
 
 //-----------------------------------------------------------------------------

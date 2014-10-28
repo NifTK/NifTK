@@ -69,7 +69,7 @@ public:
   video::SDIInput::InterlacedBehaviour GetFieldMode() const;
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
-  std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
+  //std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
   // returns number of channels
   int GetRGBAImage(unsigned int sequencenumber, IplImage* targetbuffer);
 
