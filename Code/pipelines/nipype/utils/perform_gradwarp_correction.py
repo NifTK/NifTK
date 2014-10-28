@@ -6,21 +6,19 @@ import nipype.pipeline.engine           as pe           # pypeline engine
 from nipype                             import config, logging
 from distutils                          import spawn
 
-#from gradwarp_correction import GradwarpCorrection
 import os
 import textwrap
 import argparse
-#import nipype.interfaces.niftyreg as niftyreg
+import nipype.interfaces.niftyreg as niftyreg
+from gradwarp_correction import GradwarpCorrection
 
 
-def gen_substitutions(in_files, prefix, suffix):    
+def gen_substitutions(in_file, prefix, suffix):    
     from nipype.utils.filemanip import split_filename
-    subs = []
-    for i in range(0,len(in_files)):
-        in_file=in_files[i]
-        _, in_bn, _ = split_filename(in_file)
-        subs.append((in_bn, \
-            prefix+in_bn+'_unwarped'+suffix))
+    _, in_bn, _ = split_filename(in_file)
+    subs = []    
+    subs.append(('_res', ''))
+    subs.append((in_bn, prefix+in_bn+'_unwarped'+suffix))
 
     return subs
 
@@ -36,41 +34,65 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, \
         description=pipelineDescription)
     """ Input images """
-    parser.add_argument('-i', '--img',dest='input_img', 
-                        type=str, nargs='+', \
-                        metavar='input_img', 
-                        help='Image file or list of input images',
-                        required=True) 
+    parser.add_argument('-i', '--img',dest='input_img', \
+                        type=str, \
+                        metavar='input_img', \
+                        help='Input image file to correct', \
+                        required=True)
     """ Input coefficient file """
     parser.add_argument('-c', '--coeff',dest='input_coeff', 
                         type=str, metavar='coeff_file', 
                         help='File containing the spherical harmonic coefficient',
                         required=True)
     """ Interpolation order input """
-    parser.add_argument('--inter', metavar='order', nargs=1, type=str, \
-            choices=[0, 1, 3, 4], default=3, \
-            help='Interpolation order to resample to unwarped image. Default is 3 (cubic)')
+    parser.add_argument('--inter', metavar='inter', type=str, \
+            choices=['NN', 'LIN', 'CUB', 'SINC'], default='CUB', \
+            help='Interpolation order to resample to unwarped image. '+ \
+                'Choices are NN, LIN, CUB, SINC. [CUB]')
+    """ Table offset values input """
+    parser.add_argument('--offset_x', metavar='offset_x', type=float, \
+            default=0, \
+            help='Scanner table offset in x direction in mm. [0]', \
+            required=False)
+    parser.add_argument('--offset_y', metavar='offset_y', type=float, \
+            default=0, \
+            help='Scanner table offset in x direction in mm. [0]', \
+            required=False)
+    parser.add_argument('--offset_z', metavar='offset_z', type=float, \
+            default=0, \
+            help='Scanner table offset in x direction in mm. [0]', \
+            required=False)
+    """ Scanner type input input """
+    parser.add_argument('--scanner', metavar='scanner', type=str, \
+            choices=['ge','siemens'], default='siemens', \
+            help='Scanner type. Choices are ge and siemens. [siemens]', \
+            required=False)
+    """ Gradwarp radius input """
+    parser.add_argument('--radius', metavar='radius', type=float, \
+            default=0.225, \
+            help='Gradwarp radius in meter. [0.225]', \
+            required=False)
     """ Output argument """
     parser.add_argument('--output_dir',dest='output_dir', 
                         type=str, \
-                        metavar='directory', 
+                        metavar='directory', \
                         help='Output directory containing the unwarped result\n' + \
                         'Default is the current directory', \
-                        default=os.path.abspath('.'), 
+                        default=os.path.abspath('.'), \
                         required=False)
     parser.add_argument('--output_pre',
-                        dest='output_pre', 
+                        dest='output_pre', \
                         type=str, \
-                        metavar='prefix', 
+                        metavar='prefix', \
                         help='Output result prefix', \
-                        default='', 
+                        default='', \
                         required=False)
-    parser.add_argument('--output_suf',
-                        dest='output_suf',
+    parser.add_argument('--output_suf', \
+                        dest='output_suf', \
                         type=str, \
-                        metavar='suffix', 
+                        metavar='suffix', \
                         help='Output result suffix', \
-                        default='', 
+                        default='', \
                         required=False)
     
     	# Parse the arguments
@@ -90,36 +112,53 @@ def main():
     # Define the input and output node
     input_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['in_files',
+            fields=['in_file',
                     'input_coeff']),
-            name='input_node')
+            name='input_node')    
     output_node = pe.Node(
         interface = niu.IdentityInterface(
-            fields=['out_files']),
+            fields=['out_file']),
             name='output_node')
-    input_node.inputs.in_files=args.input_img
+    input_node.inputs.in_file=args.input_img
     input_node.inputs.input_coeff=args.input_coeff
     
-    # The gradwarp still does not work for the PET MRI yet.
-    # This pipeline is thus empty at the moment
-    workflow.connect(input_node, 'in_files', output_node, 'out_files')
+    # The gradwarp field is computed.
+    gradwarp=pe.Node(interface = GradwarpCorrection(),
+                     name='gradwarp')
+    gradwarp.inputs.offset_x=-1*args.offset_x
+    gradwarp.inputs.offset_y=-1*args.offset_y
+    gradwarp.inputs.offset_z=-1*args.offset_z
+    gradwarp.inputs.radius=args.radius
+    gradwarp.inputs.scanner_type=args.scanner
+    workflow.connect(input_node, 'in_file', gradwarp, 'in_file')
+    workflow.connect(input_node, 'input_coeff', gradwarp, 'coeff_file')
+    
+    # The obtained deformation field is used the resample the input image
+    resampling=pe.Node(interface = niftyreg.RegResample(),
+                     name='resampling')
+    resampling.inputs.inter_val=args.inter
+    workflow.connect(input_node, 'in_file', resampling, 'ref_file')
+    workflow.connect(input_node, 'in_file', resampling, 'flo_file')
+    workflow.connect(gradwarp, 'out_file', resampling, 'trans_file')
 
     # Create a node to add the suffix and prefix if required
-    subsgen = pe.Node(interface = niu.Function(input_names = ['in_files', \
+    subsgen = pe.Node(interface = niu.Function(input_names = ['in_file', \
         'prefix','suffix'], output_names = ['substitutions'], \
         function = gen_substitutions), name = 'subsgen')
-    workflow.connect(input_node, 'in_files', subsgen, 'in_files')
+    workflow.connect(input_node, 'in_file', subsgen, 'in_file')
     subsgen.inputs.prefix=args.output_pre
     subsgen.inputs.suffix=args.output_suf
+    
+    workflow.connect(resampling, 'res_file', output_node, 'out_file')
     
     # Create a data sink    
     ds = pe.Node(nio.DataSink(parameterization=False), name='data_sink')
     ds.inputs.base_directory = os.path.abspath(os.path.abspath(args.output_dir))
     workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
-    workflow.connect(output_node, 'out_files', ds, '@img')
+    workflow.connect(output_node, 'out_file', ds, '@img')
     
     # Run the overall workflow    
-    # workflow.write_graph(graph2use='colored')
+    workflow.write_graph(graph2use='colored')
     qsub_exec=spawn.find_executable('qsub')
     if not qsub_exec == None:
         qsubargs='-l h_rt=01:00:00 -l tmem=2.8G -l h_vmem=2.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'

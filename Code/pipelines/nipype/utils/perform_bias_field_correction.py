@@ -75,7 +75,7 @@ def main():
                         default='', 
                         required=False)
     
-    	# Parse the arguments
+    # Parse the arguments
     args=parser.parse_args()
 
     	# Check the parsed arguments
