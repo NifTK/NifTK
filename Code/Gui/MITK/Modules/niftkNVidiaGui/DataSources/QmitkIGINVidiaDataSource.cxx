@@ -347,7 +347,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
         // remember: stream format can be different from capture format. stream is what comes off the wire, capture is what goes to gpu.
         const video::StreamFormat             currentStreamFormat = m_Pimpl->GetFormat();
         // if the stream format is not interlaced then field mode will have no effect on the capture format.
-        if (!currentStreamFormat.is_interlaced)
+        if (!currentStreamFormat.is_interlaced && !GetIsPlayingBack())
           currentFieldMode = video::SDIInput::DO_NOTHING_SPECIAL;
 
         // max 4 streams
