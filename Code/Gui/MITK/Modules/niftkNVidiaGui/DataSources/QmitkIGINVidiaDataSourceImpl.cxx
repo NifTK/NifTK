@@ -1115,6 +1115,9 @@ void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
     // it only compresses individual images we pipe in.
     // so the number of streams during playback has to come from an external source.
     streamcount = expectedstreamcount;
+
+    m_CaptureWidth  = decompressor->get_width();
+    m_CaptureHeight = decompressor->get_height();
   }
   else
   {
