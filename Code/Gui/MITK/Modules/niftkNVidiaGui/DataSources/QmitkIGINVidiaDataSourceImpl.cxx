@@ -916,6 +916,7 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   int h = sdiin->get_height();
 
   IplImage* frame = *img;
+  // FIXME: passing in a null buffer is no longer supported!
   if (frame == 0)
   {
     frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
@@ -928,20 +929,6 @@ void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, I
   *img = frame;
   *streamcountinimg = streamcount;
 }
-
-
-//-----------------------------------------------------------------------------
-#if 0
-std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned int sequencenumber)
-{
-  IplImage*     img = 0;
-  unsigned int  streamcount = 0;
-  // this will block on the sdi thread. so no locking in this method!
-  emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
-
-  return std::make_pair(img, streamcount);
-}
-#endif
 
 
 //-----------------------------------------------------------------------------
