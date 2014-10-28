@@ -42,7 +42,7 @@ add_library(niftkITK ${niftkITK_SRCS})
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    add_definitions(-DNIFTKITK_WINDOWS_EXPORT)
+    add_definitions(-DNIFTKITK_WINDOWS_EXPORT=1)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 
