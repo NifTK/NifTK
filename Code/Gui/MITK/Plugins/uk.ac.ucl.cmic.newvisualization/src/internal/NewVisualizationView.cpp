@@ -55,21 +55,25 @@ NewVisualizationView::NewVisualizationView()
 
 NewVisualizationView::~NewVisualizationView()
 {
-/*
+
   if (m_SelectionListener)
   {
-    m_SelectionListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
     m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeAdded);
     m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
     m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
   }
 
   if (m_VisibilityListener)
-    m_VisibilityListener->NodePropertyChanged -=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnVisibilityChanged);
+    m_VisibilityListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnVisibilityPropertyChanged);
 
-  if (m_PropertyListener)
-    m_PropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<PlanningManager, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PlanningManager::OnPropertyChanged);
-*/
+  if (m_NamePropertyListener)
+    m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
+
+  if (m_ColorPropertyListener)
+    m_ColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnColorPropertyChanged);
+  
+  if (m_OpacityPropertyListener)
+    m_OpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
 }
 
 void NewVisualizationView::SetFocus()
@@ -86,7 +90,6 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     // Create UI.
     m_Controls = new Ui::NewVisualizationViewControls();
     m_Controls->setupUi(parent);
-
 
     connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
 
@@ -112,29 +115,9 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 
     InitVLRendering();
 
-    ctkPluginContext* context = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
-
-    ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
-    OclResourceService* oclService = context->getService<OclResourceService>(serviceRef);
-
-    if (oclService == NULL)
-    {
-      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
-    }
-
-    vl::OpenGLContext * glContext = m_RenderApplet->openglContext();
-    glContext->makeCurrent();
-
-    // Force tests to run on the ATI GPU
-    oclService->SpecifyPlatformAndDevice(0, 0, true);
-
-    // Get context 
-    cl_context gpuContext = oclService->GetContext();
-
+    // Make sure that we show all the nodes that are already present in DataStorage
+    UpdateDisplay();
   }
-
-  // Redraw screen
-  //UpdateDisplay();
 }
 
 void  NewVisualizationView::InitVLRendering()
@@ -152,6 +135,12 @@ void  NewVisualizationView::InitVLRendering()
 
   m_VLQtRenderWindow = new vlQt4::Qt4Widget;
 
+  /* Initialize the OpenGL context and window properties */
+  int x = 10;
+  int y = 10;
+  int width = 512;
+  int height= 512;
+  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4", format, NULL, x, y, width, height );
 
   m_RenderApplet = new VLRenderingApplet();
 
@@ -166,14 +155,6 @@ void  NewVisualizationView::InitVLRendering()
   vl::vec3 up     = vl::vec3(0,1,0);   // up direction
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_RenderApplet->rendering()->as<Rendering>()->camera()->setViewMatrix( view_mat );
-
-  /* Initialize the OpenGL context and window properties */
-  int x = 10;
-  int y = 10;
-  int width = 512;
-  int height= 512;
-  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4 - Rotating Cube", format, NULL, x, y, width, height );
-
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
 
   /* show the window */
@@ -270,39 +251,36 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   MITK_INFO <<"Opacity Change";
 }
 
-//void NewVisualizationView::UpdateDisplay(bool viewEnabled)
-//{
-  //m_RenderApplet->sceneManager()->tree()->actors()->clear();
+void NewVisualizationView::UpdateDisplay(bool viewEnabled)
+{
+  m_RenderApplet->sceneManager()->tree()->actors()->clear();
 
-  //  // Set DataNode property accordingly
-  //typedef mitk::DataNode::Pointer dataNodePointer;
-  //typedef itk::VectorContainer<unsigned int, dataNodePointer> nodesContainerType;
-  //nodesContainerType::ConstPointer vc = this->GetDataStorage()->GetAll();
+    // Set DataNode property accordingly
+  typedef mitk::DataNode::Pointer dataNodePointer;
+  typedef itk::VectorContainer<unsigned int, dataNodePointer> nodesContainerType;
+  nodesContainerType::ConstPointer vc = this->GetDataStorage()->GetAll();
 
-  //// Iterate through the DataNodes
-  //for (unsigned int i = 0; i < vc->Size(); i++)
-  //{
-  //  dataNodePointer currentDataNode = vc->ElementAt(i);
-  //  if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
-  //    continue;
+  // Iterate through the DataNodes
+  for (unsigned int i = 0; i < vc->Size(); i++)
+  {
+    dataNodePointer currentDataNode = vc->ElementAt(i);
+    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
+      continue;
 
-  //  bool isHelper = false;
-  //  currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
+    bool isHelper = false;
+    currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
 
-  //  if (isHelper)
-  //    continue;
+    if (isHelper)
+      continue;
 
-  //  bool isVisible = false;
-  //  currentDataNode->GetVisibility(isVisible, 0);
+    bool isVisible = false;
+    currentDataNode->GetVisibility(isVisible, 0);
 
-  //  if (!isVisible)
-  //    continue;
+    if (!isVisible)
+      continue;
+    
+    m_RenderApplet->AddDataNode(currentDataNode);
+  }
 
-  //  // Get name of the current node
-  //  QString currNodeName(currentDataNode->GetPropertyList()->GetProperty("name")->GetValueAsString().c_str() );
-  //  
-  //  m_RenderApplet->AddDataNode(currentDataNode);
-  //}
-
-  //m_RenderApplet->rendering()->render();
-//}
+  m_RenderApplet->rendering()->render();
+}

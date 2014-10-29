@@ -25,7 +25,6 @@
 #include <QmitkRenderWindow.h>
 
 #include <mitkDataNode.h>
-#include <mitkOclResourceService.h>
 #include <mitkSurface.h>
 #include <mitkImage.h>
 
@@ -41,7 +40,7 @@
 
 /**
  * \class NewVisualizationView
- * \brief Provides a simple GUI to visualize risk associate for a trajectory
+ * \brief Provides a simple GUI to visualize stuff
  * \ingroup uk_ac_ucl_cmic_NewVisualization_internal
  */
 class NewVisualizationView : public QmitkBaseView
@@ -86,7 +85,7 @@ private:
   void InitVLRendering();
 
   /// \brief 
-  //void UpdateDisplay(bool viewEnabled = true);
+  void UpdateDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
   Ui::NewVisualizationViewControls* m_Controls;
@@ -94,10 +93,11 @@ private:
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
 
+  // VL rendering specific members
   vl::ref<vlQt4::Qt4Widget>  m_VLQtRenderWindow;
   vl::ref<VLRenderingApplet> m_RenderApplet;
 
-  
+  // Listeners
   mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
   mitk::DataNodePropertyListener::Pointer    m_VisibilityListener;
   mitk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
