@@ -151,7 +151,12 @@ void  NewVisualizationView::InitVLRendering()
   format.setFullscreen(false);
 
   m_VLQtRenderWindow = new vlQt4::Qt4Widget;
-
+  /* Initialize the OpenGL context and window properties */
+  int x = 10;
+  int y = 10;
+  int width = 512;
+  int height= 512;
+  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4 - Rotating Cube", format, NULL, x, y, width, height );
 
   m_RenderApplet = new VLRenderingApplet();
 
@@ -166,13 +171,6 @@ void  NewVisualizationView::InitVLRendering()
   vl::vec3 up     = vl::vec3(0,1,0);   // up direction
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_RenderApplet->rendering()->as<Rendering>()->camera()->setViewMatrix( view_mat );
-
-  /* Initialize the OpenGL context and window properties */
-  int x = 10;
-  int y = 10;
-  int width = 512;
-  int height= 512;
-  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4 - Rotating Cube", format, NULL, x, y, width, height );
 
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
 
