@@ -307,8 +307,9 @@ void QmitkPointSetCropper::CreateBoundingObject()
 
 
 //-----------------------------------------------------------------------------
-void QmitkPointSetCropper::OnSelectionChanged(std::vector<mitk::DataNode*> nodes)
+void QmitkPointSetCropper::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
+  std::cerr << "Matt, OnSelectionChanged" << std::endl;
   this->RemoveBoundingObjectFromNode();
 
   if (nodes.size() != 1 || dynamic_cast<mitk::PointSet*>(nodes[0]->GetData()) == 0)

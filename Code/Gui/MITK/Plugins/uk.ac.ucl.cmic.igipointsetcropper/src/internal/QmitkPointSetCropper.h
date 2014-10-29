@@ -62,8 +62,6 @@ class QmitkPointSetCropper : public QmitkBaseView, public mitk::OperationActor
     long m_NewDataDeletedObserverTag;
   };
 
-private:
-
   Q_OBJECT
 
 public:
@@ -100,7 +98,9 @@ public:
 
   QWidget* GetControls();
 
-  public slots:
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+
+public slots:
 
     virtual void CropPointSet();
     virtual void CreateNewBoundingObject();
@@ -147,11 +147,6 @@ protected:
   * \brief Creates the cuboid and its data tree node.
   */
   virtual void CreateBoundingObject();
-
-  /*!
-  * \brief Called from superclass, handles selection changes.
-  */
-  virtual void OnSelectionChanged(std::vector<mitk::DataNode*> nodes);
 
   /*!
   * \brief Finds the given node in the data tree and optionally fits the cuboid to it
