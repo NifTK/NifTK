@@ -44,13 +44,13 @@
 #include <QtOpenGL/QGLWidget>
 #include <QtOpenGL/QGLFormat>
 
-namespace vlQt4
-{
+//namespace vlQt4
+//{
 //-----------------------------------------------------------------------------
 // Qt4Widget
 //-----------------------------------------------------------------------------
   /** The Qt4Widget class implements an OpenGLContext using the Qt4 API. */
-  class VLQT4_EXPORT Qt4Widget : public QGLWidget, public vl::OpenGLContext
+  class /*VLQT4_EXPORT*/ VLQt4Widget : public QGLWidget, public vl::OpenGLContext
   {
     Q_OBJECT
 
@@ -58,7 +58,7 @@ namespace vlQt4
     using vl::Object::setObjectName;
     using QObject::setObjectName;
   
-    Qt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0)
+    VLQt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0)
       :QGLWidget(parent,shareWidget,f),
       mRefresh(10) // 100 fps
     {
@@ -70,7 +70,7 @@ namespace vlQt4
       vl::OpenGLContext::setAutomaticDelete(false);
     }
 
-    ~Qt4Widget()
+    ~VLQt4Widget()
     {
       dispatchDestroyEvent();
     }
@@ -403,6 +403,6 @@ namespace vlQt4
     QTimer mUpdateTimer;
   };
   //-----------------------------------------------------------------------------
-}
+//}
 
 #endif

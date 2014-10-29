@@ -150,7 +150,7 @@ void  NewVisualizationView::InitVLRendering()
   format.setStencilBufferBits(8);
   format.setFullscreen(false);
 
-  m_VLQtRenderWindow = new vlQt4::Qt4Widget;
+  m_VLQtRenderWindow = new VLQt4Widget;//(m_Controls->groupBox_View);
   /* Initialize the OpenGL context and window properties */
   int x = 10;
   int y = 10;

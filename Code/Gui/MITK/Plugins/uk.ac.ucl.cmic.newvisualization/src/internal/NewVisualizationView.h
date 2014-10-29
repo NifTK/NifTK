@@ -35,9 +35,10 @@
 
 // VL includes
 #include <vlCore/VisualizationLibrary.hpp>
-#include <vlQt4/Qt4Widget.hpp>
+//#include <vlQt4/Qt4Widget.hpp>
 
 #include "VLRenderingApplet.h"
+#include "VLQt4Widget.h"
 
 /**
  * \class NewVisualizationView
@@ -94,7 +95,7 @@ private:
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
 
-  vl::ref<vlQt4::Qt4Widget>  m_VLQtRenderWindow;
+  vl::ref<VLQt4Widget>  m_VLQtRenderWindow;
   vl::ref<VLRenderingApplet> m_RenderApplet;
 
   
