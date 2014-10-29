@@ -24,8 +24,8 @@
 #include <mitkOperationActor.h>
 #include <mitkOperation.h>
 #include <mitkAffineInteractor.h>
-#include "mitkWeakPointer.h"
-#include <itkImage.h>
+#include <mitkWeakPointer.h>
+#include <mitkPointSet.h>
 #include <QProgressDialog>
 
 #include "mitkPointSetCropperEventInterface.h"
@@ -67,8 +67,9 @@ private:
   Q_OBJECT
 
 public:
+
   /*!
-  \brief Constructor. Called by SampleApp (or other apps that use functionalities)
+  \brief Constructor.
   */
   QmitkPointSetCropper(QObject *parent=0);
 
@@ -101,15 +102,14 @@ public:
 
   public slots:
 
-    virtual void CropImage();
-    virtual void SurroundingCheck(bool value);
+    virtual void CropPointSet();
     virtual void CreateNewBoundingObject();
     virtual void ChkInformationToggled( bool on );
 
 protected:
 
   /*!
-  * Controls containing an image selection drop down, some usage information and a "crop" button
+  * Controls containing an PointSet selection drop down, some usage information and a "crop" button
   */
   Ui::QmitkPointSetCropperControls * m_Controls;
 
@@ -119,14 +119,14 @@ protected:
   QWidget* m_ParentWidget;
 
   /*!
-  * \brief A pointer to the node of the image to be croped.
+  * \brief A pointer to the node of the PointSet to be croped.
   */
-  mitk::WeakPointer<mitk::DataNode> m_ImageNode;
+  mitk::WeakPointer<mitk::DataNode> m_PointSetNode;
 
   /*!
-  * \brief A pointer to the image to be cropped.
+  * \brief A pointer to the PointSet to be cropped.
   */
-  mitk::WeakPointer<mitk::Image> m_ImageToCrop;
+  mitk::WeakPointer<mitk::PointSet> m_PointSetToCrop;
 
   /*!
   * \brief The cuboid used for cropping.
@@ -163,6 +163,10 @@ protected:
   */
   virtual void RemoveBoundingObjectFromNode();
 
+  /*!
+   * \brief NodeRemoved
+   * \param node
+   */
   virtual void NodeRemoved(const mitk::DataNode* node);
 
 private:

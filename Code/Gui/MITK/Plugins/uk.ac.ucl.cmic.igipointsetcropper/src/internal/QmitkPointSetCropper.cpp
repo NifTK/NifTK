@@ -12,43 +12,49 @@
 
 =============================================================================*/
 
+#include "QmitkPointSetCropper.h"
+
 #include <iostream>
 
-#include "QmitkPointSetCropper.h"
 #include <QAction>
-
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QSlider>
+
 #include <vtkRenderWindow.h>
 
-
+#include <mitkRenderingManager.h>
 #include <mitkEllipsoid.h>
 #include <mitkCylinder.h>
 #include <mitkCone.h>
-#include <mitkRenderingManager.h>
 #include <mitkProperties.h>
 #include <mitkGlobalInteraction.h>
-#include "mitkUndoController.h"
-#include "mitkBoundingObjectCutter.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkITKImageImport.h"
-#include "mitkIDataStorageService.h"
-#include "mitkNodePredicateDataType.h"
+#include <mitkUndoController.h>
+#include <mitkBoundingObjectCutter.h>
+#include <mitkIDataStorageService.h>
+#include <mitkNodePredicateDataType.h>
 
 #include <itkCommand.h>
 
 // To be moved to mitkInteractionConst.h by StateMachineEditor
-const mitk::OperationType QmitkPointSetCropper::OP_EXCHANGE = 717;
+const mitk::OperationType QmitkPointSetCropper::OP_EXCHANGE = 718;
 
-// Constructors for operation classes
-QmitkPointSetCropper::opExchangeNodes::opExchangeNodes( mitk::OperationType type, mitk::DataNode* node, mitk::BaseData* oldData, mitk::BaseData* newData )
-:mitk::Operation(type),m_Node(node),m_OldData(oldData),m_NewData(newData), m_NodeDeletedObserverTag(0), m_OldDataDeletedObserverTag(0),
-m_NewDataDeletedObserverTag(0)
+//-----------------------------------------------------------------------------
+QmitkPointSetCropper::opExchangeNodes::opExchangeNodes(
+    mitk::OperationType type,
+    mitk::DataNode* node,
+    mitk::BaseData* oldData,
+    mitk::BaseData* newData )
+: mitk::Operation(type)
+, m_Node(node)
+, m_OldData(oldData)
+, m_NewData(newData)
+, m_NodeDeletedObserverTag(0)
+, m_OldDataDeletedObserverTag(0)
+, m_NewDataDeletedObserverTag(0)
 {
-  // listen to the node the image is hold
   itk::MemberCommand<opExchangeNodes>::Pointer nodeDeletedCommand = itk::MemberCommand<opExchangeNodes>::New();
   nodeDeletedCommand->SetCallbackFunction(this, &opExchangeNodes::NodeDeleted);
 
@@ -57,7 +63,8 @@ m_NewDataDeletedObserverTag(0)
   m_NewDataDeletedObserverTag = m_NewData->AddObserver(itk::DeleteEvent(), nodeDeletedCommand);
 }
 
-// destructor for operation class
+
+//-----------------------------------------------------------------------------
 QmitkPointSetCropper::opExchangeNodes::~opExchangeNodes()
 {
   if (m_Node != NULL)
@@ -79,6 +86,8 @@ QmitkPointSetCropper::opExchangeNodes::~opExchangeNodes()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkPointSetCropper::opExchangeNodes::NodeDeleted(const itk::Object * /*caller*/, const itk::EventObject &/*event*/)
 {
   m_Node = NULL;
@@ -86,22 +95,23 @@ void QmitkPointSetCropper::opExchangeNodes::NodeDeleted(const itk::Object * /*ca
   m_NewData = NULL;
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkPointSetCropper::QmitkPointSetCropper(QObject *parent)
-: m_Controls(NULL), m_ParentWidget(0)
+: m_Controls(NULL)
+, m_ParentWidget(0)
 {
    m_Interface = new mitk::PointSetCropperEventInterface;
    m_Interface->SetPointSetCropper( this );
 }
 
+
 //-----------------------------------------------------------------------------
 QmitkPointSetCropper::~QmitkPointSetCropper()
 {
-  //delete smart pointer objects
   m_CroppingObjectNode = NULL;
   m_CroppingObject = NULL;
-
   m_Interface->Delete();
-
 }
 
 
@@ -119,16 +129,14 @@ void QmitkPointSetCropper::CreateQtPartControl(QWidget* parent)
   {
     m_ParentWidget = parent;
 
-    // build ui elements
+    // Build ui elements
     m_Controls = new Ui::QmitkPointSetCropperControls;
     m_Controls->setupUi(parent);
 
-    // setup ui elements
+    // Setup ui elements
     m_Controls->groupInfo->hide();
-    m_Controls->m_SurroundingSlider->hide();
-    m_Controls->m_SurroundingSpin->hide();
     m_Controls->m_BoxButton->setEnabled(true);
-    m_Controls->warningLabel->setVisible(false);
+
     // create ui element connections
     this->CreateConnections();
   }
@@ -140,9 +148,8 @@ void QmitkPointSetCropper::CreateConnections()
 {
   if ( m_Controls )
   {
-    connect( m_Controls->m_CropButton, SIGNAL(clicked()), this, SLOT(CropImage()));   // click on the crop button
+    connect( m_Controls->m_CropButton, SIGNAL(clicked()), this, SLOT(CropPointSet()));   // click on the crop button
     connect( m_Controls->m_BoxButton, SIGNAL(clicked()), this, SLOT(CreateNewBoundingObject()) );
-    connect( m_Controls->m_EnableSurroundingCheckBox, SIGNAL(toggled(bool)), this, SLOT(SurroundingCheck(bool)) );
     connect( m_Controls->chkInformation, SIGNAL(toggled(bool)), this, SLOT(ChkInformationToggled(bool)) );
   }
 }
@@ -157,10 +164,9 @@ void QmitkPointSetCropper::ExecuteOperation (mitk::Operation *operation)
   {
   case OP_EXCHANGE:
     {
-      //RemoveBoundingObjectFromNode();
+      // RemoveBoundingObjectFromNode();
       opExchangeNodes* op = static_cast<opExchangeNodes*>(operation);
       op->GetNode()->SetData(op->GetNewData());
-      mitk::RenderingManager::GetInstance()->InitializeViews();
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
       break;
     }
@@ -173,18 +179,17 @@ void QmitkPointSetCropper::ExecuteOperation (mitk::Operation *operation)
 //-----------------------------------------------------------------------------
 void QmitkPointSetCropper::CreateNewBoundingObject()
 {
-  // attach the cuboid to the image and update the views
   if (this->IsVisible())
   {
-    if (m_ImageNode.IsNotNull())
+    if (m_PointSetNode.IsNotNull())
     {
-      m_ImageToCrop = dynamic_cast<mitk::Image*>(m_ImageNode->GetData());
+      m_PointSetToCrop = dynamic_cast<mitk::PointSet*>(m_PointSetNode->GetData());
 
-      if(m_ImageToCrop.IsNotNull())
+      if(m_PointSetToCrop.IsNotNull())
       {
-        if (this->GetDataStorage()->GetNamedDerivedNode("CroppingObject", m_ImageNode))
+        if (this->GetDataStorage()->GetNamedDerivedNode("CroppingObject", m_PointSetNode))
         {
-          //Remove m_Cropping
+          // Remove m_Cropping
           this->RemoveBoundingObjectFromNode();
         }
 
@@ -196,126 +201,68 @@ void QmitkPointSetCropper::CreateNewBoundingObject()
         }
 
         if (m_CroppingObject.IsNull())
+        {
           return;
+        }
 
-        AddBoundingObjectToNode( m_ImageNode, fitCroppingObject );
+        // Add m_Cropping
+        AddBoundingObjectToNode( m_PointSetNode, fitCroppingObject );
 
-        m_ImageNode->SetVisibility(true);
-        mitk::RenderingManager::GetInstance()->InitializeViews();
+        m_PointSetNode->SetVisibility(true);
         mitk::RenderingManager::GetInstance()->RequestUpdateAll();
         m_Controls->m_BoxButton->setText("Reset bounding box!");
         m_Controls->m_CropButton->setEnabled(true);
       }
     }
     else
-      QMessageBox::information(NULL, "Image cropping functionality", "Load an image first!");
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkPointSetCropper::SurroundingCheck(bool value)
-{
-  if(value)
-  {
-   if(m_ImageNode.IsNotNull())
     {
-      mitk::DataNode *imageNode = m_ImageNode.GetPointer();
-      if (imageNode)
-      {
-        mitk::BaseData* data = imageNode->GetData();
-        if (data)
-        {
-          // test if this data item is an image or not (could also be a surface or something totally different)
-          mitk::Image* image = dynamic_cast<mitk::Image*>( data );
-          if (image)
-          {
-            float min = 10000.0;
-            float max = -10000.0;
-
-            //min = image->GetScalarValueMin();
-            //max = image->GetScalarValueMax();
-
-            m_Controls->m_SurroundingSlider->setRange((int)min,(int)max);
-            m_Controls->m_SurroundingSpin->setRange((int)min,(int)max);
-          }
-        }
-      }
-      m_Controls->m_SurroundingSlider->show();
-      m_Controls->m_SurroundingSpin->show();
+      QMessageBox::information(NULL, "PointSet cropping functionality", "Load a PointSet first!");
     }
-    else
-      m_Controls->m_EnableSurroundingCheckBox->setChecked(false);
-  }
-  else
-  {
-    m_Controls->m_SurroundingSlider->hide();
-    m_Controls->m_SurroundingSpin->hide();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkPointSetCropper::CropImage()
+void QmitkPointSetCropper::CropPointSet()
 {
-  // test, if image is selected
-  if (m_ImageToCrop.IsNull()) return;
+  if (m_PointSetToCrop.IsNull())
+  {
+    QMessageBox::information(NULL, "PointSet cropping plugin", "Select a PointSet first!");
+    return;
+  }
 
-  // test, if bounding box is visible
   if (m_CroppingObjectNode.IsNull())
   {
-    QMessageBox::information(NULL, "Image cropping functionality", "Generate a new bounding object first!");
+    QMessageBox::information(NULL, "PointSet cropping plugin", "Generate a new bounding object first!");
     return;
   }
 
-  // image and bounding object ok
-  mitk::BoundingObjectCutter::Pointer cutter = mitk::BoundingObjectCutter::New();
-  cutter->SetBoundingObject( m_CroppingObject );
-  cutter->SetInput( m_ImageToCrop );
-  cutter->AutoOutsideValueOff();
+  mitk::PointSet::Pointer resultPointSet = mitk::PointSet::New();
 
-  if (m_Controls->m_EnableSurroundingCheckBox->isChecked())
-  {
-    cutter->SetOutsideValue(m_Controls->m_SurroundingSpin->value());
-  }
+  mitk::PointSet::DataType* uncroppedPointSet = m_PointSetToCrop->GetPointSet(0);
+  mitk::PointSet::PointsContainer* uncroppedPoints = uncroppedPointSet->GetPoints();
+  mitk::PointSet::PointsIterator uncroppedPointsIt;
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType uncroppedPoint;
 
-  // do the actual cutting
-  try
+  for (uncroppedPointsIt = uncroppedPoints->Begin(); uncroppedPointsIt != uncroppedPoints->End(); ++uncroppedPointsIt)
   {
-    cutter->Update();
-    //cutter->UpdateLargestPossibleRegion();
+    pointID = uncroppedPointsIt->Index();
+    uncroppedPoint = uncroppedPointsIt->Value();
+    if (m_CroppingObject->IsInside(uncroppedPoint))
+    {
+      resultPointSet->InsertPoint(pointID, uncroppedPoint);
+    }
   }
-  catch(itk::ExceptionObject&)
-  {
-    QMessageBox::warning ( NULL,
-      tr("Cropping not possible"),
-      tr("Sorry, the bounding box has to be completely inside the image.\n\n"
-      "The possibility to drag it larger than the image is a bug and has to be fixed."),
-      QMessageBox::Ok,  QMessageBox::NoButton,  QMessageBox::NoButton );
-    return;
-  }
-
-  // cutting successful
-  mitk::Image::Pointer resultImage = cutter->GetOutput();
-  resultImage->DisconnectPipeline();
 
   RemoveBoundingObjectFromNode();
 
   {
-    opExchangeNodes*  doOp   = new opExchangeNodes(OP_EXCHANGE, m_ImageNode.GetPointer(),
-      m_ImageNode->GetData(),
-      resultImage);
-    opExchangeNodes* undoOp  = new opExchangeNodes(OP_EXCHANGE, m_ImageNode.GetPointer(),
-      resultImage,
-      m_ImageNode->GetData());
+    opExchangeNodes*  doOp   = new opExchangeNodes(OP_EXCHANGE, m_PointSetNode.GetPointer(), m_PointSetToCrop, resultPointSet);
+    opExchangeNodes* undoOp  = new opExchangeNodes(OP_EXCHANGE, m_PointSetNode.GetPointer(), resultPointSet, m_PointSetToCrop);
 
-    // TODO: MITK doesn't recognize that a new event happens in the next line,
-    //       because nothing happens in the render window.
-    //       As a result the undo action will happen together with the last action
-    //       recognized by MITK.
-    mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Crop image");
+    mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Crop PointSet");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent ); // tell the undo controller about the action
-
     ExecuteOperation(doOp); // execute action
   }
 
@@ -364,50 +311,27 @@ void QmitkPointSetCropper::OnSelectionChanged(std::vector<mitk::DataNode*> nodes
 {
   this->RemoveBoundingObjectFromNode();
 
-  if (nodes.size() != 1 || dynamic_cast<mitk::Image*>(nodes[0]->GetData()) == 0)
+  if (nodes.size() != 1 || dynamic_cast<mitk::PointSet*>(nodes[0]->GetData()) == 0)
   {
     m_ParentWidget->setEnabled(false);
-    m_Controls->warningLabel->setVisible(false);
     return;
   }
 
-  m_ImageNode = nodes[0];
+  m_PointSetNode = nodes[0];
   m_ParentWidget->setEnabled(true);
-  // do not accept datanodes with dimension of less than three
-  mitk::Image* m_ImageToCrop = dynamic_cast<mitk::Image*>(nodes[0]->GetData());
-  if (m_ImageToCrop == NULL)
-  {
-    return;
-  }
-  unsigned int dim = m_ImageToCrop->GetDimension();
-  if (dim < 3)
-  {
-    m_Controls->warningLabel->setVisible(true);
-    m_ParentWidget->setEnabled(false);
-  }
-  else
-  {
-    m_Controls->warningLabel->setVisible(false);
-  }
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkPointSetCropper::AddBoundingObjectToNode(mitk::DataNode* node, bool fit)
 {
-  m_ImageToCrop = dynamic_cast<mitk::Image*>(node->GetData());
-  unsigned int dim = m_ImageToCrop->GetDimension();
-  if (dim < 3)
-  {
-    MITK_WARN << "Image Cropper does not support 1D/2D Objects. Aborting operation";
-    return;
-  }
+  m_PointSetToCrop = dynamic_cast<mitk::PointSet*>(node->GetData());
   if(!this->GetDataStorage()->Exists(m_CroppingObjectNode))
   {
     this->GetDataStorage()->Add(m_CroppingObjectNode, node);
     if (fit)
     {
-      m_CroppingObject->FitGeometry(m_ImageToCrop->GetGeometry());
+      m_CroppingObject->FitGeometry(m_PointSetToCrop->GetGeometry());
     }
 
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AffineInteractor );
@@ -436,9 +360,13 @@ void QmitkPointSetCropper::RemoveBoundingObjectFromNode()
 void QmitkPointSetCropper::ChkInformationToggled( bool on )
 {
   if (on)
+  {
     m_Controls->groupInfo->show();
+  }
   else
+  {
     m_Controls->groupInfo->hide();
+  }
 }
 
 
