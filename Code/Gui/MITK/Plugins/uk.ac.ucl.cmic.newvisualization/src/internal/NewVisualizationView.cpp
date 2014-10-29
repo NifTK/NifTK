@@ -74,6 +74,10 @@ NewVisualizationView::~NewVisualizationView()
   
   if (m_OpacityPropertyListener)
     m_OpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
+
+  MITK_INFO <<"Destructing NewViz plugin";
+
+  m_RenderApplet = 0;
 }
 
 void NewVisualizationView::SetFocus()
@@ -113,10 +117,8 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_OpacityPropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "opacity");
     m_OpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
 
+    // Init the VL visualization part
     InitVLRendering();
-
-    // Make sure that we show all the nodes that are already present in DataStorage
-    UpdateDisplay();
   }
 }
 
@@ -133,7 +135,8 @@ void  NewVisualizationView::InitVLRendering()
   format.setStencilBufferBits(8);
   format.setFullscreen(false);
 
-  m_VLQtRenderWindow = new vlQt4::Qt4Widget;
+  if (m_VLQtRenderWindow == 0)
+    m_VLQtRenderWindow = new vlQt4::Qt4Widget;
 
   /* Initialize the OpenGL context and window properties */
   int x = 10;
@@ -142,9 +145,12 @@ void  NewVisualizationView::InitVLRendering()
   int height= 512;
   m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4", format, NULL, x, y, width, height );
 
-  m_RenderApplet = new VLRenderingApplet();
-
+  if (m_RenderApplet == 0)
+    m_RenderApplet = new VLRenderingApplet();
+  
   m_RenderApplet->initialize();
+  //m_VLQtRenderWindow->initializeGL();
+
   m_VLQtRenderWindow->addEventListener(m_RenderApplet.get());
   m_RenderApplet->rendering()->as<Rendering>()->renderer()->setFramebuffer( m_VLQtRenderWindow->framebuffer() );
   m_RenderApplet->rendering()->as<Rendering>()->camera()->viewport()->setClearColor( black );
@@ -156,7 +162,7 @@ void  NewVisualizationView::InitVLRendering()
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_RenderApplet->rendering()->as<Rendering>()->camera()->setViewMatrix( view_mat );
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
-
+  
   /* show the window */
   m_VLQtRenderWindow->show();
 }
@@ -251,6 +257,14 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   MITK_INFO <<"Opacity Change";
 }
 
+void NewVisualizationView::Visible()
+{
+  QmitkBaseView::Visible();
+
+  // Make sure that we show all the nodes that are already present in DataStorage
+  UpdateDisplay();
+}
+
 void NewVisualizationView::UpdateDisplay(bool viewEnabled)
 {
   m_RenderApplet->sceneManager()->tree()->actors()->clear();
@@ -280,6 +294,8 @@ void NewVisualizationView::UpdateDisplay(bool viewEnabled)
       continue;
     
     m_RenderApplet->AddDataNode(currentDataNode);
+    //m_RenderApplet->rendering()->render();
+    MITK_INFO <<"Node added";
   }
 
   m_RenderApplet->rendering()->render();

@@ -78,6 +78,8 @@ protected:
   void OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   void OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
+  virtual void Visible();
+
 private slots: 
 
 
