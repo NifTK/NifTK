@@ -49,14 +49,14 @@ public:
   static const std::string CALIBRATION_FILE_NAME;
 
   /**
-   * \brief Stores the name of the preference node that contains the image scaling in the x direction.
+   * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string X_SCALING;
+  static const std::string SCALE_FILE_NAME;
 
   /**
-   * \brief Stores the name of the preference node that contains the image scaling in the y direction.
+   * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string Y_SCALING;
+  static const std::string EMTOWORLDCALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains whether we flip the x scale factor to be negative.
@@ -104,9 +104,10 @@ private:
 
   QWidget         *m_MainControl;
   ctkPathLineEdit *m_CalibrationFileName;
+  ctkPathLineEdit *m_ScaleFileName;
+  ctkPathLineEdit *m_EmToWorldCalibrationFileName;
+
   bool             m_Initializing;
-  QDoubleSpinBox  *m_XScaling;
-  QDoubleSpinBox  *m_YScaling;
   QCheckBox       *m_FlipXScaling;
   QCheckBox       *m_FlipYScaling;
 
