@@ -18,7 +18,10 @@
 #include <mitkIOUtil.h>
 #include <mitkBifurcationToPointSet.h>
 #include <vtkPolyDataReader.h>
+#include <vtkPolyDataWriter.h>
 #include <vtkSmartPointer.h>
+#include <vtkTubeFilter.h>
+#include <vtkTriangleFilter.h>
 
 int main(int argc, char** argv)
 {
@@ -26,7 +29,7 @@ int main(int argc, char** argv)
  
   int returnStatus = EXIT_FAILURE;
 
-  if ( input.length() == 0 || output.length() == 0 )
+  if ( input.length() == 0 || outputPointSet.length() == 0 )
   {
     commandLine.getOutput()->usage(commandLine);
     return returnStatus;
@@ -46,11 +49,33 @@ int main(int argc, char** argv)
     mitk::BifurcationToPointSet::Pointer converter = mitk::BifurcationToPointSet::New();
     converter->Update(polyDatas, *finalPointSet);
 
-    if (!mitk::IOUtil::SavePointSet(finalPointSet, output))
+    if (!mitk::IOUtil::SavePointSet(finalPointSet, outputPointSet))
     {
-      mitkThrow() << "Failed to save file" << output << std::endl;
+      mitkThrow() << "Failed to save file" << outputPointSet << std::endl;
     }
 
+    if (outputTubes.size() > 0 && polyDatas.size() > 0)
+    {
+      if (polyDatas.size() > 1)
+      {
+        mitkThrow() << "Poly Data array size is > 1. I wasn't expecting this." << std::endl;
+      }
+
+      vtkSmartPointer<vtkTubeFilter> tubeFilter = vtkSmartPointer<vtkTubeFilter>::New();
+      tubeFilter->SetInputData(polyDatas[0]);
+      tubeFilter->SetRadius(0.1);
+      tubeFilter->Update();
+
+      vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+      triangleFilter->SetInputData(tubeFilter->GetOutput());
+      triangleFilter->Update();
+
+      vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+      writer->SetInputData(triangleFilter->GetOutput());
+      writer->SetFileName(outputTubes.c_str());
+      writer->Update();
+
+    }
     // Done
     returnStatus = EXIT_SUCCESS;
   }

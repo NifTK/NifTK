@@ -20,14 +20,22 @@
       <label>Input</label>
       <channel>input</channel>
     </file>
+
     <file fileExtensions=".mps">
-      <name>output</name>
-      <longflag>output</longflag>
+      <name>outputPointSet</name>
+      <longflag>outputPointSet</longflag>
       <description>Output MITK PointSet</description>
-      <label>Output</label>
+      <label>Output PointSet</label>
+      <channel>output</channel>
+    </file>
+
+    <file fileExtensions=".vtk">
+      <name>outputTubes</name>
+      <longflag>outputTubes</longflag>
+      <description>Output VTK Tubes</description>
+      <label>Output Tubes</label>
       <channel>output</channel>
     </file>
 
   </parameters>
-
 </executable>

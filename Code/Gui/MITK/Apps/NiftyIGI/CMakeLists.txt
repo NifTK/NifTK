@@ -53,6 +53,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igiundistort
   uk.ac.ucl.cmic.igirmserror
+  uk.ac.ucl.cmic.igipointsetcropper
 )
 
 NIFTK_CREATE_GUI_APPLICATION(

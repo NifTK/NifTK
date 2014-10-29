@@ -1,0 +1,28 @@
+/**
+\page uk_ac_ucl_cmic_pointsetcropper The Point Set Cropper Plugin
+
+\image html PointSetCropperIcon.png "Icon of the Plugin"
+
+\tableofcontents
+
+\section PointSetCropperUserManualOverview Overview
+
+PointSetCropper is a plugin that enables the user to crop point-sets.
+
+\section PointSetCropperUserManualFeatures Features
+
+- Crop a selected PointSet using a bounding box.
+
+\section PointSetCropperUserManualUsage Usage
+
+First select the PointSet to crop from the drop down menu. The three 2D widgets in the MITK Display show yellow outlines representing the bounding box in each plane (axial, sagital, coronal), the lower right 3D widget shows the entire volume of the bounding box.\n
+
+- To change the <b>size</b> of bounding box press <i> control + right click </i> and move the cursor up/down or left/right in one of the three 2D views.\n
+- To change the <b>orientation</b> of the bounding box press <i> control + middle click </i> and move the cursor up/down or left/right in one of the three 2D views.\n
+- To <b>move</b> the bounding box press <i> control + left click </i> and move the cursor to the wanted position in one of the three 2D views.\n
+
+
+To show the result press the [crop] button.\n
+All actions can be undone by using the global undo function (Ctrl+Z).\n
+
+*/
