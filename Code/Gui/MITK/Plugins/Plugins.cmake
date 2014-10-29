@@ -93,6 +93,7 @@ set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
   Plugins/uk.ac.ucl.cmic.igiundistort:ON
   Plugins/uk.ac.ucl.cmic.igirmserror:ON
+  Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
 )
 
 if(BUILD_IGI)
