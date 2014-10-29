@@ -49,6 +49,10 @@
 // MITK
 #include <mitkImageReadAccessor.h>
 
+// THIS IS VERY IMPORTANT
+// If nothing is included from the mitk::OpenCL module the resource service will not get registered
+#include <mitkOpenCLActivator.h>
+
 using namespace vl;
 
 VLRenderingApplet::VLRenderingApplet()
@@ -56,6 +60,12 @@ VLRenderingApplet::VLRenderingApplet()
   m_FPSTimer.start();
   m_ThresholdVal = new Uniform( "val_threshold" );
   m_ThresholdVal->setUniformF( 0.5f );
+  m_OclService = 0;
+}
+
+VLRenderingApplet::~VLRenderingApplet()
+{
+  MITK_INFO <<"Destructing render applet";
 }
 
 void VLRenderingApplet::initEvent()
@@ -101,6 +111,22 @@ void VLRenderingApplet::initEvent()
   lightPos[2] = cameraPos[2];
   lightPos[3] = 0;
   m_Light->setPosition(lightPos);
+
+  ctkPluginContext* context = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
+
+  ctkServiceReference serviceRef = context->getServiceReference<OclResourceService>();
+  m_OclService = context->getService<OclResourceService>(serviceRef);
+
+  if (m_OclService == NULL)
+  {
+    mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
+  }
+
+  vl::OpenGLContext * glContext = openglContext();
+  glContext->makeCurrent();
+
+  // Force tests to run on the ATI GPU
+  m_OclService->SpecifyPlatformAndDevice(0, 0, true);
 }
 
 
@@ -116,6 +142,44 @@ void VLRenderingApplet::updateScene()
   //// light 0 transform.
   //mat = mat4::getRotation( Time::currentTime()*43, 0,1,0 ) * mat4::getTranslation( 20,20,20 );
   //m_LightTr->setLocalMatrix( mat );
+
+  return;
+
+  ref<ActorCollection> actors = sceneManager()->tree()->actors();
+  int numOfActors = actors->size();
+
+  for (int i = 0; i < numOfActors; i++)
+  {
+    ref<Actor> act = actors->at(i);
+    std::string objName = act->objectName();
+    
+    size_t found =objName.find("_surface");
+    if (found != std::string::npos)
+    {
+      ref<Renderable> ren = m_ActorToRenderableMap[act];
+      ref<Geometry> surface = dynamic_cast<Geometry*>(ren.get());
+      if (surface == 0)
+        continue;
+
+      
+      // Get context 
+      cl_context clContext = m_OclService->GetContext();
+      cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
+
+      cl_int clErr = 0;
+      GLuint bufferHandle = surface->vertexArray()->bufferObject()->handle();
+      cl_mem clBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, bufferHandle, &clErr);
+
+      clEnqueueAcquireGLObjects(clCmdQue, 1, &clBuf, 0, NULL, NULL);
+
+      // Do something
+
+      clEnqueueReleaseGLObjects(clCmdQue, 1, &clBuf, 0, NULL, NULL);
+
+    }
+  }
+
+
 }
 
 void VLRenderingApplet::keyPressEvent(unsigned short, EKey key)
@@ -158,19 +222,30 @@ void VLRenderingApplet::AddDataNode(mitk::DataNode::Pointer node)
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
-  mitk::Image::Pointer mitkImg = dynamic_cast<mitk::Image *>(node->GetData());
-
   ref<Actor> newActor;
+  std::string postFix;
+
+  mitk::Image::Pointer mitkImg = dynamic_cast<mitk::Image *>(node->GetData());
+  mitk::Surface::Pointer mitkSurf = dynamic_cast<mitk::Surface *>(node->GetData());
 
   if (mitkImg.IsNotNull())
+  {
     newActor = AddImageActor(mitkImg);
-  
-  mitk::Surface::Pointer mitkSurf = dynamic_cast<mitk::Surface *>(node->GetData());
-  if (mitkSurf.IsNotNull())
+    postFix.append("_image");
+  }
+  else if (mitkSurf.IsNotNull())
+  {
     newActor = AddSurfaceActor(mitkSurf);
+    postFix.append("_surface");
+  }
 
   if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
+  {
+    std::string objName = newActor->objectName();
+    objName.append(postFix);
+    newActor->setObjectName(objName.c_str());
     m_NodeToActorMap[node] = newActor;
+  }
 }
 
 void VLRenderingApplet::RemoveDataNode(mitk::DataNode::Pointer node)
@@ -286,6 +361,7 @@ ref<Actor> VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
   color[0] = mitkColor[0];
   color[1] = mitkColor[1];
   color[2] = mitkColor[2];
+  color[3] = 1.0f- opacity;
 
   //  SURFACE ONLY
 
@@ -337,6 +413,7 @@ ref<Actor> VLRenderingApplet::AddSurfaceActor(mitk::Surface::Pointer mitkSurf)
   // refresh window
   openglContext()->update();
 
+  m_ActorToRenderableMap[surfActor] = vlSurf;
   return surfActor;
 }
 
@@ -491,7 +568,7 @@ ref<Actor> VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   unsigned int * dims = mitkImg->GetDimensions();
   const float * spacing = const_cast<float *>(mitkImg->GetGeometry()->GetFloatSpacing());
   
-  MITK_INFO <<"DIMMMSS: "<<dims[0] <<" " <<dims[1] <<" " <<dims[2];
+  //MITK_INFO <<"DIMMMSS: "<<dims[0] <<" " <<dims[1] <<" " <<dims[2];
   float dimX = (float)dims[0]*spacing[0] / 2.0f;
   float dimY = (float)dims[1]*spacing[1] / 2.0f;
   float dimZ = (float)dims[2]*spacing[2] / 2.0f;
@@ -500,7 +577,7 @@ ref<Actor> VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   float shiftY = 0.0f;//0.5f * spacing[1];
   float shiftZ = 0.0f;//0.5f * spacing[2];
 
-  MITK_INFO <<"DIMMMSS: "<<dimX <<" " <<dimY <<" " <<dimZ;
+  //MITK_INFO <<"DIMMMSS: "<<dimX <<" " <<dimY <<" " <<dimZ;
   AABB volume_box( vec3( -dimX+shiftX,-dimY+shiftY,-dimZ+shiftZ), vec3(dimX+shiftX,dimY+shiftY,dimZ+shiftZ) );
   mRaycastVolume->setBox( volume_box );
 
@@ -564,6 +641,7 @@ ref<Actor> VLRenderingApplet::AddImageActor(mitk::Image::Pointer mitkImg)
   // refresh window
   openglContext()->update();
 
+  m_ActorToRenderableMap[imageActor] = dynamic_cast<Renderable*>( vlImg.get());
   return imageActor;
 }
 

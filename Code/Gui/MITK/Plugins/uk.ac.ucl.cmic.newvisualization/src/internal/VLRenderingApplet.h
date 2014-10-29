@@ -56,6 +56,7 @@
 #include <mitkSurface.h>
 #include <mitkBaseData.h>
 #include <mitkProperties.h>
+#include <mitkOclResourceService.h>
 
 // Microservices
 #include <usModuleContext.h>
@@ -82,7 +83,7 @@ class VLRenderingApplet: public vl::Applet
 {
 public:
   VLRenderingApplet();
-  virtual ~VLRenderingApplet() {}
+  virtual ~VLRenderingApplet();
 
   void initEvent();
   void updateEvent();
@@ -119,6 +120,9 @@ private:
   ref<Transform> m_LightTr;
 
   std::map< mitk::DataNode::Pointer, ref<Actor>  > m_NodeToActorMap;
+  std::map< ref<Actor>, ref<Renderable>  >         m_ActorToRenderableMap;
+
+  OclResourceService* m_OclService;
 };
 
 #endif
