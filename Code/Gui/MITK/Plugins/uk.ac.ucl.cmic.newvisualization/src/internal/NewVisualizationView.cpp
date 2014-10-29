@@ -136,7 +136,7 @@ void  NewVisualizationView::InitVLRendering()
   format.setFullscreen(false);
 
   if (m_VLQtRenderWindow == 0)
-    m_VLQtRenderWindow = new vlQt4::Qt4Widget;
+    m_VLQtRenderWindow = new VLQt4Widget;//(m_Controls->groupBox_View);
 
   /* Initialize the OpenGL context and window properties */
   int x = 10;
@@ -161,6 +161,7 @@ void  NewVisualizationView::InitVLRendering()
   vl::vec3 up     = vl::vec3(0,1,0);   // up direction
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_RenderApplet->rendering()->as<Rendering>()->camera()->setViewMatrix( view_mat );
+
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
   
   /* show the window */
