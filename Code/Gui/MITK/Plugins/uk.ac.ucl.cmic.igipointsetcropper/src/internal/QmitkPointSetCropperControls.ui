@@ -114,7 +114,7 @@ p, li { white-space: pre-wrap; }
            </sizepolicy>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/btn_ctrl.xpm</pixmap>
+           <pixmap>:/pointsetcropper/btn_ctrl.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
@@ -133,7 +133,7 @@ p, li { white-space: pre-wrap; }
            </sizepolicy>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/mouse_left.xpm</pixmap>
+           <pixmap>:/pointsetcropper/mouse_left.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
@@ -169,7 +169,7 @@ p, li { white-space: pre-wrap; }
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/btn_ctrl.xpm</pixmap>
+           <pixmap>:/pointsetcropper/btn_ctrl.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
@@ -188,7 +188,7 @@ p, li { white-space: pre-wrap; }
            </sizepolicy>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/mouse_middle.xpm</pixmap>
+           <pixmap>:/pointsetcropper/mouse_middle.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
@@ -224,7 +224,7 @@ p, li { white-space: pre-wrap; }
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/btn_ctrl.xpm</pixmap>
+           <pixmap>:/pointsetcropper/btn_ctrl.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
@@ -243,7 +243,7 @@ p, li { white-space: pre-wrap; }
            </sizepolicy>
           </property>
           <property name="pixmap">
-           <pixmap>:/imagecropper/mouse_right.xpm</pixmap>
+           <pixmap>:/pointsetcropper/mouse_right.xpm</pixmap>
           </property>
           <property name="scaledContents">
            <bool>false</bool>
