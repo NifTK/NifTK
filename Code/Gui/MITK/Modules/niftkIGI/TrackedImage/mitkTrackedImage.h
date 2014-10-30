@@ -46,7 +46,7 @@ public:
   void Update(const mitk::DataNode::Pointer imageNode,
            const mitk::DataNode::Pointer trackingSensorToTrackerNode,
            const vtkMatrix4x4& imageToTrackingSensor,
-           const mitk::Point2D& imageScaling
+           const vtkMatrix4x4& emToOptical
            );
 
 protected:
