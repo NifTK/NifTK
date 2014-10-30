@@ -52,6 +52,7 @@ parser.add_argument('-r', '--regexp',
                     dest='regexp',
                     metavar='regexp',
                     help='regular expression to match the scan name / description',
+                    nargs='+',
                     required=True)
 
 parser.add_argument('-d', '--dicom',
@@ -95,20 +96,22 @@ projects = []
 subjects = []
 experiments = []
 scans = []
-regexp = args.regexp
+reg_expressions = args.regexp
 
 for experiment in experiments_list:
     for scan in experiment.scans().get('obj'):
         description = scan.attrs.get('type')
-        if ( description.find(regexp) > -1 ):
-            
+        download=False
+        for regexp in reg_expressions:
+            if ( description.find(regexp) > -1 ):
+                download=True
+                break
+        if (download is True):
             print 'subj: ', scan.parent().parent().label(), ' -- matching scan found: ', description, ' -- URI: ', scan.attrs.get('URI')
             scans.append(scan.label())
             experiments.append(scan.parent().label())
             subjects.append(scan.parent().parent().label())
             projects.append(args.project)
-            
-
 
     
 infosource = pe.Node(niu.IdentityInterface(fields = ['projects', 'subjects', 'experiments', 'scans']),
