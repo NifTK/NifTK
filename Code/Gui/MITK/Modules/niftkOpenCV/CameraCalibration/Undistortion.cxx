@@ -356,6 +356,8 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   err = cudaMemcpyAsync(output->imageData, outputRA.m_DevicePointer, output->widthStep * output->height, cudaMemcpyDeviceToHost, stream);
   assert(err == cudaSuccess);
 
+  err = cudaDestroyTextureObject(texobj);
+  assert(err == cudaSuccess);
 #else
   if (recomputeCache)
   {

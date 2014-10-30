@@ -46,16 +46,16 @@ __global__ void undistortion_kernel(char* outputRGBA, int width, int height, cud
     unsigned int*  outRGBA = &(((unsigned int*) outputRGBA)[y * width + x]);
 
     // map output backwards through the camera & distortion to find out where we need to read from.
-    float   px = (float) x / (float) width;
-    float   py = (float) y / (float) height;
+    float   px = ((float) x + 0.5f) / (float) width;
+    float   py = ((float) y + 0.5f) / (float) height;
 
     float4  pixel = tex2D<float4>(texture, px, py);
 
     unsigned int    out =
-        ((unsigned char) pixel.x * 255)
-     || ((unsigned char) pixel.y * 255) << 8
-     || ((unsigned char) pixel.z * 255) << 16
-     || ((unsigned char) pixel.w * 255) << 24;
+        ((unsigned int) (pixel.x * 255))
+     | (((unsigned int) (pixel.y * 255)) << 8)
+     | (((unsigned int) (pixel.z * 255)) << 16)
+     | (((unsigned int) (pixel.w * 255)) << 24);
 
     *outRGBA = out;
   }
@@ -65,8 +65,6 @@ __global__ void undistortion_kernel(char* outputRGBA, int width, int height, cud
 //-----------------------------------------------------------------------------
 void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream)
 {
-  cudaError_t err = cudaSuccess;
-
   float   intrinsic[3*3];
   std::memcpy(&intrinsic[0], intrinsic3x3, sizeof(intrinsic));
 
