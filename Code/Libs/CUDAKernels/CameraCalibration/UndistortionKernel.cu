@@ -33,13 +33,50 @@ __global__ void donothing_kernel()
 
 
 //-----------------------------------------------------------------------------
-void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, cudaTextureObject_t texture, cudaStream_t stream)
+__global__ void undistortion_kernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, float intrinsic[3*3], float distortion[4])
+{
+  // these are output coordinates.
+  int   x = blockIdx.x * blockDim.x + threadIdx.x;
+  int   y = blockIdx.y * blockDim.y + threadIdx.y;
+
+  // if the input image to our kernel has an odd size then x and y can be out of bounds.
+  // this because we round up the launch config to multiples of 32 or 16.
+  if ((x < width) && (y < height))
+  {
+    unsigned int*  outRGBA = &(((unsigned int*) outputRGBA)[y * width + x]);
+
+    // map output backwards through the camera & distortion to find out where we need to read from.
+    float   px = (float) x / (float) width;
+    float   py = (float) y / (float) height;
+
+    float4  pixel = tex2D<float4>(texture, px, py);
+
+    unsigned int    out =
+        ((unsigned char) pixel.x * 255)
+     || ((unsigned char) pixel.y * 255) << 8
+     || ((unsigned char) pixel.z * 255) << 16
+     || ((unsigned char) pixel.w * 255) << 24;
+
+    *outRGBA = out;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream)
 {
   cudaError_t err = cudaSuccess;
 
-  dim3  grid(4, 4);
-  dim3  threads(32, 4);
+  float   intrinsic[3*3];
+  std::memcpy(&intrinsic[0], intrinsic3x3, sizeof(intrinsic));
+
+  float   distortion[4];
+  std::memcpy(&distortion[0], distortion4, sizeof(distortion));
+
+  // launch config
+  dim3  threads(32, 16);
+  dim3  grid((width + threads.x - 1) / threads.x, (height + threads.y - 1) / threads.y);
 
   // note to self: the third param is "dynamically allocated shared mem".
-  donothing_kernel<<<grid, threads, 0, stream>>>();
+  undistortion_kernel<<<grid, threads, 0, stream>>>(outputRGBA, width, height, texture, intrinsic, distortion);
 }

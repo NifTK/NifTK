@@ -290,7 +290,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
 {
   // an example of how to use the cuda interface.
   // FIXME: this should be factored out into its own class.
-  //        it should probably go niftkCUDA
+  //        it should probably go to niftkCUDA
 #ifdef _USE_CUDA
   CUDAManager*    cm = CUDAManager::GetInstance();
   cudaStream_t    stream = cm->GetStream("undistortion");
@@ -329,7 +329,14 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
   assert(err == cudaSuccess);
 
-  RunUndistortionKernel((char*) outputWA.m_DevicePointer, texobj, stream);
+  cv::Mat   cammat  = m_Intrinsics->GetCameraMatrix();
+  assert(cammat.rows == 3);
+  assert(cammat.cols == 3);
+  assert(cammat.type() == CV_32FC1);
+  cv::Mat   distmat = m_Intrinsics->GetDistorsionCoeffs();
+  assert(distmat.rows >= 4);
+
+  RunUndistortionKernel((char*) outputWA.m_DevicePointer, input->width, input->height, texobj, (float*) cammat.data, (float*) distmat.data, stream);
 
   // even though we don't need the image that holds input data,
   // we still have to finalise it. but we can simply discard the output LightweightCUDAImage.

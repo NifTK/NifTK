@@ -89,7 +89,7 @@ struct ModuleCleanup
 
 } // namespace
 
-// remember: objects at file scope are constructed and cleared up int the order of declaration.
+// remember: objects at file scope are constructed and cleared up in the order of declaration.
 // so this one will be done before the lock above goes away.
 impldetail::ModuleCleanup       s_ModuleCleaner;
 
@@ -433,6 +433,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
   if (err != cudaSuccess)
   {
     // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
+    delete pod;
     throw std::runtime_error("Cannot queue stream callback");
   }
 

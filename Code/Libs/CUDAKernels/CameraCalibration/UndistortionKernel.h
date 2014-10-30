@@ -20,7 +20,7 @@
 #include <texture_types.h>
 
 
-void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, cudaTextureObject_t srcTexture, cudaStream_t stream);
+void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t srcTexture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream);
 
 
 #endif // UndistortionKernel_h
