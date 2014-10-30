@@ -104,8 +104,9 @@
       }
     }
 
-    bool initQt4Widget(const vl::String& title, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0, int x=0, int y=0, int width=640, int height=480)
+    bool initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
     {
+#if 0
       // setFormat(fmt) is marked as deprecated so we use this other method
       QGLContext* glctx = new QGLContext(context()->format(), this);
       QGLFormat fmt = context()->format();
@@ -153,13 +154,13 @@
       // even if the created context seem to have the alpha buffer
       /*bool ok = */glctx->create(shareContext);
       setContext(glctx);
-
+#endif
       initGLContext();
 
       framebuffer()->setWidth(width);
       framebuffer()->setHeight(height);
 
-      #ifndef NDEBUG
+      #if 0//ndef NDEBUG
         printf("--------------------------------------------\n");
         printf("REQUESTED OpenGL Format:\n");
         printf("--------------------------------------------\n");
@@ -200,8 +201,10 @@
       move(x,y);
       resize(width,height);
 
+#if 0
       if (info.fullscreen())
         setFullscreen(true);
+#endif
 
       return true;
     }

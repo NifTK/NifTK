@@ -127,6 +127,7 @@ void  NewVisualizationView::InitVLRendering()
   /* init Visualization Library */
   vl::VisualizationLibrary::init();
 
+#if 0
   /* setup the OpenGL context format */
   vl::OpenGLContextFormat format;
   format.setDoubleBuffer(true);
@@ -134,6 +135,7 @@ void  NewVisualizationView::InitVLRendering()
   format.setDepthBufferBits(24);
   format.setStencilBufferBits(8);
   format.setFullscreen(false);
+#endif
 
   if (m_VLQtRenderWindow == 0)
     m_VLQtRenderWindow = new VLQt4Widget;//(m_Controls->groupBox_View);
@@ -143,7 +145,7 @@ void  NewVisualizationView::InitVLRendering()
   int y = 10;
   int width = 512;
   int height= 512;
-  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4", format, NULL, x, y, width, height );
+  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4", /*format, NULL,*/ x, y, width, height );
 
   if (m_RenderApplet == 0)
     m_RenderApplet = new VLRenderingApplet();
