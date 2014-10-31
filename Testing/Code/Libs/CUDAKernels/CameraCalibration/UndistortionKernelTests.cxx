@@ -20,6 +20,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <string>
 #include <CameraCalibration/UndistortionKernel.h>
 #include <boost/gil/gil_all.hpp>
 #include <cuda_runtime_api.h>
@@ -27,6 +28,7 @@
 #include <opencv2/core/core_c.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/highgui/highgui_c.h>
 
 
 static boost::gil::rgba8_image_t CreateTestImage(int width, int height)
@@ -89,7 +91,7 @@ static boost::gil::rgba8_image_t RunKernel(boost::gil::rgba8_view_t input, const
   resdesc.res.pitch2D.pitchInBytes = (char*) &input(0, 1)[0] - (char*) &input(0, 0)[0];
 
   cudaTextureDesc     texdesc = {cudaAddressModeWrap};
-  texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
+  texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeBorder;//cudaAddressModeClamp;
   texdesc.filterMode = cudaFilterModeLinear;
   texdesc.readMode = cudaReadModeNormalizedFloat;
   texdesc.normalizedCoords = 1;
@@ -151,6 +153,14 @@ static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& 
   cvReleaseImage(&remapy);
 
 
+  IplImage  kernelipl;
+  cvInitImageHeader(&kernelipl, cvSize(kernelresult.width(), kernelresult.height()), IPL_DEPTH_8U, 4);
+  cvSetData(&kernelipl, &kernelresult(0, 0)[0], (char*) &kernelresult(0, 1)[0] - (char*) &kernelresult(0, 0)[0]);
+
+  cvSaveImage((std::string(testname) + "-kernelresult.png").c_str(), &kernelipl);
+  cvSaveImage((std::string(testname) + "-opencvresult.png").c_str(), &outputipl);
+
+
   int   maxpixeldifference = 0;
   int   numpixelsdifferent = 0;
   // note: opencv messes up around the image border
@@ -161,22 +171,29 @@ static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& 
       boost::gil::rgba8_pixel_t   opencvpixel = boost::gil::view(cvoutput)(x, y);
       boost::gil::rgba8_pixel_t   kernelpixel = kernelresult(x, y);
 
-      int   diff = std::max((int) opencvpixel[0] - (int) kernelpixel[0],
-                   std::max((int) opencvpixel[1] - (int) kernelpixel[1],
-                   std::max((int) opencvpixel[2] - (int) kernelpixel[2],
-                            (int) opencvpixel[3] - (int) kernelpixel[3])));
-      if (diff > 1)
+      // opencv will fill in some garbage in areas that do not map back to input.
+      // the kernel will just fill these pixels with alpha zero.
+      // so ignore alpha-zero pixels.
+      if (kernelpixel[3] > 0)
       {
-        std::cerr << testname << ": Pixel at " << x << ',' << y << " differs too much" << std::endl;
-      }
-      if (diff > 0)
-      {
-        ++numpixelsdifferent;
-      }
+        int   diff = std::max((int) opencvpixel[0] - (int) kernelpixel[0],
+                     std::max((int) opencvpixel[1] - (int) kernelpixel[1],
+                     std::max((int) opencvpixel[2] - (int) kernelpixel[2],
+                              (int) opencvpixel[3] - (int) kernelpixel[3])));
+        if (diff > 1)
+        {
+          //std::cerr << testname << ": Pixel at " << x << ',' << y << " differs too much" << std::endl;
+        }
+        if (diff > 0)
+        {
+          ++numpixelsdifferent;
+        }
 
-      maxpixeldifference = std::max(maxpixeldifference, diff);
+        maxpixeldifference = std::max(maxpixeldifference, diff);
+      }
     }
   }
+
 
   if (maxpixeldifference > 1)
   {
@@ -191,6 +208,7 @@ static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& 
 
   return true;
 }
+
 
 static bool IdentityUndistortion()
 {
@@ -216,6 +234,102 @@ static bool IdentityUndistortion()
 }
 
 
+static bool RadialUndistortion()
+{
+  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
+
+  float   cammatdata[9] =
+  {
+    testimg.width(), 0, testimg.width() / 2,
+    0, testimg.height(), testimg.height() / 2,
+    0, 0, 1
+  };
+  cv::Mat   cammat(3, 3, CV_32F, &cammatdata[0]);
+
+  float   distmatdata[4] = {0.5, 0, 0, 0};
+  cv::Mat   distmat(1, 4, CV_32F, &distmatdata[0]);
+
+  boost::gil::rgba8_image_t kernelresult = RunKernel(boost::gil::view(testimg), cammat, distmat);
+
+  bool  match = CompareAgainstOpenCV(boost::gil::view(testimg), cammat, distmat, boost::gil::view(kernelresult), "radialx");
+  if (match)
+    std::cerr << "SUCCESS Radial undistortion" << std::endl;
+  return match;
+}
+
+
+static bool TangentialUndistortion()
+{
+  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
+
+  float   cammatdata[9] =
+  {
+    testimg.width(), 0, testimg.width() / 2,
+    0, testimg.height(), testimg.height() / 2,
+    0, 0, 1
+  };
+  cv::Mat   cammat(3, 3, CV_32F, &cammatdata[0]);
+
+  float   distmatdata[4] = {0, 0, 0.2, 0.2};
+  cv::Mat   distmat(1, 4, CV_32F, &distmatdata[0]);
+
+  boost::gil::rgba8_image_t kernelresult = RunKernel(boost::gil::view(testimg), cammat, distmat);
+
+  bool  match = CompareAgainstOpenCV(boost::gil::view(testimg), cammat, distmat, boost::gil::view(kernelresult), "tangential");
+  if (match)
+    std::cerr << "SUCCESS tangential undistortion" << std::endl;
+  return match;
+}
+
+
+static bool SomeOfEverythingUndistortion()
+{
+  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
+
+  float   cammatdata[9] =
+  {
+    testimg.width(), 0, testimg.width() / 2,
+    0, testimg.height(), testimg.height() / 2,
+    0, 0, 1
+  };
+  cv::Mat   cammat(3, 3, CV_32F, &cammatdata[0]);
+
+  float   distmatdata[4] = {0.5, -0.4, -0.5, 0.4};
+  cv::Mat   distmat(1, 4, CV_32F, &distmatdata[0]);
+
+  boost::gil::rgba8_image_t kernelresult = RunKernel(boost::gil::view(testimg), cammat, distmat);
+
+  bool  match = CompareAgainstOpenCV(boost::gil::view(testimg), cammat, distmat, boost::gil::view(kernelresult), "someofeverything");
+  if (match)
+    std::cerr << "SUCCESS someofeverything undistortion" << std::endl;
+  return match;
+}
+
+
+static bool OffCenterUndistortion()
+{
+  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
+
+  float   cammatdata[9] =
+  {
+    testimg.width(), 0, testimg.width() / 3,
+    0, testimg.height(), testimg.height() / 3,
+    0, 0, 1
+  };
+  cv::Mat   cammat(3, 3, CV_32F, &cammatdata[0]);
+
+  float   distmatdata[4] = {0.1, 0.1, 0.1, 0.1};
+  cv::Mat   distmat(1, 4, CV_32F, &distmatdata[0]);
+
+  boost::gil::rgba8_image_t kernelresult = RunKernel(boost::gil::view(testimg), cammat, distmat);
+
+  bool  match = CompareAgainstOpenCV(boost::gil::view(testimg), cammat, distmat, boost::gil::view(kernelresult), "offcenter");
+  if (match)
+    std::cerr << "SUCCESS offcenter undistortion" << std::endl;
+  return match;
+}
+
+
 int niftkCUDAKernelsUndistortionTest(int argc, char* argv[])
 {
   bool    result = true;
@@ -223,6 +337,10 @@ int niftkCUDAKernelsUndistortionTest(int argc, char* argv[])
   try
   {
     result &= IdentityUndistortion();
+    result &= RadialUndistortion();
+    result &= TangentialUndistortion();
+    result &= SomeOfEverythingUndistortion();
+    result &= OffCenterUndistortion();
   }
   catch (const std::exception& e)
   {

@@ -32,8 +32,15 @@ __global__ void donothing_kernel()
 }
 
 
+template <typename T, int S>
+struct Array
+{
+  T     data[S];
+};
+
+
 //-----------------------------------------------------------------------------
-__global__ void undistortion_kernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, float intrinsic[3*3], float distortion[4])
+__global__ void undistortion_kernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, Array<float, 3 * 3> intrinsic, Array<float, 4> distortion)
 {
   // these are output coordinates.
   int   x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -45,11 +52,31 @@ __global__ void undistortion_kernel(char* outputRGBA, int width, int height, cud
   {
     unsigned int*  outRGBA = &(((unsigned int*) outputRGBA)[y * width + x]);
 
-    // map output backwards through the camera & distortion to find out where we need to read from.
-    float   px = ((float) x + 0.5f) / (float) width;
-    float   py = ((float) y + 0.5f) / (float) height;
+    // normalise coordinate with respect to (de-)centered pinhole.
+    float   nx = (x - intrinsic.data[2]) / intrinsic.data[0];
+    float   ny = (y - intrinsic.data[5]) / intrinsic.data[4];
 
-    float4  pixel = tex2D<float4>(texture, px, py);
+    // input to this is the undistorted coordinate (our output coordinate)
+    // and we want to find out where it would be distorted to.
+
+    // radial distortion.
+    float   r  = (nx * nx) + (ny * ny);
+    float   dx = nx * (1.0f + distortion.data[0] * r + distortion.data[1] * r * r);
+    float   dy = ny * (1.0f + distortion.data[0] * r + distortion.data[1] * r * r);
+    // tangential distortion.
+    dx += distortion.data[3] * (r + 2.0f * nx * nx) + (2.0f * distortion.data[2] * nx * ny);
+    dy += distortion.data[2] * (r + 2.0f * ny * ny) + (2.0f * distortion.data[3] * nx * ny);
+
+    // undo coordinate normalisation (back to pixel coordinates).
+    float   ux = dx * intrinsic.data[0] + intrinsic.data[2];
+    float   uy = dy * intrinsic.data[4] + intrinsic.data[5];
+
+    // adjust for opengl 0.5 pixel offset: sample at center of the pixel.
+    // and normalise to texture coordinates.
+    ux = (ux + 0.5f) / (float) width;
+    uy = (uy + 0.5f) / (float) height;
+
+    float4  pixel = tex2D<float4>(texture, ux, uy);
 
     unsigned int    out =
         ((unsigned int) (pixel.x * 255))
@@ -65,11 +92,11 @@ __global__ void undistortion_kernel(char* outputRGBA, int width, int height, cud
 //-----------------------------------------------------------------------------
 void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream)
 {
-  float   intrinsic[3*3];
-  std::memcpy(&intrinsic[0], intrinsic3x3, sizeof(intrinsic));
+  Array<float, 3 * 3>   intrinsic;
+  std::memcpy(&intrinsic.data[0], intrinsic3x3, sizeof(intrinsic));
 
-  float   distortion[4];
-  std::memcpy(&distortion[0], distortion4, sizeof(distortion));
+  Array<float, 4>       distortion;
+  std::memcpy(&distortion.data[0], distortion4, sizeof(distortion));
 
   // launch config
   dim3  threads(32, 16);
