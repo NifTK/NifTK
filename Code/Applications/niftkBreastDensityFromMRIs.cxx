@@ -165,15 +165,15 @@ public:
   TeeDevice *teeDevice;
   TeeStream *teeStream;
 
-  InputParameters( TCLAP::CmdLine commandLine, 
-                   bool verbose, bool save, bool compression, bool debug,
+  InputParameters( TCLAP::CmdLine &commandLine, 
+                   bool verbose, bool flgSave, bool compression, bool debug,
                    std::string subdirectory, std::string prefix, std::string input,
                    std::string logfile, std::string csvfile ) {
 
     std::stringstream message;
 
     flgVerbose = verbose;
-    flgSaveImages = save;
+    flgSaveImages = flgSave;
     flgDebug = debug;
     flgCompression = compression;
 
@@ -203,8 +203,8 @@ public:
     }
     else
     {
-      newCout = 0;
       foutLog = 0;
+      newCout = 0;
       teeDevice = 0;
       teeStream = 0;
     }
@@ -234,18 +234,18 @@ public:
   }
 
   ~InputParameters() {
-
-   if ( teeStream )
+#if 0
+    if ( teeStream )
     {
       teeStream->flush();
       teeStream->close();
       delete teeStream;
     }
 
-   if ( teeDevice )
-   {
-     delete teeDevice;
-   }
+    if ( teeDevice )
+    {
+      delete teeDevice;
+    }
 
     if ( foutLog )
     {
@@ -263,8 +263,8 @@ public:
     {
       delete newCout;
     }
-
-   }
+#endif
+  }
 
   void Print(void) {
 
@@ -299,11 +299,16 @@ public:
     teeStream->flush();
   }
     
-  void PrintErrorAndExit( std::stringstream &message ) {
+  void PrintError( std::stringstream &message ) {
 
     std::cerr << "ERROR: " << message.str();
     message.str( "" );
     teeStream->flush();
+  }
+    
+  void PrintErrorAndExit( std::stringstream &message ) {
+
+    PrintError( message );
 
     exit( EXIT_FAILURE );
   }
@@ -627,7 +632,8 @@ int main( int argc, char *argv[] )
         if ((! fin) || fin.bad()) 
         {
           message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-          args.PrintErrorAndExit( message );
+          args.PrintError( message );
+          continue;
         }
 
         message << std::endl << "Reading CSV file: " << fileInputDensityMeasurements << std::endl;
@@ -730,7 +736,8 @@ int main( int argc, char *argv[] )
         catch ( itk::ExceptionObject &e )
         {
           message << "Failed to read file: " << fileNames[0] << std::endl;
-          args.PrintErrorAndExit( message );
+          args.PrintError( message );
+          continue;
         }
  
         const  DictionaryType &dictionary = gdcmImageIO->GetMetaDataDictionary();
@@ -1371,7 +1378,8 @@ int main( int argc, char *argv[] )
           if ((! fout) || fout.bad()) 
           {
             message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-            args.PrintErrorAndExit( message );
+            args.PrintError( message );
+            continue;
           }
 
           fout << "Study ID, "
@@ -1447,14 +1455,10 @@ int main( int argc, char *argv[] )
     catch (itk::ExceptionObject &ex)
     {
       message << ex << std::endl;
-      args.PrintErrorAndExit( message );
+      args.PrintError( message );
+      continue;
     }
   }
-    
-  progress = iDirectory/nDirectories;
-  std::cout  << std::endl << "<filter-progress>" << std::endl
-             << progress << std::endl
-             << "</filter-progress>" << std::endl << std::endl;
   
   return EXIT_SUCCESS;
 }
