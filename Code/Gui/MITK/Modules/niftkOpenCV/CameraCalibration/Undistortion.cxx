@@ -323,18 +323,21 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   cudaTextureDesc     texdesc = {cudaAddressModeWrap};
   texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
   texdesc.filterMode = cudaFilterModeLinear;
+  texdesc.normalizedCoords = 1;
   texdesc.readMode = cudaReadModeNormalizedFloat;//cudaReadModeElementType;     // could be cudaReadModeNormalizedFloat to have automatic conversion to floating point.
 
   cudaTextureObject_t   texobj;
   err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
   assert(err == cudaSuccess);
 
-  cv::Mat   cammat  = m_Intrinsics->GetCameraMatrix();
+  cv::Mat   cammat(3, 3, CV_32FC1);
+  m_Intrinsics->GetCameraMatrix().convertTo(cammat, CV_32FC1);
   assert(cammat.rows == 3);
   assert(cammat.cols == 3);
   assert(cammat.type() == CV_32FC1);
-  cv::Mat   distmat = m_Intrinsics->GetDistorsionCoeffs();
-  assert(distmat.rows >= 4);
+  cv::Mat   distmat(1, 4, CV_32FC1);
+  m_Intrinsics->GetDistorsionCoeffs().convertTo(distmat, CV_32FC1);
+  //assert(distmat.rows >= 4);
 
   RunUndistortionKernel((char*) outputWA.m_DevicePointer, input->width, input->height, texobj, (float*) cammat.data, (float*) distmat.data, stream);
 
@@ -358,6 +361,9 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
 
   err = cudaDestroyTextureObject(texobj);
   assert(err == cudaSuccess);
+
+  cm->Autorelease(outputRA, stream);
+
 #else
   if (recomputeCache)
   {
