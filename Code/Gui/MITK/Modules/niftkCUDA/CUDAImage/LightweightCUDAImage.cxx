@@ -46,7 +46,7 @@ LightweightCUDAImage::~LightweightCUDAImage()
     bool dead = !m_RefCount->deref();
     if (dead)
     {
-      CUDAManager::GetInstance()->AllRefsDropped(*this);
+      CUDAManager::GetInstance()->AllRefsDropped(*this, false);
     }
   }
 }
@@ -79,7 +79,7 @@ LightweightCUDAImage& LightweightCUDAImage::operator=(const LightweightCUDAImage
     bool dead = !m_RefCount->deref();
     if (dead)
     {
-      CUDAManager::GetInstance()->AllRefsDropped(*this);
+      CUDAManager::GetInstance()->AllRefsDropped(*this, false);
     }
   }
 

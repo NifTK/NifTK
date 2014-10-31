@@ -157,7 +157,7 @@ protected:
    * Used by LightweightCUDAImage to notify us that all references to it have been dropped,
    * and that it can be placed back onto m_AvailableImagePool for later re-use.
    */
-  void AllRefsDropped(LightweightCUDAImage& lwci);
+  void AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCallback);
 
 
   /** Copy and assignment is not allowed. */

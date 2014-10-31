@@ -446,7 +446,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
 
 
 //-----------------------------------------------------------------------------
-void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
+void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCallback)
 {
   QMutexLocker    lock(&s_Lock);
 
@@ -456,12 +456,20 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
   std::map<unsigned int, LightweightCUDAImage>::iterator  i = m_ValidImages.find(lwci.GetId());
   assert(i != m_ValidImages.end());
 
-  // FIXME: this needs a check whether the readyevent for lwci was ever signaled!
-  //        otherwise we have a race condition with someone requesting an output image,
-  //        queueing a kernel, finalising, and immediately dropping the result.
-  //        that would trigger a call to here, but the queued kernel is still running so the image
-  //        is not available yet!
-  //        how to go about this? queue a callback onto null stream?
+  // this needs a check whether the readyevent for lwci was ever signaled!
+  // otherwise we have a race condition with someone requesting an output image,
+  // queueing a kernel, finalising, and immediately dropping the result.
+  // that would trigger a call to here, but the queued kernel is still running so the image
+  // is not available yet!
+  if (!fromStreamCallback)
+  {
+    // as this function can also be called from a stream-callback (on which we are not allowed
+    // to call any cuda api functions!) we need to guard for that case.
+    // on stream-callback there is no need to sync on the ready-event: we know it's ready because
+    // the callback happens after event signaling.
+    cudaError_t err = cudaEventSynchronize(lwci.m_ReadyEvent);
+    assert(err == cudaSuccess);
+  }
 
   std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
   freeList.insert(freeList.begin(), lwci);
@@ -495,8 +503,12 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
 
   std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(id);
   assert(i != m_ValidImages.end());
-  // BEWARE: may call back into AllRefsDropped().
+
   // this effectively drops the reference from the readaccessor (that is dead already) that was
   // passed into FinaliseAndAutorelease().
-  i->second.m_RefCount->deref();
+  bool dead = !i->second.m_RefCount->deref();
+  if (dead)
+  {
+    AllRefsDropped(i->second, true);
+  }
 }
