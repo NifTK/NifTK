@@ -29,6 +29,16 @@ if(BUILD_MIDAS)
 
 endif()
 
+# will most likely be used by IGI only, but in itself not limited to that.
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkCUDA
+  )
+
+endif()
+
 if(BUILD_IGI)
 
   set(MODULE_DIRS

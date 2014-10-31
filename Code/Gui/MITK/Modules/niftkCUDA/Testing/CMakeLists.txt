@@ -12,23 +12,4 @@
 #
 #============================================================================*/
 
-find_package(ITK)
-if(ITK_FOUND)
-  include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
-  add_subdirectory(ITK)
-endif(ITK_FOUND)
-
-if(VTK_FOUND)
-  add_subdirectory(VTK)
-endif(VTK_FOUND)
-
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  add_subdirectory(CUDAKernels)
-endif()
-
-if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-  add_subdirectory(NVAPI)
-endif()
-
-# Meshing requires ITK, VTK: DO NOT MOVE BEFORE FIND_PACKAGE(ITK), ...
-add_subdirectory(Common)
+MITK_CREATE_MODULE_TESTS(LABELS niftkCUDA)
