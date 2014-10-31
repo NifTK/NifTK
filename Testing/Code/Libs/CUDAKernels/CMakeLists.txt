@@ -12,23 +12,29 @@
 #
 #============================================================================*/
 
+set(CUDAKernelsTests_SRCS
+)
+
 set(NIFTK_TEST_CUDA_LINK_LIBRARIES
   ${ITK_LIBRARIES}
   niftkCUDAKernels
 )
 
-#----------------------------------------------------------------------------------------------------------------------------
-# Dont forget its:  add_test(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
-#----------------------------------------------------------------------------------------------------------------------------
+# the test needs opencv for validation. but that is build automatically only for the igi config.
+if(BUILD_IGI)
+  set(CUDAKernelsTests_SRCS
+    ${CUDAKernelsTests_SRCS}
+    CameraCalibration/UndistortionKernelTests.cxx
+  )
 
-
-set(CUDAKernelsTests_SRCS
-  CameraCalibration/UndistortionKernelTests.cxx
-)
+  set(NIFTK_TEST_CUDA_LINK_LIBRARIES
+    ${NIFTK_TEST_CUDA_LINK_LIBRARIES}
+    ${OpenCV_LIBS}
+  )
+endif()
 
 
 include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 
@@ -37,4 +43,11 @@ target_link_libraries(niftkCUDAKernelsTests ${NIFTK_TEST_CUDA_LINK_LIBRARIES} )
 
 set(CUDAKernels_TESTS ${CXX_TEST_PATH}/niftkCUDAKernelsTests)
 
-add_test(CUDAKernels-UndistortionTest ${CUDAKernels_TESTS} niftkCUDAKernelsUndistortionTest )
+
+set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# Dont forget its:  add_test(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
+#----------------------------------------------------------------------------------------------------------------------------
+
+add_test(CUDAKernels-UndistortionTest ${CUDAKernels_TESTS} niftkCUDAKernelsUndistortionTest ${TEMPORARY_OUTPUT})

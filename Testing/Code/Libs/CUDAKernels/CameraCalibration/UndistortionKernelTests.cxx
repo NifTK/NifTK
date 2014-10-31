@@ -23,6 +23,10 @@
 #include <CameraCalibration/UndistortionKernel.h>
 #include <boost/gil/gil_all.hpp>
 #include <cuda_runtime_api.h>
+#include <opencv2/core/types_c.h>
+#include <opencv2/core/core_c.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
 
 
 static boost::gil::rgba8_image_t CreateTestImage(int width, int height)
@@ -46,15 +50,12 @@ static boost::gil::rgba8_image_t CreateTestImage(int width, int height)
 }
 
 
-static bool IdentityUndistortion()
+static boost::gil::rgba8_image_t RunKernel(boost::gil::rgba8_view_t input, const cv::Mat& cammat, const cv::Mat& distmat)
 {
-  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
-
-
   cudaError_t   err = cudaSuccess;
 
-  std::size_t   bufsize = testimg.width() * testimg.height() * sizeof(boost::gil::rgba8_pixel_t);
-  std::size_t   imgsize = (char*) &boost::gil::view(testimg)(testimg.width() - 1, testimg.height() - 1)[3] - (char*) &boost::gil::view(testimg)(0, 0)[0] + 1;
+  std::size_t   bufsize = input.width() * input.height() * sizeof(boost::gil::rgba8_pixel_t);
+  std::size_t   imgsize = (char*) &input(input.width() - 1, input.height() - 1)[3] - (char*) &input(0, 0)[0] + 1;
   // sanity check
   assert(bufsize == imgsize);
 
@@ -76,16 +77,16 @@ static bool IdentityUndistortion()
     throw std::bad_alloc();
   }
 
-  err = cudaMemcpy(inptr, &boost::gil::view(testimg)(0, 0)[0], imgsize, cudaMemcpyHostToDevice);
+  err = cudaMemcpy(inptr, &input(0, 0)[0], imgsize, cudaMemcpyHostToDevice);
   assert(err == cudaSuccess);
 
   cudaResourceDesc    resdesc = {cudaResourceTypePitch2D, 0};
   resdesc.res.pitch2D.devPtr = inptr;
   resdesc.res.pitch2D.desc.x = resdesc.res.pitch2D.desc.y = resdesc.res.pitch2D.desc.z = resdesc.res.pitch2D.desc.w = 8;
   resdesc.res.pitch2D.desc.f = cudaChannelFormatKindUnsigned;
-  resdesc.res.pitch2D.width  = testimg.width();
-  resdesc.res.pitch2D.height = testimg.height();
-  resdesc.res.pitch2D.pitchInBytes = (char*) &boost::gil::view(testimg)(0, 1)[0] - (char*) &boost::gil::view(testimg)(0, 0)[0];
+  resdesc.res.pitch2D.width  = input.width();
+  resdesc.res.pitch2D.height = input.height();
+  resdesc.res.pitch2D.pitchInBytes = (char*) &input(0, 1)[0] - (char*) &input(0, 0)[0];
 
   cudaTextureDesc     texdesc = {cudaAddressModeWrap};
   texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
@@ -97,15 +98,8 @@ static bool IdentityUndistortion()
   err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
   assert(err == cudaSuccess);
 
-  float   cammat[9] = 
-  {
-    testimg.width(), 0, testimg.width() / 2,
-    0, testimg.height(), testimg.height() / 2,
-    0, 0, 1
-  };
-  float   distmat[4] = {0, 0, 0, 0};
 
-  RunUndistortionKernel((char*) outptr, testimg.width(), testimg.height(), texobj, &cammat[0], &distmat[0], 0);
+  RunUndistortionKernel((char*) outptr, input.width(), input.height(), texobj, (float*) cammat.data, (float*) distmat.data, 0);
 
   err = cudaDeviceSynchronize();
   if (err != cudaSuccess)
@@ -114,11 +108,9 @@ static bool IdentityUndistortion()
   }
 
 
-  boost::gil::rgba8_image_t   resultimg(testimg);
+  boost::gil::rgba8_image_t   resultimg(input.width(), input.height());
   err = cudaMemcpy(&boost::gil::view(resultimg)(0, 0)[0], outptr, imgsize, cudaMemcpyDeviceToHost);
   assert(err == cudaSuccess);
-
-
 
   // cleanup
   err = cudaFree(outptr);
@@ -128,8 +120,99 @@ static bool IdentityUndistortion()
   err = cudaDestroyTextureObject(texobj);
   assert(err == cudaSuccess);
 
-  // we made it till here, so all is good.
+  return resultimg;
+}
+
+
+static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& cammat, const cv::Mat& distmat, boost::gil::rgba8_view_t kernelresult, const char* testname = "test")
+{
+  IplImage* remapx = cvCreateImage(cvSize(input.width(), input.height()), IPL_DEPTH_32F, 1);
+  IplImage* remapy = cvCreateImage(cvSize(input.width(), input.height()), IPL_DEPTH_32F, 1);
+
+  // the old-style CvMat will reference the memory in the new-style cv::Mat.
+  // that's why we keep these in separate variables.
+  CvMat cam  = cammat;
+  CvMat dist = distmat;
+  cvInitUndistortMap(&cam, &dist, remapx, remapy);
+
+
+  IplImage  inputipl;
+  cvInitImageHeader(&inputipl, cvSize(input.width(), input.height()), IPL_DEPTH_8U, 4);
+  cvSetData(&inputipl, &input(0, 0)[0], (char*) &input(0, 1)[0] - (char*) &input(0, 0)[0]);
+
+  boost::gil::rgba8_image_t    cvoutput(input.width(), input.height());
+  IplImage  outputipl;
+  cvInitImageHeader(&outputipl, cvSize(cvoutput.width(), cvoutput.height()), IPL_DEPTH_8U, 4);
+  cvSetData(&outputipl, &boost::gil::view(cvoutput)(0, 0)[0], (char*) &boost::gil::view(cvoutput)(0, 1)[0] - (char*) &boost::gil::view(cvoutput)(0, 0)[0]);
+
+  cvRemap(&inputipl, &outputipl, remapx, remapy, CV_INTER_LINEAR, cvScalarAll(0));
+
+  cvReleaseImage(&remapx);
+  cvReleaseImage(&remapy);
+
+
+  int   maxpixeldifference = 0;
+  int   numpixelsdifferent = 0;
+  // note: opencv messes up around the image border
+  for (int y = 1; y < cvoutput.height() - 1; ++y)
+  {
+    for (int x = 1; x < cvoutput.width() - 1; ++x)
+    {
+      boost::gil::rgba8_pixel_t   opencvpixel = boost::gil::view(cvoutput)(x, y);
+      boost::gil::rgba8_pixel_t   kernelpixel = kernelresult(x, y);
+
+      int   diff = std::max((int) opencvpixel[0] - (int) kernelpixel[0],
+                   std::max((int) opencvpixel[1] - (int) kernelpixel[1],
+                   std::max((int) opencvpixel[2] - (int) kernelpixel[2],
+                            (int) opencvpixel[3] - (int) kernelpixel[3])));
+      if (diff > 1)
+      {
+        std::cerr << testname << ": Pixel at " << x << ',' << y << " differs too much" << std::endl;
+      }
+      if (diff > 0)
+      {
+        ++numpixelsdifferent;
+      }
+
+      maxpixeldifference = std::max(maxpixeldifference, diff);
+    }
+  }
+
+  if (maxpixeldifference > 1)
+  {
+    std::cerr << testname <<": FAIL: Difference between any two pixels is too large: " << maxpixeldifference << std::endl;
+    return false;
+  }
+  if (numpixelsdifferent > std::max(input.width(), input.height()))
+  {
+    std::cerr << testname << ": FAIL: Too many different pixels: " << numpixelsdifferent << std::endl;
+    return false;
+  }
+
   return true;
+}
+
+static bool IdentityUndistortion()
+{
+  boost::gil::rgba8_image_t   testimg = CreateTestImage(1024, 1024);
+
+  float   cammatdata[9] =
+  {
+    testimg.width(), 0, testimg.width() / 2,
+    0, testimg.height(), testimg.height() / 2,
+    0, 0, 1
+  };
+  cv::Mat   cammat(3, 3, CV_32F, &cammatdata[0]);
+
+  float   distmatdata[4] = {0, 0, 0, 0};
+  cv::Mat   distmat(1, 4, CV_32F, &distmatdata[0]);
+
+  boost::gil::rgba8_image_t kernelresult = RunKernel(boost::gil::view(testimg), cammat, distmat);
+
+  bool  match = CompareAgainstOpenCV(boost::gil::view(testimg), cammat, distmat, boost::gil::view(kernelresult), "identity");
+  if (match)
+    std::cerr << "SUCCESS Identity undistortion" << std::endl;
+  return match;
 }
 
 
@@ -137,7 +220,15 @@ int niftkCUDAKernelsUndistortionTest(int argc, char* argv[])
 {
   bool    result = true;
 
-  result &= IdentityUndistortion();
+  try
+  {
+    result &= IdentityUndistortion();
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Caught exception: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

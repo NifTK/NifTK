@@ -21,5 +21,8 @@
 
 void RegisterTests()
 {
+// depends on opencv for validation
+#ifdef BUILD_IGI
   REGISTER_TEST(niftkCUDAKernelsUndistortionTest);
+#endif
 }
