@@ -353,7 +353,7 @@ public:
   }
 
   bool ReadImageFromFile( std::string dirInput, std::string filename, 
-                         const char *description, ImageType::Pointer &image ) {
+                          std::string description, ImageType::Pointer &image ) {
   
     std::stringstream message;
     std::string fileInput = niftk::ConcatenatePath( dirInput, filename );
@@ -371,7 +371,7 @@ public:
   }
 
   bool ReadImageFromFile( std::string dirInput, std::string filename, 
-                         const char *description, nifti_image *&image ) {
+                          std::string description, nifti_image *&image ) {
   
     std::stringstream message;
     std::string fileInput = niftk::ConcatenatePath( dirInput, filename );
@@ -391,7 +391,7 @@ public:
   }
 
   void WriteImageToFile( std::string dirOutput, std::string filename, 
-                         const char *description, ImageType::Pointer image ) {
+                         std::string description, ImageType::Pointer image ) {
   
     std::stringstream message;
     std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
@@ -404,7 +404,7 @@ public:
   }
 
   void WriteImageToFile( std::string dirOutput, std::string filename, 
-                         const char *description, nifti_image *image ) {
+                         std::string description, nifti_image *image ) {
   
     std::stringstream message;
     std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
@@ -809,13 +809,13 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~
         
       if ( ! args.ReadImageFromFile( dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
-                                     "bias field corrected '" 
-                                     << args.strSeriesDescFatSatT1 << "' image", 
+                                     std::string( "bias field corrected '") +
+                                     args.strSeriesDescFatSatT1 + "' image", 
                                      imFatSatT1 ) )
       {
         if ( ! args.ReadImageFromFile( dirOutput, fileI00_t1_fl3d_tra_VIBE, 
-                                       "complementary '" << args.strSeriesDescFatSatT1 
-                                       << "' image", imFatSatT1 ) )
+                                       std::string( "complementary '" ) +args.strSeriesDescFatSatT1 
+                                       + "' image", imFatSatT1 ) )
         {
           if ( fileNamesFatSatT1.size() > 0 )
           {
@@ -832,7 +832,8 @@ int main( int argc, char *argv[] )
             imFatSatT1->DisconnectPipeline();
             
             args.WriteImageToFile( dirOutput, fileI00_t1_fl3d_tra_VIBE, 
-                                   "complementary '" << args.strSeriesDescFatSatT1 << "' image", imFatSatT1 );
+                                   std::string( "complementary '" ) + args.strSeriesDescFatSatT1 +
+                                   "' image", imFatSatT1 );
           }
         }
 
@@ -854,7 +855,8 @@ int main( int argc, char *argv[] )
           imFatSatT1->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
-                                 "bias field corrected '" << args.strSeriesDescFatSatT1 << "' image", imFatSatT1 );
+                                 std::string( "bias field corrected '" ) + 
+                                 args.strSeriesDescFatSatT1 + "' image", imFatSatT1 );
         }
       }
 
@@ -863,13 +865,17 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~~~~
 
       if ( ! args.ReadImageFromFile( dirOutput, fileI02_t2_tse_tra_Resampled, 
-                                     "resampled '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 ) )
+                                     std::string( "resampled '" ) + args.strSeriesDescStructuralT2 +
+                                     "' image", imStructuralT2 ) )
       {
         if ( ! args.ReadImageFromFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
-                                       "bias field corrected '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 ) )
+                                       std::string( "bias field corrected '" ) + 
+                                       args.strSeriesDescStructuralT2 + "' image", imStructuralT2 ) )
         {
           if ( ! args.ReadImageFromFile( dirOutput, fileI00_t2_tse_tra,
-                                         "structural '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 ) )
+                                         std::string( "structural '" ) + 
+                                         args.strSeriesDescStructuralT2 + "' image", 
+                                         imStructuralT2 ) )
           {
             if ( fileNamesStructuralT2.size() > 0 )
             {
@@ -886,7 +892,8 @@ int main( int argc, char *argv[] )
               imStructuralT2->DisconnectPipeline();
 
               args.WriteImageToFile( dirOutput, fileI00_t2_tse_tra,
-                                     "structural '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 );
+                                     std::string( "structural '" ) + args.strSeriesDescStructuralT2 +
+                                     "' image", imStructuralT2 );
             }
           }
 
@@ -906,7 +913,8 @@ int main( int argc, char *argv[] )
             imStructuralT2->DisconnectPipeline();
             
             args.WriteImageToFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
-                                   "bias field corrected '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 );
+                                   std::string( "bias field corrected '" ) +
+                                   args.strSeriesDescStructuralT2 + "' image", imStructuralT2 );
           }
 
           // Rescale the 98th percentile to 100
@@ -952,7 +960,8 @@ int main( int argc, char *argv[] )
           imStructuralT2->DisconnectPipeline();
 
           args.WriteImageToFile( dirOutput, fileI02_t2_tse_tra_Resampled, 
-                                 "resampled '" << args.strSeriesDescStructuralT2 << "' image", imStructuralT2 );
+                                 std::string( "resampled '" ) + args.strSeriesDescStructuralT2 +
+                                 "' image", imStructuralT2 );
         }
       }
 
@@ -972,7 +981,8 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       if ( ! args.ReadImageFromFile( dirOutput, fileOutputBreastMask, 
-                                     "segmented breast mask", imSegmentedBreastMask ) )
+                                     "segmented breast mask", 
+                                     imSegmentedBreastMask ) )
       {
 
         bool flgSmooth = true;
@@ -1113,7 +1123,8 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       if ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_W, 
-                                     "Dixon water '" << args.strSeriesDescDixonWater << "' image", imDixonWater ) )
+                                     std::string( "Dixon water '" ) + args.strSeriesDescDixonWater +
+                                     "' image", imDixonWater ) )
       {
         if ( fileNamesDixonWater.size() > 0 )
         {
@@ -1130,7 +1141,8 @@ int main( int argc, char *argv[] )
           imDixonWater->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI00_sag_dixon_bilateral_W, 
-                                 "Dixon water '" << args.strSeriesDescDixonWater << "' image", imDixonWater );
+                                 std::string( "Dixon water '" ) + args.strSeriesDescDixonWater +
+                                 "' image", imDixonWater );
         }
       }
 
@@ -1139,7 +1151,8 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       if ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_F, 
-                                     "Dixon fat '" << args.strSeriesDescDixonFat << "' image", imDixonFat ) )
+                                     std::string( "Dixon fat '" ) + args.strSeriesDescDixonFat +
+                                     "' image", imDixonFat ) )
       {
         if ( fileNamesDixonFat.size() > 0 )
         {
@@ -1156,7 +1169,8 @@ int main( int argc, char *argv[] )
           imDixonFat->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI00_sag_dixon_bilateral_F, 
-                                 "Dixon fat '" << args.strSeriesDescDixonFat << "' image", imDixonFat );
+                                 std::string( "Dixon fat '" ) + args.strSeriesDescDixonFat +
+                                 "' image", imDixonFat );
         }
       }
 
