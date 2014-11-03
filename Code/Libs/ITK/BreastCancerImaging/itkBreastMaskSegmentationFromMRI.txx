@@ -19,6 +19,7 @@
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
 #include <itkImageMaskSpatialObject.h>
 #include <itkForegroundFromBackgroundImageThresholdCalculator.h>
+#include <itkWriteImage.h>
 
 namespace itk
 {
@@ -716,7 +717,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename ThresholdCalculatorType::Pointer 
     thresholdCalculator = ThresholdCalculatorType::New();
 
-  thresholdCalculator->SetImage( imStructural );
+  thresholdCalculator->SetImage( imMax );
 
   thresholdCalculator->SetVerbose( flgVerbose );
 
@@ -737,7 +738,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
 
-  thresholder->SetInput( imStructural );
+  thresholder->SetInput( imMax );
 
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 1000 );
@@ -749,6 +750,20 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   
   typename LabelImageType::Pointer mask = thresholder->GetOutput();
   mask->DisconnectPipeline();
+
+  if ( 0 )
+  {
+    typedef itk::ImageFileWriter< LabelImageType > FileWriterType;
+    
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+    
+    writer->SetFileName( "ThresholdedImage.nii.gz" );
+    writer->SetInput( mask );
+
+    std::cout << "Writing thresholded image to file: ThresholdedImage.nii.gz" << std::endl;
+
+    writer->Update();
+  }
 
 
   // Label the image
@@ -774,7 +789,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   
   unsigned int i;
 
-  relabel->SetInput(connected->GetOutput());
+  relabel->SetMinimumObjectSize( 500 );
+
+  relabel->SetInput( connected->GetOutput() );
 
   std::cout << "Computing connected labels" << std::endl;
   relabel->Update();
@@ -790,6 +807,21 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   mask = relabel->GetOutput();
   mask->DisconnectPipeline();
 
+  if ( 0 ) 
+  {
+    typedef itk::ImageFileWriter< LabelImageType > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( "LabelledImage.nii.gz" );
+    writer->SetInput( mask );
+
+    std::cout << "Writing labelled image to file: LabelledImage.nii.gz" << std::endl;
+
+    writer->Update();
+  }
+
+
   // Only keep the largest object
 
   typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
@@ -797,13 +829,27 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   duplicator->SetInputImage( imStructural );
   duplicator->Update();
 
-  imSegmented = duplicator->GetOutput();
-  imSegmented->DisconnectPipeline();
+  imSegmented = duplicator->GetModifiableOutput();
+
+  if ( 0 ) 
+  {
+    typedef itk::ImageFileWriter< InternalImageType > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( "ClonedImage.nii.gz" );
+    writer->SetInput( imSegmented );
+
+    std::cout << "Writing labelled image to file: ClonedImage.nii.gz" << std::endl;
+
+    writer->Update();
+  }
 
   typedef itk::ImageRegionIterator< LabelImageType > LabelIteratorType;
   
   LabelIteratorType itMask( mask, mask->GetLargestPossibleRegion() );
   IteratorType itImage( imSegmented, imSegmented->GetLargestPossibleRegion() );
+
 
   itMask.GoToBegin();
   itImage.GoToBegin();
@@ -828,6 +874,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   WriteBinaryImageToUCharFile( fileOutputBackground, "background image", 
                                imSegmented, flgLeft, flgRight );
+
 };
 
 
@@ -1849,41 +1896,84 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::PointSetType::Pointer 
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::SegmentThePectoralMuscle( RealType rYHeightOffset, unsigned long &iPointPec )
+::SegmentThePectoralMuscle( RealType rYHeightOffset, unsigned long &iPointPec, 
+                            bool flgIncludeNippleSeeds )
 {
   typename InternalImageType::RegionType region;
-  typename InternalImageType::SizeType size;
+  typename InternalImageType::SizeType  size;
+  typename InternalImageType::SizeType  sizeSearch;
   typename InternalImageType::IndexType start;
+  typename InternalImageType::IndexType startMidSternum[3];
 
   typename PointSetType::Pointer pecPointSet = PointSetType::New();  
-  typename InternalImageType::IndexType idxMidPectoral;
+  typename InternalImageType::IndexType idxPectoralSeed[3];
    
+
   // Iterate from mid sternum posteriorly looking for the first pectoral voxel
-    
+  // Also iterate from the nipple x,z positions to obtain two more seed points
+
+  startMidSternum[0][0] = idxMidSternum[0];
+  startMidSternum[0][1] = idxMidSternum[1];
+  startMidSternum[0][2] = idxMidSternum[2];
+
+  int iSeed, nSeeds;
+
+  if ( flgIncludeNippleSeeds )
+  {
+    nSeeds = 3;
+
+    startMidSternum[1][0] = (idxNippleRight[0] + 4*idxMidSternum[0])/5;
+    startMidSternum[1][1] = idxMidSternum[1];
+    startMidSternum[1][2] = idxMidSternum[2];
+
+    startMidSternum[2][0] = (idxNippleLeft[0] + 4*idxMidSternum[0])/5;
+    startMidSternum[2][1] = idxMidSternum[1];
+    startMidSternum[2][2] = idxMidSternum[2];
+  }
+  else
+  {
+    nSeeds = 1;
+  }
+
   region = imBIFs->GetLargestPossibleRegion();
   size = region.GetSize();
     
-  region.SetIndex( idxMidSternum );
-
-  size[0] = 1;
-  size[1] = size[1] - idxMidSternum[1];
-  size[2] = 1;
-
-  region.SetSize( size );
-    
-  LineIteratorType itBIFsLinear( imBIFs, region );
-    
-  itBIFsLinear.SetDirection( 1 );
-    
-  while ( ! itBIFsLinear.IsAtEndOfLine() )
+  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
   {
-    idxMidPectoral = itBIFsLinear.GetIndex();
 
-    if ( itBIFsLinear.Get() == 15 ) 
+    region.SetIndex( startMidSternum[ iSeed ] );
+
+    if ( flgVerbose )
     {
-      break;
+      std::cout << "Pectoral search start: " << iSeed << " = " << startMidSternum[ iSeed ] << std::endl;
     }
-    ++itBIFsLinear;
+
+    sizeSearch[0] = 1;
+    sizeSearch[1] = size[1] - idxMidSternum[1];
+    sizeSearch[2] = 1;
+
+    region.SetSize( sizeSearch );
+    
+    LineIteratorType itBIFsLinear( imBIFs, region );
+    
+    itBIFsLinear.SetDirection( 1 );
+    
+    while ( ! itBIFsLinear.IsAtEndOfLine() )
+    {
+      idxPectoralSeed[ iSeed ] = itBIFsLinear.GetIndex();
+      
+      if ( itBIFsLinear.Get() == 15 ) 
+      {
+        break;
+      }
+      ++itBIFsLinear;
+    }
+
+
+    if ( flgVerbose )
+    {
+      std::cout << "Pectoral seed: " << iSeed << " = " << idxPectoralSeed[ iSeed ] << std::endl;
+    }
   }
     
     
@@ -1918,14 +2008,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     // Set the region for the low x-indices [ 0 -> midSternum[0] ]
     region   = imModBIFs->GetLargestPossibleRegion();
       
-    size     = region.GetSize();
-    size[0]  = idxMidSternum[0];
+    sizeSearch     = region.GetSize();
+    sizeSearch[0]  = idxMidSternum[0];
       
     start    = region.GetIndex();
     start[0] = start[1] = start[2] = 0;
       
     region.SetIndex( start );
-    region.SetSize ( size  );
+    region.SetSize ( sizeSearch  );
 
     IteratorType itModBIFs = IteratorType( imModBIFs, region );
       
@@ -1950,8 +2040,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   connectedThreshold->SetLower( 15 );
   connectedThreshold->SetReplaceValue( 1000 );
-  connectedThreshold->SetSeed( idxMidPectoral );
-    
+
+  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
+  {
+    connectedThreshold->SetSeed( idxPectoralSeed[ iSeed ] );
+  }
+
   // Extend initial pectoral muscle region?
   if ( flgExtInitialPect )
   {
@@ -1972,93 +2066,97 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   connectedThreshold = 0;
   imModBIFs          = 0;
-
-  // Iterate through the mask to extract the voxel locations to be
-  // used as seeds for the Fast Marching filter
-             
-  typedef typename FastMarchingFilterType::NodeContainer           NodeContainer;
-  typedef typename FastMarchingFilterType::NodeType                NodeType;
     
-  NodeType node;
-  node.SetValue( 0 );
 
-  typename NodeContainer::Pointer seeds = NodeContainer::New();
-  seeds->Initialize();
-
-  IteratorType pecVoxelIterator( imPectoralVoxels, 
-				 imPectoralVoxels->GetLargestPossibleRegion() );
-        
-  for ( i=0, pecVoxelIterator.GoToBegin(); 
-	! pecVoxelIterator.IsAtEnd(); 
-	i++, ++pecVoxelIterator )
+  if ( fMarchingTime > 0. )
   {
-    if ( pecVoxelIterator.Get() ) {
-      node.SetIndex( pecVoxelIterator.GetIndex() );
-      seeds->InsertElement( i, node );
-    }	
-  }
+
+    // Iterate through the mask to extract the voxel locations to be
+    // used as seeds for the Fast Marching filter
+             
+    typedef typename FastMarchingFilterType::NodeContainer           NodeContainer;
+    typedef typename FastMarchingFilterType::NodeType                NodeType;
+    
+    NodeType node;
+    node.SetValue( 0 );
+
+    typename NodeContainer::Pointer seeds = NodeContainer::New();
+    seeds->Initialize();
+
+    IteratorType pecVoxelIterator( imPectoralVoxels, 
+                                   imPectoralVoxels->GetLargestPossibleRegion() );
+        
+    for ( i=0, pecVoxelIterator.GoToBegin(); 
+          ! pecVoxelIterator.IsAtEnd(); 
+          i++, ++pecVoxelIterator )
+    {
+      if ( pecVoxelIterator.Get() ) {
+        node.SetIndex( pecVoxelIterator.GetIndex() );
+        seeds->InsertElement( i, node );
+      }	
+    }
    
 
-  // Apply the Fast Marching filter to these seed positions
+    // Apply the Fast Marching filter to these seed positions
     
-  typename GradientFilterType::Pointer gradientMagnitude = GradientFilterType::New();
+    typename GradientFilterType::Pointer gradientMagnitude = GradientFilterType::New();
     
-  gradientMagnitude->SetSigma( 1 );
-  gradientMagnitude->SetInput( imSpeedFuncInputImage );
-  gradientMagnitude->Update();
+    gradientMagnitude->SetSigma( 1 );
+    gradientMagnitude->SetInput( imSpeedFuncInputImage );
+    gradientMagnitude->Update();
 
-  WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
-		    gradientMagnitude->GetOutput(), flgLeft, flgRight );
+    WriteImageToFile( fileOutputGradientMagImage, "gradient magnitude image", 
+                      gradientMagnitude->GetOutput(), flgLeft, flgRight );
 
-  typename SigmoidFilterType::Pointer sigmoid = SigmoidFilterType::New();
+    typename SigmoidFilterType::Pointer sigmoid = SigmoidFilterType::New();
 
-  sigmoid->SetOutputMinimum(  0.0  );
-  sigmoid->SetOutputMaximum(  1.0  );
+    sigmoid->SetOutputMinimum(  0.0  );
+    sigmoid->SetOutputMaximum(  1.0  );
 
-  //K1: min gradient along contour of structure to be segmented
-  //K2: average value of gradient magnitude in middle of structure
+    //K1: min gradient along contour of structure to be segmented
+    //K2: average value of gradient magnitude in middle of structure
 
-  sigmoid->SetAlpha( (fMarchingK2 - fMarchingK1) / 6. );
-  sigmoid->SetBeta ( (fMarchingK1 + fMarchingK2) / 2. );
+    sigmoid->SetAlpha( (fMarchingK2 - fMarchingK1) / 6. );
+    sigmoid->SetBeta ( (fMarchingK1 + fMarchingK2) / 2. );
 
-  sigmoid->SetInput( gradientMagnitude->GetOutput() );
+    sigmoid->SetInput( gradientMagnitude->GetOutput() );
 
-  sigmoid->Update();
+    sigmoid->Update();
 
-  WriteImageToFile( fileOutputSpeedImage, "sigmoid speed image", 
-		    sigmoid->GetOutput(), flgLeft, flgRight );
+    WriteImageToFile( fileOutputSpeedImage, "sigmoid speed image", 
+                      sigmoid->GetOutput(), flgLeft, flgRight );
 
-  typename FastMarchingFilterType::Pointer fastMarching = FastMarchingFilterType::New();
+    typename FastMarchingFilterType::Pointer fastMarching = FastMarchingFilterType::New();
 
-  fastMarching->SetTrialPoints( seeds );
-  fastMarching->SetOutputSize( imStructural->GetLargestPossibleRegion().GetSize() );
-  fastMarching->SetStoppingValue( fMarchingTime + 2.0 );
-  fastMarching->SetInput( sigmoid->GetOutput() );
+    fastMarching->SetTrialPoints( seeds );
+    fastMarching->SetOutputSize( imStructural->GetLargestPossibleRegion().GetSize() );
+    fastMarching->SetStoppingValue( fMarchingTime + 2.0 );
+    fastMarching->SetInput( sigmoid->GetOutput() );
 
-  fastMarching->Update();
+    fastMarching->Update();
 
-  WriteImageToFile( fileOutputFastMarchingImage, "fast marching image", 
-		    fastMarching->GetOutput(), flgLeft, flgRight );
+    WriteImageToFile( fileOutputFastMarchingImage, "fast marching image", 
+                      fastMarching->GetOutput(), flgLeft, flgRight );
 
     
-  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+    typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
     
-  thresholder->SetLowerThreshold(           0.0 );
-  thresholder->SetUpperThreshold( fMarchingTime );
+    thresholder->SetLowerThreshold(           0.0 );
+    thresholder->SetUpperThreshold( fMarchingTime );
 
-  thresholder->SetOutsideValue(  0  );
-  thresholder->SetInsideValue(  1000 );
+    thresholder->SetOutsideValue(  0  );
+    thresholder->SetInsideValue(  1000 );
 
-  thresholder->SetInput( fastMarching->GetOutput() );
+    thresholder->SetInput( fastMarching->GetOutput() );
 
-  std::cout << "Segmenting pectoral with fast marching algorithm" << std::endl;
-  thresholder->Update();
+    std::cout << "Segmenting pectoral with fast marching algorithm" << std::endl;
+    thresholder->Update();
 
-  imTmp = thresholder->GetOutput();
-  imTmp->DisconnectPipeline();
+    imTmp = thresholder->GetOutput();
+    imTmp->DisconnectPipeline();
     
-  imPectoralVoxels = imTmp;
-
+    imPectoralVoxels = imTmp;
+  }
 
   // Write the pectoral mask?
     
@@ -2071,27 +2169,30 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   region = imPectoralVoxels->GetLargestPossibleRegion();
   size = region.GetSize();
     
-  region.SetIndex( idxMidSternum );
-
-  size[0] = 1;
-  size[1] = size[1] - idxMidSternum[1];
-  size[2] = 1;
-
-  region.SetSize( size );
-    
-  LineIteratorType itBIFsLinear2( imPectoralVoxels, region );
-    
-  itBIFsLinear2.SetDirection( 1 );
-    
-  while ( ! itBIFsLinear2.IsAtEndOfLine() )
+  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
   {
-    idxMidPectoral = itBIFsLinear2.GetIndex();
+    region.SetIndex( startMidSternum[ iSeed ] );
 
-    if ( itBIFsLinear2.Get() ) 
+    sizeSearch[0] = 1;
+    sizeSearch[1] = size[1] - idxMidSternum[1];
+    sizeSearch[2] = 1;
+
+    region.SetSize( sizeSearch );
+    
+    LineIteratorType itBIFsLinear2( imPectoralVoxels, region );
+    
+    itBIFsLinear2.SetDirection( 1 );
+    
+    while ( ! itBIFsLinear2.IsAtEndOfLine() )
     {
-      break;
+      idxPectoralSeed[ iSeed ] = itBIFsLinear2.GetIndex();
+
+      if ( itBIFsLinear2.Get() ) 
+      {
+        break;
+      }
+      ++itBIFsLinear2;
     }
-    ++itBIFsLinear2;
   }
 
     
@@ -2107,9 +2208,18 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   connectedSurfacePecPoints->SetReplaceValue( 1000 );
 
-  connectedSurfacePecPoints->SetSeed( idxMidPectoral );
-
   std::cout << "Region-growing the pectoral surface" << std::endl;
+
+  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
+  {
+    connectedSurfacePecPoints->SetSeed( idxPectoralSeed[ iSeed ] );
+
+    if ( flgVerbose )
+    {
+      std::cout << "   seed: " << iSeed << " = " << idxPectoralSeed[ iSeed ] << std::endl;
+    }
+  }
+
   connectedSurfacePecPoints->Update();
   
   imPectoralSurfaceVoxels = connectedSurfacePecPoints->GetOutput();
@@ -2177,7 +2287,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::MaskWithBSplineBreastSurface( void )
+::MaskWithBSplineBreastSurface( RealType rYHeightOffset )
 {
 
   if ( flgVerbose )
@@ -2200,13 +2310,13 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // left region definition
   lateralStart[0] = 0;
-  lateralStart[1] = 0;  
+  lateralStart[1] = idxNippleLeft[1] - 1;  
   lateralStart[2] = 0;
 
-  int positionFraction = 85; // 100 = mid-sternum,  0 = breast mid-point
+  int positionFraction = 95; // 100 = mid-sternum,  0 = nipple
 
   lateralSize[0] = idxMidSternum[0];
-  lateralSize[1] = ( positionFraction * idxMidSternum[1] + (100 - positionFraction) * idxLeftBreastMidPoint[1] ) / 100;
+  lateralSize[1] = positionFraction * ( idxMidSternum[1] - idxNippleLeft[1] + 1 ) / 100;
   lateralSize[2] = lateralSize[2];
 
   lateralRegion.SetSize( lateralSize );
@@ -2218,9 +2328,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // iterate over left breast
   IteratorWithIndexType itChestSurfLeftRegion = IteratorWithIndexType( imChestSurfaceVoxels, lateralRegion );
   int iPointLeftSurf  = 0;
-
-  // This offset is necessary regardless of prone-supine scheme or not...
-  RealType rYHeightOffset = static_cast<RealType>( maxSize[ 1 ] );
 
   typename InternalImageType::IndexType idx;
   typename PointSetType::PointType point;
@@ -2264,11 +2371,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   lateralSize  = lateralRegion.GetSize();
 
   lateralStart[0] = idxMidSternum[0];
-  lateralStart[1] = 0;
+  lateralStart[1] = idxNippleRight[1];
   lateralStart[2] = 0;
     
   lateralSize[0] = lateralSize[0] - idxMidSternum[0];
-  lateralSize[1] = ( positionFraction * idxMidSternum[1] + (100 - positionFraction) * idxRightBreastMidPoint[1] ) / 100;
+  lateralSize[1] = positionFraction * ( idxMidSternum[1] - idxNippleRight[1] + 1 ) / 100;
 
   lateralRegion.SetIndex( lateralStart );
   lateralRegion.SetSize( lateralSize );
@@ -3440,7 +3547,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				     const typename InternalImageType::PointType     & origin, 
 				     const typename InternalImageType::SpacingType   & spacing,
 				     const typename InternalImageType::DirectionType & direction,
-				     const RealType rOffset, 
+				     const RealType rYHeightOffset, 
 				     const int splineOrder, 
 				     const int numOfControlPoints,
 				     const int numOfLevels,
@@ -3483,7 +3590,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   filter->SetSize   ( bsDomainSize    );
   filter->SetInput  ( pointSet        );
 
-  filter->SetDebug( true );
+  filter->SetDebug( false );
 
   filter->Update();
 
@@ -3572,7 +3679,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     {
       idx = itSurfaceMaskLinear.GetIndex();
 
-      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rOffset + rBias )
+      if ( static_cast<RealType>( idx[1] ) < surfaceHeight + rYHeightOffset + rBias )
         itSurfaceMaskLinear.Set( 0 );
       else
         itSurfaceMaskLinear.Set( 1000 );

@@ -73,18 +73,57 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   this->ComputeElevationOfAnteriorSurface();
 
   // Segment the Pectoral Muscle
-  RealType rYHeightOffset = static_cast<RealType>( 0.0 );
+
+#if 1
+
+  typename InternalImageType::SizeType 
+    maxSize = this->imStructural->GetLargestPossibleRegion().GetSize();
+
+  RealType rYHeightOffset = static_cast< RealType >( maxSize[1] );
 
   typename PointSetType::Pointer pecPointSet = 
-    this->SegmentThePectoralMuscle( rYHeightOffset, iPointPec );
+    this->SegmentThePectoralMuscle( rYHeightOffset, iPointPec, true );
 
-  MaskThePectoralMuscleAndLateralChestSkinSurface( rYHeightOffset, 
+#else
+
+  typename PointSetType::Pointer pecPointSet = 
+    this->SegmentThePectoralMuscle( 0., iPointPec );
+
+
+  // Demean the pectoral points
+
+  RealType rYHeightOffset = 0.;
+  PointDataIterator pointDataIt;
+
+  for ( pointDataIt = pecPointSet->GetPointData()->Begin();
+        pointDataIt != pecPointSet->GetPointData()->End();
+        ++pointDataIt )
+  {    
+    rYHeightOffset += pointDataIt.Value()[0];
+  }
+
+  rYHeightOffset /= static_cast< RealType >( pecPointSet->GetNumberOfPoints() );
+
+  std::cout << "Mean pectoral muscle height: " << rYHeightOffset << std::endl;
+
+  for ( pointDataIt = pecPointSet->GetPointData()->Begin();
+        pointDataIt != pecPointSet->GetPointData()->End();
+        ++pointDataIt )
+  {    
+    pointDataIt.Value()[0] -= rYHeightOffset;
+  }
+#endif
+
+  // Mask the pectoral muscle
+
+  MaskThePectoralMuscleAndLateralChestSkinSurface( false,
+                                                   rYHeightOffset, 
 						   pecPointSet,
 						   iPointPec );
 
   // Discard anything not within a fitted surface (switch -cropfit)
   if ( this->flgCropWithFittedSurface )
-    this->MaskWithBSplineBreastSurface();
+    this->MaskWithBSplineBreastSurface( rYHeightOffset );
 
   // OR Discard anything not within a certain radius of the breast center
   else 
@@ -96,16 +135,19 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   // Extract the largest object
   this->ExtractLargestObject( this->LEFT_BREAST );
 
+#if 0
   std::string fileOutputLeft( "LabelledLeftImage.nii" );
   this->WriteImageToFile( fileOutputLeft, "largest objects", 
                           this->imSegmented );      
+#endif
 
   this->ExtractLargestObject( this->RIGHT_BREAST );
 
+#if 0
   std::string fileOutputRight( "LabelledRightImage.nii" );
   this->WriteImageToFile( fileOutputRight, "largest objects", 
                           this->imSegmented );      
-
+#endif
 }
 
 
@@ -116,13 +158,15 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 void
 BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
-::MaskThePectoralMuscleAndLateralChestSkinSurface( RealType rYHeightOffset, 
+::MaskThePectoralMuscleAndLateralChestSkinSurface( bool flgIncludeChestSkinSurface,
+                                                   RealType rYHeightOffset, 
 						   typename PointSetType::Pointer &pecPointSet,
 						   unsigned long &iPointPec )
 {
-  typename InternalImageType::RegionType region;
-  typename InternalImageType::SizeType size;
   typename InternalImageType::IndexType start;
+
+  typename InternalImageType::RegionType
+    region = this->imSegmented->GetLargestPossibleRegion();
 
        
   // Extract the skin surface voxels
@@ -159,59 +203,68 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   // Extract the coordinates of the chest surface voxels -
   // i.e. posterior to the sternum
   
-  typename InternalImageType::SizeType sizeChestSurfaceRegion;
-  const typename InternalImageType::SpacingType& sp = this->imChestSurfaceVoxels->GetSpacing();
-
-  start[0] = 0;
-  start[1] = this->idxMidSternum[1];
-  start[2] = 0;
-
-  region = this->imChestSurfaceVoxels->GetLargestPossibleRegion();
-
-  size = region.GetSize();
-  sizeChestSurfaceRegion = size;
-
-  sizeChestSurfaceRegion[1] = static_cast<typename InternalImageType::SizeValueType>(60./sp[1]);		// 60mm only
-
-  if ( start[1] + sizeChestSurfaceRegion[1] > size[1] )
-    sizeChestSurfaceRegion[1] = size[1] - start[1] - 1;
-
-  region.SetSize( sizeChestSurfaceRegion );
-  region.SetIndex( start );
-
-
-  if ( this->flgVerbose )
-    std::cout << "Collating chest surface points in region: "
-	      << region << std::endl;
-
-  IteratorType itSegPosteriorBreast( this->imChestSurfaceVoxels, region );
-  
-  VectorType pecHeight;
-  typename InternalImageType::IndexType idx;
-  typename PointSetType::PointType point;
-
-  for ( itSegPosteriorBreast.GoToBegin(); 
-        ! itSegPosteriorBreast.IsAtEnd() ; 
-        ++itSegPosteriorBreast )
+  if ( flgIncludeChestSkinSurface )
   {
-    if ( itSegPosteriorBreast.Get() ) {
+
+    typename InternalImageType::SizeType sizeChestSurfaceRegion;
+    const typename InternalImageType::SpacingType& sp = this->imChestSurfaceVoxels->GetSpacing();
+
+    start[0] = 0;
+    start[1] = this->idxMidSternum[1];
+    start[2] = 0;
+    
+    typename InternalImageType::SizeType size = region.GetSize();
+    sizeChestSurfaceRegion = size;
+    
+    sizeChestSurfaceRegion[1] = static_cast<typename InternalImageType::SizeValueType>(60./sp[1]);		// 60mm only
+    
+    if ( start[1] + sizeChestSurfaceRegion[1] > size[1] )
+      sizeChestSurfaceRegion[1] = size[1] - start[1] - 1;
+    
+    region.SetSize( sizeChestSurfaceRegion );
+    region.SetIndex( start );
+
+    if ( this->flgVerbose )
+      std::cout << "Collating chest surface points in region: "
+                << region << std::endl;
+
+    IteratorType itSegPosteriorBreast( this->imChestSurfaceVoxels, region );
+  
+    VectorType pecHeight;
+    typename InternalImageType::IndexType idx;
+    typename PointSetType::PointType point;
+
+    for ( itSegPosteriorBreast.GoToBegin(); 
+          ! itSegPosteriorBreast.IsAtEnd() ; 
+          ++itSegPosteriorBreast )
+    {
+      if ( itSegPosteriorBreast.Get() ) {
       
-      idx = itSegPosteriorBreast.GetIndex();
+        idx = itSegPosteriorBreast.GetIndex();
       
-      // The 'height' of the chest surface
-      pecHeight[0] = static_cast<RealType>( idx[1] );
+        // The 'height' of the chest surface
+        pecHeight[0] = static_cast<RealType>( idx[1] );
       
-      // Location of this surface point
-      point[0] = static_cast<RealType>( idx[0] );
-      point[1] = static_cast<RealType>( idx[2] );
+        // Location of this surface point
+        point[0] = static_cast<RealType>( idx[0] );
+        point[1] = static_cast<RealType>( idx[2] );
       
-      pecPointSet->SetPoint( iPointPec, point );
-      pecPointSet->SetPointData( iPointPec, pecHeight );
+        pecPointSet->SetPoint( iPointPec, point );
+        pecPointSet->SetPointData( iPointPec, pecHeight );
       
-      iPointPec++;
+        iPointPec++;
+      }
     }
   }
   
+
+  // Write the chest surface points to a file?
+
+  this->WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
+                                     "chest surface points", 
+                                     this->imChestSurfaceVoxels, 
+                                     this->flgLeft, this->flgRight );
+
 
   // Fit the B-Spline surface with offset
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,18 +279,13 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 					     this->imStructural->GetDirection(), 
 					     rYHeightOffset,
 					     3, 5, 3, false );
-
+  
   // Write the fitted surface to file
 
   this->WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
 			  "fitted pectoral surface with offset", 
-			  imFittedPectoralis, this->flgLeft, this->flgRight );
-  
-  // Write the chest surface points to a file?
-
-  this->WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
-				     "chest surface points", 
-				     this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
+			  imFittedPectoralis, 
+                          this->flgLeft, this->flgRight );
 
 
  // Discard anything within the pectoral mask (i.e. below the surface fit)

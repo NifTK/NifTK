@@ -430,10 +430,11 @@ protected:
 
   /// Segment the Pectoral Muscle
   typename PointSetType::Pointer SegmentThePectoralMuscle( RealType rYHeightOffset,
-							   unsigned long &iPointPec );
+							   unsigned long &iPointPec,
+                                                           bool flgIncludeNippleSeeds=false );
 
   /// Discard anything not within a B-Spline fitted to the breast skin surface
-  void MaskWithBSplineBreastSurface( void );
+  void MaskWithBSplineBreastSurface( RealType rYHeightOffset );
   /// Mask with a sphere centered on each breast
   void MaskBreastWithSphere( void );
 
@@ -501,7 +502,7 @@ protected:
 				       const typename InternalImageType::PointType     &origin, 
 				       const typename InternalImageType::SpacingType   &spacing,
 				       const typename InternalImageType::DirectionType &direction,
-				       const RealType rOffset, 
+				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
 				       const int numOfLevels,

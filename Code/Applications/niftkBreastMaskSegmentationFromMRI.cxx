@@ -25,6 +25,7 @@
 #include <itkBreastMaskSegmentationFromMRI.h>
 #include <itkBreastMaskSegmForModelling.h>
 #include <itkBreastMaskSegmForBreastDensity.h>
+#include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
 #include <boost/filesystem.hpp>
 
@@ -50,8 +51,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_FLOAT, "sigma", "value", "The Guassian std. dev. in mm at which to smooth the pectoral mask [5.0]."},
 
-  {OPT_FLOAT, "marchingK1", "value", "Min gradient along contour of structure to be segmented [30.0]."},
-  {OPT_FLOAT, "marchingK2", "value", "Average value of gradient magnitude in middle of structure [15.0]."},
+  {OPT_FLOAT, "marchingK1", "value", "Min gradient along contour of structure to be segmented [15.0]."},
+  {OPT_FLOAT, "marchingK2", "value", "Average value of gradient magnitude in middle of structure [7.5]."},
   {OPT_FLOAT, "marchingT",  "value", "Fast marching time [ 5.0]"},
 
   {OPT_STRING, "bifs",     "filename", "A Basic Image Features volume."},
@@ -184,8 +185,8 @@ int main( int argc, char *argv[] )
 
   float sigmaInMM = 5;
 
-  float fMarchingK1   = 30.0;
-  float fMarchingK2   = 15.0;
+  float fMarchingK1   = 15.0;
+  float fMarchingK2   = 7.5;
   float fMarchingTime = 5.0;
 
   float sigmaBIF = 3.0;
@@ -423,6 +424,23 @@ int main( int argc, char *argv[] )
 
   imStructural = imageReader->GetOutput();
   imStructural->DisconnectPipeline();
+
+  // Rescale it to 100
+
+  typedef itk::RescaleImageUsingHistogramPercentilesFilter< ImageType, ImageType > RescaleFilterType;
+
+  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput( imStructural );
+  
+  rescaleFilter->SetInLowerPercentile(  0. );
+  rescaleFilter->SetInUpperPercentile( 98. );
+
+  rescaleFilter->SetOutLowerLimit(   0. );
+  rescaleFilter->SetOutUpperLimit( 100. );
+
+  imStructural = rescaleFilter->GetOutput();
+  imStructural->DisconnectPipeline();          
+
     
   breastMaskSegmentor->SetStructuralImage( imStructural );
 

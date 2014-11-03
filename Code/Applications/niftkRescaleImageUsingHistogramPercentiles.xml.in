@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+
+  <title>Rescale image using histogram percentiles</title>
+
+  <description><![CDATA[Rescales an image, with the input limits being specified as percentiles of the input image histogram.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>RescaledImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+    <label>Rescale Limits</label>
+    <description><![CDATA[Parameters that specify the input and output image ranges]]></description>
+
+   <float>
+      <name>inLowerPercentile</name>
+      <longflag>il</longflag>
+      <description>The input lower percentile.</description>
+      <label>Input lower percentile</label>
+      <default>0.</default>
+    </float>
+
+   <float>
+      <name>inUpperPercentile</name>
+      <longflag>iu</longflag>
+      <description>The input upper percentile.</description>
+      <label>Input upper percentile</label>
+      <default>98.</default>
+    </float>
+
+   <float>
+      <name>outLowerLimit</name>
+      <longflag>ol</longflag>
+      <description>The output lower limit.</description>
+      <label>Output lower limit</label>
+      <default>0.</default>
+    </float>
+
+   <float>
+      <name>outUpperLimit</name>
+      <longflag>ou</longflag>
+      <description>The output upper limit.</description>
+      <label>Output upper limit</label>
+      <default>100.</default>
+    </float>
+
+    <boolean>
+      <name>flgClipOutput</name>
+      <flag>c</flag>
+      <longflag>clip</longflag>
+      <description>Clip the output image to the output limits.</description>
+      <label>Clip the output image?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Print verbose information?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output.</description>
+      <label>Print debugging output?</label>
+    </boolean>
+
+  </parameters>
+
+
+</executable>

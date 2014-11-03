@@ -92,6 +92,38 @@
       <label>Compress images?</label>
     </boolean>
 
+    <string>
+      <name>strSeriesDescStructuralT2</name>
+      <longflag>seriesStructural</longflag>
+      <description>The value of the DICOM series description tag (0008|103e) which identifies the structural image in which fat has a high intensity.</description>
+      <label>Structural image series description</label>
+      <default>t2_tse_tra</default>
+    </string>
+
+    <string>
+      <name>strSeriesDescFatSatT1</name>
+      <longflag>seriesAdditional</longflag>
+      <description>The value of the DICOM series description tag (0008|103e) which identifies a complementary second image with a different intensity distribution to the structural image above.</description>
+      <label>Complementary image series description</label>
+      <default>t1_fl3d_tra_VIBE</default>
+    </string>
+
+    <string>
+      <name>strSeriesDescDixonWater</name>
+      <longflag>seriesDixonWater</longflag>
+      <description>Set value of the DICOM series description tag (0008|103e) which identifies a DIXON water image.</description>
+      <label>DIXON water image series description</label>
+      <default>sag_dixon_bilateral_W</default>
+    </string>
+
+    <string>
+      <name>strSeriesDescDixonFat</name>
+      <longflag>seriesDixonFat</longflag>
+      <description>Set value of the DICOM series description tag (0008|103e) which identifies DIXON fat image.</description>
+      <label>DIXON fat image series description</label>
+      <default>sag_dixon_bilateral_F</default>
+    </string>
+
     <boolean>
       <name>flgDebug</name>
       <longflag>dbg</longflag>
