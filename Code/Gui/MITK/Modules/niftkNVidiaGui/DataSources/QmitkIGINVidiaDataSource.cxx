@@ -452,6 +452,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           // this is internal field mode, which might have the obsolete stack configured (i.e. during playback).
           switch (currentFieldMode)
           {
+            case SPLIT_LINE_INTERLEAVED_STEREO:
             case STACK_FIELDS:
               // in case of stack, the subimage-stuffing-into-mitk will have discarded the bottom half.
             case DROP_ONE_FIELD:
@@ -565,7 +566,8 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
         "# this only applies to interlaced video, it has no meaning for progressive input.\n"
         "# " << DO_NOTHING_SPECIAL << " = DO_NOTHING_SPECIAL: interlaced video is treated as full frame.\n"
         "# " << DROP_ONE_FIELD << " = DROP_ONE_FIELD: only one field is captured, the other discarded.\n"
-        "# " << STACK_FIELDS << " = STACK_FIELDS: [deprecated] both fields are stacked vertically.\n";
+        "# " << STACK_FIELDS << " = STACK_FIELDS: [deprecated] both fields are stacked vertically.\n"
+        "# " << SPLIT_LINE_INTERLEAVED_STEREO << " = SPLIT_LINE_INTERLEAVED_STEREO: single-channel line-interleaved stereo is split into two channels with one field each.\n";
       fieldmodefile.close();
     }
   }
@@ -779,6 +781,7 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           default:
             MITK_ERROR << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
             fieldmode = STACK_FIELDS;
+          case SPLIT_LINE_INTERLEAVED_STEREO:
             // STACK_FIELDS used to be the default for previous pig recordings. but it has been deprecated since.
             // we still set this on pimpl, so that Update() will do the right thing of implicitly converting it to DROP_ONE_FIELD.
           case STACK_FIELDS:

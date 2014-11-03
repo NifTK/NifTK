@@ -160,11 +160,11 @@ FrameInfo SDIInput::capture()
             glBindTexture(GL_TEXTURE_2D, pimpl->textures[i * pimpl->ringbuffer_size * pimpl->split + pimpl->current_ringbuffer_index * pimpl->split + j]);
             // we have 4 bytes per pixel
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-            // FIXME: fudge line length here to skip over one row
-            glPixelStorei(GL_UNPACK_ROW_LENGTH, pimpl->pbo_pitch / 4);
+            // fudge line length here to skip over one row: simply pretend a line is twice as long.
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, (pimpl->pbo_pitch / 4) * pimpl->split);
 
             // using the (possibly halfed) height here takes care of field-drop or stack
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, (void*) (pimpl->pbo_pitch * j));
             // FIXME: does this stall?
             glGenerateMipmapEXT(GL_TEXTURE_2D);
         }
@@ -409,15 +409,21 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
 
                 // note: if format is really progressive then the variable had been reset at the top of the constructor,
                 // and this height-halfing would not apply.
-                // however, if we do split-stereo then output is half the size
-                if ((interlaced == DROP_ONE_FIELD) ||
-                    (interlaced == SPLIT_LINE_INTERLEAVED_STEREO))
+                if (interlaced == DROP_ONE_FIELD)
                 {
                     // ntsc is one of the formats with an odd height
                     //  for which the top field has 244 lines and the bottom field 243
                     // so we are rounding towards the top field size here
                     capture_height = (capture_height + 1) / 2;
                     pimpl->height = capture_height;
+                }
+                else
+                if (interlaced == SPLIT_LINE_INTERLEAVED_STEREO)
+                {
+                    // things are a bit messy if we split-stereo:
+                    // we capture in full resolution but user-visible output is half the size.
+                    // that mimics DROP_ONE_FIELD.
+                  pimpl->height = (capture_height + 1) / 2;
                 }
 
                 int   stream_tex_index = pimpl->textures.size();
@@ -444,7 +450,12 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
                     //  but i saw an unrelated(?) bluescreen during testing
                     // (derived from libogltools)
                     {
-                        int   d[2] = {capture_width, capture_height};
+                        // the texture size is user-visible, so can be different from capture-size.
+                        // connection is: wire-format --> capture-format --> texture format.
+                        // wire-to-capture: possible field-drop.
+                        // capture-to-texture: possible stereo-split.
+                        // api-wise only the texture- and wire-formats are visible.
+                        int   d[2] = {pimpl->width, pimpl->height};
 
                         bool  all_min_size = true;
                         for (unsigned int l = 0; ; ++l)
