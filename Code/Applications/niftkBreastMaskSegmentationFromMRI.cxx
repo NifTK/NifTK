@@ -248,6 +248,7 @@ int main( int argc, char *argv[] )
   ImageType::Pointer imStructural;
   ImageType::Pointer imFatSat;
   ImageType::Pointer imBIFs;
+  ImageType::Pointer imTmp;
 
 
   // Generate the NifTK command line interface (CLI) xml code
@@ -441,6 +442,7 @@ int main( int argc, char *argv[] )
   imStructural = imageReader->GetOutput();
   imStructural->DisconnectPipeline();
 
+
   // Rescale it to 100
 
   typedef itk::RescaleImageUsingHistogramPercentilesFilter< ImageType, ImageType > RescaleFilterType;
@@ -454,11 +456,24 @@ int main( int argc, char *argv[] )
   rescaleFilter->SetOutLowerLimit(   0. );
   rescaleFilter->SetOutUpperLimit( 100. );
 
-  imStructural = rescaleFilter->GetOutput();
-  imStructural->DisconnectPipeline();          
+  try
+  { 
+    std::cout << "Rescaling structural image" << std::endl;
+    rescaleFilter->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cerr << "ERROR: rescaling structural image" << std::endl << ex << std::endl;
+    return EXIT_FAILURE;
+  }
 
+  imTmp = rescaleFilter->GetOutput();
+  imTmp->DisconnectPipeline();          
+
+  imStructural = imTmp;
     
   breastMaskSegmentor->SetStructuralImage( imStructural );
+
 
   // Read the fat-saturated image?
 
@@ -482,7 +497,10 @@ int main( int argc, char *argv[] )
     if ( imStructural->GetLargestPossibleRegion().GetSize() 
 	 != imageReader->GetOutput()->GetLargestPossibleRegion().GetSize() )
     {
-      std::cerr << "ERROR: Fat-saturated image has a different size to the structural image" 
+      std::cerr << "ERROR: Fat-saturated image has a different size, "
+                << imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()
+                << ", to the structural image, " 
+                << imStructural->GetLargestPossibleRegion().GetSize()
 		<< std::endl;
       return EXIT_FAILURE;
     }
