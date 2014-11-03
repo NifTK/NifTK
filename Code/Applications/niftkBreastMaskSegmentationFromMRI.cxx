@@ -45,7 +45,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_INT, "yrg", "yCoord", "The 'y' voxel coordinate to regio-grow the bgnd from [ny/4]."},
   {OPT_INT, "zrg", "zCoord", "The 'z' voxel coordinate to regio-grow the bgnd from [nz/2]."},
   
-  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0.6]."},
+  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0.25]."},
 
   {OPT_FLOAT, "tsg", "threshold", "The value at which to threshold the final segmentation (0<tsg<1). Changing this value influences the final size of the breast mask with tsg<0.5 expanding the mask and tsg>0.5 contracting it [0.45]"},
 
@@ -83,11 +83,15 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
   {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
   {OPT_SWITCH, "cropPS",  NULL,        "Crop for prone-supine simulations."},
-  {OPT_FLOAT,  "cropPSMidSternumDist",  NULL,  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [40]."},
+  {OPT_FLOAT,  "cropPSMidSternumDist",  NULL,  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [80]."},
 
   {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
   
   {OPT_STRING, "o",    "filename", "The output segmented image."},
+
+  {OPT_STRING, "oLeftNipple",  "filename", "Save the left nipple index and coord to a file."},
+  {OPT_STRING, "oRightNipple", "filename", "Save the right nipple index and coord to a file."},
+  {OPT_STRING, "oMidSternum",  "filename", "Save the mid-sternum index and coord to a file."},
 
   {OPT_STRING, "fs", "filename", "An additional optional fat-saturated image \n"
    "(must be the same size and resolution as the structural image)."},
@@ -156,6 +160,10 @@ enum {
 
   O_OUTPUT_IMAGE,
 
+  O_OUTPUT_LEFT_NIPPLE,
+  O_OUTPUT_RIGHT_NIPPLE,
+  O_OUTPUT_MIDSTERNUM,
+
   O_INPUT_IMAGE_FATSAT,
   O_INPUT_IMAGE_STRUCTURAL
 };
@@ -179,7 +187,7 @@ int main( int argc, char *argv[] )
   int regGrowYcoord = 0;
   int regGrowZcoord = 0;
 
-  float bgndThresholdProb = 0.6;
+  float bgndThresholdProb = 0.25;
 
   float finalSegmThreshold = 0.45;
 
@@ -191,7 +199,7 @@ int main( int argc, char *argv[] )
 
   float sigmaBIF = 3.0;
 
-  float cropProneSupineDistPostMidSternum  = 40.0;
+  float cropProneSupineDistPostMidSternum  = 80.0;
 
   std::string fileBIFs;
   std::string fileOutputBIFs;
@@ -221,6 +229,10 @@ int main( int argc, char *argv[] )
   std::string fileOutputVTKSurface;
 
   std::string fileOutputImage;
+
+  std::string fileOutputLeftNipple;
+  std::string fileOutputRightNipple;
+  std::string fileOutputMidSternum;
 
   std::string fileInputStructural;
   std::string fileInputFatSat;
@@ -310,6 +322,10 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_VTK_SURFACE, fileOutputVTKSurface);
 
   CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, fileOutputImage );
+
+  CommandLineOptions.GetArgument( O_OUTPUT_LEFT_NIPPLE,  fileOutputLeftNipple );
+  CommandLineOptions.GetArgument( O_OUTPUT_RIGHT_NIPPLE, fileOutputRightNipple );
+  CommandLineOptions.GetArgument( O_OUTPUT_MIDSTERNUM,   fileOutputMidSternum );
 
   CommandLineOptions.GetArgument( O_INPUT_IMAGE_FATSAT, fileInputFatSat );
   CommandLineOptions.GetArgument( O_INPUT_IMAGE_STRUCTURAL, fileInputStructural );
@@ -515,6 +531,96 @@ int main( int argc, char *argv[] )
     std::cout << ex << std::endl;
     return EXIT_FAILURE;
   }
+
+
+  // Save the breast landmarks to files?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ImageType::IndexType voxelIndex;
+  ImageType::PointType voxelCoord;
+
+  if ( fileOutputLeftNipple.length() > 0 )
+  {
+    std::ofstream fout( fileOutputLeftNipple.c_str() );
+
+    if ((! fout) || fout.bad()) 
+    {
+      std::cerr << "ERROR: Could not open file: " << fileOutputLeftNipple << std::endl;
+      return EXIT_FAILURE;
+    }
+    
+    voxelIndex = breastMaskSegmentor->GetLeftNippleIndex();
+
+    imStructural->TransformIndexToPhysicalPoint( voxelIndex, voxelCoord);
+
+    fout << "Left nipple x index, "
+         << "Left nipple y index, "
+         << "Left nipple z index, "
+         << "Left nipple x coord, "
+         << "Left nipple y coord, "
+         << "Left nipple z coord" << std::endl;
+
+    fout << voxelIndex[0] << ", " << voxelIndex[1] << ", " << voxelIndex[2]
+         << voxelCoord[0] << ", " << voxelCoord[1] << ", " << voxelCoord[2] << std::endl;
+
+    fout.close();
+  }
+
+
+  if ( fileOutputRightNipple.length() > 0 )
+  {
+    std::ofstream fout( fileOutputRightNipple.c_str() );
+
+    if ((! fout) || fout.bad()) 
+    {
+      std::cerr << "ERROR: Could not open file: " << fileOutputRightNipple << std::endl;
+      return EXIT_FAILURE;
+    }
+    
+    voxelIndex = breastMaskSegmentor->GetRightNippleIndex();
+
+    imStructural->TransformIndexToPhysicalPoint( voxelIndex, voxelCoord);
+
+    fout << "Right nipple x index, "
+         << "Right nipple y index, "
+         << "Right nipple z index, "
+         << "Right nipple x coord, "
+         << "Right nipple y coord, "
+         << "Right nipple z coord" << std::endl;
+
+    fout << voxelIndex[0] << ", " << voxelIndex[1] << ", " << voxelIndex[2]
+         << voxelCoord[0] << ", " << voxelCoord[1] << ", " << voxelCoord[2] << std::endl;
+
+    fout.close();
+  }
+
+  if ( fileOutputMidSternum.length() > 0 )
+  {
+    std::ofstream fout( fileOutputMidSternum.c_str() );
+
+    if ((! fout) || fout.bad()) 
+    {
+      std::cerr << "ERROR: Could not open file: " << fileOutputMidSternum << std::endl;
+      return EXIT_FAILURE;
+    }
+    
+    voxelIndex = breastMaskSegmentor->GetMidSternumIndex();
+
+    imStructural->TransformIndexToPhysicalPoint( voxelIndex, voxelCoord);
+
+    fout << "Mid-sternum x index, "
+         << "Mid-sternum y index, "
+         << "Mid-sternum z index, "
+         << "Mid-sternum x coord, "
+         << "Mid-sternum y coord, "
+         << "Mid-sternum z coord" << std::endl;
+
+    fout << voxelIndex[0] << ", " << voxelIndex[1] << ", " << voxelIndex[2]
+         << voxelCoord[0] << ", " << voxelCoord[1] << ", " << voxelCoord[2] << std::endl;
+
+    fout.close();
+  }
+
 
 
   return EXIT_SUCCESS;
