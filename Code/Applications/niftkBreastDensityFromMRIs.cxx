@@ -1430,7 +1430,7 @@ int main( int argc, char *argv[] )
           std::string fileOutputDensityMeasurements 
             = niftk::ConcatenatePath( dirOutput, fileDensityMeasurements );
 
-          std::ofstream fout( fileOutputDensityMeasurements .c_str() );
+          std::ofstream fout( fileOutputDensityMeasurements.c_str() );
 
           fout.precision(16);
 

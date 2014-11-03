@@ -221,6 +221,18 @@ public:
   void SetBIFImage( typename InternalImageType::Pointer image ) { imBIFs = image; }
 
 
+  typename InternalImageType::IndexType  GetLeftNippleIndex( void ) {
+    return idxNippleLeft;
+  }
+
+  typename InternalImageType::IndexType  GetRightNippleIndex( void ) {
+    return idxNippleRight;
+  }
+
+  typename InternalImageType::IndexType GetMidSternumIndex( void ) {
+    return idxMidSternum;
+  }
+
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
 
@@ -357,11 +369,15 @@ protected:
 
   typename InternalImageType::IndexType idxMidSternum;
 
-  typename InternalImageType::IndexType idxLeftBreastMidPoint;
-  typename InternalImageType::IndexType idxRightBreastMidPoint;
-
   typename InternalImageType::IndexType idxNippleRight;
   typename InternalImageType::IndexType idxNippleLeft;
+
+
+
+  /// Landmarks used by the segmentation
+
+  typename InternalImageType::IndexType idxLeftBreastMidPoint;
+  typename InternalImageType::IndexType idxRightBreastMidPoint;
 
   typename InternalImageType::IndexType idxLeftPosterior;
   typename InternalImageType::IndexType idxRightPosterior;
