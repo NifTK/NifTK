@@ -933,6 +933,8 @@ int main( int argc, char *argv[] )
           rescaleFilter->SetOutLowerLimit(   0. );
           rescaleFilter->SetOutUpperLimit( 100. );
 
+          rescaleFilter->Update();
+
           imStructuralT2 = rescaleFilter->GetOutput();
           imStructuralT2->DisconnectPipeline();          
         }

@@ -456,6 +456,17 @@ int main( int argc, char *argv[] )
   rescaleFilter->SetOutLowerLimit(   0. );
   rescaleFilter->SetOutUpperLimit( 100. );
 
+  try
+  { 
+    std::cout << "Rescaling structural image" << std::endl;
+    rescaleFilter->Update();
+  }
+  catch (itk::ExceptionObject &ex)
+  { 
+    std::cerr << "ERROR: rescaling structural image" << std::endl << ex << std::endl;
+    return EXIT_FAILURE;
+  }
+
   imTmp = rescaleFilter->GetOutput();
   imTmp->DisconnectPipeline();          
 
