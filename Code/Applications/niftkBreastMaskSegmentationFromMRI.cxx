@@ -25,6 +25,7 @@
 #include <itkBreastMaskSegmentationFromMRI.h>
 #include <itkBreastMaskSegmForModelling.h>
 #include <itkBreastMaskSegmForBreastDensity.h>
+#include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
 #include <boost/filesystem.hpp>
 
@@ -423,6 +424,23 @@ int main( int argc, char *argv[] )
 
   imStructural = imageReader->GetOutput();
   imStructural->DisconnectPipeline();
+
+  // Rescale it to 100
+
+  typedef itk::RescaleImageUsingHistogramPercentilesFilter< ImageType, ImageType > RescaleFilterType;
+
+  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput( imStructural );
+  
+  rescaleFilter->SetInLowerPercentile(  0. );
+  rescaleFilter->SetInUpperPercentile( 98. );
+
+  rescaleFilter->SetOutLowerLimit(   0. );
+  rescaleFilter->SetOutUpperLimit( 100. );
+
+  imStructural = rescaleFilter->GetOutput();
+  imStructural->DisconnectPipeline();          
+
     
   breastMaskSegmentor->SetStructuralImage( imStructural );
 
