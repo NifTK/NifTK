@@ -68,8 +68,12 @@ public:
     int   width;
     int   height;
 
+    // into how many channels do we need to split the incoming data.
+    int   split;
+
     SDIInputImpl()
         : oglrc(0), dc(0), videoslot(0), videodev(0), width(0), height(0), pbo_pitch(0), num_streams(0), ringbuffer_size(0), current_ringbuffer_index(0)
+        , split(1)
     {
     }
 };
@@ -94,7 +98,7 @@ int SDIInput::get_texture_id(int streamno, int ringbufferslot) const
 {
     assert(wglGetCurrentContext() == pimpl->oglrc);
 
-    if (streamno >= pimpl->num_streams)
+    if (streamno >= (pimpl->num_streams * pimpl->split))
         return 0;
     if (ringbufferslot < 0)
         ringbufferslot = pimpl->current_ringbuffer_index;
@@ -102,7 +106,10 @@ int SDIInput::get_texture_id(int streamno, int ringbufferslot) const
     assert(ringbufferslot < pimpl->ringbuffer_size);
     ringbufferslot = ringbufferslot % pimpl->ringbuffer_size;
 
-    int texindex = streamno * pimpl->ringbuffer_size + ringbufferslot;
+    int   realstreamno = streamno / pimpl->split;
+    int   splitstream = streamno % pimpl->split;
+
+    int texindex = realstreamno * pimpl->ringbuffer_size * pimpl->split + ringbufferslot * pimpl->split + splitstream;
     return pimpl->textures[texindex];
 }
 
@@ -147,15 +154,20 @@ FrameInfo SDIInput::capture()
         assert(pimpl->textures.size() >= pimpl->pbos.size());
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pimpl->pbos[i]);
-        glBindTexture(GL_TEXTURE_2D, pimpl->textures[i * pimpl->ringbuffer_size + pimpl->current_ringbuffer_index]);
-        // we have 4 bytes per pixel
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, pimpl->pbo_pitch / 4);
 
-        // using the (possibly halfed) height here takes care of field-drop or stack
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        // FIXME: does this stall?
-        glGenerateMipmapEXT(GL_TEXTURE_2D);
+        for (int j = 0; j < pimpl->split; ++j)
+        {
+            glBindTexture(GL_TEXTURE_2D, pimpl->textures[i * pimpl->ringbuffer_size * pimpl->split + pimpl->current_ringbuffer_index * pimpl->split + j]);
+            // we have 4 bytes per pixel
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+            // fudge line length here to skip over one row: simply pretend a line is twice as long.
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, (pimpl->pbo_pitch / 4) * pimpl->split);
+
+            // using the (possibly halfed) height here takes care of field-drop or stack
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, (void*) (pimpl->pbo_pitch * j));
+            // FIXME: does this stall?
+            glGenerateMipmapEXT(GL_TEXTURE_2D);
+        }
     }
     if (!pimpl->pbos.empty())
     {
@@ -221,9 +233,15 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
 
     pimpl->width  = expectedformat.get_width();
     pimpl->height = expectedformat.get_height();
-    // just in case somebody requested some interlaced mode but we are actually capturing progressive
-    if (!expectedformat.is_interlaced)
-        interlaced = DO_NOTHING_SPECIAL;
+
+    // in case somebody requested some interlaced mode but we are actually capturing progressive,
+    // make sure that code further down the line sets up the buffers correctly.
+    // however, if we split-stereo, then dont mess with format!
+    if (interlaced != SPLIT_LINE_INTERLEAVED_STEREO)
+    {
+      if (!expectedformat.is_interlaced)
+          interlaced = DO_NOTHING_SPECIAL;
+    }
 
     // find out what is currently connected and coming in
     NVVIOSTATUS status = {0};
@@ -264,14 +282,16 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
     std::map<int, std::vector<int> >::const_iterator	jci = jackchannelconfig.begin();
     for (unsigned int i = 0; i < jackchannelconfig.size(); ++i)
     {
+        // remember: signal format in status is ok, everything else is bogus including sampling etc
+
         // sampling format is set below
         // never had any input that had more than 8 bits
         config.vioConfig.inConfig.streams[i].bitsPerComponent = 8;
         // expand from colour subsampling to full resolution
         config.vioConfig.inConfig.streams[i].expansionEnable = 1;
         // BEWARE: this one is a bit funny
-        // for 3g signals this would be a dual-link stream over two channels (tested, works)
-        // but for non-3g, i have no idea how to set this up        
+        // for 3g signals this would be a dual-link stream over two channels (tested, works).
+        // but for non-3g, i have no idea how to set this up.
         config.vioConfig.inConfig.streams[i].numLinks = jci->second.size();
         for (unsigned int j = 0; j < config.vioConfig.inConfig.streams[i].numLinks; ++j)
         {
@@ -287,7 +307,8 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
     // FIXME: after further testing, it appears that the current hardware revision can sample only with 422!
     //        the other ones fail with unsupported even if that's what comes off the wire
     //        e.g.: wire=444, config=444 --> fail     wire=444, config=422 --> ok
-    NVVIOCOMPONENTSAMPLING	samplings[] = {NVVIOCOMPONENTSAMPLING_4444, NVVIOCOMPONENTSAMPLING_4224, NVVIOCOMPONENTSAMPLING_444, NVVIOCOMPONENTSAMPLING_422};
+    // FIXME: testing with the aja roi converter set to 3g output, sampling with 4444 succeeds here but produces broken colours.
+    NVVIOCOMPONENTSAMPLING  samplings[] = {/*NVVIOCOMPONENTSAMPLING_4444, NVVIOCOMPONENTSAMPLING_4224, NVVIOCOMPONENTSAMPLING_444,*/ NVVIOCOMPONENTSAMPLING_422};
     bool foundsamplingformat = false;
     for (int s = 0; s < (sizeof(samplings) / sizeof(samplings[0])); ++s)
     {
@@ -360,6 +381,7 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
             mat[2][0] = +1.596f; mat[2][1] = -0.813f; mat[2][2] = +0.000f; mat[2][3] = +0.000f;
             mat[3][0] = +0.000f; mat[3][1] = +0.000f; mat[3][2] = +0.000f; mat[3][3] = +1.000f;
 
+            pimpl->split = (interlaced == SPLIT_LINE_INTERLEAVED_STEREO) ? 2 : 1;
             pimpl->num_streams = jackchannelconfig.size();
             pimpl->ringbuffer_size = std::max(1, ringbuffersize);
 
@@ -388,7 +410,8 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
                 if (glGetError() != GL_NO_ERROR)
                     throw std::runtime_error("Cannot set up stream parameters");
 
-                // note: if format is really progressive then the variable had been reset at the top of the constructor
+                // note: if format is really progressive then the variable had been reset at the top of the constructor,
+                // and this height-halfing would not apply.
                 if (interlaced == DROP_ONE_FIELD)
                 {
                     // ntsc is one of the formats with an odd height
@@ -397,9 +420,17 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
                     capture_height = (capture_height + 1) / 2;
                     pimpl->height = capture_height;
                 }
+                else
+                if (interlaced == SPLIT_LINE_INTERLEAVED_STEREO)
+                {
+                    // things are a bit messy if we split-stereo:
+                    // we capture in full resolution but user-visible output is half the size.
+                    // that mimics DROP_ONE_FIELD.
+                  pimpl->height = (capture_height + 1) / 2;
+                }
 
                 int   stream_tex_index = pimpl->textures.size();
-                for (int j = 0; j < pimpl->ringbuffer_size; ++j)
+                for (int j = 0; j < (pimpl->ringbuffer_size * pimpl->split); ++j)
                 {
                     // no matter what, we'll always have at least one texture per stream
                     GLuint tex = 0;
@@ -422,7 +453,12 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
                     //  but i saw an unrelated(?) bluescreen during testing
                     // (derived from libogltools)
                     {
-                        int   d[2] = {capture_width, capture_height};
+                        // the texture size is user-visible, so can be different from capture-size.
+                        // connection is: wire-format --> capture-format --> texture format.
+                        // wire-to-capture: possible field-drop.
+                        // capture-to-texture: possible stereo-split.
+                        // api-wise only the texture- and wire-formats are visible.
+                        int   d[2] = {pimpl->width, pimpl->height};
 
                         bool  all_min_size = true;
                         for (unsigned int l = 0; ; ++l)
@@ -477,18 +513,23 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
 
                     int internalformat = GL_RGBA8;
                     glVideoCaptureStreamParameterivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_INTERNAL_FORMAT_NV, &internalformat);
+                    assert(glGetError() == GL_NO_ERROR);
 
                     // we dump both fields into the same pbo, stacked on top of each other
                     // and during capture time we decide whether we drop one or not
                     int     bufferpitch = 0;
                     glGetVideoCaptureStreamivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_PITCH_NV, &bufferpitch);
 
-                    if (interlaced == DO_NOTHING_SPECIAL)
+                    // for progressive, just dump the data straight into pbo.
+                    // if we do stereo-split then do the same: just straight into pbo. split happens in capture().
+                    if ((interlaced == DO_NOTHING_SPECIAL) ||
+                        (interlaced == SPLIT_LINE_INTERLEAVED_STEREO))
                     {
                         int     bufferbytes = bufferpitch * capture_height;
                         glBufferData(GL_VIDEO_BUFFER_NV, bufferbytes, 0, GL_STREAM_READ);
                         glBindVideoCaptureStreamBufferNV(pimpl->videoslot, i, GL_FRAME_NV, 0);
                     }
+                    // else branch takes care of STACK_FIELDS and (implicitly) DROP_ONE_FIELD.
                     else
                     {
                         int     fieldheight[2];
