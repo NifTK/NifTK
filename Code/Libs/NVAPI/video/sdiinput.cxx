@@ -282,14 +282,16 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
     std::map<int, std::vector<int> >::const_iterator	jci = jackchannelconfig.begin();
     for (unsigned int i = 0; i < jackchannelconfig.size(); ++i)
     {
+        // remember: signal format in status is ok, everything else is bogus including sampling etc
+
         // sampling format is set below
         // never had any input that had more than 8 bits
         config.vioConfig.inConfig.streams[i].bitsPerComponent = 8;
         // expand from colour subsampling to full resolution
         config.vioConfig.inConfig.streams[i].expansionEnable = 1;
         // BEWARE: this one is a bit funny
-        // for 3g signals this would be a dual-link stream over two channels (tested, works)
-        // but for non-3g, i have no idea how to set this up        
+        // for 3g signals this would be a dual-link stream over two channels (tested, works).
+        // but for non-3g, i have no idea how to set this up.
         config.vioConfig.inConfig.streams[i].numLinks = jci->second.size();
         for (unsigned int j = 0; j < config.vioConfig.inConfig.streams[i].numLinks; ++j)
         {
@@ -305,7 +307,8 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
     // FIXME: after further testing, it appears that the current hardware revision can sample only with 422!
     //        the other ones fail with unsupported even if that's what comes off the wire
     //        e.g.: wire=444, config=444 --> fail     wire=444, config=422 --> ok
-    NVVIOCOMPONENTSAMPLING	samplings[] = {NVVIOCOMPONENTSAMPLING_4444, NVVIOCOMPONENTSAMPLING_4224, NVVIOCOMPONENTSAMPLING_444, NVVIOCOMPONENTSAMPLING_422};
+    // FIXME: testing with the aja roi converter set to 3g output, sampling with 4444 succeeds here but produces broken colours.
+    NVVIOCOMPONENTSAMPLING  samplings[] = {/*NVVIOCOMPONENTSAMPLING_4444, NVVIOCOMPONENTSAMPLING_4224, NVVIOCOMPONENTSAMPLING_444,*/ NVVIOCOMPONENTSAMPLING_422};
     bool foundsamplingformat = false;
     for (int s = 0; s < (sizeof(samplings) / sizeof(samplings[0])); ++s)
     {
@@ -510,6 +513,7 @@ SDIInput::SDIInput(SDIDevice* dev, InterlacedBehaviour interlaced, int ringbuffe
 
                     int internalformat = GL_RGBA8;
                     glVideoCaptureStreamParameterivNV(pimpl->videoslot, i, GL_VIDEO_BUFFER_INTERNAL_FORMAT_NV, &internalformat);
+                    assert(glGetError() == GL_NO_ERROR);
 
                     // we dump both fields into the same pbo, stacked on top of each other
                     // and during capture time we decide whether we drop one or not
