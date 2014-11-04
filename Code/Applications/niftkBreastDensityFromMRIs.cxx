@@ -911,33 +911,34 @@ int main( int argc, char *argv[] )
 
             imStructuralT2 = biasFieldCorrector->GetOutput();
             imStructuralT2->DisconnectPipeline();
+
+            // Rescale the 98th percentile to 100
+          
+            message << std::endl << "Rescaling '" << args.strSeriesDescStructuralT2 << "' image to 100" << std::endl;  
+            args.PrintMessage( message );
+
+            typedef itk::RescaleImageUsingHistogramPercentilesFilter<ImageType, ImageType> RescaleFilterType;
+            
+            RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+            rescaleFilter->SetInput( imStructuralT2 );
+  
+            rescaleFilter->SetInLowerPercentile(  0. );
+            rescaleFilter->SetInUpperPercentile( 98. );
+
+            rescaleFilter->SetOutLowerLimit(   0. );
+            rescaleFilter->SetOutUpperLimit( 100. );
+
+            rescaleFilter->Update();
+
+            imStructuralT2 = rescaleFilter->GetOutput();
+            imStructuralT2->DisconnectPipeline();          
             
             args.WriteImageToFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
                                    std::string( "bias field corrected '" ) +
                                    args.strSeriesDescStructuralT2 + "' image", imStructuralT2 );
           }
-
-          // Rescale the 98th percentile to 100
-          
-          message << std::endl << "Rescaling '" << args.strSeriesDescStructuralT2 << "' image to 100" << std::endl;  
-          args.PrintMessage( message );
-
-          typedef itk::RescaleImageUsingHistogramPercentilesFilter<ImageType, ImageType> RescaleFilterType;
-
-          RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-          rescaleFilter->SetInput( imStructuralT2 );
-  
-          rescaleFilter->SetInLowerPercentile(  0. );
-          rescaleFilter->SetInUpperPercentile( 98. );
-
-          rescaleFilter->SetOutLowerLimit(   0. );
-          rescaleFilter->SetOutUpperLimit( 100. );
-
-          rescaleFilter->Update();
-
-          imStructuralT2 = rescaleFilter->GetOutput();
-          imStructuralT2->DisconnectPipeline();          
         }
+
       
         // Resample the T2 image to match the FatSat image
 
@@ -1278,6 +1279,9 @@ int main( int argc, char *argv[] )
 
         int ret = system( commandNiftySeg.str().c_str() );
         message << std::endl << "Returned: " << ret << std::endl;
+
+        args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
+                                "breast parenchyma", imParenchyma );
       }
 
 #endif
