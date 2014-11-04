@@ -357,25 +357,27 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 
 
     vl::ref<vl::Effect> fx = vlActor->effect();
-    //if (opacity == 1.0f)
-    //{
-    //  fx->shader()->enable(EN_DEPTH_TEST);
-    //  fx->shader()->enable(EN_CULL_FACE);
-    //  fx->shader()->enable(EN_LIGHTING);
-    //  fx->shader()->setRenderState(m_Light.get(), 0 );
-    //  fx->shader()->gocMaterial()->setDiffuse(color);
-    //  fx->shader()->gocMaterial()->setTransparency(1.0f);
-    //}
-    //else
+    fx->shader()->enable(vl::EN_DEPTH_TEST);
+    fx->shader()->enable(vl::EN_LIGHTING);
+    fx->shader()->setRenderState(m_Light.get(), 0 );
+    fx->shader()->gocMaterial()->setDiffuse(color);
+
+    if (opacity <= (1.0f - (1.0f / 255.0f)))
     {
+      vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
       fx->shader()->enable(vl::EN_BLEND);
-      fx->shader()->enable(vl::EN_DEPTH_TEST);
-      fx->shader()->enable(vl::EN_CULL_FACE);
-      fx->shader()->enable(vl::EN_LIGHTING);
-      fx->shader()->setRenderState(m_Light.get(), 0 );
-      fx->shader()->gocMaterial()->setDiffuse(color);
+      // no backface culling for translucent objects: you should be able to see the backside!
+      fx->shader()->disable(vl::EN_CULL_FACE);
       fx->shader()->gocMaterial()->setTransparency(opacity);
     }
+    else
+    {
+      vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
+      fx->shader()->disable(vl::EN_BLEND);
+      fx->shader()->enable(vl::EN_CULL_FACE);
+      fx->shader()->gocMaterial()->setTransparency(1);
+    }
+
   }
 }
 

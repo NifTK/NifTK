@@ -230,8 +230,7 @@ void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, con
     return;
 
   m_VLQtRenderWindow->UpdateDataNode(node);
-  //m_RenderApplet->rendering()->render();
-  MITK_INFO <<"Visibility Change";
+  //MITK_INFO <<"Visibility Change";
 }
 
 void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
@@ -240,8 +239,7 @@ void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mi
     return;
 
   m_VLQtRenderWindow->UpdateDataNode(node);
-  //m_RenderApplet->rendering()->render();
-  MITK_INFO <<"Color Change";
+  //MITK_INFO <<"Color Change";
 }
 
 void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
@@ -250,8 +248,7 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
     return;
 
   m_VLQtRenderWindow->UpdateDataNode(node);
-  //m_RenderApplet->rendering()->render();
-  MITK_INFO <<"Opacity Change";
+  //MITK_INFO <<"Opacity Change";
 }
 
 void NewVisualizationView::Visible()

@@ -122,6 +122,10 @@ protected:
 protected:
   void renderScene();
 
+  // side note: default actor block is zero
+  static const int      RENDERBLOCK_OPAQUE            = -1000;
+  static const int      RENDERBLOCK_TRANSLUCENT       =  1000;
+
   // FIXME: the rendering tree stuff might go away. could be useful for shadowing though.
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
