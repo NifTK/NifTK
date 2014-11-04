@@ -366,7 +366,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
       fx->shader()->enable(vl::EN_LIGHTING);
       fx->shader()->setRenderState(m_Light.get(), 0 );
       fx->shader()->gocMaterial()->setDiffuse(color);
-      fx->shader()->gocMaterial()->setTransparency(1.0f - opacity);
+      fx->shader()->gocMaterial()->setTransparency(opacity);
     }
   }
 }
@@ -422,7 +422,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   fx->shader()->enable(vl::EN_LIGHTING);
   fx->shader()->setRenderState(m_Light.get(), 0);
   fx->shader()->gocMaterial()->setDiffuse(color);
-  fx->shader()->gocMaterial()->setTransparency(1.0f - opacity);
+  fx->shader()->gocMaterial()->setTransparency(opacity);
 
 
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
