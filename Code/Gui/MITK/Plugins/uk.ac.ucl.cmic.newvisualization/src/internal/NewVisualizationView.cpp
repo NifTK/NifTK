@@ -48,7 +48,7 @@ const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualizati
 NewVisualizationView::NewVisualizationView()
 : m_Controls(0)
 , m_Parent(0)
-, m_RenderApplet(0)
+//, m_RenderApplet(0)
 , m_VLQtRenderWindow(0)
 {
 }
@@ -77,7 +77,7 @@ NewVisualizationView::~NewVisualizationView()
 
   MITK_INFO <<"Destructing NewViz plugin";
 
-  m_RenderApplet = 0;
+//  m_RenderApplet = 0;
 }
 
 void NewVisualizationView::SetFocus()
@@ -137,42 +137,36 @@ void  NewVisualizationView::InitVLRendering()
   format.setFullscreen(false);
 #endif
 
-  if (m_VLQtRenderWindow == 0)
-    m_VLQtRenderWindow = new VLQt4Widget;//(m_Controls->groupBox_View);
+  assert(m_VLQtRenderWindow == 0);
+  m_VLQtRenderWindow = new VLQt4Widget;
 
-  /* Initialize the OpenGL context and window properties */
-  int x = 10;
-  int y = 10;
-  int width = 512;
-  int height= 512;
-  m_VLQtRenderWindow->initQt4Widget( "Visualization Library on Qt4", /*format, NULL,*/ x, y, width, height );
+//  assert(m_RenderApplet == 0);
 
-  if (m_RenderApplet == 0)
-    m_RenderApplet = new VLRenderingApplet();
-  
-  m_RenderApplet->initialize();
-  //m_VLQtRenderWindow->initializeGL();
 
-  m_VLQtRenderWindow->addEventListener(m_RenderApplet.get());
-  m_RenderApplet->rendering()->as<Rendering>()->renderer()->setFramebuffer( m_VLQtRenderWindow->framebuffer() );
-  m_RenderApplet->rendering()->as<Rendering>()->camera()->viewport()->setClearColor( black );
+  // renderer uses ocl kernels to sort triangles.
+  ctkPluginContext*     context     = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
+  ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
+  OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
+  if (oclService == NULL)
+  {
+    mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
+  }
+  m_VLQtRenderWindow->setOclResourceService(oclService);
+  // note: m_VLQtRenderWindow will use that service instance in initializeGL(), which will only be called
+  // once we have been bounced through the event-loop, i.e. after we return from this method here.
 
-  /* define the camera position and orientation */
-  vl::vec3 eye    = vl::vec3(0,10,35); // camera position
-  vl::vec3 center = vl::vec3(0,0,0);   // point the camera is looking at
-  vl::vec3 up     = vl::vec3(0,1,0);   // up direction
-  vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
-  m_RenderApplet->rendering()->as<Rendering>()->camera()->setViewMatrix( view_mat );
 
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
-  
-  /* show the window */
   m_VLQtRenderWindow->show();
+
+  // default transparency blending function.
+  // vl keeps dumping stuff to the console about blend state mismatch.
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void NewVisualizationView::On_SliderMoved(int val)
 {
-  m_RenderApplet->UpdateThresholdVal(val);
+  //m_RenderApplet->UpdateThresholdVal(val);
 }
 
 void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
@@ -192,8 +186,8 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
   if (!isVisible)
     return;
 
-  m_RenderApplet->AddDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->AddDataNode(node);
+  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node added";
 }
@@ -209,8 +203,8 @@ void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
   if (isHelper)
     return;
 
-  m_RenderApplet->RemoveDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->RemoveDataNode(node);
+  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node removed";
 }
@@ -220,8 +214,8 @@ void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_RenderApplet->RemoveDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->RemoveDataNode(node);
+  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node deleted";
 }
@@ -235,8 +229,8 @@ void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, con
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_RenderApplet->UpdateDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->UpdateDataNode(node);
+  //m_RenderApplet->rendering()->render();
   MITK_INFO <<"Visibility Change";
 }
 
@@ -245,8 +239,8 @@ void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mi
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_RenderApplet->UpdateDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->UpdateDataNode(node);
+  //m_RenderApplet->rendering()->render();
   MITK_INFO <<"Color Change";
 }
 
@@ -255,8 +249,8 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_RenderApplet->UpdateDataNode(node);
-  m_RenderApplet->rendering()->render();
+  m_VLQtRenderWindow->UpdateDataNode(node);
+  //m_RenderApplet->rendering()->render();
   MITK_INFO <<"Opacity Change";
 }
 
@@ -270,7 +264,7 @@ void NewVisualizationView::Visible()
 
 void NewVisualizationView::UpdateDisplay(bool viewEnabled)
 {
-  m_RenderApplet->sceneManager()->tree()->actors()->clear();
+  m_VLQtRenderWindow->ClearScene();
 
     // Set DataNode property accordingly
   typedef mitk::DataNode::Pointer dataNodePointer;
@@ -296,10 +290,10 @@ void NewVisualizationView::UpdateDisplay(bool viewEnabled)
     if (!isVisible)
       continue;
     
-    m_RenderApplet->AddDataNode(currentDataNode);
+    m_VLQtRenderWindow->AddDataNode(currentDataNode);
     //m_RenderApplet->rendering()->render();
     MITK_INFO <<"Node added";
   }
 
-  m_RenderApplet->rendering()->render();
+  //m_RenderApplet->rendering()->render();
 }

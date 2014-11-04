@@ -36,7 +36,7 @@
 #include <vlCore/VisualizationLibrary.hpp>
 //#include <vlQt4/Qt4Widget.hpp>
 
-#include "VLRenderingApplet.h"
+//#include "VLRenderingApplet.h"
 #include "VLQt4Widget.h"
 
 /**
@@ -99,7 +99,7 @@ private:
 
   // VL rendering specific members
   vl::ref<VLQt4Widget>       m_VLQtRenderWindow;
-  vl::ref<VLRenderingApplet> m_RenderApplet;
+  //vl::ref<VLRenderingApplet> m_RenderApplet;
 
   // Listeners
   mitk::DataNodePropertyListener::Pointer    m_SelectionListener;

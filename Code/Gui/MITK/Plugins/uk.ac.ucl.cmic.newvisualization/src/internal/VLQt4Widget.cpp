@@ -1,120 +1,1034 @@
-/**************************************************************************************/
-/*                                                                                    */
-/*  Visualization Library                                                             */
-/*  http://www.visualizationlibrary.org                                               */
-/*                                                                                    */
-/*  Copyright (c) 2005-2010, Michele Bosi                                             */
-/*  All rights reserved.                                                              */
-/*                                                                                    */
-/*  Redistribution and use in source and binary forms, with or without modification,  */
-/*  are permitted provided that the following conditions are met:                     */
-/*                                                                                    */
-/*  - Redistributions of source code must retain the above copyright notice, this     */
-/*  list of conditions and the following disclaimer.                                  */
-/*                                                                                    */
-/*  - Redistributions in binary form must reproduce the above copyright notice, this  */
-/*  list of conditions and the following disclaimer in the documentation and/or       */
-/*  other materials provided with the distribution.                                   */
-/*                                                                                    */
-/*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND   */
-/*  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED     */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE            */
-/*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR  */
-/*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES    */
-/*  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;      */
-/*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON    */
-/*  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT           */
-/*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS     */
-/*  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                      */
-/*                                                                                    */
-/**************************************************************************************/
+
 
 #include "VLQt4Widget.h"
 #include <vlCore/Log.hpp>
+#include <vlCore/Time.hpp>
+#include <vlCore/Colors.hpp>
+#include <vlGraphics/GeometryPrimitives.hpp>
+#include <vlGraphics/RenderQueueSorter.hpp>
+#include <cassert>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+#include <vtkLinearTransform.h>
+#include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkCellArray.h>
+#include <vtkPolyDataNormals.h>
+#include <mitkProperties.h>
 
-using namespace vl;
-//using namespace vlQt4;
 
-void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, EKey& key_out)
+VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
+  : QGLWidget(parent, shareWidget, f)
+  , m_Refresh(10) // 100 fps
+  , m_OclService(0)
+{
+  setContinuousUpdate(true);
+  setMouseTracking(true);
+  setAutoBufferSwap(false);
+  setAcceptDrops(false);
+  // let Qt take care of object destruction.
+  vl::OpenGLContext::setAutomaticDelete(false);
+}
+
+
+VLQt4Widget::~VLQt4Widget()
+{
+  dispatchDestroyEvent();
+}
+
+
+#if 0
+bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
+{
+#if 0
+  // setFormat(fmt) is marked as deprecated so we use this other method
+  QGLContext* glctx = new QGLContext(context()->format(), this);
+  QGLFormat fmt = context()->format();
+
+  // double buffer
+  fmt.setDoubleBuffer( info.doubleBuffer() );
+
+  // color buffer
+  fmt.setRedBufferSize( info.rgbaBits().r() );
+  fmt.setGreenBufferSize( info.rgbaBits().g() );
+  fmt.setBlueBufferSize( info.rgbaBits().b() );
+  // setAlpha == true makes the create() function alway fail
+  // even if the returned format has the requested alpha channel
+  fmt.setAlphaBufferSize( info.rgbaBits().a() );
+  fmt.setAlpha( info.rgbaBits().a() != 0 );
+
+  // accumulation buffer
+  int accum = vl::max( info.accumRGBABits().r(), info.accumRGBABits().g() );
+  accum = vl::max( accum, info.accumRGBABits().b() );
+  accum = vl::max( accum, info.accumRGBABits().a() );
+  fmt.setAccumBufferSize( accum );
+  fmt.setAccum( accum != 0 );
+
+  // multisampling
+  if (info.multisample())
+    fmt.setSamples( info.multisampleSamples() );
+  fmt.setSampleBuffers( info.multisample() );
+
+  // depth buffer
+  fmt.setDepthBufferSize( info.depthBufferBits() );
+  fmt.setDepth( info.depthBufferBits() != 0 );
+
+  // stencil buffer
+  fmt.setStencilBufferSize( info.stencilBufferBits() );
+  fmt.setStencil( info.stencilBufferBits() != 0 );
+
+  // stereo
+  fmt.setStereo( info.stereo() );
+
+  // swap interval / v-sync
+  fmt.setSwapInterval( info.vSync() ? 1 : 0 );
+
+  glctx->setFormat(fmt);
+  // this function returns false when we request an alpha buffer
+  // even if the created context seem to have the alpha buffer
+  /*bool ok = */glctx->create(shareContext);
+  setContext(glctx);
+#endif
+
+  initGLContext();
+
+  framebuffer()->setWidth(width);
+  framebuffer()->setHeight(height);
+
+#if 0//ndef NDEBUG
+  printf("--------------------------------------------\n");
+  printf("REQUESTED OpenGL Format:\n");
+  printf("--------------------------------------------\n");
+  printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
+  printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
+  printf("depth buffer size = %d\n", fmt.depthBufferSize() );
+  printf("depth buffer = %d\n", fmt.depth() );
+  printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
+  printf("stencil buffer = %d\n", fmt.stencil() );
+  printf("accum buffer size %d\n", fmt.accumBufferSize() );
+  printf("accum buffer %d\n", fmt.accum() );
+  printf("stereo = %d\n", (int)fmt.stereo() );
+  printf("swap interval = %d\n", fmt.swapInterval() );
+  printf("multisample = %d\n", (int)fmt.sampleBuffers() );
+  printf("multisample samples = %d\n", (int)fmt.samples() );
+
+  fmt = format();
+
+  printf("--------------------------------------------\n");
+  printf("OBTAINED OpenGL Format:\n");
+  printf("--------------------------------------------\n");
+  printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
+  printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
+  printf("depth buffer size = %d\n", fmt.depthBufferSize() );
+  printf("depth buffer = %d\n", fmt.depth() );
+  printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
+  printf("stencil buffer = %d\n", fmt.stencil() );
+  printf("accum buffer size %d\n", fmt.accumBufferSize() );
+  printf("accum buffer %d\n", fmt.accum() );
+  printf("stereo = %d\n", (int)fmt.stereo() );
+  printf("swap interval = %d\n", fmt.swapInterval() );
+  printf("multisample = %d\n", (int)fmt.sampleBuffers() );
+  printf("multisample samples = %d\n", (int)fmt.samples() );
+  printf("--------------------------------------------\n");
+#endif
+
+  setWindowTitle(title);
+  move(x,y);
+  resize(width,height);
+
+#if 0
+  if (info.fullscreen())
+    setFullscreen(true);
+#endif
+
+  return true;
+}
+#endif
+
+
+void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
+{
+  m_OclService = oclserv;
+}
+
+
+void VLQt4Widget::initializeGL()
+{
+  assert(this->context() == QGLContext::currentContext());
+
+  vl::OpenGLContext::initGLContext();
+
+  // use the device that is running our opengl context as the compute-device
+  // for sorting triangles in the correct order.
+  if (m_OclService)
+  {
+    m_OclService->SpecifyPlatformAndDevice(0, 0, true);
+  }
+
+
+  m_Camera = new vl::Camera;
+  vl::vec3 eye    = vl::vec3(0,10,35);
+  vl::vec3 center = vl::vec3(0,0,0);
+  vl::vec3 up     = vl::vec3(0,1,0);
+  vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
+  m_Camera->setViewMatrix(view_mat);
+
+  vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
+
+  m_LightTr = new vl::Transform;
+
+  m_Light = new vl::Light;
+  m_Light->setAmbient(vl::fvec4(0.1f, 0.1f, 0.1f, 1.0f));
+  m_Light->setDiffuse(vl::white);
+  m_Light->bindTransform(m_LightTr.get());
+
+  vl::vec4 lightPos;
+  lightPos[0] = cameraPos[0];
+  lightPos[1] = cameraPos[1];
+  lightPos[2] = cameraPos[2];
+  lightPos[3] = 0;
+  m_Light->setPosition(lightPos);
+
+
+  m_SceneManager = new vl::SceneManagerActorTree;
+
+  // opaque objects dont need any sorting (in theory).
+  // but they have to happen before anything else.
+  m_OpaqueObjectsRendering = new vl::Rendering;
+  m_OpaqueObjectsRendering->setCamera(m_Camera.get());
+  m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
+  // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
+  m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
+
+  m_RenderingTree = new vl::RenderingTree;
+  m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
+
+  // ???
+  m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
+
+
+  m_Trackball = new vl::TrackballManipulator;
+  m_Trackball->setEnabled(true);
+  m_Trackball->setCamera(m_Camera.get());
+  m_Trackball->setTransform(NULL);
+  m_Trackball->setPivot(vl::vec3(0,0,0));
+  vl::OpenGLContext::addEventListener(m_Trackball.get());
+
+  m_OpaqueObjectsRendering->renderer()->setFramebuffer(vl::OpenGLContext::framebuffer());
+  m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fuchsia);
+
+  vl::OpenGLContext::dispatchInitEvent();
+}
+
+
+void VLQt4Widget::resizeGL(int width, int height)
+{
+  framebuffer()->setWidth(width);
+  framebuffer()->setHeight(height);
+
+  //  VL_CHECK( w == rend->renderer()->framebuffer()->width() );
+  //  VL_CHECK( h == rend->renderer()->framebuffer()->height() );
+  m_Camera->viewport()->setWidth(width);
+  m_Camera->viewport()->setHeight(height);
+  m_Camera->setProjectionPerspective();
+
+  vl::OpenGLContext::dispatchResizeEvent(width, height);
+}
+
+
+void VLQt4Widget::paintGL()
+{
+  renderScene();
+
+  vl::OpenGLContext::dispatchRunEvent();
+}
+
+
+void VLQt4Widget::renderScene()
+{
+  // caller of paintGL() (i.e. Qt's internals) should have activated our context!
+  assert(this->context() == QGLContext::currentContext());
+
+  // update scene graph.
+  vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
+  m_LightTr->setLocalMatrix(cameraMatrix);
+
+
+  // trigger execution of the renderer(s).
+  vl::real now_time = vl::Time::currentTime();
+  m_RenderingTree->setFrameClock(now_time);
+  m_RenderingTree->render();
+
+  if (vl::OpenGLContext::hasDoubleBuffer())
+    swapBuffers();
+
+  VL_CHECK_OGL();
+}
+
+
+void VLQt4Widget::ClearScene()
+{
+  m_SceneManager->tree()->actors()->clear();
+}
+
+
+void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
+{
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  // Propagate color and opacity down to basedata
+  node->GetData()->SetProperty("color", node->GetProperty("color"));
+  node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
+  node->GetData()->SetProperty("visible", node->GetProperty("visible"));
+
+  mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
+  mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
+
+  vl::ref<vl::Actor>    newActor;
+  std::string           namePostFix;
+  if (mitkImg.IsNotNull())
+  {
+    //newActor = AddImageActor(mitkImg);
+    //postFix.append("_image");
+    assert(false);
+  }
+  else
+  if (mitkSurf.IsNotNull())
+  {
+    newActor = AddSurfaceActor(mitkSurf);
+    namePostFix = "_surface";
+  }
+
+  if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
+  {
+    std::string   objName = newActor->objectName();
+    objName.append(namePostFix);
+    newActor->setObjectName(objName.c_str());
+
+    m_NodeToActorMap[node] = newActor;
+  }
+}
+
+
+void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
+{
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  MITK_INFO << m_NodeToActorMap.size();
+  std::map< mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+
+  vl::ref<vl::Actor>    vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
+  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
+  if (visibleProp->GetValue() == false)
+  {
+    vlActor->setEnableMask(0);
+  }
+  else
+  {
+    vlActor->setEnableMask(0xFFFFFFFF);
+
+    mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
+    mitk::Color mitkColor = colorProp->GetColor();
+
+    mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
+    float opacity = opacityProp->GetValue();
+
+    vl::fvec4 color;
+    color[0] = mitkColor[0];
+    color[1] = mitkColor[1];
+    color[2] = mitkColor[2];
+    color[3] = opacity;
+
+
+    vl::ref<vl::Effect> fx = vlActor->effect();
+    //if (opacity == 1.0f)
+    //{
+    //  fx->shader()->enable(EN_DEPTH_TEST);
+    //  fx->shader()->enable(EN_CULL_FACE);
+    //  fx->shader()->enable(EN_LIGHTING);
+    //  fx->shader()->setRenderState(m_Light.get(), 0 );
+    //  fx->shader()->gocMaterial()->setDiffuse(color);
+    //  fx->shader()->gocMaterial()->setTransparency(1.0f);
+    //}
+    //else
+    {
+      fx->shader()->enable(vl::EN_BLEND);
+      fx->shader()->enable(vl::EN_DEPTH_TEST);
+      fx->shader()->enable(vl::EN_CULL_FACE);
+      fx->shader()->enable(vl::EN_LIGHTING);
+      fx->shader()->setRenderState(m_Light.get(), 0 );
+      fx->shader()->gocMaterial()->setDiffuse(color);
+      fx->shader()->gocMaterial()->setTransparency(1.0f - opacity);
+    }
+  }
+}
+
+
+void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
+{
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+
+  vl::ref<vl::Actor>    vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
+  m_SceneManager->tree()->eraseActor(vlActor.get());
+  m_NodeToActorMap.erase(it);
+}
+
+
+vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
+{
+  vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
+  ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
+
+  MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size();
+  //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
+  if (!vlSurf->normalArray())
+    vlSurf->computeNormals();
+
+  float   opacity = 1;
+  mitkSurf->GetPropertyList()->GetFloatProperty("opacity", opacity);
+
+  float         defaultColor[3] = {1, 1, 1};
+  mitk::Color   mitkColor(defaultColor);
+  mitk::ColorProperty::Pointer    prop = dynamic_cast<mitk::ColorProperty*>(mitkSurf->GetProperty("color").GetPointer());
+  if (prop.IsNotNull())
+    mitkColor = prop->GetColor();
+
+  vl::fvec4 color;
+  color[0] = mitkColor[0];
+  color[1] = mitkColor[1];
+  color[2] = mitkColor[2];
+  color[3] = opacity;
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_BLEND);
+  fx->shader()->enable(vl::EN_DEPTH_TEST);
+  fx->shader()->enable(vl::EN_CULL_FACE);
+  fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->setRenderState(m_Light.get(), 0);
+  fx->shader()->gocMaterial()->setDiffuse(color);
+  fx->shader()->gocMaterial()->setTransparency(1.0f - opacity);
+
+
+  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  mitkSurf->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
+
+  //float vals[16];
+  vl::mat4  mat;
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      double val = geometryTransformMatrix->GetElement(i, j);
+      //vals[i * 4 + j] = val;
+      mat.e(i, j) = val;
+    }
+  }
+
+  //vl::mat4  mat(vals);
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  tr->setLocalMatrix(mat);
+
+
+  vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[surfActor] = vlSurf;
+
+  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+
+  return surfActor;
+}
+
+
+void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
+{
+  if (vtkPoly == 0)
+    return;
+
+  /// \brief Buffer in host memory to store cell info
+  unsigned int * m_IndexBuffer = 0;
+  
+  /// \brief Buffer in host memory to store vertex points
+  float * m_PointBuffer = 0;
+  
+  /// \brief Buffer in host memory to store normals associated with vertices
+  float * m_NormalBuffer = 0;
+
+  /// \brief Buffer in host memory to store scalar info associated with vertices
+  char * m_ScalarBuffer = 0;
+
+
+  unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
+
+  // A polydata will always have point data
+  int pointArrayNum = vtkPoly->GetPointData()->GetNumberOfArrays();
+
+  if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
+  {
+    MITK_ERROR <<"No points detected in the vtkPoly data!\n";
+    return;
+  }
+
+  // We'll have to build the cell data if not present already
+  int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
+  if (cellArrayNum == 0)
+    vtkPoly->BuildCells();
+
+  vtkSmartPointer<vtkCellArray> verts;
+
+  // Try to get access to cells
+  if (vtkPoly->GetVerts() != 0 && vtkPoly->GetVerts()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetVerts();
+  else if (vtkPoly->GetLines() != 0 && vtkPoly->GetLines()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetLines();
+  else if (vtkPoly->GetPolys() != 0 && vtkPoly->GetPolys()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetPolys();
+  else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
+    verts = vtkPoly->GetStrips();
+
+  if (verts->GetMaxCellSize() > 4)
+  {
+    // Panic and return
+    MITK_ERROR <<"More than four vertices / cell detected, can't handle this data type!\n";
+    return;
+  }
+  
+  vtkSmartPointer<vtkPoints>     points = vtkPoly->GetPoints();
+
+  if (points == 0)
+  {
+    MITK_ERROR <<"Corrupt vtkPoly, returning! \n";
+    return;
+  }
+
+  // Deal with normals
+  vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
+
+  if (normals == 0)
+  {
+    MITK_INFO <<"Generating normals for the vtkPoly data (mitk::OclSurface)";
+    
+    vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
+    normalGen->SetInputData(vtkPoly);
+    normalGen->AutoOrientNormalsOn();
+    normalGen->Update();
+
+    normals = normalGen->GetOutput()->GetPointData()->GetNormals();
+
+    if (normals == 0)
+    {
+      MITK_ERROR <<"Couldn't generate normals, returning! \n";
+      return;
+    }
+
+    vtkPoly->GetPointData()->SetNormals(normals);
+    vtkPoly->GetPointData()->GetNormals()->Modified();
+    vtkPoly->GetPointData()->Modified();
+  }
+ 
+  // Check if we have scalars
+  vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
+
+  bool pointsValid  = (points.GetPointer() == 0) ? false : true;
+  bool normalsValid = (normals.GetPointer() == 0) ? false : true;
+  bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
+  
+  unsigned int pointBufferSize = 0;
+  unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
+  pointBufferSize = numOfPoints * sizeof(float) *3;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with points
+
+
+  // Allocate memory
+  m_PointBuffer = new float[numOfPoints*3];
+
+  // Copy data to buffer
+  memcpy(m_PointBuffer, points->GetVoidPointer(0), pointBufferSize);
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with normals
+
+  if (normalsValid)
+  {
+    // Get the number of normals we have to deal with
+    int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
+
+    // Size of the buffer that is required to store all the normals
+    unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
+
+    // Allocate memory
+    m_NormalBuffer = new float[numOfPoints*3];
+
+    // Copy data to buffer
+    memcpy(m_NormalBuffer, normals->GetVoidPointer(0), normalBufferSize);
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with scalars (colors or texture coordinates)
+  if (scalarsValid)
+  {
+
+    // Get the number of scalars we have to deal with
+    int m_ScalarCount = static_cast<unsigned int> (scalars->GetNumberOfTuples());
+
+    // Size of the buffer that is required to store all the scalars
+    unsigned int scalarBufferSize = numOfPoints * sizeof(char) * 1;
+
+    // Allocate memory
+    m_ScalarBuffer = new char[numOfPoints];
+
+    // Copy data to buffer
+    memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
+  }
+
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Deal with cells - initialize index buffer
+  vtkIdType npts;
+  vtkIdType *pts;
+
+  // Get the number of indices we have to deal with
+  unsigned int m_IndexCount = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+  // Get the max number of vertices / cell
+  int maxPointsPerCell = verts->GetMaxCellSize();
+
+
+  // Get the number of indices we have to deal with
+  unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+  // Allocate memory for the index buffer
+  m_IndexBuffer = new unsigned int[numOfTriangles*3];
+  memset(m_IndexBuffer, 0, numOfTriangles*3*sizeof(unsigned int));
+
+  verts->InitTraversal();
+
+  unsigned int cellIndex = 0;
+  // Iterating through all the cells
+  while (cellIndex < numOfTriangles)
+  {
+    verts->GetNextCell(npts, pts);
+
+    // Copy the indices into the index buffer
+    for (size_t i = 0; i < static_cast<size_t>(npts); i++)
+      m_IndexBuffer[cellIndex*3 +i] = pts[i];
+
+    cellIndex++;
+  }
+  MITK_INFO <<"Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() <<" Num of Cells: " <<verts->GetNumberOfCells() <<"\n";
+
+  vl::ref<vl::ArrayFloat3>  vlVerts   = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
+
+  //vlVerts->resize(numOfPoints *3);
+  //vlNormals->resize(numOfPoints *3);
+  //ref<DrawArrays> de = new DrawArrays(PT_TRIANGLES,0,numOfPoints*3);
+
+  vlVerts->resize(numOfTriangles *3);
+  vlNormals->resize(numOfTriangles *3);
+  vl::ref<vl::DrawArrays> de = new vl::DrawArrays(vl::PT_TRIANGLES,0,numOfTriangles*3);
+   
+  vlPoly->drawCalls()->push_back(de.get());
+  vlPoly->setVertexArray(vlVerts.get());
+  vlPoly->setNormalArray(vlNormals.get());
+
+/*
+    // read triangles
+  for(unsigned int i=0; i<numOfPoints; ++i)
+  {
+    fvec3 n0, n1, n2, v1,v2,v0;
+    n0.x() = m_NormalBuffer[i*3 +0];
+    n0.y() = m_NormalBuffer[i*3 +1];
+    n0.z() = m_NormalBuffer[i*3 +2];
+    v0.x() = m_PointBuffer[i*3 +0];
+    v0.y() = m_PointBuffer[i*3 +1];
+    v0.z() = m_PointBuffer[i*3 +2];
+
+    vlNormals->at(i*3+0) = n0;
+    vlVerts->at(i*3+0) = v0;
+  }
+*/
+
+  // read triangles
+  for(unsigned int i=0; i<numOfTriangles; ++i)
+  {
+    vl::fvec3 n0, n1, n2, v1,v2,v0;
+    unsigned int vertIndex = m_IndexBuffer[i*3 +0];
+    n0.x() = m_NormalBuffer[vertIndex*3 +0];
+    n0.y() = m_NormalBuffer[vertIndex*3 +1];
+    n0.z() = m_NormalBuffer[vertIndex*3 +2];
+    v0.x() = m_PointBuffer[vertIndex*3 +0];
+    v0.y() = m_PointBuffer[vertIndex*3 +1];
+    v0.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vertIndex = m_IndexBuffer[i*3 +1];
+    n1.x() = m_NormalBuffer[vertIndex*3 +0];
+    n1.y() = m_NormalBuffer[vertIndex*3 +1];
+    n1.z() = m_NormalBuffer[vertIndex*3 +2];
+    v1.x() = m_PointBuffer[vertIndex*3 +0];
+    v1.y() = m_PointBuffer[vertIndex*3 +1];
+    v1.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vertIndex = m_IndexBuffer[i*3 +2];
+    n2.x() = m_NormalBuffer[vertIndex*3 +0];
+    n2.y() = m_NormalBuffer[vertIndex*3 +1];
+    n2.z() = m_NormalBuffer[vertIndex*3 +2];
+    v2.x() = m_PointBuffer[vertIndex*3 +0];
+    v2.y() = m_PointBuffer[vertIndex*3 +1];
+    v2.z() = m_PointBuffer[vertIndex*3 +2];
+
+    vlNormals->at(i*3+0) = n0;
+    vlVerts->at(i*3+0) = v0;
+    vlNormals->at(i*3+1) = n1;
+    vlVerts->at(i*3+1) = v1;
+    vlNormals->at(i*3+2) = n2;
+    vlVerts->at(i*3+2) = v2;
+  }
+
+  /// \brief Buffer in host memory to store cell info
+  if (m_IndexBuffer != 0)
+    delete m_IndexBuffer;
+  
+  /// \brief Buffer in host memory to store vertex points
+  if (m_PointBuffer != 0)
+    delete m_PointBuffer;
+  
+  /// \brief Buffer in host memory to store normals associated with vertices
+  if (m_NormalBuffer != 0)
+    delete m_NormalBuffer;
+
+  /// \brief Buffer in host memory to store scalar info associated with vertices
+  if (m_ScalarBuffer != 0)
+    delete m_ScalarBuffer;
+
+
+  MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size();
+}
+
+
+void VLQt4Widget::setContinuousUpdate(bool continuous)
+{
+  vl::OpenGLContext::setContinuousUpdate(continuous);
+
+  if (continuous)
+  {
+    disconnect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+    connect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+    m_UpdateTimer.setSingleShot(false);
+    m_UpdateTimer.setInterval(m_Refresh);
+    m_UpdateTimer.start(0);
+  }
+  else
+  {
+    disconnect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+    m_UpdateTimer.stop();
+  }
+}
+
+
+void VLQt4Widget::setWindowTitle(const vl::String& title)
+{
+  QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
+}
+
+
+bool VLQt4Widget::setFullscreen(bool fullscreen)
+{
+  // fullscreen not allowed (yet)!
+  fullscreen = false;
+
+  mFullscreen = fullscreen;
+  if (fullscreen)
+    QGLWidget::setWindowState(QGLWidget::windowState() | Qt::WindowFullScreen);
+  else
+    QGLWidget::setWindowState(QGLWidget::windowState() & (~Qt::WindowFullScreen));
+  return true;
+}
+
+
+void VLQt4Widget::show()
+{
+  QGLWidget::show();
+}
+
+
+void VLQt4Widget::hide()
+{
+  QGLWidget::hide();
+}
+
+
+void VLQt4Widget::setPosition(int x, int y)
+{
+  QGLWidget::move(x,y);
+}
+
+
+vl::ivec2 VLQt4Widget::position() const
+{
+  return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
+}
+
+
+void VLQt4Widget::update()
+{
+  // schedules a repaint, will eventually call into paintGL()
+  QGLWidget::update();
+}
+
+
+void VLQt4Widget::setSize(int w, int h)
+{
+  // this already excludes the window's frame so it's ok for Visualization Library standards
+  QGLWidget::resize(w,h);
+}
+
+
+vl::ivec2 VLQt4Widget::size() const
+{
+  // this already excludes the window's frame so it's ok for Visualization Library standards
+  return vl::ivec2(QGLWidget::size().width(), QGLWidget::size().height());
+}
+
+
+void VLQt4Widget::swapBuffers()
+{
+  QGLWidget::swapBuffers();
+}
+
+
+void VLQt4Widget::makeCurrent()
+{
+  QGLWidget::makeCurrent();
+}
+
+
+void VLQt4Widget::setMousePosition(int x, int y)
+{
+  QCursor::setPos(mapToGlobal(QPoint(x,y)));
+}
+
+
+void VLQt4Widget::setMouseVisible(bool visible)
+{
+  vl::OpenGLContext::setMouseVisible(visible);
+
+  if (visible)
+    QGLWidget::setCursor(Qt::ArrowCursor);
+  else
+    QGLWidget::setCursor(Qt::BlankCursor);
+}
+
+void VLQt4Widget::getFocus()
+{
+  QGLWidget::setFocus(Qt::OtherFocusReason);
+}
+
+
+void VLQt4Widget::setRefreshRate(int msec)
+{
+  m_Refresh = msec;
+  m_UpdateTimer.setInterval(m_Refresh);
+}
+
+
+int VLQt4Widget::refreshRate()
+{
+  return m_Refresh;
+}
+
+
+#if 0
+void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
+{
+  if (ev->mimeData()->hasUrls())
+    ev->acceptProposedAction();
+}
+
+
+void VLQt4Widget::dropEvent(QDropEvent* ev)
+{
+  if ( ev->mimeData()->hasUrls() )
+  {
+    std::vector<vl::String> files;
+    QList<QUrl> list = ev->mimeData()->urls();
+    for(int i=0; i<list.size(); ++i)
+    {
+      if (list[i].path().isEmpty())
+        continue;
+      #ifdef WIN32
+        if (list[i].path()[0] == '/')
+          files.push_back( list[i].path().toStdString().c_str()+1 );
+        else
+          files.push_back( list[i].path().toStdString().c_str() );
+      #else
+        files.push_back( list[i].path().toStdString().c_str() );
+      #endif
+    }
+    dispatchFileDroppedEvent(files);
+  }
+}
+#endif
+
+
+void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
+{
+  if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
+    dispatchMouseMoveEvent(ev->x(), ev->y());
+  vl::OpenGLContext::mIgnoreNextMouseMoveEvent = false;
+}
+
+
+void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
+{
+  vl::EMouseButton bt = vl::NoButton;
+  switch(ev->button())
+  {
+  case Qt::LeftButton:  bt = vl::LeftButton; break;
+  case Qt::RightButton: bt = vl::RightButton; break;
+  case Qt::MidButton:   bt = vl::MiddleButton; break;
+  default:
+    bt = vl::UnknownButton; break;
+  }
+  vl::OpenGLContext::dispatchMouseDownEvent(bt, ev->x(), ev->y());
+}
+
+
+void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
+{
+  vl::EMouseButton bt = vl::NoButton;
+  switch(ev->button())
+  {
+  case Qt::LeftButton:  bt = vl::LeftButton; break;
+  case Qt::RightButton: bt = vl::RightButton; break;
+  case Qt::MidButton:   bt = vl::MiddleButton; break;
+  default:
+    bt = vl::UnknownButton; break;
+  }
+  vl::OpenGLContext::dispatchMouseUpEvent(bt, ev->x(), ev->y());
+}
+
+
+void VLQt4Widget::wheelEvent(QWheelEvent* ev)
+{
+  vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
+}
+
+
+void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
+{
+  unsigned short unicode_ch = 0;
+  vl::EKey key = vl::Key_None;
+  translateKeyEvent(ev, unicode_ch, key);
+  vl::OpenGLContext::dispatchKeyPressEvent(unicode_ch, key);
+}
+
+
+void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
+{
+  unsigned short unicode_ch = 0;
+  vl::EKey key = vl::Key_None;
+  translateKeyEvent(ev, unicode_ch, key);
+  vl::OpenGLContext::dispatchKeyReleaseEvent(unicode_ch, key);
+}
+
+
+void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
 {
   // translate non unicode characters
-  key_out     = Key_None;
+  key_out     = vl::Key_None;
   unicode_out = 0;
 
   switch(ev->key())
   {
-    case Qt::Key_Clear:    key_out = Key_Clear; break;
-    case Qt::Key_Control:  key_out = Key_Ctrl; break;
+    case Qt::Key_Clear:    key_out = vl::Key_Clear; break;
+    case Qt::Key_Control:  key_out = vl::Key_Ctrl; break;
     // case Qt::Key_LCONTROL: key_out = Key_LeftCtrl; break;
     // case Qt::Key_RCONTROL: key_out = Key_RightCtrl; break;
-    case Qt::Key_Alt:     key_out = Key_Alt; break;
+    case Qt::Key_Alt:     key_out = vl::Key_Alt; break;
     // case Qt::Key_LMENU:    key_out = Key_LeftAlt; break;
     // case Qt::Key_RMENU:    key_out = Key_RightAlt; break;
-    case Qt::Key_Shift:    key_out = Key_Shift; break;
+    case Qt::Key_Shift:    key_out = vl::Key_Shift; break;
     // case Qt::Key_LSHIFT:   key_out = Key_LeftShift; break;
     // case Qt::Key_RSHIFT:   key_out = Key_RightShift; break;
-    case Qt::Key_Insert:   key_out = Key_Insert; break;
-    case Qt::Key_Delete:   key_out = Key_Delete; break;
-    case Qt::Key_Home:     key_out = Key_Home; break;
-    case Qt::Key_End:      key_out = Key_End; break;
-    case Qt::Key_Print:    key_out = Key_Print; break;
-    case Qt::Key_Pause:    key_out = Key_Pause; break;
-    case Qt::Key_PageUp:   key_out = Key_PageUp; break;
-    case Qt::Key_PageDown: key_out = Key_PageDown; break;
-    case Qt::Key_Left:     key_out = Key_Left; break;
-    case Qt::Key_Right:    key_out = Key_Right; break;
-    case Qt::Key_Up:       key_out = Key_Up; break;
-    case Qt::Key_Down:     key_out = Key_Down; break;
-    case Qt::Key_F1:       key_out = Key_F1; break;
-    case Qt::Key_F2:       key_out = Key_F2; break;
-    case Qt::Key_F3:       key_out = Key_F3; break;
-    case Qt::Key_F4:       key_out = Key_F4; break;
-    case Qt::Key_F5:       key_out = Key_F5; break;
-    case Qt::Key_F6:       key_out = Key_F6; break;
-    case Qt::Key_F7:       key_out = Key_F7; break;
-    case Qt::Key_F8:       key_out = Key_F8; break;
-    case Qt::Key_F9:       key_out = Key_F9; break;
-    case Qt::Key_F10:      key_out = Key_F10; break;
-    case Qt::Key_F11:      key_out = Key_F11; break;
-    case Qt::Key_F12:      key_out = Key_F12; break;
+    case Qt::Key_Insert:   key_out = vl::Key_Insert; break;
+    case Qt::Key_Delete:   key_out = vl::Key_Delete; break;
+    case Qt::Key_Home:     key_out = vl::Key_Home; break;
+    case Qt::Key_End:      key_out = vl::Key_End; break;
+    case Qt::Key_Print:    key_out = vl::Key_Print; break;
+    case Qt::Key_Pause:    key_out = vl::Key_Pause; break;
+    case Qt::Key_PageUp:   key_out = vl::Key_PageUp; break;
+    case Qt::Key_PageDown: key_out = vl::Key_PageDown; break;
+    case Qt::Key_Left:     key_out = vl::Key_Left; break;
+    case Qt::Key_Right:    key_out = vl::Key_Right; break;
+    case Qt::Key_Up:       key_out = vl::Key_Up; break;
+    case Qt::Key_Down:     key_out = vl::Key_Down; break;
+    case Qt::Key_F1:       key_out = vl::Key_F1; break;
+    case Qt::Key_F2:       key_out = vl::Key_F2; break;
+    case Qt::Key_F3:       key_out = vl::Key_F3; break;
+    case Qt::Key_F4:       key_out = vl::Key_F4; break;
+    case Qt::Key_F5:       key_out = vl::Key_F5; break;
+    case Qt::Key_F6:       key_out = vl::Key_F6; break;
+    case Qt::Key_F7:       key_out = vl::Key_F7; break;
+    case Qt::Key_F8:       key_out = vl::Key_F8; break;
+    case Qt::Key_F9:       key_out = vl::Key_F9; break;
+    case Qt::Key_F10:      key_out = vl::Key_F10; break;
+    case Qt::Key_F11:      key_out = vl::Key_F11; break;
+    case Qt::Key_F12:      key_out = vl::Key_F12; break;
 
-    case Qt::Key_0: key_out = Key_0; break;
-    case Qt::Key_1: key_out = Key_1; break;
-    case Qt::Key_2: key_out = Key_2; break;
-    case Qt::Key_3: key_out = Key_3; break;
-    case Qt::Key_4: key_out = Key_4; break;
-    case Qt::Key_5: key_out = Key_5; break;
-    case Qt::Key_6: key_out = Key_6; break;
-    case Qt::Key_7: key_out = Key_7; break;
-    case Qt::Key_8: key_out = Key_8; break;
-    case Qt::Key_9: key_out = Key_9; break;
+    case Qt::Key_0: key_out = vl::Key_0; break;
+    case Qt::Key_1: key_out = vl::Key_1; break;
+    case Qt::Key_2: key_out = vl::Key_2; break;
+    case Qt::Key_3: key_out = vl::Key_3; break;
+    case Qt::Key_4: key_out = vl::Key_4; break;
+    case Qt::Key_5: key_out = vl::Key_5; break;
+    case Qt::Key_6: key_out = vl::Key_6; break;
+    case Qt::Key_7: key_out = vl::Key_7; break;
+    case Qt::Key_8: key_out = vl::Key_8; break;
+    case Qt::Key_9: key_out = vl::Key_9; break;
 
-    case Qt::Key_A: key_out = Key_A; break;
-    case Qt::Key_B: key_out = Key_B; break;
-    case Qt::Key_C: key_out = Key_C; break;
-    case Qt::Key_D: key_out = Key_D; break;
-    case Qt::Key_E: key_out = Key_E; break;
-    case Qt::Key_F: key_out = Key_F; break;
-    case Qt::Key_G: key_out = Key_G; break;
-    case Qt::Key_H: key_out = Key_H; break;
-    case Qt::Key_I: key_out = Key_I; break;
-    case Qt::Key_J: key_out = Key_J; break;
-    case Qt::Key_K: key_out = Key_K; break;
-    case Qt::Key_L: key_out = Key_L; break;
-    case Qt::Key_M: key_out = Key_M; break;
-    case Qt::Key_N: key_out = Key_N; break;
-    case Qt::Key_O: key_out = Key_O; break;
-    case Qt::Key_P: key_out = Key_P; break;
-    case Qt::Key_Q: key_out = Key_Q; break;
-    case Qt::Key_R: key_out = Key_R; break;
-    case Qt::Key_S: key_out = Key_S; break;
-    case Qt::Key_T: key_out = Key_T; break;
-    case Qt::Key_U: key_out = Key_U; break;
-    case Qt::Key_V: key_out = Key_V; break;
-    case Qt::Key_W: key_out = Key_W; break;
-    case Qt::Key_X: key_out = Key_X; break;
-    case Qt::Key_Y: key_out = Key_Y; break;
-    case Qt::Key_Z: key_out = Key_Z; break;
+    case Qt::Key_A: key_out = vl::Key_A; break;
+    case Qt::Key_B: key_out = vl::Key_B; break;
+    case Qt::Key_C: key_out = vl::Key_C; break;
+    case Qt::Key_D: key_out = vl::Key_D; break;
+    case Qt::Key_E: key_out = vl::Key_E; break;
+    case Qt::Key_F: key_out = vl::Key_F; break;
+    case Qt::Key_G: key_out = vl::Key_G; break;
+    case Qt::Key_H: key_out = vl::Key_H; break;
+    case Qt::Key_I: key_out = vl::Key_I; break;
+    case Qt::Key_J: key_out = vl::Key_J; break;
+    case Qt::Key_K: key_out = vl::Key_K; break;
+    case Qt::Key_L: key_out = vl::Key_L; break;
+    case Qt::Key_M: key_out = vl::Key_M; break;
+    case Qt::Key_N: key_out = vl::Key_N; break;
+    case Qt::Key_O: key_out = vl::Key_O; break;
+    case Qt::Key_P: key_out = vl::Key_P; break;
+    case Qt::Key_Q: key_out = vl::Key_Q; break;
+    case Qt::Key_R: key_out = vl::Key_R; break;
+    case Qt::Key_S: key_out = vl::Key_S; break;
+    case Qt::Key_T: key_out = vl::Key_T; break;
+    case Qt::Key_U: key_out = vl::Key_U; break;
+    case Qt::Key_V: key_out = vl::Key_V; break;
+    case Qt::Key_W: key_out = vl::Key_W; break;
+    case Qt::Key_X: key_out = vl::Key_X; break;
+    case Qt::Key_Y: key_out = vl::Key_Y; break;
+    case Qt::Key_Z: key_out = vl::Key_Z; break;
   }
 
   // fill unicode
@@ -126,104 +1040,104 @@ void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, 
     // fill key
     switch(unicode_out)
     {
-      case L'0': key_out = Key_0; break;
-      case L'1': key_out = Key_1; break;
-      case L'2': key_out = Key_2; break;
-      case L'3': key_out = Key_3; break;
-      case L'4': key_out = Key_4; break;
-      case L'5': key_out = Key_5; break;
-      case L'6': key_out = Key_6; break;
-      case L'7': key_out = Key_7; break;
-      case L'8': key_out = Key_8; break;
-      case L'9': key_out = Key_9; break;
+      case L'0': key_out = vl::Key_0; break;
+      case L'1': key_out = vl::Key_1; break;
+      case L'2': key_out = vl::Key_2; break;
+      case L'3': key_out = vl::Key_3; break;
+      case L'4': key_out = vl::Key_4; break;
+      case L'5': key_out = vl::Key_5; break;
+      case L'6': key_out = vl::Key_6; break;
+      case L'7': key_out = vl::Key_7; break;
+      case L'8': key_out = vl::Key_8; break;
+      case L'9': key_out = vl::Key_9; break;
 
-      case L'A': key_out = Key_A; break;
-      case L'B': key_out = Key_B; break;
-      case L'C': key_out = Key_C; break;
-      case L'D': key_out = Key_D; break;
-      case L'E': key_out = Key_E; break;
-      case L'F': key_out = Key_F; break;
-      case L'G': key_out = Key_G; break;
-      case L'H': key_out = Key_H; break;
-      case L'I': key_out = Key_I; break;
-      case L'J': key_out = Key_J; break;
-      case L'K': key_out = Key_K; break;
-      case L'L': key_out = Key_L; break;
-      case L'M': key_out = Key_M; break;
-      case L'N': key_out = Key_N; break;
-      case L'O': key_out = Key_O; break;
-      case L'P': key_out = Key_P; break;
-      case L'Q': key_out = Key_Q; break;
-      case L'R': key_out = Key_R; break;
-      case L'S': key_out = Key_S; break;
-      case L'T': key_out = Key_T; break;
-      case L'U': key_out = Key_U; break;
-      case L'V': key_out = Key_V; break;
-      case L'W': key_out = Key_W; break;
-      case L'X': key_out = Key_X; break;
-      case L'Y': key_out = Key_Y; break;
-      case L'Z': key_out = Key_Z; break;
+      case L'A': key_out = vl::Key_A; break;
+      case L'B': key_out = vl::Key_B; break;
+      case L'C': key_out = vl::Key_C; break;
+      case L'D': key_out = vl::Key_D; break;
+      case L'E': key_out = vl::Key_E; break;
+      case L'F': key_out = vl::Key_F; break;
+      case L'G': key_out = vl::Key_G; break;
+      case L'H': key_out = vl::Key_H; break;
+      case L'I': key_out = vl::Key_I; break;
+      case L'J': key_out = vl::Key_J; break;
+      case L'K': key_out = vl::Key_K; break;
+      case L'L': key_out = vl::Key_L; break;
+      case L'M': key_out = vl::Key_M; break;
+      case L'N': key_out = vl::Key_N; break;
+      case L'O': key_out = vl::Key_O; break;
+      case L'P': key_out = vl::Key_P; break;
+      case L'Q': key_out = vl::Key_Q; break;
+      case L'R': key_out = vl::Key_R; break;
+      case L'S': key_out = vl::Key_S; break;
+      case L'T': key_out = vl::Key_T; break;
+      case L'U': key_out = vl::Key_U; break;
+      case L'V': key_out = vl::Key_V; break;
+      case L'W': key_out = vl::Key_W; break;
+      case L'X': key_out = vl::Key_X; break;
+      case L'Y': key_out = vl::Key_Y; break;
+      case L'Z': key_out = vl::Key_Z; break;
 
-      case L'a': key_out = Key_A; break;
-      case L'b': key_out = Key_B; break;
-      case L'c': key_out = Key_C; break;
-      case L'd': key_out = Key_D; break;
-      case L'e': key_out = Key_E; break;
-      case L'f': key_out = Key_F; break;
-      case L'g': key_out = Key_G; break;
-      case L'h': key_out = Key_H; break;
-      case L'i': key_out = Key_I; break;
-      case L'j': key_out = Key_J; break;
-      case L'k': key_out = Key_K; break;
-      case L'l': key_out = Key_L; break;
-      case L'm': key_out = Key_M; break;
-      case L'n': key_out = Key_N; break;
-      case L'o': key_out = Key_O; break;
-      case L'p': key_out = Key_P; break;
-      case L'q': key_out = Key_Q; break;
-      case L'r': key_out = Key_R; break;
-      case L's': key_out = Key_S; break;
-      case L't': key_out = Key_T; break;
-      case L'u': key_out = Key_U; break;
-      case L'v': key_out = Key_V; break;
-      case L'w': key_out = Key_W; break;
-      case L'x': key_out = Key_X; break;
-      case L'y': key_out = Key_Y; break;
-      case L'z': key_out = Key_Z; break;
+      case L'a': key_out = vl::Key_A; break;
+      case L'b': key_out = vl::Key_B; break;
+      case L'c': key_out = vl::Key_C; break;
+      case L'd': key_out = vl::Key_D; break;
+      case L'e': key_out = vl::Key_E; break;
+      case L'f': key_out = vl::Key_F; break;
+      case L'g': key_out = vl::Key_G; break;
+      case L'h': key_out = vl::Key_H; break;
+      case L'i': key_out = vl::Key_I; break;
+      case L'j': key_out = vl::Key_J; break;
+      case L'k': key_out = vl::Key_K; break;
+      case L'l': key_out = vl::Key_L; break;
+      case L'm': key_out = vl::Key_M; break;
+      case L'n': key_out = vl::Key_N; break;
+      case L'o': key_out = vl::Key_O; break;
+      case L'p': key_out = vl::Key_P; break;
+      case L'q': key_out = vl::Key_Q; break;
+      case L'r': key_out = vl::Key_R; break;
+      case L's': key_out = vl::Key_S; break;
+      case L't': key_out = vl::Key_T; break;
+      case L'u': key_out = vl::Key_U; break;
+      case L'v': key_out = vl::Key_V; break;
+      case L'w': key_out = vl::Key_W; break;
+      case L'x': key_out = vl::Key_X; break;
+      case L'y': key_out = vl::Key_Y; break;
+      case L'z': key_out = vl::Key_Z; break;
 
-      case 13: key_out = Key_Return; break;
-      case 8: key_out = Key_BackSpace; break;
-      case 9: key_out = Key_Tab; break;
-      case L' ': key_out = Key_Space; break;
+      case 13: key_out = vl::Key_Return; break;
+      case 8: key_out = vl::Key_BackSpace; break;
+      case 9: key_out = vl::Key_Tab; break;
+      case L' ': key_out = vl::Key_Space; break;
 
-      case 27: key_out = Key_Escape; break;
-      case L'!': key_out = Key_Exclam; break;
-      case L'"': key_out = Key_QuoteDbl; break;
-      case L'#': key_out = Key_Hash; break;
-      case L'$': key_out = Key_Dollar; break;
-      case L'&': key_out = Key_Ampersand; break;
-      case L'\'': key_out = Key_Quote; break;
-      case L'(': key_out = Key_LeftParen; break;
-      case L')': key_out = Key_RightParen; break;
-      case L'*': key_out = Key_Asterisk; break;
-      case L'+': key_out = Key_Plus; break;
-      case L',': key_out = Key_Comma; break;
-      case L'-': key_out = Key_Minus; break;
-      case L'.': key_out = Key_Period; break;
-      case L'\\': key_out = Key_Slash; break;
-      case L':': key_out = Key_Colon; break;
-      case L';': key_out = Key_Semicolon; break;
-      case L'<': key_out = Key_Less; break;
-      case L'=': key_out = Key_Equal; break;
-      case L'>': key_out = Key_Greater; break;
-      case L'?': key_out = Key_Question; break;
-      case L'@': key_out = Key_At; break;
-      case L'[': key_out = Key_LeftBracket; break;
-      case L'/': key_out = Key_BackSlash; break;
-      case L']': key_out = Key_RightBracket; break;
-      case L'|': key_out = Key_Caret; break;
-      case L'_': key_out = Key_Underscore; break;
-      case L'`': key_out = Key_QuoteLeft; break;
+      case 27: key_out = vl::Key_Escape; break;
+      case L'!': key_out = vl::Key_Exclam; break;
+      case L'"': key_out = vl::Key_QuoteDbl; break;
+      case L'#': key_out = vl::Key_Hash; break;
+      case L'$': key_out = vl::Key_Dollar; break;
+      case L'&': key_out = vl::Key_Ampersand; break;
+      case L'\'': key_out = vl::Key_Quote; break;
+      case L'(': key_out = vl::Key_LeftParen; break;
+      case L')': key_out = vl::Key_RightParen; break;
+      case L'*': key_out = vl::Key_Asterisk; break;
+      case L'+': key_out = vl::Key_Plus; break;
+      case L',': key_out = vl::Key_Comma; break;
+      case L'-': key_out = vl::Key_Minus; break;
+      case L'.': key_out = vl::Key_Period; break;
+      case L'\\': key_out = vl::Key_Slash; break;
+      case L':': key_out = vl::Key_Colon; break;
+      case L';': key_out = vl::Key_Semicolon; break;
+      case L'<': key_out = vl::Key_Less; break;
+      case L'=': key_out = vl::Key_Equal; break;
+      case L'>': key_out = vl::Key_Greater; break;
+      case L'?': key_out = vl::Key_Question; break;
+      case L'@': key_out = vl::Key_At; break;
+      case L'[': key_out = vl::Key_LeftBracket; break;
+      case L'/': key_out = vl::Key_BackSlash; break;
+      case L']': key_out = vl::Key_RightBracket; break;
+      case L'|': key_out = vl::Key_Caret; break;
+      case L'_': key_out = vl::Key_Underscore; break;
+      case L'`': key_out = vl::Key_QuoteLeft; break;
     }
   }
 }

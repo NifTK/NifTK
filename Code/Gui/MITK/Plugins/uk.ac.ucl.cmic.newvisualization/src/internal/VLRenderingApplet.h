@@ -34,17 +34,17 @@
 
 // VL
 #include <vlCore/ResourceDatabase.hpp>
-#include <vlCore/Time.hpp>
+
 #include <vlCore/VisualizationLibrary.hpp>
 
 #include <vlGraphics/Applet.hpp>
 #include <vlGraphics/Rendering.hpp>
-#include <vlGraphics/GeometryPrimitives.hpp>
-#include <vlGraphics/Light.hpp>
+
 #include <vlGraphics/Text.hpp>
 #include <vlGraphics/FontManager.hpp>
 #include <vlGraphics/GLSL.hpp>
-#include <vlGraphics/GeometryPrimitives.hpp>
+
+
 
 #include <vlVolume/RaycastVolume.hpp>
 #include <vlVolume/VolumeUtils.hpp>
@@ -77,12 +77,15 @@
 #include <vtkPolyDataNormals.h>
 #include <vtkCleanPolyData.h>
 
-using namespace vl;
+//using namespace vl;
 
-class VLRenderingApplet: public vl::Applet
+// forward decl
+class vl::OpenGLContext;
+
+class VLRenderingApplet : public vl::Applet
 {
 public:
-  VLRenderingApplet();
+  VLRenderingApplet(vl::OpenGLContext* context);
   virtual ~VLRenderingApplet();
 
   void initEvent();
@@ -91,38 +94,34 @@ public:
 
   void updateScene();
 
-  void keyPressEvent(unsigned short, EKey key);
-
-  void AddDataNode(mitk::DataNode::Pointer node);
-  void RemoveDataNode(mitk::DataNode::Pointer node);
-  void UpdateDataNode(mitk::DataNode::Pointer node);
-
   void UpdateThresholdVal( int val );
 
 protected:
-  typedef std::vector<const char*> CStringList;
-  typedef std::vector<size_t> ClSizeList;
+  //typedef std::vector<const char*> CStringList;
+  //typedef std::vector<size_t> ClSizeList;
 
 private:
-  ref<Actor> AddImageActor(mitk::Image::Pointer mitkImg);
-  ref<Actor> AddSurfaceActor(mitk::Surface::Pointer mitkSurf);
+  vl::ref<vl::Actor> AddImageActor(mitk::Image::Pointer mitkImg);
+  
   void LoadGLSLSourceFromResources(const char* filename, vl::String &source);
 
-  void ConvertVTKPolyData(vtkPolyData * vtkPoly, ref<vl::Geometry> vlPoly);
+  
 
 private:
-  Time           m_FPSTimer;
-  ref<Uniform>   m_ThresholdVal;
-  ref<Text>      mText;
-  ref<Transform> mTransform1;
-  ref<Transform> mTransform2;
-  ref<Light>     m_Light;
-  ref<Transform> m_LightTr;
+  //vl::Time           m_FPSTimer;
+  vl::ref<vl::Uniform>   m_ThresholdVal;
+  vl::ref<vl::Text>      mText;
+  vl::ref<vl::Transform> mTransform1;
+  vl::ref<vl::Transform> mTransform2;
 
-  std::map< mitk::DataNode::Pointer, ref<Actor>  > m_NodeToActorMap;
-  std::map< ref<Actor>, ref<Renderable>  >         m_ActorToRenderableMap;
 
-  OclResourceService* m_OclService;
+
+  
+
+  
+  
+
+  
 };
 
 #endif

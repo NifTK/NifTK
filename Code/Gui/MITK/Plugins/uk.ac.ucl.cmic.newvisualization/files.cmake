@@ -5,7 +5,7 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   NewVisualizationPluginActivator.cpp
   NewVisualizationView.cpp
-  VLRenderingApplet.cpp
+  # VLRenderingApplet.cpp
   VLQt4Widget.cpp
 )
 

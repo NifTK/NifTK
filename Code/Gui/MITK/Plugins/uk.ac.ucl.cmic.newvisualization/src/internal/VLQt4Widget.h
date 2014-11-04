@@ -35,377 +35,115 @@
 #include <vlQt4/link_config.hpp>
 #include <vlCore/VisualizationLibrary.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
-#include <QtGui/QApplication>
+#include <vlGraphics/Light.hpp>
+#include <vlGraphics/Camera.hpp>
+#include <vlGraphics/Rendering.hpp>
+#include <vlGraphics/RenderingTree.hpp>
+#include <vlGraphics/SceneManagerActorTree.hpp>
+#include <vlGraphics/TrackballManipulator.hpp>
+#include <vlGraphics/Geometry.hpp>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWidget>
-#include <QtCore/QUrl>
 #include <QtCore/QTimer>
 #include <QtCore/QObject>
 #include <QtOpenGL/QGLWidget>
-#include <QtOpenGL/QGLFormat>
+//#include <QtOpenGL/QGLFormat>
+//#include <QtGui/QApplication>
+//#include <QtCore/QUrl>
+#include <mitkOclResourceService.h>
+#include <mitkDataNode.h>
+#include <mitkSurface.h>
+#include <map>
 
-//namespace vlQt4
-//{
-//-----------------------------------------------------------------------------
-// Qt4Widget
-//-----------------------------------------------------------------------------
-  /** The Qt4Widget class implements an OpenGLContext using the Qt4 API. */
-  class /*VLQT4_EXPORT*/ VLQt4Widget : public QGLWidget, public vl::OpenGLContext
-  {
-    Q_OBJECT
 
-  public:
-    using vl::Object::setObjectName;
-    using QObject::setObjectName;
-  
-    VLQt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0)
-      :QGLWidget(parent,shareWidget,f),
-      mRefresh(10) // 100 fps
-    {
-      setContinuousUpdate(true);
-      setMouseTracking(true);
-      setAutoBufferSwap(false);
-      setAcceptDrops(true);
-      // let Qt take care of object destruction.
-      vl::OpenGLContext::setAutomaticDelete(false);
-    }
+class VLQt4Widget : public QGLWidget, public vl::OpenGLContext
+{
+  Q_OBJECT
 
-    ~VLQt4Widget()
-    {
-      dispatchDestroyEvent();
-    }
+public:
+  using vl::Object::setObjectName;
+  using QObject::setObjectName;
 
-    void dragEnterEvent(QDragEnterEvent *ev) 
-    { 
-      if (ev->mimeData()->hasUrls()) 
-        ev->acceptProposedAction(); 
-    }
+  VLQt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
 
-    void dropEvent(QDropEvent* ev)
-    {
-      if ( ev->mimeData()->hasUrls() )
-      {
-        std::vector<vl::String> files;
-        QList<QUrl> list = ev->mimeData()->urls();
-        for(int i=0; i<list.size(); ++i)
-        {
-          if (list[i].path().isEmpty())
-            continue;
-          #ifdef WIN32
-            if (list[i].path()[0] == '/')
-              files.push_back( list[i].path().toStdString().c_str()+1 );
-            else
-              files.push_back( list[i].path().toStdString().c_str() );
-          #else
-            files.push_back( list[i].path().toStdString().c_str() );
-          #endif
-        }
-        dispatchFileDroppedEvent(files);
-      }
-    }
+  virtual ~VLQt4Widget();
 
-    bool initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
-    {
-#if 0
-      // setFormat(fmt) is marked as deprecated so we use this other method
-      QGLContext* glctx = new QGLContext(context()->format(), this);
-      QGLFormat fmt = context()->format();
+  //bool initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480);
 
-      // double buffer
-      fmt.setDoubleBuffer( info.doubleBuffer() );
+  void setRefreshRate(int msec);
+  int refreshRate();
 
-      // color buffer
-      fmt.setRedBufferSize( info.rgbaBits().r() );
-      fmt.setGreenBufferSize( info.rgbaBits().g() );
-      fmt.setBlueBufferSize( info.rgbaBits().b() );
-      // setAlpha == true makes the create() function alway fail
-      // even if the returned format has the requested alpha channel
-      fmt.setAlphaBufferSize( info.rgbaBits().a() );
-      fmt.setAlpha( info.rgbaBits().a() != 0 );
+  void setOclResourceService(OclResourceService* oclserv);
 
-      // accumulation buffer
-      int accum = vl::max( info.accumRGBABits().r(), info.accumRGBABits().g() );
-      accum = vl::max( accum, info.accumRGBABits().b() );
-      accum = vl::max( accum, info.accumRGBABits().a() );
-      fmt.setAccumBufferSize( accum );
-      fmt.setAccum( accum != 0 );
+  void AddDataNode(const mitk::DataNode::Pointer& node);
+  void RemoveDataNode(const mitk::DataNode::Pointer& node);
+  void UpdateDataNode(const mitk::DataNode::Pointer& node);
 
-      // multisampling
-      if (info.multisample())
-        fmt.setSamples( info.multisampleSamples() );
-      fmt.setSampleBuffers( info.multisample() );
+  void ClearScene();
 
-      // depth buffer
-      fmt.setDepthBufferSize( info.depthBufferBits() );
-      fmt.setDepth( info.depthBufferBits() != 0 );
+  // from vl::OpenGLContext
+public:
+  virtual void setContinuousUpdate(bool continuous);
+  virtual void setWindowTitle(const vl::String& title);
+  virtual bool setFullscreen(bool fullscreen);
+  virtual void show();
+  virtual void hide();
+  virtual void setPosition(int x, int y);
+  virtual vl::ivec2 position() const;
+  virtual void update();                // hides non-virtual QWidget::update()?
+  virtual void setSize(int w, int h);
+  virtual void swapBuffers();           // in QGLWidget too
+  virtual void makeCurrent();           // in QGLWidget too
+  virtual void setMousePosition(int x, int y);
+  virtual void setMouseVisible(bool visible);
+  virtual void getFocus();
 
-      // stencil buffer
-      fmt.setStencilBufferSize( info.stencilBufferBits() );
-      fmt.setStencil( info.stencilBufferBits() != 0 );
+  virtual vl::ivec2 size() const;       // BEWARE: not a baseclass method!
 
-      // stereo
-      fmt.setStereo( info.stereo() );
+protected:
+  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
 
-      // swap interval / v-sync
-      fmt.setSwapInterval( info.vSync() ? 1 : 0 );
 
-      glctx->setFormat(fmt);
-      // this function returns false when we request an alpha buffer
-      // even if the created context seem to have the alpha buffer
-      /*bool ok = */glctx->create(shareContext);
-      setContext(glctx);
-#endif
-      initGLContext();
+  // from QGLWidget
+protected:
+  virtual void initializeGL();
+  virtual void resizeGL(int width, int height);
+  virtual void paintGL();
+  virtual void mouseMoveEvent(QMouseEvent* ev);
+  virtual void mousePressEvent(QMouseEvent* ev);
+  virtual void mouseReleaseEvent(QMouseEvent* ev);
+  virtual void wheelEvent(QWheelEvent* ev);
+  virtual void keyPressEvent(QKeyEvent* ev);
+  virtual void keyReleaseEvent(QKeyEvent* ev);
+  //void dragEnterEvent(QDragEnterEvent *ev);
+  //void dropEvent(QDropEvent* ev);
 
-      framebuffer()->setWidth(width);
-      framebuffer()->setHeight(height);
 
-      #if 0//ndef NDEBUG
-        printf("--------------------------------------------\n");
-        printf("REQUESTED OpenGL Format:\n");
-        printf("--------------------------------------------\n");
-        printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
-        printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
-        printf("depth buffer size = %d\n", fmt.depthBufferSize() );
-        printf("depth buffer = %d\n", fmt.depth() );
-        printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
-        printf("stencil buffer = %d\n", fmt.stencil() );
-        printf("accum buffer size %d\n", fmt.accumBufferSize() );
-        printf("accum buffer %d\n", fmt.accum() );
-        printf("stereo = %d\n", (int)fmt.stereo() );
-        printf("swap interval = %d\n", fmt.swapInterval() );
-        printf("multisample = %d\n", (int)fmt.sampleBuffers() );
-        printf("multisample samples = %d\n", (int)fmt.samples() );
+protected:
+  void renderScene();
 
-        fmt = format();
+  vl::ref<vl::RenderingTree>            m_RenderingTree;
+  vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
+  vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
+  vl::ref<vl::Camera>                   m_Camera;
+  vl::ref<vl::Light>                    m_Light;
+  vl::ref<vl::Transform>                m_LightTr;
+  vl::ref<vl::TrackballManipulator>     m_Trackball;
 
-        printf("--------------------------------------------\n");
-        printf("OBTAINED OpenGL Format:\n");
-        printf("--------------------------------------------\n");
-        printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
-        printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
-        printf("depth buffer size = %d\n", fmt.depthBufferSize() );
-        printf("depth buffer = %d\n", fmt.depth() );
-        printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
-        printf("stencil buffer = %d\n", fmt.stencil() );
-        printf("accum buffer size %d\n", fmt.accumBufferSize() );
-        printf("accum buffer %d\n", fmt.accum() );
-        printf("stereo = %d\n", (int)fmt.stereo() );
-        printf("swap interval = %d\n", fmt.swapInterval() );
-        printf("multisample = %d\n", (int)fmt.sampleBuffers() );
-        printf("multisample samples = %d\n", (int)fmt.samples() );
-        printf("--------------------------------------------\n");
-      #endif
+  OclResourceService*                   m_OclService;
 
-      setWindowTitle(title);
-      move(x,y);
-      resize(width,height);
 
-#if 0
-      if (info.fullscreen())
-        setFullscreen(true);
-#endif
+  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
+  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
 
-      return true;
-    }
+  std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >    m_NodeToActorMap;
+  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >    m_ActorToRenderableMap;
 
-    virtual void setContinuousUpdate(bool continuous)
-    {
-      mContinuousUpdate = continuous;
-      if (continuous)
-      {
-        disconnect(&mUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-        connect(&mUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-        mUpdateTimer.setSingleShot(false);
-        mUpdateTimer.setInterval(mRefresh);
-        mUpdateTimer.start(0);
-      }
-      else
-      {
-        disconnect(&mUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-        mUpdateTimer.stop();
-      }
-    }
 
-    void setRefreshRate( int msec )
-    {
-      mRefresh = msec;
-      mUpdateTimer.setInterval(mRefresh);
-    }
+protected:
+  int       m_Refresh;
+  QTimer    m_UpdateTimer;
+};
 
-    int refreshRate()
-    {
-      return mRefresh;
-    }
-
-    void initializeGL()
-    {
-      // OpenGL extensions initialization
-      dispatchInitEvent();
-    }
-
-    void resizeGL(int width, int height)
-    {
-      dispatchResizeEvent(width, height);
-    }
-
-    void paintGL()
-    {
-      dispatchRunEvent();
-    }
-
-    void update()
-    {
-      QGLWidget::update();
-      // QGLWidget::updateGL();
-    }
-
-    virtual void setWindowTitle(const vl::String& title)
-    {
-      QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
-    }
-
-    virtual bool setFullscreen(bool fullscreen)
-    {
-      mFullscreen = fullscreen;
-      if (fullscreen)
-        QGLWidget::setWindowState(QGLWidget::windowState() | Qt::WindowFullScreen);
-      else
-        QGLWidget::setWindowState(QGLWidget::windowState() & (~Qt::WindowFullScreen));
-      return true;
-    }
-
-    virtual void quitApplication()
-    {
-      eraseAllEventListeners();
-      QApplication::quit();
-    }
-
-    virtual void show()
-    {
-      QGLWidget::show();
-    }
-
-    virtual void hide()
-    {
-      QGLWidget::hide();
-    }
-
-    virtual void setPosition(int x, int y)
-    {
-      QGLWidget::move(x,y);
-    }
-
-    virtual vl::ivec2 position() const
-    {
-      return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
-    }
-
-    virtual void setSize(int w, int h)
-    {
-      // this already excludes the window's frame so it's ok for Visualization Library standards
-      QGLWidget::resize(w,h);
-    }
-
-    virtual vl::ivec2 size() const
-    {
-      // this already excludes the window's frame so it's ok for Visualization Library standards
-      return vl::ivec2(QGLWidget::size().width(), QGLWidget::size().height());
-    }
-
-    void swapBuffers()
-    {
-      QGLWidget::swapBuffers();
-    }
-
-    void makeCurrent()
-    {
-      QGLWidget::makeCurrent();
-    }
-
-    void setMousePosition(int x, int y)
-    {
-      QCursor::setPos( mapToGlobal(QPoint(x,y)) );
-    }
-
-    void mouseMoveEvent(QMouseEvent* ev)
-    {
-      if (!mIgnoreNextMouseMoveEvent)
-        dispatchMouseMoveEvent(ev->x(), ev->y());
-      mIgnoreNextMouseMoveEvent = false;
-    }
-
-    void mousePressEvent(QMouseEvent* ev)
-    {
-      vl::EMouseButton bt = vl::NoButton;
-      switch(ev->button())
-      {
-      case Qt::LeftButton:  bt = vl::LeftButton; break;
-      case Qt::RightButton: bt = vl::RightButton; break;
-      case Qt::MidButton:   bt = vl::MiddleButton; break;
-      default:
-        bt = vl::UnknownButton; break;
-      }
-      dispatchMouseDownEvent(bt, ev->x(), ev->y());
-    }
-
-    void mouseReleaseEvent(QMouseEvent* ev)
-    {
-      vl::EMouseButton bt = vl::NoButton;
-      switch(ev->button())
-      {
-      case Qt::LeftButton:  bt = vl::LeftButton; break;
-      case Qt::RightButton: bt = vl::RightButton; break;
-      case Qt::MidButton:   bt = vl::MiddleButton; break;
-      default:
-        bt = vl::UnknownButton; break;
-      }
-      dispatchMouseUpEvent(bt, ev->x(), ev->y());
-    }
-
-    void wheelEvent(QWheelEvent* ev)
-    {
-      dispatchMouseWheelEvent(ev->delta() / 120);
-    }
-
-    void keyPressEvent(QKeyEvent* ev)
-    {
-      unsigned short unicode_ch = 0;
-      vl::EKey key = vl::Key_None;
-      translateKeyEvent(ev, unicode_ch, key);
-      dispatchKeyPressEvent(unicode_ch, key);
-    }
-
-    void keyReleaseEvent(QKeyEvent* ev)
-    {
-      unsigned short unicode_ch = 0;
-      vl::EKey key = vl::Key_None;
-      translateKeyEvent(ev, unicode_ch, key);
-      dispatchKeyReleaseEvent(unicode_ch, key);
-    }
-
-    virtual void setMouseVisible(bool visible)
-    {
-      mMouseVisible=visible;
-      if (visible)
-        QGLWidget::setCursor(Qt::ArrowCursor);
-      else
-        QGLWidget::setCursor(Qt::BlankCursor);
-    }
-
-    virtual void getFocus()
-    {
-      QGLWidget::setFocus(Qt::OtherFocusReason);
-    }
-
-  protected:
-    void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
-
-  protected:
-    int    mRefresh;
-    QTimer mUpdateTimer;
-  };
-  //-----------------------------------------------------------------------------
-//}
 
 #endif
