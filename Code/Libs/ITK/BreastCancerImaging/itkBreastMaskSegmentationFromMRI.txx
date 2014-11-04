@@ -3551,7 +3551,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				     const int splineOrder, 
 				     const int numOfControlPoints,
 				     const int numOfLevels,
-             bool correctSurfaceOffest )
+                                     bool correctSurfaceOffest )
 {
   
   // Fit the B-Spline surface
