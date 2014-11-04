@@ -122,8 +122,10 @@ protected:
 protected:
   void renderScene();
 
+  // FIXME: the rendering tree stuff might go away. could be useful for shadowing though.
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
+  //vl::ref<vl::Rendering>                m_TranslucentObjectsRendering;
   vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
   vl::ref<vl::Camera>                   m_Camera;
   vl::ref<vl::Light>                    m_Light;

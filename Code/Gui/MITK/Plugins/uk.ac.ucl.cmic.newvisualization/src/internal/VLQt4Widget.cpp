@@ -308,6 +308,9 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
     newActor->setObjectName(objName.c_str());
 
     m_NodeToActorMap[node] = newActor;
+
+    // update colour, etc.
+    UpdateDataNode(node);
   }
 }
 
@@ -317,7 +320,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  MITK_INFO << m_NodeToActorMap.size();
+  //MITK_INFO << m_NodeToActorMap.size();
   std::map< mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
@@ -327,7 +330,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
     return;
 
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (visibleProp->GetValue() == false)
+  bool  isVisble = visibleProp->GetValue();
+
+  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
+  float opacity = opacityProp->GetValue();
+  // if object is too translucent to not have a effect after blending then just skip it.
+  if (opacity < (1.0f / 255.0f))
+    isVisble = false;
+
+  if (isVisble == false)
   {
     vlActor->setEnableMask(0);
   }
@@ -337,9 +348,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 
     mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
     mitk::Color mitkColor = colorProp->GetColor();
-
-    mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-    float opacity = opacityProp->GetValue();
 
     vl::fvec4 color;
     color[0] = mitkColor[0];
@@ -400,6 +408,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   if (!vlSurf->normalArray())
     vlSurf->computeNormals();
 
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+/*
   float   opacity = 1;
   mitkSurf->GetPropertyList()->GetFloatProperty("opacity", opacity);
 
@@ -415,7 +425,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   color[2] = mitkColor[2];
   color[3] = opacity;
 
-  vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_BLEND);
   fx->shader()->enable(vl::EN_DEPTH_TEST);
   fx->shader()->enable(vl::EN_CULL_FACE);
@@ -423,7 +432,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   fx->shader()->setRenderState(m_Light.get(), 0);
   fx->shader()->gocMaterial()->setDiffuse(color);
   fx->shader()->gocMaterial()->setTransparency(opacity);
-
+  */
 
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   mitkSurf->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
