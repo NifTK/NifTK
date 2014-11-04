@@ -1267,11 +1267,19 @@ int main( int argc, char *argv[] )
 
         std::stringstream commandNiftySeg;
 
+#if (defined(_WIN32) || defined(WIN32))
+        commandNiftySeg 
+          << "seg_EM.exe -v 2 -bc_order 4 -nopriors 2" 
+          << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
+          << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
+          << " -out \"" << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ) << "\" ";
+#else
         commandNiftySeg 
           << "seg_EM -v 2 -bc_order 4 -nopriors 2" 
           << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
           << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
           << " -out \"" << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ) << "\" ";
+#endif
 
         message << std::endl << "Executing parenchyma segmentation: "
                 << std::endl << "   " << commandNiftySeg.str() << std::endl << std::endl;
