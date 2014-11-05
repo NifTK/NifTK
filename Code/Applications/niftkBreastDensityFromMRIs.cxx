@@ -161,6 +161,8 @@ public:
   std::string strSeriesDescDixonWater;
   std::string strSeriesDescDixonFat;
 
+  std::string fileSegEM;
+
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
   std::ostream *newCout;
@@ -178,7 +180,8 @@ public:
                    std::string strStructuralT2,
                    std::string strFatSatT1,
                    std::string strDixonWater,
-                   std::string strDixonFat  ) {
+                   std::string strDixonFat,
+                   std::string segEM ) {
 
     std::stringstream message;
 
@@ -198,7 +201,9 @@ public:
     strSeriesDescFatSatT1 = strFatSatT1;
     strSeriesDescDixonWater = strDixonWater;
     strSeriesDescDixonFat = strDixonFat;
-   
+
+    fileSegEM = segEM;
+
     if ( fileLog.length() > 0 )
     {
       foutLog = new std::ofstream( fileLog.c_str() );
@@ -307,6 +312,8 @@ public:
             << "Complementary image series description" << strSeriesDescFatSatT1 << std::endl
             << "DIXON water image series description: " << strSeriesDescDixonWater << std::endl
             << "DIXON fat image series description: " << strSeriesDescDixonFat << std::endl
+            << std::endl
+            << "NiftySeg 'seg_EM' executable: " << fileSegEM << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -478,7 +485,8 @@ int main( int argc, char *argv[] )
                         strSeriesDescStructuralT2,
                         strSeriesDescFatSatT1,
                         strSeriesDescDixonWater,
-                        strSeriesDescDixonFat );
+                        strSeriesDescDixonFat,
+                        fileSegEM );
 
 
   args.Print();
@@ -689,6 +697,11 @@ int main( int argc, char *argv[] )
         
         continue;
       }
+      else
+      {
+        message << "Density measurements: " << fileInputDensityMeasurements << " not found" << std::endl;
+        args.PrintMessage( message );
+      }     
 
 
       // Find the DICOM files in this directory
@@ -918,7 +931,7 @@ int main( int argc, char *argv[] )
             args.PrintMessage( message );
 
             typedef itk::RescaleImageUsingHistogramPercentilesFilter<ImageType, ImageType> RescaleFilterType;
-            
+
             RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
             rescaleFilter->SetInput( imStructuralT2 );
   
@@ -938,7 +951,6 @@ int main( int argc, char *argv[] )
                                    args.strSeriesDescStructuralT2 + "' image", imStructuralT2 );
           }
         }
-
       
         // Resample the T2 image to match the FatSat image
 
@@ -1267,19 +1279,12 @@ int main( int argc, char *argv[] )
 
         std::stringstream commandNiftySeg;
 
-#if (defined(_WIN32) || defined(WIN32))
         commandNiftySeg 
-          << "seg_EM.exe -v 2 -bc_order 4 -nopriors 2" 
+          << fileSegEM
+          << " -v 2 -bc_order 4 -nopriors 2" 
           << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
           << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
           << " -out \"" << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ) << "\" ";
-#else
-        commandNiftySeg 
-          << "seg_EM -v 2 -bc_order 4 -nopriors 2" 
-          << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
-          << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
-          << " -out \"" << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ) << "\" ";
-#endif
 
         message << std::endl << "Executing parenchyma segmentation: "
                 << std::endl << "   " << commandNiftySeg.str() << std::endl << std::endl;
@@ -1287,9 +1292,6 @@ int main( int argc, char *argv[] )
 
         int ret = system( commandNiftySeg.str().c_str() );
         message << std::endl << "Returned: " << ret << std::endl;
-
-        args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
-                                "breast parenchyma", imParenchyma );
       }
 
 #endif
