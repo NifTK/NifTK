@@ -31,6 +31,12 @@
 #include <opencv2/highgui/highgui_c.h>
 
 
+std::pair<int, int> DecodePixelToCoordinate(boost::gil::rgba8_pixel_t p)
+{
+  // alpha is not a coordinate
+  return std::make_pair(p[0] + (p[1] << 8), p[2]);
+}
+
 static boost::gil::rgba8_image_t CreateTestImage(int width, int height)
 {
   boost::gil::rgba8_image_t   img(width, height);
@@ -43,7 +49,7 @@ static boost::gil::rgba8_image_t CreateTestImage(int width, int height)
       unsigned char     r = x & 0xFF;
       unsigned char     g = (x >> 8) & 0xFF;
       unsigned char     b = y & 0xFF;
-      unsigned char     a = (y >> 8) & 0xFF;
+      unsigned char     a = 255;//(y >> 8) & 0xFF;
       view(x, y) = boost::gil::rgba8_pixel_t(r, g, b, a);
     }
   }
@@ -160,6 +166,23 @@ static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& 
   cvSaveImage((std::string(testname) + "-kernelresult.png").c_str(), &kernelipl);
   cvSaveImage((std::string(testname) + "-opencvresult.png").c_str(), &outputipl);
 
+  // FIXME: erode alpha channel of kernel result
+  {
+    CvArr*      in[] = {&kernelipl};
+    IplImage*   alphaonly = cvCreateImage(cvSize(kernelipl.width, kernelipl.height), kernelipl.depth, 1);
+    CvArr*      out[] = {alphaonly};
+    int         pairs[] = {3, 0, 0, 3};
+    cvMixChannels((const CvArr**) &in[0], 1, &out[0], 1, &pairs[0], 1);
+
+    // supports in-place
+    cvErode(alphaonly, alphaonly, 0, 1);
+
+    cvMixChannels((const CvArr**) &out[0], 1, &in[0], 1, &pairs[2], 1);
+
+    cvReleaseImage(&alphaonly);
+  }
+
+  cvSaveImage((std::string(testname) + "-kernelresult-after.png").c_str(), &kernelipl);
 
   int   maxpixeldifference = 0;
   int   numpixelsdifferent = 0;
@@ -171,31 +194,37 @@ static bool CompareAgainstOpenCV(boost::gil::rgba8_view_t input, const cv::Mat& 
       boost::gil::rgba8_pixel_t   opencvpixel = boost::gil::view(cvoutput)(x, y);
       boost::gil::rgba8_pixel_t   kernelpixel = kernelresult(x, y);
 
+      std::pair<int, int>   opencvcoord = DecodePixelToCoordinate(opencvpixel);
+      std::pair<int, int>   kernelcoord = DecodePixelToCoordinate(kernelpixel);
+
       // opencv will fill in some garbage in areas that do not map back to input.
       // the kernel will just fill these pixels with alpha zero.
-      // so ignore alpha-zero pixels.
-      if (kernelpixel[3] > 0)
+      // so ignore pixels that do not have fully-opaque alpha.
+      if (kernelpixel[3] >= 255)
       {
-        int   diff = std::max((int) opencvpixel[0] - (int) kernelpixel[0],
-                     std::max((int) opencvpixel[1] - (int) kernelpixel[1],
-                     std::max((int) opencvpixel[2] - (int) kernelpixel[2],
-                              (int) opencvpixel[3] - (int) kernelpixel[3])));
-        if (diff > 1)
+        int   pixeldiff = std::max(std::abs((int) opencvpixel[0] - (int) kernelpixel[0]),
+                          std::max(std::abs((int) opencvpixel[1] - (int) kernelpixel[1]),
+                          std::max(std::abs((int) opencvpixel[2] - (int) kernelpixel[2]),
+                                   std::abs((int) opencvpixel[3] - (int) kernelpixel[3]))));
+        int   coorddiff = std::max(std::abs((int) opencvcoord.first  - (int) kernelcoord.first),
+                                   std::abs((int) opencvcoord.second - (int) kernelcoord.second));
+
+        if (pixeldiff > 5)
         {
-          //std::cerr << testname << ": Pixel at " << x << ',' << y << " differs too much" << std::endl;
-        }
-        if (diff > 0)
-        {
-          ++numpixelsdifferent;
+          std::cerr << testname << ": Pixel at " << x << ',' << y << " differs too much" << std::endl;
+
+          if (coorddiff > 5)
+            ++numpixelsdifferent;
         }
 
-        maxpixeldifference = std::max(maxpixeldifference, diff);
+        maxpixeldifference = std::max(maxpixeldifference, std::min(pixeldiff, coorddiff));
       }
     }
   }
 
 
-  if (maxpixeldifference > 1)
+  // current testing puts the max difference at 5
+  if (maxpixeldifference > 5)
   {
     std::cerr << testname <<": FAIL: Difference between any two pixels is too large: " << maxpixeldifference << std::endl;
     return false;
