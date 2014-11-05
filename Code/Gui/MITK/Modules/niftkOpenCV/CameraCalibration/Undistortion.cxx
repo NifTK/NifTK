@@ -306,7 +306,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
 
     cudaError_t   err = cudaSuccess;
     // source of memcpy is not page-locked, so would never be async.
-    err = cudaMemcpy(inputWA.m_DevicePointer, input->imageData, input->widthStep * input->height, cudaMemcpyHostToDevice);
+    err = cudaMemcpyAsync(inputWA.m_DevicePointer, input->imageData, input->widthStep * input->height, cudaMemcpyHostToDevice, stream);
     assert(err == cudaSuccess);
 
     // we need another image, this time for actual output.
