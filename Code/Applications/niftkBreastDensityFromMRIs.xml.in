@@ -131,6 +131,15 @@
       <label>Print debugging output?</label>
     </boolean>
 
+    <file>
+      <name>fileSegEM</name>
+      <longflag>segEM</longflag>
+      <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
+      <label>Seg_EM executable</label>
+      <channel>input</channel>
+      <default>seg_EM</default>
+    </file>
+
   </parameters>
 
 </executable>
