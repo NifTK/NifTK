@@ -65,10 +65,17 @@
     </boolean>
 
     <string>
-      <name>dirSub</name>
-      <longflag>dirSub</longflag>
+      <name>dirSubMRI</name>
+      <longflag>dirSubMRI</longflag>
+      <description>The sub-directory containing the input MRI data.</description>
+      <label>Input MRI sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirSubData</name>
+      <longflag>dirSubData</longflag>
       <description>The sub-directory within each directory to which intermediate images and data are saved.</description>
-      <label>Data sub-directory name</label>
+      <label>Output data sub-directory name</label>
     </string>
 
     <string>
