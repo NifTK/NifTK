@@ -153,7 +153,8 @@ public:
   std::string fileLog;
   std::string fileOutputCSV;
 
-  std::string dirSub;  
+  std::string dirSubMRI;  
+  std::string dirSubData;  
   std::string dirPrefix;  
 
   std::string strSeriesDescStructuralT2;
@@ -175,7 +176,8 @@ public:
 
   InputParameters( TCLAP::CmdLine &commandLine, 
                    bool verbose, bool flgSave, bool compression, bool debug,
-                   std::string subdirectory, std::string prefix, std::string input,
+                   std::string subdirMRI, std::string subdirData, 
+                   std::string prefix, std::string input,
                    std::string logfile, std::string csvfile,
                    std::string strStructuralT2,
                    std::string strFatSatT1,
@@ -190,9 +192,10 @@ public:
     flgDebug = debug;
     flgCompression = compression;
 
-    dirSub = subdirectory;
-    dirPrefix = prefix;
-    dirInput = input;
+    dirSubMRI  = subdirMRI;
+    dirSubData = subdirData;
+    dirPrefix  = prefix;
+    dirInput   = input;
 
     fileLog = logfile;
     fileOutputCSV = csvfile;
@@ -302,7 +305,8 @@ public:
             << "Debugging output?: " << std::boolalpha << flgDebug       
             << std::noboolalpha << std::endl
             << std::endl
-            << "Data sub-directory: " << dirSub << std::endl
+            << "Input MRI sub-directory: " << dirSubMRI << std::endl
+            << "Output data sub-directory: " << dirSubData << std::endl
             << "Study directory prefix: " << dirPrefix << std::endl
             << std::endl
             << "Output log file: " << fileLog << std::endl
@@ -480,7 +484,7 @@ int main( int argc, char *argv[] )
 
   InputParameters args( commandLine, 
                         flgVerbose, flgSaveImages, flgCompression, flgDebug,
-                        dirSub, dirPrefix, dirInput,
+                        dirSubMRI, dirSubData, dirPrefix, dirInput,
                         fileLog, fileOutputCSV,
                         strSeriesDescStructuralT2,
                         strSeriesDescFatSatT1,
@@ -588,6 +592,7 @@ int main( int argc, char *argv[] )
   std::string dirFullPath;
   std::string dirBaseName;
 
+  std::string dirMRI;
   std::string dirOutput;
 
   std::vector< std::string > directoryNames;
@@ -631,9 +636,18 @@ int main( int argc, char *argv[] )
     message << std::endl << "Directory: " << dirFullPath << std::endl << std::endl;
     args.PrintMessage( message );
 
-    if ( dirSub.length() > 0 )
+    if ( dirSubMRI.length() > 0 )
     {
-      dirOutput = niftk::ConcatenatePath( dirFullPath, dirSub );
+      dirMRI = niftk::ConcatenatePath( dirFullPath, dirSubMRI );
+    }
+    else
+    {
+      dirMRI = dirFullPath;
+    }
+
+    if ( dirSubData.length() > 0 )
+    {
+      dirOutput = niftk::ConcatenatePath( dirFullPath, dirSubData );
     }
     else
     {
@@ -726,7 +740,7 @@ int main( int argc, char *argv[] )
 
       nameGenerator->SetUseSeriesDetails( true );
     
-      nameGenerator->SetDirectory( dirFullPath );
+      nameGenerator->SetDirectory( dirMRI );
   
     
       // The GDCMSeriesFileNames object first identifies the list of DICOM series
