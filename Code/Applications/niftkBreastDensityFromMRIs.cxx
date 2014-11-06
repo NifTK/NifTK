@@ -1122,8 +1122,12 @@ int main( int argc, char *argv[] )
           if ( fileOutputPectoralSurfaceVoxels.length() > 0 ) breastMaskSegmentor->SetOutputPectoralSurf(         niftk::ConcatenatePath( dirOutput, fileOutputPectoralSurfaceVoxels ) );
   
           if ( fileOutputFittedBreastMask.length() > 0 )      breastMaskSegmentor->SetOutputBreastFittedSurfMask( niftk::ConcatenatePath( dirOutput, fileOutputFittedBreastMask ) );
+        }
 
-          if ( fileOutputVTKSurface.length() > 0 )            breastMaskSegmentor->SetOutputVTKSurface(           niftk::ConcatenatePath( dirOutput, fileOutputVTKSurface ) );
+        if ( fileOutputVTKSurface.length() > 0 )
+        {
+          breastMaskSegmentor->SetOutputVTKSurface( niftk::ConcatenatePath( dirOutput, 
+                                                                            fileOutputVTKSurface ) );
         }
 
         if ( args.ReadImageFromFile( dirOutput, fileBIFs, "BIF image", imBIFs ) )
@@ -1537,8 +1541,6 @@ int main( int argc, char *argv[] )
         args.DeleteFile( dirOutput, fileOutputPectoralSurfaceVoxels );
 
         args.DeleteFile( dirOutput, fileOutputFittedBreastMask );
-
-        args.DeleteFile( dirOutput, fileOutputVTKSurface );
       }
     }
     catch (itk::ExceptionObject &ex)
