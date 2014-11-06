@@ -81,7 +81,7 @@
     <string>
       <name>dirPrefix</name>
       <longflag>dirPrefix</longflag>
-      <description>Only study directories with this prefix will be included in processing.</description>
+      <description>Only study directories with this prefix will be included in the processing.</description>
       <label>Study directory prefix</label>
     </string>
  
@@ -143,8 +143,8 @@
       <longflag>segEM</longflag>
       <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
-      <channel>input</channel>
       <default>seg_EM</default>
+      <channel>input</channel>
     </file>
 
   </parameters>
