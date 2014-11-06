@@ -19,6 +19,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
+#include <QProcessEnvironment>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -50,6 +51,8 @@ const int    QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE = 5000; // 5 se
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
 const bool   QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA = false;
+const char*  QmitkIGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
+
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -188,9 +191,17 @@ QString QmitkIGIDataSourceManager::GetDefaultPath()
   QString path;
   QDir directory;
 
-  path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+  // if the user has configured a per-machine default location for igi data.
+  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
+  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
+  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
   directory.setPath(path);
 
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    directory.setPath(path);
+  }
   if (!directory.exists())
   {
     path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
