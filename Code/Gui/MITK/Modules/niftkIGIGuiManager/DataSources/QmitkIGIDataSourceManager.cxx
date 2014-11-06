@@ -1132,7 +1132,7 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
   QDateTime dateTime;
   dateTime.setMSecsSinceEpoch(millis);
 
-  QString formattedTime = dateTime.toString("yyyy-MM-dd_hh-mm-ss-zzz");
+  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
   QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
   return directoryName;
