@@ -410,51 +410,24 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   if (!vlSurf->normalArray())
     vlSurf->computeNormals();
 
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-/*
-  float   opacity = 1;
-  mitkSurf->GetPropertyList()->GetFloatProperty("opacity", opacity);
-
-  float         defaultColor[3] = {1, 1, 1};
-  mitk::Color   mitkColor(defaultColor);
-  mitk::ColorProperty::Pointer    prop = dynamic_cast<mitk::ColorProperty*>(mitkSurf->GetProperty("color").GetPointer());
-  if (prop.IsNotNull())
-    mitkColor = prop->GetColor();
-
-  vl::fvec4 color;
-  color[0] = mitkColor[0];
-  color[1] = mitkColor[1];
-  color[2] = mitkColor[2];
-  color[3] = opacity;
-
-  fx->shader()->enable(vl::EN_BLEND);
-  fx->shader()->enable(vl::EN_DEPTH_TEST);
-  fx->shader()->enable(vl::EN_CULL_FACE);
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(m_Light.get(), 0);
-  fx->shader()->gocMaterial()->setDiffuse(color);
-  fx->shader()->gocMaterial()->setTransparency(opacity);
-  */
-
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   mitkSurf->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
 
-  //float vals[16];
   vl::mat4  mat;
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
     {
       double val = geometryTransformMatrix->GetElement(i, j);
-      //vals[i * 4 + j] = val;
       mat.e(i, j) = val;
     }
   }
 
-  //vl::mat4  mat(vals);
   vl::ref<vl::Transform> tr     = new vl::Transform();
   tr->setLocalMatrix(mat);
 
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[surfActor] = vlSurf;
@@ -845,6 +818,7 @@ void VLQt4Widget::setMouseVisible(bool visible)
   else
     QGLWidget::setCursor(Qt::BlankCursor);
 }
+
 
 void VLQt4Widget::getFocus()
 {
