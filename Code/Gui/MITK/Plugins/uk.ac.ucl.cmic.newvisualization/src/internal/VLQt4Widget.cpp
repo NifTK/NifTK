@@ -6,6 +6,8 @@
 #include <vlCore/Colors.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlGraphics/RenderQueueSorter.hpp>
+#include <vlGraphics/GLSL.hpp>
+#include <vlVolume/RaycastVolume.hpp>
 #include <cassert>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
@@ -16,6 +18,9 @@
 #include <vtkCellArray.h>
 #include <vtkPolyDataNormals.h>
 #include <mitkProperties.h>
+#include <mitkImageReadAccessor.h>
+#include <QFile>
+#include <QTextStream>
 
 
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
@@ -218,6 +223,9 @@ void VLQt4Widget::initializeGL()
   m_OpaqueObjectsRendering->renderer()->setFramebuffer(vl::OpenGLContext::framebuffer());
   m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fuchsia);
 
+  m_ThresholdVal = new vl::Uniform("val_threshold");
+  m_ThresholdVal->setUniformF(0.5f);
+
   vl::OpenGLContext::dispatchInitEvent();
 }
 
@@ -290,9 +298,8 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
   std::string           namePostFix;
   if (mitkImg.IsNotNull())
   {
-    //newActor = AddImageActor(mitkImg);
-    //postFix.append("_image");
-    assert(false);
+    newActor = AddImageActor(mitkImg);
+    namePostFix = "_image";
   }
   else
   if (mitkSurf.IsNotNull())
@@ -362,6 +369,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
     fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
 
+    // FIXME: this may need special case for volumes...
     if (opacity <= (1.0f - (1.0f / 255.0f)))
     {
       vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
@@ -703,6 +711,228 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 
 
   MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size();
+}
+
+
+vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkImg)
+{
+  mitk::PixelType pixType = mitkImg->GetPixelType();
+  size_t numOfComponents = pixType.GetNumberOfComponents();
+
+  if (false)
+  {
+    std::cout << "Original pixel type:" << std::endl;
+    std::cout << " PixelType: " <<pixType.GetTypeAsString() << std::endl;
+    std::cout << " BitsPerElement: " <<pixType.GetBpe() << std::endl;
+    std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
+    std::cout << " BitsPerComponent: " <<pixType.GetBitsPerComponent() << std::endl;
+  }
+
+
+  vl::ref<vl::Image>     vlImg;
+
+  try
+  {
+    mitk::ImageReadAccessor   readAccess(mitkImg, mitkImg->GetVolumeData(0));
+    const void*               cPointer = readAccess.GetData();
+
+    vl::EImageType     typeMap[] =
+    {
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
+      vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
+      vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
+      vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
+      vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
+      vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
+      vl::IT_INT,             // itk::ImageIOBase::INT = 6
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
+      vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
+      vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
+    };
+
+    vl::EImageType     type = typeMap[pixType.GetComponentType()];
+    vl::EImageFormat   format;
+
+    if (type != vl::IT_FLOAT)
+    {
+      if (numOfComponents == 1)
+        format = vl::IF_LUMINANCE;
+      else if (numOfComponents == 2)
+        format = vl::IF_RG_INTEGER;
+      else if (numOfComponents == 3)
+        format = vl::IF_RGB_INTEGER;
+      else if (numOfComponents == 4)
+        format = vl::IF_RGBA_INTEGER;
+    }
+    else if (type == vl::IT_FLOAT)
+    {
+      if (numOfComponents == 1)
+        format = vl::IF_LUMINANCE;
+      else if (numOfComponents == 2)
+        format = vl::IF_RG;
+      else if (numOfComponents == 3)
+        format = vl::IF_RGB;
+      else if (numOfComponents == 4)
+        format = vl::IF_RGBA;
+    }
+
+    unsigned int* dims = 0;
+    dims = mitkImg->GetDimensions();
+    // we do not own dims!
+
+    int bytealign = 1;
+    vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
+
+    // sanity check
+    unsigned int size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+    assert(vlImg->requiredMemory() == size);
+    std::memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
+
+    vlImg = vlImg->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
+/*
+    ref<KeyValues> tags = new KeyValues;
+    tags->set("Origin")    = Say("%n %n %n") << mitkImg->GetGeometry()->GetOrigin()[0]  << mitkImg->GetGeometry()->GetOrigin()[1]  << mitkImg->GetGeometry()->GetOrigin()[2];
+    tags->set("Spacing")   = Say("%n %n %n") << mitkImg->GetGeometry()->GetSpacing()[0] << mitkImg->GetGeometry()->GetSpacing()[1] << mitkImg->GetGeometry()->GetSpacing()[2];
+    vlImg->setTags(tags.get());
+*/
+  }
+  catch(mitk::Exception& e)
+  {
+    // deal with the situation not to have access
+    assert(false);
+  }
+
+
+  float opacity;
+  mitkImg->GetPropertyList()->GetFloatProperty("opacity", opacity);
+
+  mitk::BaseProperty::Pointer   colourProp = mitkImg->GetProperty("color");
+  mitk::Color                   mitkColor;
+  if (colourProp.IsNotNull())
+    mitkColor = dynamic_cast<mitk::ColorProperty*>(colourProp.GetPointer())->GetColor();
+
+  vl::fvec4 color;
+  color[0] = mitkColor[0];
+  color[1] = mitkColor[1];
+  color[2] = mitkColor[2];
+  color[3] = opacity;
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_DEPTH_TEST);
+  fx->shader()->enable(vl::EN_BLEND);
+  fx->shader()->setRenderState(m_Light.get(), 0);
+  fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->gocMaterial()->setDiffuse(color);
+  fx->shader()->gocMaterial()->setTransparency(opacity);
+
+  vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
+  vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
+
+  // The GLSL program used to perform the actual rendering.
+  // The \a volume_luminance_light.fs fragment shader allows you to specify how many 
+  // lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
+  vl::ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
+  glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
+  glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
+
+  vl::ref<vl::Actor>    imageActor = new vl::Actor;
+  imageActor->setEffect(fx.get());
+  imageActor->setUniform(m_ThresholdVal.get());
+
+  vl::ref<vl::Transform>    tr = new vl::Transform;
+  imageActor->setTransform(tr.get());
+  m_SceneManager->tree()->addActor(imageActor.get());
+
+
+  vl::ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
+  raycastVolume->bindActor(imageActor.get());
+
+
+  // we do not own dims!
+  unsigned int*   dims    = mitkImg->GetDimensions();
+  const float*    spacing = /*const_cast<float*>*/(mitkImg->GetGeometry()->GetFloatSpacing());
+
+  float dimX = (float) dims[0] * spacing[0] / 2.0f;
+  float dimY = (float) dims[1] * spacing[1] / 2.0f;
+  float dimZ = (float) dims[2] * spacing[2] / 2.0f;
+  float shiftX = 0.0f;//0.5f * spacing[0];
+  float shiftY = 0.0f;//0.5f * spacing[1];
+  float shiftZ = 0.0f;//0.5f * spacing[2];
+
+  vl::AABB    volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
+                       , vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ));
+  raycastVolume->setBox(volume_box);
+  raycastVolume->generateTextureCoordinates(vl::ivec3(vlImg->width(), vlImg->height(), vlImg->depth()));
+
+
+  //fx = imageActor->effect();
+  // FIXME: img has been converted to IT_UNSIGNED_SHORT above!
+  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_LUMINANCE8, false, false));
+  fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
+
+  // generate a simple colored transfer function
+  vl::ref<vl::Image>  trfunc = vl::makeColorSpectrum(1024, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson);
+  // installs the transfer function as texture #1
+  fx->shader()->gocTextureSampler(1)->setTexture(new vl::Texture(trfunc.get()));
+  fx->shader()->gocUniform("trfunc_texunit")->setUniformI(1);
+/*
+  ref<Image> gradient;
+  // note that this can take a while...
+  gradient = vl::genGradientNormals( vlImg.get() );
+  fx->shader()->gocUniform( "precomputed_gradient" )->setUniformI( 1);
+  fx->shader()->gocTextureSampler( 2 )->setTexture( new Texture( gradient.get(), TF_RGBA, false, false ) );
+  fx->shader()->gocUniform( "gradient_texunit" )->setUniformI( 2 );
+*/
+  fx->shader()->gocUniform("precomputed_gradient")->setUniformI(0);
+  // used to compute on the fly the normals based on the volume's gradient
+  fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vlImg->width(), 0.5f / vlImg->height(), 0.5f / vlImg->depth()));
+
+  fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
+
+  vtkLinearTransform * nodeVtkTr = mitkImg->GetGeometry()->GetVtkTransform();
+  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  nodeVtkTr->GetMatrix(geometryTransformMatrix);
+
+  float vals[16];
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      double val = geometryTransformMatrix->GetElement(i, j);
+      vals[i*4+j] = val;
+    }
+  }
+  vl::mat4 mat(vals);
+  tr->setLocalMatrix(mat);
+
+  // refresh window
+  //openglContext()->update();
+
+  m_ActorToRenderableMap[imageActor] = dynamic_cast<vl::Renderable*>( vlImg.get());
+  return imageActor;
+}
+
+
+vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
+{
+  QString   sourceFilename(filename);
+  sourceFilename.prepend(":/NewVisualization/");
+  QFile   sourceFile;
+  sourceFile.setFileName(sourceFilename);
+
+  if (sourceFile.exists() && sourceFile.open(QIODevice::ReadOnly))
+  {
+    QTextStream   textStream(&sourceFile);
+
+    QString   qContents = textStream.readAll();
+    return vl::String(qContents.toStdString().c_str());
+  }
+  else
+  {
+    MITK_ERROR << "Failed to open GLSL source file: " << filename << std::endl;
+    throw std::runtime_error("Failed to open GLSL source file");
+  }
 }
 
 

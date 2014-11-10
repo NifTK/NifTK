@@ -42,11 +42,11 @@
 
 #include <vlGraphics/Text.hpp>
 #include <vlGraphics/FontManager.hpp>
-#include <vlGraphics/GLSL.hpp>
 
 
 
-#include <vlVolume/RaycastVolume.hpp>
+
+
 #include <vlVolume/VolumeUtils.hpp>
 
 
@@ -101,7 +101,7 @@ protected:
   //typedef std::vector<size_t> ClSizeList;
 
 private:
-  vl::ref<vl::Actor> AddImageActor(mitk::Image::Pointer mitkImg);
+  
   
   void LoadGLSLSourceFromResources(const char* filename, vl::String &source);
 
@@ -109,7 +109,7 @@ private:
 
 private:
   //vl::Time           m_FPSTimer;
-  vl::ref<vl::Uniform>   m_ThresholdVal;
+  
   vl::ref<vl::Text>      mText;
   vl::ref<vl::Transform> mTransform1;
   vl::ref<vl::Transform> mTransform2;

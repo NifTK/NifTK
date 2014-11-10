@@ -42,14 +42,12 @@
 #include <vlGraphics/SceneManagerActorTree.hpp>
 #include <vlGraphics/TrackballManipulator.hpp>
 #include <vlGraphics/Geometry.hpp>
+#include <vlGraphics/Uniform.hpp>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWidget>
 #include <QtCore/QTimer>
 #include <QtCore/QObject>
 #include <QtOpenGL/QGLWidget>
-//#include <QtOpenGL/QGLFormat>
-//#include <QtGui/QApplication>
-//#include <QtCore/QUrl>
 #include <mitkOclResourceService.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
@@ -136,11 +134,15 @@ protected:
   vl::ref<vl::Transform>                m_LightTr;
   vl::ref<vl::TrackballManipulator>     m_Trackball;
 
+  vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
+
   OclResourceService*                   m_OclService;
 
 
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
+  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
+  static vl::String LoadGLSLSourceFromResources(const char* filename);
 
   std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >    m_NodeToActorMap;
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >    m_ActorToRenderableMap;
