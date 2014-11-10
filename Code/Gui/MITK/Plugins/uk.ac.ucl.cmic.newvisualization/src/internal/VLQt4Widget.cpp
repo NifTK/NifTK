@@ -23,6 +23,35 @@
 #include <QTextStream>
 
 
+struct ScopedOGLContext
+{
+  QGLContext*   prevctx;
+  QGLContext*   ourctx;
+
+  ScopedOGLContext(QGLContext* newctx)
+    : ourctx(newctx)
+  {
+    prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
+    if (prevctx != ourctx)
+      ourctx->makeCurrent();
+  }
+
+  ~ScopedOGLContext()
+  {
+    // did somebody mess up our context?
+    assert(QGLContext::currentContext() == ourctx);
+
+    if (prevctx != ourctx)
+    {
+      if (prevctx)
+        prevctx->makeCurrent();
+      else
+        ourctx->doneCurrent();
+    }
+  }
+};
+
+
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(10) // 100 fps
@@ -34,11 +63,15 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
   setAcceptDrops(false);
   // let Qt take care of object destruction.
   vl::OpenGLContext::setAutomaticDelete(false);
+
+  // remember: all opengl related init should happen in initializeGL()!
 }
 
 
 VLQt4Widget::~VLQt4Widget()
 {
+  ScopedOGLContext  ctx(this->context());
+
   dispatchDestroyEvent();
 }
 
@@ -160,6 +193,7 @@ void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
 
 void VLQt4Widget::initializeGL()
 {
+  // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
 
   vl::OpenGLContext::initGLContext();
@@ -232,6 +266,9 @@ void VLQt4Widget::initializeGL()
 
 void VLQt4Widget::resizeGL(int width, int height)
 {
+  // sanity check: context is initialised by Qt
+  assert(this->context() == QGLContext::currentContext());
+
   framebuffer()->setWidth(width);
   framebuffer()->setHeight(height);
 
@@ -247,6 +284,9 @@ void VLQt4Widget::resizeGL(int width, int height)
 
 void VLQt4Widget::paintGL()
 {
+  // sanity check: context is initialised by Qt
+  assert(this->context() == QGLContext::currentContext());
+
   renderScene();
 
   vl::OpenGLContext::dispatchRunEvent();
@@ -257,6 +297,7 @@ void VLQt4Widget::renderScene()
 {
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
+
 
   // update scene graph.
   vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
@@ -277,6 +318,8 @@ void VLQt4Widget::renderScene()
 
 void VLQt4Widget::ClearScene()
 {
+  ScopedOGLContext  ctx(context());
+
   m_SceneManager->tree()->actors()->clear();
 }
 
@@ -293,6 +336,12 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
+
+
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  ScopedOGLContext    ctx(context());
+
 
   vl::ref<vl::Actor>    newActor;
   std::string           namePostFix;
@@ -327,7 +376,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  //MITK_INFO << m_NodeToActorMap.size();
   std::map< mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
@@ -335,6 +383,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   vl::ref<vl::Actor>    vlActor = it->second;
   if (vlActor.get() == 0)
     return;
+
+
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  ScopedOGLContext    ctx(context());
+
 
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
   bool  isVisble = visibleProp->GetValue();
@@ -385,7 +439,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
       fx->shader()->enable(vl::EN_CULL_FACE);
       fx->shader()->gocMaterial()->setTransparency(1);
     }
-
   }
 }
 
@@ -403,6 +456,12 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
   if (vlActor.get() == 0)
     return;
 
+
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  ScopedOGLContext    ctx(context());
+
+
   m_SceneManager->tree()->eraseActor(vlActor.get());
   m_NodeToActorMap.erase(it);
 }
@@ -410,6 +469,12 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 
 vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+
   vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
 
@@ -448,6 +513,12 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
 void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+
   if (vtkPoly == 0)
     return;
 
@@ -716,6 +787,12 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 
 vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+
   mitk::PixelType pixType = mitkImg->GetPixelType();
   size_t numOfComponents = pixType.GetNumberOfComponents();
 
@@ -1023,6 +1100,10 @@ vl::ivec2 VLQt4Widget::size() const
 
 void VLQt4Widget::swapBuffers()
 {
+  // on windows, swapBuffers() does not depend on the opengl rendering context.
+  // instead it is initiated on the device context, which is not implicitly bound to the calling thread.
+  ScopedOGLContext    ctx(context());
+
   QGLWidget::swapBuffers();
 }
 
@@ -1030,6 +1111,8 @@ void VLQt4Widget::swapBuffers()
 void VLQt4Widget::makeCurrent()
 {
   QGLWidget::makeCurrent();
+  // sanity check
+  assert(QGLContext::currentContext() == QGLWidget::context());
 }
 
 
@@ -1356,4 +1439,9 @@ void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, 
     }
   }
 }
-//-----------------------------------------------------------------------------
+
+
+QGLContext* VLQt4Widget::context()
+{
+  return const_cast<QGLContext*>(QGLWidget::context());
+}

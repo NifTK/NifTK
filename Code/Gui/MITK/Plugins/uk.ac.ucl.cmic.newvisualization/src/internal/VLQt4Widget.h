@@ -115,6 +115,9 @@ protected:
   virtual void keyReleaseEvent(QKeyEvent* ev);
   //void dragEnterEvent(QDragEnterEvent *ev);
   //void dropEvent(QDropEvent* ev);
+private:
+  QGLContext* context();    // non-const, hiding the one in QGLWidget.
+
 
 
 protected:
