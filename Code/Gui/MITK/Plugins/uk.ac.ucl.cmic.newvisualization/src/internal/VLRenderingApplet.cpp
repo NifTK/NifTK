@@ -179,12 +179,7 @@ vl::String VLRenderingApplet::appletInfo()
 
 void VLRenderingApplet::UpdateThresholdVal( int val )
 {
-  float val_threshold = 0.0f;
-  m_ThresholdVal->getUniform( &val_threshold );
-  val_threshold = val / 10000.0f;
-  val_threshold = vl::clamp( val_threshold, 0.0f, 1.0f );
-  m_ThresholdVal->setUniformF( val_threshold );
-  openglContext()->update();
+
 }
 
 

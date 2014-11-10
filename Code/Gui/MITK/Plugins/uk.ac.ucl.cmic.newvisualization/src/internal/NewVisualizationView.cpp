@@ -166,7 +166,8 @@ void  NewVisualizationView::InitVLRendering()
 
 void NewVisualizationView::On_SliderMoved(int val)
 {
-  //m_RenderApplet->UpdateThresholdVal(val);
+  m_VLQtRenderWindow->UpdateThresholdVal(val);
+  m_VLQtRenderWindow->update();
 }
 
 void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)

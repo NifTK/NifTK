@@ -107,7 +107,7 @@ void main(void)
 	bool sign_prev = val > val_threshold;
 	bool isosurface_found = false;
 	vec3 prev_pos = ray_pos;
-	vec4 frag_color = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 frag_color = vec4(0.0, 0.0, 0.0, 0.0);
 	do
 	{
 		// note: 
@@ -132,10 +132,11 @@ void main(void)
 			vec3 iso_pos = (prev_pos+ray_pos)*0.5;
 			
 			vec4 rgba = computeFragColor(iso_pos);
-			const float alpha = 0.5; // = rgba.a;
-			frag_color.rgb += frag_color.a * alpha * rgba.rgb;
-			frag_color.a *= (1. - alpha);
-			if (frag_color.a <= 0.005)
+            // FIXME: alpha should come from transfer function. hard-coded here for debugging.
+            const float alpha = 0.5; // = rgba.a;
+            frag_color.rgb += rgba.rgb * alpha * (1.0 - frag_color.a);
+            frag_color.a   +=            alpha * (1.0 - frag_color.a);
+            if (frag_color.a >= 0.995)
 				break;
 		}
 	}
@@ -144,6 +145,6 @@ void main(void)
 	if (frag_color == vec4(0.0,0.0,0.0,0.0))
 		discard;
 	else
-		gl_FragColor = vec4(frag_color.rgb,1.);
+        gl_FragColor = vec4(frag_color.rgb, frag_color.a);
 }
 // Have fun!

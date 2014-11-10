@@ -324,6 +324,20 @@ void VLQt4Widget::ClearScene()
 }
 
 
+void VLQt4Widget::UpdateThresholdVal(int isoVal)
+{
+  ScopedOGLContext    ctx(context());
+
+  float val_threshold = 0.0f;
+  m_ThresholdVal->getUniform(&val_threshold);
+
+  val_threshold = isoVal / 10000.0f;
+  val_threshold = vl::clamp(val_threshold, 0.0f, 1.0f);
+
+  m_ThresholdVal->setUniformF(val_threshold);
+}
+
+
 void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
@@ -423,21 +437,40 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
     fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
 
-    // FIXME: this may need special case for volumes...
-    if (opacity <= (1.0f - (1.0f / 255.0f)))
+    bool  isVolume = false;
+    // special case for volumes: they'll have a certain event-callback bound.
+    for (int i = 0; i < vlActor->actorEventCallbacks()->size(); ++i)
+    {
+      isVolume |= (dynamic_cast<vl::RaycastVolume*>(vlActor->actorEventCallbacks()->at(i)) != 0);
+      if (isVolume)
+        break;
+    }
+
+    if (isVolume)
     {
       vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
       fx->shader()->enable(vl::EN_BLEND);
-      // no backface culling for translucent objects: you should be able to see the backside!
-      fx->shader()->disable(vl::EN_CULL_FACE);
-      fx->shader()->gocMaterial()->setTransparency(opacity);
+      fx->shader()->enable(vl::EN_CULL_FACE);
+      fx->shader()->gocMaterial()->setTransparency(1.0f);//opacity);
     }
     else
     {
-      vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
-      fx->shader()->disable(vl::EN_BLEND);
-      fx->shader()->enable(vl::EN_CULL_FACE);
-      fx->shader()->gocMaterial()->setTransparency(1);
+      bool  isProbablyTranslucent = opacity <= (1.0f - (1.0f / 255.0f));
+      if (isProbablyTranslucent)
+      {
+        vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
+        fx->shader()->enable(vl::EN_BLEND);
+        // no backface culling for translucent objects: you should be able to see the backside!
+        fx->shader()->disable(vl::EN_CULL_FACE);
+        fx->shader()->gocMaterial()->setTransparency(opacity);
+      }
+      else
+      {
+        vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
+        fx->shader()->disable(vl::EN_BLEND);
+        fx->shader()->enable(vl::EN_CULL_FACE);
+        fx->shader()->gocMaterial()->setTransparency(1);
+      }
     }
   }
 }
@@ -921,8 +954,10 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
   imageActor->setTransform(tr.get());
   m_SceneManager->tree()->addActor(imageActor.get());
 
-
+  // this is a callback: gets triggered everytime its bound actor is to be rendered.
+  // during that callback it updates the uniforms of our glsl shader to match fixed-function state.
   vl::ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
+  // this stuffs the proxy geometry onto our actor, as lod-slot zero.
   raycastVolume->bindActor(imageActor.get());
 
 
@@ -943,9 +978,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
   raycastVolume->generateTextureCoordinates(vl::ivec3(vlImg->width(), vlImg->height(), vlImg->depth()));
 
 
-  //fx = imageActor->effect();
-  // FIXME: img has been converted to IT_UNSIGNED_SHORT above!
-  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_LUMINANCE8, false, false));
+  // note img has been converted unconditionally to IT_UNSIGNED_SHORT above!
+  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_LUMINANCE16, false, false));
   fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
 
   // generate a simple colored transfer function

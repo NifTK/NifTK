@@ -79,6 +79,8 @@ public:
 
   void ClearScene();
 
+  void UpdateThresholdVal(int isoVal);
+
   // from vl::OpenGLContext
 public:
   virtual void setContinuousUpdate(bool continuous);

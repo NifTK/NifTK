@@ -94,7 +94,7 @@ public:
 
   void updateScene();
 
-  void UpdateThresholdVal( int val );
+  
 
 protected:
   //typedef std::vector<const char*> CStringList;
