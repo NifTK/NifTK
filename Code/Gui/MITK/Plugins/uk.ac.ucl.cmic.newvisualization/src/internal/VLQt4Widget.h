@@ -43,6 +43,7 @@
 #include <vlGraphics/TrackballManipulator.hpp>
 #include <vlGraphics/Geometry.hpp>
 #include <vlGraphics/Uniform.hpp>
+#include <vlGraphics/BlitFramebuffer.hpp>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWidget>
 #include <QtCore/QTimer>
@@ -124,15 +125,16 @@ private:
 
 protected:
   void renderScene();
+  void createAndUpdateFBOSizes(int width, int height);
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
   static const int      RENDERBLOCK_TRANSLUCENT       =  1000;
 
-  // FIXME: the rendering tree stuff might go away. could be useful for shadowing though.
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
-  //vl::ref<vl::Rendering>                m_TranslucentObjectsRendering;
+  vl::ref<vl::Rendering>                m_VolumeRendering;
+  vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
   vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
   vl::ref<vl::Camera>                   m_Camera;
   vl::ref<vl::Light>                    m_Light;

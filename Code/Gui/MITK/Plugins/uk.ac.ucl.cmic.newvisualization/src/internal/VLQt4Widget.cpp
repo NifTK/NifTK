@@ -7,6 +7,7 @@
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlGraphics/RenderQueueSorter.hpp>
 #include <vlGraphics/GLSL.hpp>
+#include <vlGraphics/FramebufferObject.hpp>
 #include <vlVolume/RaycastVolume.hpp>
 #include <cassert>
 #include <vtkSmartPointer.h>
@@ -235,13 +236,38 @@ void VLQt4Widget::initializeGL()
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
   m_OpaqueObjectsRendering = new vl::Rendering;
+  m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
   m_OpaqueObjectsRendering->setCamera(m_Camera.get());
   m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
   // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
   m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
 
+  // volume rendering is a separate stage, after opaque.
+  // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
+  m_VolumeRendering = new vl::Rendering;
+  m_VolumeRendering->setObjectName("m_VolumeRendering");
+  m_VolumeRendering->setCamera(m_Camera.get());
+  m_VolumeRendering->sceneManagers()->push_back(m_SceneManager.get());
+  // FIXME: only single volume supported for now, so no queue sorting.
+
   m_RenderingTree = new vl::RenderingTree;
+  m_RenderingTree->setObjectName("m_RenderingTree");
   m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
+  //m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
+
+  // once rendering to fbo has finished, blit it to the screen's backbuffer.
+  // a final swapbuffers in renderScene() and/or paintGL() will show it on screen.
+  m_FinalBlit = new vl::BlitFramebuffer;
+  m_FinalBlit->setObjectName("m_FinalBlit");
+  m_FinalBlit->setLinearFilteringEnabled(false);
+  m_FinalBlit->setBufferMask(vl::BB_COLOR_BUFFER_BIT | vl::BB_DEPTH_BUFFER_BIT);
+  m_FinalBlit->setDrawFramebuffer(vl::OpenGLContext::framebuffer());
+  m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
+
+  // updating the size of our fbo is a bit of a pain.
+  createAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
+
+  m_Camera->viewport()->setClearColor(vl::fuchsia);
 
   // ???
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
@@ -254,13 +280,25 @@ void VLQt4Widget::initializeGL()
   m_Trackball->setPivot(vl::vec3(0,0,0));
   vl::OpenGLContext::addEventListener(m_Trackball.get());
 
-  m_OpaqueObjectsRendering->renderer()->setFramebuffer(vl::OpenGLContext::framebuffer());
-  m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fuchsia);
-
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
 
   vl::OpenGLContext::dispatchInitEvent();
+}
+
+
+void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
+{
+  vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
+  opaqueFBO->setObjectName("opaqueFBO");
+  opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
+  opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
+  opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
+
+  m_OpaqueObjectsRendering->renderer()->setFramebuffer(opaqueFBO.get());
+
+  m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
+  m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
 }
 
 
@@ -269,11 +307,25 @@ void VLQt4Widget::resizeGL(int width, int height)
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
 
+
+  // dont do anything if window is zero size.
+  // it's an opengl error to have a viewport like that!
+  if ((width <= 0) || (height <= 0))
+    return;
+
   framebuffer()->setWidth(width);
   framebuffer()->setHeight(height);
+  m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
+  m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
 
-  //  VL_CHECK( w == rend->renderer()->framebuffer()->width() );
-  //  VL_CHECK( h == rend->renderer()->framebuffer()->height() );
+  createAndUpdateFBOSizes(width, height);
+
+  //m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
+  //m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
+
+  m_FinalBlit->setSrcRect(0, 0, width, height);
+  m_FinalBlit->setDstRect(0, 0, width, height);
+
   m_Camera->viewport()->setWidth(width);
   m_Camera->viewport()->setHeight(height);
   m_Camera->setProjectionPerspective();
