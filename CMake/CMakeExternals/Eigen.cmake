@@ -42,7 +42,7 @@ if(BUILD_IGI)
       CONFIGURE_COMMAND ""
       UPDATE_COMMAND ""
       BUILD_COMMAND ""
-      INSTALL_COMMAND ""
+      #INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
@@ -50,6 +50,8 @@ if(BUILD_IGI)
 
     set(Eigen_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
     set(Eigen_ROOT ${Eigen_DIR})
+    set(Eigen_INCLUDE_DIR "${proj}-install/include/eigen3")
+
 
     message("SuperBuild loading Eigen from ${Eigen_DIR}")
 
