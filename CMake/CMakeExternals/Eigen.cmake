@@ -45,6 +45,7 @@ if(BUILD_IGI OR BUILD_NIFTYREG)
       #INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
       DEPENDS ${proj_DEPENDENCIES}
       )
 
@@ -61,4 +62,4 @@ if(BUILD_IGI OR BUILD_NIFTYREG)
 
   endif(NOT DEFINED Eigen_DIR)
 
-endif(BUILD_IGI)
+endif()
