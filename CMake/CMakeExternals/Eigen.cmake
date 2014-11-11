@@ -22,7 +22,7 @@ if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
   message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_IGI OR BUILD_NIFTYREG)
 
   set(proj Eigen)
   set(proj_DEPENDENCIES )
