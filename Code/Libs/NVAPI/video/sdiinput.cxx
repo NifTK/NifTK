@@ -164,7 +164,7 @@ FrameInfo SDIInput::capture()
             glPixelStorei(GL_UNPACK_ROW_LENGTH, (pimpl->pbo_pitch / 4) * pimpl->split);
 
             // using the (possibly halfed) height here takes care of field-drop or stack
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, (void*) (pimpl->pbo_pitch * j));
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pimpl->width, pimpl->height, GL_RGBA, GL_UNSIGNED_BYTE, (void*) (pimpl->pbo_pitch * (pimpl->split - 1 - j)));
             // FIXME: does this stall?
             glGenerateMipmapEXT(GL_TEXTURE_2D);
         }
