@@ -1310,6 +1310,9 @@ int main( int argc, char *argv[] )
 
         int ret = system( commandNiftySeg.str().c_str() );
         message << std::endl << "Returned: " << ret << std::endl;
+
+        args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
+                                "breast parenchyma", imParenchyma );
       }
 
 #endif
@@ -1508,7 +1511,32 @@ int main( int argc, char *argv[] )
                    << fileOutputDensityMeasurements  << std::endl << std::endl;
           args.PrintMessage( message );
         }
+
+        // Write the data to the main collated csv file
+
+        if ( args.foutOutputCSV )
+        {
+          *args.foutOutputCSV << dirBaseName << ", "
+                              << nLeftVoxels << ", "
+                              << leftBreastVolume << ", "
+                              << leftDensity << ", "
+            
+                              << nRightVoxels << ", "
+                              << rightBreastVolume << ", "
+                              << rightDensity << ", "
+      
+                              << nLeftVoxels + nRightVoxels << ", "
+                              << leftBreastVolume + rightBreastVolume << ", "
+                              << totalDensity << std::endl;
+        }
+        else
+        {
+          message << "Collated csv data file: " << fileOutputCSV 
+                  << " is not open, data will not be written." << std::endl;
+          args.PrintWarning( message );
+        }
       }
+
 
       // Delete unwanted images
       // ~~~~~~~~~~~~~~~~~~~~~~

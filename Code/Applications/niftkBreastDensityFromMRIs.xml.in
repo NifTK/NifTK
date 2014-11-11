@@ -67,8 +67,8 @@
     <string>
       <name>dirSubMRI</name>
       <longflag>dirSubMRI</longflag>
-      <description>The sub-directory containing the input MRI data.</description>
-      <label>Input MRI sub-directory name</label>
+      <description>The sub-directory containing the input MRI DICOM data.</description>
+      <label>Input MRI DICOM data sub-directory name</label>
     </string>
 
     <string>
