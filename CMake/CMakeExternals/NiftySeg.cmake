@@ -25,7 +25,7 @@ endif()
 if(BUILD_NIFTYSEG)
 
   set(proj NiftySeg)
-  set(proj_DEPENDENCIES )
+  set(proj_DEPENDENCIES Eigen)
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYSEG_DEPENDS ${proj})
 
