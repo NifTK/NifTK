@@ -236,6 +236,7 @@ void VLQt4Widget::initializeGL()
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
   m_OpaqueObjectsRendering = new vl::Rendering;
+  m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT);
   m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
   m_OpaqueObjectsRendering->setCamera(m_Camera.get());
   m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
@@ -245,6 +246,7 @@ void VLQt4Widget::initializeGL()
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
   m_VolumeRendering = new vl::Rendering;
+  m_VolumeRendering->setEnableMask(ENABLEMASK_VOLUME);
   m_VolumeRendering->setObjectName("m_VolumeRendering");
   m_VolumeRendering->setCamera(m_Camera.get());
   m_VolumeRendering->sceneManagers()->push_back(m_SceneManager.get());
@@ -501,6 +503,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
     if (isVolume)
     {
       vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
+      vlActor->setEnableMask(ENABLEMASK_VOLUME);
       fx->shader()->enable(vl::EN_BLEND);
       fx->shader()->enable(vl::EN_CULL_FACE);
       fx->shader()->gocMaterial()->setTransparency(1.0f);//opacity);
@@ -511,6 +514,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
       if (isProbablyTranslucent)
       {
         vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
+        vlActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
         fx->shader()->enable(vl::EN_BLEND);
         // no backface culling for translucent objects: you should be able to see the backside!
         fx->shader()->disable(vl::EN_CULL_FACE);
@@ -519,6 +523,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
       else
       {
         vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
+        vlActor->setEnableMask(ENABLEMASK_OPAQUE);
         fx->shader()->disable(vl::EN_BLEND);
         fx->shader()->enable(vl::EN_CULL_FACE);
         fx->shader()->gocMaterial()->setTransparency(1);

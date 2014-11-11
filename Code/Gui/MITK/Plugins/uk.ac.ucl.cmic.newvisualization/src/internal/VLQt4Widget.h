@@ -130,6 +130,9 @@ protected:
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
   static const int      RENDERBLOCK_TRANSLUCENT       =  1000;
+  static const int      ENABLEMASK_OPAQUE             = 1 << 0;
+  static const int      ENABLEMASK_TRANSLUCENT        = 1 << 1;
+  static const int      ENABLEMASK_VOLUME             = 1 << 2;
 
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
