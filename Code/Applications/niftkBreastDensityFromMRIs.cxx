@@ -1510,6 +1510,31 @@ int main( int argc, char *argv[] )
         }
       }
 
+      // Write the data to the main collated csv file
+
+      if ( foutOutputCSV )
+      {
+        *args.foutOutputCSV << dirBaseName << ", "
+                            << nLeftVoxels << ", "
+                            << leftBreastVolume << ", "
+                            << leftDensity << ", "
+      
+                            << nRightVoxels << ", "
+                            << rightBreastVolume << ", "
+                            << rightDensity << ", "
+      
+                            << nLeftVoxels + nRightVoxels << ", "
+                            << leftBreastVolume + rightBreastVolume << ", "
+                            << totalDensity << std::endl;
+      }
+      else
+      {
+        message << "CouldCollated csv data file: " << fileOutputCSV 
+                << " is not open, data will not be written." << std::endl;
+        args.PrintWarning( message );
+      }
+
+
       // Delete unwanted images
       // ~~~~~~~~~~~~~~~~~~~~~~
 
