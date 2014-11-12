@@ -109,7 +109,7 @@ then
   NIFTK_INSTALL_OPTIONS="-DCMAKE_INSTALL_PREFIX=${NIFTK_INSTALL_PREFIX}"
 fi
 
-run_command "git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK ${SOURCE_DIR}"
+run_command "git clone git@cmiclab.cs.ucl.ac.uk:CMIC/NifTK ${SOURCE_DIR}"
 run_command "cd ${SOURCE_DIR}"
 run_command "git checkout ${BRANCH}"
 run_command "cd .."

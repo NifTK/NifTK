@@ -223,7 +223,7 @@ Please install NSIS and make sure that it is added to your system path. For furt
 \section BuildInstructionsDownload 6. Download the code
 
 \verbatim
-git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
+git clone https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK.git
 \endverbatim
 
 \section BuildInstructionsCMake 7. CMake

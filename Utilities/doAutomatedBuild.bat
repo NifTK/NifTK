@@ -169,7 +169,7 @@
 @REM pause
 @echo.
 @echo *****  Fetch the latest source from GIT  *****
-call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK %BUILD_SRC%
+call git clone git@cmiclab.cs.ucl.ac.uk:CMIC/NifTK %BUILD_SRC%
 @cd "%BUILD_SRC%"
 @call git checkout %BRANCH%
 @call git pull origin %BRANCH%
