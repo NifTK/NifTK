@@ -6,10 +6,12 @@ import nipype.pipeline.engine           as pe
 import diffusion_mri_processing         as dmri
 from distutils                          import spawn
 import argparse
-import os
+import os, sys
 
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
+
+
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
@@ -24,16 +26,19 @@ parser = argparse.ArgumentParser(description=help_message)
 parser.add_argument('-i', '--dwis',
                     dest='dwis',
                     metavar='dwis',
+                    nargs='+',
                     help='Diffusion Weighted Images in a 4D nifti file',
                     required=True)
 parser.add_argument('-a','--bvals',
                     dest='bvals',
                     metavar='bvals',
+                    nargs='+',
                     help='bval file to be associated with the DWIs',
                     required=True)
 parser.add_argument('-e','--bvecs',
                     dest='bvecs',
                     metavar='bvecs',
+                    nargs='+',
                     help='bvec file to be associated with the DWIs',
                     required=True)
 parser.add_argument('-t','--t1',
@@ -51,10 +56,14 @@ parser.add_argument('-p','--fieldmapphase',
                     metavar='fieldmapphase',
                     help='Field Map Phase image file to be associated with the DWIs',
                     required=False)
-parser.add_argument('--output_dir',dest='output_dir', type=str, \
-                    metavar='directory', help='Output directory containing the registration result\n' + \
-                    'Default is a directory called results', \
-                    default=os.path.abspath('results'), required=False)
+parser.add_argument('-o', '--output_dir', 
+                    dest='output_dir', 
+                    type=str,
+                    metavar='output_dir', 
+                    help='Output directory containing the registration result\n' + \
+                    'Default is a directory called results',
+                    default=os.path.abspath('results'), 
+                    required=False)
 
 args = parser.parse_args()
 
@@ -73,13 +82,23 @@ if do_susceptibility_correction == True:
         do_susceptibility_correction = False
 
 # extracting basename of the input file (list)
-input_file = os.path.basename(args.dwis)
-# extracting the directory where the input file is (are)
-input_directory = os.path.abspath(os.path.dirname(args.dwis))
+input_file = os.path.basename(args.dwis[0])
 # extracting the 'subject name simply for output name purposes
 subject_name = input_file.replace('.nii.gz','')
 subject_t1_name = os.path.basename(args.t1).replace('.nii.gz','')
 
+
+merge_initial_dwis = pe.Node(interface = niu.Function(input_names = ['input_dwis', 
+                                                                     'input_bvals', 
+                                                                     'input_bvecs'],
+                                                      output_names = ['dwis', 'bvals', 'bvecs'],
+                                                      function = dmri.merge_dwi_function),
+                             name = 'merge_initial_dwis')
+
+merge_initial_dwis.inputs.input_dwis = [os.path.abspath(f) for f in args.dwis]
+merge_initial_dwis.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
+merge_initial_dwis.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]
+merge_initial_dwis.base_dir = os.getcwd()
 
 r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   resample_in_t1 = False,
@@ -93,9 +112,9 @@ r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
 
 r.base_dir = os.getcwd()
 
-r.inputs.input_node.in_dwi_4d_file = os.path.abspath(args.dwis)
-r.inputs.input_node.in_bvec_file = os.path.abspath(args.bvecs)
-r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals)
+r.connect(merge_initial_dwis, 'dwis', r.get_node('input_node'), 'in_dwi_4d_file')
+r.connect(merge_initial_dwis, 'bvals', r.get_node('input_node'), 'in_bval_file')
+r.connect(merge_initial_dwis, 'bvecs', r.get_node('input_node'), 'in_bvec_file')
 r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
 r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
 r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)

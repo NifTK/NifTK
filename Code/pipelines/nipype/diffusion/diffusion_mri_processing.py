@@ -62,6 +62,69 @@ def reorder_list_from_bval_bvecs(B0s, DWIs, bvals, bvecs):
         i = i+1
     return ret_val
 
+
+def merge_dwi_function (input_dwis, input_bvals, input_bvecs):
+
+    import os, glob, sys, errno
+    import nipype.interfaces.fsl as fsl
+    import nibabel as nib
+    import numpy as np 
+    
+    def merge_vector_files(input_files):
+        import numpy as np
+        import os
+        result = np.array([])
+        files_base, files_ext = os.path.splitext(os.path.basename(input_files[0]))
+        for f in input_files:
+            if result.size == 0:
+                result = np.loadtxt(f)
+            else:
+                result = np.hstack((result, np.loadtxt(f)))
+        output_file = os.path.abspath(files_base + '_merged' + files_ext)
+        np.savetxt(output_file, result, fmt = '%.3f')
+        return output_file
+    
+    if len(input_bvals) == 0 or len(input_bvecs) == 0 or len(input_dwis) == 0:
+        print 'I/O One of the dwis merge input is empty, exiting.'
+        sys.exit(errno.EIO)
+
+    if not type(input_dwis) == list:
+        input_dwis =  [input_dwis]
+        input_bvals = [input_bvals]
+        input_bvecs = [input_bvecs]
+
+    qforms = []
+    for dwi in input_dwis:
+        im = nib.load(dwi)
+        qform = im.get_qform()
+        qforms.append(qform)
+
+    if len(input_dwis) > 1:
+        # Walk backwards through the dwis, assume later scans are more likely to be correctly acquired!
+        for file_index in range(len(input_dwis)-2,-1,-1):
+            # If the qform doesn't match that of the last scan, throw it away
+            if np.sum(qform[len(input_dwis)-1] == qform[file_index]) < 4:
+                print '** WARNING ** : The qform of the DWIs dont match, denoting a re-scan error, throwing ', input_dwis[file_index]
+                input_dwis.pop(file_index)
+                input_bvals.pop(file_index)
+                input_bvecs.pop(file_index)
+    
+    # Set the default values of these variables as the first index, 
+    # in case we only have one image and we don't do a merge
+    dwis = input_dwis[0]
+    bvals = input_bvals[0]
+    bvecs = input_bvecs[0]
+    if len(input_dwis) > 1:
+        merger = fsl.Merge(dimension = 't')
+        merger.inputs.in_files = input_dwis
+        res = merger.run()
+        dwis = res.outputs.merged_file
+        bvals = merge_vector_files(input_bvals)
+        bvecs = merge_vector_files(input_bvecs)
+
+    return dwis, bvals, bvecs
+
+
 def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing', 
                                              correct_susceptibility = True, 
                                              resample_in_t1 = False, 

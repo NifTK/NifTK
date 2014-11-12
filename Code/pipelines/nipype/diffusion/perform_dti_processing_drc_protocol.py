@@ -28,35 +28,10 @@ mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI1
 def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_files):
 
     import os, glob, sys, errno
-    import nipype.interfaces.fsl as fsl
-    import nibabel as nib
-    import numpy as np 
-    
-    def merge_vector_files(input_files):
-        import numpy as np
-        import os
-        result = np.array([])
-        files_base, files_ext = os.path.splitext(os.path.basename(input_files[0]))
-        for f in input_files:
-            if result.size == 0:
-                result = np.loadtxt(f)
-            else:
-                result = np.hstack((result, np.loadtxt(f)))
-        output_file = os.path.abspath(files_base + '_merged' + files_ext)
-        np.savetxt(output_file, result, fmt = '%.3f')
-        return output_file
-    
+    import diffusion_mri_processing as dmri
+
     input_path = os.path.dirname(input_files[0])
     dwis_files = []
-
-    if len(input_bvals) == 0 or len(input_bvecs) == 0:
-        print 'I/O Could not any diffusion based images in ', input_path, ', exiting.'
-        sys.exit(errno.EIO)
-
-    qforms = []
-    if not type(input_bvals) == list:
-        input_bvals = [input_bvals]
-        input_bvecs = [input_bvecs]
 
     for bvals_file in input_bvals:
         if ('iso' in bvals_file) and ('001.bval' in bvals_file):
@@ -64,39 +39,13 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
             dwi_file = dwi_base + '.nii.gz'
             if not os.path.exists(dwi_file):
                 dwi_file = dwi_base + '.nii'
-            if not os.path.exists(dwi_file):
-                print 'I/O The DWI file with base ', dwi_base, ' does not exist, exiting.'
-                sys.exit(errno.EIO)
-            im = nib.load(dwi_file)
-            qform = im.get_qform()
-            qforms.append(qform)
             dwis_files.append(dwi_file)
         else:
             dwi_base, _ = os.path.splitext(bvals_file)
             input_bvals.remove(dwi_base+'.bval')
             input_bvecs.remove(dwi_base+'.bvec')
 
-    if len(dwis_files) > 1:
-        # Work backwards through the dwis, assume later scans are more likely to be correctly acquired!
-        for file_index in range(len(dwis_files)-2,-1,-1):
-            # If the qform doesn't match that of the last scan, throw it away
-            if np.sum(qform[len(dwis_files)-1] == qform[file_index]) < 16:
-                dwis_files.pop(file_index)
-                input_bvals.pop(file_index)
-                input_bvecs.pop(file_index)
-
-    # Set the default values of these variables as the first index, in case we only have one image and we don't do a merge
-    dwis = dwis_files[0]
-    bvals = input_bvals[0]
-    bvecs = input_bvecs[0]
-    if len(dwis_files) > 1:
-        merger = fsl.Merge(dimension = 't')
-        merger.inputs.in_files = dwis_files
-        res = merger.run()
-        dwis = res.outputs.merged_file
-        bvals = merge_vector_files(input_bvals)
-        bvecs = merge_vector_files(input_bvecs)
-    
+    dwis, bvals, bvecs = dmri.merge_dwi_function(dwis_files, input_bvals, input_bvecs)
 
     fms = glob.glob(input_path + os.sep + '*fieldmap*.nii*')
     fms.sort()
