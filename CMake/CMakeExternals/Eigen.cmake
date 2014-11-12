@@ -55,10 +55,10 @@ if(BUILD_IGI OR BUILD_NIFTYREG)
 
     set(Eigen_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
     set(Eigen_ROOT ${Eigen_DIR})
-    set(Eigen_INCLUDE_DIR "${proj}-install/include/eigen3")
-
-
+    set(Eigen_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include/eigen3)
+    
     message("SuperBuild loading Eigen from ${Eigen_DIR}")
+    message("Eigen_INCLUDE_DIR: ${Eigen_INCLUDE_DIR}")
 
   else(NOT DEFINED Eigen_DIR)
 
