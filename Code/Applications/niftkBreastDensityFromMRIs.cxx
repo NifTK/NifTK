@@ -1298,7 +1298,7 @@ int main( int argc, char *argv[] )
         std::stringstream commandNiftySeg;
 
         commandNiftySeg 
-          << fileSegEM
+          << "\"" << fileSegEM << "\""
           << " -v 2 -bc_order 4 -nopriors 2" 
           << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
           << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
