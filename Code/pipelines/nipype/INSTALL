@@ -1,0 +1,120 @@
+========================================================
+NIPYPE: Neuroimaging in Python: Pipelines and Interfaces
+========================================================
+
+*Nipype*, an open-source, community-developed initiative under the
+umbrella of NiPy, is a Python project that provides a uniform interface
+to existing neuroimaging software and facilitates interaction between
+these packages within a single workflow. Nipype provides an environment
+that encourages interactive exploration of algorithms from different
+packages (e.g., SPM, FSL, FreeSurfer, AFNI, Slicer), eases the
+design of workflows within and between packages, and reduces the
+learning curve necessary to use different packages. Nipype is creating a
+collaborative platform for neuroimaging software development in a
+high-level language and addressing limitations of existing pipeline
+systems.
+
+*Nipype* allows you to:
+
+* easily interact with tools from different software packages
+* combine processing steps from different software packages
+* develop new workflows faster by reusing common steps from old ones
+* process data faster by running it in parallel on many cores/machines
+* make your research easily reproducible
+* share your processing workflows with the community
+
+
+
+Installation
+-------------
+
+Nipype is a python extension. The user needs top install the following packages
+prior to install nipype
+
+* git http://git-scm.com/book/en/Getting-Started-Installing-Git
+* python 2.x https://www.python.org/download/releases/2.7.6/
+* SQLite http://www.sqlite.org/download.html
+* GraphVix http://www.graphviz.org/Download..php
+
+The next step is to install some python packages either through apt-get on Debian, MacPorts 
+on MacOSX, or using python tools such as easy_install or pip. Here is the list of required 
+packages:
+
+numpy / scipy / traits / dateutil / sphinx / nibabel / networkx / six (/nose) / matplotlib / dipy
+
+Then you would be ready to install the nipype repository that we put in place on https://github.com/ntoussaint/nipype.git
+
+Follow those following OS specific steps for installing and using nipype and niftk interfaces:
+
+MacOSX
+-------------
+On a terminal, type the following commands
+
+1) Install MacPorts: https://www.macports.org/install.php
+2) sudo port install git python27 sqlite3 graphviz py27-ipython py27-numpy py27-scipy py27-traits py27-dateutil py27-sphinx py27-nibabel py27-networkx py27-six py27-nose py27-matplotlib; sudo easy_install dipy
+3) cd $HOME/Projects/; git clone https://github.com/ntoussaint/nipype.git nipype; cd nipype; sudo python setup.py install
+4) cd $HOME/Projects/NifTK/src; git fetch origin; git checkout b3421-nipype-workflows
+5) Add the following lines in your $HOME/.bash_profile:
+
+NIFTK_SRC_DIR=$HOME/Projects/NifTK/src
+PYTHONPATH=${PYTHONPATH}:.
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/diffusion
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/registration
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/seg-gif
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/utils
+export PYTHONPATH
+
+Debian
+-------------
+On a terminal, type the following commands
+
+1) sudo apt-get install git sqlite3 python python-dev ipython python-dateutil python-six python-nibabel python-networkx python-dipy python-scipy python-traits python-sphinx python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose graphviz
+2) cd ~/Projects/; git clone https://github.com/ntoussaint/nipype.git nipype; cd nipype; sudo python setup.py install
+3) cd ~/Projects/NifTK/src; git fetch origin; git checkout b3421-nipype-workflows
+4) Add the following lines in your $HOME/.bashrc
+
+NIFTK_SRC_DIR=$HOME/Projects/NifTK/src
+PYTHONPATH=${PYTHONPATH}:.
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/diffusion
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/registration
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/seg-gif
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/utils
+export PYTHONPATH
+
+
+Windows
+-------------
+
+
+
+Documentation
+-------------
+
+Please see the following website for general nipype documentation::
+
+   http://nipy.sourceforge.net/nipype/documentation.html
+
+
+
+Website
+-------
+
+Information specific to NIPYPE is located here::
+	    
+    http://nipy.org/nipype
+
+
+
+Mailing Lists
+-------------
+
+For core NIPYPE related issues, please see the developer's list here::
+       
+       http://projects.scipy.org/mailman/listinfo/nipy-devel
+
+For user NIPYPE related issues, please see the user's list here::
+
+       http://groups.google.com/group/nipy-user
+
+For NIPYPE related issues, please add *NIPYPE* to the subject line
+
