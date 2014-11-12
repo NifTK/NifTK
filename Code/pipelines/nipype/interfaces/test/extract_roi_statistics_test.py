@@ -23,8 +23,8 @@ pipeline.base_dir = os.getcwd()
 input_node =  pe.Node(niu.IdentityInterface(
             fields=['in_file', 'roi_file']),
                         name='input_node')
-input_node.inputs.in_file = args.input_img[0]
-input_node.inputs.roi_file = args.input_par[0]
+input_node.inputs.in_file = os.path.abspath(args.input_img[0])
+input_node.inputs.roi_file = os.path.abspath(args.input_par[0])
 
 
 
