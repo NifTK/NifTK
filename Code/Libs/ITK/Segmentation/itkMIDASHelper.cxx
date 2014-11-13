@@ -73,4 +73,39 @@ int GetUpDirection(const std::string& orientationString, const int& axisOfIntere
   return upDirection;
 }
 
+//-----------------------------------------------------------------------------
+std::string GetMajorAxisFromPatientRelativeDirectionCosine(double x,double y,double z)
+{
+  double obliquityThresholdCosineValue = 0.8;
+
+  std::string axis;
+
+  std::string orientationX = x < 0 ? "R" : "L";
+  std::string orientationY = y < 0 ? "A" : "P";
+  std::string orientationZ = z < 0 ? "F" : "H";
+
+  double absX = fabs(x);
+  double absY = fabs(y);
+  double absZ = fabs(z);
+
+  // The tests here really don't need to check the other dimensions,
+  // just the threshold, since the sum of the squares should be == 1.0
+  // but just in case ...
+
+  if (absX>obliquityThresholdCosineValue && absX>absY && absX>absZ)
+  {
+    axis=orientationX;
+  }
+  else if (absY>obliquityThresholdCosineValue && absY>absX && absY>absZ)
+  {
+    axis=orientationY;
+  }
+  else if (absZ>obliquityThresholdCosineValue && absZ>absX && absZ>absY)
+  {
+    axis=orientationZ;
+  }
+
+  return axis;
+}
+
 } // end namespace
