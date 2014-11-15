@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "itkMIDASHelper.h"
+#include <itkAffineTransform.h>
 
 namespace itk
 {
@@ -185,10 +186,10 @@ void GetOrientationLabelFromITKImage(const itk::Image<TPixel, VImageDimension>* 
     return;
   
   // Get direction cosines from the image
-  itk::Image<TPixel, VImageDimension>::DirectionType dirCosines = itkImage->GetDirection();
+  typename itk::Image<TPixel, VImageDimension>::DirectionType dirCosines = itkImage->GetDirection();
 
   // Copy values to a new ITK matrix
-  mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedMatrix;
+  typename itk::AffineTransform<TPixel, VImageDimension>::MatrixType::InternalMatrixType normalisedMatrix;
   for (unsigned int i=0; i < 3; i++)
   {
     for (unsigned int j = 0; j < 3; j++)
