@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-    Simple interface for the noddi_fitting.m script
+    Interface for the noddi_fitting.m script. NODDI estimation interface for the MATLAB toolbox (http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab)
 """
 
 import os
@@ -11,69 +11,87 @@ from string import Template
 
 class NoddiInputSpec( MatlabInputSpec):
 
-    in_dwis = 
-    in_mask = 
-    in_bvals
-    in_bvecs
-    in_fname
+    in_dwis = File(exists=True, 
+                   desc='The input 4D DWIs image file',
+                   mandatory=True)
+    in_mask = File(exists=True, 
+                   desc='The input mask image file',
+                   mandatory=True)
+    in_bvals = File(exists=True, 
+                   desc='The input bval file',
+                   mandatory=True)
+    in_bvecs = File(exists=True, 
+                   desc='The input bvec file',
+                   mandatory=True)
+    in_fname = traits.Str('noddi',
+                          desc='The output fname to use',
+                          usedefault=True)
 
 class NoddiOutputSpec( MatlabInputSpec):
-    out_neural_density = File(exists=True)
-    out_orientation_dispersion_index = File(exists=True)
-    out_csf_volume_fraction = File(exists=True)
-    out_objective_function = File(exists=True)
-    out_kappa_concentration = File(exists=True)
-    out_error = File(exists=True)
-    out_fibre_orientations_x = File(exists=True)
-    out_fibre_orientations_y = File(exists=True)
-    out_fibre_orientations_z = File(exists=True)
-    
-    
+
+    out_neural_density = File(genfile=True, desc='The output neural density image file')
+    out_orientation_dispersion_index = File(genfile=True, desc='The output orientation dispersion index image file')
+    out_csf_volume_fraction = File(genfile=True, desc='The output csf volume fraction image file')
+    out_objective_function = File(genfile=True, desc='The output objective function image file')
+    out_kappa_concentration = File(genfile=True, desc='The output Kappa concentration image file')
+    out_error = File(genfile=True, desc='The output estimation error image file')
+    out_fibre_orientations_x = File(genfile=True, desc='The output fibre orientation (x) image file')
+    out_fibre_orientations_y = File(genfile=True, desc='The output fibre orientation (y) image file')
+    out_fibre_orientations_z = File(genfile=True, desc='The output fibre orientation (z) image file')
+
+    matlab_output = traits.Str()
 
 class Noddi( MatlabCommand):
-    """ Basic Hello World that displays Hello <name> in MATLAB
+    """ NODDI estimation interface for the MATLAB toolbox (http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab)
 
     Returns
     -------
 
-    matlab_output : capture of matlab output which may be
-                    parsed by user to get computation results
-
+    output files : 
+    out_neural_density  ::  The output neural density image file
+    out_orientation_dispersion_index  ::  The output orientation dispersion index image file
+    out_csf_volume_fraction  ::  The output csf volume fraction image file
+    out_objective_function  ::  The output objective function image file
+    out_kappa_concentration  ::  The output Kappa concentration image file
+    out_error  ::  The output estimation error image file
+    out_fibre_orientations_x  ::  The output fibre orientation (x) image file
+    out_fibre_orientations_y  ::  The output fibre orientation (y) image file
+    out_fibre_orientations_z  ::  The output fibre orientation (z) image file
+    
     Examples
     --------
 
     >>> n = Noddi()
-    >>> n.inputs.
-    >>> out = hello.run()
+    >>> n.inputs.in_dwis = subject1_dwis.nii.gz
+    >>> n.inputs.in_mask = subject1_mask.nii.gz
+    >>> n.inputs.in_bvals = subject1_bvals.bval
+    >>> n.inputs.in_bvecs = subject1_bvecs.bvec
+    >>> n.inputs.in_fname = 'subject1'
+    >>> out = n.run()
     >>> print out.outputs
     """
+
     input_spec = NoddiInputSpec
     output_spec = NoddiOutputSpec
 
     def _my_script(self):
         """This is where you implement your script"""
 
+        matlab_scriptname = 'noddi_fitting'
+
         d = dict(in_dwis=self.inputs.in_dwis,
                  in_mask=self.inputs.in_mask,
                  in_bvals=self.inputs.in_bvals,
                  in_bvecs=self.inputs.in_bvecs,
                  in_fname=self.inputs.in_fname,
-                 out_neural_density=self.inputs.out_neural_density,
-                 out_orientation_dispersion_index=self.inputs.out_orientation_dispersion_index,
-                 out_csf_volume_fraction=self.inputs.out_csf_volume_fraction,
-                 out_objective_function=self.inputs.out_objective_function,
-                 out_kappa_concentration=self.inputs.out_kappa_concentration,
-                 out_error=self.inputs.out_error,
-                 out_fibre_orientations_x=self.inputs.out_fibre_orientations_x,
-                 out_fibre_orientations_y=self.inputs.out_fibre_orientations_y,
-                 out_fibre_orientations_z=self.inputs.out_fibre_orientations_z)
+                 script_name = matlab_scriptname)
+
         #this is your MATLAB code template
         script = Template("""
-        [neural_density, orientation_dispersion_index, csf_volume_fraction, objective_function, kappa_concentration, error, fibre_orientations] = noddi_fitting(dwis, mask, bvals, bvecs, fname);
-        exit;
+        [~,~,~,~,~,~,~] = script_name(in_dwis, in_mask, in_bvals, in_bvecs, in_fname);
         """).substitute(d)
-        return script
 
+        return script
 
     def run(self, **inputs):
         ## inject your script
@@ -84,7 +102,16 @@ class Noddi( MatlabCommand):
         results.outputs.matlab_output = stdout
         return results
 
-
     def _list_outputs(self):
         outputs = self._outputs().get()
+        basename = self.inputs.fname
+        outputs['out_neural_density'] = os.path.join(os.getcwd(), basename + '_ficvf.nii')
+        outputs['out_orientation_dispersion_index'] = os.path.join(os.getcwd(), basename + '_odi.nii')
+        outputs['out_csf_volume_fraction'] = os.path.join(os.getcwd(), basename + '_fiso.nii')
+        outputs['out_objective_function'] = os.path.join(os.getcwd(), basename + '_fmin.nii')
+        outputs['out_kappa_concentration'] = os.path.join(os.getcwd(), basename + '_kappa.nii')
+        outputs['out_error'] = os.path.join(os.getcwd(), basename + '_error_code.nii')
+        outputs['out_fibre_orientations_x'] = os.path.join(os.getcwd(), basename + '_fibredirs_xvec.nii')
+        outputs['out_fibre_orientations_y'] = os.path.join(os.getcwd(), basename + '_fibredirs_yvec.nii')
+        outputs['out_fibre_orientations_z'] = os.path.join(os.getcwd(), basename + '_fibredirs_zvec.nii')
         return outputs
