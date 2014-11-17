@@ -25,24 +25,54 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
   , m_InputDevice(0)
   , m_WasSavingMessagesPreviously(false)
 {
-  SetName("AudioDataSource");
   SetStatus("Initialising...");
 
-  // these should be updated based on QAudioDeviceInfo::defaultInputDevice()
-  SetType("Microphone");
-  SetDescription("NVidia SDI");
+  QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
+  QAudioFormat      defaultFormat = defaultDevice.preferredFormat();
+
+  SetAudioDevice(&defaultDevice, &defaultFormat);
 }
 
 
 //-----------------------------------------------------------------------------
 AudioDataSource::~AudioDataSource()
 {
+  delete m_InputDevice;
 }
 
 
 //-----------------------------------------------------------------------------
-void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device)
+void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format)
 {
+  assert(device != 0);
+  assert(format != 0);
+
+  // FIXME: disconnect previous audio device!
+
+
+  QAudioInput*  input = 0;
+  try
+  {
+
+    input = new QAudioInput(*device, *format);
+    QIODevice*  stream = input->start();
+    // FIXME: do something with stream!
+
+    m_InputDevice = input;
+    SetType("QAudioInput");
+    SetName(device->deviceName().toStdString());
+
+    std::ostringstream    description;
+    description << input->format().channels() << " channels @ " << input->format().sampleRate() << " Hz, " << input->format().codec().toStdString();
+    SetDescription(description.str());
+
+    SetStatus("Grabbing");
+  }
+  catch (...)
+  {
+    delete input;
+    SetStatus("Init failed!");
+  }
 }
 
 

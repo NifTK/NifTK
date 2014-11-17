@@ -21,6 +21,7 @@
 // forward-decl
 class QAudioInput;
 class QAudioDeviceInfo;
+class QAudioFormat;
 
 
 class NIFTKIGIGUI_EXPORT AudioDataSource : public QmitkIGILocalDataSource
@@ -32,7 +33,7 @@ public:
   mitkNewMacro1Param(AudioDataSource, mitk::DataStorage*);
 
 
-  void SetAudioDevice(QAudioDeviceInfo* device);
+  void SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format);
 
 
 
@@ -41,7 +42,6 @@ public:
 public:
   /** @returns false, always */
   virtual bool GetSaveInBackground() const;
-
 
   /** @returns false, always */
   virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);

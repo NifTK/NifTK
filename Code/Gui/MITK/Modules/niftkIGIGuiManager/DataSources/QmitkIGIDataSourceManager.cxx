@@ -29,6 +29,7 @@
 #include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
+#include <DataSources/AudioDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
 #include <QmitkRenderingManager.h>
 
@@ -368,10 +369,10 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
   m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
-  
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
+  m_SourceSelectComboBox->addItem("local microphone/audio", mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE);
 
   m_ToolManagerPlaybackGroupBox->setCollapsed(true);
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
@@ -559,6 +560,10 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     source = QmitkIGINVidiaDataSource::New(m_DataStorage);
   }
 #endif
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE)
+  {
+    source = AudioDataSource::New(m_DataStorage);
+  }
   else
   {
     throw std::runtime_error("Data source not implemented yet!");
@@ -1188,6 +1193,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
       "#  QmitkIGIUltrasonixTool\n"
       "#  QmitkIGIOpenCVDataSource\n"
       "#  QmitkIGITrackerSource\n"
+      "#  AudioDataSource\n"
       "# however, not all might be compiled in.\n";
 
     foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
@@ -1366,7 +1372,7 @@ void QmitkIGIDataSourceManager::OnPlayStart()
               else
               {
                 // no special else here (only diagnostic). if this data source cannot playback that particular directory,
-                // even though the descriptor says it can, the data source may still be able to play another director
+                // even though the descriptor says it can, the data source may still be able to play another directory
                 // coming later in the list.
                 MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
               }
