@@ -38,6 +38,7 @@ set(CPP_FILES
   DataSources/QmitkIGIUltrasonixToolGui.cxx
   DataSources/QmitkIGIOpenCVDataSource.cxx
   DataSources/QmitkIGIOpenCVDataSourceGui.cxx
+  DataSources/AudioDataSource.cxx
   OverlayEditor/QmitkBitmapOverlay.cxx
   OverlayEditor/QmitkSingle3DView.cxx
   OverlayEditor/QmitkIGIOverlayEditor.cxx
@@ -64,6 +65,7 @@ set(MOC_H_FILES
   DataSources/QmitkIGIUltrasonixToolGui.h
   DataSources/QmitkIGIOpenCVDataSource.h
   DataSources/QmitkIGIOpenCVDataSourceGui.h
+  DataSources/AudioDataSource.h
   OverlayEditor/QmitkSingle3DView.h
   OverlayEditor/QmitkIGIOverlayEditor.h
 )

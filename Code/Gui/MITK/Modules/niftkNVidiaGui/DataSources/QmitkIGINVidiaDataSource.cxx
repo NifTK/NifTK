@@ -287,6 +287,7 @@ void QmitkIGINVidiaDataSource::GrabData()
 
   // because there's currently no notification when the user clicked stop-record
   // we need to check this way to clean up the compressor.
+  // FIXME: what about mitk::IGIDataSource::StopRecording()?
   if (m_WasSavingMessagesPreviously && !GetSavingMessages())
   {
     m_Pimpl->StopCompression();
