@@ -4,12 +4,14 @@
     Interface for the noddi_fitting.m script. NODDI estimation interface for the MATLAB toolbox (http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab)
 """
 
-import os
+import os, sys
 from nipype.interfaces.base import File, traits
 from nipype.interfaces.matlab import MatlabCommand, MatlabInputSpec
 from string import Template
 
-class NoddiInputSpec( MatlabInputSpec):
+from nipype.interfaces.base import TraitedSpec, BaseInterface, BaseInterfaceInputSpec, File
+
+class NoddiInputSpec( BaseInterfaceInputSpec):
 
     in_dwis = File(exists=True, 
                    desc='The input 4D DWIs image file',
@@ -27,7 +29,7 @@ class NoddiInputSpec( MatlabInputSpec):
                           desc='The output fname to use',
                           usedefault=True)
 
-class NoddiOutputSpec( MatlabInputSpec):
+class NoddiOutputSpec( TraitedSpec):
 
     out_neural_density = File(genfile=True, desc='The output neural density image file')
     out_orientation_dispersion_index = File(genfile=True, desc='The output orientation dispersion index image file')
@@ -41,7 +43,7 @@ class NoddiOutputSpec( MatlabInputSpec):
 
     matlab_output = traits.Str()
 
-class Noddi( MatlabCommand):
+class Noddi( BaseInterface):
     """ NODDI estimation interface for the MATLAB toolbox (http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab)
 
     Returns
@@ -93,14 +95,30 @@ class Noddi( MatlabCommand):
 
         return script
 
-    def run(self, **inputs):
-        ## inject your script
-        self.inputs.script =  self._my_script()
-        results = super(MatlabCommand, self).run( **inputs)
-        stdout = results.runtime.stdout
-        # attach stdout to outputs to access matlab results
-        results.outputs.matlab_output = stdout
-        return results
+    def _run_interface(self, runtime):
+        print "I am here..."
+        """This is where you implement your script"""
+
+        d = dict(in_dwis=self.inputs.in_dwis,
+                 in_mask=self.inputs.in_mask,
+                 in_bvals=self.inputs.in_bvals,
+                 in_bvecs=self.inputs.in_bvecs,
+                 in_fname=self.inputs.in_fname)
+
+        #this is your MATLAB code template
+        script = Template("""
+        in_dwis = '$in_dwis';
+        in_mask = '$in_mask';
+        in_bvals = '$in_bvals';
+        in_bvecs = '$in_bvecs';
+        in_fname = '$in_fname';
+        [~,~,~,~,~,~,~] = noddi_fitting(in_dwis, in_mask, in_bvals, in_bvecs, in_fname);
+        exit;
+        """).substitute(d)
+
+        mlab = MatlabCommand(script=script, mfile=True)
+        result = mlab.run()
+        return result.runtime
 
     def _list_outputs(self):
         outputs = self._outputs().get()
