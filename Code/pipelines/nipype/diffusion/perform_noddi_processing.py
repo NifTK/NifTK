@@ -358,6 +358,20 @@ workflow.connect(b0_mask_eroder, 'out_file', noddi_fitting, 'in_mask')
 workflow.connect(merge_bv_files, 'bvals', noddi_fitting, 'in_bvals')
 workflow.connect(merge_bv_files, 'bvecs', noddi_fitting, 'in_bvecs')
 
+data_sink = pe.Node(nio.DataSink(), name='data_sink')
+data_sink.inputs.base_directory = result_dir
+data_sink.inputs.parameterization = False
+
+workflow.connect(noddi_fitting, 'out_neural_density', data_sink, '@out_neural_density')
+workflow.connect(noddi_fitting, 'out_orientation_dispersion_index', data_sink, '@out_orientation_dispersion_index')
+workflow.connect(noddi_fitting, 'out_csf_volume_fraction', data_sink, '@out_csf_volume_fraction')
+workflow.connect(noddi_fitting, 'out_objective_function', data_sink, '@out_objective_function')
+workflow.connect(noddi_fitting, 'out_kappa_concentration', data_sink, '@out_kappa_concentration')
+workflow.connect(noddi_fitting, 'out_error', data_sink, '@out_error')
+workflow.connect(noddi_fitting, 'out_fibre_orientations_x', data_sink, '@out_fibre_orientations_x')
+workflow.connect(noddi_fitting, 'out_fibre_orientations_y', data_sink, '@out_fibre_orientations_y')
+workflow.connect(noddi_fitting, 'out_fibre_orientations_z', data_sink, '@out_fibre_orientations_z')    
+
 workflow.write_graph(graph2use = 'colored')
 
 qsub_exec=spawn.find_executable('qsub')
