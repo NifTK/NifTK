@@ -16,6 +16,50 @@ import registration
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
 
+def merge_bv_function (input_bvals, input_bvecs):
+
+    import os, glob, sys, errno
+    import nipype.interfaces.fsl as fsl
+    import nibabel as nib
+    import numpy as np 
+    
+    def merge_vector_files(input_files):
+        import numpy as np
+        import os
+        result = np.array([])
+        files_base, files_ext = os.path.splitext(os.path.basename(input_files[0]))
+        for f in input_files:
+            if result.size == 0:
+                result = np.loadtxt(f)
+            else:
+                result = np.hstack((result, np.loadtxt(f)))
+        output_file = os.path.abspath(files_base + '_merged' + files_ext)
+        if len(result.shape) == 1:
+            np.savetxt(output_file, result, fmt = '%.3f', newline=" ")
+        else:
+            np.savetxt(output_file, result, fmt = '%.3f')
+            
+        return output_file
+    
+    if len(input_bvals) == 0 or len(input_bvecs) == 0:
+        print 'I/O One of the dwis merge input is empty, exiting.'
+        sys.exit(errno.EIO)
+
+    if not type(input_bvals) == list:
+        input_bvals = [input_bvals]
+        input_bvecs = [input_bvecs]
+    
+    # Set the default values of these variables as the first index, 
+    # in case we only have one image and we don't do a merge
+    bvals = input_bvals[0]
+    bvecs = input_bvecs[0]
+    if len(input_bvals) > 1:
+        bvals = merge_vector_files(input_bvals)
+        bvecs = merge_vector_files(input_bvecs)
+
+    return bvals, bvecs
+
+
 
 def find_shell_files(input_directory):
 
@@ -213,7 +257,11 @@ for i in range(number_of_shells):
 
     shell_files_finder.inputs.input_directory = diffusion_preprocs_sinks[i]
 
+    split_dwis = pe.Node(interface = fsl.Split(dimension="t"), name = 'split_dwis_shell'+str(i+1))
+
     workflow.connect(shell_files_finder, 'dwis', 
+                     split_dwis, 'in_file')
+    workflow.connect(split_dwis, 'out_files', 
                      output_merger_dwis, 'in'+str(i+1))
     workflow.connect(shell_files_finder, 'average_b0', 
                      output_merger_b0s, 'in'+str(i+1))
@@ -293,26 +341,22 @@ merge_dwis_images = pe.Node(interface = fsl.Merge(dimension = 't'),
 workflow.connect(resampling, 'res_file',
                  merge_dwis_images, 'in_files')
 
-merge_dwis_files = pe.Node(interface = niu.Function(input_names = ['input_dwis', 
-                                                             'input_bvals', 
-                                                             'input_bvecs'],
-                                              output_names = ['dwis', 'bvals', 'bvecs'],
-                                              function = dmri.merge_dwi_function),
-                     name = 'merge_dwis_files')
+merge_bv_files = pe.Node(interface = niu.Function(input_names = ['input_bvals', 
+                                                                 'input_bvecs'],
+                                              output_names = ['bvals', 'bvecs'],
+                                              function = merge_bv_function),
+                     name = 'merge_bv_files')
 
-merge_dwis_files.inputs.input_dwis = [os.path.abspath(f) for f in args.dwis]
-merge_dwis_files.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
-merge_dwis_files.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]
-
-
+merge_bv_files.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
+merge_bv_files.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]
 
 noddi_fitting = pe.Node(interface = noddi.Noddi(),
                         name = 'noddi_fitting')
-                 
+
 workflow.connect(merge_dwis_images, 'merged_file', noddi_fitting, 'in_dwis')
 workflow.connect(b0_mask_eroder, 'out_file', noddi_fitting, 'in_mask')
-workflow.connect(merge_dwis_files, 'bvals', noddi_fitting, 'in_bvals')
-workflow.connect(merge_dwis_files, 'bvecs', noddi_fitting, 'in_bvecs')
+workflow.connect(merge_bv_files, 'bvals', noddi_fitting, 'in_bvals')
+workflow.connect(merge_bv_files, 'bvecs', noddi_fitting, 'in_bvecs')
 
 workflow.write_graph(graph2use = 'colored')
 
