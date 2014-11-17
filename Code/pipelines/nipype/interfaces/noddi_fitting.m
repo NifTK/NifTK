@@ -10,10 +10,12 @@ disp('******************************');
 if (strcmp(dwis_ext,'.gz'))
     disp('nifti gzip detected. gunzip DWIs');
     dwis = gunzip(dwis, pwd);
+    dwis = dwis{1};
 end
 if (strcmp(mask_ext,'.gz'))
     disp('nifti gzip detected. gunzip mask');
-    dwis = gunzip(mask, pwd);
+    mask = gunzip(mask, pwd);
+    mask = mask{1};
 end
 
 roi = 'NODDI_roi.mat';
