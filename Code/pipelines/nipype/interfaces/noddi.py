@@ -96,7 +96,6 @@ class Noddi( BaseInterface):
         return script
 
     def _run_interface(self, runtime):
-        print "I am here..."
         """This is where you implement your script"""
 
         d = dict(in_dwis=self.inputs.in_dwis,
