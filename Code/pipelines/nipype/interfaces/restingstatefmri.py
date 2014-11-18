@@ -14,27 +14,38 @@ from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, Output
 
 class RestingStatefMRIPreprocessInputSpec(RestingStatefMRIPreprocessCommandInputSpec):
     
-    # fmri id - identifier
-    in_subjectid = traits.String(argstr="%s", mandatory=True, position = 2, desc="subjec id")    
     # fmri raw input file
-    in_fmri = File(exists=True, mandatory=True, argstr="%s", position = 3, desc="raw fmri input file")
+    in_fmri = File(exists=True, 
+                   mandatory=True, 
+                   argstr="%s", 
+                   position = 3, 
+                   desc="raw fmri input file")
     # anatomical t1 image file
-    in_anat = File(exists=True, mandatory=True, argstr="%s", position = 4, desc="anatomical input file")
-    # group average
-    in_group_avg = File(exists=True, mandatory=True, argstr="%s", position = 5, desc="group average (such as MNI)")
-    # anat to group transformation
-    in_group_trans = File(exists=True, mandatory=True, argstr="%s", position = 6, desc="group average transformation (transformation field as *.nii.gz)")
+    in_t1 = File(exists=True, 
+                 mandatory=True, 
+                 argstr="%s", 
+                 position = 4, 
+                 desc="anatomical input file")
     # segmentation of the T1 scan (including white matter, csf and grey matter segmentation)
-    in_seg = File(exists=True, mandatory=True, argstr="%s", position = 7, desc="segmentation of the T1 scan (including csf pos1 ,grey pos2 and white matter pos3)")
+    in_tissue_segmentation = File(exists=True, 
+                                  mandatory=True, 
+                                  argstr="%s", 
+                                  position = 7, 
+                                  desc="segmentation of the T1 scan (including csf pos1 ,grey pos2 and white matter pos3)")
     # atlas 
-    in_atlas = File(exists=True, mandatory=True, argstr="%s", position = 8, desc="segmentation of the T1 scan (including csf pos1 ,grey pos2 and white matter pos3)")
+    in_parcellation = File(exists=True, 
+                           mandatory=True, 
+                           argstr="%s", 
+                           position = 8, 
+                           desc="segmentation of the T1 scan (including csf pos1 ,grey pos2 and white matter pos3)")
 
 class RestingStatefMRIPreprocessOutputSpec(TraitedSpec):
 
     # preprocessed fmri scan in subject space
-    out_fmri   = File(exists=True, genfile = True, desc="preprocessed fMRI scan in subject space")
-    out_fmri_group = File(exists=True, genfile = True, desc="preprocessed fMRI scan in group space")
-    out_fmri_minout_group = File(exists=True, genfile = True, desc="minimal outlier fMRI volume mapped into group space")
+    out_corrected_fmri = File(exists=True, genfile = True, desc="preprocessed fMRI scan in subject space")
+    out_fmri_to_t1_transformation = File(exists=True, genfile = True, desc="fMRI to T1 affine transformation")
+#    out_corrected_fmri_group = File(exists=True, genfile = True, desc="preprocessed fMRI scan in group space")
+#    out_fmri_minout_group = File(exists=True, genfile = True, desc="minimal outlier fMRI volume mapped into group space")
 
 class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):
     
@@ -48,13 +59,10 @@ class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):
     
     rs = fmri.RestingStatefMRIPreprocess()
     
-    rs.inputs.in_subjectid = "s1"
     rs.inputs.in_fmri = "func.nii.gz"
-    rs.inputs.in_anat = "anat.nii.gz"
-    rs.inputs.in_group_avg = "avg.nii.gz"
-    rs.inputs.in_group_trans = "group_trans.nii.gz"
-    rs.inputs.in_seg = "seg.nii.gz"
-    rs.inputs.in_atlas = "atlas.nii.gz"
+    rs.inputs.in_t1 = "anat.nii.gz"
+    rs.inputs.in_tissue_segmentation = "seg.nii.gz"
+    rs.inputs.in_parcellation = "atlas.nii.gz"
 
     rs.run()
 
@@ -65,10 +73,11 @@ class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):
     output_spec = RestingStatefMRIPreprocessOutputSpec
     
     def _list_outputs(self):
+
         outputs = self.output_spec().get()
-        outputs['out_fmri'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_pp.nii.gz')
-        outputs['out_fmri_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_pp_group.nii.gz')
-        outputs['out_fmri_minout_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_reg_group.nii.gz')
-        print outputs
+        outputs['out_corrected_fmri'] = os.path.join(os.path.dirname(self.inputs.in_fmri), 'fmri_pp.nii.gz')
+        outputs['out_fmri_to_t1_transformation'] = os.path.join(os.path.dirname(self.inputs.in_fmri), 'fmri_to_t1_transformation.txt')
+#        outputs['out_fmri_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_pp_group.nii.gz')
+#        outputs['out_fmri_minout_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_reg_group.nii.gz')
         return outputs
 
