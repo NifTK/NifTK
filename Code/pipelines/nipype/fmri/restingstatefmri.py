@@ -70,11 +70,9 @@ class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):
     output_spec = RestingStatefMRIPreprocessOutputSpec
     
     def _list_outputs(self):
-
+        current_dir = os.get_cwd()
         outputs = self.output_spec().get()
-        outputs['out_corrected_fmri'] = os.path.join(os.path.dirname(self.inputs.in_fmri), 'fmri_pp.nii.gz')
-        outputs['out_fmri_to_t1_transformation'] = os.path.join(os.path.dirname(self.inputs.in_fmri), 'fmri_to_t1_transformation.txt')
-#        outputs['out_fmri_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_pp_group.nii.gz')
-#        outputs['out_fmri_minout_group'] = os.path.join(os.path.dirname(self.inputs.in_fmri), self.inputs.in_subjectid + '.fmri_reg_group.nii.gz')
+        outputs['out_corrected_fmri'] = os.path.abspath('fmri_pp.nii.gz')
+        outputs['out_fmri_to_t1_transformation'] = os.path.abspath('fmri_to_t1_transformation.txt')
         return outputs
 
