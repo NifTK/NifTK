@@ -44,11 +44,8 @@ class RestingStatefMRIPreprocessOutputSpec(TraitedSpec):
     # preprocessed fmri scan in subject space
     out_corrected_fmri = File(exists=True, genfile = True, desc="preprocessed fMRI scan in subject space")
     out_fmri_to_t1_transformation = File(exists=True, genfile = True, desc="fMRI to T1 affine transformation")
-#    out_corrected_fmri_group = File(exists=True, genfile = True, desc="preprocessed fMRI scan in group space")
-#    out_fmri_minout_group = File(exists=True, genfile = True, desc="minimal outlier fMRI volume mapped into group space")
 
-class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):
-    
+class RestingStatefMRIPreprocess(RestingStatefMRIPreprocessCommand):    
 
     """
 
