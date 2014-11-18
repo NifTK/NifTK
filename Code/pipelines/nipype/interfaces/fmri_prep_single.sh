@@ -1,13 +1,10 @@
 #!/bin/bash
 clear
-echo The $0 command is called with $#argv parameters
-echo SUBJ ID is $1
-echo FMRI is $2
-echo ANAT is $3
-echo GROUP AVG is $4
-echo GROUP TRANS is $5
-echo SEG  is $6
-echo ATLAS is $7
+echo The $0 command is called with $# argv parameters
+echo FMRI is $1
+echo ANAT is $2
+echo SEG  is $3
+echo ATLAS is $4
 
 
 #echo All Parameters are \"$argv\"
@@ -22,21 +19,18 @@ tshift_pattern=alt+z
 afni -ver
 
 # set subject identifier
-subj=$1
-fmri=$2
-anat=$3
-group_avg=$4
-group_trans=$5
-seg=$6
-atlas=$7
+fmri=$1
+anat=$2
+seg=$3
+atlas=$4
 
 # assign output directory name
 # echo ${fmri%%${fmri##*/}}
-output_dir=$subj.results
+output_dir=results
 # verify that the results directory does not yet exist
 rm -R $output_dir
 if [ -d $output_dir ]; then
-    echo output dir "$subj.results" already exists
+    echo output dir "$results" already exists
     exit
 fi
 
@@ -50,7 +44,7 @@ mkdir $output_dir/stimuli
 # ============================ auto block: tcat ============================
 # apply 3dTcat to copy input dsets to results dir, while
 # removing the first 0 TRs
-3dTcat -prefix $output_dir/pb00.$subj.r01.tcat ${fmri}'[0..$]'
+3dTcat -prefix $output_dir/pb00.r01.tcat ${fmri}'[0..$]'
 
 # and make note of repetitions (TRs) per run
 tr_counts=$( 3dinfo -nv $fmri  )
@@ -69,7 +63,7 @@ cd $output_dir
 # data check: compute outlier fraction for each volume
 touch out.pre_ss_warn.txt
 for run in $runs; do
-  3dToutcount -automask -fraction -polort 3 -legendre pb00.$subj.r$run.tcat+orig > outcount.r$run.1D
+  3dToutcount -automask -fraction -polort 3 -legendre pb00.r$run.tcat+orig > outcount.r$run.1D
     # censor outlier TRs per run, ignoring the first 0 TRs
     # - censor when more than 0.1 of automask voxels are outliers
     # - step() defines which TRs to remove via censoring
@@ -86,7 +80,7 @@ done
 cat outcount.r*.1D > outcount_rall.1D
 
 # catenate outlier censor files into a single time series
-cat rm.out.cen.r*.1D > outcount_${subj}_censor.1D
+cat rm.out.cen.r*.1D > outcount_censor.1D
 
 # get run number and TR index for minimum outlier volume
 minindex=$( 3dTstat -argmin -prefix - outcount_rall.1D\' )
@@ -105,31 +99,31 @@ echo "min outlier: run $minoutrun, TR $minouttr" | tee out.min_outlier.txt
 # ================================ despike =================================
 # apply 3dDespike to each run
 for run in $runs; do
-    3dDespike -NEW -nomask -prefix pb01.$subj.r$run.despike \
-        pb00.$subj.r$run.tcat+orig
+    3dDespike -NEW -nomask -prefix pb01.r$run.despike \
+        pb00.r$run.tcat+orig
 done
 
 # ================================= tshift =================================
 # time shift data so all slice timing is the same 
 for run in $runs; do
-    3dTshift -tzero 0 -quintic -prefix pb02.$subj.r$run.tshift \
+    3dTshift -tzero 0 -quintic -prefix pb02.r$run.tshift \
              -tpattern ${tshift_pattern}                       \
-             pb01.$subj.r$run.despike+orig
+             pb01.r$run.despike+orig
 done
 
 # copy min outlier volume as registration base
-echo pb02.$subj.r$minoutrun.tshift+orig"[$minouttr]"
+echo pb02.r$minoutrun.tshift+orig"[$minouttr]"
 3dbucket -prefix min_outlier_volume                            \
-    pb02.$subj.r$minoutrun.tshift+orig"[$minouttr]"
+    pb02.r$minoutrun.tshift+orig"[$minouttr]"
 
 # ================================= volreg =================================
 # align each dset to base volume
 for run in $runs; do
     # register each volume to the base
     3dvolreg -verbose -zpad 1 -base min_outlier_volume+orig         \
-             -1Dfile dfile.r$run.1D -prefix pb03.$subj.r$run.volreg \
+             -1Dfile dfile.r$run.1D -prefix pb03.r$run.volreg \
              -cubic                                                 \
-             pb02.$subj.r$run.tshift+orig
+             pb02.r$run.tshift+orig
 
     # if there was an error, exit so user can see
     if [ $? -ne 0 ]; then 
@@ -143,39 +137,44 @@ cat dfile.r*.1D > dfile_rall.1D
 # ================================== blur ==================================
 # blur each volume of each run
 for run in $runs; do
-    3dmerge -1blur_fwhm ${smoothing_kernel_fwhm} -doall -prefix pb04.$subj.r$run.blur \
-            pb03.$subj.r$run.volreg+orig
+    3dmerge -1blur_fwhm ${smoothing_kernel_fwhm} -doall -prefix pb04.r$run.blur \
+            pb03.r$run.volreg+orig
 done
 
 # ================================== mask ==================================
 # create 'full_mask' dataset (union mask)
 for run in $runs; do
-    3dAutomask -dilate 1 -prefix rm.mask_r$run pb04.$subj.r$run.blur+orig
+    3dAutomask -dilate 1 -prefix rm.mask_r$run pb04.r$run.blur+orig
 done
 
 # create union of inputs, output type is byte
-3dmask_tool -inputs rm.mask_r*+orig.HEAD -union -prefix full_mask.$subj
+3dmask_tool -inputs rm.mask_r*+orig.HEAD -union -prefix full_mask
 
-# ---- create subject anatomy mask, mask_anat.$subj+orig ----
+# ---- create subject anatomy mask, mask_anat.+orig ----
 #      (resampled from aligned anat)
-3dresample -master full_mask.$subj+orig -input ${anat}     \
+3dresample -master full_mask+orig -input ${anat}     \
            -prefix rm.resam.anat
 
 # convert to binary anat mask; fill gaps and holes
 3dmask_tool -dilate_input 5 -5 -fill_holes -input rm.resam.anat+orig \
-            -prefix mask_anat.$subj
+            -prefix mask_anat
 
 # compute overlaps between anat and EPI masks
-3dABoverlap -no_automask full_mask.$subj+orig mask_anat.$subj+orig   \
+3dABoverlap -no_automask full_mask+orig mask_anat+orig   \
             | tee out.mask_ae_overlap.txt
 
 # note correlation as well
-3ddot full_mask.$subj+orig mask_anat.$subj+orig | tee out.mask_ae_corr.txt
+3ddot full_mask+orig mask_anat+orig | tee out.mask_ae_corr.txt
+
+# ============== creating brain mask from tissue segmentation =====================
+
+seg_maths $seg -tmax -bin T1_brain_mask.nii.gz
 
 # ================================== registration ==================================
-3dcopy full_mask.$subj+orig full_mask.nii.gz
+3dcopy full_mask+orig full_mask.nii.gz
 3dcopy min_outlier_volume+orig min_outlier_volume.nii.gz
-reg_aladin -ref min_outlier_volume.nii.gz -flo ${anat} -rmask full_mask.nii.gz -aff anat_2_fmri_aff.txt -res anat_in_fmri_space.nii.gz -noSym   # use -rigOnly only when no scaling necessary for anat to fmri
+# use -rigOnly only when no scaling necessary for anat to fmri
+reg_aladin -ref min_outlier_volume.nii.gz -flo ${anat} -rmask full_mask.nii.gz -fmask T1_brain_mask.nii.gz -aff anat_2_fmri_aff.txt -res anat_in_fmri_space.nii.gz -noSym
 reg_transform -invAff anat_2_fmri_aff.txt fmri_2_anat_aff.txt
 
 #================================ regress =================================
@@ -188,13 +187,13 @@ reg_transform -invAff anat_2_fmri_aff.txt fmri_2_anat_aff.txt
 1d_tool.py -infile dfile_rall.1D -set_nruns 1                                \
            -derivative -demean -write motion_deriv.1D
 
-# create censor file motion_${subj}_censor.1D, for censoring motion 
+# create censor file motion_censor.1D, for censoring motion 
 1d_tool.py -infile dfile_rall.1D -set_nruns 1                                \
     -show_censor_count -censor_prev_TR                                       \
-    -censor_motion 0.3 motion_${subj}													
+    -censor_motion 0.3 motion													
 
 # combine multiple censor files
-1deval -a motion_${subj}_censor.1D -b outcount_${subj}_censor.1D -expr "a*b" > censor_${subj}_combined_2.1D
+1deval -a motion_censor.1D -b outcount_censor.1D -expr "a*b" > censor_combined_2.1D
 
 # create bandpass regressors (instead of using 3dBandpass, say)
 1dBport -nodata ${tr_counts} ${tr_time} -band ${bandpass_high} ${bandpass_low} -invert -nozero > bandpass_rall.1D                 ###########################
@@ -220,9 +219,9 @@ if [ ! -z "${seg}" -a "${seg}" != " " ] && [ ! -z "${atlas}" -a "${atlas}" != " 
 
   # create 2 ROI regressors: WMe, CSFe
   for run in $runs; do
-    3dmaskave -quiet -mask wm_mask.nii.gz pb03.$subj.r$run.volreg+orig \
+    3dmaskave -quiet -mask wm_mask.nii.gz pb03.r$run.volreg+orig \
             | 1d_tool.py -infile - -demean -write rm.ROI.WMe.r$run.1D 
-  	3dmaskave -quiet -mask ventricles_mask.nii.gz pb03.$subj.r$run.volreg+orig \
+  	3dmaskave -quiet -mask ventricles_mask.nii.gz pb03.r$run.volreg+orig \
             | 1d_tool.py -infile - -demean -write rm.ROI.CSFe.r$run.1D 
   done
     
@@ -231,8 +230,8 @@ if [ ! -z "${seg}" -a "${seg}" != " " ] && [ ! -z "${atlas}" -a "${atlas}" != " 
 	cat rm.ROI.CSFe.r*.1D > ROI.CSFe_rall.1D
 
 	# run the regression analysis
-	3dDeconvolve -input pb04.$subj.r*.blur+orig.HEAD                             \
-	    -censor censor_${subj}_combined_2.1D                                     \
+	3dDeconvolve -input pb04.r*.blur+orig.HEAD                             \
+	    -censor censor_combined_2.1D                                     \
 	    -ortvec bandpass_rall.1D bandpass                                        \
 	    -ortvec ROI.WMe_rall.1D ROI.WMe                                          \
 	    -ortvec ROI.CSFe_rall.1D ROI.CSFe                                        \
@@ -252,16 +251,16 @@ if [ ! -z "${seg}" -a "${seg}" != " " ] && [ ! -z "${atlas}" -a "${atlas}" != " 
 	    -stim_file 12 motion_deriv.1D'[5]' -stim_base 12 -stim_label 12 dP_02    \
 	    -fout -tout -x1D X.xmat.1D -xjpeg X.jpg                                  \
 	    -x1D_uncensored X.nocensor.xmat.1D                                       \
-	    -fitts fitts.$subj                                                       \
-	    -errts errts.${subj}                                                     \
-	    -bucket stats.$subj
+	    -fitts fitts                                                      \
+	    -errts errts                                                     \
+	    -bucket stats
 
 ########################### alternatively do not use tissue regressors #########################
 else
   echo '---------------- NO SEGMENTATIONS ---------------------'
 	# run the regression analysis
-  3dDeconvolve -input pb04.$subj.r*.blur+orig.HEAD                             \
-      -censor censor_${subj}_combined_2.1D                                     \
+  3dDeconvolve -input pb04.r*.blur+orig.HEAD                             \
+      -censor censor_combined_2.1D                                     \
       -ortvec bandpass_rall.1D bandpass                                        \
       -polort 3                                                                \
       -num_stimts 12                                                           \
@@ -279,9 +278,9 @@ else
       -stim_file 12 motion_deriv.1D'[5]' -stim_base 12 -stim_label 12 dP_02    \
       -fout -tout -x1D X.xmat.1D -xjpeg X.jpg                                  \
       -x1D_uncensored X.nocensor.xmat.1D                                       \
-      -fitts fitts.$subj                                                       \
-      -errts errts.${subj}                                                     \
-      -bucket stats.$subj
+      -fitts fitts                                                       \
+      -errts errts                                                     \
+      -bucket stats
   exit
 fi
 
@@ -302,24 +301,24 @@ fi
 1d_tool.py -show_cormat_warnings -infile X.xmat.1D | tee out.cormat_warn.txt
 
 # create an all_runs dataset to match the fitts, errts, etc.
-3dTcat -prefix all_runs.$subj pb04.$subj.r*.blur+orig.HEAD
+3dTcat -prefix all_runs pb04.r*.blur+orig.HEAD
 
 # --------------------------------------------------
 # create a temporal signal to noise ratio dataset 
 #    signal: if 'scale' block, mean should be 100
 #    noise : compute standard deviation of errts
-3dTstat -mean -prefix rm.signal.all all_runs.$subj+orig
-3dTstat -stdev -prefix rm.noise.all errts.${subj}+orig
+3dTstat -mean -prefix rm.signal.all all_runs+orig
+3dTstat -stdev -prefix rm.noise.all errts+orig
 3dcalc -a rm.signal.all+orig                                                 \
        -b rm.noise.all+orig                                                  \
-       -c full_mask.$subj+orig                                               \
-       -expr 'c*a/b' -prefix TSNR.$subj 
+       -c full_mask+orig                                               \
+       -expr 'c*a/b' -prefix TSNR 
 
 # ---------------------------------------------------
 # compute and store GCOR (global correlation average)
 # (sum of squares of global mean of unit errts)
-3dTnorm -norm2 -prefix rm.errts.unit errts.${subj}+orig
-3dmaskave -quiet -mask full_mask.$subj+orig rm.errts.unit+orig >             \
+3dTnorm -norm2 -prefix rm.errts.unit errts+orig
+3dmaskave -quiet -mask full_mask+orig rm.errts.unit+orig >             \
     gmean.errts.unit.1D
 3dTstat -sos -prefix - gmean.errts.unit.1D\' > out.gcor.1D
 echo "-- GCOR = $( cat out.gcor.1D )"
@@ -335,7 +334,7 @@ reg_cols=$( 1d_tool.py -infile X.nocensor.xmat.1D -show_indices_interest )
 
 # ============================ blur estimation =============================
 # compute blur estimates
-touch blur_est.$subj.1D   # start with empty file
+touch blur_est.1D   # start with empty file
 
 # -- estimate blur for each run in errts --
 touch blur.errts.1D
@@ -347,21 +346,21 @@ for run in $runs; do
     if [ $trs == "" ]; then 
       continue
     fi
-    3dFWHMx -detrend -mask full_mask.$subj+orig                              \
-        errts.${subj}+orig"[$trs]" >> blur.errts.1D
+    3dFWHMx -detrend -mask full_mask+orig                              \
+        errts+orig"[$trs]" >> blur.errts.1D
 done
 
 # compute average blur and append
 blurs=$( cat blur.errts.1D )
 echo average errts blurs: $blurs
-echo "$blurs   # errts blur estimates" >> blur_est.$subj.1D
+echo "$blurs   # errts blur estimates" >> blur_est.1D
 
 
 # ================== auto block: generate review scripts ===================
 
 # generate a review script for the unprocessed EPI data
-# gen_epi_review.py -script @epi_review.$subj \
-#     -dsets pb00.$subj.r*.tcat+orig.HEAD
+# gen_epi_review.py -script @epi_review \
+#     -dsets pb00.r*.tcat+orig.HEAD
 
 # # generate scripts to review single subject results
 # # (try with defaults, but do not allow bad exit status)
@@ -372,16 +371,12 @@ echo "$blurs   # errts blur estimates" >> blur_est.$subj.1D
 # # if the basic subject review script is here, run it
 # # (want this to be the last text output)
 # if [-e @ss_review_basic ]; then 
-#   ./@ss_review_basic | tee out.ss_review.$subj.txt
+#   ./@ss_review_basic | tee out.ss_review.txt
 # fi
 
 ## =========================== create final copy of preprocessed fmri scan ======================================
-3dcopy errts.${subj}+orig ../${subj}.fmri_pp.nii.gz
-if [ ! -z "${group_avg}" -a "${group_avg}" != " " ] && [ ! -z "${group_trans}" -a "${group_trans}" != " " ]; then
-  reg_transform -comp fmri_2_anat_aff.txt $group_trans fmri_2_group.nii.gz -ref ${group_avg}
-  reg_resample -ref ${group_avg} -flo ../${subj}.fmri_pp.nii.gz -trans fmri_2_group.nii.gz -res ../${subj}.fmri_pp_group.nii.gz
-  reg_resample -ref ${group_avg} -flo min_outlier_volume.nii.gz -trans fmri_2_group.nii.gz -res ../${subj}.fmri_reg_group.nii.gz
-fi
+3dcopy errts+orig ../fmri_pp.nii.gz
+cp -f fmri_2_anat_aff.txt ../fmri_to_t1_transformation.txt
 
 # return to parent directory
 cd ..
