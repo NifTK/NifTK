@@ -16,6 +16,26 @@
 #define niftkDnDDisplayEnums_h
 
 /*!
+ * \enum WindowOrientation
+ * \brief Describes the different types of orientation, axial, sagittal, coronal,
+ * that can be achieved in the MIDAS style Display window. This is different from
+ * the WindowLayout. The orientation might be used to refer to the axis of an image,
+ * so an image can ONLY be sampled in AXIAL, SAGITTAL and CORONAL direction.
+ */
+enum WindowOrientation
+{
+  WINDOW_ORIENTATION_AXIAL = 0,
+  WINDOW_ORIENTATION_SAGITTAL = 1,
+  WINDOW_ORIENTATION_CORONAL = 2,
+  WINDOW_ORIENTATION_UNKNOWN = 3
+};
+
+/*!
+ * \brief The number of the possible orientations.
+ */
+const int WINDOW_ORIENTATION_NUMBER = 4;
+
+/*!
  * \enum WindowLayout
  * \brief Describes the different render window layouts. So one WindowLayout could have
  * multiple windows of different orientations, but most often will contain either axial,

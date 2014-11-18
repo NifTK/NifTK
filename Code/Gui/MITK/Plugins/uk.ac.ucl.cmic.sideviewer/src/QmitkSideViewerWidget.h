@@ -15,29 +15,36 @@
 #ifndef QmitkSideViewerWidget_h
 #define QmitkSideViewerWidget_h
 
-#include "ui_QmitkSideViewerWidget.h"
-
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
 #include <berryIPartListener.h>
 
-#include <mitkDataNodeAddedVisibilitySetter.h>
-#include <mitkDataStorageVisibilityTracker.h>
-#include <mitkMIDASDataNodeNameStringFilter.h>
-#include <mitkMIDASEnums.h>
+#include <mitkDataNodeVisibilityTracker.h>
+#include <mitkDataNodeStringPropertyFilter.h>
 
-#include <QString>
+#include <QMap>
 #include <QWidget>
+
+#include <niftkDnDDisplayEnums.h>
 
 namespace mitk
 {
 class BaseRenderer;
 class DataStorage;
 class IRenderWindowPart;
+class RenderingManager;
 }
 
 class QmitkBaseView;
 class QmitkRenderWindow;
+
+class niftkSingleViewerWidget;
+
+class QComboBox;
+class QDoubleSpinBox;
+class QLabel;
+class QRadioButton;
+class QSpinBox;
 
 /**
  * \class QmitkSideViewerWidget
@@ -53,11 +60,8 @@ class QmitkRenderWindow;
  *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
  * </pre>
  */
-class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget :
-  public QWidget,
-  public Ui_QmitkSideViewerWidget
+class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget : public QWidget
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
@@ -69,16 +73,12 @@ public:
   ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
   ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
   ///
-  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent = 0);
+  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
 
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
 
-  /**
-   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
-   * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
-   */
-  void SetDataStorage(mitk::DataStorage* storage);
+  void SetFocused();
 
   /// \brief Called when the world geometry of main window changes and updates the viewer accordingly.
   void SetGeometry(const itk::EventObject& geometrySendEvent);
@@ -114,13 +114,13 @@ protected slots:
   void OnMagnificationSpinBoxValueChanged(double magnification);
 
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
-  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the scale factor is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of the viewer has changed through interaction.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
 private:
 
@@ -128,7 +128,7 @@ private:
   void OnFocusChanged();
 
   /// \brief Works out a multi window orientation for the given orientation of the main window.
-  WindowLayout GetMultiWindowLayoutForOrientation(MIDASOrientation mainWindowOrientation);
+  WindowLayout GetMultiWindowLayoutForOrientation(WindowOrientation mainWindowOrientation);
 
   /// \brief Gets the currently visible editor.
   /// Returns 0 if no editor is opened.
@@ -138,14 +138,19 @@ private:
   void OnViewerWindowChanged();
 
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
-  void OnMainWindowOrientationChanged(MIDASOrientation orientation);
+  void OnMainWindowOrientationChanged(WindowOrientation orientation);
 
 private slots:
 
   /// \brief Called when one of the main 2D windows has been destroyed.
   virtual void OnAMainWindowDestroyed(QObject* mainWindow);
 
+  /// \brief Fits the displayed region to the size of the viewer window.
+  void FitToDisplay();
+
 private:
+
+  void SetupUi(QWidget* parent);
 
   /// \brief The view that contains this widget.
   QmitkBaseView* m_ContainingView;
@@ -155,6 +160,12 @@ private:
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;
+
+  /// \brief Rendering manager of the tracked main window.
+  /// If a main window is being tracked, the render windows of this viewer should be added
+  /// to the rendering manager of the tracked window, so that they are immediately updated
+  /// any time when the contents of the main window changes.
+  mitk::RenderingManager* m_MainRenderingManager;
 
   /// \brief Stores the currently selected window of the visible editor, if any.
   QmitkRenderWindow* m_MainWindow;
@@ -180,14 +191,10 @@ private:
   /// \brief The slice navigation controller of the coronal window of the selected editor.
   mitk::SliceNavigationController* m_MainCoronalSnc;
 
-  /// \brief Renderer of the currently focused window of the main display.
-  mitk::BaseRenderer* m_FocusedRenderer;
-
-  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
-  mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers
@@ -195,11 +202,11 @@ private:
   double m_Magnification;
 
   /// \brief The orientation of the selected window of the main display.
-  MIDASOrientation m_MainWindowOrientation;
+  WindowOrientation m_MainWindowOrientation;
 
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each orientation of the main window.
-  QMap<MIDASOrientation, WindowLayout> m_SingleWindowLayouts;
+  QMap<WindowOrientation, WindowLayout> m_SingleWindowLayouts;
 
   /// \brief The world geometry of the selected window of the selected editor.
   /// Any time when the selected main window changes, the world geometry of this viewer
@@ -209,6 +216,20 @@ private:
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
   berry::IPartListener::Pointer m_EditorLifeCycleListener;
 
+  niftkSingleViewerWidget* m_Viewer;
+  QWidget* m_ControlsWidget;
+  QWidget* m_LayoutWidget;
+  QRadioButton* m_CoronalWindowRadioButton;
+  QRadioButton* m_SagittalWindowRadioButton;
+  QRadioButton* m_AxialWindowRadioButton;
+  QRadioButton* m_MultiWindowRadioButton;
+  QComboBox* m_MultiWindowComboBox;
+  QLabel* m_SliceLabel;
+  QSpinBox* m_SliceSpinBox;
+  QLabel* m_MagnificationLabel;
+  QDoubleSpinBox* m_MagnificationSpinBox;
+
+  mitk::RenderingManager* m_RenderingManager;
 };
 
 #endif

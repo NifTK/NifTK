@@ -63,7 +63,7 @@ public:
    * \param[in] timeStamp in nano-seconds since Unix Epoch (UTC).
    * \return vector index number or -1 if not found.
    */
-  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStamp& timeStamp);
+  std::vector<TimeStampsContainer::TimeStamp>::size_type GetFrameNumber(const TimeStamp& timeStamp) const;
 
   /**
    * \brief Retrieves the timestamps before and after a given point.
@@ -85,7 +85,7 @@ public:
                                TimeStamp& before,
                                TimeStamp& after,
                                double& proportion
-                              );
+                              ) const;
 
   /**
    * \brief Retrieves the closest timestamp, and if delta is non-null, will populate with the error.
@@ -97,7 +97,7 @@ public:
    * Additional Spec:
    *   - If no timestamps, return 0, delta = 0 if provided
    */
-  TimeStamp GetNearestTimeStamp (const TimeStamp& timeStamp , long long * delta = NULL );
+  TimeStamp GetNearestTimeStamp (const TimeStamp& timeStamp , long long * delta = NULL ) const;
 
 private:
 

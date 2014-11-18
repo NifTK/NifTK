@@ -70,6 +70,7 @@ public:
   static const bool   DEFAULT_SAVE_ON_RECEIPT;
   static const bool   DEFAULT_SAVE_IN_BACKGROUND;
   static const bool   DEFAULT_PICK_LATEST_DATA;
+  static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   /**
    * \brief Creates the base class widgets, and connects signals and slots.

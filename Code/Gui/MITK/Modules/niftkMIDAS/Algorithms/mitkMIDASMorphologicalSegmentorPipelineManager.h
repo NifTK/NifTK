@@ -16,16 +16,19 @@
 #define mitkMIDASMorphologicalSegmentorPipelineManager_h
 
 #include "niftkMIDASExports.h"
-#include <itkObject.h>
+
+#include <itkLightObject.h>
+
 #include <mitkDataStorage.h>
 #include <mitkToolManager.h>
 #include <mitkImage.h>
 
-#include <MorphologicalSegmentorPipelineParams.h>
-#include <MorphologicalSegmentorPipelineInterface.h>
 #include <MorphologicalSegmentorPipeline.h>
+#include <MorphologicalSegmentorPipelineInterface.h>
+#include <MorphologicalSegmentorPipelineParams.h>
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \brief Class to contain all the ITK/MITK logic for the MIDAS Morphological Segmentor
@@ -43,10 +46,17 @@ namespace mitk {
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk::Object
+class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk::LightObject
 {
 
 public:
+
+  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
+  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
+
+  /// \brief The output of the previous stage of the segmentation pipeline.
+  static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
+
 
   mitkClassMacro(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
   itkNewMacro(MIDASMorphologicalSegmentorPipelineManager);
@@ -63,33 +73,35 @@ public:
   /// \brief Gets the mitk::ToolManager from this object.
   mitk::ToolManager::Pointer GetToolManager() const;
 
-  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
-  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
-
   /// \brief Sets the thresholding parameters.
   ///
   /// \param lowerThreshold the lowest intensity value included in the segmentation
   /// \param upperThreshold the upper intensity value included in the segmentation
   /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void OnThresholdingValuesChanged(const double& lowerThreshold, const double& upperThreshold, const int& axialSliceNumber);
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
   /// \brief Sets the conditional erosion parameters.
   ///
   /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
   /// \param numberOfErosions the number of erosion iterations to perform
-  void OnErosionsValuesChanged(const double& upperThreshold, const int& numberOfErosions);
+  void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
   /// \brief Sets the conditional dilation parameters.
   ///
   /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
   /// \param numberOfDilations the number of dilation iterations to perform
-  void OnDilationValuesChanged(const double& lowerPercentage, const double& upperPercentage, const int& numberOfDilations);
+  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
   /// \brief Sets the re-thresholding parameters.
   ///
   /// \param boxSize the size of the re-thresholding box (see paper).
-  void OnRethresholdingValuesChanged(const int& boxSize);
+  void OnRethresholdingValuesChanged(int boxSize);
+
+  /// \brief Called when we step to another stage of the pipeline, either fore or backwards.
+  ///
+  /// \param stage the new stage where we stepped to
+  void OnTabChanged(int tabIndex);
 
   /// \brief Called when a node changed.
   void NodeChanged(const mitk::DataNode* node);
@@ -97,38 +109,38 @@ public:
   /// \brief Returns true if the segmentation node can be found which implicitly means we are "in progress".
   bool HasSegmentationNode() const;
 
-  /// \brief Used to retrieve the reference image from the tool manager, where imageNumber should always be 0 for Morphological Editor.
-  mitk::Image::Pointer GetReferenceImageFromToolManager(const unsigned int& imageNumber) const;
+  /// \brief Retrieves the reference image from the tool manager.
+  mitk::Image::Pointer GetReferenceImage() const;
 
   /// \brief Used to retrieve the working image from the tool manager.
-  mitk::Image::Pointer GetWorkingImageFromToolManager(const unsigned int& imageNumber) const;
+  mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
 
   /// \brief Used to retrieve the actual node of the image being segmented.
-  mitk::DataNode::Pointer GetSegmentationNodeFromToolManager() const;
+  mitk::DataNode::Pointer GetSegmentationNode() const;
 
   /// \brief Used to retrieve the segmentation image.
-  mitk::Image::Pointer GetSegmentationImageUsingToolManager() const;
+  mitk::Image::Pointer GetSegmentationImage() const;
 
   /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
-  void GetParameterValuesFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
+  void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
 
-  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
+  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_NAME and ADDITIONS_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const;
 
-  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
+  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_NAME and ADDITIONS_NAME, and have a binary image parent.
   virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const;
 
   /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) const;
 
-  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node) const;
+  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node) const;
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const;
 
   /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
-  void SetDefaultParameterValuesFromReferenceImage();
+  void SetSegmentationNodePropsFromReferenceImage();
 
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();
@@ -158,26 +170,20 @@ private:
   /// \brief ITK method that updates the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void InvokeITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage,
+      const itk::Image<TPixel, VImageDimension>* referenceImage,
+      const std::vector<typename itk::Image<unsigned char, VImageDimension>::ConstPointer>& workingImages,
       MorphologicalSegmentorPipelineParams& params,
-      std::vector<mitk::Image*>& workingData,
-      std::vector<bool>& editingFlags,
+      const std::vector<int>& editingRegion,
+      const std::vector<bool>& editingFlags,
       bool isRestarting,
-      std::vector<int>& editingRegion,
-      mitk::Image::Pointer& outputImage
+      mitk::Image::Pointer outputImage
       );
 
   /// \brief ITK method that actually does the work of finalizing the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void FinalizeITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage,
-      mitk::Image::Pointer& outputImage
-      );
-
-  /// \brief ITK method that completely removes the current pipeline, destroying it from the m_TypeToPipelineMap.
-  template<typename TPixel, unsigned int VImageDimension>
-  void DestroyITKPipeline(
-      itk::Image<TPixel, VImageDimension>* itkImage
+      itk::Image<TPixel, VImageDimension>* referenceImage,
+      mitk::Image::Pointer segmentation
       );
 
   /// \brief ITK method to clear a single ITK image.
@@ -186,10 +192,8 @@ private:
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
-  /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
-  /// as a key, and the object containing the whole pipeline.
-  typedef std::pair<std::string, MorphologicalSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
-  std::map<std::string, MorphologicalSegmentorPipelineInterface*> m_TypeToPipelineMap;
+  /// \brief Holds a pipeline for a given segmentation.
+  std::map<mitk::Image::Pointer, MorphologicalSegmentorPipelineInterface*> m_Pipelines;
 
   /// \brief This class needs a DataStorage to work.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -197,8 +201,8 @@ private:
   /// \brief This class needs a ToolManager to work.
   mitk::ToolManager::Pointer m_ToolManager;
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

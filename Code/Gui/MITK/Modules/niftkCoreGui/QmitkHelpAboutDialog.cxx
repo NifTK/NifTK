@@ -79,7 +79,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString titles = QObject::tr(
       "<p>"
       "<h1>About %1 - %2</h1>"
-      "(git hash %3, at %4, from <a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NifTK.git;a=summary\">here</a>)"
+      "(git hash %3, at %4, from <a href=\"https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK\">here</a>)"
       "</p>"
       "<p>%5 Please go to the installation folder for a full license description for this product and dependencies.</p>"
       ).arg(applicationName).arg(versionNumber).arg(niftkVersion).arg(niftkDateTime).arg(copyrightText);
@@ -176,7 +176,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
     //QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
-      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td>Private NiftyLink License</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
+      "<tr><td><a href=\"https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink\">NiftyLink</a></td><td>%1</td><td>Private NiftyLink License</td><td><a href=\"https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink\">from here</a></td></tr>"
       ).arg(niftyLinkVersion.left(10));//.arg(niftyLinkLocation);
 
     QString arucoVersion(NIFTK_VERSION_ARUCO);

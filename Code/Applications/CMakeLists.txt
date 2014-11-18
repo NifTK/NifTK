@@ -78,6 +78,7 @@ if(SlicerExecutionModel_FOUND)
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
     niftkConvertImage
+    niftkConvertImageToDICOM
     niftkConvertRawDICOMMammogramsToPresentation
     niftkCreateMaskImage
     niftkCropImage
@@ -90,6 +91,7 @@ if(SlicerExecutionModel_FOUND)
     niftkExtrudeMaskToVolume
     niftkHistogramEqualization
     niftkHistogramMatchingImageFilter
+    niftkImageMomentsRegistration
     niftkInvertImage
     niftkLogInvertImage
     niftkMammogramFatSubtraction
@@ -100,7 +102,9 @@ if(SlicerExecutionModel_FOUND)
     niftkN4BiasFieldCorrection
     niftkNegateImage
     niftkOtsuThresholdImage
+    niftkPrintDICOMSeries
     niftkRegionalMammographicDensity
+    niftkRescaleImageUsingHistogramPercentiles
     niftkScalarConnectedComponentImageFilter
     niftkSegmentForegroundFromBackground
     niftkSubsampleImage
@@ -127,6 +131,7 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
+      niftkBreastDensityFromMRIs
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
       niftkMakeLapUSProbeAprilTagsModel
@@ -143,34 +148,13 @@ if(SlicerExecutionModel_FOUND)
         NAME ${APP}
         BUILD_SLICER
         INSTALL_SCRIPT
-        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} vtkIOImage
+        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
     endforeach()
 
   endif(VTK_FOUND)
 
 endif()
-
-###############################################################
-# The following applications don't use TCLAP but they do
-# produce the SlicerExecutionModel xml code, and hence need
-# just the script generating.
-###############################################################
-
-set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
-  #niftkBreastMaskSegmentationFromMRI
-  niftkOCTVolumeConstructor
-  niftkVesselExtractor
-  )
-list(APPEND _all_command_line_apps ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
-
-foreach(APP ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME ${APP}
-    INSTALL_SCRIPT
-    TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
-  )
-endforeach()
 
 
 ###############################################################
@@ -269,6 +253,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
+  niftkThinPlateSplineScatteredDataPointSetToImage
   niftkThreshold
   niftkTransformation
   niftkTransformPoint3Dto2D
@@ -300,6 +285,7 @@ if(VTK_FOUND)
     niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
     niftkConvertNiftiVectorImage
+    niftkConvertPLYtoVTK
     niftkDecimatePolyData
     niftkGradientVectorField
     niftkMapVolumeDataToPolyDataVertices

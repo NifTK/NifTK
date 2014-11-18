@@ -40,7 +40,7 @@ TrackedImage::~TrackedImage()
 void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
                                  const mitk::DataNode::Pointer trackingSensorToTrackerNode,
                                  const vtkMatrix4x4& imageToTrackingSensor,
-                                 const mitk::Point2D& imageScaling
+                                 const vtkMatrix4x4& emToOptical
                                  )
 {
   if (imageNode.IsNull())
@@ -61,8 +61,11 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
 
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   combinedTransform->Identity();
+  vtkMatrix4x4::Multiply4x4(trackingSensorToWorldTransform, &imageToTrackingSensor, combinedTransform);
 
-  combinedTransform->Multiply4x4(trackingSensorToWorldTransform, &imageToTrackingSensor, combinedTransform);
+  vtkSmartPointer<vtkMatrix4x4> image2world = vtkSmartPointer<vtkMatrix4x4>::New();
+  image2world->Identity();
+  vtkMatrix4x4::Multiply4x4(&emToOptical, combinedTransform, image2world);
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
   if (image.IsNotNull())
@@ -70,15 +73,7 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
     mitk::Geometry3D::Pointer geometry = image->GetGeometry();
     if (geometry.IsNotNull())
     {
-      mitk::Vector3D spacing = geometry->GetSpacing();
-      if (! (mitk::IsCloseToZero(spacing[0] - imageScaling[0])
-          && mitk::IsCloseToZero(spacing[1] - imageScaling[1])))
-      {
-        // This is surprisingly expensive, so avoid it if possible.
-        geometry->SetSpacing(spacing);
-      }
-
-      geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+      geometry->SetIndexToWorldTransformByVtkMatrix(image2world);
     }
   }
 }

@@ -503,7 +503,7 @@ fi
 
 echo "Build started at `date` on `hostname -f`." > ${log_path}/1-start.log
 print_options >> ${log_path}/1-start.log
-run_command "git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK ${source_path}" 2-clone.log
+run_command "git clone git@cmicdev.cs.ucl.ac.uk:CMIC/NifTK ${source_path}" 2-clone.log
 cd ${source_path}
 # For some reason the time-based checkout works only if the branch has already been checked out once.
 run_command "git checkout $branch" 3-checkout.log

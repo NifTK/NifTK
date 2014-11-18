@@ -25,7 +25,7 @@ endif(CGAL_FOUND)
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    # remember https://cmicdev.cs.ucl.ac.uk/trac/ticket/3647
+    # remember https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/3647
     add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
@@ -43,50 +43,22 @@ else ()
   endif ()
 endif ()
 
-if (WIN32)
-  add_library(niftkMeshingLib
-    niftkCGALMesherBackEnd.cxx
-    niftkMeditMeshParser.cxx
-    niftkMeshGenerator.cxx
-    niftkMeshMerger.cxx
-    )
+add_library(niftkMeshingLib
+  niftkCGALMesherBackEnd.cxx
+  niftkMeditMeshParser.cxx
+  niftkMeshGenerator.cxx
+  niftkMeshMerger.cxx
+  )
 
-  target_link_libraries(niftkMeshingLib
-    niftkITK
-    niftkVTK
-    niftkcommon
-    ${CGAL_LIBRARIES}
-    ${CGAL_3RD_PARTY_LIBRARIES}
-    ${ITK_LIBRARIES}
-    ${VTK_LIBRARIES}
-    )
-
-else (WIN32)
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
-    COMMAND ${CMAKE_CXX_COMPILER}
-    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
-    ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../Exceptions -I${CGAL_INCLUDE_DIRS}
-    ARGS `echo ${NIFTK_CGAL_CXX_FLAGS}`
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/niftkCGALMesherBackEnd.cxx
-    )
-
-  add_library(niftkMeshingLib
-    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/niftkCGALMesherBackEnd.o
-    niftkMeditMeshParser.cxx
-    niftkMeshGenerator.cxx
-    niftkMeshMerger.cxx
-    )
-  target_link_libraries(niftkMeshingLib
-    ${CGAL_LIBRARIES}
-    ${CGAL_3RD_PARTY_LIBRARIES}
-    niftkITK
-    niftkVTK
-    niftkcommon
-    ${ITK_LIBRARIES}
-    ${VTK_LIBRARIES}
-    )
-endif (WIN32)
+target_link_libraries(niftkMeshingLib
+  niftkITK
+  niftkVTK
+  niftkcommon
+  ${CGAL_LIBRARIES}
+  ${CGAL_3RD_PARTY_LIBRARIES}
+  ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
+  )
 
 install(TARGETS niftkMeshingLib
   LIBRARY DESTINATION ${NIFTK_INSTALL_LIB_DIR}

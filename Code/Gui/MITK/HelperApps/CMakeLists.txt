@@ -132,6 +132,7 @@ if(SlicerExecutionModel_FOUND)
       niftkHandeyeCalibrationUsingRegistration
       niftkGetMatchedTrackingMatrix
       niftkLaparoscopeTrackingAccuracy
+      niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkPickPointsOnStereoVideo
       niftkSplitVideo
@@ -157,6 +158,7 @@ if(SlicerExecutionModel_FOUND)
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
       niftkMakeChessBoardPointSet
       niftkBifurcationToPointSet
+      niftkSURF
     )
     
     if(BUILD_PCL)

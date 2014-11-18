@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Image Operators</category>
-  <title>Normalize the grayscale values between two images by histogram matching.</title>
+  <title>Image histogram matching.</title>
   <description><![CDATA[Applies ITK filter HistogramMatchingImageFilter to an image to normalize the grey-scale values of a source image based on the grey-scale values of a reference image. This filter uses a histogram matching technique where the histograms of the two images are matched only at a specified number of quantile values.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

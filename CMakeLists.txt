@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 08 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 10 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
@@ -33,20 +33,11 @@ mark_as_advanced(NIFTK_VERSION_PATCH)
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-if(APPLE)
-  cmake_minimum_required(VERSION 2.8.8)
-else(APPLE)
-  cmake_minimum_required(VERSION 2.8.4)
-endif(APPLE)
-
-# If CMake is the version we're expecting, don't show the
-# CMAKE_BACKWARDS_COMPATIBILITY option. If the version is higher than the
-# minimal version required, then show the backward compatibility option.
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
-  mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
-else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
-  mark_as_advanced(CLEAR CMAKE_BACKWARDS_COMPATIBILITY)
-endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.4$")
+if(WIN32)
+  cmake_minimum_required(VERSION 2.8.11.2)
+else()
+  cmake_minimum_required(VERSION 2.8.9)
+endif()
 
 ######################################################################
 # Setting supported build types. Should ONLY be Debug or Release.
@@ -134,12 +125,12 @@ foreach(NIFTK_APP ${NIFTK_APPS})
     endif()
 
     if (${app_name} STREQUAL "NiftyView")
-#     set(BUILD_MIDAS ON)
-#     set(BUILD_IGI ON)
+      #set(BUILD_MIDAS ON)
+      #set(BUILD_IGI ON)
     endif()
 
     if (${app_name} STREQUAL "NiftyMIDAS")
-#      set(BUILD_MIDAS ON)
+      set(BUILD_MIDAS ON)
     endif()
 
   endif()
@@ -233,24 +224,24 @@ set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
 set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "1dd16ae785" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_CTK "68a1ce2b42" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "c00657bd0c" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "08806c008c" CACHE STRING "Version of NiftyLink" FORCE)
+set(NIFTK_VERSION_NIFTYLINK "2ac0c6b187" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
-set(NIFTK_VERSION_NIFTYSEG "21dcf5777c" CACHE STRING "Version of NiftySeg" FORCE)
+set(NIFTK_VERSION_NIFTYSEG "b2decf5160" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 set(NIFTK_VERSION_NIFTYSIM "f36708639c" CACHE STRING "Version of NiftySim" FORCE)
-set(NIFTK_VERSION_CGAL "4.4" CACHE STRING "Version of CGAL" FORCE)
+set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
-set(NIFTK_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
+set(NIFTK_VERSION_EIGEN "3.2.0.1" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
 set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
 set(NIFTK_VERSION_qRestAPI "e0f498dfac" CACHE STRING "Version of qRestAPI" FORCE) 
-set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git")
+set(NIFTK_LOCATION_DATA_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NifTKData" CACHE STRING "Version of NifTKData in git")
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
 set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
@@ -262,7 +253,7 @@ set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
-set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/NiftyLink" CACHE STRING "Location of NiftyLink repository")
+set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyLink" CACHE STRING "Location of NiftyLink repository")
 set(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
 set(NIFTK_LOCATION_NIFTYREG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyReg-${NIFTK_VERSION_NIFTYREG}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
 set(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySeg-${NIFTK_VERSION_NIFTYSEG}.tar.gz" CACHE STRING  "Location of NiftySeg" FORCE)
@@ -1240,7 +1231,7 @@ endif()
 # These represent the libraries that the apps, libraries and unit tests actually link against
 #############################################################################################
 
-set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage)
+set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage vtkIOPLY)
 set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISupportQtSQL vtkGUISupportQtWebkit)
 
 ######################################################################

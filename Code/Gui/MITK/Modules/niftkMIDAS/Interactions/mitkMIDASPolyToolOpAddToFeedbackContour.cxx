@@ -27,7 +27,25 @@ MIDASPolyToolOpAddToFeedbackContour::MIDASPolyToolOpAddToFeedbackContour(
 , m_Contour(contour)
 , m_PlaneGeometry(planeGeometry)
 {
-
 }
 
-} // end namespace
+MIDASPolyToolOpAddToFeedbackContour::~MIDASPolyToolOpAddToFeedbackContour()
+{
+}
+
+mitk::Point3D MIDASPolyToolOpAddToFeedbackContour::GetPoint() const
+{
+  return m_Point;
+}
+
+mitk::ContourModel* MIDASPolyToolOpAddToFeedbackContour::GetContour() const
+{
+  return m_Contour.GetPointer();
+}
+
+const mitk::PlaneGeometry* MIDASPolyToolOpAddToFeedbackContour::GetPlaneGeometry()
+{
+  return m_PlaneGeometry;
+}
+
+}

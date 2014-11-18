@@ -1,0 +1,68 @@
+<stateMachine NAME="MIDASSeedToolPointSetInteractor">
+
+  <state NAME="stateStart" START_STATE="TRUE" ID="1" >
+    <transition NAME="middleButtonDown" NEXT_STATE_ID="2" EVENT_ID="4">
+      <!-- 30 = AcCHECKELEMENT  -->
+      <action ID="30" />
+    </transition>
+
+    <transition NAME="middleButtonDownMouseMove" NEXT_STATE_ID="2" EVENT_ID="533">
+      <!-- 30 = AcCHECKELEMENT  -->
+      <action ID="30" />
+    </transition>
+
+    <transition NAME="shiftRightButtonDown" NEXT_STATE_ID="2" EVENT_ID="2000">
+      <!-- 30 = AcCHECKELEMENT  -->
+      <action ID="30" />
+    </transition>
+
+    <transition NAME="shiftRightButtonDownMouseMove" NEXT_STATE_ID="2" EVENT_ID="2001">
+      <!-- 30 = AcCHECKELEMENT  -->
+      <action ID="30" />
+    </transition>
+
+    <transition NAME="leftButtonDown" NEXT_STATE_ID="3" EVENT_ID="1">
+      <!-- 30 = AcCHECKELEMENT  -->
+      <action ID="30" />
+    </transition>
+
+    <transition NAME="leftButtonDownMouseMove" NEXT_STATE_ID="1" EVENT_ID="530">
+      <!-- 91 = AcMOVESELECTED  -->
+      <action ID="91" />
+    </transition>
+
+    <transition NAME="leftButtonUp" NEXT_STATE_ID="1" EVENT_ID="505">
+      <!-- 42 = AcFINISHMOVEMENT  -->
+      <action ID="42" />
+      <!-- 72 = AcDESELECTALL  -->
+      <action ID="72" />
+    </transition>
+  </state>
+
+  <state NAME="guardMiddleButtonPointSelected" ID="2">
+    <transition NAME="no" NEXT_STATE_ID="1" EVENT_ID="1003">
+      <!-- 0 = AcDONOTHING -->
+      <action ID="0" />
+    </transition>
+    <transition NAME="yes" NEXT_STATE_ID="1" EVENT_ID="1004">
+      <!-- 100 = AcREMOVEPOINT -->
+      <action ID="100" />
+      <!-- 72 = AcDESELECTALL  -->
+      <action ID="72" />
+    </transition>
+  </state>
+
+  <state NAME="guardLeftButtonPointSelected" ID="3">
+    <transition NAME="no" NEXT_STATE_ID="1" EVENT_ID="1003">
+      <!-- 0 = AcDONOTHING -->
+      <action ID="0" />
+    </transition>
+    <transition NAME="yes" NEXT_STATE_ID="1" EVENT_ID="1004">
+      <!-- 8 = AcINITMOVEMENT -->
+      <action ID="8" />
+      <!-- 60 = AcSELECTPICKEDOBJECT -->
+      <action ID="60" />
+    </transition>
+  </state>
+
+</stateMachine>

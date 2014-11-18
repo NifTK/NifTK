@@ -179,7 +179,6 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
     leftTopArc->SetPoint2(-25, 0.0, 75);
     leftBottomArc->SetPoint1(0.0, -25, 75);
     leftBottomArc->SetPoint2(25, 0.0, 75);
-   
     leftTopArc->SetResolution(50);
     leftBottomArc->SetResolution(50);
     rightTopArc->SetResolution(50);
@@ -204,6 +203,15 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
     rightY->SetPoint1(0.0,-25.0,75);
     rightY->SetPoint2(0.0,25.0,75);
 
+    leftTopArc->Update();
+    leftBottomArc->Update();
+    rightTopArc->Update();
+    rightBottomArc->Update();
+    leftX->Update();
+    leftY->Update();
+    rightX->Update();
+    rightY->Update();
+
     vtkSmartPointer<vtkAppendPolyData> leftCrossApp = vtkSmartPointer<vtkAppendPolyData>::New();
     vtkSmartPointer<vtkAppendPolyData> rightCrossApp = vtkSmartPointer<vtkAppendPolyData>::New();
     vtkSmartPointer<vtkPolyData> leftCross = vtkSmartPointer<vtkPolyData>::New();
@@ -218,9 +226,12 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
     rightCrossApp->AddInputData(rightBottomArc->GetOutput());
     rightCrossApp->AddInputData(rightX->GetOutput());
     rightCrossApp->AddInputData(rightY->GetOutput());
+    leftCrossApp->Update();
+    rightCrossApp->Update();
 
     leftCross=leftCrossApp->GetOutput();
     rightCross=rightCrossApp->GetOutput();
+
     TranslatePolyData(leftCross,lefttransform);
     TranslatePolyData(rightCross,righttransform);
     appenderer->AddInputData(leftCross);

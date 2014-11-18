@@ -46,12 +46,12 @@ public:
   /**
    * \brief ToolGui can have an optional Initialize function to perform any setup.
    */
-  virtual void Initialize(QWidget *parent) {};
+  virtual void Initialize(QWidget *parent) {}
 
   /**
    * \brief Update method to get the GUI to redraw its data.
    */
-  virtual void Update() {};
+  virtual void Update() {}
 
   // just make sure ITK won't take care of anything (especially not destruction)
   virtual void Register() const;

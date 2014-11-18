@@ -25,7 +25,6 @@ set(_exclude_plugins
   org_mitk_gui_qt_extapplication
   org_mitk_gui_qt_volumevisualization
   org_mitk_gui_qt_segmentation
-  org_mitk_gui_qt_measurementtoolbox
   org_mitk_gui_qt_moviemaker
 )
 
@@ -53,6 +52,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igiundistort
   uk.ac.ucl.cmic.igirmserror
+  uk.ac.ucl.cmic.igipointsetcropper
 )
 
 NIFTK_CREATE_GUI_APPLICATION(

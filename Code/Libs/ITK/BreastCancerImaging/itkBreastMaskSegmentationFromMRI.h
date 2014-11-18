@@ -221,8 +221,24 @@ public:
   void SetBIFImage( typename InternalImageType::Pointer image ) { imBIFs = image; }
 
 
+  typename InternalImageType::IndexType  GetLeftNippleIndex( void ) {
+    return idxNippleLeft;
+  }
+
+  typename InternalImageType::IndexType  GetRightNippleIndex( void ) {
+    return idxNippleRight;
+  }
+
+  typename InternalImageType::IndexType GetMidSternumIndex( void ) {
+    return idxMidSternum;
+  }
+
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
+
+  typename InternalImageType::Pointer GetSegmentedImage( void ) {
+    return imSegmented;
+  };
 
   /// Write the segmented image to a file
   void WriteSegmentationToAFile( std::string fileOutput ) {
@@ -353,14 +369,21 @@ protected:
 
   typename InternalImageType::IndexType idxMidSternum;
 
-  typename InternalImageType::IndexType idxLeftBreastMidPoint;
-  typename InternalImageType::IndexType idxRightBreastMidPoint;
-
   typename InternalImageType::IndexType idxNippleRight;
   typename InternalImageType::IndexType idxNippleLeft;
 
+
+
+  /// Landmarks used by the segmentation
+
+  typename InternalImageType::IndexType idxLeftBreastMidPoint;
+  typename InternalImageType::IndexType idxRightBreastMidPoint;
+
   typename InternalImageType::IndexType idxLeftPosterior;
   typename InternalImageType::IndexType idxRightPosterior;
+
+  typename InternalImageType::IndexType idxAreolarRight[4];
+  typename InternalImageType::IndexType idxAreolarLeft[4];
 
 
   /// Constructor
@@ -404,21 +427,30 @@ protected:
   /// Smooth the image to increase separation of the background
   void SmoothMaxImageToIncreaseSeparationOfTheBackground( void );
 
+  /// Segment the backgound using itkForegroundFromBackgroundImageThresholdCalculator
+  void SegmentForegroundFromBackground( void );
+
   /// Segment the backgound using the maximum image histogram
   void SegmentBackground( void );
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
   void ComputeElevationOfAnteriorSurface( void );
 
+  /// Find a point in the surface offset from the nipple
+  typename InternalImageType::IndexType 
+    FindSurfacePoint( typename InternalImageType::IndexType idxNipple,
+                      float deltaXinMM, float deltaZinMM );
+
   /// Find the nipple and mid-sternum landmarks
   void FindBreastLandmarks( void );
 
   /// Segment the Pectoral Muscle
   typename PointSetType::Pointer SegmentThePectoralMuscle( RealType rYHeightOffset,
-							   unsigned long &iPointPec );
+							   unsigned long &iPointPec,
+                                                           bool flgIncludeNippleSeeds=false );
 
   /// Discard anything not within a B-Spline fitted to the breast skin surface
-  void MaskWithBSplineBreastSurface( void );
+  void MaskWithBSplineBreastSurface( RealType rYHeightOffset );
   /// Mask with a sphere centered on each breast
   void MaskBreastWithSphere( void );
 
@@ -486,7 +518,7 @@ protected:
 				       const typename InternalImageType::PointType     &origin, 
 				       const typename InternalImageType::SpacingType   &spacing,
 				       const typename InternalImageType::DirectionType &direction,
-				       const RealType rOffset, 
+				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
 				       const int numOfLevels,
