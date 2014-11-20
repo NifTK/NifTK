@@ -67,14 +67,14 @@
     <string>
       <name>dirSubMRI</name>
       <longflag>dirSubMRI</longflag>
-      <description>The sub-directory containing the input MRI DICOM data.</description>
+      <description>The sub-directory of each study containing the input MRI DICOM data.</description>
       <label>Input MRI DICOM data sub-directory name</label>
     </string>
 
     <string>
       <name>dirSubData</name>
       <longflag>dirSubData</longflag>
-      <description>The sub-directory within each directory to which intermediate images and data are saved.</description>
+      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
       <label>Output data sub-directory name</label>
     </string>
 

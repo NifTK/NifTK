@@ -2014,7 +2014,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
         try
         {
           ///////////////////////////////////////////////////////
-          // See: https://cmicdev.cs.ucl.ac.uk/trac/ticket/1742
+          // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
           //      for the whole logic surrounding changing slice.
           ///////////////////////////////////////////////////////
 

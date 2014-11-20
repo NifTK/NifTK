@@ -2,7 +2,7 @@
 <executable>
   <category>Breast Cancer Imaging Tools . MG . Individual Images</category>
 
-  <title>Mammaogram Fat Subtraction</title>
+  <title>Mammogram Fat Subtraction</title>
 
   <description><![CDATA[Subtracts the fat signal from a mammogram generating an image containing fibroglandular tissue only.]]></description>
 

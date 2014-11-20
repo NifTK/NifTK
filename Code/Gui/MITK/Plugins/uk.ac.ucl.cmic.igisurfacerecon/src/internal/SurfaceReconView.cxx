@@ -160,7 +160,7 @@ void SurfaceReconView::RetrievePreferenceValues()
   {
     // FIXME: hard-coded prefs node names, etc.
     //        how to access header files in another plugin?
-    //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2505
+    //        see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2505
     berry::IBerryPreferences::Pointer undistortPrefs = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort")).Cast<berry::IBerryPreferences>();
     if (undistortPrefs.IsNotNull())
     {

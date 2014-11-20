@@ -525,7 +525,7 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   if (m_WasSavingMessagesPreviously == false)
   {
     // FIXME: use qt for this
-    //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2546
+    //        see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2546
     SYSTEMTIME  now;
     // we used to have utc here but all the other data sources use local time too.
     GetLocalTime(&now);

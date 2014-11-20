@@ -111,7 +111,7 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
     if (!source->GetIsPlayingBack())
     {
       // FIXME: if we are recording do not allow changing it!
-      //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2559
+      //        see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2559
 
       // if we dont stop then preview-widget will reference a deleted texture
       StopPreviewWidget();
@@ -236,8 +236,8 @@ void QmitkIGINVidiaDataSourceGui::Update()
           if (g)
           {
             // disable preview widget for now.
-            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2745
-            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2383
+            // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2745
+            // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2383
             g->SetTextureId(0);
             //g->SetVideoDimensions(width, height);
             //g->SetTextureId(source->GetTextureId(0));
