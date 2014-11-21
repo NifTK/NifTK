@@ -73,12 +73,17 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);
   icp->SetTarget(fixedPoly);
-  icp->Run();
+  bool ok = icp->Run();
+  if (ok)
+  {
+    vtkMatrix4x4* temp = icp->GetTransform();
 
-  vtkMatrix4x4 *temp = icp->GetTransform();
-
-  transformMovingToFixed.DeepCopy(temp);
-  m_Matrix->DeepCopy(temp);
+    if (temp != 0)
+    {
+      transformMovingToFixed.DeepCopy(temp);
+      m_Matrix->DeepCopy(temp);
+    }
+  }
 
   delete icp;
 }
@@ -189,7 +194,9 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
       backfacecullingfilter->SetInputDataObject(normalspoly);
       backfacecullingfilter->SetOutput(&polyOut);
       backfacecullingfilter->SetCameraPosition(camtxf);
-      backfacecullingfilter->Update();
+      // this should call Update() instead of Execute().
+      // but vtk6 has changed in some way that the filter's Execute() is no longer called.
+      backfacecullingfilter->Execute();
     }
   }
   else
