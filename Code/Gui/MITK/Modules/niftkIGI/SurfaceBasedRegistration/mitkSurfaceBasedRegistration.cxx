@@ -189,7 +189,9 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
       backfacecullingfilter->SetInputDataObject(normalspoly);
       backfacecullingfilter->SetOutput(&polyOut);
       backfacecullingfilter->SetCameraPosition(camtxf);
-      backfacecullingfilter->Update();
+      // this should call Update() instead of Execute().
+      // but vtk6 has changed in some way that the filter's Execute() is no longer called.
+      backfacecullingfilter->Execute();
     }
   }
   else
