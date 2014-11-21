@@ -73,12 +73,17 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);
   icp->SetTarget(fixedPoly);
-  icp->Run();
+  bool ok = icp->Run();
+  if (ok)
+  {
+    vtkMatrix4x4* temp = icp->GetTransform();
 
-  vtkMatrix4x4 *temp = icp->GetTransform();
-
-  transformMovingToFixed.DeepCopy(temp);
-  m_Matrix->DeepCopy(temp);
+    if (temp != 0)
+    {
+      transformMovingToFixed.DeepCopy(temp);
+      m_Matrix->DeepCopy(temp);
+    }
+  }
 
   delete icp;
 }
