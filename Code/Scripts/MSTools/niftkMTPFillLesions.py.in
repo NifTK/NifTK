@@ -1,0 +1,526 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+#
+# This script is for multi-time-point and multi-modality lesion filling
+# All the needed skull-stripped masks have to be calculated previously
+#
+# The basic method is:
+# If the user runs niftkMTPFillLesions.py --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+# Import needed libraries
+import atexit
+import tempfile
+from datetime import datetime, date, time
+from _niftkCommon import *
+from glob import glob
+
+###### DEFAULT OPTIONS #######
+dir_output='mass-centre/'
+
+###########################################################################
+###########################################################################
+# Function definition
+###########################################################################
+###########################################################################
+
+# Begin of cleanup function
+def cleanup():
+	"""
+	###########################################################################
+	# Function  : Clean temp working directory 
+	###########################################################################
+	"""
+	global 	dir_output
+	global	debug_mode
+	
+	# Check if we are in the directory that we want to remove
+	if os.path.isdir(os.path.join(os.pardir,dir_output)):
+		os.chdir(os.pardir)
+
+	if os.path.isdir(dir_output):
+		if (not debug_mode) and (len(dir_output)>0) :
+			for f in glob (os.path.join(dir_output,"*.nii*")):
+				os.unlink (f)
+			for f in glob (os.path.join(dir_output,"*.txt")):
+				os.unlink (f)
+			os.removedirs(dir_output)
+
+
+	return
+# End of cleanup function
+
+
+# Begin of make_name_output_file function
+def make_name_output_file(img,add,keep_dir=True):
+	"""
+	###########################################################################
+	# def make_name_output_file(img,add)
+	# Function  : add a text to the filename 
+	# Param	    : img, input image
+	# Param	    : add, text to add at the filename
+	# Return    : new file name 
+	###########################################################################
+	"""
+
+	current_dir=os.path.dirname(img)
+	name = get_file_name(img)
+	ext = get_output_file_extension(img)
+	if keep_dir == True: 
+		output_file=os.path.join(current_dir,name+add+ext)
+	else:
+		output_file=name+add+ext
+
+	return output_file
+# End of make_name_output_file function
+
+
+# XML Definition
+xml="""<?xml version="1.0" encoding="utf-8"?>
+<executable>
+   <category>Multiple Sclerosis Tools.Fill lesions</category>
+   <title>Multi Fill Lesions</title>
+   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for multi-time-point and multi-modality filling lesions.<br>]]></description>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <documentation-url>-</documentation-url>
+   <license>BSD</license>
+   <contributor>Ferran Prados (UCL)</contributor>
+   <parameters advanced="false">
+      <label>Mandatory arguments</label>
+      <description>Mandatory arguments: input data filename</description>
+      <image fileExtensions="txt,dat,csv">
+          <name>inputImageName1</name>
+          <longflag>in1</longflag>
+	  <description>Input name</description>
+	  <label>Input text file</label>
+	  <channel>input</channel>
+      </image>
+   </parameters>
+   <parameters advanced="true">
+	<label>Optional extra arguments</label>
+	<description>Optional extra arguments</description>
+	<image fileExtensions="nii,nii.gz,img">
+		<name>inputAtlasHead</name>
+		<longflag>atlas</longflag>
+		<description>Input atlas head</description>
+		<label>Input atlas head</label>
+		<channel>input</channel>
+	</image>
+	<image fileExtensions="nii,nii.gz,img">
+		<name>inputAtlasMask</name>
+		<longflag>atlas_mask</longflag>
+		<description>Input atlas mask</description>
+		<label>Input atlas mask</label>
+		<channel>input</channel>
+	</image>
+	<directory>
+		<name>outputdir</name>
+		<longflag>output_dir</longflag>
+		<description>Select the output directory</description>
+		<label>Output directory</label>
+	</directory>
+	<boolean>
+		<name>debugMode</name>
+		<longflag>debug</longflag>
+		<description>Debug mode doesn't delete temporary intermediate images</description>
+		<label>Debug mode</label>
+	</boolean>
+    </parameters>
+    <parameters advanced="true">
+	<label>Optional extra arguments for filling lesions</label>
+	<description>Optional extra arguments for filling lesions</description>
+	<integer>
+		<name>dilations</name>
+		<longflag>dil</longflag>
+		<description><![CDATA[Number of dilations for lesion masks]]></description>
+		<label>Lesion mask dilations</label>
+		<default>0</default>
+		<constraints>
+			<minimum>0</minimum>
+			<maximum>10</maximum>
+			<step>1</step>
+		</constraints>
+	</integer>
+	<float>
+		<name>PercentageOverlaying</name>
+		<longflag>match</longflag>
+		<description><![CDATA[Percentage of minimum number of voxels between patches]]></description>
+		<label>Percentage overlaying</label>
+		<default>0.5</default>
+		<constraints>
+			<minimum>0</minimum>
+			<maximum>1</maximum>
+			<step>0.1</step>
+		</constraints>
+	</float>
+	<float>
+		<name>searchOverlaying</name>
+		<longflag>search</longflag>
+		<description><![CDATA[Minimum percentage of valid voxels in target patch]]></description>
+		<label>Search overlaying</label>
+		<default>0</default>
+		<constraints>
+			<minimum>0</minimum>
+			<maximum>1</maximum>
+			<step>0.1</step>
+		</constraints>
+	</float>
+	<float>
+		<name>smoothing</name>
+		<longflag>smo</longflag>
+		<description><![CDATA[Smoothing by value in minimal 6-neighbourhood voxels]]></description>
+		<label>Smoothing kernel</label>
+		<default>0.1</default>
+		<constraints>
+			<minimum>0</minimum>
+			<maximum>5</maximum>
+			<step>0.1</step>
+		</constraints>
+	</float>
+	<integer>
+		<name>ssize</name>
+		<longflag>size</longflag>
+		<description><![CDATA[Search regions size respect biggest patch size]]></description>
+		<label>Search region size</label>
+		<default>4</default>
+		<constraints>
+			<minimum>1</minimum>
+			<maximum>10</maximum>
+			<step>1</step>
+		</constraints>
+	</integer>
+    </parameters>
+</executable>
+"""
+
+# Help usage message definition
+help="""This script is for multi-modality and multi-time-point lesion filling using the patch-based method Prados et al. MICCAI 2014. 
+
+Usage: niftkMTPFillLesions.py -in <filename> [optional arguments]
+
+Mandatory Arguments:
+ 
+  -in <filename>    	: is the text input file with the absolute path to the image, lesion, output file and skull stripped [optional] files for each time-point and modality. Ex:
+			  /path/to/image_1.nii.gz /path/to/lesions_1.nii.gz /path/to/output_1.nii.gz /path/to/skull_stripped_image_1.nii.gz
+			  /path/to/image_2.nii.gz /path/to/lesions_2.nii.gz /path/to/output_2.nii.gz /path/to/skull_stripped_image_2.nii.gz
+			  ...
+			  /path/to/image_N.nii.gz /path/to/lesions_N.nii.gz /path/to/output_N.nii.gz /path/to/skull_stripped_image_N.nii.gz
+
+Optional Arguments:
+
+  -atlas <filename>	: is the path to the atlas data file, use only if you don't specify skull-stripped mask.
+  -atlas_mask <filename>: is the path to the mask atlas file, use only if you don't specify skull-stripped mask.
+  -debug		: debug mode doesn't delete temporary intermediate images.
+  -output_dir <path>	: specify the output dir name in case that we are working with relative path.
+  
+Optional Fill Lesions Arguments:
+
+  -dil    <int>		: number of dilations for lesion masks (by default 0).
+  -match  <float>       : percentage of minimum number of voxels between patches <float> (by default 0.5).
+  -search <float>       : minimum percentage of valid voxels in target patch <float> (by default 0).
+  -smo    <float>       : smoothing by <float> (in minimal 6-neighbourhood voxels (by default 0.1)).
+  -size   <int>         : search regions size respect biggest patch size (by default 4).
+
+"""
+
+# Main program start
+
+# We register cleanup function as a function to be executed at termination
+atexit.register(cleanup)
+os.environ['FSLOUTPUTTYPE']='NIFTI_GZ'
+os.environ['PATH']+='/usr2/mrtools/niftyseg-20140602/bin/'
+# We get the arguments
+arg=len(sys.argv)
+argv=sys.argv
+dil=''
+match=''
+search=''
+smo=''
+size=''
+debug=''
+debug_mode=False
+output_dir_name=''
+INPUT_FILE=''
+ATLAS_MASK=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz') # MNI space
+ATLAS=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm.nii.gz') # MNI space
+# If no arguments, we print usage message
+if arg < 3:
+	i=1
+	while i < arg:
+		# Clean unnecessary whitespaces
+		argv[i]=argv[i].strip()
+		if argv[i].upper() in ['--XML','-XML']: 
+			usage(xml,0)
+		i=i+1
+	# end while
+	usage(help)
+# End if, few arguments
+
+i=1
+# Parse remaining command line options
+while i < arg:
+    # Clean unnecessary whitespaces
+    argv[i]=argv[i].strip()
+    if argv[i].upper() in ['--XML','-XML']:
+	usage(xml,0)
+	
+    elif argv[i] in ['--H','--HELP','-H','-HELP']:
+	usage(text)
+
+    elif argv[i].upper() in ['--IN','-IN']:
+	INPUT_FILE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--DIL','-DIL']:
+	dil='-dil '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--MATCH','-MATCH']:
+	match='-match '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--SEARCH','-SEARCH']:
+	search='-search '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--SMO','-SMO']:
+	smo='-smo '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--SIZE','-SIZE']:
+	size='-size '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--DEBUG','-DEBUG']:
+	debug='-debug '
+	debug_mode=True
+
+    elif argv[i].upper() in ['--ATLAS','-ATLAS']:
+	ATLAS=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--ATLAS_MASK','-ATLAS_MASK']:
+	ATLAS_MASK=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--OUTPUT_DIR','-OUTPUT_DIR']:
+	output_dir_name=argv[i+1]
+	i=i+1
+
+    else:
+	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
+	usage(help)
+	
+    i=i+1
+# end while
+
+# We put all path in a normalized absolutized version of the pathname
+INPUT_FILE=os.path.abspath(INPUT_FILE)
+ATLAS=os.path.abspath(ATLAS)
+ATLAS_MASK=os.path.abspath(ATLAS_MASK)
+
+# Check if all needed files exist
+check_file_exists(INPUT_FILE) 
+check_file_exists(ATLAS) 
+check_file_exists(ATLAS_MASK) 
+
+# Checking Nifty Tools needed
+check_program_exists('reg_aladin')
+check_program_exists('reg_resample')
+check_program_exists('reg_transform')
+check_program_exists('reg_average')
+check_program_exists('seg_maths')
+check_program_exists('seg_FillLesions')
+
+images=list()
+masks=list()
+skull_strip=list()
+output_images=list()
+with open(INPUT_FILE) as f:
+   for line in f:
+       data = line.split()
+       image_file=os.path.abspath(data[0])
+       mask_file=os.path.abspath(data[1])
+       output_file=os.path.abspath(data[2])
+       check_file_exists(image_file)
+       check_file_exists(mask_file)
+       images.append(image_file)
+       masks.append(mask_file)
+       output_images.append(output_file)
+       if len(data)>3:
+		skullstrip_file=os.path.abspath(data[3])
+		check_file_exists(skullstrip_file)
+		skull_strip.append(skullstrip_file)
+
+# We get the current_dir
+current_dir=os.getcwd()
+if output_dir_name != '':
+	dir_output=output_dir_name
+	if not os.path.isdir(dir_output):
+		os.makedirs(dir_output)
+else:	
+	dir_output=tempfile.mkdtemp(dir_output)
+
+# Go to the output directory
+os.chdir(dir_output)
+print 'WORKING DIRECTORY: '+os.getcwd()
+
+i=1
+for image_file in images:
+	if not os.path.isfile('mask_tmp'+str(i)+'.nii.gz'):
+		if len(skull_strip)<len(images):
+			execute_command_or_else_stop('reg_aladin \
+					-ref '+image_file+' \
+					-flo '+ATLAS+' \
+					-aff aff_atlas'+str(i)+'.txt \
+					-res tmp.nii.gz')
+
+			execute_command_or_else_stop('reg_resample \
+					-ref '+image_file+' \
+					-flo '+ATLAS_MASK+' \
+					-aff aff_atlas'+str(i)+'.txt \
+					-res mask_tmp'+str(i)+'.nii.gz')
+
+		else:
+			# We already have the skull stripping of the brain, we just copy it
+			copy_file_to_destination(skull_strip[i],os.path.join(current_dir,'mask_tmp'+str(i)+'.nii.gz'))
+
+		# We need to dilate the mask
+		execute_command_or_else_stop('seg_maths \
+				mask_tmp'+str(i)+'.nii.gz \
+				-dil 8 \
+				mask_tmp'+str(i)+'.nii.gz')
+				
+	else:
+		print 'File: mask_tmp'+str(i)+'.nii.gz already exists!!!'
+	i=i+1
+
+# We register all the images against all the others
+for i in range(0, len(images)-1):
+	image_file1=images[i]
+	for j in range(0, len(images)):
+		image_file2=images[j]
+		if i!=j and not os.path.isfile('affine_'+str(i+1)+'_'+str(j+1)+'.txt'):
+			execute_command_or_else_stop('reg_aladin \
+				-ref '+image_file1+' \
+				-rmask mask_tmp'+str(i+1)+'.nii.gz \
+				-flo '+image_file2+' \
+				-fmask mask_tmp'+str(j+1)+'.nii.gz \
+				-aff affine_'+str(j+1)+'_'+str(i+1)+'.txt \
+				-res tmp.nii.gz')
+				
+			execute_command_or_else_stop('reg_transform \
+				-ref '+image_file1+' \
+				-invAff \
+				affine_'+str(j+1)+'_'+str(i+1)+'.txt \
+				affine_'+str(i+1)+'_'+str(j+1)+'.txt')	
+		
+identity=os.path.abspath('identity.txt')
+fo = open(identity, "wb")
+fo.write('1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n')
+fo.close()
+
+# We calculate the transformation from each image to the common half-way space
+for i in range(0, len(images)):
+	text=""
+	for j in range(0, len(images)):
+		if i!=j:
+			text=text+' affine_'+str(i+1)+'_'+str(j+1)+'.txt'
+		else:
+			text=text+' identity.txt'
+	
+	execute_command_or_else_stop('reg_average \
+		halfway_'+str(i+1)+'.txt \
+		-avg '+text+' ')		
+	
+	execute_command_or_else_stop('reg_transform \
+		-ref '+images[i]+' \
+		-invAff \
+		halfway_'+str(i+1)+'.txt \
+		halfway_'+str(i+1)+'-inv.txt ')
+
+# We transform each image to the center of mass
+text_image=''
+text_mask=''
+init_image=''
+init_mask=''
+for i in range(0, len(images)):
+	output_image=make_name_output_file(images[i],'_registered',debug_mode)
+	
+	execute_command_or_else_stop('reg_resample \
+		-ref '+images[0]+' \
+		-flo '+images[i]+' \
+		-aff halfway_'+str(i+1)+'.txt \
+		-res '+output_image+'')
+	
+	output_mask=make_name_output_file(masks[i],'_registered')
+	
+	execute_command_or_else_stop('reg_resample \
+		-ref '+images[0]+' \
+		-flo '+masks[i]+' \
+		-aff halfway_'+str(i+1)+'.txt \
+		-res '+output_mask+'')
+	
+	if i>0:
+		text_image=text_image+' '+output_image
+		text_mask=text_mask+' '+output_mask
+	else:
+		init_image=output_image
+		init_mask=output_mask
+
+# We put together all the images in one file and all the mask in other file
+execute_command_or_else_stop('seg_maths \
+		'+init_image+' \
+		-merge \
+		'+str(len(images)-1)+' 4 \
+		'+text_image+' images.nii.gz')
+
+execute_command_or_else_stop('seg_maths \
+		'+init_mask+' \
+		-merge \
+		'+str(len(masks)-1)+' 4 \
+		'+text_mask+' masks.nii.gz')
+
+# We execute the fill lesions algorithm
+execute_command_or_else_stop('seg_FillLesions \
+		images.nii.gz \
+		masks.nii.gz \
+		filled.nii.gz \
+		'+dil+' \
+		'+match+' \
+		'+search+' \
+		'+smo+' \
+		'+size+' \
+		'+debug+' -v ')
+
+# We split each time-point image in the different files
+for i in range(0, len(images)):
+	output_registered=make_name_output_file(output_images[i],'_registered',True)
+	execute_command_or_else_stop('seg_maths \
+		filled.nii.gz \
+		-tp '+str(i)+' \
+		'+output_registered+'')
+
+	execute_command_or_else_stop('reg_resample \
+		-ref '+images[0]+' \
+		-flo '+output_registered+' \
+		-aff halfway_'+str(i+1)+'-inv.txt \
+		-res '+output_images[i]+'')
+
+
+exit(0)
