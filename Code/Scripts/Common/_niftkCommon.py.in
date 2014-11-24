@@ -208,10 +208,11 @@ def check_program_exists(program):
 	if fpath:
 		if os.path.isfile(program) and os.access(program, os.X_OK):
 			result=1
-	else:
+			
+	if result == 0:
 		for path in os.environ.get('PATH').split(os.pathsep):
 			path = path.strip('"')
-			exe_file = os.path.join(path, program)
+			exe_file = os.path.join(path, fname)
 			if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
 				result=1
 
@@ -594,7 +595,7 @@ def get_output_file_type(image):
 	elif image.upper().endswith('.IMG') or image.upper().endswith('.HDR'):
 		output_type='ANALYZE'
 	else:
-		exit_program('Error: extension '+image+' not recognised')
+		output_type='UNKNOW'
 
 	return output_type
 # End of get_output_file_type function
