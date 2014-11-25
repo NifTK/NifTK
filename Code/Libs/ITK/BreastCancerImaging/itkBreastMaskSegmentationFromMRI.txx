@@ -1930,11 +1930,11 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     startMidSternum[2][1] = idxMidSternum[1];
     startMidSternum[2][2] = idxMidSternum[2];
 
-    startMidSternum[3][0] = (idxNippleRight[0] + 3*idxMidSternum[0])/5;
+    startMidSternum[3][0] = (idxNippleRight[0] + 9*idxMidSternum[0])/10;
     startMidSternum[3][1] = idxMidSternum[1];
     startMidSternum[3][2] = idxMidSternum[2];
 
-    startMidSternum[4][0] = (idxNippleLeft[0] + 3*idxMidSternum[0])/5;
+    startMidSternum[4][0] = (idxNippleLeft[0] + 9*idxMidSternum[0])/10;
     startMidSternum[4][1] = idxMidSternum[1];
     startMidSternum[4][2] = idxMidSternum[2];
   }
