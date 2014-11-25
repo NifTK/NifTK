@@ -1029,7 +1029,7 @@ int main( int argc, char *argv[] )
 
         float finalSegmThreshold = 0.49;
 
-        float sigmaInMM = 5;
+        float sigmaInMM = 1;
 
         float fMarchingK1   = 30.0;
         float fMarchingK2   = 15.0;
