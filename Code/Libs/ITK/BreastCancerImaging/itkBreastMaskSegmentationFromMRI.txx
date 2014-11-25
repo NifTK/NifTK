@@ -1903,14 +1903,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename InternalImageType::SizeType  size;
   typename InternalImageType::SizeType  sizeSearch;
   typename InternalImageType::IndexType start;
-  typename InternalImageType::IndexType startMidSternum[3];
+  typename InternalImageType::IndexType startMidSternum[5];
 
   typename PointSetType::Pointer pecPointSet = PointSetType::New();  
-  typename InternalImageType::IndexType idxPectoralSeed[3];
+  typename InternalImageType::IndexType idxPectoralSeed[5];
    
 
   // Iterate from mid sternum posteriorly looking for the first pectoral voxel
-  // Also iterate from the nipple x,z positions to obtain two more seed points
+  // Also iterate from the nipple x,z positions to obtain four more seed points
 
   startMidSternum[0][0] = idxMidSternum[0];
   startMidSternum[0][1] = idxMidSternum[1];
@@ -1920,7 +1920,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   if ( flgIncludeNippleSeeds )
   {
-    nSeeds = 3;
+    nSeeds = 5;
 
     startMidSternum[1][0] = (idxNippleRight[0] + 4*idxMidSternum[0])/5;
     startMidSternum[1][1] = idxMidSternum[1];
@@ -1929,6 +1929,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     startMidSternum[2][0] = (idxNippleLeft[0] + 4*idxMidSternum[0])/5;
     startMidSternum[2][1] = idxMidSternum[1];
     startMidSternum[2][2] = idxMidSternum[2];
+
+    startMidSternum[3][0] = (idxNippleRight[0] + 3*idxMidSternum[0])/5;
+    startMidSternum[3][1] = idxMidSternum[1];
+    startMidSternum[3][2] = idxMidSternum[2];
+
+    startMidSternum[4][0] = (idxNippleLeft[0] + 3*idxMidSternum[0])/5;
+    startMidSternum[4][1] = idxMidSternum[1];
+    startMidSternum[4][2] = idxMidSternum[2];
   }
   else
   {
@@ -2040,10 +2048,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   connectedThreshold->SetLower( 15 );
   connectedThreshold->SetReplaceValue( 1000 );
+  connectedThreshold->ClearSeeds();
 
   for ( iSeed=0; iSeed<nSeeds; iSeed++ )
   {
-    connectedThreshold->SetSeed( idxPectoralSeed[ iSeed ] );
+    std::cout << "Setting seed here: " << iSeed << " = " << idxPectoralSeed[ iSeed ] << std::endl;
+    connectedThreshold->AddSeed( idxPectoralSeed[ iSeed ] );
   }
 
   // Extend initial pectoral muscle region?
@@ -2066,7 +2076,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   connectedThreshold = 0;
   imModBIFs          = 0;
-    
 
   if ( fMarchingTime > 0. )
   {
@@ -2162,7 +2171,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
   WriteBinaryImageToUCharFile( fileOutputPectoral, "pectoral mask", imPectoralVoxels,
 			       flgLeft, flgRight );
-
     
   // Iterate posteriorly again but this time with the smoothed mask
     
@@ -2172,6 +2180,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   for ( iSeed=0; iSeed<nSeeds; iSeed++ )
   {
     region.SetIndex( startMidSternum[ iSeed ] );
+
+    if ( flgVerbose )
+    {
+      std::cout << "Pectoral surface search start: " << iSeed << " = " 
+                << startMidSternum[ iSeed ] << std::endl;
+    }
 
     sizeSearch[0] = 1;
     sizeSearch[1] = size[1] - idxMidSternum[1];
@@ -2207,12 +2221,13 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   connectedSurfacePecPoints->SetUpper( 1000 );
 
   connectedSurfacePecPoints->SetReplaceValue( 1000 );
+  connectedSurfacePecPoints->ClearSeeds();
 
   std::cout << "Region-growing the pectoral surface" << std::endl;
 
   for ( iSeed=0; iSeed<nSeeds; iSeed++ )
   {
-    connectedSurfacePecPoints->SetSeed( idxPectoralSeed[ iSeed ] );
+    connectedSurfacePecPoints->AddSeed( idxPectoralSeed[ iSeed ] );
 
     if ( flgVerbose )
     {
