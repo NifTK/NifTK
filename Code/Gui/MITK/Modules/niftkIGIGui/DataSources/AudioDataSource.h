@@ -15,13 +15,41 @@
 #ifndef AudioDataSource_h
 
 #include "niftkIGIGuiExports.h"
+#include <DataSources/mitkIGIDataType.h>
 #include <DataSources/QmitkIGILocalDataSource.h>
+#include <QAudioInput>
 
 
 // forward-decl
-class QAudioInput;
 class QAudioDeviceInfo;
 class QAudioFormat;
+
+
+
+class NIFTKIGIGUI_EXPORT AudioDataType : public mitk::IGIDataType
+{
+public:
+  mitkClassMacro(AudioDataType, mitk::IGIDataType);
+  itkNewMacro(AudioDataType);
+
+
+  void SetBlob(const char* blob, std::size_t length);
+
+
+protected:
+  AudioDataType();
+  virtual ~AudioDataType();
+
+
+private:
+  AudioDataType(const AudioDataType& copyme);
+  AudioDataType& operator=(const AudioDataType& assignme);
+
+
+private:
+  const char*   m_AudioBlob;
+  std::size_t   m_Length;
+};
 
 
 class NIFTKIGIGUI_EXPORT AudioDataSource : public QmitkIGILocalDataSource
@@ -74,6 +102,13 @@ protected:
   virtual void GrabData();
 
 
+protected slots:
+  /** @see QAudioInput::stateChanged(QAudio::State) */
+  void OnStateChanged(QAudio::State state);
+
+  /** @see QIODevice::readyRead() */
+  void OnReadyRead();
+
 
 protected:
   AudioDataSource(mitk::DataStorage* storage);
@@ -89,6 +124,7 @@ private:
 
 
   QAudioInput*        m_InputDevice;
+  QIODevice*          m_InputStream;      // we do not own this one!
 
   // used to detect whether record has stopped or not.
   // there's no notification when the user clicked stop-record.
