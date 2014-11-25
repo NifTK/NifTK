@@ -23,7 +23,7 @@
 // forward-decl
 class QAudioDeviceInfo;
 class QAudioFormat;
-
+class QFile;
 
 
 class NIFTKIGIGUI_EXPORT AudioDataType : public mitk::IGIDataType
@@ -34,7 +34,7 @@ public:
 
 
   void SetBlob(const char* blob, std::size_t length);
-
+  std::pair<const char*, std::size_t> GetBlob() const;
 
 protected:
   AudioDataType();
@@ -83,12 +83,21 @@ public:
   /** @throws std::logic_error, always */
   virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
+  /**
+   * @see mitk::IGIDataSource::StartRecording()
+   * @see QmitkIGIDataSource::StartRecording()
+   */
+  virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
+
+  /** @see mitk::IGIDataSource::StartRecording() */
+  virtual void StopRecording();
+
 
 protected:
   /** */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
-  /** @returns true, always */
+  /** @returns true if data is an instance of AudioDataType. */
   virtual bool CanHandleData(mitk::IGIDataType* data) const;
 
   /** @returns true, always */
@@ -126,9 +135,7 @@ private:
   QAudioInput*        m_InputDevice;
   QIODevice*          m_InputStream;      // we do not own this one!
 
-  // used to detect whether record has stopped or not.
-  // there's no notification when the user clicked stop-record.
-  bool                m_WasSavingMessagesPreviously;
+  QFile*              m_OutputFile;
 };
 
 
