@@ -59,7 +59,7 @@ void VTKIterativeClosestPoint::SetMaxLandmarks(int MaxLandMarks)
 void VTKIterativeClosestPoint::SetMaxIterations(int MaxIterations)
 {
   m_MaxIterations = MaxIterations;
-  m_Icp->SetMaximumNumberOfLandmarks(m_MaxIterations);
+  m_Icp->SetMaximumNumberOfIterations(m_MaxIterations);
 }
 
 

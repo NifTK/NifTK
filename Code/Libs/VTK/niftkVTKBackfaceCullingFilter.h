@@ -39,15 +39,18 @@ public:
 
   void SetCameraPosition(const vtkSmartPointer<vtkMatrix4x4>& campos);
 
+  // in vtk5, this should be a protected method, that gets called via Update().
+  // in vtk6 this no longer happens. so as a quickfix, expose it to callers.
+  virtual void Execute();
+
+
 protected:
   BackfaceCullingFilter();
   virtual ~BackfaceCullingFilter();
 
 protected:
-  virtual void Execute();
-
-
   vtkSmartPointer<vtkMatrix4x4>     m_CameraPosition;
+
 
 private:
   BackfaceCullingFilter(const BackfaceCullingFilter&);  // Not implemented.
