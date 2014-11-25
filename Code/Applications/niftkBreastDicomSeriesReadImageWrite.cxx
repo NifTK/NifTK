@@ -10,7 +10,7 @@
 
   See LICENSE.txt in the top level directory for details.
 
-=============================================================================*/
+  =============================================================================*/
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
@@ -36,6 +36,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_STRING, "series", "name", "The input series name required."},
   {OPT_STRING, "filter", "pattern", "Only consider DICOM files that contain the string 'pattern'."},
+  {OPT_STRING, "tags",   "DICOM tags", "File of additional DICOM tags  eg. '0008|0060' used to split the series."},
 
   {OPT_INT, "orient", "value", 
    "Orient the image according to itk::SpatialOrientation::ValidCoordinateOrientationFlags.\n"
@@ -64,6 +65,7 @@ enum {
 
   O_SERIES,
   O_FILENAME_FILTER,
+  O_TAGS,
 
   O_ORIENTATION,
 
@@ -78,11 +80,11 @@ struct arguments
 {
   // Set up defaults
   arguments()
-  {
-    flgVerbose = false;
-    flgDebug = false;
-    orientation = 0;
-  }
+    {
+      flgVerbose = false;
+      flgDebug = false;
+      orientation = 0;
+    }
 
   bool flgVerbose;
   bool flgDebug;
@@ -91,6 +93,7 @@ struct arguments
 
   std::string seriesName;
   std::string fileNameFilter;
+  std::string fileInputTagKeys;  
 
   std::string fileOutputStem;
   std::string fileOutputSuffix;
@@ -168,8 +171,6 @@ typedef itk::GDCMSeriesFileNames NamesGeneratorType;
 
 typedef itk::MetaDataDictionary   DictionaryType;
 
-DictionaryType::ConstIterator tagItr;
-
 // Since we are interested only in the DICOM tags that can be expressed in
 // strings, we declare a MetaDataObject suitable for managing strings.
 
@@ -200,110 +201,110 @@ SO_OrientationType;
 std::string SO_OrientationToString(SO_OrientationType in)
 {
   switch(in)
-    {
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP:
-      return std::string("RIP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP:
-      return std::string("LIP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP:
-      return std::string("RSP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP:
-      return std::string("LSP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA:
-      return std::string("RIA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA:
-      return std::string("LIA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA:
-      return std::string("RSA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA:
-      return std::string("LSA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP:
-      return std::string("IRP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP:
-      return std::string("ILP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP:
-      return std::string("SRP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP:
-      return std::string("SLP");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA:
-      return std::string("IRA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA:
-      return std::string("ILA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA:
-      return std::string("SRA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA:
-      return std::string("SLA");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI:
-      return std::string("RPI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI:
-      return std::string("LPI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI:
-      return std::string("RAI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI:
-      return std::string("LAI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS:
-      return std::string("RPS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS:
-      return std::string("LPS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS:
-      return std::string("RAS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS:
-      return std::string("LAS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI:
-      return std::string("PRI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI:
-      return std::string("PLI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI:
-      return std::string("ARI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI:
-      return std::string("ALI");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS:
-      return std::string("PRS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS:
-      return std::string("PLS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS:
-      return std::string("ARS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS:
-      return std::string("ALS");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR:
-      return std::string("IPR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR:
-      return std::string("SPR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR:
-      return std::string("IAR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR:
-      return std::string("SAR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL:
-      return std::string("IPL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL:
-      return std::string("SPL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL:
-      return std::string("IAL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL:
-      return std::string("SAL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR:
-      return std::string("PIR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR:
-      return std::string("PSR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR:
-      return std::string("AIR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR:
-      return std::string("ASR");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL:
-      return std::string("PIL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL:
-      return std::string("PSL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL:
-      return std::string("AIL");
-    case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL:
-      return "ASL";
-    default:
-      {
-      std::stringstream x;
-      x << (in & 0xff) << ", " << ((in >> 8) & 0xff) << ", " << ((in >> 16) & 0xff);
-      return x.str();
-      }
-    }
+  {
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP:
+    return std::string("RIP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP:
+    return std::string("LIP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP:
+    return std::string("RSP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP:
+    return std::string("LSP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA:
+    return std::string("RIA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA:
+    return std::string("LIA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA:
+    return std::string("RSA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA:
+    return std::string("LSA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP:
+    return std::string("IRP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP:
+    return std::string("ILP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP:
+    return std::string("SRP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP:
+    return std::string("SLP");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA:
+    return std::string("IRA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA:
+    return std::string("ILA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA:
+    return std::string("SRA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA:
+    return std::string("SLA");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI:
+    return std::string("RPI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI:
+    return std::string("LPI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI:
+    return std::string("RAI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI:
+    return std::string("LAI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS:
+    return std::string("RPS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS:
+    return std::string("LPS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS:
+    return std::string("RAS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS:
+    return std::string("LAS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI:
+    return std::string("PRI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI:
+    return std::string("PLI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI:
+    return std::string("ARI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI:
+    return std::string("ALI");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS:
+    return std::string("PRS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS:
+    return std::string("PLS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS:
+    return std::string("ARS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS:
+    return std::string("ALS");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR:
+    return std::string("IPR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR:
+    return std::string("SPR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR:
+    return std::string("IAR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR:
+    return std::string("SAR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL:
+    return std::string("IPL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL:
+    return std::string("SPL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL:
+    return std::string("IAL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL:
+    return std::string("SAL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR:
+    return std::string("PIR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR:
+    return std::string("PSR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR:
+    return std::string("AIR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR:
+    return std::string("ASR");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL:
+    return std::string("PIL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL:
+    return std::string("PSL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL:
+    return std::string("AIL");
+  case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL:
+    return "ASL";
+  default:
+  {
+    std::stringstream x;
+    x << (in & 0xff) << ", " << ((in >> 8) & 0xff) << ", " << ((in >> 16) & 0xff);
+    return x.str();
+  }
+  }
 }
 
 
@@ -321,13 +322,13 @@ DumpDirections(const std::string &prompt, const typename ImageType::Pointer &ima
             << SO_OrientationToString(itk::SpatialOrientationAdapter().FromDirectionCosines(dir))
             <<    std::endl;
   for(unsigned i = 0; i < 3; i++)
-    {
+  {
     for(unsigned j = 0; j < 3; j++)
-      {
+    {
       std::cerr << dir[i][j] << " ";
-      }
-    std::cerr << std::endl;
     }
+    std::cerr << std::endl;
+  }
 }
 
 
@@ -350,25 +351,25 @@ void AppendTag( std::string &fileOutputFilename, const DictionaryType &dictionar
   // convert it to a string entry by using a \code{dynamic\_cast}.
 
   if( tagItr != end )
-    {
-      MetaDataStringType::ConstPointer entryvalue = 
-	dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
 
-      // If the dynamic cast succeed, then we can print out the values of the label,
-      // the tag and the actual value.
+    // If the dynamic cast succeed, then we can print out the values of the label,
+    // the tag and the actual value.
 	
-      if( entryvalue )
-	{
-	  std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+    if( entryvalue )
+    {
+      std::string tagvalue = entryvalue->GetMetaDataObjectValue();
 
-	  if (flgVerbose) 
-	    std::cout << "Tag (" << entryId <<  ") "
-		      << " is: " << tagvalue.c_str() << std::endl;
+      if (flgVerbose) 
+        std::cout << "Tag (" << entryId <<  ") "
+                  << " is: " << tagvalue.c_str() << std::endl;
 	  
-	  fileOutputFilename += tagvalue;
-	  fileOutputFilename += "_";
-	}
+      fileOutputFilename += tagvalue;
+      fileOutputFilename += "_";
     }
+  }
 }
 
 
@@ -416,15 +417,15 @@ std::string SeriesOutputFilename( std::fstream &fout, std::string fileInputImage
   std::cout << "SeriesOutputFilename: Reading image..." << std::endl;
 
   try
-    {
+  {
     reader->UpdateLargestPossibleRegion();
-    }
+  }
   catch (itk::ExceptionObject & e)
-    {
+  {
     std::cerr << "exception in file reader " << std::endl;
     std::cerr << e << std::endl;
     exit( EXIT_FAILURE );
-    }
+  }
 
   std::cout << "SeriesOutputFilename: done." << std::endl;
 
@@ -500,7 +501,7 @@ std::string SeriesOutputFilename( std::fstream &fout, std::string fileInputImage
     
   if ((! fout) || fout.bad()) {
     std::cerr << "Failed to open file: "
-				   << fileDicomHeaderOut.c_str();
+              << fileDicomHeaderOut.c_str();
     exit( EXIT_FAILURE );
   }
 
@@ -683,138 +684,138 @@ bool WriteSeriesAsVolume( std::fstream &fout,
   // block.
 
   try
-    {
-      reader->UpdateLargestPossibleRegion();
-    }
+  {
+    reader->UpdateLargestPossibleRegion();
+  }
 
   catch (itk::ExceptionObject &ex)
-    {
-      // If the read failed, output the images individually and exit function
+  {
+    // If the read failed, output the images individually and exit function
       
-      std::cout << ex << std::endl;
+    std::cout << ex << std::endl;
       
-      int iImage = 0;
-      for (iterFilenames=fileNames.begin(); iterFilenames<fileNames.end(); ++iterFilenames) {
+    int iImage = 0;
+    for (iterFilenames=fileNames.begin(); iterFilenames<fileNames.end(); ++iterFilenames) {
 
-	FileNamesContainer individualFiles;
-	individualFiles.push_back( *iterFilenames );
+      FileNamesContainer individualFiles;
+      individualFiles.push_back( *iterFilenames );
 
-	WriteSeriesAsVolume( fout, 
-			     flgVerbose,
-			     flgDebug,
-			     orientation,
-			     seriesIdentifier,
-			     filenameFilter,
-			     fileOutputStem,
-			     fileOutputSuffix,
-			     fileOutput + "_" + niftk::ConvertToString( iImage ),
-			     individualFiles,
-			     reader, 
-			     tagModalityValue );
+      WriteSeriesAsVolume( fout, 
+                           flgVerbose,
+                           flgDebug,
+                           orientation,
+                           seriesIdentifier,
+                           filenameFilter,
+                           fileOutputStem,
+                           fileOutputSuffix,
+                           fileOutput + "_" + niftk::ConvertToString( iImage ),
+                           individualFiles,
+                           reader, 
+                           tagModalityValue );
 	
-	iImage++;
-      }
-      return true;
+      iImage++;
     }
+    return true;
+  }
 
   ImageType::Pointer intermediateImage = reader->GetOutput();
 
 
   // Reorientate the image to a standard orientation?
 
-   if ( (tagModalityValue == "MR") && orientation ) {
+  if ( (tagModalityValue == "MR") && orientation ) {
 
-     itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationCode;
+    itk::SpatialOrientation::ValidCoordinateOrientationFlags orientationCode;
 
-     switch ( orientation ) 
-       {
+    switch ( orientation ) 
+    {
 
-       case  1: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP; break; }
-       case  2: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP; break; }
-       case  3: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP; break; }
-       case  4: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP; break; }
-       case  5: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA; break; }
-       case  6: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA; break; }
-       case  7: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA; break; }
-       case  8: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA; break; }
-       case  9: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP; break; }
-       case 10: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP; break; }
-       case 11: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP; break; }
-       case 12: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP; break; }
-       case 13: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA; break; }
-       case 14: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA; break; }
-       case 15: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA; break; }
-       case 16: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA; break; }
-       case 17: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI; break; }
-       case 18: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI; break; }
-       case 19: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI; break; }
-       case 20: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI; break; }
-       case 21: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS; break; }
-       case 22: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS; break; }
-       case 23: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS; break; }
-       case 24: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS; break; }
-       case 25: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI; break; }
-       case 26: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI; break; }
-       case 27: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI; break; }
-       case 28: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI; break; }
-       case 29: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS; break; }
-       case 30: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS; break; }
-       case 31: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS; break; }
-       case 32: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS; break; }
-       case 33: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR; break; }
-       case 34: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR; break; }
-       case 35: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR; break; }
-       case 36: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR; break; }
-       case 37: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL; break; }
-       case 38: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL; break; }
-       case 39: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL; break; }
-       case 40: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL; break; }
-       case 41: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR; break; }
-       case 42: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR; break; }
-       case 43: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR; break; }
-       case 44: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR; break; }
-       case 45: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL; break; }
-       case 46: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL; break; }
-       case 47: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL; break; }
-       case 48: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL; break; }
-       default: {
-	 std::cerr << "ERROR Unrecognised spatial orientation type: " << orientation << std::endl;
-	 exit( EXIT_FAILURE );
-       }
-       }
+    case  1: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP; break; }
+    case  2: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIP; break; }
+    case  3: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSP; break; }
+    case  4: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSP; break; }
+    case  5: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIA; break; }
+    case  6: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LIA; break; }
+    case  7: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RSA; break; }
+    case  8: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LSA; break; }
+    case  9: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRP; break; }
+    case 10: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILP; break; }
+    case 11: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRP; break; }
+    case 12: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLP; break; }
+    case 13: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IRA; break; }
+    case 14: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ILA; break; }
+    case 15: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SRA; break; }
+    case 16: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SLA; break; }
+    case 17: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI; break; }
+    case 18: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPI; break; }
+    case 19: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI; break; }
+    case 20: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI; break; }
+    case 21: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPS; break; }
+    case 22: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS; break; }
+    case 23: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS; break; }
+    case 24: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAS; break; }
+    case 25: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRI; break; }
+    case 26: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLI; break; }
+    case 27: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARI; break; }
+    case 28: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALI; break; }
+    case 29: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PRS; break; }
+    case 30: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PLS; break; }
+    case 31: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ARS; break; }
+    case 32: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ALS; break; }
+    case 33: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPR; break; }
+    case 34: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPR; break; }
+    case 35: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAR; break; }
+    case 36: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAR; break; }
+    case 37: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IPL; break; }
+    case 38: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SPL; break; }
+    case 39: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_IAL; break; }
+    case 40: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_SAL; break; }
+    case 41: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR; break; }
+    case 42: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSR; break; }
+    case 43: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIR; break; }
+    case 44: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASR; break; }
+    case 45: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIL; break; }
+    case 46: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PSL; break; }
+    case 47: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL; break; }
+    case 48: { orientationCode = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL; break; }
+    default: {
+      std::cerr << "ERROR Unrecognised spatial orientation type: " << orientation << std::endl;
+      exit( EXIT_FAILURE );
+    }
+    }
      
-     itk::OrientImageFilter<ImageType,ImageType>::Pointer orienter =
-       itk::OrientImageFilter<ImageType,ImageType>::New();
+    itk::OrientImageFilter<ImageType,ImageType>::Pointer orienter =
+      itk::OrientImageFilter<ImageType,ImageType>::New();
      
-     orienter->UseImageDirectionOn();
-     orienter->SetDesiredCoordinateOrientation( orientationCode );
+    orienter->UseImageDirectionOn();
+    orienter->SetDesiredCoordinateOrientation( orientationCode );
      
-     orienter->SetInput( intermediateImage );
-     orienter->Update();
+    orienter->SetInput( intermediateImage );
+    orienter->Update();
 
-     if ( flgVerbose ) 
-       std::cout << std::endl
-		 << "Input Coordinate Orientation: "
-		 << SO_OrientationToString( orienter->GetGivenCoordinateOrientation() )
-		 << std::endl
-		 << "Output Coordinate Orientation: "
-		 << SO_OrientationToString( orienter->GetDesiredCoordinateOrientation() )
-		 << std::endl
-		 << "Permute Axes: " << orienter->GetPermuteOrder() << std::endl
-		 << "Flip Axes: "    << orienter->GetFlipAxes() << std::endl;
+    if ( flgVerbose ) 
+      std::cout << std::endl
+                << "Input Coordinate Orientation: "
+                << SO_OrientationToString( orienter->GetGivenCoordinateOrientation() )
+                << std::endl
+                << "Output Coordinate Orientation: "
+                << SO_OrientationToString( orienter->GetDesiredCoordinateOrientation() )
+                << std::endl
+                << "Permute Axes: " << orienter->GetPermuteOrder() << std::endl
+                << "Flip Axes: "    << orienter->GetFlipAxes() << std::endl;
 
-     fout << std::endl
-	  << "Input Coordinate Orientation: "
-	  << SO_OrientationToString( orienter->GetGivenCoordinateOrientation() )
-	  << std::endl
-	  << "Output Coordinate Orientation: "
-	  << SO_OrientationToString( orienter->GetDesiredCoordinateOrientation() )
-	  << std::endl
-	  << "Permute Axes: " << orienter->GetPermuteOrder() << std::endl
-	  << "Flip Axes: "    << orienter->GetFlipAxes() << std::endl;
+    fout << std::endl
+         << "Input Coordinate Orientation: "
+         << SO_OrientationToString( orienter->GetGivenCoordinateOrientation() )
+         << std::endl
+         << "Output Coordinate Orientation: "
+         << SO_OrientationToString( orienter->GetDesiredCoordinateOrientation() )
+         << std::endl
+         << "Permute Axes: " << orienter->GetPermuteOrder() << std::endl
+         << "Flip Axes: "    << orienter->GetFlipAxes() << std::endl;
 
-     intermediateImage = orienter->GetOutput();
-   }
+    intermediateImage = orienter->GetOutput();
+  }
 
 
   // At this point, we have a volumetric image in memory that we can access by
@@ -840,14 +841,14 @@ bool WriteSeriesAsVolume( std::fstream &fout,
   // \code{Update()} method of the writer.
 
   try
-    {
-      writer->Update();
-    }
+  {
+    writer->Update();
+  }
   catch (itk::ExceptionObject &ex)
-    {
-      std::cout << ex << std::endl;
-      exit( EXIT_FAILURE );
-    }
+  {
+    std::cout << ex << std::endl;
+    exit( EXIT_FAILURE );
+  }
 
   return true;
 }
@@ -877,6 +878,7 @@ int main( int argc, char* argv[] )
 
   CommandLineOptions.GetArgument( O_SERIES, args.seriesName );
   CommandLineOptions.GetArgument( O_FILENAME_FILTER, args.fileNameFilter );
+  CommandLineOptions.GetArgument( O_TAGS, args.fileInputTagKeys );
 
   CommandLineOptions.GetArgument( O_ORIENTATION, args.orientation );
 
@@ -933,6 +935,7 @@ int main( int argc, char* argv[] )
 
   nameGenerator->SetUseSeriesDetails( true );
 
+#if 0
   nameGenerator->AddSeriesRestriction( "0008|0008" ); // Image type
   nameGenerator->AddSeriesRestriction( "0008|0021" );
   nameGenerator->AddSeriesRestriction( "0008|0032" ) ;// Acquisition Time
@@ -950,114 +953,165 @@ int main( int argc, char* argv[] )
   nameGenerator->AddSeriesRestriction( "0020|0020" ); // Patient Orientation
   nameGenerator->AddSeriesRestriction( "0028|0010" ); // Image dimensions: number of rows and columns
   nameGenerator->AddSeriesRestriction( "0028|0011" );
+#endif
+
+  if ( args.fileInputTagKeys.length() > 0 )
+  {
+    unsigned int nTags = 0;
+    std::string tagID;
+    std::fstream finTagKeys;
+
+    finTagKeys.open( args.fileInputTagKeys.c_str(), std::ios::in );
+
+    if ((! finTagKeys) || finTagKeys.bad()) {
+      std::cerr << "ERROR: Failed to open file: " << args.fileInputTagKeys.c_str() << std::endl;
+      return EXIT_FAILURE;   
+    }
+
+    if ( finTagKeys.is_open() )                  
+    {                                      
+      while( !finTagKeys.eof() )
+      {                                                                                   
+        std::string tagKey;                                                                          
+        finTagKeys >> tagKey;                                                                    
+
+        if ( tagKey.length() > 0 )
+        {
+          if ( itk::GDCMImageIO::GetLabelFromTag( tagKey, tagID ) )
+          {      
+            nTags++;
+
+            std::cout << std::setw(12) << nTags << ": " 
+                      << tagKey << " " << tagID << std::endl;
+
+            nameGenerator->AddSeriesRestriction( tagKey );
+          }
+          else 
+          {
+            std::cout << std::setw(12) << nTags << ": ERROR - TAG NOT FOUND SO IGNORED: " 
+                      << tagKey << " " << tagID << std::endl;
+          }
+        }
+      }                                                                                   
+    }                                                                                     
+
+    if ( nTags == 0 )                      
+    {                                                                                       
+      std::cerr << "ERROR: No tags detected" << std::endl;
+      finTagKeys.close();
+      return EXIT_FAILURE;
+    }  
+
+    finTagKeys.close();
+  }
 
   nameGenerator->SetDirectory( args.dirDICOMInput );
   
   try
-    {      
+  {      
     
-      // The GDCMSeriesFileNames object first identifies the list of DICOM series
-      // that are present in the given directory. We receive that list in a
-      // reference to a container of strings and then we can do things like
-      // printing out all the series identifiers that the generator had
-      // found. Since the process of finding the series identifiers can
-      // potentially throw exceptions, it is wise to put this code inside a
-      // try/catch block.
+    // The GDCMSeriesFileNames object first identifies the list of DICOM series
+    // that are present in the given directory. We receive that list in a
+    // reference to a container of strings and then we can do things like
+    // printing out all the series identifiers that the generator had
+    // found. Since the process of finding the series identifiers can
+    // potentially throw exceptions, it is wise to put this code inside a
+    // try/catch block.
 
-      typedef std::vector<std::string> seriesIdContainer;
-      const seriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
+    typedef std::vector<std::string> seriesIdContainer;
+    const seriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
 
-      seriesIdContainer::const_iterator seriesItr = seriesUID.begin();
-      seriesIdContainer::const_iterator seriesEnd = seriesUID.end();
+    seriesIdContainer::const_iterator seriesItr = seriesUID.begin();
+    seriesIdContainer::const_iterator seriesEnd = seriesUID.end();
       
-      if ( args.flgVerbose ) {
-	std::cout << std::endl << "The directory: " << std::endl;
-	std::cout << std::endl << args.dirDICOMInput << std::endl << std::endl;
-	std::cout << "Contains the following DICOM Series: ";
-	std::cout << std::endl << std::endl;
-      }
-
-      while( seriesItr != seriesEnd )
-	{
-	  std::cout << seriesItr->c_str() << std::endl;
-	  seriesItr++;
-	}
-
-      // Given that it is common to find multiple DICOM series in the same directory,
-      // we must tell the GDCM classes what specific series do we want to read. In
-      // this example we do this by checking first if the user has provided a series
-      // identifier in the command line arguments. 
-      
-      if ( args.seriesName.length() > 0 ) {
-
-	std::fstream fout;
-
-	fileOutput = SeriesOutputFilename( fout,
-					   nameGenerator->GetFileNames( args.seriesName )[0],
-					   args.fileOutputStem, args.flgVerbose,
-					   tagModalityValue );
-      
-	std::cout << "Filename: " << fileOutput << std::endl;
-
-	WriteSeriesAsVolume( fout,
-			     args.flgVerbose, 
-			     args.flgDebug, 
-			     args.orientation,
-			     args.seriesName, 
-			     args.fileNameFilter,
-			     args.fileOutputStem, 
-			     args.fileOutputSuffix, 
-			     fileOutput, 
-			     nameGenerator, 
-			     reader,
-			     tagModalityValue );
-
-	fout.close();
-      }
-
-      // Otherwise we output all the images
-
-      else {
-	
-	seriesItr = seriesUID.begin();
-	seriesEnd = seriesUID.end();
-	
-	int i = 0;
-	while( seriesItr != seriesEnd ) {
-	  
-	  std::fstream fout;
-
-	  fileOutput = SeriesOutputFilename( fout,
-					     nameGenerator->GetFileNames( *seriesItr )[0],
-					     args.fileOutputStem, args.flgVerbose,
-					     tagModalityValue );
-
-	  std::cout << i << ": Filename: " << fileOutput << std::endl;
-	  
-	  if ( WriteSeriesAsVolume( fout,
-				    args.flgVerbose, 
-				    args.flgDebug, 
-				    args.orientation,
-				    *seriesItr, 
-				    args.fileNameFilter,
-				    args.fileOutputStem, 
-				    args.fileOutputSuffix, 
-				    fileOutput, 
-				    nameGenerator, 
-				    reader,
-				    tagModalityValue ) )
-	    i++;
-	  
-	  fout.close();
-	  seriesItr++;
-	}
-      }
+    if ( args.flgVerbose ) {
+      std::cout << std::endl << "The directory: " << std::endl;
+      std::cout << std::endl << args.dirDICOMInput << std::endl << std::endl;
+      std::cout << "Contains the following DICOM Series: ";
+      std::cout << std::endl << std::endl;
     }
-  catch (itk::ExceptionObject &ex)
+
+    while( seriesItr != seriesEnd )
     {
-      std::cout << ex << std::endl;
-      return EXIT_FAILURE;
+      std::cout << seriesItr->c_str() << std::endl;
+      seriesItr++;
     }
+
+    // Given that it is common to find multiple DICOM series in the same directory,
+    // we must tell the GDCM classes what specific series do we want to read. In
+    // this example we do this by checking first if the user has provided a series
+    // identifier in the command line arguments. 
+      
+    if ( args.seriesName.length() > 0 ) {
+
+      std::fstream fout;
+
+      fileOutput = SeriesOutputFilename( fout,
+                                         nameGenerator->GetFileNames( args.seriesName )[0],
+                                         args.fileOutputStem, args.flgVerbose,
+                                         tagModalityValue );
+      
+      std::cout << "Filename: " << fileOutput << std::endl;
+
+      WriteSeriesAsVolume( fout,
+                           args.flgVerbose, 
+                           args.flgDebug, 
+                           args.orientation,
+                           args.seriesName, 
+                           args.fileNameFilter,
+                           args.fileOutputStem, 
+                           args.fileOutputSuffix, 
+                           fileOutput, 
+                           nameGenerator, 
+                           reader,
+                           tagModalityValue );
+
+      fout.close();
+    }
+
+    // Otherwise we output all the images
+
+    else {
+	
+      seriesItr = seriesUID.begin();
+      seriesEnd = seriesUID.end();
+	
+      int i = 0;
+      while( seriesItr != seriesEnd ) {
+	  
+        std::fstream fout;
+
+        fileOutput = SeriesOutputFilename( fout,
+                                           nameGenerator->GetFileNames( *seriesItr )[0],
+                                           args.fileOutputStem, args.flgVerbose,
+                                           tagModalityValue );
+
+        std::cout << i << ": Filename: " << fileOutput << std::endl;
+	  
+        if ( WriteSeriesAsVolume( fout,
+                                  args.flgVerbose, 
+                                  args.flgDebug, 
+                                  args.orientation,
+                                  *seriesItr, 
+                                  args.fileNameFilter,
+                                  args.fileOutputStem, 
+                                  args.fileOutputSuffix, 
+                                  fileOutput, 
+                                  nameGenerator, 
+                                  reader,
+                                  tagModalityValue ) )
+          i++;
+	  
+        fout.close();
+        seriesItr++;
+      }
+    }
+  }
+  catch (itk::ExceptionObject &ex)
+  {
+    std::cout << ex << std::endl;
+    return EXIT_FAILURE;
+  }
   
   return EXIT_SUCCESS;
 }
