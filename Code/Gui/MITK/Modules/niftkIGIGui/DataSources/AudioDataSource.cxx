@@ -65,6 +65,11 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
 
   QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
   QAudioFormat      defaultFormat = defaultDevice.preferredFormat();
+  // try not to do 8 bit, sounds like trash.
+  defaultFormat.setSampleSize(16);
+  if (!defaultDevice.isFormatSupported(defaultFormat))
+    // nearestFormat() is a bit stupid: say we request unsupported 32 bit, it will pick 8 instead of 16 bit.
+    defaultFormat = defaultDevice.nearestFormat(defaultFormat);
 
   SetAudioDevice(&defaultDevice, &defaultFormat);
 }
@@ -164,8 +169,8 @@ void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* for
 //-----------------------------------------------------------------------------
 QString AudioDataSource::formatToString(const QAudioFormat* format)
 {
-  // FIXME: sample size, sample type
-  return QString("%1 channels @ %2 Hz, %3").arg(format->channels()).arg(format->sampleRate()).arg(format->codec());
+  // FIXME: sample type?
+  return QString("%1 channels @ %2 Hz, %3 bit, %4").arg(format->channels()).arg(format->sampleRate()).arg(format->sampleSize()).arg(format->codec());
 }
 
 

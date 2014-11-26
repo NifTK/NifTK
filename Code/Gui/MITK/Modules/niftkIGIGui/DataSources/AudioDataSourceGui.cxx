@@ -83,25 +83,33 @@ void AudioDataSourceGui::Update()
         foreach(int c, channelCounts)
         {
           QList<int>  sampleRates = device->supportedSampleRates();
-          foreach(int s, sampleRates)
+          foreach(int r, sampleRates)
           {
-            // FIXME: we should probably restrict the codec to pcm, in general.
-            QStringList   codecs = device->supportedCodecs();
-            foreach(QString m, codecs)
+            QList<int>  sampleSizes = device->supportedSampleSizes();
+            qSort(sampleSizes);
+            for (int s = 0; s < sampleSizes.size(); ++s)
             {
-              //QList<int>	supportedSampleSizes () const
+              // don't bother with 8 bit, it sounds like trash.
+              if ((s <= 8) && (s < sampleSizes.size() - 1))
+                // this breaks if for example 8 appears multiple times.
+                continue;
 
-              QAudioFormat    f;
-              f.setChannels(c);
-              f.setSampleRate(s);
-              f.setCodec(m);
-              f.setSampleSize(device->preferredFormat().sampleSize());    // FIXME: 8 bit vs 16 bit
-              f.setSampleType(device->preferredFormat().sampleType());
-
-              if (device->isFormatSupported(f))
+              // FIXME: we should probably restrict the codec to pcm, in general.
+              QStringList   codecs = device->supportedCodecs();
+              foreach(QString m, codecs)
               {
-                QString   text = AudioDataSource::formatToString(&f);
-                m_FormatComboBox->addItem(text, QVariant::fromValue(f));
+                QAudioFormat    f;
+                f.setChannels(c);
+                f.setSampleRate(r);
+                f.setCodec(m);
+                f.setSampleSize(sampleSizes[s]);
+                f.setSampleType(device->preferredFormat().sampleType());
+
+                if (device->isFormatSupported(f))
+                {
+                  QString   text = AudioDataSource::formatToString(&f);
+                  m_FormatComboBox->addItem(text, QVariant::fromValue(f));
+                }
               }
             }
           }
@@ -119,14 +127,19 @@ void AudioDataSourceGui::Update()
           break;
         }
       }
-      // sanity check: above we have added all formats supported by the device. so this should always be true.
-      assert(foundFormatEntry >= 0);
       if (foundFormatEntry >= 0)
       {
         if (m_FormatComboBox->currentIndex() != foundFormatEntry)
         {
           m_FormatComboBox->setCurrentIndex(foundFormatEntry);
         }
+      }
+      else
+      {
+        // this else-branch can happen if the default format has not been added in the above loop.
+        // for example, we skip 8 bit, but the default-format-selection happens to pick an 8 bit format.
+        QString   text = AudioDataSource::formatToString(format);
+        m_FormatComboBox->addItem(text, QVariant::fromValue(*format));
       }
     }
   }
