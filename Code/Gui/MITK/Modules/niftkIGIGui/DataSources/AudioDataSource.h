@@ -136,6 +136,8 @@ private:
   //@}
 
   void DisconnectAudio();
+  void StartWAVFile();
+  void FinishWAVFile();
 
 
   QAudioInput*        m_InputDevice;
@@ -145,6 +147,8 @@ private:
 
   QAudioDeviceInfo*   m_DeviceInfo;
   QAudioFormat*       m_Inputformat;
+
+  int                 m_SegmentCounter;
 };
 
 

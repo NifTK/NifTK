@@ -60,6 +60,7 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
   , m_OutputFile(0)
   , m_DeviceInfo(0)
   , m_Inputformat(0)
+  , m_SegmentCounter(0)
 {
   SetStatus("Initialising...");
 
@@ -281,46 +282,48 @@ void AudioDataSource::GrabData()
 
 
 //-----------------------------------------------------------------------------
-void AudioDataSource::StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt)
+void AudioDataSource::StartWAVFile()
 {
-  // sanity check
-  assert(m_OutputFile == 0);
-
-  // base-class. whatever it does...
-  QmitkIGILocalDataSource::StartRecording(directoryPrefix, saveInBackground, saveOnReceipt);
-
-
   std::string   directoryPath = GetSaveDirectoryName();
   QDir          directory(QString::fromStdString(directoryPath));
   if (directory.mkpath(QString::fromStdString(directoryPath)))
   {
-    m_OutputFile = new QFile(directory.absoluteFilePath("1.wav"));
-    bool ok = m_OutputFile->open(QIODevice::WriteOnly);
+    assert(m_SegmentCounter > 0);
+    m_OutputFile = new QFile(directory.absoluteFilePath(QString("%1.wav").arg(m_SegmentCounter)));
+    // it's an error to overwrite a file!
+    // first, each segment should have a unique number.
+    // second, each datasource recording session goes into its own directory.
+    bool ok = !m_OutputFile->exists();
     if (ok)
     {
-      // basic wave header
-      // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
-      char   wavheader[44];
-      std::memset(&wavheader[0], 0, sizeof(wavheader));
-      wavheader[0] = 'R'; wavheader[1] = 'I'; wavheader[2] = 'F'; wavheader[3] = 'F';
-      // followed by file size minus 8
-      wavheader[8] = 'W'; wavheader[9] = 'A'; wavheader[10] = 'V'; wavheader[11] = 'E';
-      wavheader[12] = 'f'; wavheader[13] = 'm'; wavheader[14] = 't'; wavheader[15] = ' ';
-      *((unsigned int*  ) &wavheader[16]) = 16;   // fixed size fmt chunk
-      *((unsigned short*) &wavheader[20]) = 1;   // pcm
-      *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channels();
-      *((unsigned int*  ) &wavheader[24]) = m_InputDevice->format().sampleRate();
-      *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate() * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
-      *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
-      *((unsigned short*) &wavheader[34]) = m_InputDevice->format().sampleSize();
-      wavheader[36] = 'd'; wavheader[37] = 'a'; wavheader[38] = 't'; wavheader[39] = 'a';
-      // followed by data size (filesize minus 44)
+      ok = m_OutputFile->open(QIODevice::WriteOnly);
+      if (ok)
+      {
+        // basic wave header
+        // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+        char   wavheader[44];
+        std::memset(&wavheader[0], 0, sizeof(wavheader));
+        wavheader[0] = 'R'; wavheader[1] = 'I'; wavheader[2] = 'F'; wavheader[3] = 'F';
+        // followed by file size minus 8
+        wavheader[8] = 'W'; wavheader[9] = 'A'; wavheader[10] = 'V'; wavheader[11] = 'E';
+        wavheader[12] = 'f'; wavheader[13] = 'm'; wavheader[14] = 't'; wavheader[15] = ' ';
+        *((unsigned int*  ) &wavheader[16]) = 16;   // fixed size fmt chunk
+        *((unsigned short*) &wavheader[20]) = 1;   // pcm
+        *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channels();
+        *((unsigned int*  ) &wavheader[24]) = m_InputDevice->format().sampleRate();
+        *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate() * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[34]) = m_InputDevice->format().sampleSize();
+        wavheader[36] = 'd'; wavheader[37] = 'a'; wavheader[38] = 't'; wavheader[39] = 'a';
+        // followed by data size (filesize minus 44)
 
-      std::size_t actuallyWritten = m_OutputFile->write(&wavheader[0], sizeof(wavheader));
-      assert(actuallyWritten == sizeof(wavheader));
-      // and after that raw data.
+        std::size_t actuallyWritten = m_OutputFile->write(&wavheader[0], sizeof(wavheader));
+        assert(actuallyWritten == sizeof(wavheader));
+        // and after that raw data.
+      }
     }
-    else
+
+    if (!ok)
     {
       m_InputDevice->stop();
       SetStatus("Error: cannot open output file");
@@ -330,12 +333,8 @@ void AudioDataSource::StartRecording(const std::string& directoryPrefix, const b
 
 
 //-----------------------------------------------------------------------------
-void AudioDataSource::StopRecording()
+void AudioDataSource::FinishWAVFile()
 {
-  assert(m_OutputFile != 0);
-
-  QmitkIGILocalDataSource::StopRecording();
-
   // fill in the missing chunk sizes
   unsigned int    riffsize = m_OutputFile->size() - 8;
   m_OutputFile->seek(4);
@@ -349,6 +348,33 @@ void AudioDataSource::StopRecording()
   m_OutputFile->flush();
   delete m_OutputFile;
   m_OutputFile = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void AudioDataSource::StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt)
+{
+  // sanity check
+  assert(m_OutputFile == 0);
+
+  // base-class. whatever it does...
+  QmitkIGILocalDataSource::StartRecording(directoryPrefix, saveInBackground, saveOnReceipt);
+
+  // each recording session starts counting its own segments.
+  m_SegmentCounter = 1;
+
+  StartWAVFile();
+}
+
+
+//-----------------------------------------------------------------------------
+void AudioDataSource::StopRecording()
+{
+  assert(m_OutputFile != 0);
+
+  QmitkIGILocalDataSource::StopRecording();
+
+  FinishWAVFile();
 }
 
 
@@ -367,6 +393,17 @@ bool AudioDataSource::SaveData(mitk::IGIDataType* d, std::string& outputFileName
     return false;
 
   std::pair<const char*, std::size_t>   blob = data->GetBlob();
+
+  // if writing the current blob to the file would make it too big (signed 32 bit overflow!),
+  // then start a new segment.
+  // this can happen quite easily: 32 bit samples, 2 channels, 96kHz --> 46 minutes!
+  if ((m_OutputFile->size() + blob.second) > std::numeric_limits<int>::max())
+  {
+    FinishWAVFile();
+    ++m_SegmentCounter;
+    StartWAVFile();
+  }
+
   std::size_t actuallyWritten = m_OutputFile->write(blob.first, blob.second);
   assert(actuallyWritten == blob.second);
 
