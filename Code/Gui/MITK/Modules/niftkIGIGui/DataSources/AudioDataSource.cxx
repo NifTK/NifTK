@@ -58,6 +58,8 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
   : QmitkIGILocalDataSource(storage)
   , m_InputDevice(0)
   , m_OutputFile(0)
+  , m_DeviceInfo(0)
+  , m_Inputformat(0)
 {
   SetStatus("Initialising...");
 
@@ -81,6 +83,22 @@ AudioDataSource::~AudioDataSource()
   // we do not own m_InputStream!
 
   delete m_OutputFile;
+  delete m_DeviceInfo;
+  delete m_Inputformat;
+}
+
+
+//-----------------------------------------------------------------------------
+const QAudioDeviceInfo* AudioDataSource::GetDeviceInfo() const
+{
+  return m_DeviceInfo;
+}
+
+
+//-----------------------------------------------------------------------------
+const QAudioFormat* AudioDataSource::GetFormat() const
+{
+  return m_Inputformat;
 }
 
 
@@ -95,7 +113,6 @@ void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* for
 
   try
   {
-
     m_InputDevice = new QAudioInput(*device, *format);
     bool ok = false;
     ok = QObject::connect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
@@ -109,10 +126,13 @@ void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* for
     SetName(device->deviceName().toStdString());
 
     std::ostringstream    description;
-    description << m_InputDevice->format().channels() << " channels @ " << m_InputDevice->format().sampleRate() << " Hz, " << m_InputDevice->format().codec().toStdString();
+    description << formatToString(format).toStdString();
     SetDescription(description.str());
 
     // status is updated by state-change slot.
+
+    m_DeviceInfo  = new QAudioDeviceInfo(*device);
+    m_Inputformat = new QAudioFormat(*format);
   }
   catch (...)
   {
@@ -120,6 +140,14 @@ void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* for
     m_InputDevice = 0;
     SetStatus("Init failed!");
   }
+}
+
+
+//-----------------------------------------------------------------------------
+QString AudioDataSource::formatToString(const QAudioFormat* format)
+{
+  // FIXME: sample size, sample type
+  return QString("%1 channels @ %2 Hz, %3").arg(format->channels()).arg(format->sampleRate()).arg(format->codec());
 }
 
 

@@ -39,6 +39,7 @@ set(CPP_FILES
   DataSources/QmitkIGIOpenCVDataSource.cxx
   DataSources/QmitkIGIOpenCVDataSourceGui.cxx
   DataSources/AudioDataSource.cxx
+  DataSources/AudioDataSourceGui.cxx
   OverlayEditor/QmitkBitmapOverlay.cxx
   OverlayEditor/QmitkSingle3DView.cxx
   OverlayEditor/QmitkIGIOverlayEditor.cxx
@@ -66,6 +67,7 @@ set(MOC_H_FILES
   DataSources/QmitkIGIOpenCVDataSource.h
   DataSources/QmitkIGIOpenCVDataSourceGui.h
   DataSources/AudioDataSource.h
+  DataSources/AudioDataSourceGui.h
   OverlayEditor/QmitkSingle3DView.h
   OverlayEditor/QmitkIGIOverlayEditor.h
 )
@@ -80,6 +82,7 @@ set(UI_FILES
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
   DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
+  DataSources/AudioDataSourceGui.ui
   OverlayEditor/QmitkIGIOverlayEditor.ui
 )
 

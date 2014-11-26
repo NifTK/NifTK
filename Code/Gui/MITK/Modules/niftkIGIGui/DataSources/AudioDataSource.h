@@ -63,7 +63,11 @@ public:
 
   void SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format);
 
+  const QAudioDeviceInfo* GetDeviceInfo() const;
+  const QAudioFormat* GetFormat() const;
 
+
+  static QString formatToString(const QAudioFormat* format);
 
   /** @name Functions from mitk::IGIDataSource */
   //@{
@@ -136,6 +140,9 @@ private:
   QIODevice*          m_InputStream;      // we do not own this one!
 
   QFile*              m_OutputFile;
+
+  QAudioDeviceInfo*   m_DeviceInfo;
+  QAudioFormat*       m_Inputformat;
 };
 
 
