@@ -70,7 +70,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imFatSat = 0;
   imBIFs = 0;
 
-  imMax = 0;
+  imMaximum = 0;
+  imMaxClosed = 0;
   imPectoralVoxels = 0;
   imPectoralSurfaceVoxels = 0;
   imChestSurfaceVoxels = 0;
@@ -582,12 +583,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
       exit( EXIT_FAILURE );
     }
     
-    imMax = histMatcher->GetOutput();
+    imMaximum = histMatcher->GetOutput();
 
     // Compute the voxel-wise maximum intensities
             
     IteratorType inputIterator( imStructural, imStructural->GetLargestPossibleRegion() );
-    IteratorType outputIterator( imMax, imMax->GetLargestPossibleRegion() );
+    IteratorType outputIterator( imMaximum, imMaximum->GetLargestPossibleRegion() );
         
     for ( inputIterator.GoToBegin(), outputIterator.GoToBegin(); 
 	 ! inputIterator.IsAtEnd();
@@ -605,12 +606,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     duplicator->SetInputImage( imStructural );
     duplicator->Update();
 
-    imMax = duplicator->GetOutput();
+    imMaximum = duplicator->GetOutput();
 
     // Compute the voxel-wise maximum intensities
             
     IteratorType inputIterator( imFatSat, imFatSat->GetLargestPossibleRegion() );
-    IteratorType outputIterator( imMax, imMax->GetLargestPossibleRegion() );
+    IteratorType outputIterator( imMaximum, imMaximum->GetLargestPossibleRegion() );
         
     for ( inputIterator.GoToBegin(), outputIterator.GoToBegin(); 
 	 ! inputIterator.IsAtEnd();
@@ -622,10 +623,15 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 #endif
   }
   else
-    imMax=imStructural;
+  {
+    imMaximum = imStructural;
+  }
 
-  imMax = GreyScaleCloseImage( imMax, m_LeftLateralRegion,  "MaxLeft" );
-  imMax = GreyScaleCloseImage( imMax, m_RightLateralRegion, "MaxRight" );     
+  WriteImageToFile( fileOutputMaxImage, "maximum image", imMaximum, flgLeft, flgRight );
+
+
+  imMaxClosed = GreyScaleCloseImage( imMaximum,   m_LeftLateralRegion,  "MaxLeft" );
+  imMaxClosed = GreyScaleCloseImage( imMaxClosed, m_RightLateralRegion, "MaxRight" );     
   
   // Smooth the image to increase separation of the background
 
@@ -637,7 +643,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename CurvatureFlowImageFilterType::Pointer preRegionGrowingSmoothing = 
     CurvatureFlowImageFilterType::New();
 
-  preRegionGrowingSmoothing->SetInput( imMax );
+  preRegionGrowingSmoothing->SetInput( imMaxClosed );
 
   unsigned int nItersPreRegionGrowingSmoothing = 5;
   double timeStepPreRegionGrowingSmoothing = 0.125;
@@ -650,15 +656,15 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 	    << ", time step: " << timeStepPreRegionGrowingSmoothing << std::endl;
   preRegionGrowingSmoothing->Update();
 
-  imMax = preRegionGrowingSmoothing->GetOutput();
-  imMax->DisconnectPipeline();
+  imMaxClosed = preRegionGrowingSmoothing->GetOutput();
+  imMaxClosed->DisconnectPipeline();
 
 #endif
 
 
   // Ensure the maximum image contains only positive intensities
 
-  IteratorType imIterator( imMax, imMax->GetLargestPossibleRegion() );
+  IteratorType imIterator( imMaxClosed, imMaxClosed->GetLargestPossibleRegion() );
         
   for ( imIterator.GoToBegin(); ! imIterator.IsAtEnd(); ++imIterator )
   {
@@ -667,14 +673,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
 
-  // Compute the range of the maximum image
+  // Compute the range of the maximum closed image
 
   typedef itk::MinimumMaximumImageCalculator< InternalImageType > MinimumMaximumImageCalculatorType;
 
   typename MinimumMaximumImageCalculatorType::Pointer 
     rangeCalculator = MinimumMaximumImageCalculatorType::New();
 
-  rangeCalculator->SetImage( imMax );
+  rangeCalculator->SetImage( imMaxClosed );
   rangeCalculator->Compute();
 
   maxIntensity = rangeCalculator->GetMaximum();
@@ -686,12 +692,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
   if ( flgVerbose ) 
+  {
     std::cout << "Maximum image intensity range: " 
 	      << niftk::ConvertToString( minIntensity ).c_str() << " to "
 	      << niftk::ConvertToString( maxIntensity ).c_str() << std::endl;
+  }
 
-
-  WriteImageToFile( fileOutputMaxImage, "maximum image", imMax, flgLeft, flgRight );
+  WriteImageToFile( fileOutputMaxClosedImage, "maximum closed image", 
+                    imMaxClosed, flgLeft, flgRight );
 };
 
 
@@ -717,7 +725,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename ThresholdCalculatorType::Pointer 
     thresholdCalculator = ThresholdCalculatorType::New();
 
-  thresholdCalculator->SetImage( imMax );
+  thresholdCalculator->SetImage( imMaxClosed );
 
   thresholdCalculator->SetVerbose( flgVerbose );
 
@@ -738,7 +746,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
 
-  thresholder->SetInput( imMax );
+  thresholder->SetInput( imMaxClosed );
 
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 1000 );
@@ -750,6 +758,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   
   typename LabelImageType::Pointer mask = thresholder->GetOutput();
   mask->DisconnectPipeline();
+
+  imMaxClosed = 0;
 
   if ( 0 )
   {
@@ -1093,7 +1103,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
 
-  connectedThreshold->SetInput( imMax );
+  connectedThreshold->SetInput( imMaxClosed );
 
   connectedThreshold->SetLower( 0  );
   connectedThreshold->SetUpper( bgndThreshold );
@@ -1116,6 +1126,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   imSegmented->DisconnectPipeline();
 
   connectedThreshold = 0;
+  imMaxClosed = 0;
 
 
   // Invert the segmentation
@@ -1130,7 +1141,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     else
       segIterator.Set( 1000 );
   }
-
 }
 
 
@@ -1943,6 +1953,47 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     nSeeds = 1;
   }
 
+  // Iterate posteriorly to make sure we're inside the breast
+
+  region = imSegmented->GetLargestPossibleRegion();
+  size = region.GetSize();
+    
+  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
+  {
+
+    region.SetIndex( startMidSternum[ iSeed ] );
+
+    if ( flgVerbose )
+    {
+      std::cout << "Breast mask search start: " << iSeed << " = " 
+                << startMidSternum[ iSeed ] << std::endl;
+    }
+
+    sizeSearch[0] = 1;
+    sizeSearch[1] = size[1] - idxMidSternum[1];
+    sizeSearch[2] = 1;
+
+    region.SetSize( sizeSearch );
+    
+    LineIteratorType itMaskLinear( imSegmented, region );
+    
+    itMaskLinear.SetDirection( 1 );
+    
+    while ( ! itMaskLinear.IsAtEndOfLine() )
+    {
+      startMidSternum[ iSeed ] = itMaskLinear.GetIndex();
+      
+      if ( itMaskLinear.Get() ) 
+      {
+        break;
+      }
+      ++itMaskLinear;
+    }
+  }
+
+
+  // Iterate posteriorly to find the pectoral 'dark line'
+
   region = imBIFs->GetLargestPossibleRegion();
   size = region.GetSize();
     
@@ -1957,7 +2008,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     }
 
     sizeSearch[0] = 1;
-    sizeSearch[1] = size[1] - idxMidSternum[1];
+    sizeSearch[1] = size[1] - startMidSternum[ iSeed ][1];
     sizeSearch[2] = 1;
 
     region.SetSize( sizeSearch );
@@ -2165,49 +2216,50 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     imTmp->DisconnectPipeline();
     
     imPectoralVoxels = imTmp;
+    
+    // Iterate posteriorly again but this time with the smoothed mask
+    
+    region = imPectoralVoxels->GetLargestPossibleRegion();
+    size = region.GetSize();
+    
+    for ( iSeed=0; iSeed<nSeeds; iSeed++ )
+    {
+      region.SetIndex( startMidSternum[ iSeed ] );
+
+      if ( flgVerbose )
+      {
+        std::cout << "Pectoral surface search start: " << iSeed << " = " 
+                  << startMidSternum[ iSeed ] << std::endl;
+      }
+
+      sizeSearch[0] = 1;
+      sizeSearch[1] = size[1] - startMidSternum[ iSeed ][1];
+      sizeSearch[2] = 1;
+
+      region.SetSize( sizeSearch );
+    
+      LineIteratorType itPectoralVoxels( imPectoralVoxels, region );
+    
+      itPectoralVoxels.SetDirection( 1 );
+    
+      while ( ! itPectoralVoxels.IsAtEndOfLine() )
+      {
+        idxPectoralSeed[ iSeed ] = itPectoralVoxels.GetIndex();
+
+        if ( itPectoralVoxels.Get() ) 
+        {
+          break;
+        }
+        ++itPectoralVoxels;
+      }
+    }
   }
+
 
   // Write the pectoral mask?
     
   WriteBinaryImageToUCharFile( fileOutputPectoral, "pectoral mask", imPectoralVoxels,
 			       flgLeft, flgRight );
-    
-  // Iterate posteriorly again but this time with the smoothed mask
-    
-  region = imPectoralVoxels->GetLargestPossibleRegion();
-  size = region.GetSize();
-    
-  for ( iSeed=0; iSeed<nSeeds; iSeed++ )
-  {
-    region.SetIndex( startMidSternum[ iSeed ] );
-
-    if ( flgVerbose )
-    {
-      std::cout << "Pectoral surface search start: " << iSeed << " = " 
-                << startMidSternum[ iSeed ] << std::endl;
-    }
-
-    sizeSearch[0] = 1;
-    sizeSearch[1] = size[1] - idxMidSternum[1];
-    sizeSearch[2] = 1;
-
-    region.SetSize( sizeSearch );
-    
-    LineIteratorType itBIFsLinear2( imPectoralVoxels, region );
-    
-    itBIFsLinear2.SetDirection( 1 );
-    
-    while ( ! itBIFsLinear2.IsAtEndOfLine() )
-    {
-      idxPectoralSeed[ iSeed ] = itBIFsLinear2.GetIndex();
-
-      if ( itBIFsLinear2.Get() ) 
-      {
-        break;
-      }
-      ++itBIFsLinear2;
-    }
-  }
 
     
   // And region-grow the pectoral surface from this point

@@ -67,6 +67,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "ofit",  "filename", "Write the Rayleigh distrbution fit to a file."},
   {OPT_STRING, "ocdf",  "filename", "Write the histogram minus the fit as a CDF."},
   {OPT_STRING, "omax", "filename", "Output the maximum image."},
+  {OPT_STRING, "omaxClosed", "filename", "Output the maximum closed image."},
   {OPT_STRING, "obgnd", "filename", "Output the background mask."},
   {OPT_STRING, "oelevation", "filename", "Output the skin elevation map."},
   {OPT_STRING, "ochpts", "filename", "Output the chest surface points image."},
@@ -138,6 +139,7 @@ enum {
   O_OUTPUT_FIT,
   O_OUTPUT_CDF,
   O_OUTPUT_IMAGE_MAX,
+  O_OUTPUT_IMAGE_MAX_CLOSED,
   O_OUTPUT_BACKGROUND,
   O_OUTPUT_ELEVATION,
   O_OUTPUT_CHEST_POINTS,
@@ -211,6 +213,7 @@ int main( int argc, char *argv[] )
   std::string fileOutputRayleigh;
   std::string fileOutputFreqLessBgndCDF;
   std::string fileOutputMaxImage;
+  std::string fileOutputMaxClosedImage;
   std::string fileOutputBackground;
   std::string fileOutputSkinElevationMap;
   std::string fileOutputPectoralSurfaceMask;
@@ -297,15 +300,16 @@ int main( int argc, char *argv[] )
 
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_STRUCTURAL, fileOutputSmoothedStructural );
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_FATSAT,     fileOutputSmoothedFatSat );
-  CommandLineOptions.GetArgument( O_OUTPUT_CLOSED_STRUCTURAL,     fileOutputClosedStructural );
-  CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM,     fileOutputCombinedHistogram );
-  CommandLineOptions.GetArgument( O_OUTPUT_FIT,           fileOutputRayleigh );
-  CommandLineOptions.GetArgument( O_OUTPUT_CDF,           fileOutputFreqLessBgndCDF );
-  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX,     fileOutputMaxImage );
-  CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,    fileOutputBackground );
-  CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,     fileOutputSkinElevationMap );
-  CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,  fileOutputChestPoints );
-  CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK, fileOutputPectoral );
+  CommandLineOptions.GetArgument( O_OUTPUT_CLOSED_STRUCTURAL,   fileOutputClosedStructural );
+  CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM,           fileOutputCombinedHistogram );
+  CommandLineOptions.GetArgument( O_OUTPUT_FIT,                 fileOutputRayleigh );
+  CommandLineOptions.GetArgument( O_OUTPUT_CDF,                 fileOutputFreqLessBgndCDF );
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX,           fileOutputMaxImage );
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX_CLOSED,    fileOutputMaxClosedImage );
+  CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,          fileOutputBackground );
+  CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,           fileOutputSkinElevationMap );
+  CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,        fileOutputChestPoints );
+  CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK,       fileOutputPectoral );
   CommandLineOptions.GetArgument( O_OUTPUT_PEC_SURFACE_MASK,    fileOutputPectoralSurfaceMask );
 
   CommandLineOptions.GetArgument( O_OUTPUT_GRADIENT_MAG_IMAGE, fileOutputGradientMagImage );
@@ -389,6 +393,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetOutputFit( fileOutputRayleigh );
   breastMaskSegmentor->SetOutputCDF( fileOutputFreqLessBgndCDF );
   breastMaskSegmentor->SetOutputImageMax( fileOutputMaxImage );
+  breastMaskSegmentor->SetOutputImageMaxClosed( fileOutputMaxClosedImage );
   breastMaskSegmentor->SetOutputBackground( fileOutputBackground );
   breastMaskSegmentor->SetOutputSkinElevationMap( fileOutputSkinElevationMap );
   breastMaskSegmentor->SetOutputChestPoints( fileOutputChestPoints );
