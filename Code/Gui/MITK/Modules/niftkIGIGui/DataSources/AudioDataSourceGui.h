@@ -42,6 +42,13 @@ protected:
   virtual ~AudioDataSourceGui();
 
 
+protected slots:
+  /** @see QComboBox::currentIndexChanged(const QString&) */
+  void OnCurrentDeviceIndexChanged(const QString& text);
+  /** @see QComboBox::currentIndexChanged(int) */
+  void OnCurrentFormatIndexChanged(int index);
+
+
 private:
   AudioDataSourceGui(const AudioDataSourceGui& copyme);
   AudioDataSourceGui& operator=(const AudioDataSourceGui& assignme);

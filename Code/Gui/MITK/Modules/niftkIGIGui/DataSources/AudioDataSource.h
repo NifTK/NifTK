@@ -135,6 +135,8 @@ private:
   AudioDataSource& operator=(const AudioDataSource& assignme);
   //@}
 
+  void DisconnectAudio();
+
 
   QAudioInput*        m_InputDevice;
   QIODevice*          m_InputStream;      // we do not own this one!

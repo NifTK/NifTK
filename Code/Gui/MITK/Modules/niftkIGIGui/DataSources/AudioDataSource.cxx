@@ -63,13 +63,7 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
 {
   SetStatus("Initialising...");
 
-  QList<QAudioDeviceInfo>   allDevices;// = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-//  foreach(QAudioDeviceInfo d, allDevices)
-//  {
-//    std::cerr << d.deviceName().toStdString() << std::endl;
-//  }
-
-  QAudioDeviceInfo  defaultDevice = allDevices.empty() ? QAudioDeviceInfo::defaultInputDevice() : allDevices.front();
+  QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
   QAudioFormat      defaultFormat = defaultDevice.preferredFormat();
 
   SetAudioDevice(&defaultDevice, &defaultFormat);
@@ -79,12 +73,9 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
 //-----------------------------------------------------------------------------
 AudioDataSource::~AudioDataSource()
 {
-  delete m_InputDevice;
-  // we do not own m_InputStream!
+  DisconnectAudio();
 
   delete m_OutputFile;
-  delete m_DeviceInfo;
-  delete m_Inputformat;
 }
 
 
@@ -103,13 +94,40 @@ const QAudioFormat* AudioDataSource::GetFormat() const
 
 
 //-----------------------------------------------------------------------------
+void AudioDataSource::DisconnectAudio()
+{
+  bool    ok = false;
+
+  if (m_InputDevice != 0)
+  {
+    if (m_InputStream != 0)
+    {
+      ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+      assert(ok);
+      // we do not own m_InputStream!
+      m_InputStream = 0;
+    }
+    m_InputDevice->stop();
+
+    ok = QObject::disconnect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+    assert(ok);
+
+    delete m_InputDevice;
+    m_InputDevice = 0;
+  }
+
+  delete m_DeviceInfo;
+  delete m_Inputformat;
+}
+
+
+//-----------------------------------------------------------------------------
 void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format)
 {
   assert(device != 0);
   assert(format != 0);
 
-  // FIXME: disconnect previous audio device!
-
+  DisconnectAudio();
 
   try
   {
@@ -231,6 +249,8 @@ void AudioDataSource::GrabData()
 {
   // sanity check
   if (m_InputStream == 0)
+    return;
+  if (m_InputDevice == 0)
     return;
 
   // beware: m_InputStream->bytesAvailable() always returns zero!

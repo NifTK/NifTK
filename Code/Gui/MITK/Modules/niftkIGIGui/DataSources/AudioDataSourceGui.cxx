@@ -20,6 +20,8 @@
 #include <QAudioInput>
 
 
+Q_DECLARE_METATYPE(QAudioFormat);
+
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, AudioDataSourceGui, "IGI Audio Source Gui")
 
 
@@ -41,10 +43,8 @@ void AudioDataSourceGui::Update()
   AudioDataSource::Pointer  src = dynamic_cast<AudioDataSource*>(GetSource());
   if (src.IsNotNull())
   {
-
     const QAudioDeviceInfo*   device  = src->GetDeviceInfo();
     const QAudioFormat*       format  = src->GetFormat();
-
 
     // find entry that matches our device.
     {
@@ -76,6 +76,8 @@ void AudioDataSourceGui::Update()
     {
       if (m_FormatComboBox->count() == 0)
       {
+        m_FormatComboBox->blockSignals(true);
+
         // this kinda sucks...
         QList<int>  channelCounts = device->supportedChannelCounts();
         foreach(int c, channelCounts)
@@ -99,11 +101,13 @@ void AudioDataSourceGui::Update()
               if (device->isFormatSupported(f))
               {
                 QString   text = AudioDataSource::formatToString(&f);
-                m_FormatComboBox->addItem(text);
+                m_FormatComboBox->addItem(text, QVariant::fromValue(f));
               }
             }
           }
         }
+
+        m_FormatComboBox->blockSignals(false);
       }
       QString currentFormatText = AudioDataSource::formatToString(format);
       int   foundFormatEntry = -1;
@@ -147,4 +151,62 @@ void AudioDataSourceGui::Initialize(QWidget* parent)
 
   // format combobox depends on the selected device.
   Update();
+
+  // signals are connected after init, avoids unnecessary roundtrips.
+  bool    ok = false;
+  ok = QObject::connect(m_DeviceComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(OnCurrentDeviceIndexChanged(const QString&)));
+  assert(ok);
+  ok = QObject::connect(m_FormatComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentFormatIndexChanged(int)));
+  assert(ok);
+}
+
+
+//-----------------------------------------------------------------------------
+void AudioDataSourceGui::OnCurrentDeviceIndexChanged(const QString& text)
+{
+  QList<QAudioDeviceInfo>   allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+  foreach(QAudioDeviceInfo d, allDevices)
+  {
+    if (d.deviceName() == text)
+    {
+      // format combobox needs re-populating.
+      // that will be done in due time via Update().
+      m_FormatComboBox->clear();
+
+      AudioDataSource::Pointer  src = dynamic_cast<AudioDataSource*>(GetSource());
+      if (src.IsNotNull())
+      {
+        QAudioFormat format = d.preferredFormat();
+        src->SetAudioDevice(&d, &format);
+      }
+
+      break;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void AudioDataSourceGui::OnCurrentFormatIndexChanged(int index)
+{
+  QVariant v = m_FormatComboBox->itemData(index);
+  if (v.isValid())
+  {
+    QAudioFormat    format(v.value<QAudioFormat>());
+    assert(m_FormatComboBox->itemText(index) == AudioDataSource::formatToString(&format));
+
+    AudioDataSource::Pointer  src = dynamic_cast<AudioDataSource*>(GetSource());
+    if (src.IsNotNull())
+    {
+      QList<QAudioDeviceInfo>   allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+      foreach(QAudioDeviceInfo d, allDevices)
+      {
+        if (d.deviceName() == m_DeviceComboBox->currentText())
+        {
+          src->SetAudioDevice(&d, &format);
+          break;
+        }
+      }
+    }
+  }
 }
