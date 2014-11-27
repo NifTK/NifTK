@@ -371,6 +371,10 @@ workflow.connect(noddi_fitting, 'out_error', data_sink, '@out_error')
 workflow.connect(noddi_fitting, 'out_fibre_orientations_x', data_sink, '@out_fibre_orientations_x')
 workflow.connect(noddi_fitting, 'out_fibre_orientations_y', data_sink, '@out_fibre_orientations_y')
 workflow.connect(noddi_fitting, 'out_fibre_orientations_z', data_sink, '@out_fibre_orientations_z')    
+workflow.connect(b0_mask_eroder, 'out_file', data_sink, '@dwi_mask')
+workflow.connect(merge_dwis_images, 'merged_file', data_sink, '@corrected_dwis')
+workflow.connect(merge_bv_files, 'bvals', data_sink, '@bvals')
+workflow.connect(merge_bv_files, 'bvecs', data_sink, '@bvecs')
 
 workflow.write_graph(graph2use = 'colored')
 

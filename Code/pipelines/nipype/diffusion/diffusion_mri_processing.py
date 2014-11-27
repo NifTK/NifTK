@@ -306,7 +306,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
                 'transformations',
                 'average_b0',
                 'mcmap',
-                'T1toB0_transformation']),
+                'T1toB0_transformation',
+                'dwi_mask']),
                            name="output_node" )
 
     #############################################################
@@ -509,7 +510,8 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
         workflow.connect(threshold_dwis, 'out_file', output_node, 'dwis')
 
     workflow.connect(reorder_transformations, 'out', output_node, 'transformations')
-    
+    workflow.connect(T1_mask_resampling, 'res_file', output_node, 'dwi_mask')
+
     return workflow    
 
     # node explanation:

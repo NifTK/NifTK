@@ -165,6 +165,9 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 	r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 	r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+	r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
+	r.connect(find_and_merge_dwis, 'bvals', ds, '@bvals')
+	r.connect(find_and_merge_dwis, 'bvecs', ds, '@bvecs')
 
 	return r
 

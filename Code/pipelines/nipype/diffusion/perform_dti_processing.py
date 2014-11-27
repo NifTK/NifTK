@@ -160,6 +160,7 @@ r.connect(r.get_node('output_node'), 'dwis', ds, '@dwis')
 r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
 
 r.write_graph(graph2use = 'colored')
 
