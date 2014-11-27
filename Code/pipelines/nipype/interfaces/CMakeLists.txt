@@ -12,18 +12,10 @@
 #
 #============================================================================*/
 
-add_subdirectory(Libs)
+file(GLOB __python_files    "*.py")
+file(GLOB __bash_files      "*.sh")
+file(GLOB __python_programs "perform_*.py")
 
-if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(Applications)
-endif()
-
-if(BUILD_COMMAND_LINE_SCRIPTS)
-  add_subdirectory(Scripts)
-endif()
-
-if(BUILD_GUI)
-  add_subdirectory(Gui)
-endif(BUILD_GUI)
-
-add_subdirectory(pipelines)
+install(FILES    ${__python_files}    DESTINATION python)
+install(PROGRAMS ${__bash_files}      DESTINATION bin)
+install(PROGRAMS ${__python_programs} DESTINATION bin)

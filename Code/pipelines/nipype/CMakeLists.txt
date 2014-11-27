@@ -12,18 +12,16 @@
 #
 #============================================================================*/
 
-add_subdirectory(Libs)
+add_subdirectory(asl)
+add_subdirectory(diffusion)
+add_subdirectory(examples)
+add_subdirectory(fmri)
+add_subdirectory(functional)
+add_subdirectory(interfaces)
+add_subdirectory(registration)
+add_subdirectory(seg-gif)
+add_subdirectory(studies)
+add_subdirectory(tests)
+add_subdirectory(utils)
+add_subdirectory(xnat)
 
-if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(Applications)
-endif()
-
-if(BUILD_COMMAND_LINE_SCRIPTS)
-  add_subdirectory(Scripts)
-endif()
-
-if(BUILD_GUI)
-  add_subdirectory(Gui)
-endif(BUILD_GUI)
-
-add_subdirectory(pipelines)

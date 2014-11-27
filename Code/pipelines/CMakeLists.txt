@@ -12,18 +12,5 @@
 #
 #============================================================================*/
 
-add_subdirectory(Libs)
+add_subdirectory(nipype)
 
-if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(Applications)
-endif()
-
-if(BUILD_COMMAND_LINE_SCRIPTS)
-  add_subdirectory(Scripts)
-endif()
-
-if(BUILD_GUI)
-  add_subdirectory(Gui)
-endif(BUILD_GUI)
-
-add_subdirectory(pipelines)
