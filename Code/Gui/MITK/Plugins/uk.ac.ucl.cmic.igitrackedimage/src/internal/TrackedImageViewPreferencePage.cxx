@@ -34,7 +34,7 @@ const std::string TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME
 const std::string TrackedImageViewPreferencePage::FLIP_X_SCALING("flip x scaling");
 const std::string TrackedImageViewPreferencePage::FLIP_Y_SCALING("flip y scaling");
 const std::string TrackedImageViewPreferencePage::CLONE_IMAGE("Clone image");
-
+const std::string TrackedImageViewPreferencePage::SHOW_2D_WINDOW("show 2D window");
 
 //-----------------------------------------------------------------------------
 TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
@@ -44,6 +44,7 @@ TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
 , m_EmToWorldCalibrationFileName(0)
 , m_Initializing(false)
 , m_CloneImage(0)
+, m_Show2DWindow(0)
 , m_TrackedImageViewPreferencesNode(0)
 {
 }
@@ -106,6 +107,10 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
   m_CloneImage->setChecked(false);
   formLayout->addRow("show clone image button", m_CloneImage);
 
+  m_Show2DWindow = new QCheckBox();
+  m_Show2DWindow->setChecked(false);
+  formLayout->addRow("show 2D window", m_Show2DWindow);
+
   m_MainControl->setLayout(formLayout);
   this->Update();
 
@@ -129,6 +134,7 @@ bool TrackedImageViewPreferencePage::PerformOk()
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_X_SCALING, m_FlipXScaling->isChecked());
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_Y_SCALING, m_FlipYScaling->isChecked());
   m_TrackedImageViewPreferencesNode->PutBool(CLONE_IMAGE, m_CloneImage->isChecked());
+  m_TrackedImageViewPreferencesNode->PutBool(SHOW_2D_WINDOW, m_Show2DWindow->isChecked());
   return true;
 }
 
@@ -149,4 +155,5 @@ void TrackedImageViewPreferencePage::Update()
   m_FlipXScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_X_SCALING, false));
   m_FlipYScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_Y_SCALING, false));
   m_CloneImage->setChecked(m_TrackedImageViewPreferencesNode->GetBool(CLONE_IMAGE, false));
+  m_Show2DWindow->setChecked(m_TrackedImageViewPreferencesNode->GetBool(SHOW_2D_WINDOW, false));
 }
