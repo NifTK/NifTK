@@ -93,7 +93,7 @@ the source code and compile your own, and install it in a non standard place (i.
 then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
 On Linux/Mac try
 \verbatim
-./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
@@ -102,7 +102,7 @@ On Linux/Mac try
 \verbatim
 git clone git://gitorious.org/qt/qt.git qt
 cd qt
-./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
@@ -154,7 +154,7 @@ where XXXX is the Visual Studio version you'd like to use.
 The next step is to configure Qt for the build:
 \verbatim
 cd /D C:\Qt\4.8.6-build
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-multimedia -no-audio-backend -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
 The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
