@@ -68,10 +68,15 @@ public:
    */
   static const std::string FLIP_Y_SCALING;
 
-    /**
-   * \brief Stores the status whether we show the clone image button.
+  /**
+   * \brief Stores the name of the preference node that contains status whether we show the clone image button.
    */
   static const std::string CLONE_IMAGE;
+
+  /**
+   * \brief Stores the name of the preference node that controls if we show the 2D window.
+   */
+  static const std::string SHOW_2D_WINDOW;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
@@ -112,6 +117,7 @@ private:
   QCheckBox       *m_FlipYScaling;
 
   QCheckBox       *m_CloneImage;
+  QCheckBox       *m_Show2DWindow;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };
