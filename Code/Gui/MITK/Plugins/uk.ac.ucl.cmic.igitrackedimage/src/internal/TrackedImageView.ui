@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="m_VerticalLayout">
      <item>
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="0">
@@ -79,7 +79,30 @@
       </widget>
      </item>
      <item>
-      <widget class="QmitkRenderWindow" name="m_RenderWindow" native="true"/>
+      <widget class="QmitkRenderWindow" name="m_RenderWindow" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="m_VerticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>4</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

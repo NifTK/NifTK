@@ -105,7 +105,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
 
     RetrievePreferenceValues();
 
-    m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);   
     connect(m_Controls->m_ClonePushButton, SIGNAL(clicked()), this, SLOT(OnClonePushButtonClicked()));
 
     m_Controls->m_CloneTrackedImageDirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
@@ -129,8 +128,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
 void TrackedImageView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
-
-  m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);
 }
 
 
@@ -177,6 +174,18 @@ void TrackedImageView::RetrievePreferenceValues()
     vtkMatrix4x4::Multiply4x4(imageToSensorTransform, image2SensorScale, m_ImageToTrackingSensorTransform);
 
     m_ShowCloneImageGroup = prefs->GetBool(TrackedImageViewPreferencePage::CLONE_IMAGE, false);
+    m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);
+
+    m_Show2DWindow = prefs->GetBool(TrackedImageViewPreferencePage::SHOW_2D_WINDOW, false);
+    m_Controls->m_RenderWindow->setVisible(m_Show2DWindow);
+    if (m_Show2DWindow)
+    {
+      m_Controls->m_VerticalLayout->removeItem(m_Controls->m_VerticalSpacer);
+    }
+    else
+    {
+      m_Controls->m_VerticalLayout->addItem(m_Controls->m_VerticalSpacer);
+    }
   }
 }
 
