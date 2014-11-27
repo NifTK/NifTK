@@ -128,6 +128,7 @@ if(NOT DEFINED MITK_DIR)
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )
