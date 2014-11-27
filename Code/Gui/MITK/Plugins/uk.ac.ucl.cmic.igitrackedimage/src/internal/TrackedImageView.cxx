@@ -103,6 +103,14 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ImageToWorldNode->setEditable(true);
 
+    // Set up the Render Window.
+    // This currently has to be a 2D view, to generate the 2D plane geometry to render
+    // which is then used to drive the moving 2D plane we see in 3D. This is how
+    // the axial/sagittal/coronal slices work in the QmitkStdMultiWidget.
+
+    m_Controls->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
+    mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
+
     RetrievePreferenceValues();
 
     connect(m_Controls->m_ClonePushButton, SIGNAL(clicked()), this, SLOT(OnClonePushButtonClicked()));
@@ -181,10 +189,12 @@ void TrackedImageView::RetrievePreferenceValues()
     if (m_Show2DWindow)
     {
       m_Controls->m_VerticalLayout->removeItem(m_Controls->m_VerticalSpacer);
+      mitk::RenderingManager::GetInstance()->AddRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
     else
     {
       m_Controls->m_VerticalLayout->addItem(m_Controls->m_VerticalSpacer);
+      mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
   }
 }
@@ -226,6 +236,13 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
         mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
         nodeToUpdate->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
       }
+
+      // This is expensive, so only update if the window is visible.
+      if (m_Show2DWindow)
+      {
+        mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      }
+
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     }
   }
@@ -261,7 +278,13 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
                     
         ctkDictionary properties;
         emit Updated(properties);
-        
+
+        // This is expensive, so only update if the window is visible.
+        if (m_Show2DWindow)
+        {
+          mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+        }
+
       } // end if input is valid
     } // if got an image
   } // if got an image node
