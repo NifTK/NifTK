@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="16" class="LinearLookupTable" displayName="FSL hot" premultiplied="1">
+<lut order="17" class="LinearLookupTable" displayName="FSL hot" premultiplied="1">
 <colour r="0.000000"  g="0.000000"  b="0.000000" />
 <colour r="0.027027"  g="0.000000"  b="0.000000" />
 <colour r="0.054054"  g="0.000000"  b="0.000000" />

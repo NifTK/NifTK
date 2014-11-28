@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="19" class="LinearLookupTable" displayName="Matlab summer" premultiplied="1">
+<lut order="20" class="LinearLookupTable" displayName="Matlab summer" premultiplied="1">
 <colour r="0" g="0.5" b="0.4" />
 <colour r="0.0039" g="0.502" b="0.4" />
 <colour r="0.0078" g="0.5039" b="0.4" />
