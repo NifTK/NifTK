@@ -90,6 +90,15 @@ cd qt
 
 <li> On Windows follow the instructions below to build Qt:<br>
 
+Instead of compiling Qt yourself, ready-to-use patched source and binaries can be downloaded from
+\verbatim
+https://bitbucket.org/bruelltuete/qt-niftk
+\endverbatim
+Binaries are available for 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc11+src_selfextracting-7z.exe">VS2012 64-bit</a>, 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc10+src_selfextracting-7z.exe">VS2010 64-bit</a> and 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x86-vc10+src_selfextracting-7z.exe">VS2010 32-bit</a>.
+
 First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.<br>
 You might also want to have the Qt integration pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
 
