@@ -31,6 +31,11 @@ which can be accessed on the CMIC Unix filesystem here:
 People should add any preconditions or caveats here as they find them.
 
 <ul>
+<li>On a RedHat machine, this may be needed to be able to compile Qt with audio:
+\verbatim
+sudo yum install 'pkgconfig(gstreamer-app-0.10)'
+\endverbatim
+</li>
 <li> On Ubuntu you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev. (This has been done on hellica and denguefever).</li>
 <li> On most Linux distros you will need to install libbz2-dev.</li>
 <li> On CMIC Centos machines, you will need to use CMAKE_C++_COMPILER=/usr/lib/g++44 and CMAKE_C_COMPILER=/usr/lib/gcc44 in the build below. </li>
