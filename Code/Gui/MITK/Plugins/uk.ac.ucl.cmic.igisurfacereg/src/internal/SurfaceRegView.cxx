@@ -291,7 +291,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
-  ComposeTransformWithNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
+  ComposeTransformWithSelectedNodes(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
 
 
