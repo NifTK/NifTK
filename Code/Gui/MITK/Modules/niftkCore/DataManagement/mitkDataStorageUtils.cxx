@@ -488,18 +488,27 @@ void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer
   vtkSmartPointer<vtkMatrix4x4> nonConstTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   nonConstTransform->DeepCopy(&transform);
 
-  vtkSmartPointer<vtkMatrix4x4> inverse = vtkSmartPointer<vtkMatrix4x4>::New();
-  inverse->DeepCopy(&transform);
-  inverse->Invert();
-
   mitk::Point3D dummyPoint;
   dummyPoint.Fill(0);
 
   mitk::ApplyTransformMatrixOperation *doOp = new mitk::ApplyTransformMatrixOperation(OpAPPLYTRANSFORMMATRIX, nonConstTransform, dummyPoint);
-  mitk::ApplyTransformMatrixOperation *undoOp = new mitk::ApplyTransformMatrixOperation(OpAPPLYTRANSFORMMATRIX, inverse, dummyPoint);
-  mitk::OperationEvent* operationEvent = new mitk::OperationEvent( geometry, doOp, undoOp, "ApplyTransformToNode");
-  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-  geometry->ExecuteOperation(doOp);
+
+  if (mitk::UndoController::GetCurrentUndoModel() != NULL)
+  {
+    vtkSmartPointer<vtkMatrix4x4> inverse = vtkSmartPointer<vtkMatrix4x4>::New();
+    inverse->DeepCopy(&transform);
+    inverse->Invert();
+
+    mitk::ApplyTransformMatrixOperation *undoOp = new mitk::ApplyTransformMatrixOperation(OpAPPLYTRANSFORMMATRIX, inverse, dummyPoint);
+    mitk::OperationEvent* operationEvent = new mitk::OperationEvent( geometry, doOp, undoOp, "ApplyTransformToNode");
+    mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+    geometry->ExecuteOperation(doOp);
+  }
+  else
+  {
+    geometry->ExecuteOperation(doOp);
+    delete doOp;
+  }
 }
 
 
