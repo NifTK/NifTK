@@ -70,6 +70,8 @@ def merge_dwi_function (input_dwis, input_bvals, input_bvecs):
     import nibabel as nib
     import numpy as np 
     
+    qdiff_eps = 1.0
+
     def merge_vector_files(input_files):
         import numpy as np
         import os
@@ -103,7 +105,7 @@ def merge_dwi_function (input_dwis, input_bvals, input_bvecs):
         # Walk backwards through the dwis, assume later scans are more likely to be correctly acquired!
         for file_index in range(len(input_dwis)-2,-1,-1):
             # If the qform doesn't match that of the last scan, throw it away
-            if np.sum(qform[len(input_dwis)-1] == qform[file_index]) < 4:
+            if np.linalg.norm(qforms[len(input_dwis)-1] - qforms[file_index]) > qdiff_eps:
                 print '** WARNING ** : The qform of the DWIs dont match, denoting a re-scan error, throwing ', input_dwis[file_index]
                 input_dwis.pop(file_index)
                 input_bvals.pop(file_index)
