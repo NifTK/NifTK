@@ -51,7 +51,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
   Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.xnat:ON
-  Plugins/uk.ac.ucl.cmic.niftyreg:ON                      # Must be after the xnat plugin
+  Plugins/uk.ac.ucl.cmic.niftyreg:OFF                      # Must be after the xnat plugin
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
   Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF           # Under development
 
