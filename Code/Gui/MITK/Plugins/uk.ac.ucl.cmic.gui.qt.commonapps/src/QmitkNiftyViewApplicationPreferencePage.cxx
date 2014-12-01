@@ -26,6 +26,8 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+#include <limits>
+
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME("window/level initialisation method");
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS("window/level initialisation by MIDAS convention");
 const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_LEVELWINDOW("window/level initialisation by window level widget");
