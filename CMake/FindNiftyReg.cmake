@@ -64,7 +64,6 @@ if(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
     _reg_globalTransformation
     _reg_localTransformation
     _reg_maths
-    _reg_mutualinformation
     _reg_resampling
     _reg_ssd
     _reg_tools
