@@ -113,7 +113,7 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     // disable it for now, we've never used it, and it seems to have bugs:
     //  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2873
     //  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2579
-    m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
+    m_Controls->m_LiveDistanceGroupBox->setEnabled(true);//false);
 
     // disabled by default, for now.
     m_Controls->m_HiddenSurfaceRemovalGroupBox->setCollapsed(true);
@@ -183,14 +183,17 @@ float SurfaceRegView::ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSma
   // FIXME: this crashes because targetLocator has a null tree member... sometimes???
   niftk::DistanceToSurface(moving, fixed, result);
 
-  double  sum = 0;
+  double  sqsum = 0;
   for (int i = 0; i < result->GetNumberOfTuples(); ++i)
   {
+    // p is the distance or error.
     double p = result->GetValue(i);
-    sum += p;
+    sqsum += p * p;
   }
 
-  return sum;
+  sqsum /= result->GetNumberOfTuples();
+  double  rms = std::sqrt(sqsum);
+  return rms;
 }
 
 
