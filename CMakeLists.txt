@@ -1427,7 +1427,6 @@ include(NIFTKCPackOptions)
 include(CPack)
 
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
-
 include(mitkInstallRules)
 
 ######################################################################
@@ -1496,3 +1495,24 @@ if(WIN32)
 else(WIN32)
   message( "CreateWindowsBatchScript: WIN32 not found" )
 endif(WIN32)
+
+######################################################################
+# Here we generate stuff for a NifTK "Package Config"
+# As you might expect, its based on the MITK stuff.
+######################################################################
+set(NIFTK_EXPORTS_FILE "${NIFTK_BINARY_DIR}/NifTKExports.cmake")
+file(REMOVE ${NIFTK_EXPORTS_FILE})
+
+set(targets_to_export)
+get_property(module_targets GLOBAL PROPERTY MITK_MODULE_TARGETS)
+if(module_targets)
+  list(APPEND targets_to_export ${module_targets})
+endif()
+
+if(MITK_USE_BLUEBERRY)
+  if(MITK_PLUGIN_LIBRARIES)
+    list(APPEND targets_to_export ${MITK_PLUGIN_LIBRARIES})
+  endif()
+endif()
+
+message("Matt, targets_to_export=${targets_to_export}")
