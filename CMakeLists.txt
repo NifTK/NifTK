@@ -399,6 +399,7 @@ include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateCommandLineScript)
 include(niftkMacroCreateGuiApplication)
 include(niftkMacroFixupCommandLineApps)
+include(niftkMacroForcePluginCacheValue)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -1354,19 +1355,19 @@ endif()
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
-subdirs(Doc)
-subdirs(Code)
+add_subdirectory(Doc)
+add_subdirectory(Code)
 
 if(BUILD_UTILITIES)
-  subdirs(Utilities)
+  add_subdirectory(Utilities)
 endif(BUILD_UTILITIES)
 
 if(BUILD_TESTING)
-  subdirs(Testing)
+  add_subdirectory(Testing)
 endif(BUILD_TESTING)
 
 if(BUILD_PROTOTYPE)
-  subdirs(Prototype)
+  add_subdirectory(Prototype)
 endif(BUILD_PROTOTYPE)
 
 ######################################################################
@@ -1510,9 +1511,32 @@ if(module_targets)
 endif()
 
 if(MITK_USE_BLUEBERRY)
-  if(MITK_PLUGIN_LIBRARIES)
-    list(APPEND targets_to_export ${MITK_PLUGIN_LIBRARIES})
+  get_property(plugin_targets GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS)
+  if(plugin_targets)
+    list(APPEND targets_to_export ${plugin_targets})
   endif()
 endif()
 
-message("Matt, targets_to_export=${targets_to_export}")
+export(TARGETS ${targets_to_export} APPEND FILE ${NIFTK_EXPORTS_FILE})
+
+set(NIFTK_EXPORTED_TARGET_PROPERTIES )
+foreach(target_to_export ${targets_to_export})
+  get_target_property(autoload_targets ${target_to_export} MITK_AUTOLOAD_TARGETS)
+  if(autoload_targets)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+  endif()
+  get_target_property(autoload_dir ${target_to_export} MITK_AUTOLOAD_DIRECTORY)
+  if(autoload_dir)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+  endif()
+endforeach()
+
+get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+set(VISIBILITY_AVAILABLE 0)
+set(visibility_test_flag "")
+mitkFunctionCheckCompilerFlags("-fvisibility=hidden" visibility_test_flag)
+if(visibility_test_flag)
+  # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
+  set(VISIBILITY_AVAILABLE 1)
+endif()
