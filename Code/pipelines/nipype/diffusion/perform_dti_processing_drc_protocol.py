@@ -19,7 +19,11 @@ def gen_substitutions(op_basename):
     
     subs.append(('average_output_res_maths', op_basename+'_average_b0'))
     subs.append(('vol0000_maths_res_merged_thresh_maths', op_basename+'_corrected_dwi'))
-
+    subs.append(('MNI152_T1_2mm_brain_mask_dil_res_maths_res', op_basename+'_mask'))
+    subs.append((r'/([^/;]+)_merged.bval', '/' + op_basename + '_corrected_dwi.bval'))
+    subs.append((r'/([^/;]+)_merged.bvec', '/' + op_basename + '_corrected_dwi.bvec'))
+    subs.append((r'/([^/;]+)_aff_reg_transform.txt', '/' + op_basename + '_T1_to_B0.txt'))
+    subs.append((r'/transformations/vol', '/transformations/' + op_basename + '_dwi_to_b0_'))
     return subs
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
@@ -150,7 +154,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	ds = pe.Node(nio.DataSink(), name='ds')
 	ds.inputs.base_directory = result_dir
 	ds.inputs.parameterization = False
-	r.connect(subsgen, 'substitutions', ds, 'substitutions')
+	r.connect(subsgen, 'substitutions', ds, 'regexp_substitutions')
 
 	
 
@@ -165,6 +169,9 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 	r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 	r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
+	r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
+	r.connect(find_and_merge_dwis, 'bvals', ds, '@bvals')
+	r.connect(find_and_merge_dwis, 'bvecs', ds, '@bvecs')
 
 	return r
 
