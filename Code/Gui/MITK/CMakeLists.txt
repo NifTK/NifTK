@@ -17,10 +17,9 @@
 # However, you will also need to specify stuff in each subdirectory.
 ####################################################################################
 
-set(MY_PROJECT_NAME ${PROJECT})
+set(MY_PROJECT_NAME ${PROJECT_NAME})
 
-mark_as_advanced(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
-                 )
+mark_as_advanced(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE)
 
 if(MITK_USE_QT)
   set(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
