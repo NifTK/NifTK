@@ -29,10 +29,6 @@ build_testing=true
 build_docs=true
 build_niftysim=false
 build_command_line_tools=true
-build_all_apps=true
-build_midas=true
-build_igi=true
-build_niftyview=true
 ctest_type="Nightly"
 make_install=false
 install_prefix="/usr/local"
@@ -160,10 +156,6 @@ Components:
   documentation:         $build_docs
   NiftySim:              $build_niftysim
   command line tools:    $build_command_line_tools
-  all apps:              $build_all_apps
-  NiftyMIDAS:            $build_midas
-  NiftyIGI:              $build_igi
-  NiftyView:             $build_niftyview
 
 Test options:
 
@@ -273,22 +265,6 @@ do
   elif [ "$1" == "--no-command-line-tools" ]
   then
     build_command_line_tools=false
-    shift 1
-  elif [ "$1" == "--no-all-apps" ]
-  then
-    build_all_apps=false
-    shift 1
-  elif [ "$1" == "--no-midas" ]
-  then
-    build_midas=false
-    shift 1
-  elif [ "$1" == "--no-igi" ]
-  then
-    build_igi=false
-    shift 1
-  elif [ "$1" == "--no-niftyview" ]
-  then
-    build_niftyview=false
     shift 1
   elif [ "$1" == "--ctest-type" ]
   then
@@ -447,34 +423,6 @@ then
   cmake_args="${cmake_args} -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON"
 else
   cmake_args="${cmake_args} -DBUILD_COMMAND_LINE_PROGRAMS=OFF -DBUILD_COMMAND_LINE_SCRIPTS=OFF"
-fi
-
-if $build_all_apps
-then
-  cmake_args="${cmake_args} -DNIFTK_BUILD_ALL_APPS=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_BUILD_ALL_APPS=OFF"
-fi
-
-if $build_midas
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyMIDAS=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyMIDAS=OFF"
-fi
-
-if $build_igi
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyIGI=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyIGI=OFF"
-fi
-
-if $build_niftyview
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyView=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyView=OFF"
 fi
 
 # -----------------------------------------------------------------------------
