@@ -25,7 +25,6 @@ branch="dev"
 threads=1
 do_coverage=false
 do_memcheck=false
-use_gcc44=false
 build_testing=true
 build_docs=true
 build_niftysim=false
@@ -100,8 +99,6 @@ Options:
 
     -v, --valgrind                  Does memory checks with valgrind.
 
-    --gcc44                         Uses gcc4.4. Deprecated. Set the CC and CXX variables, instead.
-
     -D <variable=value>             Sets a CMake variable for the build. Space after -D is optional.
 
     --no-testing                    Does not build the tests.
@@ -155,7 +152,6 @@ Build options:
   branch:                $branch
   build type:            $build_type
   threads:               $threads
-  gcc44:                 $use_gcc44
   CMake variables:       $cmake_vars
 
 Components:
@@ -252,10 +248,6 @@ do
   elif [ "$1" == "-v" ] || [ "$1" == "--valgrind" ]
   then
     do_memcheck=true
-    shift 1
-  elif [ "$1" == "--gcc44" ]
-  then
-    use_gcc44=true
     shift 1
   elif [ "$1" == "-D" ]
   then
@@ -427,11 +419,6 @@ then
   ctest_command="make clean ; ctest -D ${ctest_type}Start ; ctest -D ${ctest_type}Update ; ctest -D ${ctest_type}Configure ; ctest -D ${ctest_type}Build ; ctest -D ${ctest_type}Test ; ctest -D ${ctest_type}Coverage ; ctest -D ${ctest_type}MemCheck ; ctest -D ${ctest_type}Submit"
 else
   ctest_command="make clean ; ctest -D ${ctest_type}"
-fi
-
-if $use_gcc44
-then
-  cmake_args="${cmake_args} -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
 fi
 
 if $build_docs
