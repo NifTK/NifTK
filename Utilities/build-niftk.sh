@@ -21,6 +21,7 @@
 build_root="."
 source_dir="NifTK"
 build_type="Release"
+uri=git@cmiclab.cs.ucl.ac.uk:CMIC/NifTK
 branch="dev"
 threads=1
 do_coverage=false
@@ -84,6 +85,8 @@ Options:
 
     -d, --debug                     Sets the build type to Debug.
 
+    -u, --uri                       Tells which URI to clone the repository from.
+
     -b, --branch <branch>           Checks out the given branch. Default is 'dev'.
 
     -t, --time <time>               Checks out the commit from the given time. Default is 'now'.
@@ -142,6 +145,7 @@ Directories:
 
 Build options:
 
+  uri:                   $uri
   branch:                $branch
   build type:            $build_type
   threads:               $threads
@@ -219,6 +223,11 @@ do
   then
     build_type="Debug"
     shift 1
+  elif [ "$1" == "-u" ] || [ "$1" == "--uri" ]
+  then
+    check_next_arg ${@}
+    uri="$2"
+    shift 2
   elif [ "$1" == "-b" ] || [ "$1" == "--branch" ]
   then
     check_next_arg ${@}
@@ -416,7 +425,7 @@ fi
 
 echo "Build started at `date` on `hostname -f`." > ${log_path}/1-start.log
 print_options >> ${log_path}/1-start.log
-run_command "git clone git@cmicdev.cs.ucl.ac.uk:CMIC/NifTK ${source_path}" 2-clone.log
+run_command "git clone ${uri} ${source_path}" 2-clone.log
 cd ${source_path}
 # For some reason the time-based checkout works only if the branch has already been checked out once.
 run_command "git checkout $branch" 3-checkout.log
