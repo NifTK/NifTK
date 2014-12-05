@@ -22,7 +22,6 @@ build_root="."
 source_dir="NifTK"
 build_type="Release"
 branch="dev"
-commit_time="now"
 threads=1
 do_coverage=false
 do_memcheck=false
@@ -154,7 +153,6 @@ Directories:
 Build options:
 
   branch:                $branch
-  commit time:           $commit_time
   build type:            $build_type
   threads:               $threads
   gcc44:                 $use_gcc44
@@ -241,11 +239,6 @@ do
   then
     check_next_arg ${@}
     branch="$2"
-    shift 2
-  elif [ "$1" == "-t" ] || [ "$1" == "--time" ]
-  then
-    check_next_arg ${@}
-    commit_time="$2"
     shift 2
   elif [ "$1" == "-j" ] || [ "$1" == "--threads" ]
   then
@@ -507,7 +500,6 @@ run_command "git clone git@cmicdev.cs.ucl.ac.uk:CMIC/NifTK ${source_path}" 2-clo
 cd ${source_path}
 # For some reason the time-based checkout works only if the branch has already been checked out once.
 run_command "git checkout $branch" 3-checkout.log
-run_command "git checkout $branch@{$commit_time}" 3-checkout.log
 cd ${build_path}
 run_command "cmake ${cmake_args} ${source_path}" 4-cmake.log
 run_command "make -j ${threads}" 5-build.log
