@@ -27,7 +27,6 @@ do_coverage=false
 do_memcheck=false
 build_testing=true
 build_docs=true
-build_niftysim=false
 build_command_line_tools=true
 ctest_type="Nightly"
 make_install=false
@@ -101,8 +100,6 @@ Options:
 
     --no-docs                       Does not build the documentation pages.
 
-    --build-niftysim                Builds NiftySim. (Switched off by default.)
-
     --no-command-line-tools         Does not build the command line applications and scripts.
 
     --no-all-apps                   Does not build all the applications.
@@ -154,7 +151,6 @@ Components:
 
   testing:               $build_testing
   documentation:         $build_docs
-  NiftySim:              $build_niftysim
   command line tools:    $build_command_line_tools
 
 Test options:
@@ -257,10 +253,6 @@ do
   elif [ "$1" == "--no-docs" ]
   then
     build_docs=false
-    shift 1
-  elif [ "$1" == "--build-niftysim" ]
-  then
-    build_niftysim=true
     shift 1
   elif [ "$1" == "--no-command-line-tools" ]
   then
@@ -409,13 +401,6 @@ then
   cmake_args="${cmake_args} -DBUILD_TESTING=ON"
 else
   cmake_args="${cmake_args} -DBUILD_TESTING=OFF"
-fi
-
-if $build_niftysim
-then
-  cmake_args="${cmake_args} -DBUILD_NIFTYSIM=ON"
-else
-  cmake_args="${cmake_args} -DBUILD_NIFTYSIM=OFF"
 fi
 
 if $build_command_line_tools
