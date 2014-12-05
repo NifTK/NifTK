@@ -32,7 +32,8 @@ class NIFTKCORE_EXPORT CoordinateAxesDataWriter : public FileWriterWithInformati
 public:
 
   mitkClassMacro( CoordinateAxesDataWriter, FileWriterWithInformation );
-  itkNewMacro( Self );
+  itkFactorylessNewMacro(Self);
+  itkCloneMacro(Self);
 
   typedef mitk::CoordinateAxesData InputType;
 
@@ -90,6 +91,8 @@ public:
   void Update();
   bool CanWriteBaseDataType(BaseData::Pointer data);
   void DoWrite(BaseData::Pointer data);
+
+  std::string GetSupportedBaseData() const;
 
 protected:
 
