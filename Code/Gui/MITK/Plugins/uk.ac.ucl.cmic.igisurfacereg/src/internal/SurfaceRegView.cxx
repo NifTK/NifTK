@@ -27,6 +27,7 @@
 #include <QFileDialog>
 #include <niftkVTKFunctions.h>
 #include <vtkDoubleArray.h>
+#include <limits>
 
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
@@ -113,7 +114,7 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     // disable it for now, we've never used it, and it seems to have bugs:
     //  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2873
     //  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2579
-    m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
+    m_Controls->m_LiveDistanceGroupBox->setEnabled(true);//false);
 
     // disabled by default, for now.
     m_Controls->m_HiddenSurfaceRemovalGroupBox->setCollapsed(true);
@@ -141,35 +142,50 @@ void SurfaceRegView::OnComputeDistance()
   // wouldnt be visible otherwise
   assert(m_Controls->m_LiveDistanceGroupBox->isChecked());
 
+  if (m_Controls->m_FixedSurfaceComboBox->GetSelectedNode().IsNull())
+    return;
+  if (m_Controls->m_MovingSurfaceComboBox->GetSelectedNode().IsNull())
+    return;
+
   // disable it until we are done with the current computation.
   m_Controls->m_LiveDistanceUpdateButton->setEnabled(false);
 
   // should not be able to call/click here if it's still running.
   assert(!m_BackgroundProcess.isRunning());
 
-  // essentially the same stuff that SurfaceBasedRegistration::Update() does.
-  // we should do that before we kick off the worker thread! 
-  // otherwise someone else might move around the node's matrices.
-  vtkPolyData *fixedPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
-
-  vtkPolyData *movingPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
-
-  // this seems a bit messy here:
-  // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
-  // so if it doesnt then we swap, if both dont have any then dont do anything.
-  if (fixedPoly->GetNumberOfCells() == 0)
+  try
   {
-    if (movingPoly->GetNumberOfCells() == 0)
-    {
-      m_Controls->m_DistanceLineEdit->setText("ERROR: need cells on at least one of the objects");
-    }
-    std::swap(fixedPoly, movingPoly);
-  }
+    // essentially the same stuff that SurfaceBasedRegistration::Update() does.
+    // we should do that before we kick off the worker thread! 
+    // otherwise someone else might move around the node's matrices.
+    vtkPolyData *fixedPoly = vtkPolyData::New();
+    mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
 
-  m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, fixedPoly, movingPoly);
-  m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
+    vtkPolyData *movingPoly = vtkPolyData::New();
+    mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
+
+    // this seems a bit messy here:
+    // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
+    // so if it doesnt then we swap, if both dont have any then dont do anything.
+    if (fixedPoly->GetNumberOfCells() == 0)
+    {
+      if (movingPoly->GetNumberOfCells() == 0)
+      {
+        m_Controls->m_DistanceLineEdit->setText("ERROR: need cells on at least one of the objects");
+      }
+      std::swap(fixedPoly, movingPoly);
+    }
+
+    m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, fixedPoly, movingPoly);
+    m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
+  }
+  catch (...)
+  {
+    // just swallow it.
+    // we certainly do not want to keep popping up error message boxes, if for example a node is moving
+    // around constantly (being attached to a tracker).
+    MITK_WARN << "Caught exception while preparing ICP distance calculation";
+  }
 }
 
 
@@ -178,19 +194,29 @@ float SurfaceRegView::ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSma
 {
   // note: this is run in a worker thread! do not do any updates to data storage or nodes!
 
-  vtkSmartPointer<vtkDoubleArray>   result;
-
-  // FIXME: this crashes because targetLocator has a null tree member... sometimes???
-  niftk::DistanceToSurface(moving, fixed, result);
-
-  double  sum = 0;
-  for (int i = 0; i < result->GetNumberOfTuples(); ++i)
+  try
   {
-    double p = result->GetValue(i);
-    sum += p;
-  }
+    vtkSmartPointer<vtkDoubleArray>   result;
 
-  return sum;
+    // FIXME: this crashes because targetLocator has a null tree member... sometimes???
+    niftk::DistanceToSurface(moving, fixed, result);
+
+    double  sqsum = 0;
+    for (int i = 0; i < result->GetNumberOfTuples(); ++i)
+    {
+      // p is the distance or error.
+      double p = result->GetValue(i);
+      sqsum += p * p;
+    }
+
+    sqsum /= result->GetNumberOfTuples();
+    double  rms = std::sqrt(sqsum);
+    return rms;
+  }
+  catch (...)
+  {
+    return std::numeric_limits<float>::quiet_NaN();
+  }
 }
 
 
