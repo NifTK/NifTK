@@ -43,7 +43,7 @@ set(PROJECT_PLUGINS
 
 # These are 'Application' plugins, and so are 'View' independent.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonapps:ON
-  Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
+#  Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
