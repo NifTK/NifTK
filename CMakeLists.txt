@@ -400,6 +400,7 @@ include(niftkMacroCreateCommandLineScript)
 include(niftkMacroCreateGuiApplication)
 include(niftkMacroFixupCommandLineApps)
 include(niftkMacroForcePluginCacheValue)
+include(CMakePackageConfigHelpers)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -1198,9 +1199,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.sh.in ${CMAKE_BINARY
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINARY_DIR}/SetupDependencies.csh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
-configure_file(${CMAKE_SOURCE_DIR}/Config/UseNifTK.cmake.in ${CMAKE_BINARY_DIR}/UseNifTK.cmake)
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
@@ -1498,8 +1496,7 @@ else(WIN32)
 endif(WIN32)
 
 ######################################################################
-# Here we generate stuff for a NifTK "Package Config"
-# As you might expect, its based on the MITK stuff.
+# Start: "NifTK Package Config"
 ######################################################################
 set(NIFTK_EXPORTS_FILE "${NIFTK_BINARY_DIR}/NifTKExports.cmake")
 file(REMOVE ${NIFTK_EXPORTS_FILE})
@@ -1540,3 +1537,14 @@ if(visibility_test_flag)
   # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
   set(VISIBILITY_AVAILABLE 1)
 endif()
+
+# This generates a C++ header file with values that need compiling into code.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
+
+# The next two generate CMake code to enable external projects to correctly use NifTK.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
+write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
+
+######################################################################
+# End: "NifTK Package Config"
+######################################################################
