@@ -91,6 +91,14 @@ ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      BUILD_OPTION_PREFIX ${PROJECT_NAME}_
                      BUILD_ALL ${${PROJECT_NAME}_BUILD_ALL_PLUGINS})
 
+set(NIFTK_PLUGIN_USE_FILE "${CMAKE_BINARY_DIR}/NifTKPluginUseFile.cmake")
+if(${PROJECT_NAME}_PLUGIN_LIBRARIES)
+  ctkFunctionGeneratePluginUseFile(${NIFTK_PLUGIN_USE_FILE})
+else()
+  file(REMOVE ${NIFTK_PLUGIN_USE_FILE})
+  set(NIFTK_PLUGIN_USE_FILE )
+endif()
+
 ctkFunctionGetAllPluginTargets(all_niftk_ctk_plugins)
 GetMyTargetLibraries("${all_niftk_ctk_plugins}" all_niftk_plugins)
 set_property(GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS ${all_niftk_plugins})

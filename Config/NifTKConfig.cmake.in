@@ -250,17 +250,12 @@ if(MITK_USE_BLUEBERRY)
     message(SEND_ERROR "MITK does not seem to be configured with BlueBerry support. Set MITK_USE_BLUEBERRY to ON in your MITK build configuration.")
   endif()
 
-  set(MITK_PLUGIN_USE_FILE "@MITK_PLUGIN_USE_FILE@")
-  if(MITK_PLUGIN_USE_FILE)
-    if(EXISTS "${MITK_PLUGIN_USE_FILE}")
-      include("${MITK_PLUGIN_USE_FILE}")
+  set(NIFTK_PLUGIN_USE_FILE "@CMAKE_BINARY_DIR@/NifTKPluginUseFile.cmake")
+  if(NIFTK_PLUGIN_USE_FILE)
+    if(EXISTS "${NIFTK_PLUGIN_USE_FILE}")
+      include("${NIFTK_PLUGIN_USE_FILE}")
     endif()
   endif()
-
-  set(MITK_PLUGIN_PROVISIONING_FILE "@MITK_EXTAPP_PROVISIONING_FILE@")
-  set(MITK_PROVISIONING_FILES
-      "${BLUEBERRY_PLUGIN_PROVISIONING_FILE}"
-      "${MITK_PLUGIN_PROVISIONING_FILE}")
 
 endif()
 
