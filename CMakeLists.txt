@@ -745,20 +745,25 @@ endif()
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
 
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake
-  ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake
-  ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake
-  ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
+file(COPY ${CMAKE_SOURCE_DIR}/CMake/PackageDepends DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
 
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
@@ -1158,6 +1163,8 @@ endif(WIN32)
 
 # This should now always be true as MITK is required.
 if(MITK_FOUND)
+  set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
+  list(INSERT MODULES_PACKAGE_DEPENDS_DIRS 0 ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})
   include(mitkCompilerSettings)
 endif()
 

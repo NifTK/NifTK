@@ -37,16 +37,20 @@
 include(FeatureSummary)
 
 # Make all the NifTK CMake macros are available.
-set(NifTK_CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@NIFTK_BINARY_DIR@/CMakeMacros")
 
 # The list of 'include' commands should match those in NifTK/CMake folder.
-include(MacroParseArguments)
 include(mitkMacroEmptyExternalProject)
-include(niftkMacroCreateApplication)
+include(mitkFunctionGetGccVersion.cmake)
+include(mitkFunctionGetVersion.cmake)
 include(niftkMacroBuildCLI)
-include(niftkMacroInstallCLI)
-include(niftkMacroConfigureAndBuildCLI)
+include(niftkMacroCreateCommandLineApplication)
+include(niftkMacroCreateCommandLineScript)
+include(niftkMacroCreateGuiApplication)
+include(niftkMacroGenerateCLIScript)
+include(niftkMacroGetGitBranch)
 include(niftkMacroGetGitDateTime)
+include(niftkMacroInstallCLIScript)
 
 # The NifTK Library version number.
 set(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
@@ -84,8 +88,6 @@ set(NifTK_VERSION_PCL "@NIFTK_VERSION_PCL@")
 set(NifTK_VERSION_qRestAPI "@NIFTK_VERSION_qRestAPI@")
 
 # Various config params for NifTK, so 3rd parties can know HOW it was built.
-set(NifTK_SOURCE_DIR "@NIFTK_SOURCE_DIR@")
-set(NifTK_BINARY_DIR "@NIFTK_BINARY_DIR@")
 set(NifTK_BUILD_COMMAND_LINE_PROGRAMS "@BUILD_COMMAND_LINE_PROGRAMS@")
 set(NifTK_BUILD_COMMAND_LINE_SCRIPTS "@BUILD_COMMAND_LINE_SCRIPTS@")
 set(NifTK_BUILD_CAMINO "@BUILD_CAMINO@")
@@ -226,6 +228,8 @@ set(MODULES_CONF_DIRNAME "@MODULES_CONF_DIRNAME@")
 foreach(_module @module_targets@)
   set(${_module}_CONFIG_FILE "@NIFTK_BINARY_DIR@/@MODULES_CONF_DIRNAME@/${_module}Config.cmake")
 endforeach()
+
+list(APPEND MODULES_PACKAGE_DEPENDS_DIRS "@NIFTK_BINARY_DIR@/CMakePackageDepends")
 
 # Stuff that actually includes the NIFTK_EXPORTS_FILE which contains include dirs,
 # library dirs and dependency descriptions for all modules and plugins in NifTK.
