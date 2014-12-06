@@ -1548,6 +1548,9 @@ endif()
 # This generates a C++ header file with values that need compiling into code.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 
+# This generates a C++ header file for GUI apps only.
+configure_file(${CMAKE_SOURCE_DIR}/Code/Gui/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
+
 # The next two generate CMake code to enable external projects to correctly use NifTK.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
 write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
