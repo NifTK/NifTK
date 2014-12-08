@@ -1017,6 +1017,11 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
 
+      // update device/name...
+      m_TableWidget->item(rowNumber, 5)->setText(QString::fromStdString(source->GetName()));
+      // ...and description too.
+      m_TableWidget->item(rowNumber, 6)->setText(QString::fromStdString(source->GetDescription()));
+
       QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
       activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
