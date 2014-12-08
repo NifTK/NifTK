@@ -242,8 +242,16 @@ def main():
     # Run the overall workflow
 #     workflow.write_graph(graph2use='colored')
     qsub_exec=spawn.find_executable('qsub')
+
+    if os.environ['QSUB_OPTIONS']!='':
+    	qsubargs=os.environ['QSUB_OPTIONS']
+    else:
+    	if not qsub_exec == None:
+		print 'The environtment variable QSUB_OPTIONS is not set up, we cannot queue properly the process. Using the default script options.'
+      		qsubargs='-l h_rt=01:00:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=1.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+        	print qsubargs
+
     if not qsub_exec == None:
-        qsubargs='-l h_rt=01:00:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=1.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
         workflow.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
     else:
         workflow.run(plugin='MultiProc')
