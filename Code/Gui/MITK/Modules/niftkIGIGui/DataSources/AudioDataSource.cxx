@@ -383,6 +383,16 @@ void AudioDataSource::StopRecording()
   QmitkIGILocalDataSource::StopRecording();
 
   FinishWAVFile();
+
+  // reset to invalid
+  m_SegmentCounter = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+bool AudioDataSource::IsRecording() const
+{
+  return m_SegmentCounter > 0;
 }
 
 

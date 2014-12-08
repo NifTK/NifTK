@@ -142,6 +142,9 @@ void AudioDataSourceGui::Update()
         m_FormatComboBox->addItem(text, QVariant::fromValue(*format));
       }
     }
+
+    m_DeviceComboBox->setEnabled(!src->IsRecording());
+    m_FormatComboBox->setEnabled(!src->IsRecording());
   }
 }
 

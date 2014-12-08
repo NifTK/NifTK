@@ -63,6 +63,8 @@ public:
 
   void SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format);
 
+  bool IsRecording() const;
+
   const QAudioDeviceInfo* GetDeviceInfo() const;
   const QAudioFormat* GetFormat() const;
 
