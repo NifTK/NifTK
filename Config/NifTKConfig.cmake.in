@@ -41,8 +41,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@NIFTK_BINARY_DIR@/CMakeMacros")
 
 # The list of 'include' commands should match those in NifTK/CMake folder.
 include(mitkMacroEmptyExternalProject)
-include(mitkFunctionGetGccVersion.cmake)
-include(mitkFunctionGetVersion.cmake)
+include(mitkFunctionGetGccVersion)
+include(mitkFunctionGetVersion)
 include(niftkMacroBuildCLI)
 include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateCommandLineScript)
