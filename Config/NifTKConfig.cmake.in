@@ -193,6 +193,7 @@ set(NifTK_INCLUDE_DIRS
 # This should only include directories that NifTK owns.
 set(NifTK_LIBRARY_DIRS
   @CMAKE_BINARY_DIR@/bin/@CMAKE_CFG_INTDIR@
+  @CMAKE_BINARY_DIR@/bin/plugins/@CMAKE_CFG_INTDIR@
 )
 
 # A list of all libraries for NifTK.
@@ -229,7 +230,15 @@ foreach(_module @module_targets@)
   set(${_module}_CONFIG_FILE "@NIFTK_BINARY_DIR@/@MODULES_CONF_DIRNAME@/${_module}Config.cmake")
 endforeach()
 
+# Stuff to enable modules to find out 3rd party dependencies (like NiftyLink).
 list(APPEND MODULES_PACKAGE_DEPENDS_DIRS "@NIFTK_BINARY_DIR@/CMakePackageDepends")
+
+# Stuff to enable the packaging to work.
+get_property(mitk_additional_library_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+if(mitk_additional_library_search_paths)
+  list(APPEND mitk_additional_library_search_paths ${NifTK_LIBRARY_DIRS})
+endif()
+set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_mitk_additional_library_search_paths})
 
 # Stuff that actually includes the NIFTK_EXPORTS_FILE which contains include dirs,
 # library dirs and dependency descriptions for all modules and plugins in NifTK.
