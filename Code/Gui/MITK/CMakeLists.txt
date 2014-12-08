@@ -17,10 +17,9 @@
 # However, you will also need to specify stuff in each subdirectory.
 ####################################################################################
 
-set(MY_PROJECT_NAME ${PROJECT})
+set(MY_PROJECT_NAME ${PROJECT_NAME})
 
-mark_as_advanced(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
-                 )
+mark_as_advanced(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE)
 
 if(MITK_USE_QT)
   set(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
@@ -47,12 +46,10 @@ endif()
 
 add_subdirectory(Modules)
 
-####################################################################################
-# Create all CTK plugins.
-####################################################################################
-
-ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
-
+#####################################################################################
+# Do not remove or rename this.
+# It overrides the macro in MITK, and I haven't yet worked out why it actually works.
+#####################################################################################
 macro(GetMyTargetLibraries all_target_libraries varname)
   set(re_ctkplugin "^(uk_ac_ucl|it_unito_cim)_[a-zA-Z0-9_]+$")
   set(_tmp_list)
@@ -60,14 +57,13 @@ macro(GetMyTargetLibraries all_target_libraries varname)
   ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
 endmacro()
 
-macro(ForcePluginCacheValue list_of_plugins plugin_value)
-  foreach(plugin ${list_of_plugins})
-    string(REPLACE ":" "\;" target_info ${plugin})
-    set(target_info_list ${target_info})
-    list(GET target_info_list 0 plugin_name)
-    set(${PROJECT_NAME}_${plugin_name} ${plugin_value} CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
-  endforeach()
-endmacro()
+####################################################################################
+# Create all CTK plugins.
+####################################################################################
+
+# Don't put this in niftkMacroCreateGuiApplication, because at
+# THIS point specifically, it only contains MITK plugins.
+ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
 
 # Get infos about application directories and build options
 include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
@@ -87,13 +83,25 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 
 # These are required, because people turn BUILD_IGI/BUILD_MIDAS off
 # and expect all the corresponding plugins to do the same.
-ForcePluginCacheValue(${IGI_PLUGINS} ${BUILD_IGI})
-ForcePluginCacheValue(${MIDAS_PLUGINS} ${BUILD_MIDAS})
+niftkMacroForcePluginCacheValue(${IGI_PLUGINS} ${BUILD_IGI})
+niftkMacroForcePluginCacheValue(${MIDAS_PLUGINS} ${BUILD_MIDAS})
 
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      APPS ${_apps_fullpath} 
                      BUILD_OPTION_PREFIX ${PROJECT_NAME}_
                      BUILD_ALL ${${PROJECT_NAME}_BUILD_ALL_PLUGINS})
+
+set(NIFTK_PLUGIN_USE_FILE "${CMAKE_BINARY_DIR}/NifTKPluginUseFile.cmake")
+if(${PROJECT_NAME}_PLUGIN_LIBRARIES)
+  ctkFunctionGeneratePluginUseFile(${NIFTK_PLUGIN_USE_FILE})
+else()
+  file(REMOVE ${NIFTK_PLUGIN_USE_FILE})
+  set(NIFTK_PLUGIN_USE_FILE )
+endif()
+
+ctkFunctionGetAllPluginTargets(all_niftk_ctk_plugins)
+GetMyTargetLibraries("${all_niftk_ctk_plugins}" all_niftk_plugins)
+set_property(GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS ${all_niftk_plugins})
 
 ####################################################################################
 # Add subdirectories. 

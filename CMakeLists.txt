@@ -399,6 +399,8 @@ include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateCommandLineScript)
 include(niftkMacroCreateGuiApplication)
 include(niftkMacroFixupCommandLineApps)
+include(niftkMacroForcePluginCacheValue)
+include(CMakePackageConfigHelpers)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -743,20 +745,29 @@ endif()
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
 
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake
-  ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake
-  ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake
-  ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
+file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
+foreach(file_to_copy ${package_depends_files})
+  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
+endforeach()
+
 
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
@@ -1156,6 +1167,8 @@ endif(WIN32)
 
 # This should now always be true as MITK is required.
 if(MITK_FOUND)
+  set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
+  list(INSERT MODULES_PACKAGE_DEPENDS_DIRS 0 ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})
   include(mitkCompilerSettings)
 endif()
 
@@ -1197,9 +1210,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.sh.in ${CMAKE_BINARY
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINARY_DIR}/SetupDependencies.csh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
-configure_file(${CMAKE_SOURCE_DIR}/Config/UseNifTK.cmake.in ${CMAKE_BINARY_DIR}/UseNifTK.cmake)
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
@@ -1354,19 +1364,19 @@ endif()
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
-subdirs(Doc)
-subdirs(Code)
+add_subdirectory(Doc)
+add_subdirectory(Code)
 
 if(BUILD_UTILITIES)
-  subdirs(Utilities)
+  add_subdirectory(Utilities)
 endif(BUILD_UTILITIES)
 
 if(BUILD_TESTING)
-  subdirs(Testing)
+  add_subdirectory(Testing)
 endif(BUILD_TESTING)
 
 if(BUILD_PROTOTYPE)
-  subdirs(Prototype)
+  add_subdirectory(Prototype)
 endif(BUILD_PROTOTYPE)
 
 ######################################################################
@@ -1427,7 +1437,6 @@ include(NIFTKCPackOptions)
 include(CPack)
 
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
-
 include(mitkInstallRules)
 
 ######################################################################
@@ -1496,3 +1505,60 @@ if(WIN32)
 else(WIN32)
   message( "CreateWindowsBatchScript: WIN32 not found" )
 endif(WIN32)
+
+######################################################################
+# Start: "NifTK Package Config"
+######################################################################
+set(NIFTK_EXPORTS_FILE "${NIFTK_BINARY_DIR}/NifTKExports.cmake")
+file(REMOVE ${NIFTK_EXPORTS_FILE})
+
+set(targets_to_export)
+get_property(module_targets GLOBAL PROPERTY MITK_MODULE_TARGETS)
+if(module_targets)
+  list(APPEND targets_to_export ${module_targets})
+endif()
+
+if(MITK_USE_BLUEBERRY)
+  get_property(plugin_targets GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS)
+  if(plugin_targets)
+    list(APPEND targets_to_export ${plugin_targets})
+  endif()
+endif()
+
+export(TARGETS ${targets_to_export} APPEND FILE ${NIFTK_EXPORTS_FILE})
+
+set(NIFTK_EXPORTED_TARGET_PROPERTIES )
+foreach(target_to_export ${targets_to_export})
+  get_target_property(autoload_targets ${target_to_export} MITK_AUTOLOAD_TARGETS)
+  if(autoload_targets)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+  endif()
+  get_target_property(autoload_dir ${target_to_export} MITK_AUTOLOAD_DIRECTORY)
+  if(autoload_dir)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+  endif()
+endforeach()
+
+get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+set(VISIBILITY_AVAILABLE 0)
+set(visibility_test_flag "")
+mitkFunctionCheckCompilerFlags("-fvisibility=hidden" visibility_test_flag)
+if(visibility_test_flag)
+  # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
+  set(VISIBILITY_AVAILABLE 1)
+endif()
+
+# This generates a C++ header file with values that need compiling into code.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
+
+# This generates a C++ header file for GUI apps only.
+configure_file(${CMAKE_SOURCE_DIR}/Code/Gui/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
+
+# The next two generate CMake code to enable external projects to correctly use NifTK.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
+write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
+
+######################################################################
+# End: "NifTK Package Config"
+######################################################################
