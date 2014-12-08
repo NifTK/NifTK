@@ -102,6 +102,9 @@ const QAudioFormat* AudioDataSource::GetFormat() const
 //-----------------------------------------------------------------------------
 void AudioDataSource::DisconnectAudio()
 {
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
+
   bool    ok = false;
 
   if (m_InputDevice != 0)
@@ -130,6 +133,8 @@ void AudioDataSource::DisconnectAudio()
 //-----------------------------------------------------------------------------
 void AudioDataSource::SetAudioDevice(QAudioDeviceInfo* device, QAudioFormat* format)
 {
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
   assert(device != 0);
   assert(format != 0);
 
@@ -253,6 +258,9 @@ void AudioDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 //-----------------------------------------------------------------------------
 void AudioDataSource::GrabData()
 {
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
+
   // sanity check
   if (m_InputStream == 0)
     return;
@@ -381,6 +389,9 @@ void AudioDataSource::StopRecording()
 //-----------------------------------------------------------------------------
 bool AudioDataSource::SaveData(mitk::IGIDataType* d, std::string& outputFileName)
 {
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
+
   // cannot record while playing back
   assert(!GetIsPlayingBack());
 
