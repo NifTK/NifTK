@@ -77,7 +77,10 @@ struct ModuleCleanup
   {
     try
     {
+      // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/3977 for why this is disabled for now.
+#if 0
       delete CUDAManager::s_Instance;
+#endif
       CUDAManager::s_Instance = 0;
     }
     catch (...)
