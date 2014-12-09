@@ -29,7 +29,6 @@
 #include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
-#include <DataSources/AudioDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
 #include <QmitkRenderingManager.h>
 
@@ -41,6 +40,11 @@
 #ifdef _USE_NVAPI
 #include <QmitkIGINVidiaDataSource.h>
 #endif
+
+#ifdef QT_MULTIMEDIA_LIB
+#include <DataSources/AudioDataSource.h>
+#endif
+
 
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
@@ -372,7 +376,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
+#ifdef QT_MULTIMEDIA_LIB
   m_SourceSelectComboBox->addItem("local microphone/audio", mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE);
+#endif
 
   m_ToolManagerPlaybackGroupBox->setCollapsed(true);
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
@@ -560,10 +566,12 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     source = QmitkIGINVidiaDataSource::New(m_DataStorage);
   }
 #endif
+#ifdef QT_MULTIMEDIA_LIB
   else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE)
   {
     source = AudioDataSource::New(m_DataStorage);
   }
+#endif
   else
   {
     throw std::runtime_error("Data source not implemented yet!");
