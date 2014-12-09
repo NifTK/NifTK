@@ -192,6 +192,13 @@ void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
 }
 
 
+vl::FramebufferObject* VLQt4Widget::GetFBO()
+{
+  // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
+  return dynamic_cast<vl::FramebufferObject*>(m_FinalBlit->readFramebuffer());
+}
+
+
 void VLQt4Widget::initializeGL()
 {
   // sanity check: context is initialised by Qt

@@ -14,9 +14,9 @@
 
 MITK_CREATE_MODULE(niftkCUDA
   EXPORT_DEFINE NIFTKCUDA_EXPORT
-  INCLUDE_DIRS CUDAManager CUDAImage
+  INCLUDE_DIRS CUDAManager CUDAImage VLInterface
   DEPENDS MitkCore niftkCore
-  PACKAGE_DEPENDS Qt4|QtCore
+  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL
 )
 
 include_directories(${CUDA_TOOLKIT_INCLUDE})
@@ -26,6 +26,9 @@ target_link_libraries(niftkCUDA
   ${CUDA_CUDA_LIBRARY}
   ${CUDA_CUDART_LIBRARY}
 )
+if(BUILD_VL)
+  target_link_libraries(niftkCUDA ${VL_LIBRARIES})
+endif()
 
 if(MSVC AND NIFTK_DELAYLOAD_CUDA)
   # all of the nvidia-driver/cuda dependencies should be delay-loaded

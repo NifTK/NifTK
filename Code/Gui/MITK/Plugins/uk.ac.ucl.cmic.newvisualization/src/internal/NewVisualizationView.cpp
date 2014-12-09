@@ -43,6 +43,11 @@
 #include <usModuleResourceStream.h>
 #include <usModuleRegistry.h>
 
+#ifdef _USE_CUDA
+#include <VLInterface/VLFramebufferToCUDA.h>
+#endif
+
+
 const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualization";
 
 NewVisualizationView::NewVisualizationView()
@@ -249,7 +254,16 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
     return;
 
   m_VLQtRenderWindow->UpdateDataNode(node);
-  //MITK_INFO <<"Opacity Change";
+
+
+  // random hack to illustrate how to do cuda kernels in combination with vl rendering
+#ifdef _USE_CUDA
+  {
+    vl::ref<vl::FramebufferObject>  fbo = m_VLQtRenderWindow->GetFBO();
+
+    VLFramebufferAdaptor    adaptor(fbo.get(), 0);
+  }
+#endif
 }
 
 void NewVisualizationView::Visible()

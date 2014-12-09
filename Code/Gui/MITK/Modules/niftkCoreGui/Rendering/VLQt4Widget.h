@@ -84,6 +84,12 @@ public:
 
   void UpdateThresholdVal(int isoVal);
 
+  /**
+   * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
+   * Beware: this can/will return a different object every time you call it!
+   */
+  vl::FramebufferObject* GetFBO();
+
   // from vl::OpenGLContext
 public:
   virtual void setContinuousUpdate(bool continuous);

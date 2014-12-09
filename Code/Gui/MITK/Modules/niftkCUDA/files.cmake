@@ -17,3 +17,10 @@ set(CPP_FILES
   CUDAImage/CUDAImage.cxx
   CUDAImage/LightweightCUDAImage.cxx
 )
+
+if(BUILD_VL)
+  set(CPP_FILES
+    ${CPP_FILES}
+    VLInterface/VLFramebufferToCUDA.cxx
+  )
+endif()
