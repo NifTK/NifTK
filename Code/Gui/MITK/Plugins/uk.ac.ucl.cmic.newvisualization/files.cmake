@@ -5,8 +5,6 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   NewVisualizationPluginActivator.cpp
   NewVisualizationView.cpp
-  # VLRenderingApplet.cpp
-  VLQt4Widget.cpp
 )
 
 set(UI_FILES
@@ -16,7 +14,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/NewVisualizationPluginActivator.h
   src/internal/NewVisualizationView.h
-  src/internal/VLQt4Widget.h
 )
 
 # list of resource files which can be used by the plug-in

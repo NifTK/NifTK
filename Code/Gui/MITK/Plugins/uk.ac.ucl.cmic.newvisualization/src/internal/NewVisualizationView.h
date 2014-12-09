@@ -34,10 +34,9 @@
 
 // VL includes
 #include <vlCore/VisualizationLibrary.hpp>
-//#include <vlQt4/Qt4Widget.hpp>
 
-//#include "VLRenderingApplet.h"
-#include "VLQt4Widget.h"
+#include <Rendering/VLQt4Widget.h>
+
 
 /**
  * \class NewVisualizationView

@@ -32,6 +32,8 @@
 #ifndef Qt4Window_INCLUDE_ONCE
 #define Qt4Window_INCLUDE_ONCE
 
+#include <niftkCoreGuiExports.h>
+
 #include <vlQt4/link_config.hpp>
 #include <vlCore/VisualizationLibrary.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
@@ -55,7 +57,7 @@
 #include <map>
 
 
-class VLQt4Widget : public QGLWidget, public vl::OpenGLContext
+class NIFTKCOREGUI_EXPORT VLQt4Widget : public QGLWidget, public vl::OpenGLContext
 {
   Q_OBJECT
 
