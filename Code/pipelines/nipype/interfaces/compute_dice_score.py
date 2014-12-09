@@ -2,7 +2,7 @@
 
 import numpy as np
 import nibabel as nib
-import nipype.interfaces.fsl            as fsl     # NiftySeg
+import nipype.interfaces.fsl            as fsl     
 
 from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
 from nipype.interfaces.base import (TraitedSpec, File, traits)

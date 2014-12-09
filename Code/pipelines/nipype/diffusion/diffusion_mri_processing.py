@@ -223,12 +223,19 @@ def create_diffusion_mri_processing_workflow(name='diffusion_mri_processing',
     susceptibility_correction = create_fieldmap_susceptibility_workflow('susceptibility_correction',
                                                                         mask_exists = True,
                                                                         reg_to_t1 = True)
-    susceptibility_correction.inputs.input_node.etd = 2.46
+    # Can we provide the SUSCEPTIBILITY_ETD value using an environment otherwise, we use the default DRC etd value
+    try:    
+        susceptibility_correction.inputs.input_node.etd =os.environ['SUSCEPTIBILITY_ETD']
+    except KeyError:    
+	susceptibility_correction.inputs.input_node.etd = 2.46
 
-    # rot value for the DRC
-    susceptibility_correction.inputs.input_node.rot = 34.56
-    # rot value for the 1946
-    # susceptibility_correction.inputs.input_node.rot = 25.92
+    # Can we provide the SUSCEPTIBILITY_ROT value using an environment otherwise, we use the default DRC rot value
+    try:    
+        susceptibility_correction.inputs.input_node.rot =os.environ['SUSCEPTIBILITY_ROT']
+    except KeyError: 
+        # rot value for the 1946
+        # susceptibility_correction.inputs.input_node.rot = 25.92   
+	susceptibility_correction.inputs.input_node.rot = 34.56
 
     susceptibility_correction.inputs.input_node.ped = '-y'
     

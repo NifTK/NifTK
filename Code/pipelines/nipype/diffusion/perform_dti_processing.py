@@ -162,7 +162,9 @@ r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
 r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
 
-r.write_graph(graph2use = 'colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

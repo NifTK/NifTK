@@ -182,7 +182,9 @@ def main():
     workflow.connect(output_node, 'res_files', ds, '@res')
 
     # Run the overall workflow
-#     workflow.write_graph(graph2use='colored')
+    dot_exec=spawn.find_executable('dot')   
+    if not dot_exec == None:
+        workflow.write_graph(graph2use='colored')
 
     qsub_exec=spawn.find_executable('qsub')
 

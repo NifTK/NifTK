@@ -217,13 +217,13 @@ def getlabels():
 \n\
 <label>\n\
 <number>62</number>\n\
-<tissueclass>4</tissueclass>\n\
+<tissueclass>3</tissueclass>\n\
 <name>Right Ventral DC</name>\n\
 </label>\n\
 \n\
 <label>\n\
 <number>63</number>\n\
-<tissueclass>4</tissueclass>\n\
+<tissueclass>3</tissueclass>\n\
 <name>Left Ventral DC</name>\n\
 </label>\n\
 \n\

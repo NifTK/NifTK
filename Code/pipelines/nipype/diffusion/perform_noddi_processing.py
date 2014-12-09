@@ -217,7 +217,9 @@ for i in range(number_of_shells):
     r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
     r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
     
-    r.write_graph(graph2use = 'colored')
+    dot_exec=spawn.find_executable('dot')   
+    if not dot_exec == None:
+        r.write_graph(graph2use='colored')
     
     qsub_exec=spawn.find_executable('qsub')
 
@@ -390,7 +392,9 @@ workflow.connect(merge_dwis_images, 'merged_file', data_sink, '@corrected_dwis')
 workflow.connect(merge_bv_files, 'bvals', data_sink, '@bvals')
 workflow.connect(merge_bv_files, 'bvecs', data_sink, '@bvecs')
 
-workflow.write_graph(graph2use = 'colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    workflow.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 
