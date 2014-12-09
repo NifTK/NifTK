@@ -264,6 +264,9 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
       m_CaptureWidth  = sdiin->get_width();
       m_CaptureHeight = sdiin->get_height();
 
+      if (m_FieldMode == video::SDIInput::SPLIT_LINE_INTERLEAVED_STEREO)
+        streamcount *= 2;
+
       // allocate a bunch of pbos that we can copy the incoming video frames into.
       // we do that during the capture loop (OnTimeoutImpl), so that when there's a request for a frame
       // copy has finished and we can map the pbo straight in.

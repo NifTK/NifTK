@@ -61,8 +61,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
   targetReader->Update();
   target->ShallowCopy(targetReader->GetOutput());
 
-  icp->SetMaxLandmarks(10000);
-  icp->SetMaxIterations(1000);
+  icp->SetMaxLandmarks(1000);
   icp->SetSource(source);
   icp->SetTarget(target);
 

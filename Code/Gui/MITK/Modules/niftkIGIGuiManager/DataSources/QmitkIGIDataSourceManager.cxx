@@ -19,6 +19,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
+#include <QProcessEnvironment>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -40,16 +41,23 @@
 #include <QmitkIGINVidiaDataSource.h>
 #endif
 
+#ifdef QT_MULTIMEDIA_LIB
+#include <DataSources/AudioDataSource.h>
+#endif
+
+
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
 const QColor QmitkIGIDataSourceManager::DEFAULT_SUSPENDED_COLOUR = QColor(Qt::blue);
-const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
+const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
 const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 2; // every 2 seconds
 const int    QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE = 5000; // 5 seconds expressed in milliseconds
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
 const bool   QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA = false;
+const char*  QmitkIGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
+
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -188,9 +196,17 @@ QString QmitkIGIDataSourceManager::GetDefaultPath()
   QString path;
   QDir directory;
 
-  path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+  // if the user has configured a per-machine default location for igi data.
+  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
+  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
+  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
   directory.setPath(path);
 
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    directory.setPath(path);
+  }
   if (!directory.exists())
   {
     path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
@@ -357,9 +373,11 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
   m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
-  
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
+#endif
+#ifdef QT_MULTIMEDIA_LIB
+  m_SourceSelectComboBox->addItem("local microphone/audio", mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE);
 #endif
 
   m_ToolManagerPlaybackGroupBox->setCollapsed(true);
@@ -546,6 +564,12 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
   else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI)
   {
     source = QmitkIGINVidiaDataSource::New(m_DataStorage);
+  }
+#endif
+#ifdef QT_MULTIMEDIA_LIB
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_MICROPHONE)
+  {
+    source = AudioDataSource::New(m_DataStorage);
   }
 #endif
   else
@@ -1001,6 +1025,11 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
 
+      // update device/name...
+      m_TableWidget->item(rowNumber, 5)->setText(QString::fromStdString(source->GetName()));
+      // ...and description too.
+      m_TableWidget->item(rowNumber, 6)->setText(QString::fromStdString(source->GetDescription()));
+
       QTableWidgetItem *activatedItem = m_TableWidget->item(rowNumber, 0);
       activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
@@ -1121,7 +1150,7 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
   QDateTime dateTime;
   dateTime.setMSecsSinceEpoch(millis);
 
-  QString formattedTime = dateTime.toString("yyyy-MM-dd_hh-mm-ss-zzz");
+  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
   QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
   return directoryName;
@@ -1177,6 +1206,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
       "#  QmitkIGIUltrasonixTool\n"
       "#  QmitkIGIOpenCVDataSource\n"
       "#  QmitkIGITrackerSource\n"
+      "#  AudioDataSource\n"
       "# however, not all might be compiled in.\n";
 
     foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
@@ -1355,7 +1385,7 @@ void QmitkIGIDataSourceManager::OnPlayStart()
               else
               {
                 // no special else here (only diagnostic). if this data source cannot playback that particular directory,
-                // even though the descriptor says it can, the data source may still be able to play another director
+                // even though the descriptor says it can, the data source may still be able to play another directory
                 // coming later in the list.
                 MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
               }

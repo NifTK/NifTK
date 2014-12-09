@@ -42,12 +42,12 @@ NIFTKIGIGUI_EXPORT bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QStri
 /**
  * \brief Applies (sets, i.e. copies) the given transform to all checked nodes in the comboBox.
  */
-NIFTKIGIGUI_EXPORT void ApplyTransformToNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
+NIFTKIGIGUI_EXPORT void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
 
 /**
  * \brief Composes the given transform with all checked nodes in the comboBox.
  */
-NIFTKIGIGUI_EXPORT void ComposeTransformWithNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
+NIFTKIGIGUI_EXPORT void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
 
 /**
  * \brief For visualisation purposes, creates a representation of the laparoscope.

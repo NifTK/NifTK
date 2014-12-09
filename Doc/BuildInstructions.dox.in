@@ -31,6 +31,11 @@ which can be accessed on the CMIC Unix filesystem here:
 People should add any preconditions or caveats here as they find them.
 
 <ul>
+<li>On a RedHat machine, this may be needed to be able to compile Qt with audio:
+\verbatim
+sudo yum install 'pkgconfig(gstreamer-app-0.10)'
+\endverbatim
+</li>
 <li> On Ubuntu you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev. (This has been done on hellica and denguefever).</li>
 <li> On most Linux distros you will need to install libbz2-dev.</li>
 <li> On CMIC Centos machines, you will need to use CMAKE_C++_COMPILER=/usr/lib/g++44 and CMAKE_C_COMPILER=/usr/lib/gcc44 in the build below. </li>
@@ -39,25 +44,7 @@ So if you are currently running a CMIC Centos machine, you are strongly advised 
 machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
 <li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.
 Do check your system path, if it has Boost, old Qt, random installation of ITK or VTK then please clear them off. </li>
-<li> If you would like to compile NifTK using Visual Studio 2010 or VS2012 please also install the VS Redistributable packages for your system. Also make sure that you have at least the "Professional" version of Visual Studio, otherwise you won't have OpenMP support.
-
-<br> 32 bit Windows:
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=3387">Microsoft Visual C++ 2005 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5638">Microsoft Visual C++ 2005 SP1 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=29">Microsoft Visual C++ 2008 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5582">Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=5555">Microsoft Visual C++ 2010 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=8328">Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)</a><br>
-
-<br> 64 bit Windows:
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=21254">Microsoft Visual C++ 2005 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=18471">Microsoft Visual C++ 2005 SP1 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=15336">Microsoft Visual C++ 2008 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=2092">Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=14632">Microsoft Visual C++ 2010 Redistributable Package (x86)</a><br>
-<a href="http://www.microsoft.com/en-us/download/details.aspx?id=13523">Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)</a><br>
-
-</li>
+<li> Make sure that you have at least the "Professional" version of Visual Studio, otherwise you won't have OpenMP support.</li>
 </ul>
 
 \section BuildInstructionsDownloadCMake 2. Install CMake
@@ -93,7 +80,7 @@ the source code and compile your own, and install it in a non standard place (i.
 then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
 On Linux/Mac try
 \verbatim
-./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
@@ -102,19 +89,23 @@ On Linux/Mac try
 \verbatim
 git clone git://gitorious.org/qt/qt.git qt
 cd qt
-./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
 <li> On Windows follow the instructions below to build Qt:<br>
 
-First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.<br>
-You might also want to have the Qt intergation pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
+Instead of compiling Qt yourself, ready-to-use patched source and binaries can be downloaded from
+\verbatim
+https://bitbucket.org/bruelltuete/qt-niftk
+\endverbatim
+Binaries are available for 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc11+src_selfextracting-7z.exe">VS2012 64-bit</a>, 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc10+src_selfextracting-7z.exe">VS2010 64-bit</a> and 
+<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x86-vc10+src_selfextracting-7z.exe">VS2010 32-bit</a>.
 
-On Win32 you can download a pre-compiled Qt version from <a href="http://qt-project.org/downloads">_here_</a>. The suitable versions are:
-- Qt libraries 4.X.X for Windows (VS 2008, 234 MB) or 
-- Qt libraries 4.X.X for Windows (VS 2010, 235 MB) <br>
-where XXXX is the Visual Studio version you'd like to use.
+First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.<br>
+You might also want to have the Qt integration pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
 
 On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
@@ -154,7 +145,7 @@ where XXXX is the Visual Studio version you'd like to use.
 The next step is to configure Qt for the build:
 \verbatim
 cd /D C:\Qt\4.8.6-build
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-multimedia -no-audio-backend -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
 The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
@@ -223,7 +214,7 @@ Please install NSIS and make sure that it is added to your system path. For furt
 \section BuildInstructionsDownload 6. Download the code
 
 \verbatim
-git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
+git clone https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK.git
 \endverbatim
 
 \section BuildInstructionsCMake 7. CMake
@@ -320,7 +311,7 @@ This executable will be placed within the NifTK-build subfolder, once the PACKAG
 <li> On Windows, we only recommend and regularly test Windows 64 bit. While the build is known to work on 32bit Windows 7 and XP, it is less frequently tested. </li>
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, Boost, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
 <li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times. <br><br>
-If you are experiencing "unpredicatble" problems with your VS build please turn off the multi-threaded build feature.<br>
+If you are experiencing "unpredictable" problems with your VS build please turn off the multi-threaded build feature.<br>
 Go to Tools > Options > Projects and Solutions > Build and Run, and set the "Maximum number of parallel project builds" variable to 1.
 </ul>
 

@@ -57,6 +57,7 @@
 #include <itkBreastMaskSegmForModelling.h>
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkITKImageToNiftiImage.h>
+#include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
 
 //#define LINK_TO_SEG_EM
@@ -146,14 +147,23 @@ public:
   bool flgSaveImages;
   bool flgDebug;
   bool flgCompression;
+  bool flgOverwrite;
 
   std::string dirInput;
 
   std::string fileLog;
   std::string fileOutputCSV;
 
-  std::string dirSub;  
+  std::string dirSubMRI;  
+  std::string dirSubData;  
   std::string dirPrefix;  
+
+  std::string strSeriesDescStructuralT2;
+  std::string strSeriesDescFatSatT1;
+  std::string strSeriesDescDixonWater;
+  std::string strSeriesDescDixonFat;
+
+  std::string fileSegEM;
 
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
@@ -165,25 +175,40 @@ public:
   TeeDevice *teeDevice;
   TeeStream *teeStream;
 
-  InputParameters( TCLAP::CmdLine commandLine, 
-                   bool verbose, bool save, bool compression, bool debug,
-                   std::string subdirectory, std::string prefix, std::string input,
-                   std::string logfile, std::string csvfile ) {
+  InputParameters( TCLAP::CmdLine &commandLine, 
+                   bool verbose, bool flgSave, bool compression, bool debug, bool overwrite,
+                   std::string subdirMRI, std::string subdirData, 
+                   std::string prefix, std::string input,
+                   std::string logfile, std::string csvfile,
+                   std::string strStructuralT2,
+                   std::string strFatSatT1,
+                   std::string strDixonWater,
+                   std::string strDixonFat,
+                   std::string segEM ) {
 
     std::stringstream message;
 
     flgVerbose = verbose;
-    flgSaveImages = save;
+    flgSaveImages = flgSave;
     flgDebug = debug;
     flgCompression = compression;
+    flgOverwrite = overwrite;
 
-    dirSub = subdirectory;
-    dirPrefix = prefix;
-    dirInput = input;
+    dirSubMRI  = subdirMRI;
+    dirSubData = subdirData;
+    dirPrefix  = prefix;
+    dirInput   = input;
 
     fileLog = logfile;
     fileOutputCSV = csvfile;
-    
+
+    strSeriesDescStructuralT2 = strStructuralT2;
+    strSeriesDescFatSatT1 = strFatSatT1;
+    strSeriesDescDixonWater = strDixonWater;
+    strSeriesDescDixonFat = strDixonFat;
+
+    fileSegEM = segEM;
+
     if ( fileLog.length() > 0 )
     {
       foutLog = new std::ofstream( fileLog.c_str() );
@@ -203,8 +228,8 @@ public:
     }
     else
     {
-      newCout = 0;
       foutLog = 0;
+      newCout = 0;
       teeDevice = 0;
       teeStream = 0;
     }
@@ -234,18 +259,18 @@ public:
   }
 
   ~InputParameters() {
-
-   if ( teeStream )
+#if 0
+    if ( teeStream )
     {
       teeStream->flush();
       teeStream->close();
       delete teeStream;
     }
 
-   if ( teeDevice )
-   {
-     delete teeDevice;
-   }
+    if ( teeDevice )
+    {
+      delete teeDevice;
+    }
 
     if ( foutLog )
     {
@@ -263,8 +288,8 @@ public:
     {
       delete newCout;
     }
-
-   }
+#endif
+  }
 
   void Print(void) {
 
@@ -273,20 +298,27 @@ public:
     message << std::endl
             << "Examining directory: " << dirInput << std::endl 
             << std::endl
-            << "Verbose output?: "   << std::boolalpha << flgVerbose     
-            << std::noboolalpha << std::endl
-            << "Save images?: "      << std::boolalpha << flgSaveImages  
-            << std::noboolalpha << std::endl
-            << "Compress images?: "  << std::boolalpha << flgCompression 
-            << std::noboolalpha << std::endl
-            << "Debugging output?: " << std::boolalpha << flgDebug       
-            << std::noboolalpha << std::endl
+            << std::boolalpha
+            << "Verbose output?: "             << flgVerbose     << std::endl
+            << "Save images?: "                << flgSaveImages  << std::endl
+            << "Compress images?: "            << flgCompression << std::endl
+            << "Debugging output?: "           << flgDebug       << std::endl
+            << "Overwrite previous results?: " << flgOverwrite   << std::endl       
+            << std::noboolalpha
             << std::endl
-            << "Data sub-directory: " << dirSub << std::endl
+            << "Input MRI sub-directory: " << dirSubMRI << std::endl
+            << "Output data sub-directory: " << dirSubData << std::endl
             << "Study directory prefix: " << dirPrefix << std::endl
             << std::endl
             << "Output log file: " << fileLog << std::endl
             << "Output csv file: " << fileOutputCSV << std::endl
+            << std::endl
+            << "Structural series description: " << strSeriesDescStructuralT2 << std::endl
+            << "Complementary image series description" << strSeriesDescFatSatT1 << std::endl
+            << "DIXON water image series description: " << strSeriesDescDixonWater << std::endl
+            << "DIXON fat image series description: " << strSeriesDescDixonFat << std::endl
+            << std::endl
+            << "NiftySeg 'seg_EM' executable: " << fileSegEM << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -299,11 +331,16 @@ public:
     teeStream->flush();
   }
     
-  void PrintErrorAndExit( std::stringstream &message ) {
+  void PrintError( std::stringstream &message ) {
 
     std::cerr << "ERROR: " << message.str();
     message.str( "" );
     teeStream->flush();
+  }
+    
+  void PrintErrorAndExit( std::stringstream &message ) {
+
+    PrintError( message );
 
     exit( EXIT_FAILURE );
   }
@@ -328,7 +365,7 @@ public:
   }
 
   bool ReadImageFromFile( std::string dirInput, std::string filename, 
-                         const char *description, ImageType::Pointer &image ) {
+                          std::string description, ImageType::Pointer &image ) {
   
     std::stringstream message;
     std::string fileInput = niftk::ConcatenatePath( dirInput, filename );
@@ -346,7 +383,7 @@ public:
   }
 
   bool ReadImageFromFile( std::string dirInput, std::string filename, 
-                         const char *description, nifti_image *&image ) {
+                          std::string description, nifti_image *&image ) {
   
     std::stringstream message;
     std::string fileInput = niftk::ConcatenatePath( dirInput, filename );
@@ -366,7 +403,7 @@ public:
   }
 
   void WriteImageToFile( std::string dirOutput, std::string filename, 
-                         const char *description, ImageType::Pointer image ) {
+                         std::string description, ImageType::Pointer image ) {
   
     std::stringstream message;
     std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
@@ -379,7 +416,7 @@ public:
   }
 
   void WriteImageToFile( std::string dirOutput, std::string filename, 
-                         const char *description, nifti_image *image ) {
+                         std::string description, nifti_image *image ) {
   
     std::stringstream message;
     std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
@@ -447,9 +484,14 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   InputParameters args( commandLine, 
-                        flgVerbose, flgSaveImages, flgCompression, flgDebug,
-                        dirSub, dirPrefix, dirInput,
-                        fileLog, fileOutputCSV );                     
+                        flgVerbose, flgSaveImages, flgCompression, flgDebug, flgOverwrite,
+                        dirSubMRI, dirSubData, dirPrefix, dirInput,
+                        fileLog, fileOutputCSV,
+                        strSeriesDescStructuralT2,
+                        strSeriesDescFatSatT1,
+                        strSeriesDescDixonWater,
+                        strSeriesDescDixonFat,
+                        fileSegEM );
 
 
   args.Print();
@@ -551,6 +593,7 @@ int main( int argc, char *argv[] )
   std::string dirFullPath;
   std::string dirBaseName;
 
+  std::string dirMRI;
   std::string dirOutput;
 
   std::vector< std::string > directoryNames;
@@ -594,9 +637,18 @@ int main( int argc, char *argv[] )
     message << std::endl << "Directory: " << dirFullPath << std::endl << std::endl;
     args.PrintMessage( message );
 
-    if ( dirSub.length() > 0 )
+    if ( dirSubMRI.length() > 0 )
     {
-      dirOutput = niftk::ConcatenatePath( dirFullPath, dirSub );
+      dirMRI = niftk::ConcatenatePath( dirFullPath, dirSubMRI );
+    }
+    else
+    {
+      dirMRI = dirFullPath;
+    }
+
+    if ( dirSubData.length() > 0 )
+    {
+      dirOutput = niftk::ConcatenatePath( dirFullPath, dirSubData );
     }
     else
     {
@@ -620,44 +672,53 @@ int main( int argc, char *argv[] )
       std::string fileInputDensityMeasurements  
         = niftk::ConcatenatePath( dirOutput, fileDensityMeasurements );
 
-      if ( niftk::FileExists( fileInputDensityMeasurements ) )
+      if ( ! flgOverwrite) 
       {
-        std::ifstream fin( fileInputDensityMeasurements.c_str() );
-
-        if ((! fin) || fin.bad()) 
+        if ( niftk::FileExists( fileInputDensityMeasurements ) )
         {
-          message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-          args.PrintErrorAndExit( message );
-        }
+          std::ifstream fin( fileInputDensityMeasurements.c_str() );
 
-        message << std::endl << "Reading CSV file: " << fileInputDensityMeasurements << std::endl;
-        args.PrintMessage( message );
+          if ((! fin) || fin.bad()) 
+          {
+            message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
+            args.PrintError( message );
+            continue;
+          }
 
-        niftk::CSVRow csvRow;
-
-        bool flgFirstRowOfThisFile = true;
-
-        while( fin >> csvRow )
-        {
-          message << csvRow << std::endl;
+          message << std::endl << "Reading CSV file: " << fileInputDensityMeasurements << std::endl;
           args.PrintMessage( message );
 
-          if ( flgFirstRowOfThisFile )
+          niftk::CSVRow csvRow;
+
+          bool flgFirstRowOfThisFile = true;
+
+          while( fin >> csvRow )
           {
-            if ( flgVeryFirstRow )    // Include the title row?
+            message << csvRow << std::endl;
+            args.PrintMessage( message );
+
+            if ( flgFirstRowOfThisFile )
+            {
+              if ( flgVeryFirstRow )    // Include the title row?
+              {
+                *args.foutOutputCSV << csvRow << std::endl;
+                flgVeryFirstRow = false;
+              }
+              flgFirstRowOfThisFile = false;
+            }
+            else
             {
               *args.foutOutputCSV << csvRow << std::endl;
-              flgVeryFirstRow = false;
             }
-            flgFirstRowOfThisFile = false;
           }
-          else
-          {
-            *args.foutOutputCSV << csvRow << std::endl;
-          }
-        }
         
-        continue;
+          continue;
+        }
+        else
+        {
+          message << "Density measurements: " << fileInputDensityMeasurements << " not found" << std::endl;
+          args.PrintMessage( message );
+        }     
       }
 
 
@@ -683,7 +744,7 @@ int main( int argc, char *argv[] )
 
       nameGenerator->SetUseSeriesDetails( true );
     
-      nameGenerator->SetDirectory( dirFullPath );
+      nameGenerator->SetDirectory( dirMRI );
   
     
       // The GDCMSeriesFileNames object first identifies the list of DICOM series
@@ -730,7 +791,8 @@ int main( int argc, char *argv[] )
         catch ( itk::ExceptionObject &e )
         {
           message << "Failed to read file: " << fileNames[0] << std::endl;
-          args.PrintErrorAndExit( message );
+          args.PrintError( message );
+          continue;
         }
  
         const  DictionaryType &dictionary = gdcmImageIO->GetMetaDataDictionary();
@@ -752,19 +814,19 @@ int main( int argc, char *argv[] )
 
         std::string seriesDescription = GetTag( dictionary, "0008|103e" );
 
-        if ( seriesDescription.find( std::string( "t2_tse_tra" ) ) != std::string::npos )
+        if ( seriesDescription.find( args.strSeriesDescStructuralT2 ) != std::string::npos )
         {
           fileNamesStructuralT2 = fileNames;
         }
-        else if ( seriesDescription.find( std::string( "t1_fl3d_tra_VIBE" ) ) != std::string::npos )
+        else if ( seriesDescription.find( args.strSeriesDescFatSatT1 ) != std::string::npos )
         {
           fileNamesFatSatT1 = fileNames;
         }
-        else if ( seriesDescription.find( std::string( "sag_dixon_bilateral_W" ) ) != std::string::npos )
+        else if ( seriesDescription.find( args.strSeriesDescDixonWater ) != std::string::npos )
         {
           fileNamesDixonWater = fileNames;
         }
-        else if ( seriesDescription.find( std::string( "sag_dixon_bilateral_F" ) ) != std::string::npos )
+        else if ( seriesDescription.find( args.strSeriesDescDixonFat ) != std::string::npos )
         {
           fileNamesDixonFat = fileNames;
         }
@@ -777,12 +839,16 @@ int main( int argc, char *argv[] )
       // Load the fat sat image
       // ~~~~~~~~~~~~~~~~~~~~~~
         
-      if ( ! args.ReadImageFromFile( dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
-                                     "bias field corrected 't1_fl3d_tra_VIBE' image", 
-                                     imFatSatT1 ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
+                                       std::string( "bias field corrected '") +
+                                       args.strSeriesDescFatSatT1 + "' image", 
+                                       imFatSatT1 ) ) )
       {
-        if ( ! args.ReadImageFromFile( dirOutput, fileI00_t1_fl3d_tra_VIBE, 
-                                       "fat sat 't1_fl3d_tra_VIBE' image", imFatSatT1 ) )
+        if ( flgOverwrite || 
+             ( ! args.ReadImageFromFile( dirOutput, fileI00_t1_fl3d_tra_VIBE, 
+                                         std::string( "complementary '" ) +
+                                         args.strSeriesDescFatSatT1 + "' image", imFatSatT1 ) ) )
         {
           if ( fileNamesFatSatT1.size() > 0 )
           {
@@ -790,7 +856,7 @@ int main( int argc, char *argv[] )
             SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
             seriesReader->SetFileNames( fileNamesFatSatT1 );
 
-            message << std::endl << "Reading 't1_fl3d_tra_VIBE' image" << std::endl;  
+            message << std::endl << "Reading '" << args.strSeriesDescFatSatT1 << "' image" << std::endl;  
             args.PrintMessage( message );
 
             seriesReader->UpdateLargestPossibleRegion();
@@ -799,7 +865,8 @@ int main( int argc, char *argv[] )
             imFatSatT1->DisconnectPipeline();
             
             args.WriteImageToFile( dirOutput, fileI00_t1_fl3d_tra_VIBE, 
-                                   "fat sat 't1_fl3d_tra_VIBE' image", imFatSatT1 );
+                                   std::string( "complementary '" ) + args.strSeriesDescFatSatT1 +
+                                   "' image", imFatSatT1 );
           }
         }
 
@@ -808,7 +875,7 @@ int main( int argc, char *argv[] )
         if ( imFatSatT1 ) 
         {
           
-          message << std::endl << "Bias field correcting 't1_fl3d_tra_VIBE' image"
+          message << std::endl << "Bias field correcting '" << args.strSeriesDescFatSatT1 << "' image"
                   << std::endl;  
           args.PrintMessage( message );
           
@@ -821,7 +888,8 @@ int main( int argc, char *argv[] )
           imFatSatT1->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
-                                 "bias field corrected 't1_fl3d_tra_VIBE' image", imFatSatT1 );
+                                 std::string( "bias field corrected '" ) + 
+                                 args.strSeriesDescFatSatT1 + "' image", imFatSatT1 );
         }
       }
 
@@ -829,14 +897,23 @@ int main( int argc, char *argv[] )
       // Load the structural image
       // ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileI02_t2_tse_tra_Resampled, 
-                                     "resampled 't2_tse_tra' image", imStructuralT2 ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileI02_t2_tse_tra_Resampled, 
+                                       std::string( "resampled '" ) 
+                                       + args.strSeriesDescStructuralT2 + "' image", 
+                                       imStructuralT2 ) ) )
       {
-        if ( ! args.ReadImageFromFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
-                                       "bias field corrected 't2_tse_tra' image", imStructuralT2 ) )
+        if  ( flgOverwrite || 
+              ( ! args.ReadImageFromFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
+                                          std::string( "bias field corrected '" ) + 
+                                          args.strSeriesDescStructuralT2 + "' image", 
+                                          imStructuralT2 ) ) )
         {
-          if ( ! args.ReadImageFromFile( dirOutput, fileI00_t2_tse_tra,
-                                         "structural 't2_tse_tra' image", imStructuralT2 ) )
+          if ( flgOverwrite || 
+               ( ! args.ReadImageFromFile( dirOutput, fileI00_t2_tse_tra,
+                                           std::string( "structural '" ) + 
+                                           args.strSeriesDescStructuralT2 + "' image", 
+                                           imStructuralT2 ) ) )
           {
             if ( fileNamesStructuralT2.size() > 0 )
             {
@@ -844,7 +921,7 @@ int main( int argc, char *argv[] )
               SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
               seriesReader->SetFileNames( fileNamesStructuralT2 );
 
-              message << std::endl << "Reading 't2_tse_tra' image" << std::endl;  
+              message << std::endl << "Reading '" << args.strSeriesDescStructuralT2 << "' image" << std::endl;  
               args.PrintMessage( message );
 
               seriesReader->UpdateLargestPossibleRegion();
@@ -853,7 +930,8 @@ int main( int argc, char *argv[] )
               imStructuralT2->DisconnectPipeline();
 
               args.WriteImageToFile( dirOutput, fileI00_t2_tse_tra,
-                                     "structural 't2_tse_tra' image", imStructuralT2 );
+                                     std::string( "structural '" ) + args.strSeriesDescStructuralT2 +
+                                     "' image", imStructuralT2 );
             }
           }
 
@@ -861,7 +939,7 @@ int main( int argc, char *argv[] )
           
           if ( imStructuralT2 )
           {
-            message << std::endl << "Bias field correcting 't2_tse_tra' image" << std::endl;  
+            message << std::endl << "Bias field correcting '" << args.strSeriesDescStructuralT2 << "' image" << std::endl;  
             args.PrintMessage( message );
 
             BiasFieldCorrectionType::Pointer biasFieldCorrector = BiasFieldCorrectionType::New();
@@ -871,9 +949,31 @@ int main( int argc, char *argv[] )
 
             imStructuralT2 = biasFieldCorrector->GetOutput();
             imStructuralT2->DisconnectPipeline();
+
+            // Rescale the 98th percentile to 100
+          
+            message << std::endl << "Rescaling '" << args.strSeriesDescStructuralT2 << "' image to 100" << std::endl;  
+            args.PrintMessage( message );
+
+            typedef itk::RescaleImageUsingHistogramPercentilesFilter<ImageType, ImageType> RescaleFilterType;
+
+            RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+            rescaleFilter->SetInput( imStructuralT2 );
+  
+            rescaleFilter->SetInLowerPercentile(  0. );
+            rescaleFilter->SetInUpperPercentile( 98. );
+
+            rescaleFilter->SetOutLowerLimit(   0. );
+            rescaleFilter->SetOutUpperLimit( 100. );
+
+            rescaleFilter->Update();
+
+            imStructuralT2 = rescaleFilter->GetOutput();
+            imStructuralT2->DisconnectPipeline();          
             
             args.WriteImageToFile( dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
-                                   "bias field corrected 't2_tse_tra' image", imStructuralT2 );
+                                   std::string( "bias field corrected '" ) +
+                                   args.strSeriesDescStructuralT2 + "' image", imStructuralT2 );
           }
         }
       
@@ -900,7 +1000,8 @@ int main( int argc, char *argv[] )
           imStructuralT2->DisconnectPipeline();
 
           args.WriteImageToFile( dirOutput, fileI02_t2_tse_tra_Resampled, 
-                                 "resampled 't2_tse_tra' image", imStructuralT2 );
+                                 std::string( "resampled '" ) + args.strSeriesDescStructuralT2 +
+                                 "' image", imStructuralT2 );
         }
       }
 
@@ -909,7 +1010,7 @@ int main( int argc, char *argv[] )
 
       if ( ! ( imStructuralT2 && imFatSatT1 ) )
       {
-        message << "Both of structural T2 and fat saturated T1 images not found, "
+        message << "Both of structural and complementary images not found, "
                 << "skipping this directory: " << std::endl << std::endl;
         args.PrintWarning( message );
         continue;
@@ -919,8 +1020,10 @@ int main( int argc, char *argv[] )
       // Run the breast mask segmentation?
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileOutputBreastMask, 
-                                     "segmented breast mask", imSegmentedBreastMask ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileOutputBreastMask, 
+                                       "segmented breast mask", 
+                                       imSegmentedBreastMask ) ) )
       {
 
         bool flgSmooth = true;
@@ -938,7 +1041,7 @@ int main( int argc, char *argv[] )
 
         float finalSegmThreshold = 0.49;
 
-        float sigmaInMM = 5;
+        float sigmaInMM = 1;
 
         float fMarchingK1   = 30.0;
         float fMarchingK2   = 15.0;
@@ -1031,8 +1134,12 @@ int main( int argc, char *argv[] )
           if ( fileOutputPectoralSurfaceVoxels.length() > 0 ) breastMaskSegmentor->SetOutputPectoralSurf(         niftk::ConcatenatePath( dirOutput, fileOutputPectoralSurfaceVoxels ) );
   
           if ( fileOutputFittedBreastMask.length() > 0 )      breastMaskSegmentor->SetOutputBreastFittedSurfMask( niftk::ConcatenatePath( dirOutput, fileOutputFittedBreastMask ) );
+        }
 
-          if ( fileOutputVTKSurface.length() > 0 )            breastMaskSegmentor->SetOutputVTKSurface(           niftk::ConcatenatePath( dirOutput, fileOutputVTKSurface ) );
+        if ( fileOutputVTKSurface.length() > 0 )
+        {
+          breastMaskSegmentor->SetOutputVTKSurface( niftk::ConcatenatePath( dirOutput, 
+                                                                            fileOutputVTKSurface ) );
         }
 
         if ( args.ReadImageFromFile( dirOutput, fileBIFs, "BIF image", imBIFs ) )
@@ -1060,8 +1167,10 @@ int main( int argc, char *argv[] )
       // Load the Dixon Water Image
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_W, 
-                                     "Dixon water 'sag_dixon_bilateral_W' image", imDixonWater ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_W, 
+                                       std::string( "Dixon water '" ) + args.strSeriesDescDixonWater +
+                                       "' image", imDixonWater ) ) )
       {
         if ( fileNamesDixonWater.size() > 0 )
         {
@@ -1069,7 +1178,7 @@ int main( int argc, char *argv[] )
           SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
           seriesReader->SetFileNames( fileNamesDixonWater );
           
-          message << std::endl << "Reading 'sag_dixon_bilateral_W' image" << std::endl;  
+          message << std::endl << "Reading '" << args.strSeriesDescDixonWater << "' image" << std::endl;  
           args.PrintMessage( message );
           
           seriesReader->UpdateLargestPossibleRegion();
@@ -1078,7 +1187,8 @@ int main( int argc, char *argv[] )
           imDixonWater->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI00_sag_dixon_bilateral_W, 
-                                 "Dixon water 'sag_dixon_bilateral_W' image", imDixonWater );
+                                 std::string( "Dixon water '" ) + args.strSeriesDescDixonWater +
+                                 "' image", imDixonWater );
         }
       }
 
@@ -1086,8 +1196,10 @@ int main( int argc, char *argv[] )
       // Load the Dixon Fat Image
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_F, 
-                                     "Dixon fat 'sag_dixon_bilateral_F' image", imDixonFat ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileI00_sag_dixon_bilateral_F, 
+                                       std::string( "Dixon fat '" ) + args.strSeriesDescDixonFat +
+                                       "' image", imDixonFat ) ) )
       {
         if ( fileNamesDixonFat.size() > 0 )
         {
@@ -1095,7 +1207,7 @@ int main( int argc, char *argv[] )
           SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
           seriesReader->SetFileNames( fileNamesDixonFat );
           
-          message << std::endl << "Reading 'sag_dixon_bilateral_F' image" << std::endl;  
+          message << std::endl << "Reading '" << args.strSeriesDescDixonFat << "' image" << std::endl;  
           args.PrintMessage( message );
           
           seriesReader->UpdateLargestPossibleRegion();
@@ -1104,7 +1216,8 @@ int main( int argc, char *argv[] )
           imDixonFat->DisconnectPipeline();
           
           args.WriteImageToFile( dirOutput, fileI00_sag_dixon_bilateral_F, 
-                                 "Dixon fat 'sag_dixon_bilateral_F' image", imDixonFat );
+                                 std::string( "Dixon fat '" ) + args.strSeriesDescDixonFat +
+                                 "' image", imDixonFat );
         }
       }
 
@@ -1112,8 +1225,9 @@ int main( int argc, char *argv[] )
       // Resample the breast mask to match the Dixon images
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileOutputDixonMask, 
-                                     "Dixon breast mask", imDixonBreastMask ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileOutputDixonMask, 
+                                       "Dixon breast mask", imDixonBreastMask ) ) )
       {
 
         if ( imDixonWater && imDixonFat ) 
@@ -1153,8 +1267,9 @@ int main( int argc, char *argv[] )
 
       nifti_image *niftiParenchyma;
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
-                                     "breast parenchyma", niftiParenchyma ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
+                                       "breast parenchyma", niftiParenchyma ) ) )
       {
 
         nifti_image *niftiStructuralT2 = 
@@ -1192,14 +1307,16 @@ int main( int argc, char *argv[] )
 
 #else
 
-      if ( ! args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
-                                     "breast parenchyma", imParenchyma ) )
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
+                                       "breast parenchyma", imParenchyma ) ) )
       {
 
         std::stringstream commandNiftySeg;
 
         commandNiftySeg 
-          << "seg_EM -v 2 -bc_order 4 -nopriors 2" 
+          << "\"" << fileSegEM << "\""
+          << " -v 2 -bc_order 4 -nopriors 2" 
           << " -in \"" << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
           << " -mask \"" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ) << "\" "
           << " -out \"" << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ) << "\" ";
@@ -1210,6 +1327,9 @@ int main( int argc, char *argv[] )
 
         int ret = system( commandNiftySeg.str().c_str() );
         message << std::endl << "Returned: " << ret << std::endl;
+
+        args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
+                                "breast parenchyma", imParenchyma );
       }
 
 #endif
@@ -1364,14 +1484,15 @@ int main( int argc, char *argv[] )
           std::string fileOutputDensityMeasurements 
             = niftk::ConcatenatePath( dirOutput, fileDensityMeasurements );
 
-          std::ofstream fout( fileOutputDensityMeasurements .c_str() );
+          std::ofstream fout( fileOutputDensityMeasurements.c_str() );
 
           fout.precision(16);
 
           if ((! fout) || fout.bad()) 
           {
             message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-            args.PrintErrorAndExit( message );
+            args.PrintError( message );
+            continue;
           }
 
           fout << "Study ID, "
@@ -1407,7 +1528,32 @@ int main( int argc, char *argv[] )
                    << fileOutputDensityMeasurements  << std::endl << std::endl;
           args.PrintMessage( message );
         }
+
+        // Write the data to the main collated csv file
+
+        if ( args.foutOutputCSV )
+        {
+          *args.foutOutputCSV << dirBaseName << ", "
+                              << nLeftVoxels << ", "
+                              << leftBreastVolume << ", "
+                              << leftDensity << ", "
+            
+                              << nRightVoxels << ", "
+                              << rightBreastVolume << ", "
+                              << rightDensity << ", "
+      
+                              << nLeftVoxels + nRightVoxels << ", "
+                              << leftBreastVolume + rightBreastVolume << ", "
+                              << totalDensity << std::endl;
+        }
+        else
+        {
+          message << "Collated csv data file: " << fileOutputCSV 
+                  << " is not open, data will not be written." << std::endl;
+          args.PrintWarning( message );
+        }
       }
+
 
       // Delete unwanted images
       // ~~~~~~~~~~~~~~~~~~~~~~
@@ -1440,21 +1586,15 @@ int main( int argc, char *argv[] )
         args.DeleteFile( dirOutput, fileOutputPectoralSurfaceVoxels );
 
         args.DeleteFile( dirOutput, fileOutputFittedBreastMask );
-
-        args.DeleteFile( dirOutput, fileOutputVTKSurface );
       }
     }
     catch (itk::ExceptionObject &ex)
     {
       message << ex << std::endl;
-      args.PrintErrorAndExit( message );
+      args.PrintError( message );
+      continue;
     }
   }
-    
-  progress = iDirectory/nDirectories;
-  std::cout  << std::endl << "<filter-progress>" << std::endl
-             << progress << std::endl
-             << "</filter-progress>" << std::endl << std::endl;
   
   return EXIT_SUCCESS;
 }

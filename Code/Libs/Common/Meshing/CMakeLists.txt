@@ -25,7 +25,7 @@ endif(CGAL_FOUND)
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    # remember https://cmicdev.cs.ucl.ac.uk/trac/ticket/3647
+    # remember https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/3647
     add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)

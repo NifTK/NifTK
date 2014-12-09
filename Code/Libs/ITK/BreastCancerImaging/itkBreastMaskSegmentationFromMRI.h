@@ -195,6 +195,7 @@ public:
   void SetOutputFit( std::string fn ) { fileOutputRayleigh = fn; }
   void SetOutputCDF( std::string fn ) { fileOutputFreqLessBgndCDF = fn; }
   void SetOutputImageMax( std::string fn ) { fileOutputMaxImage = fn; }
+  void SetOutputImageMaxClosed( std::string fn ) { fileOutputMaxClosedImage = fn; }
   void SetOutputBackground( std::string fn ) { fileOutputBackground = fn; }
   void SetOutputChestPoints( std::string fn ) { fileOutputChestPoints = fn; }
   void SetOutputPectoralMask( std::string fn ) { fileOutputPectoral = fn; }
@@ -220,6 +221,18 @@ public:
 
   void SetBIFImage( typename InternalImageType::Pointer image ) { imBIFs = image; }
 
+
+  typename InternalImageType::IndexType  GetLeftNippleIndex( void ) {
+    return idxNippleLeft;
+  }
+
+  typename InternalImageType::IndexType  GetRightNippleIndex( void ) {
+    return idxNippleRight;
+  }
+
+  typename InternalImageType::IndexType GetMidSternumIndex( void ) {
+    return idxMidSternum;
+  }
 
   /// Execute the segmentation - must be implemented in derived class
   virtual void Execute( void ) = 0;
@@ -316,6 +329,7 @@ protected:
   std::string fileOutputRayleigh;
   std::string fileOutputFreqLessBgndCDF;
   std::string fileOutputMaxImage;
+  std::string fileOutputMaxClosedImage;
   std::string fileOutputBackground;
   std::string fileOutputPectoralSurfaceMask;
   std::string fileOutputChestPoints;
@@ -338,7 +352,8 @@ protected:
   typename InternalImageType::Pointer imBIFs;
 
   typename InternalImageType::Pointer imSpeedFuncInputImage; // This will be a copy of the structural image after smoothing
-  typename InternalImageType::Pointer imMax;
+  typename InternalImageType::Pointer imMaximum;
+  typename InternalImageType::Pointer imMaxClosed;
   typename InternalImageType::Pointer imPectoralVoxels;
   typename InternalImageType::Pointer imPectoralSurfaceVoxels;
   typename InternalImageType::Pointer imChestSurfaceVoxels;
@@ -357,11 +372,15 @@ protected:
 
   typename InternalImageType::IndexType idxMidSternum;
 
-  typename InternalImageType::IndexType idxLeftBreastMidPoint;
-  typename InternalImageType::IndexType idxRightBreastMidPoint;
-
   typename InternalImageType::IndexType idxNippleRight;
   typename InternalImageType::IndexType idxNippleLeft;
+
+
+
+  /// Landmarks used by the segmentation
+
+  typename InternalImageType::IndexType idxLeftBreastMidPoint;
+  typename InternalImageType::IndexType idxRightBreastMidPoint;
 
   typename InternalImageType::IndexType idxLeftPosterior;
   typename InternalImageType::IndexType idxRightPosterior;
@@ -430,10 +449,11 @@ protected:
 
   /// Segment the Pectoral Muscle
   typename PointSetType::Pointer SegmentThePectoralMuscle( RealType rYHeightOffset,
-							   unsigned long &iPointPec );
+							   unsigned long &iPointPec,
+                                                           bool flgIncludeNippleSeeds=false );
 
   /// Discard anything not within a B-Spline fitted to the breast skin surface
-  void MaskWithBSplineBreastSurface( void );
+  void MaskWithBSplineBreastSurface( RealType rYHeightOffset );
   /// Mask with a sphere centered on each breast
   void MaskBreastWithSphere( void );
 
@@ -501,7 +521,7 @@ protected:
 				       const typename InternalImageType::PointType     &origin, 
 				       const typename InternalImageType::SpacingType   &spacing,
 				       const typename InternalImageType::DirectionType &direction,
-				       const RealType rOffset, 
+				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
 				       const int numOfControlPoints,
 				       const int numOfLevels,

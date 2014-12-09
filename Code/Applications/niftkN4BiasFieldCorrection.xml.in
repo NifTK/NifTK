@@ -38,7 +38,7 @@
       <longflag>outBiasField</longflag>
       <description>Output bias field image</description>      
       <label>Output bias field image</label>
-      <default>BiasField.nii.gz</default>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -65,7 +65,7 @@
       <longflag>outMask</longflag>
       <description>Output mask image</description>      
       <label>Output mask</label>
-      <default>N4Mask.nii.gz</default>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -74,7 +74,7 @@
       <longflag>outSubsampledImage</longflag>
       <description>Output subsampled image</description>      
       <label>Output subsampled field image</label>
-      <default>N4SubsampledImage.nii.gz</default>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -83,7 +83,7 @@
       <longflag>outSubsampledMask</longflag>
       <description>Output subsampled mask</description>      
       <label>Output subsampled field mask</label>
-      <default>N4SubsampledFieldMask.nii.gz</default>
+      <default></default>
       <channel>output</channel>
     </image>
 

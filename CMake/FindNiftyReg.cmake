@@ -23,7 +23,7 @@ endif(NOT NIFTYREG_DIR)
 
 # disabled for now: niftyreg is never build with cuda enabled.
 # so the gpu-related files will never be found.
-# https://cmicdev.cs.ucl.ac.uk/trac/ticket/2764
+# https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2764
 if(FALSE AND CUDA_FOUND)
 
   find_path(NIFTYREG_INCLUDE_DIR

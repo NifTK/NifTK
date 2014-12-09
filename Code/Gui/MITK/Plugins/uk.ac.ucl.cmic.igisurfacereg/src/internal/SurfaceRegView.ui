@@ -85,13 +85,13 @@
      <item>
       <widget class="ctkCollapsibleGroupBox" name="m_LiveDistanceGroupBox">
        <property name="title">
-        <string>Compute live distance</string>
+        <string>Compute live RMS</string>
        </property>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Distance:</string>
+           <string>RMS:</string>
           </property>
          </widget>
         </item>

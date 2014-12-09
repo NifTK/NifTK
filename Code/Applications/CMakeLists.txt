@@ -104,6 +104,7 @@ if(SlicerExecutionModel_FOUND)
     niftkOtsuThresholdImage
     niftkPrintDICOMSeries
     niftkRegionalMammographicDensity
+    niftkRescaleImageUsingHistogramPercentiles
     niftkScalarConnectedComponentImageFilter
     niftkSegmentForegroundFromBackground
     niftkSubsampleImage

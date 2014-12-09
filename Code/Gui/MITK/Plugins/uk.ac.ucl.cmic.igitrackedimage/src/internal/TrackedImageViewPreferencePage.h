@@ -49,14 +49,14 @@ public:
   static const std::string CALIBRATION_FILE_NAME;
 
   /**
-   * \brief Stores the name of the preference node that contains the image scaling in the x direction.
+   * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string X_SCALING;
+  static const std::string SCALE_FILE_NAME;
 
   /**
-   * \brief Stores the name of the preference node that contains the image scaling in the y direction.
+   * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string Y_SCALING;
+  static const std::string EMTOWORLDCALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains whether we flip the x scale factor to be negative.
@@ -68,10 +68,15 @@ public:
    */
   static const std::string FLIP_Y_SCALING;
 
-    /**
-   * \brief Stores the status whether we show the clone image button.
+  /**
+   * \brief Stores the name of the preference node that contains status whether we show the clone image button.
    */
   static const std::string CLONE_IMAGE;
+
+  /**
+   * \brief Stores the name of the preference node that controls if we show the 2D window.
+   */
+  static const std::string SHOW_2D_WINDOW;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
@@ -104,13 +109,15 @@ private:
 
   QWidget         *m_MainControl;
   ctkPathLineEdit *m_CalibrationFileName;
+  ctkPathLineEdit *m_ScaleFileName;
+  ctkPathLineEdit *m_EmToWorldCalibrationFileName;
+
   bool             m_Initializing;
-  QDoubleSpinBox  *m_XScaling;
-  QDoubleSpinBox  *m_YScaling;
   QCheckBox       *m_FlipXScaling;
   QCheckBox       *m_FlipYScaling;
 
   QCheckBox       *m_CloneImage;
+  QCheckBox       *m_Show2DWindow;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };
