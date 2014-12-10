@@ -315,17 +315,5 @@ If you are experiencing "unpredictable" problems with your VS build please turn 
 Go to Tools > Options > Projects and Solutions > Build and Run, and set the "Maximum number of parallel project builds" variable to 1.
 </ul>
 
-\section BuildInstructionsFinalInstallation 12. Final Installation 
-
-In addition, there are some additional steps, that could be considered as optional.
-When an end-user downloads compiled binaries, there are some steps to enable the use
-of some scripts and command line programs. These can be found on the 
-<a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> page.
-A developer can either install their software as described in section 10, and then
-adapt these <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a>
-to run the command line scripts from their installation folder, or they can adapt
-the <a href="@NIFTK_INSTALL_INSTRUCTIONS@">installation instructions</a> to run
-scripts from the build folder.
- 
 */
 

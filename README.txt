@@ -7,16 +7,6 @@ Version @NIFTK_VERSION_STRING@.
 For all questions and queries, please join the users mailing list:
 @NIFTK_USER_CONTACT@.
 
-Documentation
--------------
-
-The documentation is provided via
-
-  an online @NIFTK_WIKI_TEXT@: @NIFTK_WIKI_URL@
-  nightly generated documentation: @NIFTK_NIGHTLY_DOCS@
-
-and each graphical user interface contains its own help files.
-
 Notices
 -------
 
