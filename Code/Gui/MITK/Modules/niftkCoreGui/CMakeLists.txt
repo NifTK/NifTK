@@ -24,7 +24,7 @@ MITK_CREATE_MODULE(niftkCoreGui
   EXPORT_DEFINE NIFTKCOREGUI_EXPORT
   INCLUDE_DIRS Events LookupTables
   DEPENDS ${_modules}
-  PACKAGE_DEPENDS Qt4|QtGui CTK|CTKWidgets
+  PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets
 )
 
 target_link_libraries(niftkCoreGui
