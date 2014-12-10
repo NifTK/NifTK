@@ -15,17 +15,22 @@
 #include <VLInterface/VLFramebufferToCUDA.h>
 #include <QGLWidget>
 #include <boost/typeof/typeof.hpp>
+#include <cassert>
 #include <stdexcept>
-//#include <cuda_runtime.h>
-//#include <cuda_runtime_api.h>
 #include <cuda_gl_interop.h>
+#include <mitkLogMacros.h>
+#include <vlGraphics/OpenGLContext.hpp>
 
 
 //-----------------------------------------------------------------------------
-VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo, cudaStream_t stream)
+VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo)
   : m_GfxRes(0)
 {
   assert(fbo->openglContext() != 0);
+
+  // FIXME: i'd prefer to leave this to the caller and instead check/assert here.
+  //        but there is currently no api for that in vl.
+  fbo->openglContext()->makeCurrent();
 
   // find the first colour attachment
   vl::ref<vl::FBOAbstractAttachment>    colorAttachment;
@@ -76,11 +81,6 @@ VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo, cudaStrea
     throw std::runtime_error("Cannot register FBO attachment with CUDA");
   }
 
-  err = cudaGraphicsMapResources(1, &gfxres, stream);
-  if (err != cudaSuccess)
-  {
-    throw std::runtime_error("Cannot map FBO attachment into CUDA");
-  }
 
   m_FBO = fbo;
   m_GfxRes = gfxres;
@@ -90,8 +90,82 @@ VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo, cudaStrea
 //-----------------------------------------------------------------------------
 VLFramebufferAdaptor::~VLFramebufferAdaptor()
 {
+  cudaError_t   err = cudaSuccess;
+
+  // check if resource has been unmapped.
+  // it's an error not to unmap first.
+  {
+    cudaArray_t   arr = 0;
+    err = cudaGraphicsSubResourceGetMappedArray(&arr, m_GfxRes, 0, 0);
+    // docs say: "If resource is not mapped then cudaErrorUnknown is returned."
+    if (err != cudaErrorUnknown)
+    {
+      MITK_WARN << "Forgot to call VLFramebufferAdaptor::Unmap()";
+      // in debug mode die hard.
+      assert(!"Forgot to call VLFramebufferAdaptor::Unmap()");
+
+      try
+      {
+        // this is unsafe: we dont know which stream is still using it.
+        Unmap(0);
+      }
+      catch (...)
+      {
+        MITK_WARN << "Double-fault on missed VLFramebufferAdaptor::Unmap() cleanup";
+      }
+    }
+  }
+
   // FIXME: docs dont say anything about synchronisation on unregister!
   //        only unmap is mentioned.
+
+  err = cudaGraphicsUnregisterResource(m_GfxRes);
+  if (err != cudaSuccess)
+  {
+    MITK_WARN << "Failed to unregister FBO attachment from CUDA";
+    // die in debug mode.
+    assert(!"Failed to unregister FBO attachment from CUDA");
+  }
 }
 
 
+//-----------------------------------------------------------------------------
+cudaArray_t VLFramebufferAdaptor::Map(cudaStream_t stream)
+{
+  cudaError_t   err = cudaSuccess;
+  err = cudaGraphicsMapResources(1, &m_GfxRes, stream);
+  if (err != cudaSuccess)
+  {
+    throw std::runtime_error("Cannot map FBO attachment into CUDA");
+  }
+
+  cudaArray_t   arr = 0;
+  err = cudaGraphicsSubResourceGetMappedArray(&arr, m_GfxRes, 0, 0);
+  if (err != cudaSuccess)
+  {
+    try
+    {
+      Unmap(stream);
+    }
+    catch (...)
+    {
+      MITK_WARN << "double-fault cuda-mapping/unmapping. ignoring it.";
+    }
+
+    throw std::runtime_error("Cannot get CUDA arry for FBO attachment");
+  }
+
+  return arr;
+}
+
+
+//-----------------------------------------------------------------------------
+void VLFramebufferAdaptor::Unmap(cudaStream_t stream)
+{
+  cudaError_t   err = cudaSuccess;
+  err = cudaGraphicsUnmapResources(1, &m_GfxRes, stream);
+  if (err != cudaSuccess)
+  {
+    throw std::runtime_error("Cannot unmap array of FBO attachment");
+  }
+}

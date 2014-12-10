@@ -45,6 +45,7 @@
 
 #ifdef _USE_CUDA
 #include <VLInterface/VLFramebufferToCUDA.h>
+#include <CUDAManager/CUDAManager.h>
 #endif
 
 
@@ -259,9 +260,16 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
 #ifdef _USE_CUDA
   {
+    CUDAManager*    cudamanager = CUDAManager::GetInstance();
+    cudaStream_t    mystream    = cudamanager->GetStream("vl example");
+
     vl::ref<vl::FramebufferObject>  fbo = m_VLQtRenderWindow->GetFBO();
 
-    VLFramebufferAdaptor    adaptor(fbo.get(), 0);
+    VLFramebufferAdaptor    adaptor(fbo.get());
+
+    cudaArray_t arr = adaptor.Map(mystream);
+
+    adaptor.Unmap(mystream);
   }
 #endif
 }

@@ -24,8 +24,19 @@ class NIFTKCUDA_EXPORT VLFramebufferAdaptor
 {
 
 public:
-  VLFramebufferAdaptor(vl::FramebufferObject* fbo, cudaStream_t stream);
+  VLFramebufferAdaptor(vl::FramebufferObject* fbo);
   ~VLFramebufferAdaptor();
+
+  /**
+   *
+   */
+  cudaArray_t Map(cudaStream_t stream);
+
+  /**
+   * Invalidates the CUDA array returned by Map() and relinquishes the underlying
+   * OpenGL image back to its context.
+   */
+  void Unmap(cudaStream_t stream);
 
 
 private:
