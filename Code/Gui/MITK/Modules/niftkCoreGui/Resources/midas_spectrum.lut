@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="2" class="LinearLookupTable" displayName="MIDAS Spectrum" premultiplied="0">
+<lut order="3" class="LinearLookupTable" displayName="MIDAS Spectrum" premultiplied="0">
  <colour r="50" g="0" b="58" />
  <colour r="45" g="0" b="61" />
  <colour r="40" g="0" b="64" />

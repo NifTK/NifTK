@@ -16,6 +16,8 @@
 #include <itkConversionUtils.h>
 #include <itkMIDASHelper.h>
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::MorphologicalSegmentorPipeline()
@@ -41,12 +43,16 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   this->SetBackgroundValue((unsigned char)0);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::~MorphologicalSegmentorPipeline()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void 
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -57,6 +63,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 }
 
 
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void 
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
@@ -66,6 +73,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   this->UpdateBackgroundValues();
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension> 
@@ -74,13 +83,15 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_ThresholdingFilter->SetInsideValue(m_ForegroundValue);
   m_ThresholdingConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
   m_ErosionFilter->SetInValue(m_ForegroundValue);
-  m_ErosionConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);  
+  m_ErosionConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
   m_DilationFilter->SetInValue(m_ForegroundValue);
   m_DilationConnectedComponentFilter->SetOutputForegroundValue(m_ForegroundValue);
   m_RethresholdingFilter->SetInValue(m_ForegroundValue);
 }
 
-template<typename TPixel, unsigned int VImageDimension>  
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>  
 ::UpdateBackgroundValues()
@@ -100,48 +111,52 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   m_RethresholdingFilter->SetOutValue(m_BackgroundValue);
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::DisconnectPipeline()
+::SetInputs(const GreyScaleImageType* referenceImage,
+    const SegmentationImageType* erosionsAdditionsImage,
+    const SegmentationImageType* erosionsSubtractionsImage,
+    const SegmentationImageType* dilationsAdditionsImage,
+    const SegmentationImageType* dilationsSubtractionsImage)
 {
-  // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
-  m_ThresholdingFilter->SetInput(NULL);
-  m_ErosionFilter->SetGreyScaleImageInput(NULL);
-  m_DilationFilter->SetGreyScaleImageInput(NULL);
-  m_RethresholdingFilter->SetGreyScaleImageInput(NULL);
-
-  m_ErosionMaskFilter->SetInput(1, NULL);
-  m_ErosionMaskFilter->SetInput(2, NULL);
-  m_DilationMaskFilter->SetInput(1, NULL);
-  m_DilationMaskFilter->SetInput(2, NULL);
-  m_DilationFilter->SetConnectionBreakerImage(NULL);
-}
-
-
-template<typename TPixel, unsigned int VImageDimension>
-void
-MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GreyScaleImageType* referenceImage,
-    SegmentationImageType* erosionsAdditionsImage,
-    SegmentationImageType* erosionEditsImage,
-    SegmentationImageType* dilationsAditionsImage,
-    SegmentationImageType* dilationsEditsImage,
-    MorphologicalSegmentorPipelineParams& p)
-{
-  m_Stage = p.m_Stage;
-
-  // Connect input images.
   m_ThresholdingFilter->SetInput(referenceImage);
   m_ErosionFilter->SetGreyScaleImageInput(referenceImage);
   m_DilationFilter->SetGreyScaleImageInput(referenceImage);
   m_RethresholdingFilter->SetGreyScaleImageInput(referenceImage);
 
   m_ErosionMaskFilter->SetInput(1, erosionsAdditionsImage);
-  m_ErosionMaskFilter->SetInput(2, erosionEditsImage);
-  m_DilationMaskFilter->SetInput(1, dilationsAditionsImage);
-  m_DilationMaskFilter->SetInput(2, dilationsEditsImage);
-  m_DilationFilter->SetConnectionBreakerImage(dilationsEditsImage);
+  m_ErosionMaskFilter->SetInput(2, erosionsSubtractionsImage);
+  m_DilationMaskFilter->SetInput(1, dilationsAdditionsImage);
+  m_DilationFilter->SetConnectionBreakerImage(dilationsSubtractionsImage);
+  m_DilationMaskFilter->SetInput(2, dilationsSubtractionsImage);
+
+  m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
+  m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
+
+  m_ErosionFilter->SetBinaryImageInput(m_ThresholdingConnectedComponentFilter->GetOutput());
+  m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
+  m_ErosionConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
+
+  m_DilationFilter->SetBinaryImageInput(m_ErosionConnectedComponentFilter->GetOutput());
+  m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
+  m_DilationConnectedComponentFilter->SetInput(m_DilationMaskFilter->GetOutput());
+
+  m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
+  m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetParams(const MorphologicalSegmentorPipelineParams& params)
+{
+  int startStage = params.m_StartStage;
+  m_Stage = params.m_Stage;
 
   // Note, the ITK Set/Get Macro ensures that the Modified flag only gets set if the value set is actually different.
 
@@ -150,61 +165,43 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   
   typename SegmentationImageType::RegionType         regionOfInterest;
-  typename SegmentationImageType::SizeType           regionOfInterestSize;
   typename SegmentationImageType::IndexType          regionOfInterestIndex;
-  typedef typename GreyScaleImageType::ConstPointer  ImagePointer;
-  
-  ImagePointer input = m_ThresholdingFilter->GetInput();
+  typename SegmentationImageType::SizeType           regionOfInterestSize;
+
+  typename GreyScaleImageType::ConstPointer referenceImage = m_ThresholdingFilter->GetInput();
   
   // 1. Set region to full size of input image
-  regionOfInterestSize = input->GetLargestPossibleRegion().GetSize();
-  regionOfInterestIndex = input->GetLargestPossibleRegion().GetIndex();
+  regionOfInterestIndex = referenceImage->GetLargestPossibleRegion().GetIndex();
+  regionOfInterestSize = referenceImage->GetLargestPossibleRegion().GetSize();
 
   // 2. Get string describing orientation.
   typename itk::SpatialOrientationAdapter adaptor;
   typename itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
-  orientation = adaptor.FromDirectionCosines(input->GetDirection());
+  orientation = adaptor.FromDirectionCosines(referenceImage->GetDirection());
   std::string orientationString = itk::ConvertSpatialOrientationToString(orientation);
 
   // 3. Get Axis that represents superior/inferior
   int axialAxis = -1;
-  itk::Orientation itkOrientation = itk::ORIENTATION_AXIAL;
-  itk::GetAxisFromITKImage<TPixel, VImageDimension>(input, itkOrientation, axialAxis);
+  itk::GetAxisFromITKImage<TPixel, VImageDimension>(referenceImage, itk::ORIENTATION_AXIAL, axialAxis);
   
   if (axialAxis != -1)
   {
     // 4. Calculate size of region of interest in that axis
     if (orientationString[axialAxis] == 'I')
     {
-      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
-      regionOfInterestIndex[axialAxis] = p.m_AxialCutoffSlice;
+      regionOfInterestIndex[axialAxis] = params.m_AxialCutOffSlice;
+      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - params.m_AxialCutOffSlice;
     }
     else
     {
-      regionOfInterestSize[axialAxis] = p.m_AxialCutoffSlice + 1;
       regionOfInterestIndex[axialAxis] = 0;
-    }
-
-    // 5. Set region on both filters
-    regionOfInterest.SetSize(regionOfInterestSize);
-    regionOfInterest.SetIndex(regionOfInterestIndex);
-    
-    if (regionOfInterest != m_ThresholdingMaskFilter->GetRegion())
-    {
-      m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
-    }
-
-    if (regionOfInterest != m_ErosionMaskFilter->GetRegion())
-    { 
-      m_ErosionFilter->SetRegion(regionOfInterest);
-      m_ErosionMaskFilter->SetRegion(regionOfInterest);
-    }
-    
-    if (regionOfInterest != m_DilationMaskFilter->GetRegion())
-    {        
-      m_DilationMaskFilter->SetRegion(regionOfInterest);
+      regionOfInterestSize[axialAxis] = params.m_AxialCutOffSlice + 1;
     }
   }
+
+  // 5. Set region on both filters
+  regionOfInterest.SetIndex(regionOfInterestIndex);
+  regionOfInterest.SetSize(regionOfInterestSize);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 998, setting region of interest, on Mask filters
@@ -214,92 +211,77 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   // Start Trac 1131, calculate a rough size to help LargestConnectedComponents allocate memory.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  unsigned long int expectedSize = 1;
-  for (unsigned int i = 0; i < VImageDimension; i++)
-  {
-    expectedSize *= regionOfInterestSize[i];
-  }
-  expectedSize /= 8;
-
-  m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
-  m_ErosionConnectedComponentFilter->SetCapacity(expectedSize);
-  m_DilationConnectedComponentFilter->SetCapacity(expectedSize);
+  unsigned long int expectedSize = regionOfInterest.GetNumberOfPixels() / 8;
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // End Trac 1131.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  if (m_Stage == 0)
+  if (startStage <= THRESHOLDING && m_Stage >= THRESHOLDING)
   {
-    m_ThresholdingFilter->SetLowerThreshold((TPixel)p.m_LowerIntensityThreshold);
-    m_ThresholdingFilter->SetUpperThreshold((TPixel)p.m_UpperIntensityThreshold);
+    m_ThresholdingFilter->SetLowerThreshold((TPixel)params.m_LowerIntensityThreshold);
+    m_ThresholdingFilter->SetUpperThreshold((TPixel)params.m_UpperIntensityThreshold);
 
-    m_ThresholdingMaskFilter->SetInput(m_ThresholdingFilter->GetOutput());
+    m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
   }
-  else if (m_Stage == 1)
+
+  if (startStage <= EROSION && m_Stage >= EROSION)
   {
+    m_ThresholdingConnectedComponentFilter->SetCapacity(expectedSize);
 
-    m_ThresholdingConnectedComponentFilter->SetInput(m_ThresholdingMaskFilter->GetOutput());
+    m_ErosionFilter->SetRegion(regionOfInterest);
+    m_ErosionFilter->SetUpperThreshold((TPixel)params.m_UpperErosionsThreshold);
+    m_ErosionFilter->SetNumberOfIterations(params.m_NumberOfErosions);
+    m_ErosionFilter->SetRegion(regionOfInterest);
 
-    m_ErosionFilter->SetBinaryImageInput(m_ThresholdingConnectedComponentFilter->GetOutput());
-    m_ErosionFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_ErosionFilter->SetUpperThreshold((TPixel)p.m_UpperErosionsThreshold);
-    m_ErosionFilter->SetNumberOfIterations(p.m_NumberOfErosions);
+    m_ErosionMaskFilter->SetRegion(regionOfInterest);
 
-    m_ErosionMaskFilter->SetInput(0, m_ErosionFilter->GetOutput());
-    m_ErosionConnectedComponentFilter->SetInput(m_ErosionMaskFilter->GetOutput());
+    m_ErosionConnectedComponentFilter->SetCapacity(expectedSize);
   }
-  else if (m_Stage == 2)
+
+  if (startStage <= DILATION && m_Stage >= DILATION)
   {
+    m_DilationFilter->SetLowerThreshold((int)(params.m_LowerPercentageThresholdForDilations));
+    m_DilationFilter->SetUpperThreshold((int)(params.m_UpperPercentageThresholdForDilations));
+    m_DilationFilter->SetNumberOfIterations((int)(params.m_NumberOfDilations));
+    m_DilationFilter->SetRegion(regionOfInterest);
 
-    m_DilationFilter->SetBinaryImageInput(m_ErosionConnectedComponentFilter->GetOutput());
-    m_DilationFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_DilationFilter->SetLowerThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_DilationFilter->SetUpperThreshold((int)(p.m_UpperPercentageThresholdForDilations));
-    m_DilationFilter->SetNumberOfIterations((int)(p.m_NumberOfDilations));
+    m_DilationMaskFilter->SetRegion(regionOfInterest);
 
-    m_DilationMaskFilter->SetInput(0, m_DilationFilter->GetOutput());
-    m_DilationConnectedComponentFilter->SetInput(m_DilationMaskFilter->GetOutput());
+    m_DilationConnectedComponentFilter->SetCapacity(expectedSize);
   }
-  else if (m_Stage == 3)
+
+  if (startStage <= RETHRESHOLDING && m_Stage >= RETHRESHOLDING)
   {
-    m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
-    m_RethresholdingFilter->SetGreyScaleImageInput(m_ThresholdingFilter->GetInput());
-    m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
-    m_RethresholdingFilter->SetDownSamplingFactor(p.m_BoxSize);
-    m_RethresholdingFilter->SetLowPercentageThreshold((int)(p.m_LowerPercentageThresholdForDilations));
-    m_RethresholdingFilter->SetHighPercentageThreshold((int)(p.m_UpperPercentageThresholdForDilations));
+    m_RethresholdingFilter->SetDownSamplingFactor(params.m_BoxSize);
+    m_RethresholdingFilter->SetLowPercentageThreshold((int)(params.m_LowerPercentageThresholdForDilations));
+    m_RethresholdingFilter->SetHighPercentageThreshold((int)(params.m_UpperPercentageThresholdForDilations));
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::Update(std::vector<bool>& editingFlags, std::vector<int>& editingRegion)
+::Update(const std::vector<bool>& editingFlags, const std::vector<int>& editingRegion)
 {
-  if (m_Stage == 0)
+  if (m_Stage == THRESHOLDING)
   {
-    m_ThresholdingMaskFilter->Modified();
     m_ThresholdingMaskFilter->UpdateLargestPossibleRegion();
   }
-  else if (m_Stage == 1 || m_Stage == 2)
+  else if (m_Stage == EROSION || m_Stage == DILATION)
   {
     // Simple case first - no editing.
     
     if (!editingFlags[0] && !editingFlags[1] && !editingFlags[2] && !editingFlags[3])
     {
-      if (m_Stage == 1)
+      if (m_Stage == EROSION)
       {
-        m_ErosionMaskFilter->GetInput()->Modified();
-        m_ErosionMaskFilter->Modified();
-        m_ErosionConnectedComponentFilter->Modified();
         m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
-      else if (m_Stage == 2)
+      else if (m_Stage == DILATION)
       {
-        m_DilationMaskFilter->GetInput()->Modified();
-        m_DilationMaskFilter->Modified();
-        m_DilationConnectedComponentFilter->Modified();
         m_DilationConnectedComponentFilter->UpdateLargestPossibleRegion();
       }
     }
@@ -329,35 +311,35 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       editingRegionOfInterest.SetIndex(editingRegionStartIndex);
       editingRegionOfInterest.SetSize(editingRegionSize);
   
-      // If Either of these are set, we must be in erosions tab, so m_Stage == 1.
+      // If Either of these are set, we must be in erosions tab, so m_Stage == EROSION.
       if (editingFlags[0] || editingFlags[1])
       {
         if (editingFlags[0])
         {
           inputImage = m_ErosionMaskFilter->GetInput(1);
           outputImage = m_ErosionConnectedComponentFilter->GetOutput();
-          updateMethod = 1;        
+          updateMethod = 1;
         }
         else if (editingFlags[1])
         {
           inputImage = m_ErosionMaskFilter->GetInput(2);
           outputImage = m_ErosionConnectedComponentFilter->GetOutput();
-          updateMethod = 2;                
+          updateMethod = 2;
         }
       }
-      else // We are on dilations tab, so m_Stage == 2.
+      else // We are on dilations tab, so m_Stage == DILATION.
       {
         if (editingFlags[2])
         {
           inputImage = m_DilationMaskFilter->GetInput(1);
           outputImage = m_DilationConnectedComponentFilter->GetOutput();
-          updateMethod = 1;                
+          updateMethod = 1;
         }
         else if (editingFlags[3])
         {
           inputImage = m_DilationMaskFilter->GetInput(2);
-          outputImage = m_DilationConnectedComponentFilter->GetOutput();  
-          updateMethod = 2;                      
+          outputImage = m_DilationConnectedComponentFilter->GetOutput();
+          updateMethod = 2;
         }      
       }
       // Now we have decided, input, output, and which method.
@@ -397,36 +379,47 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
       }
     }
   }
-  else if (m_Stage == 3)
+  else if (m_Stage == RETHRESHOLDING)
   {  
-    m_RethresholdingFilter->Modified();
-    m_RethresholdingFilter->UpdateLargestPossibleRegion();    
+    m_RethresholdingFilter->UpdateLargestPossibleRegion();
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
-::GetOutput(std::vector<bool>& editingFlags)
+::GetOutput()
+{
+  return this->GetOutput(m_Stage);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+typename MorphologicalSegmentorPipeline<TPixel, VImageDimension>::SegmentationImageType::Pointer
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::GetOutput(int stage)
 {
   typename SegmentationImageType::Pointer result;
 
-  if (m_Stage == 0)
+  if (stage == THRESHOLDING)
   {
     result = m_ThresholdingMaskFilter->GetOutput();
   }
-  else if (m_Stage == 1)
+  else if (stage == EROSION)
   {
     result = m_ErosionConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == 2)
+  else if (stage == DILATION)
   {
     result = m_DilationConnectedComponentFilter->GetOutput();
   }
-  else if (m_Stage == 3)
+  else if (stage == RETHRESHOLDING)
   {
     result = m_RethresholdingFilter->GetOutput();
   }
+
   return result;
 }
-

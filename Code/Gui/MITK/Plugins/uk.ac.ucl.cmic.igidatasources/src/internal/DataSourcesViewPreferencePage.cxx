@@ -163,6 +163,14 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("save in background", m_SaveInBackground);
   formLayout->addRow("ignore timing, pick latest data", m_PickLatestData);
 
+  QFrame*     hline = new QFrame;
+  hline->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+  formLayout->addRow(hline);
+  QLabel*     noticeLabel = new QLabel(tr("Note: you can set a per-machine default Output Directory Prefix with the environment variable %1.").arg(QmitkIGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE));
+  noticeLabel->setWordWrap(true);
+  noticeLabel->setTextInteractionFlags(noticeLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
+  formLayout->addRow(noticeLabel);
+
   m_MainControl->setLayout(formLayout);
   this->Update();
 

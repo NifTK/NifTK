@@ -344,6 +344,8 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 
     if (prefNode != NULL && image.IsNotNull())
     {
+      int minRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
+      int maxRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
       double percentageOfRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
       std::string initialisationMethod = prefNode->Get(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME, QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS);
 
@@ -438,6 +440,11 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
           {
             windowMin = minDataLimit;
             windowMax = minDataLimit + (maxDataLimit - minDataLimit)*percentageOfRange/100.0;
+          }
+          else if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE)
+          {
+            windowMin = minRange; // ignores data completely.
+            windowMax = maxRange; // ignores data completely.
           }
           else
           {

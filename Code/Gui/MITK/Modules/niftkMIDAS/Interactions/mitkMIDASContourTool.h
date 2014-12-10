@@ -83,7 +83,6 @@ public:
 protected:
 
   MIDASContourTool(); // purposely hidden
-  MIDASContourTool(const char* type); // purposely hidden
   virtual ~MIDASContourTool(); // purposely hidden
 
   /// \brief Calls the FeedbackContour::OnMousePressed method, then checks for working image, reference image and geometry.
@@ -93,7 +92,7 @@ protected:
   void Disable3dRenderingOfNode(mitk::DataNode* node);
 
   /// \brief Adds the given contour to the Working Data registered with mitk::ToolManager, where the ToolManager can have multiple data sets registered, so we add the contour to the dataset specified by dataSetNumber.
-  void AccumulateContourInWorkingData(mitk::ContourModel& contour, int dataSetNumber);
+  void AccumulateContourInWorkingData(mitk::ContourModel& contour, int contourIndex);
 
   // Utility methods for helping draw lines that require m_Geometry to be set.
   void ConvertPointInMmToVx(const mitk::Point3D& pointInMm, mitk::Point3D& pointInVx);
@@ -141,10 +140,10 @@ protected:
   float m_Tolerance;
 
   // This is the 3D geometry associated with the m_WorkingImage
-  mitk::Geometry3D* m_WorkingImageGeometry;
+  mitk::Geometry3D* m_SegmentationImageGeometry;
 
   // This is the current 3D working image (the image that is the segmentation, i.e. a binary image)
-  mitk::Image* m_WorkingImage;
+  mitk::Image* m_SegmentationImage;
 
   // This is the current 3D reference image (the image that is being segmented, i.e. a grey scale image)
   mitk::Image* m_ReferenceImage;

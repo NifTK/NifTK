@@ -100,6 +100,10 @@ namespace itk
    */
   NIFTKITK_WINEXPORT ITK_EXPORT int GetUpDirection(const std::string& orientationString, const int& axisOfInterest);
 
+  /**
+   * \brief Returns the orientation string based on the the major axis.
+   */
+  NIFTKITK_WINEXPORT ITK_EXPORT std::string GetMajorAxisFromPatientRelativeDirectionCosine(double x,double y,double z);
 
   /**
    * \brief Gets the orientation string for a 3D image.
@@ -138,6 +142,14 @@ namespace itk
       const itk::Orientation orientation,
       int &upDirection
       );
+
+  /**
+   * \brief Get Image Orientation Label (Axial/Coronal/Sagittal) based on Direction Cosines of the input image
+   */
+  template<typename TPixel, unsigned int VImageDimension>
+  NIFTKITK_WINEXPORT ITK_EXPORT
+  void GetOrientationLabelFromITKImage(
+      const itk::Image<TPixel, VImageDimension>* itkImage, std::string &label);
 
 } // end namespace
 

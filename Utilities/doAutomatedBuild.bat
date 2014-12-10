@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.19 *****
+@echo ***** NifTK Automated Build Script - v.20 *****
 @echo. 
 
 @REM ************************************************************************************
@@ -169,7 +169,7 @@
 @REM pause
 @echo.
 @echo *****  Fetch the latest source from GIT  *****
-call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK %BUILD_SRC%
+call git clone git@cmiclab.cs.ucl.ac.uk:CMIC/NifTK %BUILD_SRC%
 @cd "%BUILD_SRC%"
 @call git checkout %BRANCH%
 @call git pull origin %BRANCH%
@@ -186,7 +186,7 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK %BUILD_SRC%
 @echo Running CMake....
 @cd %BUILD_BIN%
 set "PATH=%CMAKE_LOCATION%;%PATH%"
-call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_CUDA=OFF -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_SRC%" >"%BUILD_LOG%\log_cmake.txt"
+call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DOPENCV_WITH_FFMPEG=ON -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_CUDA=OFF -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_SRC%" >"%BUILD_LOG%\log_cmake.txt"
 @echo. 
 
 @REM pause

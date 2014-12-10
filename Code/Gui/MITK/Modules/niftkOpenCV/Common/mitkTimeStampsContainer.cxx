@@ -60,7 +60,7 @@ std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetS
 
 
 //---------------------------------------------------------------------------
-std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetFrameNumber(const TimeStamp& timeStamp)
+std::vector<TimeStampsContainer::TimeStamp>::size_type TimeStampsContainer::GetFrameNumber(const TimeStamp& timeStamp) const
 {
   std::vector<TimeStampsContainer::TimeStamp>::size_type result = -1;
   std::vector<TimeStampsContainer::TimeStamp>::size_type i;
@@ -83,7 +83,7 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
                                                      TimeStamp& before,
                                                      TimeStamp& after,
                                                      double& proportion
-                                                    )
+                                                    ) const
 {
   bool isValid = false;
   before = 0;             // So that even if user fails to check return code,
@@ -95,9 +95,13 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
     return isValid;
   }
 
-  std::vector<unsigned long long>::iterator iter = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
+  if (input < *(m_TimeStamps.begin()))
+  {
+    after = *(m_TimeStamps.begin());
+    return isValid;
+  }
 
-  if (*iter == input)
+  if (input == *(m_TimeStamps.begin()))
   {
     before = input;
     after = input;
@@ -105,6 +109,9 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
     isValid = true;
     return isValid;
   }
+
+  // This assumes that the value tested for is within the range.
+  std::vector<unsigned long long>::const_iterator iter = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), input);
 
   if (iter == m_TimeStamps.end())
   {
@@ -119,6 +126,15 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
     return isValid;
   }
 
+  if (*iter == input)
+  {
+    before = input;
+    after = input;
+    proportion = 0;
+    isValid = true;
+    return isValid;
+  }
+
   after = *iter;
   --iter;
   before = *iter;
@@ -130,7 +146,7 @@ bool TimeStampsContainer::GetBoundingTimeStamps(const TimeStamp& input,
 
 
 //---------------------------------------------------------------------------
-unsigned long long TimeStampsContainer::GetNearestTimeStamp (const TimeStamp& timestamp, long long *delta)
+unsigned long long TimeStampsContainer::GetNearestTimeStamp (const TimeStamp& timestamp, long long *delta) const
 {
   TimeStamp before = 0;
   TimeStamp after = 0;

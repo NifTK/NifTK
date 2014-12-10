@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="14" class="LinearLookupTable" displayName="FSL jet" premultiplied="1">
+<lut order="15" class="LinearLookupTable" displayName="FSL jet" premultiplied="1">
 <colour r="0.000000" g="0.000000" b="0.520000" />
 <colour r="0.000000" g="0.000000" b="0.560000" />
 <colour r="0.000000" g="0.000000" b="0.600000" />

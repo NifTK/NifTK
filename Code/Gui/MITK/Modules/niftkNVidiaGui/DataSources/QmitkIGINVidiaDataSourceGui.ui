@@ -242,6 +242,11 @@
           <string extracomment="One field of the video is discarded, reducing the effective vertical resolution.">Drop one field</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Split line-interleaved stereo</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="5" column="0" colspan="2">
@@ -253,7 +258,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Field mode determines what to do with interlaced video. Fields can either be stacked vertical, dropped effectively reducing vertical resolution, or treated as if nothing special is to be done. If input is progressive this does not apply.</string>
+         <string>Field mode determines what to do with interlaced video. Fields can either be stacked vertical, dropped effectively reducing vertical resolution, or treated as if nothing special is to be done. If input is progressive this does not apply. However, if you have single-channel line-interleaved stereo, it can be treated as interlaced-drop-one-field and split into separate images.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

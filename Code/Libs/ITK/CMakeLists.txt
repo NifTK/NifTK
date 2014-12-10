@@ -31,6 +31,7 @@ set(niftkITK_SRCS
   IO/itkDRCAnalyzeImageIOFactory.cxx
   IO/itkNIFTKTransformIOFactory.cxx
   IO/itkNIFTKTransformIO.cxx
+  IO/itkNiftiImageIO3201.cxx
   2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
   2D3DToolbox/Commands/itkReconstructionAndRegistrationUpdateCommand.cxx
   2D3DToolbox/Commands/itkSimultaneousReconAndRegnUpdateCommand.cxx
@@ -41,7 +42,7 @@ add_library(niftkITK ${niftkITK_SRCS})
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    add_definitions(-DNIFTKITK_WINDOWS_EXPORT)
+    add_definitions(-DNIFTKITK_WINDOWS_EXPORT=1)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 

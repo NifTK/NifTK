@@ -78,13 +78,13 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   RealType rYHeightOffset = static_cast< RealType >( maxSize[1] );
 
   typename PointSetType::Pointer pecPointSet = 
-    this->SegmentThePectoralMuscle( rYHeightOffset, iPointPec );
+    this->SegmentThePectoralMuscle( rYHeightOffset, iPointPec, true );
 
   MaskThePectoralMuscleOnly( rYHeightOffset, pecPointSet );
 
   // Discard anything not within a fitted surface (switch -cropfit)
   if ( this->flgCropWithFittedSurface )
-    this->MaskWithBSplineBreastSurface();
+    this->MaskWithBSplineBreastSurface( rYHeightOffset );
 
   // OR: for prone-supine scheme: clip at a distance of 40mm 
   //     posterior to the mid sternum point

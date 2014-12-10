@@ -51,7 +51,8 @@ public:
     SOURCE_TYPE_TRACKER,
     SOURCE_TYPE_IMAGER,
     SOURCE_TYPE_FRAME_GRABBER,
-    SOURCE_TYPE_NVIDIA_SDI
+    SOURCE_TYPE_NVIDIA_SDI,
+    SOURCE_TYPE_MICROPHONE
   };
 
   mitkClassMacro(IGIDataSource, itk::Object);
@@ -60,7 +61,7 @@ public:
    * \brief Sources can have an optional Initialize function to perform any setup after construction,
    * with this class providing a default, do-nothing implementation.
    */
-  virtual void Initialize() {};
+  virtual void Initialize() {}
 
   /**
    * \brief Sets the data storage, as each data source can put items into the storage.

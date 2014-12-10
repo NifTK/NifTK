@@ -21,31 +21,29 @@
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
+#include <usModuleResource.h>
+#include <usModuleResourceStream.h>
 
 #include <Interactions/mitkDnDDisplayInteractor.h>
 
 #include "mitkMIDASEventFilter.h"
 
-const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = "MIDAS_SEEDS";
-const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
+const std::string mitk::MIDASTool::SEEDS_NAME = "MIDAS_SEEDS";
+const std::string mitk::MIDASTool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
 const std::string mitk::MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
 const std::string mitk::MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
-const std::string mitk::MIDASTool::REGION_GROWING_IMAGE_NAME = "MIDAS_REGION_GROWING_IMAGE";
-const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_IMAGE_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
+const std::string mitk::MIDASTool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
+const std::string mitk::MIDASTool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
 const std::string mitk::MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = "MIDAS_EDITS_EROSIONS_ADDITIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
-const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS = "MIDAS_EDITS_DILATIONS_ADDITIONS";
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASTool::MIDASTool(const char* type) :
-    FeedbackContourTool(type)
+mitk::MIDASTool::MIDASTool()
+: mitk::FeedbackContourTool("")
 , m_AddToPointSetInteractor(NULL)
 , m_LastSeenNumberOfSeeds(0)
 , m_SeedsChangedTag(0)
@@ -66,25 +64,43 @@ void mitk::MIDASTool::LoadBehaviourStrings()
 {
   if (!s_BehaviourStringsLoaded)
   {
-    /// TODO
-//    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
-//    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
-//    if (stateMachineFactory)
-//    {
-//      if (stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML)
-//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML)
-//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML)
-//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML)
-//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML)
-//          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML))
-//      {
-//        s_BehaviourStringsLoaded = true;
-//      }
-//    }
-//    else
-//    {
-//      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
-//    }
+    us::Module* thisModule = us::GetModuleContext()->GetModule();
+
+    if (Self::LoadBehaviour("MIDASToolPointSetInteractor.xml", thisModule)
+        && Self::LoadBehaviour("MIDASSeedToolPointSetInteractor.xml", thisModule))
+    {
+      s_BehaviourStringsLoaded = true;
+    }
+    else
+    {
+      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+    }
+  }
+}
+
+
+bool mitk::MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* module)
+{
+  mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
+  mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
+  if (stateMachineFactory)
+  {
+    us::ModuleResource resource =  module->GetResource("Interactions/" + fileName);
+    if (!resource.IsValid())
+    {
+      mitkThrow() << ("Resource not valid. State machine pattern not found:" + fileName);
+    }
+    us::ModuleResourceStream stream(resource);
+
+    std::istreambuf_iterator<char> eos;
+    std::string behaviourString(std::istreambuf_iterator<char>(stream), eos);
+
+    return stateMachineFactory->LoadBehaviorString(behaviourString);
+  }
+  else
+  {
+    MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+    return false;
   }
 }
 
@@ -92,7 +108,12 @@ void mitk::MIDASTool::LoadBehaviourStrings()
 //-----------------------------------------------------------------------------
 bool mitk::MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  return MIDASStateMachine::CanHandleEvent(event);
+  bool canHandleIt = MIDASStateMachine::CanHandleEvent(event);
+  if (canHandleIt)
+  {
+    m_LastEventSender = event->GetSender();
+  }
+  return canHandleIt;
 }
 
 
@@ -129,7 +150,6 @@ const char* mitk::MIDASTool::GetGroup() const
 void mitk::MIDASTool::Activated()
 {
   Superclass::Activated();
-  m_IsActivated = true;
 
   mitk::PointSet* pointSet = NULL;
   mitk::DataNode* pointSetNode = NULL;
@@ -141,8 +161,11 @@ void mitk::MIDASTool::Activated()
   {
     if (m_AddToPointSetInteractor.IsNull())
     {
-//      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
-      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New();
+      m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
+
+//      m_AddToPointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
+//      m_AddToPointSetInteractor->LoadStateMachine("MIDASToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+//      m_AddToPointSetInteractor->SetEventConfig("MIDASToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
@@ -151,10 +174,11 @@ void mitk::MIDASTool::Activated()
       {
         m_AddToPointSetInteractor->InstallEventFilter(*it);
       }
-    }
 
-    /// TODO
-//    mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+//      m_AddToPointSetInteractor->SetDataNode(pointSetNode);
+
+      mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+    }
 
     itk::SimpleMemberCommand<mitk::MIDASTool>::Pointer onSeedsModifiedCommand =
       itk::SimpleMemberCommand<mitk::MIDASTool>::New();
@@ -180,39 +204,15 @@ void mitk::MIDASTool::Activated()
       displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
     }
   }
+
+  m_IsActivated = true;
 }
 
 
 //-----------------------------------------------------------------------------
 void mitk::MIDASTool::Deactivated()
 {
-  Superclass::Deactivated();
   m_IsActivated = false;
-
-  if (m_AddToPointSetInteractor.IsNotNull())
-  {
-    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-    for ( ; it != itEnd; ++it)
-    {
-      m_AddToPointSetInteractor->RemoveEventFilter(*it);
-    }
-
-    /// TODO
-///    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
-  }
-
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
-
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL)
-  {
-    pointSet->RemoveObserver(m_SeedsChangedTag);
-  }
-  m_AddToPointSetInteractor = NULL;
 
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
@@ -230,7 +230,42 @@ void mitk::MIDASTool::Deactivated()
       }
     }
   }
+
   m_DisplayInteractorConfigs.clear();
+
+  mitk::PointSet* pointSet = NULL;
+  mitk::DataNode* pointSetNode = NULL;
+
+  this->FindPointSet(pointSet, pointSetNode);
+
+  if (pointSet != NULL)
+  {
+    pointSet->RemoveObserver(m_SeedsChangedTag);
+
+    if (m_AddToPointSetInteractor.IsNotNull())
+    {
+      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
+
+      /// Note:
+      /// The interactor is disabled after it is destructed, therefore we have to make sure
+      /// that we remove every reference to it. The data node also has a reference to it,
+      /// therefore we have to decouple them here.
+      /// If we do not do this, the interactor stays active and will keep processing the events.
+//      m_AddToPointSetInteractor->SetDataNode(0);
+
+      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      for ( ; it != itEnd; ++it)
+      {
+        m_AddToPointSetInteractor->RemoveEventFilter(*it);
+      }
+
+      m_AddToPointSetInteractor = NULL;
+    }
+  }
+
+  Superclass::Deactivated();
 }
 
 
@@ -252,14 +287,17 @@ void mitk::MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
 void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );
-  mitk::RenderingManager::GetInstance()->RequestUpdate( positionEvent.GetSender()->GetRenderWindow() );
+  positionEvent.GetSender()->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
 void mitk::MIDASTool::RenderAllWindows()
 {
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  if (m_LastEventSender)
+  {
+    m_LastEventSender->GetRenderingManager()->RequestUpdateAll();
+  }
 }
 
 
@@ -267,20 +305,20 @@ void mitk::MIDASTool::RenderAllWindows()
 void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode)
 {
   // Get the current segmented volume
-  mitk::DataNode::Pointer workingData = m_ToolManager->GetWorkingData(0);
+  mitk::DataNode::Pointer segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
 
   // Get reference to point set (Seeds). Here we look at derived nodes, that are called SEED_POINT_SET_NAME
-  if (workingData.IsNotNull())
+  if (segmentationNode.IsNotNull())
   {
     // Find children of the segmented image that are point sets and called POINT_SET_NAME.
     mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
-    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( workingData, isPointSet );
+    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( segmentationNode, isPointSet );
 
     if (possibleChildren->size() > 0)
     {
       for(unsigned int i = 0; i < possibleChildren->size(); ++i)
       {
-        if ((*possibleChildren)[i]->GetName() == SEED_POINT_SET_NAME)
+        if ((*possibleChildren)[i]->GetName() == SEEDS_NAME)
         {
           pointSetNode = (*possibleChildren)[i];
           pointSet = dynamic_cast<mitk::PointSet*>((*possibleChildren)[i]->GetData());
@@ -293,14 +331,14 @@ void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& p
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASTool::UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value)
+void mitk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
 {
   assert(m_ToolManager);
 
-  mitk::DataNode* workingNode( m_ToolManager->GetWorkingData(workingDataNodeNumber) );
+  mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   assert(workingNode);
 
-  workingNode->ReplaceProperty(name.c_str(), mitk::BoolProperty::New(value));
+  workingNode->SetBoolProperty(name.c_str(), value);
 }
 
 

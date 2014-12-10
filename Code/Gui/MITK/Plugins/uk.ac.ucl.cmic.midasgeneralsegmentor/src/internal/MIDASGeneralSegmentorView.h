@@ -232,7 +232,7 @@ protected slots:
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
-  /// currently at:  https://cmicdev.cs.ucl.ac.uk/trac/ticket/1096
+  /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
   void OnCleanButtonClicked();
 
   /// \brief Qt slot called when the Propagate Up button is pressed to take the
@@ -332,7 +332,7 @@ protected:
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual mitk::ToolManager::DataVectorType GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Returns the name of the preferences node to look up.
   /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName

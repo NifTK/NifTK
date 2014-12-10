@@ -15,10 +15,8 @@
 #include "uk_ac_ucl_cmic_dnddisplay_Activator.h"
 #include <QmitkDnDDisplayPreferencePage.h>
 #include <QmitkMultiViewerEditor.h>
-#include <QmitkSingleViewerEditor.h>
+//#include <QmitkSingleViewerEditor.h>
 #include <QtPlugin>
-#include <mitkGlobalInteraction.h>
-#include <Interactions/mitkDnDDisplayStateMachine.h>
 
 namespace mitk
 {

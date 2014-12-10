@@ -79,7 +79,9 @@ public:
     DROP_ONE_FIELD        = 1,
 
     /** No longer supported! */
-    STACK_FIELDS          = 2
+    STACK_FIELDS          = 2,
+
+    SPLIT_LINE_INTERLEAVED_STEREO = 3
   };
 
   // used to capture a lower-resolution image

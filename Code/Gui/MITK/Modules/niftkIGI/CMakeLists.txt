@@ -27,7 +27,7 @@ MITK_CREATE_MODULE(niftkIGI
 )
 
 # only enable openmp on windows, for now.
-# see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2502
+# see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2502
 if(MSVC)
   if(OPENMP_FOUND)
     set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})

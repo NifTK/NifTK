@@ -29,7 +29,7 @@ class NIFTKCOREGUI_EXPORT QmitkPaintEventEater : public QObject
 
 public:
   QmitkPaintEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkPaintEventEater() {};
+  ~QmitkPaintEventEater() {}
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
  protected:

@@ -24,12 +24,11 @@ set(CPP_FILES
   Common/mitkPointUtils.cxx
   Common/mitkMathsUtils.cxx
   DataManagement/mitkDataNodeBoolPropertyFilter.cxx
-  DataManagement/mitkDataNodeAddedVisibilitySetter.cxx
   DataManagement/mitkDataNodeStringPropertyFilter.cxx
   DataManagement/mitkDataStorageUtils.cxx
   DataManagement/mitkDataStorageListener.cxx
-  DataManagement/mitkDataStoragePropertyListener.cxx
-  DataManagement/mitkDataStorageVisibilityTracker.cxx
+  DataManagement/mitkDataNodePropertyListener.cxx
+  DataManagement/mitkDataNodeVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
   DataManagement/mitkCoordinateAxesDataOpUpdate.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
@@ -41,7 +40,6 @@ set(CPP_FILES
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO3160.cxx
-  IO/itkNiftiImageIO3201.cxx
   IO/mitkNifTKItkImageFileReader.cxx
   IO/mitkNifTKItkImageFileIOFactory.cxx
   IO/itkPNMImageIOFactory.cxx

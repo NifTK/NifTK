@@ -15,7 +15,7 @@
 #include "QmitkNiftyViewApplicationPlugin.h"
 #include <QmitkCommonAppsMinimalPerspective.h>
 #include <QmitkCommonAppsIGIPerspective.h>
-#include <QmitkCommonAppsMIDASPerspective.h>
+#include <QmitkMIDASSegmentationPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyViewApplication.h"
 

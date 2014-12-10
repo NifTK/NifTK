@@ -18,7 +18,6 @@
 #include <mitkPointSet.h>
 #include <mitkProperties.h>
 #include <mitkPositionEvent.h>
-#include <mitkRenderingManager.h>
 #include <mitkGlobalInteraction.h>
 
 #include <usModuleResource.h>
@@ -36,7 +35,8 @@ mitk::MIDASSeedTool::~MIDASSeedTool()
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASSeedTool::MIDASSeedTool() : MIDASTool("dummy")
+mitk::MIDASSeedTool::MIDASSeedTool()
+: MIDASTool()
 , m_PointSetInteractor(NULL)
 {
 }
@@ -47,8 +47,9 @@ void mitk::MIDASSeedTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASSeedToolStateMachine.xml", us::GetModuleContext()->GetModule());
-    this->SetEventConfig("MIDASSeedToolConfig.xml", us::GetModuleContext()->GetModule());
+    /// Note:
+    /// This is a dummy, empty state machine, with no transitions. The job is done by the interactor.
+    this->LoadStateMachine("MIDASSeedTool.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
@@ -103,49 +104,64 @@ void mitk::MIDASSeedTool::Activated()
 
   this->FindPointSet(pointSet, pointSetNode);
 
-  /// TODO
+  if (pointSet != NULL && pointSetNode != NULL)
+  {
+    if (m_PointSetInteractor.IsNull())
+    {
+      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
 
-//  if (pointSet != NULL && pointSetNode != NULL)
-//  {
-//    if (m_PointSetInteractor.IsNull())
-//    {
-////      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
-//      m_PointSetInteractor = mitk::MIDASPointSetInteractor::New();
+//      m_PointSetInteractor = mitk::MIDASPointSetDataInteractor::New();
+//      m_PointSetInteractor->LoadStateMachine("MIDASSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+//      m_PointSetInteractor->SetEventConfig("MIDASSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
-//      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-//      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-//      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-//      for ( ; it != itEnd; ++it)
-//      {
-//        m_PointSetInteractor->InstallEventFilter(*it);
-//      }
+      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      for ( ; it != itEnd; ++it)
+      {
+        m_PointSetInteractor->InstallEventFilter(*it);
+      }
 
-////      m_PointSetInteractor->SetAccuracy(1.0);
-//    }
+//      m_PointSetInteractor->SetDataNode(pointSetNode);
 
-//    mitk::GlobalInteraction* globalInteraction = mitk::GlobalInteraction::GetInstance();
-//    globalInteraction->AddInteractor(m_PointSetInteractor);
-//  }
+      mitk::GlobalInteraction::GetInstance()->AddInteractor(m_PointSetInteractor);
+    }
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void mitk::MIDASSeedTool::Deactivated()
 {
+  mitk::PointSet* pointSet = NULL;
+  mitk::DataNode* pointSetNode = NULL;
+
+  this->FindPointSet(pointSet, pointSetNode);
+
+  if (pointSet != NULL && pointSetNode != NULL)
+  {
+    if (m_PointSetInteractor.IsNotNull())
+    {
+      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
+
+      /// Note:
+      /// The interactor is disabled after it is destructed, therefore we have to make sure
+      /// that we remove every reference to it. The data node also has a reference to it,
+      /// therefore we have to decouple them here.
+      /// If we do not do this, the interactor stays active and will keep processing the events.
+//      m_PointSetInteractor->SetDataNode(0);
+
+      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      for ( ; it != itEnd; ++it)
+      {
+        m_PointSetInteractor->RemoveEventFilter(*it);
+      }
+
+      m_PointSetInteractor = NULL;
+    }
+  }
+
   Superclass::Deactivated();
-
-  /// TODO
-
-//  if (m_PointSetInteractor.IsNotNull())
-//  {
-//    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-//    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-//    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-//    for ( ; it != itEnd; ++it)
-//    {
-//      m_PointSetInteractor->RemoveEventFilter(*it);
-//    }
-//    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
-//  }
-  m_PointSetInteractor = NULL;
 }

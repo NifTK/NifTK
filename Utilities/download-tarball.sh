@@ -126,7 +126,7 @@ function download_from_github() {
   fi
 }
 
-function download_from_cmicdev() {
+function download_from_cmiclab() {
   project=$1
   version=$2
   directory=$project-$version
@@ -134,13 +134,13 @@ function download_from_cmicdev() {
   if [[ $keep_repository && ! $keep_sources ]]
   then
     mkdir $directory
-    git clone --bare git://cmicdev.cs.ucl.ac.uk/$project $directory/.git
+    git clone --bare git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory/.git
     cd $directory
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
     cd ..
   else
-    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
+    git clone git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory
     cd $directory
     git checkout $version
     if [ ! $keep_repository ]
@@ -219,7 +219,7 @@ then
   download_from_github NifTK $project $version
 elif [[ $project = "EpiNav-MITK" ]]
 then
-  download_from_cmicdev $project $version
+  download_from_cmiclab $project $version
 elif [ $project = commontk/CTK ]
 then
   download_from_github commontk CTK $version
@@ -255,13 +255,13 @@ then
   download_from_sourceforge_git $project $version git
 elif [ $project = NiftyLink ]
 then
-  download_from_cmicdev $project $version
+  download_from_cmiclab $project $version
 elif [ $project = NifTKData ]
 then
-  download_from_cmicdev $project $version
+  download_from_cmiclab $project $version
 elif [ $project = NifTK ]
 then
-  download_from_cmicdev $project $version
+  download_from_cmiclab $project $version
 elif [ $project = IGSTK ]
 then
   if [[ $version = IGSTK-* ]]

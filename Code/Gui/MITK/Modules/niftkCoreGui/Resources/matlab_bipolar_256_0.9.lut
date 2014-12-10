@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="23" class="LinearLookupTable" displayName="Matlab bipolar(256,0.9)" premultiplied="1">
+<lut order="24" class="LinearLookupTable" displayName="Matlab bipolar(256,0.9)" premultiplied="1">
 <colour r="0" g="0" b="1" />
 <colour r="0" g="0.0243" b="1" />
 <colour r="0" g="0.0485" b="1" />

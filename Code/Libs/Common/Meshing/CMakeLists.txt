@@ -25,7 +25,7 @@ endif(CGAL_FOUND)
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    # remember https://cmicdev.cs.ucl.ac.uk/trac/ticket/3647
+    # remember https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/3647
     add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
@@ -43,41 +43,22 @@ else ()
   endif ()
 endif ()
 
-if (WIN32)
-  add_library(niftkMeshingLib
-    niftkCGALMesherBackEnd.cxx
-    niftkMeditMeshParser.cxx
-    niftkMeshGenerator.cxx
-    niftkMeshMerger.cxx
-    )
+add_library(niftkMeshingLib
+  niftkCGALMesherBackEnd.cxx
+  niftkMeditMeshParser.cxx
+  niftkMeshGenerator.cxx
+  niftkMeshMerger.cxx
+  )
 
-  target_link_libraries(niftkMeshingLib
-    niftkITK
-    niftkVTK
-    niftkcommon
-    ${CGAL_LIBRARIES}
-    ${CGAL_3RD_PARTY_LIBRARIES}
-    ${ITK_LIBRARIES}
-    ${VTK_LIBRARIES}
-    )
-
-else (WIN32)
-  add_library(niftkMeshingLib
-    niftkMeditMeshParser.cxx
-    niftkMeshGenerator.cxx
-    niftkMeshMerger.cxx
-    niftkCGALMesherBackEnd.cxx
-    )
-  target_link_libraries(niftkMeshingLib
-    ${CGAL_LIBRARIES}
-    ${CGAL_3RD_PARTY_LIBRARIES}
-    niftkITK
-    niftkVTK
-    niftkcommon
-    ${ITK_LIBRARIES}
-    ${VTK_LIBRARIES}
-    )
-endif (WIN32)
+target_link_libraries(niftkMeshingLib
+  niftkITK
+  niftkVTK
+  niftkcommon
+  ${CGAL_LIBRARIES}
+  ${CGAL_3RD_PARTY_LIBRARIES}
+  ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
+  )
 
 install(TARGETS niftkMeshingLib
   LIBRARY DESTINATION ${NIFTK_INSTALL_LIB_DIR}

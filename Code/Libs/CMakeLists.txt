@@ -20,8 +20,11 @@ endif(ITK_FOUND)
 
 if(VTK_FOUND)
   add_subdirectory(VTK)
-
 endif(VTK_FOUND)
+
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  add_subdirectory(CUDAKernels)
+endif()
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   add_subdirectory(NVAPI)

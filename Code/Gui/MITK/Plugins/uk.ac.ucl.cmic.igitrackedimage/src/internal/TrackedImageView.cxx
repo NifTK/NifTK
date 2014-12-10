@@ -40,12 +40,9 @@ const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 TrackedImageView::TrackedImageView()
 : m_Controls(NULL)
 , m_ImageToTrackingSensorTransform(NULL)
-, m_ImageToTrackingSensorFileName("")
 , m_ShowCloneImageGroup(false)
 , m_NameCounter(0)
 {
-  m_ImageScaling[0] = 1;
-  m_ImageScaling[1] = 1;
 }
 
 
@@ -106,9 +103,16 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ImageToWorldNode->setEditable(true);
 
+    // Set up the Render Window.
+    // This currently has to be a 2D view, to generate the 2D plane geometry to render
+    // which is then used to drive the moving 2D plane we see in 3D. This is how
+    // the axial/sagittal/coronal slices work in the QmitkStdMultiWidget.
+
+    m_Controls->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
+    mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
+
     RetrievePreferenceValues();
 
-    m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);   
     connect(m_Controls->m_ClonePushButton, SIGNAL(clicked()), this, SLOT(OnClonePushButtonClicked()));
 
     m_Controls->m_CloneTrackedImageDirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
@@ -132,8 +136,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
 void TrackedImageView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
-
-  m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);
 }
 
 
@@ -143,22 +145,57 @@ void TrackedImageView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_ImageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
-    m_ImageToTrackingSensorTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToTrackingSensorFileName);
+    std::string calibEmToOpticalFileName = prefs->Get(TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME, "").c_str();
+    if ( calibEmToOpticalFileName.size() > 0 )
+    {
+      m_EmToOpticalMatrix = mitk::LoadVtkMatrix4x4FromFile(calibEmToOpticalFileName);
+    }
+    else
+    {
+      m_EmToOpticalMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+      m_EmToOpticalMatrix->Identity();
+    }
 
-    m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
-    m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
+    std::string imageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    vtkSmartPointer<vtkMatrix4x4> imageToSensorTransform = mitk::LoadVtkMatrix4x4FromFile(imageToTrackingSensorFileName);
+
+    std::string scaleFileName = prefs->Get(TrackedImageViewPreferencePage::SCALE_FILE_NAME, "").c_str();
+    vtkSmartPointer<vtkMatrix4x4> image2SensorScale = mitk::LoadVtkMatrix4x4FromFile(scaleFileName);
 
     if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
     {
-      m_ImageScaling[0] *= -1;
+      double x = image2SensorScale->GetElement(0,0);
+      x *= -1;
+      image2SensorScale->SetElement(0,0,x);
     }
     if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_Y_SCALING, false))
     {
-      m_ImageScaling[1] *= -1;
+      double y = image2SensorScale->GetElement(1,1);
+      y *= -1;
+      image2SensorScale->SetElement(1,1,y);
     }
 
+    // Calculate image plane to tracker sensor transformation
+    m_ImageToTrackingSensorTransform = NULL;
+    m_ImageToTrackingSensorTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+    m_ImageToTrackingSensorTransform->Identity();
+    vtkMatrix4x4::Multiply4x4(imageToSensorTransform, image2SensorScale, m_ImageToTrackingSensorTransform);
+
     m_ShowCloneImageGroup = prefs->GetBool(TrackedImageViewPreferencePage::CLONE_IMAGE, false);
+    m_Controls->m_CloneImageGroupBox->setVisible(m_ShowCloneImageGroup);
+
+    m_Show2DWindow = prefs->GetBool(TrackedImageViewPreferencePage::SHOW_2D_WINDOW, false);
+    m_Controls->m_RenderWindow->setVisible(m_Show2DWindow);
+    if (m_Show2DWindow)
+    {
+      m_Controls->m_VerticalLayout->removeItem(m_Controls->m_VerticalSpacer);
+      mitk::RenderingManager::GetInstance()->AddRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
+    }
+    else
+    {
+      m_Controls->m_VerticalLayout->addItem(m_Controls->m_VerticalSpacer);
+      mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
+    }
   }
 }
 
@@ -199,6 +236,13 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
         mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
         nodeToUpdate->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
       }
+
+      // This is expensive, so only update if the window is visible.
+      if (m_Show2DWindow)
+      {
+        mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      }
+
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     }
   }
@@ -229,12 +273,18 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
         command->Update(imageNode,
                         trackingSensorToTrackerTransform,
                         *m_ImageToTrackingSensorTransform,
-                        m_ImageScaling
+                        *m_EmToOpticalMatrix
                         );
                     
         ctkDictionary properties;
         emit Updated(properties);
-        
+
+        // This is expensive, so only update if the window is visible.
+        if (m_Show2DWindow)
+        {
+          mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+        }
+
       } // end if input is valid
     } // if got an image
   } // if got an image node

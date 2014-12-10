@@ -19,7 +19,6 @@
 #include <mitkDataStorage.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkDisplayGeometry.h>
-#include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 
 #include <QmitkMouseEventEater.h>
@@ -36,8 +35,8 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
-  : QmitkRenderWindow(parent)
+QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager)
+: QmitkRenderWindow(parent, "thumbnail viewer", 0, renderingManager)
 , m_TrackedWorldGeometryTag(-1)
 , m_TrackedDisplayGeometryTag(-1)
 , m_TrackedSliceSelectorTag(-1)
@@ -47,15 +46,18 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 , m_BoundingBox(NULL)
 , m_Renderer(NULL)
 , m_TrackedRenderer(NULL)
+, m_TrackedRenderingManager(NULL)
 , m_TrackedWorldGeometry(NULL)
 , m_TrackedDisplayGeometry(NULL)
 , m_TrackedSliceNavigator(NULL)
 , m_MouseEventEater(NULL)
 , m_WheelEventEater(NULL)
 , m_InDataStorageChanged(false)
-, m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 {
+  m_DataStorage = renderingManager->GetDataStorage();
+  assert(m_DataStorage.IsNotNull());
+
   // This should come early on, as we are setting renderer specific properties,
   // and when you set a renderer specific property, if the renderer is NULL,
   // it is an equivalent function call to setting a global property.
@@ -69,30 +71,13 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_BoundingBoxNode->SetProperty("helper object", mitk::BoolProperty::New(true));
   m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
-  this->setBoundingBoxVisible(false);
-  this->setBoundingBoxColor(255, 0, 0);
-  this->setBoundingBoxOpacity(1);
-  this->setBoundingBoxLineThickness(1);
-  this->setBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
+  this->SetBoundingBoxVisible(false);
+  this->SetBoundingBoxColor(255, 0, 0);
+  this->SetBoundingBoxOpacity(1);
+  this->SetBoundingBoxLineThickness(1);
+  this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
 
-  m_MouseEventEater = new QmitkMouseEventEater();
-  m_MouseEventEater->SetIsEating(false);
-  this->installEventFilter(m_MouseEventEater);
-
-  m_WheelEventEater = new QmitkWheelEventEater();
-  m_WheelEventEater->SetIsEating(true);
-  this->installEventFilter(m_WheelEventEater);
-
-  std::vector<const mitk::BaseRenderer*> renderers;
-  renderers.push_back(m_Renderer);
-
-  std::vector<mitk::DataNode*> nodesToIgnore;
-  nodesToIgnore.push_back(m_BoundingBoxNode);
-
-  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-
-  // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
-  //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+  /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
   m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
   m_MIDASToolNodeNameFilter->SetPropertyName("name");
@@ -108,23 +93,38 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
   m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
 
-  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
-  m_NodeAddedSetter->SetRenderers(renderers);
-  m_NodeAddedSetter->SetVisibility(false);
+  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
 
-  m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  std::vector<const mitk::BaseRenderer*> renderers;
+  renderers.push_back(m_Renderer);
   m_VisibilityTracker->SetManagedRenderers(renderers);
+
+  std::vector<mitk::DataNode*> nodesToIgnore;
+  nodesToIgnore.push_back(m_BoundingBoxNode);
   m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
+
+  m_VisibilityTracker->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
+
+  m_MouseEventEater = new QmitkMouseEventEater();
+  m_MouseEventEater->SetIsEating(false);
+  this->installEventFilter(m_MouseEventEater);
+
+  m_WheelEventEater = new QmitkWheelEventEater();
+  m_WheelEventEater->SetIsEating(true);
+  this->installEventFilter(m_WheelEventEater);
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 {
+  this->SetTrackedRenderer(0);
+
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
 
@@ -137,6 +137,13 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
   {
     delete m_WheelEventEater;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
+{
+  return m_DisplayInteractor.IsNotNull();
 }
 
 
@@ -176,29 +183,17 @@ void QmitkThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
-{
-  return m_DisplayInteractor.IsNotNull();
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (dataStorage.IsNotNull())
+  if (add && !m_DataStorage->Exists(m_BoundingBoxNode))
   {
-    if (add && !dataStorage->Exists(m_BoundingBoxNode))
-    {
-
-      dataStorage->Add(m_BoundingBoxNode);
-      this->setBoundingBoxVisible(true);
-
-    } else if (!add && dataStorage->Exists(m_BoundingBoxNode))
-    {
-      dataStorage->Remove(m_BoundingBoxNode);
-      this->setBoundingBoxVisible(false);
-    }
+    m_DataStorage->Add(m_BoundingBoxNode);
+    this->SetBoundingBoxVisible(true);
+  }
+  else if (!add && m_DataStorage->Exists(m_BoundingBoxNode))
+  {
+    m_DataStorage->Remove(m_BoundingBoxNode);
+    this->SetBoundingBoxVisible(false);
   }
 }
 
@@ -206,8 +201,6 @@ void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
-  this->AddBoundingBoxToDataStorage(false);
-
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
@@ -262,29 +255,6 @@ void QmitkThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
     m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
     m_TrackedTimeStepSelectorTag = -1;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
-{
-  // Don't allow anyone to pass in a null dataStorage.
-  assert(dataStorage);
-  m_DataStorage = dataStorage;
-
-  m_Renderer->SetDataStorage(dataStorage);
-
-  m_NodeAddedSetter->SetDataStorage(dataStorage);
-  m_VisibilityTracker->SetDataStorage(dataStorage);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer QmitkThumbnailRenderWindow::GetDataStorage()
-{
-  // This MUST be set before you actually use this widget.
-  assert(m_DataStorage);
-  return m_DataStorage;
 }
 
 
@@ -383,19 +353,19 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
       mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
       if (viewDirection == mitk::SliceNavigationController::Frontal)
       {
-        this->setBoundingBoxColor(0, 0, 255);
+        this->SetBoundingBoxColor(0, 0, 255);
       }
       else if (viewDirection == mitk::SliceNavigationController::Sagittal)
       {
-        this->setBoundingBoxColor(0, 255, 0);
+        this->SetBoundingBoxColor(0, 255, 0);
       }
       else if (viewDirection == mitk::SliceNavigationController::Axial)
       {
-        this->setBoundingBoxColor(255, 0, 0);
+        this->SetBoundingBoxColor(255, 0, 0);
       }
       else
       {
-        this->setBoundingBoxColor(0, 255, 255);
+        this->SetBoundingBoxColor(0, 255, 255);
       }
     }
 
@@ -406,7 +376,7 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
     cube->Delete();
 
     // Request a single update at the end of the method.
-    mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+    m_Renderer->RequestUpdate();
   }
 }
 
@@ -422,19 +392,21 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
       )
   {
     m_InDataStorageChanged = true;
-    this->NodeAdded(node);
+    this->OnNodeAdded(node);
     m_InDataStorageChanged = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
+void QmitkThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
 {
+  this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
+
   this->UpdateBoundingBox();
 
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -449,16 +421,16 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
       )
   {
     m_InDataStorageChanged = true;
-    this->NodeChanged(node);
+    this->OnNodeChanged(node);
     m_InDataStorageChanged = false;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::NodeChanged( const mitk::DataNode* node)
+void QmitkThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
 {
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -490,8 +462,6 @@ void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
     {
       m_Renderer->SetSlice(m_TrackedRenderer->GetSlice());
     }
-
-    this->UpdateWorldGeometry(true);
   }
 }
 
@@ -506,25 +476,19 @@ void QmitkThumbnailRenderWindow::OnWorldGeometryChanged()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (m_TrackedRenderer)
   {
-    mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
-    if (focusedRenderer.IsNotNull())
+    // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
+    m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(m_TrackedRenderer->GetWorldTimeGeometry()));
+
+    // Display geometry of widget must encompass whole of world geometry
+    if (fitToDisplay)
     {
-
-      // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
-      m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(focusedRenderer->GetWorldTimeGeometry()));
-
-      // Display geometry of widget must encompass whole of world geometry
-      if (fitToDisplay)
-      {
-        m_Renderer->GetDisplayGeometry()->Fit();
-      }
-
-      // Request a single update at the end of the method.
-      mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+      m_Renderer->GetDisplayGeometry()->Fit();
     }
+
+    // Request a single update at the end of the method.
+    m_Renderer->RequestUpdate();
   }
 }
 
@@ -539,12 +503,6 @@ mitk::BaseRenderer::ConstPointer QmitkThumbnailRenderWindow::GetTrackedRenderer(
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  if (dataStorage.IsNull())
-  {
-    return;
-  }
-
   if (rendererToTrack == m_TrackedRenderer)
   {
     return;
@@ -553,9 +511,27 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // Remove any existing geometry observers
   this->RemoveObserversFromTrackedObjects();
 
+  mitk::RenderingManager* trackedRenderingManager = rendererToTrack ? rendererToTrack->GetRenderingManager() : 0;
+  if (trackedRenderingManager != m_TrackedRenderingManager)
+  {
+    if (m_TrackedRenderingManager)
+    {
+      m_TrackedRenderingManager->RemoveRenderWindow(this->GetRenderWindow());
+    }
+
+    m_TrackedRenderingManager = trackedRenderingManager;
+
+    if (m_TrackedRenderingManager)
+    {
+      m_TrackedRenderingManager->AddRenderWindow(this->GetRenderWindow());
+    }
+  }
+
   if (rendererToTrack.IsNull())
   {
+    this->AddBoundingBoxToDataStorage(false);
     m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Renderer->RequestUpdate();
     return;
   }
 
@@ -566,7 +542,9 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   if (m_TrackedWorldGeometry.IsNull()
       || m_TrackedDisplayGeometry.IsNull())
   {
+    this->AddBoundingBoxToDataStorage(false);
     m_VisibilityTracker->SetTrackedRenderer(0);
+    m_Renderer->RequestUpdate();
     return;
   }
 
@@ -598,22 +576,18 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // window starts (i.e. before any data is loaded),
   // the bounding box will not be included, and not visible.
   this->AddBoundingBoxToDataStorage(true);
-  if (!dataStorage->Exists(m_BoundingBoxNode))
-  {
-    this->GetDataStorage()->Add(m_BoundingBoxNode);
-  }
 
+  this->UpdateWorldGeometry(true);
   this->UpdateSliceAndTimeStep();
 
   // Setup the visibility tracker.
   m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
-  m_VisibilityTracker->NotifyAll();
 
   // Get the box to update
   this->UpdateBoundingBox();
 
   // Request a single update at the end of the method.
-  mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -649,7 +623,7 @@ void QmitkThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-QColor QmitkThumbnailRenderWindow::boundingBoxColor() const
+QColor QmitkThumbnailRenderWindow::GetBoundingBoxColor() const
 {
   float colour[3];
   m_BoundingBoxNode->GetColor(colour);
@@ -660,21 +634,21 @@ QColor QmitkThumbnailRenderWindow::boundingBoxColor() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxColor(QColor &colour)
+void QmitkThumbnailRenderWindow::SetBoundingBoxColor(QColor &colour)
 {
   m_BoundingBoxNode->SetColor(colour.redF(), colour.greenF(), colour.blueF());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxColor(float r, float g, float b)
+void QmitkThumbnailRenderWindow::SetBoundingBoxColor(float r, float g, float b)
 {
   m_BoundingBoxNode->SetColor(r, g, b);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkThumbnailRenderWindow::boundingBoxLineThickness() const
+int QmitkThumbnailRenderWindow::GetBoundingBoxLineThickness() const
 {
   int thickness = 0;
   m_BoundingBoxNode->GetIntProperty("line width", thickness);
@@ -683,14 +657,14 @@ int QmitkThumbnailRenderWindow::boundingBoxLineThickness() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxLineThickness(int thickness)
+void QmitkThumbnailRenderWindow::SetBoundingBoxLineThickness(int thickness)
 {
   m_BoundingBoxNode->SetIntProperty("line width", thickness);
 }
 
 
 //-----------------------------------------------------------------------------
-float QmitkThumbnailRenderWindow::boundingBoxOpacity() const
+float QmitkThumbnailRenderWindow::GetBoundingBoxOpacity() const
 {
   float opacity = 0;
   m_BoundingBoxNode->GetFloatProperty("opacity", opacity);
@@ -699,14 +673,14 @@ float QmitkThumbnailRenderWindow::boundingBoxOpacity() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxOpacity(float opacity)
+void QmitkThumbnailRenderWindow::SetBoundingBoxOpacity(float opacity)
 {
   m_BoundingBoxNode->SetOpacity(opacity);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::boundingBoxVisible() const
+bool QmitkThumbnailRenderWindow::GetBoundingBoxVisible() const
 {
   bool visible = false;
   m_BoundingBoxNode->GetBoolProperty("visible", visible, m_Renderer);
@@ -715,14 +689,14 @@ bool QmitkThumbnailRenderWindow::boundingBoxVisible() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxVisible(bool visible)
+void QmitkThumbnailRenderWindow::SetBoundingBoxVisible(bool visible)
 {
   m_BoundingBoxNode->SetBoolProperty("visible", visible, m_Renderer);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkThumbnailRenderWindow::boundingBoxLayer() const
+int QmitkThumbnailRenderWindow::GetBoundingBoxLayer() const
 {
   bool layer = 0;
   m_BoundingBoxNode->GetBoolProperty("layer", layer);
@@ -731,35 +705,35 @@ int QmitkThumbnailRenderWindow::boundingBoxLayer() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setBoundingBoxLayer(int layer)
+void QmitkThumbnailRenderWindow::SetBoundingBoxLayer(int layer)
 {
   m_BoundingBoxNode->SetIntProperty("layer", layer);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setRespondToMouseEvents(bool on)
-{
-  m_MouseEventEater->SetIsEating(!on);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::respondToMouseEvents() const
+bool QmitkThumbnailRenderWindow::GetRespondToMouseEvents() const
 {
   return !m_MouseEventEater->GetIsEating();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::setRespondToWheelEvents(bool on)
+void QmitkThumbnailRenderWindow::SetRespondToMouseEvents(bool on)
 {
-  m_WheelEventEater->SetIsEating(!on);
+  m_MouseEventEater->SetIsEating(!on);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailRenderWindow::respondToWheelEvents() const
+bool QmitkThumbnailRenderWindow::GetRespondToWheelEvents() const
 {
   return !m_WheelEventEater->GetIsEating();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::SetRespondToWheelEvents(bool on)
+{
+  m_WheelEventEater->SetIsEating(!on);
 }

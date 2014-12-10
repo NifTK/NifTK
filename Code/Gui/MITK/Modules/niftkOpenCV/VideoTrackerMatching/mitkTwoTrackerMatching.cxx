@@ -33,12 +33,61 @@ TwoTrackerMatching::TwoTrackerMatching ()
 , m_LagIsNegative(false)
 , m_FlipMat1(false)
 , m_FlipMat2(false)
-{}
+{
+}
 
 
 //---------------------------------------------------------------------------
 TwoTrackerMatching::~TwoTrackerMatching () 
-{}
+{
+}
+
+
+//---------------------------------------------------------------------------
+void TwoTrackerMatching::ConvertMatrices(const TrackingAndTimeStampsContainer& container1, TrackingMatrices& container2)
+{
+  container2.m_TrackingMatrices.clear();
+  container2.m_TimingErrors.clear();
+
+  std::vector<TimeStampsContainer::TimeStamp>::size_type i;
+  for (i = 0; i < container1.GetSize(); i++)
+  {
+    cv::Mat outputMatrix ( 4, 4, CV_64FC1 );
+    mitk::CopyToOpenCVMatrix(container1.GetMatrix(i), outputMatrix);
+
+    container2.m_TrackingMatrices.push_back(outputMatrix);
+  }
+}
+
+
+//---------------------------------------------------------------------------
+void TwoTrackerMatching::LookupMatrices(const TrackingAndTimeStampsContainer& container1,
+                                      const TrackingAndTimeStampsContainer& container2,
+                                      TrackingMatrices& outputContainer)
+{
+  outputContainer.m_TimingErrors.clear();
+  outputContainer.m_TrackingMatrices.clear();
+
+  for ( unsigned int i = 0 ; i < container1.GetSize() ; i++ )
+  {
+    cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
+
+    long long timingError;
+    unsigned long long targetTimeStamp;
+
+    if ( m_LagIsNegative )
+    {
+      targetTimeStamp = container2.GetNearestTimeStamp(container1.GetTimeStamp(i)+m_Lag,&timingError);
+    }
+    else
+    {
+      targetTimeStamp = container2.GetNearestTimeStamp(container1.GetTimeStamp(i)-m_Lag,&timingError);
+    }
+    mitk::CopyToOpenCVMatrix(container2.GetMatrix(container2.GetFrameNumber(targetTimeStamp)), trackingMatrix);
+    outputContainer.m_TrackingMatrices.push_back(trackingMatrix);
+    outputContainer.m_TimingErrors.push_back(timingError);
+  }
+}
 
 
 //---------------------------------------------------------------------------
@@ -47,20 +96,21 @@ void TwoTrackerMatching::Initialise(std::string directory1, std::string director
   m_Directory1 = directory1;
   m_Directory2 = directory2;
   
-  m_TimeStampsContainer1 = mitk::FindTrackingTimeStamps(m_Directory1);
+  m_TimeStampsContainer1.LoadFromDirectory(m_Directory1);
+  this->ConvertMatrices(m_TimeStampsContainer1, m_TrackingMatrices11);
   MITK_INFO << "Found " << m_TimeStampsContainer1.GetSize() << " time stamped tracking files in " << m_Directory1;
   
-  m_TimeStampsContainer2 = mitk::FindTrackingTimeStamps(m_Directory2);
+  m_TimeStampsContainer2.LoadFromDirectory(m_Directory2);
+  this->ConvertMatrices(m_TimeStampsContainer2, m_TrackingMatrices22);
   MITK_INFO << "Found " << m_TimeStampsContainer2.GetSize() << " time stamped tracking files in " << m_Directory2;
 
-  //now match em up. Do it both ways
+  // Now match em up. Do it both ways
   this->CreateLookUps ();
 
   if ( CheckTimingErrorStats() )
   { 
     MITK_INFO << "TwoTrackerMatching initialised OK";
     m_Ready=true;
-    this->LoadOwnMatrices();
   }
   else
   {
@@ -70,111 +120,14 @@ void TwoTrackerMatching::Initialise(std::string directory1, std::string director
   return;
 }
 
+
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::CreateLookUps()
 {
-  cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
-  //do look up from 1 to 2
-  m_TrackingMatrices12.m_TimingErrors.clear();
-  m_TrackingMatrices12.m_TrackingMatrices.clear();
-
-  for ( unsigned int i = 0 ; i < m_TimeStampsContainer1.GetSize() ; i ++ )
-  {
-    long long timingError;
-    unsigned long long TargetTimeStamp;
-    if ( m_LagIsNegative )
-    {
-      TargetTimeStamp = m_TimeStampsContainer2.GetNearestTimeStamp(
-          m_TimeStampsContainer1.GetTimeStamp(i)+m_Lag,&timingError);
-    }
-    else
-    {
-      TargetTimeStamp = m_TimeStampsContainer2.GetNearestTimeStamp(
-          m_TimeStampsContainer1.GetTimeStamp(i)-m_Lag,&timingError);
-    }
-    m_TrackingMatrices12.m_TimingErrors.push_back(timingError);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
-    boost::filesystem::path MatrixFileNameFull (m_Directory2);
-    MatrixFileNameFull /= MatrixFileName;
-  
-    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
-
-    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
-    trackingMatrix.copyTo(tmpMatrix);
-    
-    m_TrackingMatrices12.m_TrackingMatrices.push_back(tmpMatrix);
-  }
-  //do look up from 2 to 1
-  m_TrackingMatrices21.m_TimingErrors.clear();
-  m_TrackingMatrices21.m_TrackingMatrices.clear();
-
-  for ( unsigned int i = 0 ; i < m_TimeStampsContainer2.GetSize() ; i ++ )
-  {
-    long long timingError;
-    unsigned long long TargetTimeStamp;
-    if ( m_LagIsNegative )
-    {
-      TargetTimeStamp = m_TimeStampsContainer1.GetNearestTimeStamp(
-          m_TimeStampsContainer2.GetTimeStamp(i)-m_Lag,&timingError);
-    }
-    else
-    {
-      TargetTimeStamp = m_TimeStampsContainer1.GetNearestTimeStamp(
-          m_TimeStampsContainer2.GetTimeStamp(i)-+m_Lag,&timingError);
-    }
-    m_TrackingMatrices21.m_TimingErrors.push_back(timingError);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
-    boost::filesystem::path MatrixFileNameFull (m_Directory1);
-    MatrixFileNameFull /= MatrixFileName;
-  
-    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
-
-    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
-    trackingMatrix.copyTo(tmpMatrix);
-    
-    m_TrackingMatrices21.m_TrackingMatrices.push_back(tmpMatrix);
-  }
-
+  this->LookupMatrices(m_TimeStampsContainer1, m_TimeStampsContainer2, m_TrackingMatrices12);
+  this->LookupMatrices(m_TimeStampsContainer2, m_TimeStampsContainer1, m_TrackingMatrices21);
 }
-//---------------------------------------------------------------------------
-void TwoTrackerMatching::LoadOwnMatrices()
-{
-  cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
-  m_TrackingMatrices11.m_TimingErrors.clear();
-  m_TrackingMatrices11.m_TrackingMatrices.clear();
 
-  for ( unsigned int i = 0 ; i < m_TimeStampsContainer1.GetSize() ; i ++ )
-  {
-    m_TrackingMatrices11.m_TimingErrors.push_back(0);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TimeStampsContainer1.GetTimeStamp(i)) + ".txt";
-    boost::filesystem::path MatrixFileNameFull (m_Directory1);
-    MatrixFileNameFull /= MatrixFileName;
-  
-    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
-
-    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
-    trackingMatrix.copyTo(tmpMatrix);
-    
-    m_TrackingMatrices11.m_TrackingMatrices.push_back(tmpMatrix);
-  }
-  m_TrackingMatrices22.m_TimingErrors.clear();
-  m_TrackingMatrices22.m_TrackingMatrices.clear();
-
-  for ( unsigned int i = 0 ; i < m_TimeStampsContainer2.GetSize() ; i ++ )
-  {
-    m_TrackingMatrices22.m_TimingErrors.push_back(0);
-    std::string MatrixFileName = boost::lexical_cast<std::string>(m_TimeStampsContainer2.GetTimeStamp(i)) + ".txt";
-    boost::filesystem::path MatrixFileNameFull (m_Directory2);
-    MatrixFileNameFull /= MatrixFileName;
-  
-    mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
-
-    cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
-    trackingMatrix.copyTo(tmpMatrix);
-    
-    m_TrackingMatrices22.m_TrackingMatrices.push_back(tmpMatrix);
-  }
-}
 
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::SetLagMilliseconds ( unsigned long long Lag, bool VideoLeadsTracking) 
@@ -206,7 +159,8 @@ void TwoTrackerMatching::SetLagMilliseconds ( unsigned long long Lag, bool Video
 bool TwoTrackerMatching::CheckTimingErrorStats()
 {
   bool ok = true;
-  //check sizes
+
+  // check sizes
   if ( m_TrackingMatrices12.m_TrackingMatrices.size() != 
         m_TrackingMatrices12.m_TimingErrors.size() )
   {
@@ -239,7 +193,6 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
         << " != " <<  m_TimeStampsContainer2.GetSize();
       ok = false;
   }
-
 
   double mean = 0 ; 
   double absmean = 0 ; 
@@ -286,6 +239,8 @@ bool TwoTrackerMatching::CheckTimingErrorStats()
 
   return ok;
 }
+
+
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::FlipMats1 ( )
 {
@@ -302,6 +257,8 @@ void TwoTrackerMatching::FlipMats1 ( )
   m_TrackingMatrices11.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices11.m_TrackingMatrices);
   m_TrackingMatrices21.m_TrackingMatrices = mitk::FlipMatrices(m_TrackingMatrices21.m_TrackingMatrices);
 }
+
+
 //---------------------------------------------------------------------------
 void TwoTrackerMatching::FlipMats2 ( )
 {

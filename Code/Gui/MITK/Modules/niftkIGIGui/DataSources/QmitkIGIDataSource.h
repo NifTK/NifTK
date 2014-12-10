@@ -48,6 +48,7 @@ public:
 
   /**
    * \see mitk::IGIDataSource::StartRecording()
+   * Overridden here to start a QmitkIGIDataSourceBackgroundSaveThread.
    */
   virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 

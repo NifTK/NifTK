@@ -29,10 +29,8 @@
 #include <QTime>
 #include <QWidget>
 
-#include <mitkMIDASEnums.h>
-#include <niftkDnDDisplayEnums.h>
-#include "Interactions/mitkDnDDisplayStateMachineResponder.h"
-#include "Interactions/mitkDnDDisplayStateMachine.h"
+#include "niftkDnDDisplayEnums.h"
+#include "Interactions/mitkDnDDisplayInteractor.h"
 
 class QGridLayout;
 class niftkMultiWindowWidget;
@@ -72,7 +70,7 @@ class niftkMultiWindowWidget;
  * \sa QmitkRenderWindow
  * \sa niftkMultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::DnDDisplayStateMachineResponder
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget
 {
 
   Q_OBJECT;
@@ -87,11 +85,11 @@ public:
   niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
   virtual ~niftkSingleViewerWidget();
 
-  /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
-  void SetEnabled(bool enabled);
-
   /// \brief Returns the enabled flag.
   bool IsEnabled() const;
+
+  /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
+  void SetEnabled(bool enabled);
 
   /// \brief Tells if the selected render window has the focus.
   bool IsFocused() const;
@@ -125,8 +123,8 @@ public:
   /// \brief Returns the 3D Window.
   QmitkRenderWindow* Get3DWindow() const;
 
-  /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
-  MIDASOrientation GetOrientation() const;
+  /// \brief Returns the orientation for the selected window, returning WINDOW_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
+  WindowOrientation GetOrientation() const;
 
   /// \brief Get the flag controlling 2D cursors on/off.
   bool IsCursorVisible() const;
@@ -159,7 +157,7 @@ public:
   QColor GetBackgroundColour() const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  int GetMaxSlice(MIDASOrientation orientation) const;
+  int GetMaxSlice(WindowOrientation orientation) const;
 
   /// \brief Gets the maximum time step.
   int GetMaxTimeStep() const;
@@ -176,19 +174,13 @@ public:
   /// \brief Returns the maximum allowed magnification.
   double GetMaxMagnification() const;
 
-  /// \brief Returns the data storage or NULL if widget is not fully created, or datastorage has not been set.
-  mitk::DataStorage::Pointer GetDataStorage() const;
-
-  /// \brief Sets the data storage on m_DataStorage, m_RenderingManager and m_MultiWidget.
-  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
-
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
   /// \brief Gets the world geometry.
   const mitk::TimeGeometry* GetTimeGeometry() const;
 
-  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
+  /// \brief Sets the world geometry that we are sampling and sends a TimeGeometryChanged signal.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
@@ -202,10 +194,10 @@ public:
   bool IsBoundTimeGeometryActive();
 
   /// \brief Gets the index of the selected slice for a given orientation.
-  int GetSelectedSlice(MIDASOrientation orientation) const;
+  int GetSelectedSlice(WindowOrientation orientation) const;
 
   /// \brief Sets the index of the selected slice for a given orientation.
-  void SetSelectedSlice(MIDASOrientation orientation, int slice);
+  void SetSelectedSlice(WindowOrientation orientation, int slice);
 
   /// \brief Get the current time step.
   int GetTimeStep() const;
@@ -226,10 +218,10 @@ public:
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Get the current cursor position of the render window in pixels, normalised with the size of the render windows.
-  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
+  mitk::Vector2D GetCursorPosition(WindowOrientation orientation) const;
 
   /// \brief Set the current cursor position of the render window in pixels, normalised with the size of the render windows.
-  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the current cursor position of each render window in pixels, normalised with the size of the render windows.
   const std::vector<mitk::Vector2D>& GetCursorPositions() const;
@@ -238,10 +230,10 @@ public:
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Get the current scale factor.
-  double GetScaleFactor(MIDASOrientation orientation) const;
+  double GetScaleFactor(WindowOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+  void SetScaleFactor(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Gets the current scale factor of each render window.
   const std::vector<double>& GetScaleFactors() const;
@@ -250,10 +242,10 @@ public:
   void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Get the current magnification.
-  double GetMagnification(MIDASOrientation orientation) const;
+  double GetMagnification(WindowOrientation orientation) const;
 
   /// \brief Set the current magnification.
-  void SetMagnification(MIDASOrientation orientation, double magnification);
+  void SetMagnification(WindowOrientation orientation, double magnification);
 
   /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool IsLinkedNavigationEnabled() const;
@@ -293,9 +285,7 @@ public:
   std::vector<mitk::DataNode*> GetWidgetPlanes();
 
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice index to move "up".
-  ///
-  /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(MIDASOrientation orientation) const;
+  int GetSliceUpDirection(WindowOrientation orientation) const;
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultSingleWindowLayout(WindowLayout windowLayout);
@@ -303,29 +293,15 @@ public:
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultMultiWindowLayout(WindowLayout windowLayout);
 
-  /// \brief Move anterior a slice.
-  bool MoveAnterior();
-
-  /// \brief Move posterior a slice.
-  bool MovePosterior();
-
-  /// \brief Switch to Axial.
-  bool SwitchToAxial();
-
-  /// \brief Switch to Sagittal.
-  bool SwitchToSagittal();
-
-  /// \brief Switch to Coronal.
-  bool SwitchToCoronal();
-
-  /// \brief Switch to 3D.
-  bool SwitchTo3D();
+  /// \brief Selects the nth slice before or after the currently selected slice.
+  /// Slices are ordered: coronal: anterior to posterior, sagittal: right to left, axial: inferior to superior
+  void MoveSlice(WindowOrientation orientation, int delta, bool restart = false);
 
   /// \brief Switch the from single window to multiple windows or back
-  bool ToggleMultiWindowLayout();
+  void ToggleMultiWindowLayout();
 
   /// \brief Shows or hides the cursor.
-  bool ToggleCursorVisibility();
+  void ToggleCursorVisibility();
 
   /// \brief Blocks the update of the viewer.
   ///
@@ -349,34 +325,34 @@ public:
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(niftkSingleViewerWidget* thisViewer, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
+  void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the selected time step has changed in this viewer.
-  void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);
+  void TimeStepChanged(int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void CursorPositionChanged(WindowOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
+  void ScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed in this viewer.
-  void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void CursorPositionBindingChanged(bool bound);
 
   /// \brief Emitted when the scale factor binding has changed in this viewer.
-  void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+  void ScaleFactorBindingChanged(bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
-  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisViewer, const mitk::TimeGeometry* geometry);
+  void TimeGeometryChanged(const mitk::TimeGeometry* timeGeometry);
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
-  void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
+  void CursorVisibilityChanged(bool visible);
 
 public slots:
 
@@ -434,7 +410,6 @@ private:
   /// \brief Gets the cursor positions in the render windows, assuming that the centre of the displayed regions is at the given display positions.
   std::vector<mitk::Vector2D> GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions);
 
-  mitk::DataStorage::Pointer m_DataStorage;
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   QGridLayout* m_GridLayout;
@@ -507,7 +482,13 @@ private:
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
-  mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
+  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  us::ServiceRegistrationU m_DisplayInteractorService;
 };
 
 #endif

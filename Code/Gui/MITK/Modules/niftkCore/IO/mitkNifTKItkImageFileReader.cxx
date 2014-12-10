@@ -23,9 +23,10 @@
 #include <itkImageIOFactory.h>
 #include <itkImageIORegion.h>
 #include <itkImageIOBase.h>
-#include "itkDRCAnalyzeImageIO3160.h"
-#include "itkNiftiImageIO3201.h"
+#include <itkNiftiImageIO3201.h>
 #include <niftkEnvironmentHelper.h>
+
+#include "itkDRCAnalyzeImageIO3160.h"
 
 mitk::NifTKItkImageFileReader::NifTKItkImageFileReader()
 {

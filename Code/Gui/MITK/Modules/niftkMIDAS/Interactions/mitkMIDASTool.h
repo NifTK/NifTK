@@ -16,13 +16,16 @@
 #define mitkMIDASTool_h
 
 #include "niftkMIDASExports.h"
-#include "mitkMIDASPointSetInteractor.h"
 #include "mitkMIDASStateMachine.h"
 #include <mitkFeedbackContourTool.h>
 #include <mitkPointSet.h>
 #include <mitkDataNode.h>
 #include <mitkPositionEvent.h>
 #include <mitkMessage.h>
+
+#include "mitkMIDASPointSetInteractor.h"
+//#include "mitkMIDASPointSetDataInteractor.h"
+
 #include <usServiceReference.h>
 
 #include <map>
@@ -39,7 +42,7 @@ namespace mitk
  * Matt: I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
  *
  * Note that the MIDASSeedTool, MIDASDrawTool and MIDASPolyTool all inherit from this class.
- * Each of these tools will have their MIDASPointSetInteractor. Each tool is managed
+ * Each of these tools will have their point set interactor. Each tool is managed
  * by an mitk::ToolManager which guarantees that only one is active at any given time.
  * As each tool becomes activated it will register the interactor with GlobalInteraction,
  * and as the tool becomes deactivated it will de-register the interactor with GlobalInteraction.
@@ -53,7 +56,7 @@ namespace mitk
  * \sa mitk::MIDASContourTool
  * \sa mitk::MIDASDrawTool
  * \sa mitk::MIDASPolyTool
- * \sa mitk::MIDASPointSetInteractor
+ * \sa mitk::MIDASPointSetDataInteractor
  */
 class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {
@@ -66,16 +69,33 @@ public:
   /// This function should be called before any MIDASTool object is created.
   static void LoadBehaviourStrings();
 
+  static bool LoadBehaviour(const std::string& fileName, us::Module* module);
+
   const char* GetGroup() const;
 
+  /// \brief Constants that identify the data needed for the irregular edit tools.
+  /// They should be used to index the vector of working data.
+  enum
+  {
+    SEGMENTATION,
+    SEEDS,
+    CONTOURS,
+    DRAW_CONTOURS,
+    PRIOR_CONTOURS,
+    NEXT_CONTOURS,
+    REGION_GROWING,
+    INITIAL_SEGMENTATION,
+    INITIAL_SEEDS
+  };
+
   /// \brief Stores a seed point set name, so all classes have access to the name.
-  static const std::string SEED_POINT_SET_NAME;
+  static const std::string SEEDS_NAME;
 
   /// \brief Stores the name of the current slice contours, so all classes have access to the name.
-  static const std::string CURRENT_CONTOURS_NAME;
+  static const std::string CONTOURS_NAME;
 
-  /// \brief Stores the name of the region growing image, so all classes have access to the name.
-  static const std::string REGION_GROWING_IMAGE_NAME;
+  /// \brief Stores the name of the draw tool contours, so all classes have access to the name.
+  static const std::string DRAW_CONTOURS_NAME;
 
   /// \brief Stores the name of the prior contours, so all classes have access to the name.
   static const std::string PRIOR_CONTOURS_NAME;
@@ -83,26 +103,14 @@ public:
   /// \brief Stores the name of the next contours, so all classes have access to the name.
   static const std::string NEXT_CONTOURS_NAME;
 
-  /// \brief Stores the name of the draw tool contours, so all classes have access to the name.
-  static const std::string DRAW_CONTOURS_NAME;
+  /// \brief Stores the name of the region growing image, so all classes have access to the name.
+  static const std::string REGION_GROWING_NAME;
 
   /// \brief Stores the name of the initial segmentation image, so all classes have access to the name.
-  static const std::string INITIAL_SEGMENTATION_IMAGE_NAME;
+  static const std::string INITIAL_SEGMENTATION_NAME;
 
   /// \brief Stores the name of the initial set of seeds, so all classes have access to the name.
   static const std::string INITIAL_SEEDS_NAME;
-
-  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_EROSIONS_SUBTRACTIONS;
-
-  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_EROSIONS_ADDITIONS;
-
-  /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_DILATIONS_SUBTRACTIONS;
-
-  /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
-  static const std::string MORPH_EDITS_DILATIONS_ADDITIONS;
 
   /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
   virtual void Activated();
@@ -132,7 +140,6 @@ public:
 protected:
 
   MIDASTool(); // purposefully hidden
-  MIDASTool(const char* type); // purposefully hidden
   virtual ~MIDASTool(); // purposely hidden
 
   /// \brief Tells if this tool can handle the given event.
@@ -146,7 +153,7 @@ protected:
   bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
   /// \brief Makes the current window re-render
-  virtual void RenderCurrentWindow(const PositionEvent& event);
+  virtual void RenderCurrentWindow(const mitk::PositionEvent& event);
 
   /// \brief Makes all windows re-render
   virtual void RenderAllWindows();
@@ -155,7 +162,7 @@ protected:
   virtual void FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode);
 
   /// \brief Helper method to update a boolean property on a given working data node.
-  virtual void UpdateWorkingDataNodeBooleanProperty(int workingDataNodeNumber, std::string name, bool value);
+  virtual void UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value);
 
 private:
 
@@ -164,6 +171,7 @@ private:
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
   mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
+//  mitk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief Used to track when the number of seeds changes.
   int m_LastSeenNumberOfSeeds;

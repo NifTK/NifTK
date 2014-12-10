@@ -74,6 +74,63 @@ WriteImageToFile( const char *fileOutput, const char *description,
 }
 
 
+//  --------------------------------------------------------------------------
+/// Write an ITK image to a file and print a message
+//  --------------------------------------------------------------------------
+
+template < typename TOutputImage >
+void
+WriteImageToFile( std::string fileOutput, typename TOutputImage::Pointer image, 
+                  std::string *description=0 )
+{
+  if ( fileOutput.length() > 0 ) {
+
+    typedef itk::ImageFileWriter< TOutputImage > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutput );
+    writer->SetInput( image );
+
+    if ( description )
+    {
+      std::cout << "Writing " << description << " to file: "
+                << fileOutput << std::endl;
+    }
+
+    writer->Update();
+  }
+}
+
+//  --------------------------------------------------------------------------
+/// Write an ITK image to a file and print a message
+//  --------------------------------------------------------------------------
+
+template < typename TOutputImage >
+void
+WriteImageToFile( std::string fileOutput, typename TOutputImage::ConstPointer image, 
+                  std::string *description=0 )
+{
+  if ( fileOutput.length() > 0 ) {
+
+    typedef itk::ImageFileWriter< TOutputImage > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutput );
+    writer->SetInput( image );
+
+    if ( description )
+    {
+      std::cout << "Writing " << description << " to file: "
+                << fileOutput << std::endl;
+    }
+
+    writer->Update();
+  }
+}
+
+
 
 
 } // end namespace itk

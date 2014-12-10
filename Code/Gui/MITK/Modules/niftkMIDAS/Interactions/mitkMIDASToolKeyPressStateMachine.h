@@ -19,21 +19,33 @@
 #include "mitkMIDASToolKeyPressResponder.h"
 #include <mitkStateMachine.h>
 
+#include <usServiceRegistration.h>
+#include <mitkInteractionEventObserver.h>
+
 #include "mitkMIDASStateMachine.h"
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \class MIDASToolPressStateMachine
  * \brief StateMachine to check for key press events that MIDAS is interested in,
  * and pass them onto any registered MIDASToolKeyPressResponder.
  */
-class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public mitk::EventStateMachine, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public mitk::EventStateMachine, public mitk::InteractionEventObserver, public MIDASStateMachine
 {
 
 public:
   mitkClassMacro(MIDASToolKeyPressStateMachine, mitk::EventStateMachine); // this creates the Self typedef
   mitkNewMacro1Param(Self, MIDASToolKeyPressResponder*);
+
+  /**
+   * By this function the Observer gets notified about new events.
+   * Here it is adapted to pass the events to the state machine in order to use
+   * its infrastructure.
+   * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
+   */
+  virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled);
 
 protected:
 
@@ -78,6 +90,12 @@ private:
 
   /// \brief the object that gets called, specified in constructor.
   MIDASToolKeyPressResponder* m_Responder;
+
+  /**
+    * Reference to the service registration of the observer,
+    * it is needed to unregister the observer on unload.
+    */
+   us::ServiceRegistration<mitk::InteractionEventObserver> m_ServiceRegistration;
 
 };
 

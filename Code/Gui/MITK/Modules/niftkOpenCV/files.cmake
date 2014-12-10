@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
+  Common/mitkOpenCVImageProcessing.cxx
   Common/mitkOpenCVFileIOUtils.cxx
   Common/mitkOpenCVPointTypes.cxx
   Common/mitkTimeStampsContainer.cxx

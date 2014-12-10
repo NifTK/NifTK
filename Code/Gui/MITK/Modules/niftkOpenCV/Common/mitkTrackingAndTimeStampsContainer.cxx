@@ -142,9 +142,16 @@ std::vector<TimeStampsContainer::TimeStamp>::size_type TrackingAndTimeStampsCont
 
 
 //-----------------------------------------------------------------------------
-std::vector<TimeStampsContainer::TimeStamp>::size_type TrackingAndTimeStampsContainer::GetFrameNumber(const TimeStampsContainer::TimeStamp& timeStamp)
+std::vector<TimeStampsContainer::TimeStamp>::size_type TrackingAndTimeStampsContainer::GetFrameNumber(const TimeStampsContainer::TimeStamp& timeStamp) const
 {
   return m_TimeStamps.GetFrameNumber(timeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
+TimeStampsContainer::TimeStamp TrackingAndTimeStampsContainer::GetNearestTimeStamp(const TimeStampsContainer::TimeStamp& timeStamp, long long *delta) const
+{
+  return m_TimeStamps.GetNearestTimeStamp(timeStamp, delta);
 }
 
 

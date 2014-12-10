@@ -157,7 +157,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   {
     tmp=0;
 
-    for ( k =- dk_2; 
+    for ( k = -dk_2; 
           k < dk_2 + 1; 
           k++) 
     {

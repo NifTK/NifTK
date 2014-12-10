@@ -48,7 +48,7 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 , m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
 , m_PipelineManager(NULL)
-, m_TabCounter(-1)
+, m_TabIndex(-1)
 {
 }
 
@@ -93,7 +93,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
   bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImageFromToolManager(0);
+  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImage();
   if (image.IsNotNull())
   {
 
@@ -131,7 +131,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
-    newSegmentation->SetProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), mitk::BoolProperty::New(false));
+    newSegmentation->SetBoolProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
 
     try
     {
@@ -149,7 +149,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeAddEditingProp->SetSize(1,1,1);
       erodeAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS, col->GetColor());
+      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
       erodeAddNode->SetBoolProperty("helper object", true);
       erodeAddNode->SetBoolProperty("visible", false);
       erodeAddNode->SetColor(segCol);
@@ -159,7 +159,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeSubtractEditingProp->SetSize(1,1,1);
       erodeSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS, col->GetColor());
+      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
       erodeSubtractNode->SetBoolProperty("helper object", true);
       erodeSubtractNode->SetBoolProperty("visible", false);
       erodeSubtractNode->SetColor(col->GetColor());
@@ -169,7 +169,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateAddEditingProp->SetSize(1,1,1);
       dilateAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS, col->GetColor());
+      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
       dilateAddNode->SetBoolProperty("helper object", true);
       dilateAddNode->SetBoolProperty("visible", false);
       dilateAddNode->SetColor(segCol);
@@ -179,7 +179,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateSubtractEditingProp->SetSize(1,1,1);
       dilateSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS, col->GetColor());
+      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
       dilateSubtractNode->SetBoolProperty("helper object", true);
       dilateSubtractNode->SetBoolProperty("visible", false);
       dilateSubtractNode->SetColor(col->GetColor());
@@ -215,11 +215,11 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       // MORPH_EDITS_DILATIONS_SUBTRACTIONS
       // MORPH_EDITS_DILATIONS_ADDITIONS
 
-      mitk::ToolManager::DataVectorType workingData;
-      workingData.push_back(erodeAddNode);
-      workingData.push_back(erodeSubtractNode);
-      workingData.push_back(dilateAddNode);
-      workingData.push_back(dilateSubtractNode);
+      mitk::ToolManager::DataVectorType workingData(4);
+      workingData[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
+      workingData[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
+      workingData[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
+      workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
 
       toolManager->SetWorkingData(workingData);
 
@@ -227,14 +227,16 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       if (isRestarting)
       {
         newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+        this->SetControlsFromSegmentationNodeProps();
+        m_PipelineManager->UpdateSegmentation();
       }
       else
       {
-        this->SetDefaultParameterValuesFromReferenceImage();
-        this->SetControlsByImageData();
+        this->SetSegmentationNodePropsFromReferenceImage();
+        this->SetControlsFromReferenceImage();
+        this->SetControlsFromSegmentationNodeProps();
+        m_PipelineManager->UpdateSegmentation();
       }
-      this->SetControlsByParameterValues();
-      m_PipelineManager->UpdateSegmentation();
     }
     catch (std::bad_alloc&)
     {
@@ -313,7 +315,7 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
   m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
 
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
@@ -340,9 +342,9 @@ void MIDASMorphologicalSegmentorView::OnErosionsValuesChanged(double upperThresh
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnDilationValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
+void MIDASMorphologicalSegmentorView::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
-  m_PipelineManager->OnDilationValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
+  m_PipelineManager->OnDilationsValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
   this->RequestRenderWindowUpdate();
 }
 
@@ -358,7 +360,7 @@ void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     if (tabIndex == 1 || tabIndex == 2)
@@ -368,8 +370,8 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       mitk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>()));
 
-      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(1);
-      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(3);
+      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
+      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
 
       if (tabIndex == 1)
       {
@@ -378,7 +380,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(false);
 
         // Only if we are switching from tab 2 to 1.
-        if (m_TabCounter == 2)
+        if (m_TabIndex == 2)
         {
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
@@ -395,7 +397,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(true);
 
         // Only if we are switching from tab 1 to 2.
-        if (m_TabCounter == 1)
+        if (m_TabIndex == 1)
         {
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
@@ -412,18 +414,19 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
-    segmentationNode->SetIntProperty("midas.morph.stage", tabIndex);
-    m_PipelineManager->UpdateSegmentation();
+    m_PipelineManager->OnTabChanged(tabIndex);
+
     this->RequestRenderWindowUpdate();
   }
-  m_TabCounter = tabIndex;
+
+  m_TabIndex = tabIndex;
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
@@ -447,14 +450,14 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
     m_PipelineManager->ClearWorkingData();
-    this->SetDefaultParameterValuesFromReferenceImage();
-    this->SetControlsByImageData();
-    this->SetControlsByParameterValues();
+    this->SetSegmentationNodePropsFromReferenceImage();
+    this->SetControlsFromReferenceImage();
+    this->SetControlsFromSegmentationNodeProps();
     m_PipelineManager->UpdateSegmentation();
 
     /// Reset the axial cut-off plane to the bottom of the image.
@@ -485,7 +488,7 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
@@ -556,16 +559,16 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
 
   if (m_MorphologicalControls != NULL)
   {
-    connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
-    connect(m_ToolSelector, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
-    connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), this, SLOT(OnThresholdingValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), this, SLOT(OnErosionsValuesChanged(double, int)));
-    connect(m_MorphologicalControls, SIGNAL(DilationValuesChanged(double, double, int)), this, SLOT(OnDilationValuesChanged(double, double, int)));
-    connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), this, SLOT(OnRethresholdingValuesChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), this, SLOT(OnTabChanged(int)));
-    connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), this, SLOT(OnOKButtonClicked()));
-//    connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), this, SLOT(OnCancelButtonClicked()));
-    connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), this, SLOT(OnRestartButtonClicked()));
+    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+    this->connect(m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
+    this->connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+    this->connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+//    this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+    this->connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
   }
 }
 
@@ -592,24 +595,24 @@ bool MIDASMorphologicalSegmentorView::CanStartSegmentationForBinaryNode(const mi
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  return m_PipelineManager->GetWorkingNodesFromSegmentationNode(node);
+  return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingNode(const mitk::DataNode::Pointer node)
+mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
-  return m_PipelineManager->GetSegmentationNodeFromWorkingNode(node);
+  return m_PipelineManager->GetSegmentationNodeFromWorkingData(node);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
-  int tabNumber = m_MorphologicalControls->GetTabNumber();
-  if (enabled && (tabNumber == 1 || tabNumber == 2))
+  int tabIndex = m_MorphologicalControls->GetTabIndex();
+  if (enabled && (tabIndex == 1 || tabIndex == 2))
   {
     m_ToolSelector->SetEnabled(true);
   }
@@ -618,7 +621,7 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
     m_ToolSelector->SetEnabled(false);
   }
 
-  m_MorphologicalControls->EnableControls(enabled);
+  m_MorphologicalControls->SetEnabled(enabled);
 }
 
 
@@ -632,14 +635,14 @@ void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    bool wasBlocked = m_MorphologicalControls->m_TabWidget->blockSignals(true);
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
     m_PipelineManager->DestroyPipeline();
 //    this->GetDataStorage()->Remove(segmentationNode);
@@ -659,12 +662,12 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
   if (nodes.size() == 1)
   {
-    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImageFromToolManager(0);
-    mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImageUsingToolManager();
+    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
+    mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImage();
 
     if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
     {
-      this->SetControlsByParameterValues();
+      this->SetControlsFromSegmentationNodeProps();
     }
 
     bool isAlreadyFinished = true;
@@ -680,23 +683,23 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImage()
+void MIDASMorphologicalSegmentorView::SetSegmentationNodePropsFromReferenceImage()
 {
-  m_PipelineManager->SetDefaultParameterValuesFromReferenceImage();
+  m_PipelineManager->SetSegmentationNodePropsFromReferenceImage();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsByImageData()
+void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
 {
-  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImageFromToolManager(0);
+  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
     int upDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
-    m_MorphologicalControls->SetControlsByImageData(    
+    m_MorphologicalControls->SetControlsByReferenceImage(
         referenceImage->GetStatistics()->GetScalarValueMin(),
         referenceImage->GetStatistics()->GetScalarValueMax(),
         numberOfAxialSlices,
@@ -706,39 +709,39 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
+void MIDASMorphologicalSegmentorView::SetControlsFromSegmentationNodeProps()
 {
   MorphologicalSegmentorPipelineParams params;
-  m_PipelineManager->GetParameterValuesFromSegmentationNode(params);
+  m_PipelineManager->GetPipelineParamsFromSegmentationNode(params);
 
-  m_MorphologicalControls->SetControlsByParameterValues(params);
+  m_MorphologicalControls->SetControlsByPipelineParams(params);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 {
-  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
-  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodesFromToolManager();
-  if (segmentationNode.IsNotNull() && node == segmentationNode && workingNodes.size() == 4)
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 4)
   {
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
 
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      workingNodes[0]->SetVisibility(false);
-      workingNodes[1]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 1);
-      workingNodes[2]->SetVisibility(false);
-      workingNodes[3]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 2);
+      workingData[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
+      workingData[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 1);
+      workingData[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
+      workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 2);
       axialCutOffPlaneNode->SetVisibility(true);
     }
     else
     {
-      for (std::size_t i = 1; i < workingNodes.size(); ++i)
+      for (std::size_t i = 1; i < workingData.size(); ++i)
       {
-        workingNodes[i]->SetVisibility(false);
+        workingData[i]->SetVisibility(false);
       }
       axialCutOffPlaneNode->SetVisibility(false);
     }
