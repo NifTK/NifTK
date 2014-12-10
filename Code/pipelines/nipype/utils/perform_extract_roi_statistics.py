@@ -11,6 +11,13 @@ import sys, os
 import argparse, textwrap
 from extract_roi_statistics import ExtractRoiStatistics
 
+
+def gen_substitutions(in_files, subject_list):    
+    subs = []
+    for i in range(0,len(in_files)):
+        subs.append((in_files[i], subject_list[i] + '.csv'))
+    return subs
+
 def print_array_function(in_array):
     import numpy as np
     import os
@@ -40,8 +47,8 @@ parser.add_argument('-p', '--par',
                     help='Parcelation image or list of parcelation images',
                     required=True)
 
-parser.add_argument('-o', '--output_dir',
-                    dest='output_dir', 
+parser.add_argument('-o', '--output',
+                    dest='output', 
                     type=str, \
                     metavar='directory', 
                     help='Output directory containing the statistics results',
@@ -50,7 +57,12 @@ parser.add_argument('-o', '--output_dir',
 
 args = parser.parse_args()
 
-workflow = pe.Workflow('workflow')
+result_dir = os.path.abspath(args.output)
+if not os.path.exists(result_dir):
+    os.mkdir(result_dir)
+
+
+workflow = pe.Workflow('extract_roi_statistics')
 workflow.base_dir = os.getcwd()
 
 # extracting basename of the input file (list)
@@ -76,6 +88,23 @@ print_array = pe.MapNode(interface = niu.Function(
 extract_roi_stats.inputs.in_file = input_files
 extract_roi_stats.inputs.roi_file = par_files
 workflow.connect(extract_roi_stats, 'out_array', print_array, 'in_array')
+
+
+# Create a node to add the suffix and prefix if required
+subsgen = pe.Node(interface = niu.Function(
+    input_names = ['in_files', 'subject_list'], 
+    output_names = ['substitutions'],
+    function = gen_substitutions), 
+                  name = 'subsgen')
+
+workflow.connect(print_array, 'out_file', subsgen, 'in_files')
+subsgen.inputs.subject_list = subject_list
+
+# Create a data sink    
+ds = pe.Node(nio.DataSink(parameterization=False), name='data_sink')
+ds.inputs.base_directory = result_dir
+workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
+workflow.connect(print_array, 'out_file', ds, '@statistics')
 
 workflow.write_graph(graph2use='colored')
 workflow.run(plugin='MultiProc')
