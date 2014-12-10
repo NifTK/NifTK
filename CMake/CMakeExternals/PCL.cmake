@@ -61,7 +61,7 @@ if(BUILD_IGI AND BUILD_PCL)
     if(WIN32)
       set(PCL_DIR ${proj_INSTALL}/cmake)
     else()
-      set(PCL_DIR ${proj_INSTALL}/share/pcl-1.7)
+      set(PCL_DIR ${proj_INSTALL}/share/pcl-1.8)
     endif()
     message("SuperBuild loading PCL from ${PCL_DIR}")
   
