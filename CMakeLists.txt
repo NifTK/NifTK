@@ -248,7 +248,7 @@ set(NIFTK_VERSION_CAMINO "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "3.2.2.1" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
-set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
+set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
 set(NIFTK_VERSION_qRestAPI "5f3a03b15d" CACHE STRING "Version of qRestAPI" FORCE) 
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git")
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
@@ -275,7 +275,7 @@ set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino
 set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${NIFTK_VERSION_EIGEN}.tar.bz2" CACHE STRING "Location of Eigen" FORCE)
 set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-apriltags-${NIFTK_VERSION_APRILTAGS}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
 set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
-set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
+set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
 set(NIFTK_LOCATION_qRestAPI "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
 
 ######################################################################
