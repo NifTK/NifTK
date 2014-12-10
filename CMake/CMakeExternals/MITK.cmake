@@ -23,12 +23,12 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 endif()
 
 set(proj MITK)
-set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
+set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK Eigen)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES aruco OpenCV Eigen apriltags)
+  list(APPEND proj_DEPENDENCIES aruco OpenCV apriltags)
   if(BUILD_PCL)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
@@ -115,6 +115,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_Boost:BOOL=ON
         -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
+        -DMITK_USE_Eigen:BOOL=ON
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
@@ -128,6 +129,7 @@ if(NOT DEFINED MITK_DIR)
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )
