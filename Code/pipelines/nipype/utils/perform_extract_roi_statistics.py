@@ -101,7 +101,24 @@ ds.inputs.base_directory = result_dir
 workflow.connect(print_array, 'out_file', ds, '@statistics')
 
 workflow.write_graph(graph2use='colored')
-workflow.run(plugin='MultiProc')
 
+qsub_exec=spawn.find_executable('qsub')
 
+# We can provide the QSUB options using an environment variable QSUB_OPTIONS otherwise, we use the default options
+try:
+    qsubargs=os.environ['QSUB_OPTIONS']
+except KeyError:
+    print 'The environtment variable QSUB_OPTIONS is not set up, we cannot queue properly the process. Using the default script options.'
+    qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
+    print qsubargs
 
+# We can use qsub or not depending of this environment variable, by default we use it.
+try:
+    run_qsub=os.environ['RUN_QSUB'] in ['true', '1', 't', 'y', 'yes', 'TRUE', 'YES', 'T', 'Y']
+except KeyError:
+    run_qsub=True
+
+if not qsub_exec == None and run_qsub:
+    workflow.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+else:
+    workflow.run(plugin='MultiProc')
