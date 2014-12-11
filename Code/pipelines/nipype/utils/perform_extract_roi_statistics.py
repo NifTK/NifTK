@@ -11,20 +11,15 @@ import sys, os
 import argparse, textwrap
 from extract_roi_statistics import ExtractRoiStatistics
 
-
-def gen_substitutions(in_files, subject_list):    
-    subs = []
-    for i in range(0,len(in_files)):
-        subs.append((in_files[i], subject_list[i] + '.csv'))
-    return subs
-
-def print_array_function(in_array):
-    import numpy as np
-    import os
-    print(in_array)
-    array_file = 'statistics.csv'
-    np.savetxt(array_file, in_array, '%u %5.2f %5.2f %5.2f')
+def print_array_function(in_array, subject_id):
+    import os, numpy as np
+    array_file = subject_id + '.csv'
+    array_format = '%u'
+    for f in range(in_array.shape[1] - 1):
+        array_format = array_format + ' %5.2f'    
+    np.savetxt(array_file, in_array, array_format)
     return os.path.abspath(array_file)
+
 
 pipelineDescription=textwrap.dedent('''\
 Pipeline to perform a simple ROI statistics on an image
@@ -42,14 +37,23 @@ parser.add_argument('-i', '--input_file',
 
 parser.add_argument('-p', '--par',
                     dest='input_par', 
-                    type=str, nargs='+',
+                    type=str, 
+                    nargs='+',
                     metavar='input_par', 
                     help='Parcelation image or list of parcelation images',
                     required=True)
 
+parser.add_argument('-l', '--label',
+                    dest='input_label', 
+                    type=int,
+                    nargs='+',
+                    metavar='input_label', 
+                    help='Specify Label(s) to extract',
+                    required=False)
+
 parser.add_argument('-o', '--output',
                     dest='output', 
-                    type=str, \
+                    type=str, 
                     metavar='directory', 
                     help='Output directory containing the statistics results',
                     default=os.getcwd(), 
@@ -60,7 +64,6 @@ args = parser.parse_args()
 result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
-
 
 workflow = pe.Workflow('extract_roi_statistics')
 workflow.base_dir = os.getcwd()
@@ -78,32 +81,23 @@ extract_roi_stats = pe.MapNode(interface=ExtractRoiStatistics(),
                                iterfield = ['in_file', 'roi_file'])
 
 print_array = pe.MapNode(interface = niu.Function(
-    input_names = ['in_array'],
+    input_names = ['in_array', 'subject_id'],
     output_names = ['out_file'],
     function=print_array_function),
                          name='print_array',
-                         iterfield = ['in_array']
+                         iterfield = ['in_array', 'subject_id']
 )
 
 extract_roi_stats.inputs.in_file = input_files
 extract_roi_stats.inputs.roi_file = par_files
+if args.input_label:
+    extract_roi_stats.inputs.in_label = args.input_label
 workflow.connect(extract_roi_stats, 'out_array', print_array, 'in_array')
-
-
-# Create a node to add the suffix and prefix if required
-subsgen = pe.Node(interface = niu.Function(
-    input_names = ['in_files', 'subject_list'], 
-    output_names = ['substitutions'],
-    function = gen_substitutions), 
-                  name = 'subsgen')
-
-workflow.connect(print_array, 'out_file', subsgen, 'in_files')
-subsgen.inputs.subject_list = subject_list
+print_array.inputs.subject_id = subject_list
 
 # Create a data sink    
 ds = pe.Node(nio.DataSink(parameterization=False), name='data_sink')
 ds.inputs.base_directory = result_dir
-workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
 workflow.connect(print_array, 'out_file', ds, '@statistics')
 
 workflow.write_graph(graph2use='colored')
