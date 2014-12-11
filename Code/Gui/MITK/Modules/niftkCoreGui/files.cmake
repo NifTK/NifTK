@@ -21,6 +21,7 @@ set(CPP_FILES
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
+  Rendering/SharedOGLContext.cxx
 )
 
 set(MOC_H_FILES
@@ -29,6 +30,7 @@ set(MOC_H_FILES
   Events/QmitkMouseEventEater.h
   QmitkDataStorageCheckableComboBox.h
   QmitkHelpAboutDialog.h
+  Rendering/SharedOGLContext.h
 )
 
 set(UI_FILES

@@ -43,6 +43,9 @@
 #include <usModuleResourceStream.h>
 #include <usModuleRegistry.h>
 
+#include <Rendering/SharedOGLContext.h>
+
+
 const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualization";
 
 NewVisualizationView::NewVisualizationView()
@@ -138,7 +141,7 @@ void  NewVisualizationView::InitVLRendering()
 #endif
 
   assert(m_VLQtRenderWindow == 0);
-  m_VLQtRenderWindow = new VLQt4Widget;
+  m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
 
 //  assert(m_RenderApplet == 0);
 
