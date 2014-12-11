@@ -41,6 +41,31 @@ SharedOGLContext::SharedOGLContext()
   }
 
   m_ShareWidget->hide();
+
+  // run some benign opengl commands to see if the context is usable.
+  // this is only ever going to fail if the driver is seriously broken.
+  m_ShareWidget->makeCurrent();
+
+  const GLubyte* str = glGetString(GL_RENDERER);
+  // we don't care what it is. it should not error out, and not return null.
+  if (glGetError() != GL_NO_ERROR)
+  {
+    m_ShareWidget->doneCurrent();
+    delete m_ShareWidget;
+    m_ShareWidget = 0;
+
+    throw std::runtime_error("Cannot query most basic info from OpenGL context.");
+  }
+  if (str == 0)
+  {
+    m_ShareWidget->doneCurrent();
+    delete m_ShareWidget;
+    m_ShareWidget = 0;
+
+    throw std::runtime_error("Cannot query most basic info from OpenGL context.");
+  }
+
+  m_ShareWidget->doneCurrent();
 }
 
 
