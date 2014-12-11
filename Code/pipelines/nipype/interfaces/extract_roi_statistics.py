@@ -13,7 +13,9 @@ class ExtractRoiStatisticsInputSpec(BaseInterfaceInputSpec):
                         desc="Input image to extract the statistics from")
     roi_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input image that contains the different roi")
-    
+    in_label = traits.List(traits.BaseInt,
+                           desc = "Label(s) to extract")
+
 class ExtractRoiStatisticsOutputSpec(TraitedSpec):
     out_array   = traits.Array(desc="Output array organised as follow: "+ \
         "label index, mean value, std value, roi volume in mm")
@@ -34,7 +36,8 @@ class ExtractRoiStatistics(BaseInterface):
     def _run_interface(self, runtime):
         in_file = self.inputs.in_file
         roi_file = self.inputs.roi_file
-        self.stats=self.extract_roi_statistics(in_file, roi_file)
+        labels = self.inputs.in_label
+        self.stats=self.extract_roi_statistics(in_file, roi_file, labels)
         return runtime
     
     def _list_outputs(self):
@@ -45,7 +48,8 @@ class ExtractRoiStatistics(BaseInterface):
 
     def extract_roi_statistics(self,
                                in_file,
-                               roi_file):
+                               roi_file,
+                               labels):
         # Read the input images
         in_img=nib.load(in_file)
         img_data=in_img.get_data()
@@ -64,11 +68,17 @@ class ExtractRoiStatistics(BaseInterface):
             self.number_of_roi_ims = roi_shape[3]
         
         # Create an array to store mean uptakes and volumes
-        unique_values=np.unique(roi_data)
-        unique_values_number=len(unique_values);
+        unique_values = 0
+        unique_values_number = 0
+
+        if len(labels) > 0:
+            unique_values = labels
+        else:
+            unique_values = np.unique(roi_data)
+
+        unique_values_number = len(unique_values)
         
         stats_array= np.zeros((unique_values_number*self.number_of_ims,4))
-        
         
         for im_index in range(0, self.number_of_ims):
             if self.number_of_ims > 1:
