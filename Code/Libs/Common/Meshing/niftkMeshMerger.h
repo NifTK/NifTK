@@ -24,8 +24,10 @@
 #include <vector>
 #include <string>
 
+#include <niftkCommonWin32ExportHeader.h>
+
 namespace niftk {
-  class MeshMerger {
+  class NIFTKCOMMON_WINEXPORT MeshMerger {
     /**
      * \name Labels
      * @{

@@ -13,6 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkImage2DToTexturePlaneMapper3D.cxx
+  Common/mitkNifTKIGIObjectFactory.cxx
   DataSources/mitkIGITestDataUtils.cxx
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx
@@ -20,13 +22,14 @@ set(CPP_FILES
   SurfaceReconstruction/SurfaceReconstruction.cxx
   SurfaceReconstruction/SequentialCpuQds.cxx
   SurfaceReconstruction/QDSCommon.cxx
-  TrackedImage/mitkTrackedImageCommand.cxx
-  TrackedPointer/mitkTrackedPointerManager.cxx
+  TrackedImage/mitkTrackedImage.cxx
+  TrackedPointer/mitkTrackedPointer.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
   Utils/mitkMakeGeometry.cxx
   # this one does not depend on pcl!
   PointClouds/mitkMergePointClouds.cxx
+  CentreLines/mitkBifurcationToPointSet.cxx
 )
 
 if(BUILD_PCL)

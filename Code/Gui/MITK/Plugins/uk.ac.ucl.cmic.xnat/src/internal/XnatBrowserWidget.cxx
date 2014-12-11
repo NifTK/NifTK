@@ -18,8 +18,7 @@
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
 #include <ctkXnatFile.h>
-#include <ctkXnatReconstructionResource.h>
-#include <ctkXnatScanResource.h>
+#include <ctkXnatResource.h>
 #include <ctkXnatSettings.h>
 #include <ctkXnatTreeModel.h>
 
@@ -359,8 +358,7 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
 
 bool XnatBrowserWidget::holdsFiles(const ctkXnatObject* xnatObject) const
 {
-  if (dynamic_cast<const ctkXnatScanResource*>(xnatObject)
-      || dynamic_cast<const ctkXnatReconstructionResource*>(xnatObject))
+  if (dynamic_cast<const ctkXnatResource*>(xnatObject))
   {
     return true;
   }

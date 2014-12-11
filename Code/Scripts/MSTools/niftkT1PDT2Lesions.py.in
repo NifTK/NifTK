@@ -1,0 +1,444 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+#
+# This script is for ms registration preprocessing
+#
+# The basic method is:
+# If the user runs niftkRegPPMS.py --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+# Import needed libraries
+import atexit
+import tempfile
+from datetime import datetime, date, time
+from _niftkCommon import *
+from glob import glob
+
+###### DEFAULT OPTIONS #######
+output_dir='Fill-T1PDT2'
+temp_dir=''
+
+###########################################################################
+###########################################################################
+# Function definition
+###########################################################################
+###########################################################################
+
+# Begin of reg_resample function
+def reg_resample(ref,flo,typet,transform,result,interpolation=''):
+	"""
+	#####################################################################################
+	# def reg_resample(ref,flo,type,transform,result)
+	# Function   : Resample the image
+	#####################################################################################
+	"""
+  
+	if not os.path.isfile(result):
+		execute_command_or_else_stop('reg_resample \
+				-ref '+ref+' \
+				-flo '+flo+' \
+				'+typet+' '+transform+' \
+				-res '+result+' \
+				'+interpolation+' ')
+	else:
+		print 'File '+result+' does exist, we don\'t repeat the calculation' 	
+	
+	return 
+# End of reg_resample function
+
+
+def removeFile(filename):
+	global	debug_mode
+
+	if (not debug_mode) and (os.path.isfile(filename)):
+		os.unlink (filename)
+
+	return 
+
+# XML Definition
+xml="""
+"""
+
+# Help usage message definition
+help="""
+This script fills lesions in the T1 image allowing different ways using the patch-based method Prados et al. MICCAI 2014.
+
+Usage: niftkT1PDT2Lesions.py -t1 <filename> -lesion <filename> -out <filename> [options]
+
+Mandatory Arguments:
+ 
+  -t1 <filename>	: T1 image filename (NIFTI .nii .nii.gz)
+  -lesion <filename>	: lesion mask filename in PD/T2 space (JIM FORMAT .roi or NIFTI .nii .nii.gz)
+  -out <filename>	: output image filename (NIFTI .nii .nii.gz)
+
+Optional Arguments:
+
+  -t2 <filename>	: T2 image filename (NIFTI .nii .nii.gz)
+  -pd <filename>	: PD image filename (it is needed if you haven't Pseudo T1)
+  -pdt2	<filename>	: give as input PDT2 in the same file (first time point PD, second time point T2), then you don't need to provide as input T2 and PD image as -t2 and -pd arguments
+  -pt1 <filename>	: specify pseudo T1 output filename
+  -t1_space		: lesions are drawn in T1 space, then you don't need to provide as input T2 and PD image as -t2 and -pd arguments
+  -debug		: debug mode doesn't delete temporary intermediate images
+  -output_dir <path>	: specify the output dir name
+  -bin			: nearest neighboor interpolation method (by default is linear) 
+  -mask_mode <value>	: See Masker -h, by default any, possible values: half, all or any
+  -dil <int>		: number of dilations for the lesion mask, by default is 0
+  -atlas_t1 <filename>	: is the t1 atlas file (by default: /usr/share/fsl/data/standard/MNI152_T1_1mm.nii.gz)
+  -atlas_t2 <filename>	: is the t2 atlas data file (by default: /local/SPM12b/canonical/avg152T2.nii)
+  -atlas_mask <filename>: is the atlas mask file (by default: /usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz)
+  -leap			: use LEAP method Chard et al. JMRI 2010, by default use the patch-based method Prados et al. MICCAI 2014 
+  
+"""
+
+
+# Main program start
+
+# We register cleanup function as a function to be executed at termination
+os.environ['FSLOUTPUTTYPE']='NIFTI_GZ'
+os.environ['PATH']+='/usr2/mrtools/niftyseg-20140602/bin/'
+# We get the arguments
+arg=len(sys.argv)
+argv=sys.argv
+debug_mode=False
+old_mode=False
+output_dir_name=''
+T1_INPUT_IMAGE=''
+T2_INPUT_IMAGE=''
+PD_INPUT_IMAGE=''
+ROI_INPUT_LESION=''
+OUTPUT_IMAGE=''
+PDT2_INPUT_IMAGE=''
+LESIONS_T1_SPACE=False
+interpolation='-LIN'
+MASK_MODE='any'
+PSEUDOT1_INPUT_IMAGE='PSEUDO_T1.nii.gz'
+DILATIONS=''
+VERBOSE=''
+ATLAS=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_1mm.nii.gz') # MNI space
+ATLAS_T2=os.path.join(os.getenv('SPMDIR','/local/SPM12b'), 'canonical', 'avg152T2.nii')
+ATLAS_MASK=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_1mm_brain_mask.nii.gz') # MNI space
+
+# If no arguments, we print usage message
+if arg < 7: 
+	i=1
+	while i < arg:
+		if argv[i].upper() in ['--XML','-XML']: 
+			usage(xml,0)
+		i=i+1
+	# end while
+	usage(help)
+# End if, few arguments
+
+i=1
+# Parse remaining command line options
+while i < arg:
+    if argv[i].upper() in ['--XML','-XML']:
+	usage(xml,0)
+	
+    elif argv[i] in ['--H','--HELP','-H','-HELP']:
+	usage(text)
+
+    elif argv[i].upper() in ['--T1','-T1']:
+	T1_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--T2','-T2']:
+	T2_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--PD','-PD']:
+	PD_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--PDT2','-PDT2']:
+	PDT2_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--OUTPUT','-OUTPUT','--OUT','-OUT']:
+	OUTPUT_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--LESION','-LESION','--LESIONS','-LESIONS']:
+	ROI_INPUT_LESION=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--DEBUG','-DEBUG']:
+	debug_mode=True
+	VERBOSE='-v'
+    
+    elif argv[i].upper() in ['-LEAP','--LEAP','--OLD','-OLD']:
+	old_mode=True
+
+    elif argv[i].upper() in ['--OUTPUT_DIR','-OUTPUT_DIR']:
+	output_dir_name=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--PT1','-PT1']:
+	PSEUDOT1_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--LIN','-LIN']:
+	interpolation='-LIN'
+	i=i+1
+
+    elif argv[i].upper() in ['--MASK_MODE','-MASK_MODE']:
+	MASK_MODE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--DIL','-DIL']:
+	DILATIONS='-dil '+argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--T1_SPACE','-T1_SPACE']:
+	LESIONS_T1_SPACE=True
+    
+    elif argv[i].upper() in ['--ATLAS_T1','-ATLAS_T1','--ATLAS','-ATLAS',]:
+	ATLAS=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--ATLAS_T2','-ATLAS_T2']:
+	ATLAS_T2=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--ATLAS_MASK','-ATLAS_MASK']:
+	ATLAS_MASK=argv[i+1]
+	i=i+1	
+	
+    else:
+	print "\n\ERROR: option ",argv[i]," not recognised\n\n"
+	usage(help)
+	
+    i=i+1
+# end while
+
+# We put all path in a normalized absolutized version of the pathname
+T1_INPUT_IMAGE=os.path.abspath(T1_INPUT_IMAGE)
+if (PDT2_INPUT_IMAGE=='') and not LESIONS_T1_SPACE:
+	T2_INPUT_IMAGE=os.path.abspath(T2_INPUT_IMAGE)
+	PD_INPUT_IMAGE=os.path.abspath(PD_INPUT_IMAGE)
+ATLAS=os.path.abspath(ATLAS)
+ATLAS_T2=os.path.abspath(ATLAS_T2)
+ATLAS_MASK=os.path.abspath(ATLAS_MASK)
+if not (PDT2_INPUT_IMAGE==''):
+	PDT2_INPUT_IMAGE=os.path.abspath(PDT2_INPUT_IMAGE)
+
+# Check if all needed files exist
+check_file_exists(T1_INPUT_IMAGE) 
+if (PDT2_INPUT_IMAGE=='') and not LESIONS_T1_SPACE:
+	check_file_exists(T2_INPUT_IMAGE)
+	check_file_exists(PD_INPUT_IMAGE)
+check_file_exists(ATLAS)
+check_file_exists(ATLAS_T2)
+check_file_exists(ATLAS_MASK)
+
+if not LESIONS_T1_SPACE and (PDT2_INPUT_IMAGE==''):
+	if not os.path.isfile(PSEUDOT1_INPUT_IMAGE) :
+		print 'Please, specify a PD file or a Pseudo T1!'	
+		PD_INPUT_IMAGE=os.path.abspath(PD_INPUT_IMAGE)
+		check_file_exists(PD_INPUT_IMAGE)
+	else:	
+		PSEUDOT1_INPUT_IMAGE=os.path.abspath(PSEUDOT1_INPUT_IMAGE)
+		check_file_exists(PSEUDOT1_INPUT_IMAGE)
+
+# Checking Nifty Tools
+check_program_exists('reg_aladin')
+check_program_exists('reg_transform')
+check_program_exists('reg_tools')
+check_program_exists('Masker')
+check_program_exists('seg_maths')
+check_program_exists('seg_FillLesions')
+if old_mode:
+	check_program_exists('niftkFillLesions.sh')
+
+# We get the filename and extensions	
+name = get_file_name(T1_INPUT_IMAGE)
+
+# Create the work temp dir
+current_dir=os.getcwd()
+if output_dir_name!='':
+	if os.path.isdir(output_dir_name):
+		output_dir=os.path.join(output_dir_name)
+	else:
+		output_dir=os.path.join(current_dir,output_dir_name)
+else:
+	output_dir=os.path.join(current_dir,output_dir+'-'+name)
+	
+if not os.path.isdir(output_dir):
+	os.makedirs(output_dir)
+
+if OUTPUT_IMAGE=='':
+	OUTPUT_IMAGE=os.path.join(current_dir,name+"filled.nii.gz")
+else:
+	OUTPUT_IMAGE=os.path.abspath(OUTPUT_IMAGE)
+
+# Create the temp dir
+#temp_dir = tempfile.mkdtemp()
+
+if not (ROI_INPUT_LESION=='' or ROI_INPUT_LESION=='empty'):
+	ROI_INPUT_LESION=os.path.abspath(ROI_INPUT_LESION)
+	check_file_exists(ROI_INPUT_LESION)
+
+# Go to the temp directory
+os.chdir(output_dir)
+progress_xml(0.01,"Changing to output_dirtemp dir: "+output_dir)
+
+###################################################
+# Start process
+###################################################
+
+if not (PDT2_INPUT_IMAGE==''): 
+	check_file_exists(PDT2_INPUT_IMAGE)
+	execute_command_or_else_stop('seg_maths \
+					'+PDT2_INPUT_IMAGE+' \
+					-tp 0 PD.nii.gz')
+	execute_command_or_else_stop('seg_maths \
+					'+PDT2_INPUT_IMAGE+' \
+					-tp 1 T2.nii.gz')
+
+	T2_INPUT_IMAGE=os.path.abspath('T2.nii.gz')
+	PD_INPUT_IMAGE=os.path.abspath('PD.nii.gz')
+
+# Calculation of pseudo T1 extracted from SJ Hickman et al. 2002, Multiple Sclerosis Journal
+# http://msj.sagepub.com/content/8/5/433.full.pdf
+if ROI_INPUT_LESION=='' or ROI_INPUT_LESION=='empty':
+	print "ATENTION: This is a control subject without lesions!!!!"
+	print "We don't fill lesions. We will compute everything using: "+T1_INPUT_IMAGE
+	execute_command_or_else_stop('cp '+T1_INPUT_IMAGE+' '+OUTPUT_IMAGE+'')
+else:
+	if not LESIONS_T1_SPACE:
+		if not os.path.isfile(PSEUDOT1_INPUT_IMAGE):
+			progress_xml(0.02,"Computing pseudoT1")
+			execute_command_or_else_stop('reg_tools \
+					-in '+PD_INPUT_IMAGE+' \
+					-sub '+T2_INPUT_IMAGE+' \
+					-out '+PSEUDOT1_INPUT_IMAGE+'')
+
+		progress_xml(0.10,"Calculating T2 mask")
+		if not os.path.isfile('ATLAS_MASK_T2.nii.gz'):
+			execute_command_or_else_stop('reg_aladin \
+					-ref '+T2_INPUT_IMAGE+' \
+					-flo '+ATLAS_T2+' \
+					-aff ATLASToT2_affine.txt \
+					-res ATLASToT2_affine.nii.gz')
+	
+			reg_resample(T2_INPUT_IMAGE,ATLAS_MASK,'-aff','ATLASToT2_affine.txt','ATLAS_MASK_T2.nii.gz')
+
+			removeFile ('ATLASToT2_affine.nii.gz')
+			removeFile ('ATLASToT2_affine.txt')
+
+		progress_xml(0.20,"Calculating T1 mask")
+		if not os.path.isfile('ATLAS_MASK_T1.nii.gz'):
+			execute_command_or_else_stop('reg_aladin \
+				-ref '+T1_INPUT_IMAGE+' \
+				-flo '+ATLAS+' \
+				-aff ATLASToT1_affine.txt \
+				-res ATLASToT1_affine.nii.gz')
+	
+			reg_resample(T1_INPUT_IMAGE,ATLAS_MASK,'-aff','ATLASToT1_affine.txt','ATLAS_MASK_T1.nii.gz')
+	
+			removeFile ('ATLASToT1_affine.nii.gz')
+			removeFile ('ATLASToT1_affine.txt')
+
+		progress_xml(0.30,"Registering T1 to pseudo T1 image")
+		if not os.path.isfile('PT1ToT1_affine.txt'):
+			execute_command_or_else_stop('seg_maths \
+					ATLAS_MASK_T1.nii.gz \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_T1_dilated.nii.gz')
+
+			execute_command_or_else_stop('seg_maths \
+					ATLAS_MASK_T2.nii.gz \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_T2_dilated.nii.gz')
+
+			execute_command_or_else_stop('reg_aladin \
+				-ref '+T1_INPUT_IMAGE+' \
+				-rmask ATLAS_MASK_T1_dilated.nii.gz \
+				-flo PSEUDO_T1.nii.gz \
+				-fmask ATLAS_MASK_T2_dilated.nii.gz \
+				-aff PT1ToT1_affine.txt \
+				-res PT1ToT1_affine.nii.gz')
+
+			removeFile ('PT1ToT1_affine.nii.gz')
+			removeFile ('ATLAS_MASK_T1_dilated.nii.gz')
+			removeFile ('ATLAS_MASK_T2_dilated.nii.gz')
+
+	progress_xml(0.40,"Getting the mask in NIFTI format")
+	if not LESIONS_T1_SPACE:	
+		if not os.path.isfile('lesions_mask_pd_space.nii'):
+			if get_output_file_extension(ROI_INPUT_LESION)=='.nii' or get_output_file_extension(ROI_INPUT_LESION)=='.nii.gz':
+				copy_file_to_destination(ROI_INPUT_LESION,'lesions_mask_pd_space.nii')
+			else:
+				execute_command_or_else_stop('Masker \
+					--mask-mode '+MASK_MODE+' \
+					'+PD_INPUT_IMAGE+' \
+					'+ROI_INPUT_LESION+' \
+					lesions_mask_pd_space.nii')
+
+		progress_xml(0.60,"Resampling lesions mask at T1 space")
+		if not os.path.isfile('lesions_mask_t1_space.nii.gz'):
+			execute_command_or_else_stop('reg_resample \
+					-ref '+T1_INPUT_IMAGE+' \
+					-flo lesions_mask_pd_space.nii \
+					-aff PT1ToT1_affine.txt \
+					-res lesions_mask_t1_space.nii.gz \
+					'+interpolation+'')
+	
+	else:
+		if get_output_file_extension(ROI_INPUT_LESION)=='.nii' or get_output_file_extension(ROI_INPUT_LESION)=='.nii.gz':
+			copy_file_to_destination(ROI_INPUT_LESION,'lesions_mask_t1_space.nii')
+		else:
+			execute_command_or_else_stop('Masker \
+					--mask-mode '+MASK_MODE+' \
+					'+T1_INPUT_IMAGE+' \
+					'+ROI_INPUT_LESION+' \
+					lesions_mask_t1_space.nii')
+
+	if not os.path.isfile('lesions_mask_t1_space-bin.nii.gz'):
+			execute_command_or_else_stop('seg_maths \
+					lesions_mask_t1_space.nii.gz \
+					-thr 0.5 -bin  \
+					lesions_mask_t1_space-bin.nii.gz ')
+
+	progress_xml(0.80,"Filling the lesions")
+	if not os.path.isfile(OUTPUT_IMAGE):
+		if not old_mode:
+			execute_command_or_else_stop('seg_FillLesions \
+					'+T1_INPUT_IMAGE+' \
+					lesions_mask_t1_space-bin.nii.gz \
+					'+OUTPUT_IMAGE+' '+DILATIONS+' '+VERBOSE)
+		else:
+			execute_command_or_else_stop('niftkFillLesions.sh \
+					-in '+T1_INPUT_IMAGE+' \
+					-orient a \
+					-mask lesions_mask_t1_space-bin.nii.gz \
+					-out '+OUTPUT_IMAGE+' -z -r')
+
+
+# Go back to the corresponding directory
+os.chdir(current_dir)
+
+progress_xml(1,"Done")
+
+# End of the main program
+exit(0)
+

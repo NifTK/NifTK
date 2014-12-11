@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Merge separate point clouds into one</title>
+  <title>Merge Point Clouds</title>
   <description><![CDATA[Merges separate point clouds into one.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -19,13 +19,13 @@
       <label>Directory</label>
     </directory>
  
-    <file fileExtensions="*.mps">
+    <file fileExtensions=".mps">
       <name>output</name>
       <longflag>output</longflag>
       <description>Output file for the merged point cloud.</description>
       <label>Output file for the merged point cloud</label>
-      <channel>output</channel>
       <default>merged.mps</default>
+      <channel>output</channel>
     </file>
   </parameters>
 </executable>

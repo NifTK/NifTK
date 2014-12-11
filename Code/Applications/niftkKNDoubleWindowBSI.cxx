@@ -498,6 +498,34 @@ void saveBSIImage(char* forward, char* backward,  char* resultBSIFilename)
 	writer->Update(); 
 }
 
+/* We calculate the volume for one file */
+double getVolume(char *image) {
+    DoubleReaderType::Pointer reader = DoubleReaderType::New();
+    reader->SetFileName(image);
+    reader->Update();
+
+    itk::ImageRegionIterator<DoubleImageType> volumeIterator(reader->GetOutput(), reader->GetOutput()->GetLargestPossibleRegion());
+    double volume=0.0;
+
+    for(volumeIterator.GoToBegin();!volumeIterator.IsAtEnd();++volumeIterator) {
+        volume+=volumeIterator.Get()>0.5; // Binarized volume
+    }
+
+    DoubleImageType::SpacingType samplingSpacing = reader->GetOutput()->GetSpacing();
+    DoubleImageType::SpacingType::ConstIterator samplingSpacingIterator = samplingSpacing.Begin();
+    double samplingSpacingProduct = 1.0;
+
+    // Calculate the product of the sampling space.
+    for (samplingSpacingIterator = samplingSpacing.Begin();
+         samplingSpacingIterator != samplingSpacing.End();
+         ++samplingSpacingIterator)
+    {
+      samplingSpacingProduct *= *samplingSpacingIterator;
+    }
+
+    return samplingSpacingProduct*volume;
+}
+
 /**
  * Main program.
  */
@@ -514,7 +542,7 @@ int main(int argc, char* argv[])
     std::cerr << "  robust measure of cerebral volume changes from registered repeat MRI," << std::endl; 
     std::cerr << "  IEEE Trans Med Imaging. 1997 Oct;16(5):623-9." << std::endl << std::endl;
     std::cerr << "Added gBSI and pBSI calculation options" << std::endl;
-    std::cerr << "  gBSI is generalized BSI " << std::endl;
+    std::cerr << "  gBSI is generalized BSI of Prados et al. Neurobiology of aging 2014 " << std::endl;
     std::cerr << "  pBSI is probabilistic BSI of Ledig et al. MICCAI 2012"  << std::endl << std::endl;  
     std::cerr << "The double window BSI aims to capture the boundary change between CSF and GM " << std::endl; 
     std::cerr << "as well as the boundary change between GM and WM. This is mainly used to calculate " << std::endl; 
@@ -549,7 +577,8 @@ int main(int argc, char* argv[])
     std::cerr << "         <Upper CSF-GM window value> (-1 for automatic)" << std::endl;
     std::cerr << "         <BSI method. 0 KN-BSI, 1 GBSI, 2 pBSI1, 3 pBSI gamma=0.5. Default is 0, that it computes KN-BSI>" << std::endl;
     std::cerr << "         <output complete BSI image> (dummy to ignore it)" << std::endl;
-    std::cerr << "         <tissue to remove mask file name, is for masking lesions during the normalization step (dummy to ignore it)>" << std::endl;    
+    std::cerr << "         <tissue to remove mask file name, is for masking lesions during the normalization step (dummy to ignore it)>" << std::endl;  
+    std::cerr << "         <t2 image, 1 if you are working with T2 images (by default is 0 that means T1 images)>" << std::endl;    
     std::cerr << "Notice that all the images and masks for intensity normalisation must " << std::endl;
     std::cerr << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
     std::cerr << "images and masks for BSI." << std::endl;
@@ -653,6 +682,13 @@ int main(int argc, char* argv[])
     if (argc > 30 && strlen(argv[30]) > 0 && strcmp(argv[30], "dummy") != 0)
     {
       tissueToRemoveMASKFilename = argv[30];
+    }
+    bool t1_images_mode=true;
+    // Working with T2 images
+    if (argc > 31 && strlen(argv[31]) > 0)
+    {
+        t1_images_mode = atoi(argv[31])==1?false:true;
+        if(!t1_images_mode) std::cout<<"Warning: T2 support not implemented yet!,";
     }
     /*for(int i=0;i<argc;i++) {
 	std::cout<<"["<<i<<"] "<<argv[i]<<std::endl;
@@ -818,7 +854,22 @@ int main(int argc, char* argv[])
                                    userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue,backwardbsi,pBSIComputation); 
     }
     
-    std::cout << "BSI," << forwardBSI << "," << -backwardBSI << "," << (forwardBSI-backwardBSI)/2.0 << std::endl;
+    std::cout << "BSI," << forwardBSI << "," << -backwardBSI << "," << (forwardBSI-backwardBSI)/2.0 << ",";
+
+    double volumeb=getVolume(argv[6]);
+    double volumef=getVolume(argv[8]);
+    double pbvcb=100*1000*forwardBSI/volumeb;
+    double pbvcf=100*1000*backwardBSI/volumef;
+    std::cout << "PBVC(%)," << pbvcb << "," << -pbvcf << "," << (pbvcb-pbvcf)/2.0 << ",";
+    std::cout << "baseline volume(ml)," << volumeb/1000 << ",";
+    std::cout << "repeat volume(ml)," << volumef/1000 << ",";
+    if(pBSIComputation==0) std::cout <<",KNBSI,DW,";
+    if(pBSIComputation==1) std::cout <<",GBSI,DW,";
+    if(pBSIComputation==2) std::cout <<",pBSI1,DW,";
+    if(pBSIComputation==3) std::cout <<",pBSIg,DW,";
+    if(t1_images_mode) std::cout<<"T1 image";
+    else std::cout<<"T2 image";
+    std::cout <<  std::endl;
     
   if(resultBSIFilename!=NULL) {
 		saveBSIImage(forwardbsi,backwardbsi,resultBSIFilename); 

@@ -266,7 +266,7 @@ mitk::Image::Pointer ConvertNiftiImageToMitkPixel( nifti_image *imageNifti )
 
   mitk::CastToMitkImage( imageITK, imageMITK );
 
-  mitk::Geometry3D* geometry = imageMITK->GetGeometry();
+  mitk::BaseGeometry* geometry = imageMITK->GetGeometry();
 
   std::ofstream fout("/scratch0/NOT_BACKED_UP/JamiesAffineRegnHeaderTestData/testConvertNiftiImageToMitkPixel_MITKGeometry.txt");
   geometry->Print( fout );

@@ -16,42 +16,33 @@
 #define mitkUltrasoundPinCalibration_h
 
 #include "niftkOpenCVExports.h"
-#include "mitkUltrasoundCalibration.h"
+#include "mitkInvariantPointCalibration.h"
 #include "itkUltrasoundPinCalibrationCostFunction.h"
 
 namespace mitk {
 
 /**
  * \class UltrasoundPinCalibration
- * \brief Does an ultrasound probe calibration from an ordered list of tracker matrices,
- * and pin locations (x,y pixels) extracted from 2D ultrasound images.
+ * \brief Does an Ultrasound Pin/Cross-Wire calibration.
  */
-class NIFTKOPENCV_EXPORT UltrasoundPinCalibration : public mitk::UltrasoundCalibration
+class NIFTKOPENCV_EXPORT UltrasoundPinCalibration : public mitk::InvariantPointCalibration
 {
 
 public:
 
-  mitkClassMacro(UltrasoundPinCalibration, mitk::UltrasoundCalibration);
+  mitkClassMacro(UltrasoundPinCalibration, mitk::InvariantPointCalibration);
   itkNewMacro(UltrasoundPinCalibration);
 
-  itkSetMacro(OptimiseInvariantPoints, bool);
-  itkGetMacro(OptimiseInvariantPoints, bool);
+  void SetImageScaleFactors(const mitk::Point2D& point);
+  mitk::Point2D GetImageScaleFactors() const;
 
-  void SetNumberOfInvariantPoints(const unsigned int& numberOfPoints);
-
-  void InitialiseInvariantPoint(const std::vector<float>& commandLineArgs);
-
-  void InitialiseInvariantPoint(const int& pointNumber, const std::vector<float>& commandLineArgs);
+  void SetOptimiseImageScaleFactors(const bool&);
+  bool GetOptimiseImageScaleFactors() const;
 
   /**
-   * \brief Performs pin-head (invariant-point) calibration.
-   * \see mitk::UltrasoundCalibration::Calibrate()
+   * \see mitk::InvariantPointCalibration::Calibrate().
    */
-  virtual double Calibrate(
-      const std::vector< cv::Mat >& matrices,
-      const std::vector< std::pair<int, cv::Point2d> >& points,
-      cv::Matx44d& outputMatrix
-      );
+  virtual double Calibrate();
 
 protected:
 
@@ -63,8 +54,7 @@ protected:
 
 private:
 
-  bool                                                       m_OptimiseInvariantPoints;
-  mutable itk::UltrasoundPinCalibrationCostFunction::Pointer m_CostFunction;
+  itk::UltrasoundPinCalibrationCostFunction* m_DownCastCostFunction;
 
 }; // end class
 

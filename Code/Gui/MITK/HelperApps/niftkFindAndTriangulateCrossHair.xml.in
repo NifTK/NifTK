@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Get Matched Tracking Matrix</title>
+  <title>Find And Triangulate Cross Hair</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -32,7 +32,7 @@
       <longflag>outputLens</longflag>
       <description>Output lens points</description>
       <label>Output lens points</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </file>
     
     <file>
@@ -49,6 +49,14 @@
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
+   
+    <boolean>
+      <name>ignoreVideoReadFail</name>
+      <longflag>ignoreVideoReadFail</longflag>
+      <description>If set will attempt to continue in spite of errors reading the video file</description>
+      <label>If set will attempt to continue in spite of errors reading the video file</label>
+      <default>0</default>
+    </boolean>
     
     <boolean>
       <name>FlipTracking</name>
@@ -81,6 +89,14 @@
 	<default>0</default>
     </integer>
 
+    <integer>
+	<name>framesToUse</name>
+	<longflag>framesToUse</longflag>
+	<description>If zero or greater, stop processing after n frames</description>
+	<label>If zero or greater, stop processing after n frames</label>
+	<default>-1</default>
+    </integer>
+ 
 
   
   </parameters>

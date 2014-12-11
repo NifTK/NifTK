@@ -12,14 +12,14 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Output parameters]]></description>
-    <file fileExtensions="*.vtk">
+    <file fileExtensions=".vtk">
       <name>outputPoints</name>
       <longflag>outputPoints</longflag>
       <description>Output VTK file (vtkPolyData).</description>
       <label>Output point data</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions="*.png">
+    <file fileExtensions=".png">
       <name>outputImage</name>
       <longflag>outputImage</longflag>
       <description>Output image file (PNG image).</description>

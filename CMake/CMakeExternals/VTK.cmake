@@ -26,6 +26,8 @@ set(proj VTK)
 set(proj_DEPENDENCIES )
 set(VTK_DEPENDS ${proj})
 
+set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
+
 if(NOT DEFINED VTK_DIR)
 
   if(WIN32)
@@ -43,16 +45,32 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(MINGW)
 
-  if(DESIRED_QT_VERSION MATCHES 4) # current VTK package has a HARD Qt 4 dependency
+  if(WIN32)
+    # see http://bugs.mitk.org/show_bug.cgi?id=17858
     list(APPEND additional_cmake_args
-        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-        -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-        -DVTK_USE_QT:BOOL=ON
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DVTK_Group_Qt:BOOL=ON
-    )
+         -DVTK_DO_NOT_DEFINE_OSTREAM_SLL:BOOL=ON
+         -DVTK_DO_NOT_DEFINE_OSTREAM_ULL:BOOL=ON
+        )
   endif()
+
+  # Optionally enable memory leak checks for any objects derived from vtkObject. This
+  # will force unit tests to fail if they have any of these memory leaks.
+  option(MITK_VTK_DEBUG_LEAKS OFF)
+  mark_as_advanced(MITK_VTK_DEBUG_LEAKS)
+  list(APPEND additional_cmake_args
+       -DVTK_DEBUG_LEAKS:BOOL=${MITK_VTK_DEBUG_LEAKS}
+      )
+
+
+  list(APPEND additional_cmake_args
+      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
+      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+      -DModule_vtkGUISupportQt:BOOL=ON
+      -DModule_vtkGUISupportQtWebkit:BOOL=ON
+      -DModule_vtkGUISupportQtSQL:BOOL=ON
+      -DModule_vtkRenderingQt:BOOL=ON
+      -DVTK_Group_Qt:BOOL=ON
+  )
 
   if(APPLE)
     set(additional_cmake_args
@@ -70,6 +88,7 @@ if(NOT DEFINED VTK_DIR)
     INSTALL_DIR ${proj}-install
     URL ${NIFTK_LOCATION_VTK}
     URL_MD5 ${NIFTK_CHECKSUM_VTK}
+    PATCH_COMMAND ${VTK_PATCH_COMMAND}
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
@@ -83,10 +102,6 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_USE_GUISUPPORT:BOOL=ON
         -DVTK_LEGACY_REMOVE:BOOL=ON
         -DModule_vtkTestingRendering:BOOL=ON
-        -DModule_vtkGUISupportQt:BOOL=ON
-        -DModule_vtkGUISupportQtWebkit:BOOL=ON
-        -DModule_vtkGUISupportQtSQL:BOOL=ON
-        -DModule_vtkRenderingQt:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         ${additional_cmake_args}
         ${VTK_QT_ARGS}

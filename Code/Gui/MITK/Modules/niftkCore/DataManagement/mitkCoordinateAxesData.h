@@ -28,7 +28,7 @@ namespace mitk {
  * \brief Class to enable the data to represent coordinate axes to be
  * added as a mitk::BaseData to the mitk::DataStorage. This class
  * turns out to be very simple, as the BaseData contains the
- * mitk::Geometry3D, which contains all the information we need. So
+ * mitk::BaseGeometry, which contains all the information we need. So
  * this class is effectively a dummy class.
  */
 class NIFTKCORE_EXPORT CoordinateAxesData : public BaseData {

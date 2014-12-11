@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "../NifTKApplication.h"
+
 /**
  * \file NiftyIGI.cxx
  * \brief Main entry point for NiftyIGI application.

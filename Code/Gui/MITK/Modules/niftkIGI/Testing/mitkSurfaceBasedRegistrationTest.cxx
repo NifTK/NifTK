@@ -43,8 +43,8 @@ protected:
 
 bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
 {
-  mitk::Geometry3D::Pointer geometry = node->GetData()->GetGeometry();
-  if (geometry.IsNotNull())
+  mitk::BaseGeometry* geometry = node->GetData()->GetGeometry();
+  if (geometry)
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(matrix);
     geometry->Modified();
@@ -92,6 +92,8 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   } 
   
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
+  registerer->SetMaximumNumberOfLandmarkPointsToUse(2000);
+  registerer->SetMaximumIterations(100);
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points

@@ -24,7 +24,7 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <mitkCameraIntrinsicsProperty.h>
-
+#include <mitkImage.h>
 
 
 // forward-decl

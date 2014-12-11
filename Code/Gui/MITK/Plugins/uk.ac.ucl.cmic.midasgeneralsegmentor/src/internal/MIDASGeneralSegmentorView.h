@@ -232,7 +232,7 @@ protected slots:
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
-  /// currently at:  https://cmicdev.cs.ucl.ac.uk/trac/ticket/1096
+  /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
   void OnCleanButtonClicked();
 
   /// \brief Qt slot called when the Propagate Up button is pressed to take the

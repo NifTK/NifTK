@@ -23,6 +23,14 @@
 namespace itk
 {
 
+template< class TInputImage >
+const char* MammogramLeftOrRightSideCalculator< TInputImage >::BreastSideDescription[3] = { 
+  "UNKNOWN_BREAST_SIDE",
+  "LEFT_BREAST_SIDE",
+  "RIGHT_BREAST_SIDE"
+};
+
+
 // ---------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------

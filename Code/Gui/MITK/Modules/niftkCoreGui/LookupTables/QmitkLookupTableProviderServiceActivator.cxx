@@ -29,4 +29,4 @@ void QmitkLookupTableProviderServiceActivator::Unload(us::ModuleContext *)
 {
 }
 
-US_EXPORT_MODULE_ACTIVATOR(niftkCoreGui, QmitkLookupTableProviderServiceActivator )
+US_EXPORT_MODULE_ACTIVATOR(QmitkLookupTableProviderServiceActivator)

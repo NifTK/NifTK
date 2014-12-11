@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make Chessboard PointSet from 3 corners</title>
+  <description><![CDATA[Generates an MITK Chessboard (Grid) PointSet from 3 corners.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image fileExtensions=".mps">
+      <name>outputPointSet</name>
+      <longflag>outputPointSet</longflag>
+      <description>Output PointSet</description>
+      <label>Output PointSet</label>
+      <channel>output</channel>
+    </image>
+  </parameters>
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Mandatory Parameters]]></description>  
+    <float-vector>
+      <name>origin</name>
+      <longflag>origin</longflag>
+      <description>Origin, normally top-left corner.</description>
+      <label>Origin</label>
+      <default>0,0,0</default>
+    </float-vector>
+    <float-vector>
+      <name>right</name>
+      <longflag>right</longflag>
+      <description>Right, normally top-right corner, corresponding to X-axis.</description>
+      <label>Right</label>
+      <default>1,0,0</default>
+    </float-vector>
+    <float-vector>
+      <name>down</name>
+      <longflag>down</longflag>
+      <description>Down, normally bottom-left corner, corresponding to Y-axis.</description>
+      <label>Down</label>
+      <default>0,1,0</default>
+    </float-vector>
+    <integer-vector>
+      <name>internalCorners</name>
+      <longflag>internalCorners</longflag>
+      <description>Number of corners in X,Y axis.</description>
+      <label>Corners</label>
+      <default>14,10</default>
+    </integer-vector>
+    <float>
+      <name>squareSize</name>
+      <longflag>squareSize</longflag>
+      <description>Square size (mm)</description>
+      <label>Square size (mm)</label>
+      <default>3</default>
+      <constraints>
+        <minimum>0.01</minimum>
+        <maximum>100</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>
+  </parameters>
+</executable>

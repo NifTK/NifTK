@@ -23,6 +23,8 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
+#include <mitkProportionalTimeGeometry.h>
+#include <mitkSlicedGeometry3D.h>
 #include <mitkVtkLayerController.h>
 
 #include "vtkSideAnnotation_p.h"
@@ -1302,7 +1304,8 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
           slicedGeometry->SetImageGeometry(false);
           slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped);
 
-          slicedGeometry->SetTimeBounds(timeGeometry->GetGeometryForTimeStep(timeStep)->GetTimeBounds());
+          /// TODO The function has been removed in MITK 2014.09.
+//          slicedGeometry->SetTimeBounds(timeGeometry->GetGeometryForTimeStep(timeStep)->GetTimeBounds());
           createdTimeGeometry->SetTimeStepGeometry(slicedGeometry, timeStep);
         }
         createdTimeGeometry->Update();
@@ -1755,7 +1758,7 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
 
-  const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
+  const mitk::PlaneGeometry* worldGeometry = displayGeometry->GetWorldGeometry();
   if (worldGeometry != m_WorldGeometries[windowIndex])
   {
     m_WorldGeometries[windowIndex] = worldGeometry;

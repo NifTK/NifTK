@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Hand-eye Calibration Using Registration</title>
+  <description><![CDATA[Determines the hand eye calibration for a tracked object, using the tracking and extrinsic matrices]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <file fileExtensions=".mps">
+      <name>modelInputFile</name>
+      <longflag>modelInputFile</longflag>
+      <description>The model of the calibration object (e.g. chessboard).</description>
+      <label>Model</label>
+      <channel>input</channel>
+    </file>
+    <directory>
+      <name>modelTrackingDirectory</name>
+      <longflag>modelTrackingDirectory</longflag>
+      <description>If specified tracking matrices for each model (eg. chessboard) pose.</description>
+      <label>Model tracking matrices</label>
+      <channel>input</channel>
+    </directory>
+    <directory>
+      <name>handTrackingDirectory</name>
+      <longflag>handTrackingDirectory</longflag>
+      <description>Tracking matrices for each hand (eg. laparoscope) pose. </description>
+      <label>Hand tracking matrices</label>
+      <channel>input</channel>
+    </directory>
+    <directory>
+      <name>cameraPointsDirectory</name>
+      <longflag>cameraPointsDirectory</longflag>
+      <description>The directory containing sets of reconstructed model points as viewed by the camera.</description>
+      <label>Camera points</label>
+    </directory>    
+    <file fileExtensions=".txt">
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>Output hand-eye calibration as 4x4 matrix, as .txt file.</description>
+      <label>Output calibration data filename</label>
+      <default>calib.txt</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <float>
+        <name>distanceThreshold</name>
+        <longflag>distanceThreshold</longflag>
+        <description>The maximum distance from the camera (in millimetres) to use.</description>
+        <label>Distance threshold</label>
+        <default>75</default>
+    </float>
+
+    <float>
+        <name>errorThreshold</name>
+        <longflag>errorThreshold</longflag>
+        <description>The maximum fiducial registration error (in millimetres) to use.</description>
+        <label>FRE threshold</label>
+        <default>3</default>
+    </float>
+
+  </parameters>
+</executable>

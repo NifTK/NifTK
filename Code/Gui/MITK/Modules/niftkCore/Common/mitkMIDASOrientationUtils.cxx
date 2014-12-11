@@ -64,7 +64,7 @@ MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation)
 
 
 //-----------------------------------------------------------------------------
-int GetUpDirection(const mitk::Geometry3D* geometry, itk::Orientation orientation)
+int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientation)
 {
 
   int result = 0;
@@ -220,7 +220,7 @@ void GetExtentsInVxInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Ve
   int axesInWorldCoordinateOrder[3];
   mitk::GetAxesInWorldCoordinateOrder(mitkImage, axesInWorldCoordinateOrder);
 
-  mitk::Geometry3D* geometry = mitkImage->GetGeometry();
+  mitk::BaseGeometry* geometry = mitkImage->GetGeometry();
   extentsInVxInWorldCoordinateOrder[0] = geometry->GetExtent(axesInWorldCoordinateOrder[0]);
   extentsInVxInWorldCoordinateOrder[1] = geometry->GetExtent(axesInWorldCoordinateOrder[1]);
   extentsInVxInWorldCoordinateOrder[2] = geometry->GetExtent(axesInWorldCoordinateOrder[2]);
@@ -233,7 +233,7 @@ void GetExtentsInMmInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Ve
   int axesInWorldCoordinateOrder[3];
   mitk::GetAxesInWorldCoordinateOrder(mitkImage, axesInWorldCoordinateOrder);
 
-  mitk::Geometry3D* geometry = mitkImage->GetGeometry();
+  mitk::BaseGeometry* geometry = mitkImage->GetGeometry();
   extentsInMmInWorldCoordinateOrder[0] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[0]);
   extentsInMmInWorldCoordinateOrder[1] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[1]);
   extentsInMmInWorldCoordinateOrder[2] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[2]);

@@ -34,7 +34,7 @@ int niftkVTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
     return EXIT_FAILURE;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> m1 = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> m1 = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkSmartPointer<vtkMatrix4x4> m2 = NULL;
   vtkSmartPointer<vtkMatrix4x4> m3 = NULL;
 

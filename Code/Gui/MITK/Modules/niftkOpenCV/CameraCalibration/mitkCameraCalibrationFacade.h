@@ -16,6 +16,9 @@
 #define mitkCameraCalibrationFacade_h
 
 #include "niftkOpenCVExports.h"
+#include <mitkOpenCVPointTypes.h>
+#include <mitkPoint.h>
+
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
@@ -536,6 +539,8 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObse
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
  * greater than the tolerance, the point is rejected.
+ * \param preserveVectorSize if true will fill any output points outside tolerance with NaN, to
+ * preserve correspondance between input and output vectors
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
@@ -543,7 +548,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
   const cv::Mat& rightCameraIntrinsicParams,
   const cv::Mat& rightToLeftRotationMatrix,
   const cv::Mat& rightToLeftTranslationVector,
-  const double& tolerance
+  const double& tolerance,
+  const bool& preserveVectorSize = false
   );
 
 
@@ -576,6 +582,23 @@ extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& rightCameraTranslationVector,
   CvMat& output3DPoints
   );
+
+/**
+ * \brief Wrapper to triangulate vector of mitk::ProjectedPointPair to vector of mitk::WorldPoint
+ */
+
+extern "C++" NIFTKOPENCV_EXPORT std::vector < mitk::WorldPoint > Triangulate (
+    const std::vector < mitk::ProjectedPointPair >& onScreenPoints,
+    const cv::Mat& leftIntrinsicMatrix,
+    const cv::Mat& leftDistortionVector,
+    const cv::Mat& rightIntrinsicMatrix,
+    const cv::Mat& rightDistorionVector,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const bool& cropPointsToScreen = false,
+    const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+    const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
+    );
 
 /** 
  * \brief Reprojects undistorted  screen points to normalised points (x/z, y/z, 1.0) in lens coordinates.

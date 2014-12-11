@@ -121,9 +121,9 @@ private:
   mitk::Point2D              m_CurrentlyPickedDisplayPoint;
   double                     m_CurrentlyPickedPointWorld[4];
 
-  mitk::Geometry3D::Pointer  m_Geometry;
+  mitk::BaseGeometry::Pointer  m_Geometry;
 
-  mitk::Geometry3D::Pointer  m_OriginalGeometry;
+  mitk::BaseGeometry::Pointer  m_OriginalGeometry;
 
   mitk::Vector3D             m_ObjectNormal;
   

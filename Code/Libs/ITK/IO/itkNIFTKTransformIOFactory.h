@@ -47,13 +47,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(NIFTKTransformIOFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-    {
-    NIFTKTransformIOFactory::Pointer metaFactory = NIFTKTransformIOFactory::New();
-    ObjectFactoryBase::RegisterFactory(metaFactory);
-    }
-
 protected:
   NIFTKTransformIOFactory();
   ~NIFTKTransformIOFactory();

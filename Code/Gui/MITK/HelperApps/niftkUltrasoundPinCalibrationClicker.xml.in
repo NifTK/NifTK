@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Ultrasound Point Clicker</title>
+  <description><![CDATA[Enables the user to scroll through images, and click on a single point per image.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>inputImageDirectory</name>
+      <longflag>inputImageDirectory</longflag>
+      <description>Directory containing ultrasound images.</description>
+      <label>Input Image Directory</label>
+    </directory>
+    <directory>
+      <name>outputPointDirectory</name>
+      <longflag>outputPointDirectory</longflag>
+      <description>Directory to write selected 2D pin locations.</description>
+      <label>Output Points Directory</label>
+    </directory>
+  </parameters>
+
+</executable>

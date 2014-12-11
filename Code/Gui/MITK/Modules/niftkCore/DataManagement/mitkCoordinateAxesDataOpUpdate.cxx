@@ -27,7 +27,7 @@ CoordinateAxesDataOpUpdate::CoordinateAxesDataOpUpdate(
 , m_Matrix(NULL)
 , m_NodeName(nodeName)
 {
-  m_Matrix = vtkMatrix4x4::New();
+  m_Matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_Matrix->DeepCopy(&matrix);
 }
 
@@ -36,5 +36,15 @@ CoordinateAxesDataOpUpdate::CoordinateAxesDataOpUpdate(
 CoordinateAxesDataOpUpdate::~CoordinateAxesDataOpUpdate()
 {
 }
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> CoordinateAxesDataOpUpdate::GetMatrix() const
+{
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+  result->DeepCopy(this->m_Matrix);
+  return result;
+}
+
 
 } // end namespace

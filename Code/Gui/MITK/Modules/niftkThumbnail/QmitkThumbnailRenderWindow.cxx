@@ -536,7 +536,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   }
 
   // Store pointers to the display and world geometry, and render window
-  m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(rendererToTrack->GetWorldGeometry());
+  m_TrackedWorldGeometry = const_cast<mitk::BaseGeometry*>(rendererToTrack->GetWorldGeometry());
   m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(rendererToTrack->GetDisplayGeometry());
 
   if (m_TrackedWorldGeometry.IsNull()

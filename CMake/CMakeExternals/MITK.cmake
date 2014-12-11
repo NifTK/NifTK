@@ -42,6 +42,13 @@ if(WIN32)
   set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-DNOMINMAX")
 endif(WIN32)
 
+# there are additional warnings in boost headers in Release mode with special gcc versions
+if(CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_BUILD_TYPE STREQUAL "Release" AND (${GCC_VERSION} VERSION_EQUAL "4.4" OR ${GCC_VERSION} VERSION_GREATER "4.4") AND ${GCC_VERSION} VERSION_LESS "4.5")
+    set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-Wno-error=uninitialized")
+  endif()
+endif()
+
 if(NOT DEFINED MITK_DIR)
 
     ######################################################################
@@ -96,7 +103,7 @@ if(NOT DEFINED MITK_DIR)
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_ARGS}
-        -DDESIRED_QT_VERSION:STRING=4
+        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DMITK_BUILD_TUTORIAL:BOOL=OFF
         -DMITK_BUILD_ALL_PLUGINS:BOOL=OFF
@@ -121,6 +128,7 @@ if(NOT DEFINED MITK_DIR)
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )

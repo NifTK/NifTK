@@ -94,7 +94,7 @@ namespace mitk
   /**
    * \brief Composes (pre-multiplies) the given transform with the given node.
    * \param[In] transform a VTK transformation
-   * \param[Out] node a non-NULL data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \param[Out] node a non-NULL data node, and as each node has a mitk::BaseGeometry in the mitk::BaseData, we can transform anything.
    * \throws mitk::Exception if node points to null object
    */
   NIFTKCORE_EXPORT void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node);
@@ -103,7 +103,7 @@ namespace mitk
   /**
    * \brief Applies (sets, i.e. copies) the given transform to the given node.
    * \param[In] transform a VTK transformation
-   * \param[Out] node a non-NULL data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \param[Out] node a non-NULL data node, and as each node has a mitk::BaseGeometry in the mitk::BaseData, we can transform anything.
    * \throws mitk::Exception if node points to null object
    */
   NIFTKCORE_EXPORT void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node);

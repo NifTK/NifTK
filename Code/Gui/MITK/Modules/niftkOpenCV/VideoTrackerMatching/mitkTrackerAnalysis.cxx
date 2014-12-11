@@ -49,7 +49,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   std::vector < std::ofstream* > fout;
   if ( fileout.length() != 0 ) 
   {
-    for ( unsigned int i = 0 ; i <  m_TrackingMatrixTimeStamps.size() ; i ++ ) 
+    for ( unsigned int i = 0 ; i <  m_TimeStampsContainer.size() ; i ++ )
     {
       std::string thisfileout = fileout + boost::lexical_cast<std::string>(i) + ".txt";
       std::ofstream* thisfout = new std::ofstream();
@@ -62,23 +62,23 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     }
   }
 
-  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError >  pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > onScreenPoints;
+  std::vector < mitk::ProjectedPointPairsWithTimingError> onScreenPoints;
   onScreenPoints.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size() != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size()  << " != " << m_FrameNumbers.size() ;
     return;
   }
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
   projector->Initialise(m_Directory,m_CalibrationDirectory);
 
-  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TrackingMatrixTimeStamps.size());
-  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TrackingMatrixTimeStamps.size());
+  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TimeStampsContainer.size());
+  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TimeStampsContainer.size());
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
     if ( videoLag < 0 ) 
@@ -90,29 +90,30 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
     }
    
-    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
     {
       std::vector <cv::Point3d> worldPoints;
       worldPoints.clear();
       for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
       {
-        int framenumber = frame * 2;
+        int framenumber = frame;
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
-            pointsInLensCS[frame][0]);
+            pointsInLensCS[frame].m_Points[0].m_Point);
       }
       
       cv::Point3d pointSpread;
       cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
 
       reconstructedPointSD[trackerIndex].push_back(pointSpread);
-      std::vector <cv::Point3d > worldPoint(1);
-      worldPoint[0] = worldCentre;
-      projector->SetWorldPoints(worldPoint);
+      std::vector <mitk::WorldPoint > worldPoint(1);
+      worldPoint[0] = mitk::WorldPoint (worldCentre);
+      projector->ClearWorldPoints();
+      projector->AppendWorldPoints(worldPoint);
       projector->SetTrackerIndex(trackerIndex);
       projector->Project(this);
-      std::vector < std::pair < long long ,std::vector < std::pair < cv::Point2d, cv::Point2d > > > > projectedPoints = 
+      std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
         projector->GetProjectedPoints();
-      
+
       std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
       projectedErrorRMS[trackerIndex].push_back(projectedRMS);
       
@@ -121,7 +122,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 
   if ( fileout.length() != 0 ) 
   {
-    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
     {
       *fout[trackerIndex] << "#lag SDx SDy SDz RMSLeft RMSRight" << std::endl;
       for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
@@ -138,7 +139,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 
   }
 
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
   {
     std::pair < unsigned int , unsigned int > minIndexes;
     std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
@@ -169,26 +170,26 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
     }
   }
 
-  std::vector < std::vector <cv::Point3d> > pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError > pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > >* onScreenPoints = new std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > >;
+  std::vector < mitk::ProjectedPointPairsWithTimingError >* onScreenPoints;
   onScreenPoints->clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1, onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size() != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size()  << " != " << m_FrameNumbers.size() ;
     return;
   }
 
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
   {
     std::vector<cv::Mat> cameraMatrices;
     cameraMatrices.clear();
     for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
     {
-      int framenumber = frame * 2;
-      if ( ! ( boost::math::isnan(pointsInLensCS[frame][0].x) || boost::math::isnan(pointsInLensCS[frame][0].y) || boost::math::isnan(pointsInLensCS[frame][0].z) ) )
+      int framenumber = frame ;
+      if ( ! ( pointsInLensCS[frame].m_Points[0].IsNaN() ))
       {
         cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
       }
@@ -248,7 +249,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
   std::vector < std::ofstream* > fout;
   if ( fileout.length() != 0 ) 
   {
-    for ( unsigned int i = 0 ; i <  m_TrackingMatrixTimeStamps.size() ; i ++ ) 
+    for ( unsigned int i = 0 ; i <  m_TimeStampsContainer.size() ; i ++ )
     {
       std::string thisfileout = fileout + boost::lexical_cast<std::string>(i) + ".txt";
       std::ofstream* thisfout = new std::ofstream();
@@ -261,23 +262,23 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
     }
   }
 
-  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
+  std::vector < mitk::WorldPointsWithTimingError >  pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > onScreenPoints;
+  std::vector < mitk::ProjectedPointPairsWithTimingError > onScreenPoints;
   onScreenPoints.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size()  != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Handeye sensitivity file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Handeye sensitivity file has wrong number of frames, " << pointsInLensCS.size() << " != " << m_FrameNumbers.size() ;
     return;
   }
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
   projector->Initialise(m_Directory,m_CalibrationDirectory);
 
-  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TrackingMatrixTimeStamps.size());
-  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TrackingMatrixTimeStamps.size());
+  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TimeStampsContainer.size());
+  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TimeStampsContainer.size());
   std::vector < std::vector <double> > stateVector;
   for ( double tx = windowLow; tx <= windowHigh ; tx += stepSize )
   {
@@ -302,29 +303,30 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
               state.push_back(rz);
 
               stateVector.push_back( state );
-              for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+              for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
               {
                 std::vector <cv::Point3d> worldPoints;
                 worldPoints.clear();
                 for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
                 {
-                  int framenumber = frame * 2;
+                  int framenumber = frame ;
                   worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
-                      pointsInLensCS[frame][0]);
+                      pointsInLensCS[frame].m_Points[0].m_Point);
                 }
                 
                 cv::Point3d pointSpread;
                 cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
                 reconstructedPointSD[trackerIndex].push_back(pointSpread);
-                std::vector <cv::Point3d > worldPoint(1);
-                worldPoint[0] = worldCentre;
-                projector->SetWorldPoints(worldPoint);
+                std::vector < mitk::WorldPoint > worldPoint(1);
+                worldPoint[0] = mitk::WorldPoint(worldCentre);
+                projector->ClearWorldPoints();
+                projector->AppendWorldPoints(worldPoint);
                 projector->SetTrackerIndex(trackerIndex);
                 projector->Project(this, &state);
-                std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > > projectedPoints = 
-                projector->GetProjectedPoints();
+                std::vector < mitk::ProjectedPointPairsWithTimingError > projectedPoints = 
+                  projector->GetProjectedPoints();
                 
-                std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
+                std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints, onScreenPoints );
                 projectedErrorRMS[trackerIndex].push_back(projectedRMS);
                 
               }
@@ -337,7 +339,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
 
   if ( fileout.length() != 0 ) 
   {
-    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
     {
       *fout[trackerIndex] << "#lag SDx SDy SDz RMSLeft RMSRight" << std::endl;
       for ( unsigned int i = 0 ; i  < stateVector.size() ; i ++ )
@@ -358,7 +360,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
     }
   }
 
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
   {
     std::pair < unsigned int , unsigned int > minIndexes;
     std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );

@@ -25,7 +25,7 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
-#include <mitkTrackedPointerManager.h>
+#include <mitkTrackedPointer.h>
 
 const std::string TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
 const std::string TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
@@ -127,7 +127,7 @@ void TrackedPointerViewPreferencePage::PerformCancel()
 void TrackedPointerViewPreferencePage::Update()
 {
   m_CalibrationFileName->setCurrentPath(QString(m_TrackedPointerViewPreferencesNode->Get(CALIBRATION_FILE_NAME, "").c_str()));
-  bool updateViewCoordinate = m_TrackedPointerViewPreferencesNode->GetBool(UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT);
+  bool updateViewCoordinate = m_TrackedPointerViewPreferencesNode->GetBool(UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);
   m_UpdateViewCoordinate->setChecked(updateViewCoordinate);
   m_NumberOfSamplesToAverage->setValue(m_TrackedPointerViewPreferencesNode->GetInt(NUMBER_OF_SAMPLES_TO_AVERAGE, 1));
 }

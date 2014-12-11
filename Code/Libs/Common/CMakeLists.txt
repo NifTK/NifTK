@@ -23,13 +23,14 @@ niftkFileHelper.cxx
 niftkConversionUtils.cxx
 niftkEnvironmentHelper.cxx
 niftkCommandLineParser.cxx
+niftkCSVRow.cxx
 )
 
 add_library(niftkcommon ${niftkcommon_SRCS})
 
 if(BUILD_SHARED_LIBS)
   if(WIN32)
-    add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
+    add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT=1)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 

@@ -19,7 +19,7 @@
       <description>Directory containing tracking matrices.</description>
       <label>Input Directory</label>
     </directory>
-    <file fileExtensions="*.4x4,*.mat,*.txt">
+    <file fileExtensions=".4x4,.mat,.txt">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
       <description>Output tracking matrix.</description>

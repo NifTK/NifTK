@@ -18,7 +18,7 @@
       <description>Directory containing 4x4 tracking matrices in plain text files.</description>
       <label>Matrix Directory</label>
     </directory>
-    <file fileExtensions="*.txt,*.4x4">
+    <file fileExtensions=".txt,.4x4">
       <name>outputMatrixFile</name>
       <longflag>outputMatrixFile</longflag>
       <description>Output matrix filename.</description>

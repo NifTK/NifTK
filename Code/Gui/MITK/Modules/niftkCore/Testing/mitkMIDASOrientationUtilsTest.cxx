@@ -45,9 +45,6 @@ public:
   //-----------------------------------------------------------------------------
   void Setup(char* argv[])
   {
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
-
     m_DataStorage = mitk::StandaloneDataStorage::New();
     std::string fileName = argv[1];
     std::vector<std::string> files;

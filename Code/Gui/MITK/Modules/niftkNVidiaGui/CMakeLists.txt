@@ -22,6 +22,7 @@ MITK_CREATE_MODULE(niftkNVidiaGui
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
 include_directories(${QT_QTOPENGL_INCLUDE_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
@@ -35,15 +36,15 @@ target_link_libraries(niftkNVidiaGui
   )
 
 
-if(MSVC)
+if(MSVC AND NIFTK_DELAYLOAD_CUDA)
   # all of the nvidia-driver/cuda dependencies should be delay-loaded
   #  so this library would at least load on a machine that doesnt have nv hardware
   set_target_properties(niftkNVidiaGui PROPERTIES LINK_FLAGS 
     "/DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
-endif(MSVC)
+endif()
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkNVidiaGui)
+  # cotire(niftkNVidiaGui)
 endif()
 
 if(BUILD_TESTING)

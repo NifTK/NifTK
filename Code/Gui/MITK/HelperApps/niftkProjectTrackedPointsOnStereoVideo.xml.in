@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Get Matched Tracking Matrix</title>
+  <title>Project Tracked Points on Stereo Video</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -27,7 +27,7 @@
       <label>calibration Input directory.</label>
     </directory>    
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input3D</name>
       <longflag>input3D</longflag>
       <description>Input 3D points</description>
@@ -35,7 +35,7 @@
       <channel>input</channel>
     </file>
     
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input3DWithScalars</name>
       <longflag>input3DWithScalars</longflag>
       <description>Input 3D points and their scalar values</description>
@@ -43,7 +43,7 @@
       <channel>input</channel>
     </file>
     
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>input2D</name>
       <longflag>input2D</longflag>
       <description>Input 2D points</description>
@@ -67,7 +67,7 @@
       <channel>input</channel>
     </file>
 
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>classifier3D</name>
       <longflag>classifier3D</longflag>
       <description>3D points used for classifing GS points during error calculation</description>
@@ -80,7 +80,7 @@
       <longflag>output3D</longflag>
       <description>Output 3D points</description>
       <label>Output 3D points</label>
-      <channel>ouput</channel>
+      <channel>output</channel>
     </file>
     
     <file>
@@ -111,6 +111,14 @@
       <longflag>outputErrors</longflag>
       <description>Write out the projection / reprojection errors</description>
       <label>Write out the projection / reprojection errors</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputTriangulatedPoints</name>
+      <longflag>outputTriangulatedPoints</longflag>
+      <description>Output Trianguled 3D points</description>
+      <label>Output Triangulated 3D points</label>
       <channel>output</channel>
     </file>
  

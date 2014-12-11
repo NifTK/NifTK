@@ -21,6 +21,7 @@
 #include <mitkRenderWindowFrame.h>
 #include <mitkGradientBackground.h>
 #include <mitkDataStorage.h>
+#include <mitkImage.h>
 #include <QWidget>
 #include <QFrame>
 #include <QResizeEvent>

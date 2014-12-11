@@ -1,0 +1,8 @@
+project(uk_ac_ucl_cmic_igipointsetcropper)
+
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE NIFTK_IMAGECROPPER
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS MitkQtWidgetsExt
+)
+

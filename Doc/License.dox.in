@@ -29,7 +29,7 @@
 
 \section LicenseNiftyLink The NiftyLink License
 
-\include LICENSE_NiftyLink.txt
+\include ExternalLicenses/NiftyLink.txt
 
 \section LicenseNiftyReg The NiftyReg License
 
@@ -101,10 +101,10 @@
 
 \section LicenseOpenIGTLink The OpenIGTLink License
 
-\include LICENSE_OpenIGTLink.txt
+\include ExternalLicenses/OpenIGTLink.txt
 
 \section LicenseQsLog The QsLog License
 
-\include LICENSE_QsLog.txt
+\include ExternalLicenses/QsLog.txt
 
 */

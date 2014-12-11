@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Handeye Calibration</title>
+  <title>Hand-eye Calibration</title>
   <description><![CDATA[Determines the hand eye calibration for a tracked object, using the tracking and extrinsic matrices]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -31,7 +31,7 @@
       <description>The directory containing the corresponding tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
     </directory>    
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>outputCalibrationData</name>
       <longflag>output</longflag>
       <description>Output file for calibration data</description>
@@ -83,7 +83,30 @@
       <label>Sort the tracking matrices by angular distance</label>
       <default>0</default>
     </boolean>
+
+    <integer>
+      <name>NumberCornerWidth</name>
+      <longflag>NumberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis</description>
+      <label>The number of internal chessboard corners along the width axis</label>
+      <default>14</default>
+    </integer>
+
+    <integer>
+      <name>NumberCornerHeight</name>
+      <longflag>NumberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis</description>
+      <label>The number of internal chessboard corners along the height axis</label>
+      <default>10</default>
+    </integer>
     
+    <float>
+      <name>squareSizeInmm</name>
+      <longflag>squareSizeInmm</longflag>
+      <description>The size in mm of each grid sqaure</description>
+      <label>The size in mm of each grid square</label>
+      <default>3.0</default>
+    </float>
   </parameters>
   
 </executable>

@@ -16,6 +16,7 @@
 #define niftkCGALMesherBackEnd_h
 
 #include <niftkIOException.h>
+#include <niftkCommonWin32ExportHeader.h>
 
 #include <stdexcept>
 #include <string>
@@ -24,7 +25,7 @@ namespace niftk {
   /**
    * Attention: This module HAS TO be kept in separate directory, as CGAL and ITK cannot be compiled together.
    */
-  class CGALMesherBackEnd {
+  class NIFTKCOMMON_WINEXPORT CGALMesherBackEnd {
     /**
      * \name Quality Criteria
      * @{

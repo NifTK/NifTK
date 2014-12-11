@@ -19,7 +19,7 @@
 
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkGeometry3D.h>
+#include <mitkBaseGeometry.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -477,7 +477,7 @@ private:
 
   std::vector<mitk::Vector2D> m_CursorPositions;
 
-  std::vector<const mitk::Geometry2D*> m_WorldGeometries;
+  std::vector<const mitk::PlaneGeometry*> m_WorldGeometries;
   std::vector<mitk::Vector2D> m_RenderWindowSizes;
   std::vector<mitk::Vector2D> m_Origins;
 
@@ -502,7 +502,7 @@ private:
   /// \brief The 3D geometry for the first time step.
   /// The viewer assumes that the dimensions are equal at each time step.
   /// This is not the geometry at the selected time step.
-  mitk::Geometry3D* m_Geometry;
+  mitk::BaseGeometry* m_Geometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes

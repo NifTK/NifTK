@@ -37,9 +37,6 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("mitkCoordinateAxesDataRenderingTest");
 
-  // Call this to set up the mapper.
-  RegisterNifTKCoreObjectFactory();
-
   // Create axes node
   mitk::CoordinateAxesData::Pointer axes = mitk::CoordinateAxesData::New();
   mitk::DataNode::Pointer axesNode = mitk::DataNode::New();
@@ -48,7 +45,7 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   axesNode->SetIntProperty("size", 1);
   axesNode->SetBoolProperty("show text", true);
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   matrix->Identity();
   axes->SetVtkMatrix(*matrix);
 

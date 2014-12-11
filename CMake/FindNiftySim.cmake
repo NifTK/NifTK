@@ -21,7 +21,7 @@ else(NOT NIFTYSIM_DIR)
   set(NIFTYSIM_DIR @NIFTYSIM_DIR@ CACHE PATH "Directory containing NiftySim installation")
 endif(NOT NIFTYSIM_DIR)
 
-if(CUDA_FOUND)
+if(CUDA_FOUND AND NIFTYSIM_USE_CUDA)
 
   find_path(NIFTYSIM_INCLUDE_DIR
     NAME tledSolverGPU.h
@@ -35,7 +35,7 @@ if(CUDA_FOUND)
     NO_DEFAULT_PATH
   )
 
-else(CUDA_FOUND)
+else()
 
   find_path(NIFTYSIM_INCLUDE_DIR
     NAME tledSolverCPU.h
@@ -49,7 +49,7 @@ else(CUDA_FOUND)
     NO_DEFAULT_PATH
   )
 
-endif(CUDA_FOUND)
+endif()
 
 if(NIFTYSIM_LIBRARIES AND NIFTYSIM_INCLUDE_DIR)
   set(NIFTYSIM_FOUND 1)

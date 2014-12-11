@@ -32,39 +32,47 @@ namespace mitk {
  */
 class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
 {
-  public:
-    mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
-    itkNewMacro(NifTKCoreObjectFactory);
+public:
+  mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
+  itkNewMacro(NifTKCoreObjectFactory);
 
-    /// \see CoreObjectFactoryBase::CreateMapper
-    virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+  /// \see CoreObjectFactoryBase::CreateMapper
+  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
 
-    /// \see CoreObjectFactoryBase::SetDefaultProperties
-    virtual void SetDefaultProperties(mitk::DataNode* node);
+  /// \see CoreObjectFactoryBase::SetDefaultProperties
+  virtual void SetDefaultProperties(mitk::DataNode* node);
 
-    /// \see CoreObjectFactoryBase::GetFileExtensions
-    virtual const char* GetFileExtensions();
+  /// \see CoreObjectFactoryBase::GetFileExtensions
+  virtual const char* GetFileExtensions();
 
-    /// \see CoreObjectFactoryBase::GetFileExtensionsMap
-    virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
+  /// \see CoreObjectFactoryBase::GetFileExtensionsMap
+  virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
 
-    /// \see CoreObjectFactoryBase::GetSaveFileExtensions
-    virtual const char* GetSaveFileExtensions();
+  /// \see CoreObjectFactoryBase::GetSaveFileExtensions
+  virtual const char* GetSaveFileExtensions();
 
-    /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
-    virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
+  /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
+  virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
 
-  protected:
-    NifTKCoreObjectFactory(bool registerSelf = true);
-    void CreateFileExtensionsMap();
-    MultimapType m_FileExtensionsMap;
-    MultimapType m_SaveFileExtensionsMap;
+protected:
+  NifTKCoreObjectFactory();
+  virtual ~NifTKCoreObjectFactory();
+
+  void CreateFileExtensionsMap();
+  MultimapType m_FileExtensionsMap;
+  MultimapType m_SaveFileExtensionsMap;
+
+private:
+
+  itk::ObjectFactoryBase::Pointer m_ItkImageFileIOFactory;
+  itk::ObjectFactoryBase::Pointer m_NifTKItkImageFileIOFactory;
+  itk::ObjectFactoryBase::Pointer m_PNMImageIOFactory;
+  itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataReaderFactory;
+  itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataWriterFactory;
+
 };
 
 } // end namespace
-
-// global declaration for simple call by applications
-void NIFTKCORE_EXPORT RegisterNifTKCoreObjectFactory();
 
 #endif
 

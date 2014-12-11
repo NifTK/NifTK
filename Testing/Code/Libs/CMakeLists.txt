@@ -22,3 +22,6 @@ if(VTK_FOUND)
   add_subdirectory(VTK)
 endif(VTK_FOUND)
 
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  add_subdirectory(CUDAKernels)
+endif()

@@ -11,7 +11,7 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-    <image fileExtensions="*.png">
+    <image fileExtensions=".png">
       <name>output</name>
       <longflag>output</longflag>
       <description>Output image</description>

@@ -170,14 +170,14 @@ void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const
 
 
 //-----------------------------------------------------------------------------
-void ApplyTransformToNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
 {
   ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void ComposeTransformWithNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
 {
   ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, true);
 }

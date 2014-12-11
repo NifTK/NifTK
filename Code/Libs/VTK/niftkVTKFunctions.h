@@ -24,6 +24,7 @@
 #include <vtkCellLocator.h>
 #include <vtkCamera.h>
 #include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 /**
  * \file vtkFunctions.h
@@ -176,6 +177,11 @@ extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vt
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface(vtkPolyData* source, vtkPolyData* target, vtkSmartPointer<vtkDoubleArray>& result);
 
 /**
+ * \brief Writes matrix out as a string, for use in SaveMatrix4x4ToFile.
+ */
+extern "C++" NIFTKVTK_WINEXPORT std::string WriteMatrix4x4ToString(const vtkMatrix4x4& matrix);
+
+/**
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
  * \param fileName full path of file name
  * \param matrix a matrix
@@ -187,7 +193,7 @@ extern "C++" NIFTKVTK_WINEXPORT bool SaveMatrix4x4ToFile (const std::string& fil
  * \brief Loads the matrix from file, or else creates an Identity matrix, and the caller is responsible for deallocation.
  * \param fileName
  */
-extern "C++" NIFTKVTK_WINEXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
+extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkMatrix4x4> LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
 
 /**
  * \brief Checks matrices for equality.
@@ -224,6 +230,27 @@ extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
  * Any cells or surfaces will be deleted as part of the process, leaving only points.
  */
 extern "C++" NIFTKVTK_WINEXPORT bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points = 200);
+
+/**
+ * \brief Extracts the rotation matrix, and converts to quaternion.
+ * \param quaternion must be a pointer to an array of 4 doubles that is already allocated.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void MatrixToQuaternion(const vtkMatrix4x4& matrix, double* quaternion);
+
+/**
+ * \brief Performs spherical linear interpolation.
+ * \param beforeRotation quaternion as 4-vector, already allocated.
+ * \param afterRotation quaternion as 4-vector, already allocated.
+ * \param outputRotation quaternion as 4-vector, already allocated.
+ * \param weight between 0 and 1.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void InterpolateRotation(const double* beforeRotation, const double* afterRotation, const double& weight, double* outputRotation, bool adjustSign /*= true*/);
+
+/**
+ * \brief Interpolates between two matrices.
+ * \param proportion is defined as between [0 and 1], where 0 gives exactly the before matrix, 1 gives exactly the after matrix, and the proportion is a linear proportion between them to interpolate.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void InterpolateTransformationMatrix(const vtkMatrix4x4& before, const vtkMatrix4x4& after, const double& proportion, vtkMatrix4x4& interpolated);
 
 } // end namespace
 

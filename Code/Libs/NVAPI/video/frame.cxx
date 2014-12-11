@@ -24,11 +24,6 @@ int StreamFormat::get_width() const
 {
     switch (format)
     {
-        // FIXME: dont know
-        case PF_1035:
-            // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-            assert(false);
-
         case PF_NONE:
         default:
             return 0;
@@ -38,6 +33,8 @@ int StreamFormat::get_width() const
             return 720;
         case PF_720:
             return 1280;
+        case PF_1035:
+            return 1920;
         case PF_1080:
             return 1920;
         case PF_2048:

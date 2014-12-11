@@ -23,6 +23,8 @@
 #include <mitkIDataStorageService.h>
 #include <QmitkLookupTableProviderService.h>
 
+#include <itkImage.h>
+
 #include <QObject>
 #include <QString>
 

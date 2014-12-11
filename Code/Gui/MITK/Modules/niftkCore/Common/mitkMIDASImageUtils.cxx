@@ -465,7 +465,7 @@ void UpdateVolumeProperty(const mitk::Image* image, mitk::DataNode* node)
 
 //-----------------------------------------------------------------------------
 template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
-void ITKCopyIntensityData(itk::Image<TPixel1, VImageDimension1>* input,
+void ITKCopyIntensityData(const itk::Image<TPixel1, VImageDimension1>* input,
                           itk::Image<TPixel2, VImageDimension2>* output
                          )
 {

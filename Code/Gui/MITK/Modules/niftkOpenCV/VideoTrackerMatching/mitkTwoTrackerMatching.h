@@ -21,7 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include "mitkTrackingMatrices.h"
-#include "mitkTrackingMatrixTimeStamps.h"
+#include "mitkTrackingAndTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -79,27 +79,28 @@ protected:
   TwoTrackerMatching& operator=(const TwoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  TrackingMatrixTimeStamps              m_TrackingMatrixTimeStamps1; 
-  TrackingMatrixTimeStamps              m_TrackingMatrixTimeStamps2; 
+  TrackingAndTimeStampsContainer        m_TimeStampsContainer1;
+  TrackingAndTimeStampsContainer        m_TimeStampsContainer2;
   bool                                  m_Ready;
   std::string                           m_Directory1;
   std::string                           m_Directory2;
 
-  TrackingMatrices                      m_TrackingMatrices11; //the tracking matrices in directory 1
-  TrackingMatrices                      m_TrackingMatrices22;  //the tracking matrices in directory 2
-  TrackingMatrices                      m_TrackingMatrices12; //the tracking matrices in directory 2 corresponding with the timestamps in directory 1
-  TrackingMatrices                      m_TrackingMatrices21; //the tracking matrices in directory 1 corresponding with the timestamps in directory 2
+  TrackingMatrices                      m_TrackingMatrices11; // The tracking matrices in directory 1
+  TrackingMatrices                      m_TrackingMatrices22; // The tracking matrices in directory 2
+  TrackingMatrices                      m_TrackingMatrices12; // The tracking matrices in directory 2 corresponding with the timestamps in directory 1
+  TrackingMatrices                      m_TrackingMatrices21; // The tracking matrices in directory 1 corresponding with the timestamps in directory 2
 
 private:
   
-  TrackingMatrixTimeStamps              FindTrackingTimeStamps(std::string directory);
-  bool                                  CheckIfDirectoryContainsTrackingMatrices(std::string directory);
+  void                                  ConvertMatrices(const TrackingAndTimeStampsContainer& container1, TrackingMatrices& container2);
+  void                                  LookupMatrices(const TrackingAndTimeStampsContainer& container1,
+                                                       const TrackingAndTimeStampsContainer& container2,
+                                                       TrackingMatrices& outputContainer);
   bool                                  CheckTimingErrorStats();
   void                                  CreateLookUps();
-  void                                  LoadOwnMatrices();
 
-  unsigned long long                    m_Lag; //the delay between tracker1 and tracker2
-  bool                                  m_LagIsNegative; //controls the direction of lag
+  unsigned long long                    m_Lag; // The delay between tracker1 and tracker2
+  bool                                  m_LagIsNegative; // Controls the direction of lag
 
   bool                                  m_FlipMat1; // flip matrices in directory1
   bool                                  m_FlipMat2; // flip matrices in directory2

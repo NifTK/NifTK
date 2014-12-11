@@ -25,7 +25,22 @@ namespace mitk {
 
 /**
  * \class UltrasoundTransformAndImageMerger
- * \brief Merges a directory of images and tracking data into a .mhd file, according to PLUS specifications.
+ * \brief Merges a directory of images and tracking data into a .mhd file, according to PLUS meta-data specifications.
+ *
+ * This takes each 2D slice, and stacks them into a 3D volume. It writes the data out as a .mhd file.
+ * .mhd files have the binary image data in a file ending in .raw, and .mhd is an ASCII header.
+ * Therefore PLUS have specified additional information to be stored in the header. This additional
+ * information pertains to tracking information collected at the time the images were grabbed.
+ * The tracking information normally comprises the probe-to-tracker transform, the
+ * reference-to-tracker transform and the stylus-to-tracker transform. For our purposes,
+ * we just want to get the data into PLUS to use, for example, the fCal calibration or
+ * the temporal calibration. So, inputMatrixDirectory refers to a directory full of
+ * probe tracking transformations, giving the probe-to-tracker transform.
+ * The reference-to-tracker and stylus-to-tracker are set to identity.
+ *
+ * Furthermore, NifTK will record tracking and image data at whatever framerate
+ * the devices support. So, this method takes an image, and will interpolate the
+ * timestamps of the tracking data, and hence interpolate the transformation matrices.
  */
 class NIFTKOPENCV_EXPORT UltrasoundTransformAndImageMerger : public itk::Object
 {
@@ -41,7 +56,8 @@ public:
   void Merge(
       const std::string& inputMatrixDirectory,
       const std::string& inputImageDirectory,
-      const std::string& outputFileName
+      const std::string& outputImageFileName,
+      const std::string& imageOrientation
       );
 
 protected:

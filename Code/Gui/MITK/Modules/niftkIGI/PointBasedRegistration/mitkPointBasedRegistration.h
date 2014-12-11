@@ -56,6 +56,11 @@ public:
   static const bool DEFAULT_USE_SVD_BASED_METHOD;
 
   /**
+   * \brief Stores the default value of StripNaNFromInput = true.
+   */
+  static const bool DEFAULT_STRIP_NAN_FROM_INPUT;
+
+  /**
    * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
    */
   itkSetMacro(UsePointIDToMatchPoints, bool);
@@ -73,6 +78,12 @@ public:
    */
   itkSetMacro(UseICPInitialisation, bool);
   itkGetMacro(UseICPInitialisation, bool);
+
+  /**
+   * \brief If true, both fixed and moving points are checked for NaN values prior to matching.
+   */
+  itkSetMacro(StripNaNFromInput, bool);
+  itkGetMacro(StripNaNFromInput, bool);
 
   /**
    * \brief Main method to calculate the point based registration.
@@ -101,6 +112,7 @@ private:
   bool m_UseICPInitialisation;
   bool m_UsePointIDToMatchPoints;
   bool m_UseSVDBasedMethod;
+  bool m_StripNaNFromInput;
 
 }; // end class
 

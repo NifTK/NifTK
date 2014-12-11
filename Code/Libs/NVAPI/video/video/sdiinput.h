@@ -46,7 +46,9 @@ public:
         // one of the fields (not specifying which one) is dropped
         DROP_ONE_FIELD,
         // both fields are captured and stacked vertically
-        STACK_FIELDS
+        STACK_FIELDS,
+        // for either progressive or interlaced input, alternating lines are split into two separate images.
+        SPLIT_LINE_INTERLEAVED_STEREO
     };
 
 
