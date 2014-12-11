@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#! /usr/bin/env python
-
 import nipype.interfaces.utility        as niu          # utility
 import nipype.interfaces.io             as nio          # Input Output
 import nipype.pipeline.engine           as pe           # pypeline engine
@@ -10,10 +8,11 @@ from distutils                          import spawn
 import sys, os
 import argparse, textwrap
 from extract_roi_statistics import ExtractRoiStatistics
+import nipype.interfaces.niftyreg as niftyreg
 
 def print_array_function(in_array, subject_id):
     import os, numpy as np
-    array_file = subject_id + '.csv'
+    array_file = subject_id + '.txt'
     array_format = '%u'
     for f in range(in_array.shape[1] - 1):
         array_format = array_format + ' %5.2f'    
@@ -43,6 +42,14 @@ parser.add_argument('-p', '--par',
                     help='Parcelation image or list of parcelation images',
                     required=True)
 
+parser.add_argument('-t', '--transformation',
+                    dest='input_transformation', 
+                    type=str, 
+                    nargs='+',
+                    metavar='input_transformation', 
+                    help='Affine transformation between feature image and parcellation, with parcellation as reference',
+                    required=False)
+
 parser.add_argument('-l', '--label',
                     dest='input_label', 
                     type=int,
@@ -71,6 +78,11 @@ workflow.base_dir = os.getcwd()
 # extracting basename of the input file (list)
 input_files = [os.path.abspath(f) for f in args.input_file]
 par_files = [os.path.abspath(f) for f in args.input_par]
+
+trans_files = []
+if args.input_transformation:
+    trans_files = [os.path.abspath(f) for f in args.input_transformation]
+
 input_filenames = [os.path.basename(f) for f in input_files]
 
 # extracting the 'subject list simply for iterable purposes
@@ -88,8 +100,27 @@ print_array = pe.MapNode(interface = niu.Function(
                          iterfield = ['in_array', 'subject_id']
 )
 
+if args.input_transformation:
+    
+    inv_trans = pe.MapNode(niftyreg.RegTransform(), 
+                           name = 'inv_trans',
+                           iterfield = ['inv_aff_input'])
+    
+    parc_resample  = pe.MapNode(interface = niftyreg.RegResample(inter_val = 'NN'), 
+                                name = 'parc_resample',
+                                iterfield = ['ref_file', 'flo_file', 'aff_file'])
+    inv_trans.inputs.inv_aff_input = trans_files
+    parc_resample.inputs.ref_file = input_files
+    parc_resample.inputs.flo_file = par_files
+    workflow.connect(inv_trans, 'out_file', parc_resample, 'aff_file')
+    workflow.connect(parc_resample, 'res_file', extract_roi_stats, 'roi_file')
+    
+else:
+    
+    extract_roi_stats.inputs.roi_file = par_files
+
 extract_roi_stats.inputs.in_file = input_files
-extract_roi_stats.inputs.roi_file = par_files
+
 if args.input_label:
     extract_roi_stats.inputs.in_label = args.input_label
 workflow.connect(extract_roi_stats, 'out_array', print_array, 'in_array')
