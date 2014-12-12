@@ -13,10 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <mitkMakeGeometry.h>
 #include <mitkIOUtil.h>
-#include <niftkIGIMakeGeometryCLP.h>
-
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -25,6 +22,9 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkProperty.h>
+
+#include <mitkMakeGeometry.h>
+#include <niftkIGIMakeGeometryCLP.h>
 
 int main(int argc, char** argv)
 {

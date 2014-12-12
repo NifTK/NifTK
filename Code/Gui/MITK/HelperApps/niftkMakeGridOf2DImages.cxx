@@ -13,14 +13,15 @@
 =============================================================================*/
 
 #include <itkLogHelper.h>
-#include <niftkConversionUtils.h>
-#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-#include <niftkFileHelper.h>
-#include <niftkMakeGridOf2DImagesCLP.h>
 #include <cv.h>
 #include <highgui.h>
+
+#include <itkCommandLineHelper.h>
+#include <niftkFileHelper.h>
+#include <niftkConversionUtils.h>
+#include <niftkMakeGridOf2DImagesCLP.h>
 
 /*!
  * \file niftkMakeGridOf2DImages.cxx

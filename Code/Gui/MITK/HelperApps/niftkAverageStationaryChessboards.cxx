@@ -15,18 +15,19 @@
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
-#include <iostream>
 #include <sstream>
-#include <niftkAverageStationaryChessboardsCLP.h>
-#include <niftkFileHelper.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <mitkExceptionMacro.h>
-#include <mitkCameraCalibrationFacade.h>
+#include <iostream>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkExceptionMacro.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
+
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkFileIOUtils.h>
+#include <mitkCameraCalibrationFacade.h>
+#include <niftkFileHelper.h>
+#include <niftkAverageStationaryChessboardsCLP.h>
 
 int main(int argc, char** argv)
 {
