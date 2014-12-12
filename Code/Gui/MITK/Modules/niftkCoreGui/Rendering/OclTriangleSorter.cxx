@@ -178,7 +178,7 @@ bool mitk::OclTriangleSorter::Initialize()
 
 void mitk::OclTriangleSorter::InitKernels()
 {
-  bool buildErr = false;
+  int buildErr = 0;
   cl_int clErr = 0;
 
   // Prefix Sum
@@ -243,8 +243,6 @@ void mitk::OclTriangleSorter::InitKernels()
   this->m_ckTest = clCreateKernel(this->m_ClProgram, "ckTest", &clErr);
   CHECK_OCL_ERR( clErr );
   buildErr |= clErr;
-
-  std::cout <<"buildErr: " <<buildErr <<"\n";
 
   if (buildErr != 0)
   {
@@ -510,10 +508,12 @@ cl_mem mitk::OclTriangleSorter::ComputeTriangleDistances(
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckComputeTriangleDistances, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 
+/*
   cl_uint * buff = new cl_uint[numOfTriangles*4];
   clStatus = clEnqueueReadBuffer(m_CommandQue, indexBufWithDist, CL_TRUE, 0, numOfTriangles*4*sizeof(cl_uint), buff, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
 
+ 
   MITK_INFO <<"numOfTriangles: " <<numOfTriangles;
   std::ofstream outfile0;
   outfile0.open ("d://trianglesWithDists.txt", std::ios::out);
@@ -525,7 +525,7 @@ cl_mem mitk::OclTriangleSorter::ComputeTriangleDistances(
   }
 
   outfile0.close();
-
+*/
   return indexBufWithDist;
 
 }
