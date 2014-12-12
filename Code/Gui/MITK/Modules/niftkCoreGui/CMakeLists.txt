@@ -19,6 +19,12 @@ if(BUILD_VL)
     MitkOpenCL
   )
 endif()
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  set(_modules
+    ${_modules}
+    niftkCUDA
+  )
+endif()
 
 MITK_CREATE_MODULE(niftkCoreGui
   EXPORT_DEFINE NIFTKCOREGUI_EXPORT
