@@ -299,6 +299,13 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
 
     i = m_AvailableImagePool[sizeTier].insert(m_AvailableImagePool[sizeTier].begin(), lwci);
   }
+  else
+  {
+    // images in m_AvailableImagePool are not referenced by anyone else anymore.
+    // so these should get a new id.
+    ++m_LastIssuedId;
+    i->m_Id = m_LastIssuedId;
+  }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
   assert(inserted);
