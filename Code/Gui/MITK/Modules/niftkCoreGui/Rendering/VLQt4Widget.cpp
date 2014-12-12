@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-
 #include "VLQt4Widget.h"
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
@@ -1702,6 +1701,296 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
     MITK_ERROR << "Failed to open GLSL source file: " << filename << std::endl;
     throw std::runtime_error("Failed to open GLSL source file");
   }
+}
+
+void VLQt4Widget::sortTranslucentTriangles()
+{
+  vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
+  int numOfActors = actors->size();
+
+  // Get context 
+  cl_context clContext = m_OclService->GetContext();
+  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
+
+  if (clContext == 0 || clCmdQue == 0)
+    return;
+
+  // Get camera position
+  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
+  cl_float4 clCameraPos;
+  clCameraPos.s[0] = cameraPos[0];
+  clCameraPos.s[1] = cameraPos[1];
+  clCameraPos.s[2] = cameraPos[2];
+
+  std::vector<vl::ref<vl::Transform>> transforms;
+  std::vector<cl_mem> clTransforms;
+  std::vector<vl::ref<vl::Geometry>> translucentSurfaces;
+  std::vector<vl::ref<vl::Actor>> translucentActors;
+  cl_int clErr = 0;
+
+  // Instantiate TriangleSorter
+  if (m_OclTriangleSorter == 0)
+    m_OclTriangleSorter = new mitk::OclTriangleSorter();
+
+  // Make sure previous values are cleared
+  m_OclTriangleSorter->Reset();
+
+  cl_uint totalNumOfTriangles = 0;
+  cl_uint totalNumOfVertices  = 0;
+
+  for (int i = 0; i < numOfActors; i++)
+  {
+    vl::ref<vl::Actor> act = actors->at(i);
+    std::string objName = act->objectName();
+    int renderBlock = act->renderBlock();
+    
+    size_t found =objName.find("_surface");
+    if ((found != std::string::npos) && (renderBlock == RENDERBLOCK_TRANSLUCENT))
+    {
+      vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
+      vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
+      if (surface == 0)
+        continue;
+
+      translucentSurfaces.push_back(surface);
+      translucentActors.push_back(act);
+
+      vl::ref<vl::Transform> transf = act->transform();
+      transforms.push_back(transf);
+    }
+  }
+
+  if (translucentSurfaces.size() == 0)
+    return;
+
+  for (int i = 0; i < translucentSurfaces.size(); i++)
+  {
+    // Make sure values are copied onto GPU memory
+    translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
+
+    // Acquire the vertex buffer from the vl surface
+    unsigned int numOfVertices = translucentSurfaces.at(i)->vertexArray()->size() /3;
+    unsigned int numOfVertexComponents = translucentSurfaces.at(i)->vertexArray()->glSize();
+    GLenum typeOfVertexComponents = translucentSurfaces.at(i)->vertexArray()->glType();
+
+    // Update vertex counter
+    totalNumOfVertices += numOfVertices;
+
+    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
+    cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clErr);
+    CHECK_OCL_ERR(clErr);
+
+    // Have to call glFinish() otherwise the buffer state is not guaranteed to be consistent
+    glFinish();
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+
+    //cl_float * buff = new cl_float[numOfVertices * 3];
+    //clErr = clEnqueueReadBuffer(clCmdQue, clVertexBuf, CL_TRUE, 0, (numOfVertices)*3*sizeof(cl_float), buff, 0, 0, 0);
+
+    //CHECK_OCL_ERR(clErr);
+
+    // MITK_INFO <<"numOfVertices: " <<numOfVertices;
+    //std::ofstream outfile0;
+    //outfile0.open ("d://vertexBuf.txt", std::ios::out);
+    //
+    //// Write out filtered volume
+    //for (int r = 0 ; r < numOfVertices; r++)
+    //{
+    //  outfile0 <<"Index: " <<r <<std::setprecision(10) <<" Vert: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
+    //}
+
+    //outfile0.close();
+
+
+
+    // Acquire the index buffer from the vl surface
+    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls()->size();
+    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls()->at(numOfDrawcalls-1);
+    vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+
+    unsigned int numOfTriangles = vlTriangles->countTriangles();
+    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
+    cl_mem clIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, indexBufferHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+    totalNumOfTriangles += numOfTriangles;
+
+    // Acquire the transformation matrix
+    vl::ref<vl::Transform> transf = transforms[i];
+    vl::mat4  mat = transf->localMatrix();
+    MITK_INFO <<"Mat: " <<mat.e(0,0) <<" " <<mat.e(0,1) <<" " <<mat.e(0,2) <<" " <<mat.e(0,3) <<"\n";
+    cl_float clMat[16];
+    int index = 0;
+    for (int p = 0; p < 4; p++)
+      for (int q = 0; q < 4; q++)
+        clMat[index++] = mat.e(p,q);
+
+    MITK_INFO <<"ClMat: " <<clMat[0] <<" " <<clMat[1] <<" " <<clMat[2] <<" " <<clMat[3] <<"\n";
+
+    cl_mem clTransform = clCreateBuffer(clContext, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR, 16*sizeof(cl_float), &clMat, &clErr);
+    clTransforms.push_back(clTransform);
+    CHECK_OCL_ERR( clErr );
+
+    m_OclTriangleSorter->AddIndexBuffer(clIndexBuf, numOfTriangles);
+    m_OclTriangleSorter->AddVertexBuffer(clVertexBuf, numOfVertices);
+    m_OclTriangleSorter->AddTransform(clTransform);
+
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
+  }
+
+  m_OclTriangleSorter->SetViewPoint(clCameraPos);
+  m_OclTriangleSorter->Update();
+
+  vl::ref<vl::ArrayFloat3>  vlVerts         = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3>  vlNormals       = new vl::ArrayFloat3;
+  vl::ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
+
+  vlVerts->resize(totalNumOfVertices *3);
+  vlNormals->resize(totalNumOfVertices *3);
+   
+  vl::ref<vl::Geometry> translucentGeometry = new vl::Geometry();
+
+  translucentGeometry->drawCalls()->push_back(vlTriangles.get());
+  vlTriangles->indexBuffer()->resize(totalNumOfTriangles*3);
+  
+  translucentGeometry->setVertexArray(vlVerts.get());
+  translucentGeometry->setNormalArray(vlNormals.get());
+
+  // Make sure that the values are copied onto GPU memory
+  translucentGeometry->vertexArray()->updateBufferObject();
+  translucentGeometry->normalArray()->updateBufferObject();
+  glFinish();
+ 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  GLuint mergedVertexArrayHandle = translucentGeometry->vertexArray()->bufferObject()->handle();
+  cl_mem clMergedVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clErr);
+  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedVertexBuf, 0, NULL, NULL);
+  CHECK_OCL_ERR(clErr);
+
+  // get CL_MEM_SIZE
+  size_t mergedVertexBufSize;
+  clErr = clGetMemObjectInfo(clMergedVertexBuf, CL_MEM_SIZE, sizeof(size_t), &mergedVertexBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+
+  // Get normal array
+  GLuint mergedNormalArrayHandle = translucentGeometry->normalArray()->bufferObject()->handle();
+  cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clErr);
+  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+  CHECK_OCL_ERR(clErr);
+
+  // get CL_MEM_SIZE
+  size_t mergedNormalBufSize;
+  clErr = clGetMemObjectInfo(clMergedNormalBuf, CL_MEM_SIZE, sizeof(size_t), &mergedNormalBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+
+/*
+  // Get color array
+  GLuint mergedColorArrayHandle = translucentGeometry->colorArray()->bufferObject()->handle();
+  cl_mem clMergedColorBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedColorArrayHandle, &clErr);
+  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedColorBuf, 0, NULL, NULL);
+  CHECK_OCL_ERR(clErr);
+
+  // get CL_MEM_SIZE
+  size_t mergedColorBufSize;
+  clErr = clGetMemObjectInfo(clMergedColorBuf, CL_MEM_SIZE, sizeof(size_t), &mergedColorBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+*/
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Acquire the index buffer from the vl surface
+  size_t numOfDrawcalls = translucentGeometry->drawCalls()->size();
+  vl::DrawCall * dc = translucentGeometry->drawCalls()->at(numOfDrawcalls-1);
+  vl::ref<vl::DrawElementsUInt> vlMergedTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+
+  vlMergedTriangles->indexBuffer()->updateBufferObject();
+  GLuint mergedIndexBufferHandle = vlMergedTriangles->indexBuffer()->bufferObject()->handle();
+  cl_mem clMergedIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clErr);
+  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedIndexBuf, 0, NULL, NULL);
+  CHECK_OCL_ERR(clErr);
+
+
+  unsigned int totalNumOfTriangles2 = 0;
+  m_OclTriangleSorter->GetOutput(clMergedIndexBuf, totalNumOfTriangles2);
+
+
+
+  size_t vertexBufferOffset = 0;
+  size_t normalBufferOffset = 0;
+  size_t colorBufferOffset = 0;
+
+  for (size_t i = 0; i < translucentSurfaces.size(); i++)
+  {
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Get vertex array
+    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
+    cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+
+    // Get CL_MEM_SIZE
+    size_t vertBufSize;
+    clErr = clGetMemObjectInfo(clVertexBuf, CL_MEM_SIZE, sizeof(size_t), &vertBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
+
+    // Copy to merged buffer
+    clErr = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, clMergedVertexBuf, 0, vertexBufferOffset, vertBufSize, 0, 0, 0);
+    CHECK_OCL_ERR(clErr);
+    vertexBufferOffset += vertBufSize;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Get normal array
+    GLuint normalArrayHandle = translucentSurfaces.at(i)->normalArray()->bufferObject()->handle();
+    cl_mem clNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, normalArrayHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+
+    // get CL_MEM_SIZE
+    size_t normalBufSize;
+    clErr = clGetMemObjectInfo(clNormalBuf, CL_MEM_SIZE, sizeof(size_t), &normalBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
+
+    // Copy to merged buffer
+    clErr = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, normalBufSize, 0, 0, 0);
+    CHECK_OCL_ERR(clErr);
+    normalBufferOffset += normalBufSize;
+  
+/*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Get color array
+    GLuint colorArrayHandle = translucentSurfaces.at(i)->colorArray()->bufferObject()->handle();
+    cl_mem clColorBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, colorArrayHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clColorBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+
+    // get CL_MEM_SIZE
+    size_t colorBufSize;
+    clErr = clGetMemObjectInfo(clColorBuf, CL_MEM_SIZE, sizeof(size_t), &colorBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
+
+    // Copy to merged buffer
+    clErr = clEnqueueCopyBuffer(clCmdQue, clColorBuf, clMergedColorBuf, 0, colorBufferOffset, colorBufSize, 0, 0, 0);
+    CHECK_OCL_ERR(clErr);
+    colorBufferOffset += colorBufSize;
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clColorBuf, 0, NULL, NULL);
+*/
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    
+  }
+
+  for (size_t u = 0; u < transforms.size(); u++)
+    clReleaseMemObject(clTransforms.at(u));
+
+
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(translucentGeometry.get(), fx.get(), tr.get());
+
+
+  for (int i = 0; i < translucentActors.size(); i++)
+    translucentActors.at(i)->setEnableMask(0x0);
+
 }
 
 

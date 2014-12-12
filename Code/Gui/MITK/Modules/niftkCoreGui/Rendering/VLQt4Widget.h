@@ -155,6 +155,7 @@ private:
 
 
 protected:
+<<<<<<< HEAD
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCamera();
@@ -163,6 +164,7 @@ protected:
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
+  void sortTranslucentTriangles();
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
@@ -219,6 +221,7 @@ protected:
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
+  vl::ref<vl::Actor>         m_TranslucentSurfaceActor;
   mitk::OclTriangleSorter *  m_OclTriangleSorter;
 
 protected:
