@@ -1122,7 +1122,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
 
-  MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size();
+  MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size()/3;
   //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
   if (!vlSurf->normalArray())
     vlSurf->computeNormals();
@@ -1218,7 +1218,6 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   // internal method, so sanity check.
   assert(QGLContext::currentContext() == QGLWidget::context());
 
-
   if (vtkPoly == 0)
     return;
 
@@ -1263,10 +1262,10 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
     verts = vtkPoly->GetStrips();
 
-  if (verts->GetMaxCellSize() > 4)
+  if (verts->GetMaxCellSize() > 3)
   {
     // Panic and return
-    MITK_ERROR <<"More than four vertices / cell detected, can't handle this data type!\n";
+    MITK_ERROR <<"More than three vertices / cell detected, can't handle this data type!\n";
     return;
   }
   
@@ -1360,7 +1359,6 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
     memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
   }
 
-
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Deal with cells - initialize index buffer
   vtkIdType npts;
@@ -1371,7 +1369,6 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 
   // Get the max number of vertices / cell
   int maxPointsPerCell = verts->GetMaxCellSize();
-
 
   // Get the number of indices we have to deal with
   unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
@@ -1398,71 +1395,47 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 
   vl::ref<vl::ArrayFloat3>  vlVerts   = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
+  vl::ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
 
-  //vlVerts->resize(numOfPoints *3);
-  //vlNormals->resize(numOfPoints *3);
-  //ref<DrawArrays> de = new DrawArrays(PT_TRIANGLES,0,numOfPoints*3);
-
-  vlVerts->resize(numOfTriangles *3);
-  vlNormals->resize(numOfTriangles *3);
-  vl::ref<vl::DrawArrays> de = new vl::DrawArrays(vl::PT_TRIANGLES,0,numOfTriangles*3);
+  vlVerts->resize(numOfPoints *3);
+  vlNormals->resize(numOfPoints *3);
    
-  vlPoly->drawCalls()->push_back(de.get());
+  vlPoly->drawCalls()->push_back(vlTriangles.get());
+  vlTriangles->indexBuffer()->resize(numOfTriangles*3);
+  
   vlPoly->setVertexArray(vlVerts.get());
   vlPoly->setNormalArray(vlNormals.get());
 
-/*
-    // read triangles
-  for(unsigned int i=0; i<numOfPoints; ++i)
+  float * vertBufFlotPtr = reinterpret_cast<float *>( vlVerts->ptr());
+  float * normBufFlotPtr = reinterpret_cast<float *>( vlNormals->ptr());
+
+  // Vertices and normals
+  for (unsigned int i=0; i<numOfPoints; ++i)
   {
-    fvec3 n0, n1, n2, v1,v2,v0;
-    n0.x() = m_NormalBuffer[i*3 +0];
-    n0.y() = m_NormalBuffer[i*3 +1];
-    n0.z() = m_NormalBuffer[i*3 +2];
-    v0.x() = m_PointBuffer[i*3 +0];
-    v0.y() = m_PointBuffer[i*3 +1];
-    v0.z() = m_PointBuffer[i*3 +2];
+    vertBufFlotPtr[3*i + 0] = m_PointBuffer[i*3 +0];
+    vertBufFlotPtr[3*i + 1] = m_PointBuffer[i*3 +1];
+    vertBufFlotPtr[3*i + 2] = m_PointBuffer[i*3 +2];
 
-    vlNormals->at(i*3+0) = n0;
-    vlVerts->at(i*3+0) = v0;
+    normBufFlotPtr[3*i + 0] = m_NormalBuffer[i*3 +0];
+    normBufFlotPtr[3*i + 1] = m_NormalBuffer[i*3 +1];
+    normBufFlotPtr[3*i + 2] = m_NormalBuffer[i*3 +2];
   }
-*/
 
-  // read triangles
+  // Make sure that the values are copied onto GPU memory
+  //vlPoly->vertexArray()->updateBufferObject();
+  //glFinish();
+
+  // Read triangles
   for(unsigned int i=0; i<numOfTriangles; ++i)
   {
-    vl::fvec3 n0, n1, n2, v1,v2,v0;
-    unsigned int vertIndex = m_IndexBuffer[i*3 +0];
-    n0.x() = m_NormalBuffer[vertIndex*3 +0];
-    n0.y() = m_NormalBuffer[vertIndex*3 +1];
-    n0.z() = m_NormalBuffer[vertIndex*3 +2];
-    v0.x() = m_PointBuffer[vertIndex*3 +0];
-    v0.y() = m_PointBuffer[vertIndex*3 +1];
-    v0.z() = m_PointBuffer[vertIndex*3 +2];
-
-    vertIndex = m_IndexBuffer[i*3 +1];
-    n1.x() = m_NormalBuffer[vertIndex*3 +0];
-    n1.y() = m_NormalBuffer[vertIndex*3 +1];
-    n1.z() = m_NormalBuffer[vertIndex*3 +2];
-    v1.x() = m_PointBuffer[vertIndex*3 +0];
-    v1.y() = m_PointBuffer[vertIndex*3 +1];
-    v1.z() = m_PointBuffer[vertIndex*3 +2];
-
-    vertIndex = m_IndexBuffer[i*3 +2];
-    n2.x() = m_NormalBuffer[vertIndex*3 +0];
-    n2.y() = m_NormalBuffer[vertIndex*3 +1];
-    n2.z() = m_NormalBuffer[vertIndex*3 +2];
-    v2.x() = m_PointBuffer[vertIndex*3 +0];
-    v2.y() = m_PointBuffer[vertIndex*3 +1];
-    v2.z() = m_PointBuffer[vertIndex*3 +2];
-
-    vlNormals->at(i*3+0) = n0;
-    vlVerts->at(i*3+0) = v0;
-    vlNormals->at(i*3+1) = n1;
-    vlVerts->at(i*3+1) = v1;
-    vlNormals->at(i*3+2) = n2;
-    vlVerts->at(i*3+2) = v2;
+    vlTriangles->indexBuffer()->at(i*3+0) = m_IndexBuffer[i*3 +0];
+    vlTriangles->indexBuffer()->at(i*3+1) = m_IndexBuffer[i*3 +1];
+    vlTriangles->indexBuffer()->at(i*3+2) = m_IndexBuffer[i*3 +2];
   }
+
+  // Make sure that the values are copied onto GPU memory
+  //vlTriangles->indexBuffer()->updateBufferObject();
+  //glFinish();
 
   /// \brief Buffer in host memory to store cell info
   if (m_IndexBuffer != 0)
@@ -1480,8 +1453,7 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   if (m_ScalarBuffer != 0)
     delete m_ScalarBuffer;
 
-
-  MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size();
+  //MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size()/3;
 }
 
 
