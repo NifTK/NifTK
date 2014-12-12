@@ -1789,7 +1789,7 @@ void VLQt4Widget::sortTranslucentTriangles()
     CHECK_OCL_ERR(clErr);
 
     // Have to call glFinish() otherwise the buffer state is not guaranteed to be consistent
-    glFinish();
+    //glFinish();
     clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     CHECK_OCL_ERR(clErr);
 
@@ -1875,7 +1875,7 @@ void VLQt4Widget::sortTranslucentTriangles()
   // Make sure that the buffers are allocated in GPU memory
   translucentGeometry->vertexArray()->updateBufferObject();
   translucentGeometry->normalArray()->updateBufferObject();
-  glFinish();
+  //glFinish();
  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
