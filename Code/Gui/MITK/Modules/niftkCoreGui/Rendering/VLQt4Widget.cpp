@@ -305,7 +305,13 @@ void VLQt4Widget::initializeGL()
   // for sorting triangles in the correct order.
   if (m_OclService)
   {
+    // Have to call makeCurrent() otherwise the shared CL-GL context creation fails
+    makeCurrent();
+
+    // Force tests to run on the first GPU with shared context
     m_OclService->SpecifyPlatformAndDevice(0, 0, true);
+    // Calling this to make sure that the context is created right at startup
+    cl_context clContext = m_OclService->GetContext();
   }
 
 
