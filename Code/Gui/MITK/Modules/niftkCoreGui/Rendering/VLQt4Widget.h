@@ -57,6 +57,14 @@
 #include <map>
 
 
+// forward-decl
+struct CUDAInterop;
+namespace mitk
+{
+class DataStorage;
+}
+
+
 class NIFTKCOREGUI_EXPORT VLQt4Widget : public QGLWidget, public vl::OpenGLContext
 {
   Q_OBJECT
@@ -89,6 +97,12 @@ public:
    * Beware: this can/will return a different object every time you call it!
    */
   vl::FramebufferObject* GetFBO();
+
+  /**
+   * Will throw an exception if CUDA has not been enabled at compile time.
+   */
+  void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
+
 
   // from vl::OpenGLContext
 public:
@@ -164,6 +178,10 @@ protected:
 
   std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >    m_NodeToActorMap;
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >    m_ActorToRenderableMap;
+
+
+  // will only be non-null if cuda support is enabled at compile time.
+  CUDAInterop*         m_CUDAInteropPimpl;
 
 
 protected:

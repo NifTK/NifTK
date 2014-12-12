@@ -36,7 +36,7 @@ __global__ void edgedetection_kernel(char* outputRGBA, int width, int height, cu
   {
     unsigned int*  outRGBA = &(((unsigned int*) outputRGBA)[y * width + x]);
 
-    float4  pixel;// = tex2D<float4>(texture, ux, uy);
+    float4  pixel = tex2D<float4>(texture, x, y);
 
     unsigned int    out =
         ((unsigned int) (pixel.x * 255))

@@ -20,8 +20,38 @@
 #include <vtkPolyDataNormals.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
+#include <mitkDataStorage.h>
 #include <QFile>
 #include <QTextStream>
+#include <stdexcept>
+#include <sstream>
+
+#ifdef _USE_CUDA
+#include <VLInterface/VLFramebufferToCUDA.h>
+#include <CUDAManager/CUDAManager.h>
+
+
+struct CUDAInterop
+{
+  std::string                     m_NodeName;
+  mitk::DataStorage::Pointer      m_DataStorage;
+
+  VLFramebufferAdaptor*           m_FBOAdaptor;
+
+  CUDAInterop()
+    : m_FBOAdaptor(0)
+  {
+  }
+
+  ~CUDAInterop()
+  {
+    delete m_FBOAdaptor;
+  }
+};
+#else
+// empty dummy, in case we have no cuda
+struct CUDAInterop { };
+#endif // _USE_CUDA
 
 
 struct ScopedOGLContext
@@ -53,10 +83,12 @@ struct ScopedOGLContext
 };
 
 
+
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(10) // 100 fps
   , m_OclService(0)
+  , m_CUDAInteropPimpl(0)
 {
   setContinuousUpdate(true);
   setMouseTracking(true);
@@ -74,6 +106,8 @@ VLQt4Widget::~VLQt4Widget()
   ScopedOGLContext  ctx(this->context());
 
   dispatchDestroyEvent();
+
+  delete m_CUDAInteropPimpl;
 }
 
 
@@ -199,6 +233,39 @@ vl::FramebufferObject* VLQt4Widget::GetFBO()
 }
 
 
+void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
+{
+#ifdef _USE_CUDA
+  ScopedOGLContext  ctx(this->context());
+
+  if (enable)
+  {
+    if (datastorage == 0)
+      throw std::runtime_error("Need data storage object");
+
+    delete m_CUDAInteropPimpl;
+    m_CUDAInteropPimpl = new CUDAInterop;
+    m_CUDAInteropPimpl->m_FBOAdaptor = 0;
+    m_CUDAInteropPimpl->m_DataStorage = datastorage;
+    m_CUDAInteropPimpl->m_NodeName = nodename;
+    if (m_CUDAInteropPimpl->m_NodeName.empty())
+    {
+      std::ostringstream    n;
+      n << "0x" << std::hex << (void*) this;
+      m_CUDAInteropPimpl->m_NodeName = n.str();
+    }
+  }
+  else
+  {
+    delete m_CUDAInteropPimpl;
+    m_CUDAInteropPimpl = 0;
+  }
+#else
+  throw std::runtime_error("CUDA support was not enabled");
+#endif
+}
+
+
 void VLQt4Widget::initializeGL()
 {
   // sanity check: context is initialised by Qt
@@ -298,6 +365,9 @@ void VLQt4Widget::initializeGL()
 
 void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
 {
+  // sanity check: internal method, context should have been activated by caller.
+  assert(this->context() == QGLContext::currentContext());
+
   vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
   opaqueFBO->setObjectName("opaqueFBO");
   opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
@@ -308,6 +378,14 @@ void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
 
   m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
   m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
+
+#ifdef _USE_CUDA
+  if (m_CUDAInteropPimpl)
+  {
+    delete m_CUDAInteropPimpl->m_FBOAdaptor;
+    m_CUDAInteropPimpl->m_FBOAdaptor = new VLFramebufferAdaptor(opaqueFBO.get());
+  }
+#endif
 }
 
 
@@ -1203,6 +1281,44 @@ void VLQt4Widget::swapBuffers()
   ScopedOGLContext    ctx(context());
 
   QGLWidget::swapBuffers();
+
+#ifdef _USE_CUDA
+  if (m_CUDAInteropPimpl)
+  {
+    cudaError_t     err         = cudaSuccess;
+    CUDAManager*    cudamanager = CUDAManager::GetInstance();
+    cudaStream_t    mystream    = cudamanager->GetStream(m_CUDAInteropPimpl->m_NodeName);
+    WriteAccessor   outputWA    = cudamanager->RequestOutputImage(QWidget::width(), QWidget::height(), 4);
+    cudaArray_t     fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
+
+    // side note: cuda-arrays are always measured in bytes, never in pixels.
+    err = cudaMemcpyFromArrayAsync(outputWA.m_DevicePointer, fboarr, 0, 0, QWidget::width() * QWidget::height() * 4, cudaMemcpyDeviceToDevice, mystream);
+    // not sure what to do if it fails. do not throw and exception, that's for sure.
+    assert(err == cudaSuccess);
+
+    m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
+
+    LightweightCUDAImage lwci = cudamanager->Finalise(outputWA, mystream);
+
+    bool    isNewNode = false;
+    mitk::DataNode::Pointer node = m_CUDAInteropPimpl->m_DataStorage->GetNamedNode(m_CUDAInteropPimpl->m_NodeName);
+    if (node.IsNull())
+    {
+      isNewNode = true;
+      node = mitk::DataNode::New();
+      node->SetName(m_CUDAInteropPimpl->m_NodeName);
+      node->SetVisibility(false);
+      node->SetBoolProperty("helper object", true);
+    }
+    CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
+    if (img.IsNull())
+      img = CUDAImage::New();
+    img->SetLightweightCUDAImage(lwci);
+    node->SetData(img);
+    if (isNewNode)
+      m_CUDAInteropPimpl->m_DataStorage->Add(node);
+  }
+#endif
 }
 
 

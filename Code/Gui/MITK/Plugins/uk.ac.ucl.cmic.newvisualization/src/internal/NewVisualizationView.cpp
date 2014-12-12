@@ -171,6 +171,8 @@ void  NewVisualizationView::InitVLRendering()
   // default transparency blending function.
   // vl keeps dumping stuff to the console about blend state mismatch.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
 }
 
 void NewVisualizationView::On_SliderMoved(int val)
@@ -262,6 +264,7 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
 
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
 #ifdef _USE_CUDA
+  if (false)
   {
     vl::ref<vl::FramebufferObject>  fbo = m_VLQtRenderWindow->GetFBO();
 

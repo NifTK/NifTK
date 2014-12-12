@@ -43,6 +43,10 @@ public:
 
 
 private:
+  VLFramebufferAdaptor(const VLFramebufferAdaptor& copyme);
+  VLFramebufferAdaptor& operator=(const VLFramebufferAdaptor& assignme);
+
+
   vl::ref<vl::FramebufferObject>      m_FBO;
   cudaGraphicsResource_t              m_GfxRes;
 };
