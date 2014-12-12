@@ -76,6 +76,8 @@ mitk::OclTriangleSorter::OclTriangleSorter()
 
   m_MergedIndexBuffer = 0;
   m_TotalTriangleNum = 0;
+
+  m_KernelsReady = false;
 }
 
 mitk::OclTriangleSorter::~OclTriangleSorter()
@@ -145,7 +147,6 @@ void mitk::OclTriangleSorter::Update()
 
 bool mitk::OclTriangleSorter::Initialize()
 {
-  bool buildErr = true;
   cl_int clErr = 0;
 
   if (m_IndexBuffers.size() == 0 || m_VertexBuffers.size() == 0)
@@ -164,68 +165,93 @@ bool mitk::OclTriangleSorter::Initialize()
     return false;
   }
 
-  InitKernels();
+  if (!m_KernelsReady)
+    InitKernels();
 
-  return buildErr;
+  if (!m_KernelsReady)
+  {
+    return false;
+  }
+
+  return true;
 }
 
 void mitk::OclTriangleSorter::InitKernels()
 {
-  bool buildErr = true;
+  bool buildErr = false;
   cl_int clErr = 0;
 
   // Prefix Sum
   this->m_ckScanBlockAnyLength = clCreateKernel( this->m_ClProgram, "ckScanBlockAnyLength", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   /// Sort kernels
   this->m_ckRadixLocalSort = clCreateKernel( this->m_ClProgram, "ckRadixLocalSort", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckLocalHistogram = clCreateKernel( this->m_ClProgram, "ckLocalHistogram", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckRadixPermute = clCreateKernel( this->m_ClProgram, "ckRadixPermute", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckParallelBitonic_B2 = clCreateKernel( this->m_ClProgram, "ckParallelBitonic_B2", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
   m_BitonicSortKernels.push_back(m_ckParallelBitonic_B2);
 
   this->m_ckParallelBitonic_B4 = clCreateKernel( this->m_ClProgram, "ckParallelBitonic_B4", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
   m_BitonicSortKernels.push_back(m_ckParallelBitonic_B4);
 
   this->m_ckParallelBitonic_B8 = clCreateKernel( this->m_ClProgram, "ckParallelBitonic_B8", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
   m_BitonicSortKernels.push_back(m_ckParallelBitonic_B8);
 
   this->m_ckParallelBitonic_B16 = clCreateKernel( this->m_ClProgram, "ckParallelBitonic_B16", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
   m_BitonicSortKernels.push_back(m_ckParallelBitonic_B16);
 
   this->m_ckParallelBitonic_C4 = clCreateKernel( this->m_ClProgram, "ckParallelBitonic_C4", &clErr);
-  buildErr |= CHECK_OCL_ERR( clErr );
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
   m_BitonicSortKernels.push_back(m_ckParallelBitonic_C4);
 
   this->m_ckTransformVertexAndComputeDistance = clCreateKernel(this->m_ClProgram, "ckTransformVertexAndComputeDistance", &clErr);
-  std::cout <<"Err: " <<clErr <<"\n";
-  buildErr |= CHECK_OCL_ERR(clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckComputeTriangleDistances = clCreateKernel(this->m_ClProgram, "ckComputeTriangleDistances", &clErr);
-  buildErr |= CHECK_OCL_ERR(clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckCopyAndUpdateIndices = clCreateKernel(this->m_ClProgram, "ckCopyAndUpdateIndices", &clErr);
-  buildErr |= CHECK_OCL_ERR(clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckCopyIndicesOnly = clCreateKernel(this->m_ClProgram, "ckCopyIndicesOnly", &clErr);
-  buildErr |= CHECK_OCL_ERR(clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
 
   this->m_ckTest = clCreateKernel(this->m_ClProgram, "ckTest", &clErr);
-  buildErr |= CHECK_OCL_ERR(clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
+
+  std::cout <<"buildErr: " <<buildErr <<"\n";
 
   if (buildErr != 0)
+  {
     MITK_ERROR <<"Error while compiling OpenCL kernels!";
+    m_KernelsReady = false;
+  }
+  else m_KernelsReady = true;
 }
 
 
@@ -649,7 +675,7 @@ void mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   
   for (unsigned int bitOffset = 0; bitOffset < m_SortBits; bitOffset += 4)
   {
-    MITK_INFO <<"bitOffset: " <<bitOffset <<" m_SortBits: " <<m_SortBits;
+    //MITK_INFO <<"bitOffset: " <<bitOffset <<" m_SortBits: " <<m_SortBits;
 
     // 1) Each workgroup sorts its tile by using local memory
     // 2) Create an histogram of d=2^b digits entries
