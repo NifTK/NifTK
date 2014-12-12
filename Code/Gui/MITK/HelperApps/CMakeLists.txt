@@ -158,7 +158,6 @@ if(SlicerExecutionModel_FOUND)
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
       niftkMakeChessBoardPointSet
       niftkBifurcationToPointSet
-      niftkSURF
     )
     
     if(BUILD_PCL)
@@ -167,6 +166,14 @@ if(SlicerExecutionModel_FOUND)
         FitPlaneToPointCloud
       )
     endif()
+
+    if(OPENCV_WITH_NONFREE)
+      set(SLICER_HELPER_APPS
+        ${SLICER_HELPER_APPS}
+        niftkSURF
+      )
+    endif()
+
   endif()  
 
   foreach(APP ${SLICER_HELPER_APPS})
