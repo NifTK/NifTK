@@ -283,7 +283,10 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
 
     mitk::DataNode::Pointer node = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
     if (node.IsNull())
+    {
       node = mitk::DataNode::New();
+      node->SetName("vl-cuda-interop sample");
+    }
     CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
     if (img.IsNull())
       img = CUDAImage::New();
