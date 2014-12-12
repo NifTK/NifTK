@@ -246,8 +246,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   unsigned int  bytepitch = width * FIXME_pixeltype;
   bytepitch = std::max(bytepitch, 64u);
   // 64 byte alignment sounds good.
-  // FIXME: this does not work
-  bytepitch += bytepitch % 64;
+  bytepitch = ((bytepitch / 64) + 1) * 64;
   assert((bytepitch % 64) == 0);
 
   std::size_t   minSizeInBytes = bytepitch * height;
