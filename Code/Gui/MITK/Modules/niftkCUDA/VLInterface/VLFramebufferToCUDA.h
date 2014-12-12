@@ -18,6 +18,7 @@
 #include "niftkCUDAExports.h"
 #include <vlGraphics/FramebufferObject.hpp>
 #include <driver_types.h>
+#include <texture_types.h>
 
 
 class NIFTKCUDA_EXPORT VLFramebufferAdaptor
@@ -31,6 +32,8 @@ public:
    *
    */
   cudaArray_t Map(cudaStream_t stream);
+
+  static cudaTextureObject_t WrapAsTexture(cudaArray_t arr);
 
   /**
    * Invalidates the CUDA array returned by Map() and relinquishes the underlying

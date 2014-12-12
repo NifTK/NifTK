@@ -46,6 +46,9 @@
 #ifdef _USE_CUDA
 #include <VLInterface/VLFramebufferToCUDA.h>
 #include <CUDAManager/CUDAManager.h>
+#include <CUDAImage/CUDAImage.h>
+#include <CUDAImage/LightweightCUDAImage.h>
+#include <Example/EdgeDetectionKernel.h>
 #endif
 
 
@@ -260,16 +263,35 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
 #ifdef _USE_CUDA
   {
+    vl::ref<vl::FramebufferObject>  fbo = m_VLQtRenderWindow->GetFBO();
+
     CUDAManager*    cudamanager = CUDAManager::GetInstance();
     cudaStream_t    mystream    = cudamanager->GetStream("vl example");
-
-    vl::ref<vl::FramebufferObject>  fbo = m_VLQtRenderWindow->GetFBO();
+    WriteAccessor   outputWA    = cudamanager->RequestOutputImage(fbo->width(), fbo->height(), 4);
 
     VLFramebufferAdaptor    adaptor(fbo.get());
 
-    cudaArray_t arr = adaptor.Map(mystream);
+    cudaArray_t         fboarr = adaptor.Map(mystream);
+    cudaTextureObject_t fbotex = VLFramebufferAdaptor::WrapAsTexture(fboarr);
 
+    RunEdgeDetectionKernel((char*) outputWA.m_DevicePointer, fbo->width(), fbo->height(), fbotex, mystream);
+
+    cudaDestroyTextureObject(fbotex);
     adaptor.Unmap(mystream);
+
+    LightweightCUDAImage lwci = cudamanager->Finalise(outputWA, mystream);
+
+    mitk::DataNode::Pointer node = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
+    if (node.IsNull())
+      node = mitk::DataNode::New();
+    CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
+    if (img.IsNull())
+      img = CUDAImage::New();
+    img->SetLightweightCUDAImage(lwci);
+    node->SetData(img);
+    if (GetDataStorage()->Exists(node.GetPointer()))
+      GetDataStorage()->Remove(node);
+    GetDataStorage()->Add(node);
   }
 #endif
 }

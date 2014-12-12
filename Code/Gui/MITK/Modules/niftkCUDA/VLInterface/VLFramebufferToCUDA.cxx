@@ -169,3 +169,32 @@ void VLFramebufferAdaptor::Unmap(cudaStream_t stream)
     throw std::runtime_error("Cannot unmap array of FBO attachment");
   }
 }
+
+
+//-----------------------------------------------------------------------------
+cudaTextureObject_t VLFramebufferAdaptor::WrapAsTexture(cudaArray_t arr)
+{
+  cudaError_t err = cudaSuccess;
+
+
+  cudaChannelFormatDesc   desc;
+  cudaExtent              size;
+  unsigned int            flags = 0;
+  err = cudaArrayGetInfo(&desc, &size, &flags, arr);
+
+  // FIXME: only default flags supported!
+
+  cudaResourceDesc    resdesc = {cudaResourceTypeArray, 0};
+  resdesc.res.array.array = arr;
+
+  cudaTextureDesc     texdesc = {cudaAddressModeWrap};
+  texdesc.addressMode[0]   = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
+  texdesc.filterMode       = cudaFilterModePoint;
+  texdesc.normalizedCoords = 0;
+  texdesc.readMode         = cudaReadModeElementType;
+
+  cudaTextureObject_t   texobj = 0;
+  err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
+
+  return texobj;
+}
