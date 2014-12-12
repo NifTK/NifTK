@@ -28,6 +28,7 @@ set(CPP_FILES
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
   VideoProcessing/mitkSplitVideo.cxx
+  VideoProcessing/mitkMakeGridOf2DImages.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkPickPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
@@ -60,3 +61,7 @@ set(CPP_FILES
   PivotCalibration/mitkPivotCalibration.cxx
   Features/mitkSurfTester.cxx
 )
+
+if(OPENCV_WITH_NONFREE)
+  list(APPEND CPP_FILES Features/mitkSurfTester.cxx)
+endif()
