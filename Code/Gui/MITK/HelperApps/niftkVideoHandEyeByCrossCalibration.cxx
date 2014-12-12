@@ -14,13 +14,14 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkVideoHandEyeCalibration.h>
-#include <niftkVideoHandEyeByCrossCalibrationCLP.h>
+#include <mitkExceptionMacro.h>
 #include <mitkVector.h>
+
+#include <mitkVideoHandEyeCalibration.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkTrackingAndTimeStampsContainer.h>
-#include <mitkExceptionMacro.h>
 #include <mitkFindAndTriangulateCrossHair.h>
+#include <niftkVideoHandEyeByCrossCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {

@@ -14,10 +14,11 @@
 
 #include <cstdlib>
 #include <limits>
-#include <niftkUltrasoundTransformAndImageMergerCLP.h>
 #include <mitkVector.h>
 #include <QApplication>
+
 #include <mitkUltrasoundTransformAndImageMerger.h>
+#include <niftkUltrasoundTransformAndImageMergerCLP.h>
 
 int main(int argc, char** argv)
 {

@@ -59,6 +59,7 @@ if(BUILD_IGI)
         -DBUILD_opencv_python:BOOL=OFF
         -DBUILD_opencv_ts:BOOL=OFF
         -DBUILD_opencv_java:BOOL=OFF
+        -DBUILD_opencv_nonfree:BOOL=${OPENCV_WITH_NONFREE}
         -DBUILD_DOCS:BOOL=OFF
         -DBUILD_TESTS:BOOL=OFF
         -DBUILD_EXAMPLES:BOOL=OFF

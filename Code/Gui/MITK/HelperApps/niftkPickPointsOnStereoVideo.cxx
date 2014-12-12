@@ -14,10 +14,11 @@
 
 #include <cstdlib>
 #include <limits>
+#include <fstream>
+
 #include <mitkPickPointsOnStereoVideo.h>
 #include <niftkPickPointsOnStereoVideoCLP.h>
 
-#include <fstream>
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
