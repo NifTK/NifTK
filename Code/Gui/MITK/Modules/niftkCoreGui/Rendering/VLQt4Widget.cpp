@@ -1738,6 +1738,9 @@ void VLQt4Widget::sortTranslucentTriangles()
   cl_uint totalNumOfTriangles = 0;
   cl_uint totalNumOfVertices  = 0;
 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Find all the translucent geometries and stuff their actor/geometry/transform to lists
+
   for (int i = 0; i < numOfActors; i++)
   {
     vl::ref<vl::Actor> act = actors->at(i);
@@ -1760,15 +1763,20 @@ void VLQt4Widget::sortTranslucentTriangles()
     }
   }
 
+  // Return if there's nothing to do 
   if (translucentSurfaces.size() == 0)
     return;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Acquire the VBO/IBO and transfrom of the translucent objects from GPUmem 
+  // and pass them to the triangle sorter as cl_mem objects
 
   for (int i = 0; i < translucentSurfaces.size(); i++)
   {
     // Make sure values are copied onto GPU memory
     translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
 
-    // Acquire the vertex buffer from the vl surface
+    // Acquire the vertex buffer from the vl surface a'la OpenCL mem
     unsigned int numOfVertices = translucentSurfaces.at(i)->vertexArray()->size() /3;
     unsigned int numOfVertexComponents = translucentSurfaces.at(i)->vertexArray()->glSize();
     GLenum typeOfVertexComponents = translucentSurfaces.at(i)->vertexArray()->glType();
@@ -1802,9 +1810,7 @@ void VLQt4Widget::sortTranslucentTriangles()
 
     //outfile0.close();
 
-
-
-    // Acquire the index buffer from the vl surface
+    // Acquire the index buffer from the vl surface a'la OpenCL mem
     size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls()->size();
     vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls()->at(numOfDrawcalls-1);
     vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
@@ -1819,19 +1825,21 @@ void VLQt4Widget::sortTranslucentTriangles()
     // Acquire the transformation matrix
     vl::ref<vl::Transform> transf = transforms[i];
     vl::mat4  mat = transf->localMatrix();
-    MITK_INFO <<"Mat: " <<mat.e(0,0) <<" " <<mat.e(0,1) <<" " <<mat.e(0,2) <<" " <<mat.e(0,3) <<"\n";
+    //MITK_INFO <<"Mat: " <<mat.e(0,0) <<" " <<mat.e(0,1) <<" " <<mat.e(0,2) <<" " <<mat.e(0,3) <<"\n";
     cl_float clMat[16];
     int index = 0;
     for (int p = 0; p < 4; p++)
       for (int q = 0; q < 4; q++)
         clMat[index++] = mat.e(p,q);
 
-    MITK_INFO <<"ClMat: " <<clMat[0] <<" " <<clMat[1] <<" " <<clMat[2] <<" " <<clMat[3] <<"\n";
+    //MITK_INFO <<"ClMat: " <<clMat[0] <<" " <<clMat[1] <<" " <<clMat[2] <<" " <<clMat[3] <<"\n";
 
+    // Creating CL buffer here, releasing it at the end of this function
     cl_mem clTransform = clCreateBuffer(clContext, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR, 16*sizeof(cl_float), &clMat, &clErr);
     clTransforms.push_back(clTransform);
     CHECK_OCL_ERR( clErr );
 
+    // Pass on the buffers to the triangle sorter
     m_OclTriangleSorter->AddIndexBuffer(clIndexBuf, numOfTriangles);
     m_OclTriangleSorter->AddVertexBuffer(clVertexBuf, numOfVertices);
     m_OclTriangleSorter->AddTransform(clTransform);
@@ -1839,9 +1847,14 @@ void VLQt4Widget::sortTranslucentTriangles()
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
   }
-
+  
+  // Pass on the camera position to the sorter
   m_OclTriangleSorter->SetViewPoint(clCameraPos);
+  // Compute trinagle distances and sort the triangles
   m_OclTriangleSorter->Update();
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Allocate VL arrays for the merged object's vertices and normals
 
   vl::ref<vl::ArrayFloat3>  vlVerts         = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat3>  vlNormals       = new vl::ArrayFloat3;
@@ -1849,7 +1862,8 @@ void VLQt4Widget::sortTranslucentTriangles()
 
   vlVerts->resize(totalNumOfVertices *3);
   vlNormals->resize(totalNumOfVertices *3);
-   
+  
+  // Create the merged VL geometry object that holds all translucent triangles
   vl::ref<vl::Geometry> translucentGeometry = new vl::Geometry();
 
   translucentGeometry->drawCalls()->push_back(vlTriangles.get());
@@ -1858,12 +1872,14 @@ void VLQt4Widget::sortTranslucentTriangles()
   translucentGeometry->setVertexArray(vlVerts.get());
   translucentGeometry->setNormalArray(vlNormals.get());
 
-  // Make sure that the values are copied onto GPU memory
+  // Make sure that the buffers are allocated in GPU memory
   translucentGeometry->vertexArray()->updateBufferObject();
   translucentGeometry->normalArray()->updateBufferObject();
   glFinish();
  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
+
   GLuint mergedVertexArrayHandle = translucentGeometry->vertexArray()->bufferObject()->handle();
   cl_mem clMergedVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clErr);
   clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedVertexBuf, 0, NULL, NULL);
@@ -1897,8 +1913,10 @@ void VLQt4Widget::sortTranslucentTriangles()
   clErr = clGetMemObjectInfo(clMergedColorBuf, CL_MEM_SIZE, sizeof(size_t), &mergedColorBufSize, NULL);
   CHECK_OCL_ERR( clErr );
 */
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Acquire the index buffer from the vl surface
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Acquire the index buffer from the vl surface and updated it 
+
   size_t numOfDrawcalls = translucentGeometry->drawCalls()->size();
   vl::DrawCall * dc = translucentGeometry->drawCalls()->at(numOfDrawcalls-1);
   vl::ref<vl::DrawElementsUInt> vlMergedTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
@@ -1909,16 +1927,16 @@ void VLQt4Widget::sortTranslucentTriangles()
   clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedIndexBuf, 0, NULL, NULL);
   CHECK_OCL_ERR(clErr);
 
-
   unsigned int totalNumOfTriangles2 = 0;
+  
+  // Here we trigger get the merged and sorted index buffer
   m_OclTriangleSorter->GetOutput(clMergedIndexBuf, totalNumOfTriangles2);
-
-
 
   size_t vertexBufferOffset = 0;
   size_t normalBufferOffset = 0;
   size_t colorBufferOffset = 0;
 
+  // Here we merge the rest: vertices and normals
   for (size_t i = 0; i < translucentSurfaces.size(); i++)
   {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1979,18 +1997,19 @@ void VLQt4Widget::sortTranslucentTriangles()
     
   }
 
+  // Release the GPU mem that was allocated for the transform
   for (size_t u = 0; u < transforms.size(); u++)
     clReleaseMemObject(clTransforms.at(u));
 
 
+  // Add the new merged geometry actor
   vl::ref<vl::Transform> tr     = new vl::Transform();
   vl::ref<vl::Effect>    fx = new vl::Effect;
   m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(translucentGeometry.get(), fx.get(), tr.get());
 
-
+  // Disable the translucent geometries
   for (int i = 0; i < translucentActors.size(); i++)
     translucentActors.at(i)->setEnableMask(0x0);
-
 }
 
 
@@ -2068,6 +2087,8 @@ vl::ivec2 VLQt4Widget::position() const
 //-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
+  sortTranslucentTriangles();
+
   // schedules a repaint, will eventually call into paintGL()
   QGLWidget::update();
 }
