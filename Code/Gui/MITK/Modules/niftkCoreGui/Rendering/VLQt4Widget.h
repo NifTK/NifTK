@@ -55,6 +55,8 @@ namespace mitk
 class DataStorage;
 }
 
+#include "OclTriangleSorter.h"
+
 
 /**
  * This class is not thread-safe! Methods should only ever be called on the main
@@ -217,6 +219,7 @@ protected:
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
+  mitk::OclTriangleSorter *  m_OclTriangleSorter;
 
 protected:
   int       m_Refresh;

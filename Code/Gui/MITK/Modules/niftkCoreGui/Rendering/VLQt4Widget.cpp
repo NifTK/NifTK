@@ -90,6 +90,7 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
   , m_Refresh(10) // 100 fps
   , m_OclService(0)
   , m_CUDAInteropPimpl(0)
+  , m_OclTriangleSorter(0)
 {
   setContinuousUpdate(true);
   setMouseTracking(true);
@@ -106,6 +107,11 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 VLQt4Widget::~VLQt4Widget()
 {
   ScopedOGLContext  ctx(this->context());
+
+  if (m_OclTriangleSorter)
+    delete m_OclTriangleSorter;
+
+  m_OclTriangleSorter = 0;
 
   dispatchDestroyEvent();
 

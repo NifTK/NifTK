@@ -23,6 +23,7 @@ set(CPP_FILES
   QmitkCmicLogo.cxx
   Rendering/SharedOGLContext.cxx
   Rendering/ScopedOGLContext.cxx
+  Rendering/OclTriangleSorter.cxx
 )
 
 set(MOC_H_FILES
