@@ -59,7 +59,6 @@ set(CPP_FILES
   UltrasoundCalibration/mitkVideoHandEyeCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
-  Features/mitkSurfTester.cxx
 )
 
 if(OPENCV_WITH_NONFREE)
