@@ -18,12 +18,13 @@
 #include <itkLogHelper.h>
 
 #include <niftkConversionUtils.h>
-#include <niftkCommandLineParser.h>
 #include <itkCommandLineHelper.h>
+#include <itkDOMReader.h>
 
 #include <itkImageFileWriter.h>
 #include <itkThinPlateSplineScatteredDataPointSetToImageFilter.h>
 
+#include <niftkThinPlateSplineScatteredDataPointSetToImageCLP.h>
 
 /*!
  * \file niftkThinPlateSplineScatteredDataPointSetToImage.cxx
@@ -31,46 +32,13 @@
  * \section niftkThinPlateSplineScatteredDataPointSetToImageSummary Computes a thin plate spline mask approximation to a set of landmarks.
  */
 
-struct niftk::CommandLineArgumentDescription clArgList[] = {
-
-  {OPT_SWITCH, "v", NULL, "Verbose output."},
-  {OPT_SWITCH, "dbg", NULL, "Output debugging info."},
-
-  {OPT_INTx3,   "size",   "nx,ny,nz", 
-   "The size of the output volume [100 x 100 x 100]. For 2D data set nz = 1 or 0."},
-
-  {OPT_FLOATx3, "res",    "rx,ry,rz", "The resolution of the output volume [1mm x 1mm x 1mm]"},
-  {OPT_FLOATx3, "origin", "ox,oy,oz", "The origin of the output volume [0mm x 0mm x 0mm]"},
-
-  {OPT_DOUBLE, "s", "stiffness", "The stiffness of the spline [ 1 ]"},
-
-  {OPT_STRING|OPT_REQ, "o", "fileOut", "The file name of the output voxel planes."},
-  {OPT_STRING|OPT_REQ, "i", "fileIn", "The file name of the input landmarks."},
-
-  {OPT_DONE, NULL, NULL,
-   "Program to compute a thin plate spline mask approximation to a set of landmarks.\n"
-  }
-};
-
-enum {
-  O_VERBOSE,
-  O_DEBUG,
-
-  O_SIZE,
-  O_RES,
-  O_ORIGIN,
-
-  O_STIFFNESS,
-
-  O_OUTPUT_FILE,
-  O_INPUT_FILE
-};
 
 
 struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+  bool flgInvert;
 
   int size[3];
 
@@ -79,12 +47,19 @@ struct arguments
 
   double stiffness;
 
+  std::string dimension;
+
   std::string fileOutput;
-  std::string fileInput;
+
+  std::string fileInputMITK;
+  std::string fileInputPointSet;
+
+  std::string fileInputImage;
 
   arguments() {
     flgVerbose = false;
     flgDebug = false;
+    flgInvert = false;
 
     size[0] = 100;
     size[1] = 100;
@@ -120,12 +95,14 @@ int DoMain(arguments args)
 
   typedef typename itk::ThinPlateSplineScatteredDataPointSetToImageFilter< LandmarkPointSetType, OutputImageType > ThinPlateSplineFilterType;
 
+  typename OutputImageType::Pointer imMask;
+
 
   // Read the input points
   // ~~~~~~~~~~~~~~~~~~~~~
 
   unsigned int iDim;
-  unsigned int iLandmark;
+  unsigned int iLandmark = 0;
   unsigned int nLandmarks;
 
   std::fstream fin;
@@ -136,45 +113,124 @@ int DoMain(arguments args)
 
   LandmarkPointType point; 
 
-  if ( args.flgVerbose ) {
-    std::cout << "Opening landmarks file: " << args.fileInput << "..." << std::endl;
-    std::cout.flush();
-  }
+  // Read the landmark text file
 
-  fin.open( args.fileInput.c_str(), std::ios::in );
-
-  if ( fin.bad() || fin.fail() ) {
-    std::cerr << "ERROR: Failed to open file: " << args.fileInput << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  iLandmark = 0;
-
-  if ( args.flgVerbose )
-  {
-    std::cout << "Landmarks:" << std::endl;
-  }
-
-  while ( fin.eof() == 0 )
+  if ( args.fileInputPointSet.length() )
   {
 
-    for ( iDim=0; iDim<OutputDimension; iDim++ )
-    {
-      fin >> point[iDim];
-      if ( fin.eof() ) break;
+    if ( args.flgVerbose ) {
+      std::cout << "Opening landmarks file: " << args.fileInputPointSet << "..." << std::endl;
+      std::cout.flush();
     }
 
-    if ( fin.eof() ) break;
+    fin.open( args.fileInputPointSet.c_str(), std::ios::in );
+
+    if ( fin.bad() || fin.fail() ) {
+      std::cerr << "ERROR: Failed to open file: " << args.fileInputPointSet << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    iLandmark = 0;
 
     if ( args.flgVerbose )
     {
-      std::cout << std::setw(8) << iLandmark << " "
-                << point << std::endl;
+      std::cout << "Landmarks:" << std::endl;
     }
 
-    PointSet->SetPoint( iLandmark, point );
+    while ( fin.eof() == 0 )
+    {
 
-    iLandmark++;
+      for ( iDim=0; iDim<OutputDimension; iDim++ )
+      {
+        fin >> point[iDim];
+        if ( fin.eof() ) break;
+      }
+
+      if ( fin.eof() ) break;
+
+      if ( args.flgVerbose )
+      {
+        std::cout << std::setw(8) << iLandmark << " "
+                  << point << std::endl;
+      }
+
+      PointSet->SetPoint( iLandmark, point );
+
+      iLandmark++;
+    }
+
+    fin.close();
+  }
+
+
+  // Read an MITK point set
+
+  if ( args.fileInputMITK.length() )
+  {
+    typename itk::DOMNodeXMLReader::Pointer domReader = itk::DOMNodeXMLReader::New();
+
+    domReader->SetFileName( args.fileInputMITK );
+
+    try {
+      std::cout << "Reading MITK PointSet file: " << args.fileInputMITK << std::endl;
+      domReader->Update();
+    }
+    catch( itk::ExceptionObject & err )
+    {
+      std::cerr << "ERROR: Failed to read MITK PointSet file: " << err << std::endl;
+      exit( EXIT_FAILURE );
+    }
+    
+    typename itk::DOMNode::Pointer dom = domReader->GetOutput();
+
+    typedef itk::DOMNode::IdentifierType NodeIdentifierType;
+
+    NodeIdentifierType iNodePoint;
+
+    typename itk::DOMNode::Pointer nodePointSet;
+    typename itk::DOMNode::Pointer nodePoint;
+
+    const itk::DOMTextNode* textNode;
+
+    nodePointSet = dom->Find( "point_set" );
+
+    typedef itk::DOMNode::ConstChildrenListType ConstChildrenListType;
+    typedef itk::DOMNode::AttributesListType AttributesListType;
+
+    ConstChildrenListType children;
+    nodePointSet->GetAllChildren( children );
+
+    for ( size_t i = 0; i < children.size(); i++ )
+    {
+
+      ConstChildrenListType pointChildren;
+      children[i]->GetAllChildren( pointChildren );
+
+      for ( size_t i = 0; i < pointChildren.size(); i++ )
+      {
+        if ( pointChildren[i]->GetName() == std::string( "point" ) )
+        {
+          
+          ConstChildrenListType coords;
+          pointChildren[i]->GetAllChildren( coords );
+
+          int iPoint = atoi( coords[0]->GetTextChild()->GetText().c_str() );
+
+          point[0] = atof( coords[2]->GetTextChild()->GetText().c_str() );
+          point[1] = atof( coords[3]->GetTextChild()->GetText().c_str() );
+          point[2] = atof( coords[4]->GetTextChild()->GetText().c_str() );
+
+          if ( args.flgVerbose )
+          {
+            std::cout << std::setw(8) << iLandmark << " "
+                      << point << std::endl;
+          }
+
+          PointSet->SetPoint( iLandmark, point );
+          iLandmark++;
+        }
+      }
+    }
   }
 
   
@@ -200,7 +256,31 @@ int DoMain(arguments args)
   filter->SetOrigin(  origin );
   filter->SetSize( size );
 
+  if ( args.flgInvert )
+  {
+    filter->SetInvert( true );
+  }
+
+  if ( args.dimension == std::string( "x" ) )
+  {
+    filter->SetSplineHeightDimension( 0 );
+  }
+  else if ( ( OutputDimension == 2 ) || ( args.dimension == std::string( "y" ) ) )
+  {
+    filter->SetSplineHeightDimension( 1 );
+  }
+  else if ( ( OutputDimension == 3 ) || ( args.dimension == std::string( "z" ) ) )
+  {
+    filter->SetSplineHeightDimension( 2 );
+  }
+
+
   filter->SetStiffness( args.stiffness );
+
+  if ( args.flgDebug )
+  {
+    filter->SetDebug(true);
+  }
 
   try
   {  
@@ -209,9 +289,13 @@ int DoMain(arguments args)
   }                                                                                
   catch (itk::ExceptionObject &e)                                                  
   {                                                                                
+    std::cerr << "ERROR: Failed to compute the thin plate spline mask" << std::endl;
     std::cerr << e << std::endl;                                                   
     return EXIT_FAILURE;                                                           
   }                                                                                
+
+  imMask = filter->GetOutput();
+  imMask->DisconnectPipeline();
 
 
   // Write the image out
@@ -222,7 +306,7 @@ int DoMain(arguments args)
     typename OutputImageWriterType::Pointer writer = OutputImageWriterType::New();
 
     writer->SetFileName( args.fileOutput );
-    writer->SetInput( filter->GetOutput() );               
+    writer->SetInput( imMask );               
 
     try
     {  
@@ -231,6 +315,7 @@ int DoMain(arguments args)
     }                                                                                
     catch (itk::ExceptionObject &e)                                                  
     {                                                                                
+      std::cerr << "ERROR: Failed to write the mask to a file" << std::endl;
       std::cerr << e << std::endl;                                                   
       return EXIT_FAILURE;                                                           
     }                                                                                
@@ -246,7 +331,10 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  unsigned int i;
+
   int result;
+  int numberOfDimensions;
 
   int *clo_size = 0;		// The size of the reconstructed volume
 
@@ -255,46 +343,113 @@ int main(int argc, char** argv)
 
   struct arguments args;
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  PARSE_ARGS;
+  GENERATE_ECHOARGS;
 
-  CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );
-  CommandLineOptions.GetArgument( O_DEBUG, args.flgDebug );
+  args.flgVerbose = flgVerbose;
+  args.flgDebug = flgDebug;
+  args.flgInvert = flgInvert;
 
-  if (CommandLineOptions.GetArgument(O_SIZE, clo_size)) {
-    args.size[0] = clo_size[0];
-    args.size[1] = clo_size[1];
-    args.size[2] = clo_size[2];
+  for ( i=0; (i<size.size()) && (i<3); i++ )
+  {
+    args.size[i] = size[i];
   }
 
-  if (CommandLineOptions.GetArgument(O_RES, clo_res)) {
-    args.resolution[0] = clo_res[0];
-    args.resolution[1] = clo_res[1];
-    args.resolution[2] = clo_res[2];
+  for ( i=0; (i<resolution.size()) && (i<3); i++ )
+  {
+    args.resolution[i] = resolution[i];
   }
 
-  if (CommandLineOptions.GetArgument(O_ORIGIN, clo_origin)) {
-    args.origin[0] = clo_origin[0];
-    args.origin[1] = clo_origin[1];
-    args.origin[2] = clo_origin[2];
+  for ( i=0; (i<origin.size()) && (i<3); i++ )
+  {
+    args.origin[i] = origin[i];
   }
+  
+  args.dimension = dimension;
 
-  CommandLineOptions.GetArgument( O_STIFFNESS, args.stiffness );
+  args.stiffness = stiffness;
 
-  CommandLineOptions.GetArgument( O_OUTPUT_FILE, args.fileOutput );
-  CommandLineOptions.GetArgument( O_INPUT_FILE, args.fileInput );
+  args.fileOutput = fileOutputImage;
+  args.fileInputMITK = fileInputMITK;
+  args.fileInputPointSet = fileInputPointSet;
+  
+  args.fileInputImage = fileInputImage;
 
 
   if ( args.size[2] > 1 )
   {
-
-    result = DoMain<3, unsigned char>( args );  
-
+    numberOfDimensions = 3;
+  }
+  else if ( args.size[1] > 1 )
+  {
+    numberOfDimensions = 2;
+  }
+  else if ( args.size[0] > 1 )
+  {
+    numberOfDimensions = 1;
   }
   else
   {
+    numberOfDimensions = 0;
+  }
 
+
+  if ( ! ( args.fileInputMITK.length() || args.fileInputPointSet.length() ) )
+  {
+    std::cerr << "ERROR: One or more point sets must be specified" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( args.fileInputImage.length() > 0 )
+  {
+    itk::ImageIOBase::Pointer imageIO;
+    itk::InitialiseImageIO( args.fileInputImage, imageIO );
+
+    numberOfDimensions = imageIO->GetNumberOfDimensions();
+
+    if ( numberOfDimensions > 0 )
+    {
+      args.size[0] = imageIO->GetDimensions(0);
+      args.origin[0] = imageIO->GetOrigin(0);
+      args.resolution[0] = imageIO->GetSpacing(0);
+    }
+
+    if ( numberOfDimensions > 1 )
+    {
+      args.size[1] = imageIO->GetDimensions(1);
+      args.origin[1] = imageIO->GetOrigin(1);
+      args.resolution[1] = imageIO->GetSpacing(1);
+    }
+
+    if ( numberOfDimensions > 2 )
+    {
+      args.size[2] = imageIO->GetDimensions(2);
+      args.origin[2] = imageIO->GetOrigin(2);
+      args.resolution[2] = imageIO->GetSpacing(2);
+    }
+  }
+
+  switch ( numberOfDimensions )
+  {
+
+  case 3:
+  {
+    result = DoMain<3, unsigned char>( args );  
+    break;
+  }
+
+  case 2:
+  {
     result = DoMain<2, unsigned char>( args );  
+    break;
+  }
 
+  default:
+  {
+    std::cerr << "ERROR: Unsupported number of dimensions (" << numberOfDimensions << ")"
+              << std::endl;
+    result = EXIT_FAILURE;
+  }
   }
 
   return result;
