@@ -172,7 +172,9 @@ void  NewVisualizationView::InitVLRendering()
   // vl keeps dumping stuff to the console about blend state mismatch.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
+#ifdef _USE_CUDA
+  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage());//, "vl-framebuffer");
+#endif
 }
 
 void NewVisualizationView::On_SliderMoved(int val)
