@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#include <VLInterface/VLFramebufferToCUDA.h>
+#include <Rendering/VLFramebufferToCUDA.h>
 #include <QGLWidget>
 #include <boost/typeof/typeof.hpp>
 #include <cassert>
 #include <stdexcept>
 #include <cuda_gl_interop.h>
+#include <cuda_runtime_api.h>
 #include <mitkLogMacros.h>
 #include <vlGraphics/OpenGLContext.hpp>
 

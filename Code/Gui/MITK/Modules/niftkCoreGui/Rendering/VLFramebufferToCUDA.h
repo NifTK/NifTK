@@ -15,13 +15,13 @@
 #ifndef VLFramebufferToCUDA_h
 #define VLFramebufferToCUDA_h
 
-#include "niftkCUDAExports.h"
+#include <niftkCoreGuiExports.h>
 #include <vlGraphics/FramebufferObject.hpp>
 #include <driver_types.h>
 #include <texture_types.h>
 
 
-class NIFTKCUDA_EXPORT VLFramebufferAdaptor
+class NIFTKCOREGUI_EXPORT VLFramebufferAdaptor
 {
 
 public:

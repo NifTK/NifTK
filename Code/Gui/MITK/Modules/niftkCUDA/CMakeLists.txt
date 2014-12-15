@@ -29,10 +29,6 @@ target_link_libraries(niftkCUDA
   ${CUDA_CUDART_LIBRARY}
   niftkCUDAKernels
 )
-if(BUILD_VL)
-  target_link_libraries(niftkCUDA ${VL_LIBRARIES})
-endif()
-
 
 
 if(MSVC AND NIFTK_DELAYLOAD_CUDA)

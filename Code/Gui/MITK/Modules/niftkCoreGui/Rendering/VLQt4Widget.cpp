@@ -27,7 +27,7 @@
 #include <sstream>
 
 #ifdef _USE_CUDA
-#include <VLInterface/VLFramebufferToCUDA.h>
+#include <Rendering/VLFramebufferToCUDA.h>
 #include <CUDAManager/CUDAManager.h>
 
 
