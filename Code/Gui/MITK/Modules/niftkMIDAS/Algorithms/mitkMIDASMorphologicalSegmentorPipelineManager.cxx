@@ -466,7 +466,7 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
     this->GetPipelineParamsFromSegmentationNode(params);
 
     typedef itk::Image<unsigned char, 3> SegmentationImageType;
-    typedef mitk::ImageToItk<const SegmentationImageType> ImageToItkType;
+    typedef mitk::ImageToItk<SegmentationImageType> ImageToItkType;
 
     /// Note:
     /// We pass NULLs to the pipeline for the inputs that have not been changed.
