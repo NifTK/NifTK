@@ -194,7 +194,7 @@ bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::In
     return false;
   }
 
-  const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
+  const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
   if (!planeGeometry)
   {
     return false;
@@ -209,9 +209,9 @@ bool mitk::MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::In
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
   bool contourAugmented = this->DrawLineAroundVoxelEdges(
-                               *m_SegmentationImage,
-                               *m_SegmentationImageGeometry,
-                               *planeGeometry,
+                               m_SegmentationImage,
+                               m_SegmentationImageGeometry,
+                               planeGeometry,
                                 positionEvent->GetPositionInWorld(),
                                 m_MostRecentPointInMm,
                                *feedbackContour,
@@ -294,10 +294,10 @@ bool mitk::MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::I
   }
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
-  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
-  m_EraserScope->SetGeometry2D(const_cast<mitk::Geometry2D*>(geometry2D));
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  m_EraserScope->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
   mitk::Point2D mousePosition;
-  geometry2D->Map(positionEvent->GetPositionInWorld(), mousePosition);
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
 
   this->SetEraserScopeVisible(true, renderer);
@@ -320,9 +320,9 @@ bool mitk::MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::In
   }
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
-  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
   mitk::Point2D mousePosition;
-  geometry2D->Map(positionEvent->GetPositionInWorld(), mousePosition);
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
   renderer->RequestUpdate();
 
@@ -380,8 +380,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAct
     return false;
   }
 
-  const PlaneGeometry* planeGeometry =
-      dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+  const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
 
   mitk::Vector3D spacing = planeGeometry->GetSpacing();
 

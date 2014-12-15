@@ -113,9 +113,9 @@ protected:
   //   2.) from previousPoint to currentPoint working in a straight line, output in contourAlongLine
   // Returns true if new points added to contourAroundCorners or the last point updated, otherwise false.
   bool DrawLineAroundVoxelEdges(
-      const mitk::Image& image,                 // input
-      const mitk::Geometry3D& geometry3D,       // input
-      const mitk::PlaneGeometry& planeGeometry, // input
+      const mitk::Image* image,                 // input
+      const mitk::BaseGeometry* geometry,       // input
+      const mitk::PlaneGeometry* planeGeometry, // input
       const mitk::Point3D& currentPoint,        // input
       const mitk::Point3D& previousPoint,       // input
       mitk::ContourModel& contourAroundCorners,      // output
@@ -140,7 +140,7 @@ protected:
   float m_Tolerance;
 
   // This is the 3D geometry associated with the m_WorkingImage
-  mitk::Geometry3D* m_SegmentationImageGeometry;
+  mitk::BaseGeometry* m_SegmentationImageGeometry;
 
   // This is the current 3D working image (the image that is the segmentation, i.e. a binary image)
   mitk::Image* m_SegmentationImage;

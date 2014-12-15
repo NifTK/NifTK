@@ -106,13 +106,13 @@ private:
   void Disable3dRenderingOfPreviousContour();
 
   /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling mitk::MIDASContourTool::DrawLineAroundVoxelEdges.
-  void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
+  void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const PlaneGeometry* planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
 
   /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.
   void UpdateContours(mitk::StateMachineAction* action, mitk::InteractionPositionEvent* positionEvent, bool provideUndo, bool registerNewPoint);
 
   /// \brief Called from UpdateContours, takes the given point and geometry, and the existing contour (poly line), and calculates the closest point in the current contourReferencePointsInput, sets it to the closestCornerPoint and redraws the feedbackContour and backgroundContour by calling DrawWholeContour.
-  void UpdateFeedbackContour(bool registerNewPoint, const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::ContourModel& contourReferencePointsInput, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour, bool provideUndo);
+  void UpdateFeedbackContour(bool registerNewPoint, const mitk::Point3D& closestCornerPoint, const PlaneGeometry* planeGeometry, mitk::ContourModel& contourReferencePointsInput, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour, bool provideUndo);
 
   /// \brief We use this to store the last point between mouse clicks.
   mitk::Point3D m_MostRecentPointInMillimetres;

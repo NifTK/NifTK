@@ -222,7 +222,7 @@ void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
   mitk::Point3D projectedPointIn3DVoxels;
   mitk::Point3D previousProjectedPointIn3DVoxels;
   mitk::Point3D cursorPointIn3DVoxels;
-  mitk::Index3D affectedVoxel;
+  itk::Index<3> affectedVoxel;
 
 //  dont forget to set projectedPointIn3DVoxels equal invalid value, then track
 //  all new points and only add to processor list if different to previous.
@@ -362,7 +362,7 @@ bool mitk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, m
     return false;
   }
 
-  const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+  const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldPlaneGeometry());
   if ( !planeGeometry )
   {
     return false;

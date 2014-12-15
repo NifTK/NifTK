@@ -104,7 +104,7 @@ bool mitk::MIDASPointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* 
     mitk::BaseRenderer* renderer = positionEvent->GetSender();
 
     mitk::Point3D point3DInMm = positionEvent->GetPositionInWorld();
-    const mitk::Geometry3D* worldGeometry = renderer->GetWorldGeometry();
+    const mitk::BaseGeometry* worldGeometry = renderer->GetWorldGeometry();
     mitk::Point3D point3DIndex;
     worldGeometry->WorldToIndex(point3DInMm, point3DIndex);
     point3DIndex[0] = std::floor(point3DIndex[0]) + 0.5;

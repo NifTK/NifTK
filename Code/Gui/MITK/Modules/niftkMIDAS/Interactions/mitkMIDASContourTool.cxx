@@ -321,9 +321,9 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
 }
 
 bool mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
-    const mitk::Image& image,                 // input
-    const mitk::Geometry3D& geometry3D,       // input
-    const mitk::PlaneGeometry& planeGeometry, // input
+    const mitk::Image* image,                 // input
+    const mitk::BaseGeometry* geometry,       // input
+    const mitk::PlaneGeometry* planeGeometry, // input
     const mitk::Point3D& currentPointInMm,        // input
     const mitk::Point3D& previousPointInMm,       // input
     mitk::ContourModel& contourAroundCorners,      // output
@@ -336,7 +336,7 @@ bool mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
   int affectedDimension( -1 );
   int affectedSlice( -1 );
 
-  if (!(SegTool2D::DetermineAffectedImageSlice( &image, &planeGeometry, affectedDimension, affectedSlice )))
+  if (!(SegTool2D::DetermineAffectedImageSlice(image, planeGeometry, affectedDimension, affectedSlice)))
   {
     return contourAugmented;
   }
@@ -359,7 +359,7 @@ bool mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
   }
 
   // Get size, for now using VTK spacing.
-  mitk::Image::Pointer nonConstImage = const_cast<mitk::Image*>(&image);
+  mitk::Image::Pointer nonConstImage = const_cast<mitk::Image*>(image);
   vtkImageData* vtkImage = nonConstImage->GetVtkImageData(0, 0);
   double *spacing = vtkImage->GetSpacing();
 
