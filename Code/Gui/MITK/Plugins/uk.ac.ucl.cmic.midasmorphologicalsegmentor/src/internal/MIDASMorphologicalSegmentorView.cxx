@@ -464,7 +464,7 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
     {
       mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
       mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
-      mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+      mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
       mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 

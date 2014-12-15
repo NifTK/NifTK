@@ -35,7 +35,7 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkSlicedGeometry3D.h>
 #include <mitkITKImageImport.h>
-#include <mitkGeometry2D.h>
+#include <mitkPlaneGeometry.h>
 #include <mitkOperationEvent.h>
 #include <mitkUndoController.h>
 #include <mitkDataStorageUtils.h>
