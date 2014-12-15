@@ -177,7 +177,7 @@ void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geometry3D* geometry)
+mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -210,7 +210,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::Geome
 
 
 // --------------------------------------------------------------------------
-mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::Geometry3D* geometry)
+mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -234,7 +234,7 @@ mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mitk::Geometry3D* geometry)
+mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -319,9 +319,9 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCentrePosition(int windowInd
 
   mitk::BaseRenderer* renderer = d->Viewer->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-  const mitk::Geometry2D* worldGeometry2D = renderer->GetCurrentWorldGeometry2D();
+  const mitk::PlaneGeometry* worldPlaneGeometry = renderer->GetCurrentWorldPlaneGeometry();
 
-  mitk::Point3D centreInMm = worldGeometry2D->GetCenter();
+  mitk::Point3D centreInMm = worldPlaneGeometry->GetCenter();
   mitk::Point2D centreInMm2D;
   displayGeometry->Map(centreInMm, centreInMm2D);
   mitk::Point2D centreInPx2D;
@@ -475,7 +475,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetRandomWorldPosition() const
 {
   Q_D(const niftkSingleViewerWidgetTestClass);
 
-  mitk::Geometry3D* geometry = d->Image->GetGeometry();
+  mitk::BaseGeometry* geometry = d->Image->GetGeometry();
 
   return geometry->GetOrigin()
       + geometry->GetAxisVector(0) * ((double) std::rand() / RAND_MAX)
@@ -555,11 +555,7 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   /// not with the real application. We simply suppress them here.
   vtkObject::GlobalWarningDisplayOff();
 
-  std::vector<std::string> files;
-  files.push_back(d->FileName);
-
-  mitk::IOUtil::LoadFiles(files, *(d->DataStorage.GetPointer()));
-  mitk::DataStorage::SetOfObjects::ConstPointer allImages = d->DataStorage->GetAll();
+  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(d->FileName, *(d->DataStorage.GetPointer()));
 
   /// Note:
   /// If the file is a DICOM file then all the DICOM images from the same directory
@@ -752,10 +748,10 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   Q_D(niftkSingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
-  const mitk::Geometry3D* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
+  const mitk::BaseGeometry* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
 
   const mitk::TimeGeometry* viewerTimeGeometry = d->Viewer->GetTimeGeometry();
-  const mitk::Geometry3D* viewerGeometry = viewerTimeGeometry->GetGeometryForTimePoint(0);
+  const mitk::BaseGeometry* viewerGeometry = viewerTimeGeometry->GetGeometryForTimePoint(0);
 
   QVERIFY(imageTimeGeometry == viewerTimeGeometry);
   QVERIFY(imageGeometry == viewerGeometry);
@@ -764,9 +760,9 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
 
-  const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
-  const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
-  const mitk::Geometry3D* coronalGeometry = coronalRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* axialGeometry = axialRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* coronalGeometry = coronalRenderer->GetWorldGeometry();
 
   QVERIFY(axialGeometry);
   QVERIFY(sagittalGeometry);
@@ -800,12 +796,12 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
   QVERIFY(sagittalSlicedGeometry);
   QVERIFY(coronalSlicedGeometry);
 
-  const mitk::PlaneGeometry* axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(1));
-  const mitk::PlaneGeometry* sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(1));
-  const mitk::PlaneGeometry* coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(1));
+  const mitk::PlaneGeometry* axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetPlaneGeometry(0));
+  const mitk::PlaneGeometry* sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetPlaneGeometry(0));
+  const mitk::PlaneGeometry* coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetPlaneGeometry(0));
+  const mitk::PlaneGeometry* axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetPlaneGeometry(1));
+  const mitk::PlaneGeometry* sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetPlaneGeometry(1));
+  const mitk::PlaneGeometry* coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetPlaneGeometry(1));
 
   QVERIFY(axialFirstPlaneGeometry);
   QVERIFY(sagittalFirstPlaneGeometry);
@@ -1216,10 +1212,10 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   Q_D(niftkSingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
-  const mitk::Geometry3D* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
+  const mitk::BaseGeometry* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
 
   const mitk::TimeGeometry* viewerTimeGeometry = d->Viewer->GetTimeGeometry();
-  const mitk::Geometry3D* viewerGeometry = viewerTimeGeometry->GetGeometryForTimePoint(0);
+  const mitk::BaseGeometry* viewerGeometry = viewerTimeGeometry->GetGeometryForTimePoint(0);
 
   QVERIFY(imageTimeGeometry == viewerTimeGeometry);
   QVERIFY(imageGeometry == viewerGeometry);
@@ -1238,9 +1234,9 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 
 //  MITK_INFO << "Viewer initialised with the world geometry from an image geometry: ";
 
-  const mitk::Geometry3D* axialGeometry = axialRenderer->GetWorldGeometry();
-  const mitk::Geometry3D* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
-  const mitk::Geometry3D* coronalGeometry = coronalRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* axialGeometry = axialRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
+  const mitk::BaseGeometry* coronalGeometry = coronalRenderer->GetWorldGeometry();
 
   QVERIFY(axialGeometry);
   QVERIFY(sagittalGeometry);
@@ -1268,12 +1264,12 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(sagittalSlicedGeometry);
   QVERIFY(coronalSlicedGeometry);
 
-  const mitk::PlaneGeometry* axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(0));
-  const mitk::PlaneGeometry* axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(1));
-  const mitk::PlaneGeometry* sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(1));
-  const mitk::PlaneGeometry* coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(1));
+  const mitk::PlaneGeometry* axialFirstPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(0);
+  const mitk::PlaneGeometry* sagittalFirstPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(0);
+  const mitk::PlaneGeometry* coronalFirstPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(0);
+  const mitk::PlaneGeometry* axialSecondPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(1);
+  const mitk::PlaneGeometry* sagittalSecondPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(1);
+  const mitk::PlaneGeometry* coronalSecondPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(1);
 
   QVERIFY(axialFirstPlaneGeometry);
   QVERIFY(sagittalFirstPlaneGeometry);
@@ -1441,12 +1437,12 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(sagittalSlicedGeometry);
   QVERIFY(coronalSlicedGeometry);
 
-  axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(0));
-  sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(0));
-  coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(0));
-  axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(1));
-  sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(1));
-  coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(1));
+  axialFirstPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(0);
+  sagittalFirstPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(0);
+  coronalFirstPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(0);
+  axialSecondPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(1);
+  sagittalSecondPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(1);
+  coronalSecondPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(1);
 
   QVERIFY(axialFirstPlaneGeometry);
   QVERIFY(sagittalFirstPlaneGeometry);
@@ -1551,12 +1547,12 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(sagittalSlicedGeometry);
   QVERIFY(coronalSlicedGeometry);
 
-  axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(0));
-  sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(0));
-  coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(0));
-  axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(1));
-  sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(1));
-  coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(1));
+  axialFirstPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(0);
+  sagittalFirstPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(0);
+  coronalFirstPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(0);
+  axialSecondPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(1);
+  sagittalSecondPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(1);
+  coronalSecondPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(1);
 
   QVERIFY(axialFirstPlaneGeometry);
   QVERIFY(sagittalFirstPlaneGeometry);
@@ -1661,12 +1657,12 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(sagittalSlicedGeometry);
   QVERIFY(coronalSlicedGeometry);
 
-  axialFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(0));
-  sagittalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(0));
-  coronalFirstPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(0));
-  axialSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(axialSlicedGeometry->GetGeometry2D(1));
-  sagittalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(sagittalSlicedGeometry->GetGeometry2D(1));
-  coronalSecondPlaneGeometry = dynamic_cast<const mitk::PlaneGeometry*>(coronalSlicedGeometry->GetGeometry2D(1));
+  axialFirstPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(0);
+  sagittalFirstPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(0);
+  coronalFirstPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(0);
+  axialSecondPlaneGeometry = axialSlicedGeometry->GetPlaneGeometry(1);
+  sagittalSecondPlaneGeometry = sagittalSlicedGeometry->GetPlaneGeometry(1);
+  coronalSecondPlaneGeometry = coronalSlicedGeometry->GetPlaneGeometry(1);
 
   QVERIFY(axialFirstPlaneGeometry);
   QVERIFY(sagittalFirstPlaneGeometry);
@@ -3732,14 +3728,14 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationC
   Q_D(niftkSingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* timeGeometry = d->Viewer->GetTimeGeometry();
-  mitk::Geometry3D* worldGeometry = timeGeometry->GetGeometryForTimeStep(0);
+  mitk::BaseGeometry* worldGeometry = timeGeometry->GetGeometryForTimeStep(0);
 
   mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();
   mitk::Point3D randomWorldPosition = this->GetRandomWorldPosition();
 
   expectedSelectedPosition[AxialAxis] = randomWorldPosition[AxialAxis];
 
-  mitk::Index3D expectedSelectedIndex;
+  itk::Index<3> expectedSelectedIndex;
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
   int expectedAxialSlice = expectedSelectedIndex[1];
