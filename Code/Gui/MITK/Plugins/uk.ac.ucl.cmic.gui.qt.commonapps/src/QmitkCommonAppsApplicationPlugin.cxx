@@ -667,7 +667,6 @@ void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor
 
 
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
 void QmitkCommonAppsApplicationPlugin::LoadDataFromDisk(const QStringList &arguments, bool globalReinit)
 {
   if (!arguments.empty())
