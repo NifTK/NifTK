@@ -366,7 +366,7 @@ void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk:
     assert(backgroundContour);
 
     // Make sure we have a valid geometry, otherwise no point continuing.
-    const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+    const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
     if (!planeGeometry)
     {
       return;
@@ -409,7 +409,7 @@ bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Intera
   }
 
   // Similarly, we can't do plane calculations if no geometry set.
-  const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
+  const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
   if (!planeGeometry) return false;
 
   // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
@@ -543,7 +543,7 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
         mitk::ContourModel* contour = op->GetContour();
         const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
 
-        if (pointId >= 0 && pointId < contour->GetNumberOfVertices())
+        if (pointId < contour->GetNumberOfVertices())
         {
           mitk::ContourModel::VertexType* v = const_cast<mitk::ContourModel::VertexType*>(contour->GetVertexAt(pointId));
           v->Coordinates = point;
