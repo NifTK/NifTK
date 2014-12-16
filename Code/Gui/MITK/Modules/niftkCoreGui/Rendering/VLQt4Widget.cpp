@@ -1445,8 +1445,10 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   }
 
   // Make sure that the values are copied onto GPU memory
-  //vlTriangles->indexBuffer()->updateBufferObject();
-  //glFinish();
+  vlVerts->updateBufferObject();
+  vlNormals->updateBufferObject();
+  vlTriangles->indexBuffer()->updateBufferObject();
+  glFinish();
 
   /// \brief Buffer in host memory to store cell info
   if (m_IndexBuffer != 0)
