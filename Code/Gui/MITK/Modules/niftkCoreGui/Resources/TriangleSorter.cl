@@ -776,9 +776,9 @@ __kernel
   transformedVertexCoords.w = value;
 
   vertexDistances[idx] = fast_distance(viewPoint, transformedVertexCoords);
-  //vertexDistances[idx].y = vertexCoords.x;
-  //vertexDistances[idx].z = vertexCoords.y;
-  //vertexDistances[idx].w = vertexCoords.z;
+  //vertexBuf[idx*3+0] = vertexCoords.x;
+  //vertexBuf[idx*3+1] = vertexCoords.y;
+  //vertexBuf[idx*3+2] = vertexCoords.z;
 }
 
 inline unsigned int FloatFlip(float f)
