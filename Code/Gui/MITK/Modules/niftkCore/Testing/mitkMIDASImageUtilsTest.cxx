@@ -52,8 +52,7 @@ public:
     files.push_back(fileName);
     files.push_back(fileName);
 
-    mitk::IOUtil::LoadFiles(files, *(dataStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = dataStorage->GetAll();
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(dataStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
 
     const mitk::DataNode::Pointer inputNode = (*allImages)[0];
