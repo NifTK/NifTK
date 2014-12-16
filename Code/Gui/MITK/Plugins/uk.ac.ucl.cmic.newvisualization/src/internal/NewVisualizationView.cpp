@@ -53,8 +53,11 @@
 #endif
 
 
+//-----------------------------------------------------------------------------
 const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualization";
 
+
+//-----------------------------------------------------------------------------
 NewVisualizationView::NewVisualizationView()
 : m_Controls(0)
 , m_Parent(0)
@@ -63,6 +66,8 @@ NewVisualizationView::NewVisualizationView()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 NewVisualizationView::~NewVisualizationView()
 {
 
@@ -90,10 +95,14 @@ NewVisualizationView::~NewVisualizationView()
 //  m_RenderApplet = 0;
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::SetFocus()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 {
   // setup the basic GUI of this view
@@ -132,6 +141,8 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void  NewVisualizationView::InitVLRendering()
 {
   /* init Visualization Library */
@@ -178,12 +189,16 @@ void  NewVisualizationView::InitVLRendering()
 #endif
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::On_SliderMoved(int val)
 {
   m_VLQtRenderWindow->UpdateThresholdVal(val);
   m_VLQtRenderWindow->update();
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
@@ -207,6 +222,8 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
   MITK_INFO <<"Node added";
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
@@ -224,6 +241,8 @@ void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
   MITK_INFO <<"Node removed";
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
@@ -235,10 +254,14 @@ void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
   MITK_INFO <<"Node deleted";
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   if (node == 0 || node->GetData()== 0)
@@ -248,6 +271,8 @@ void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, con
   //MITK_INFO <<"Visibility Change";
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   if (node == 0 || node->GetData()== 0)
@@ -257,6 +282,8 @@ void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mi
   //MITK_INFO <<"Color Change";
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   if (node == 0 || node->GetData()== 0)
@@ -319,6 +346,8 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
 #endif
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::Visible()
 {
   QmitkBaseView::Visible();
@@ -327,6 +356,8 @@ void NewVisualizationView::Visible()
   UpdateDisplay();
 }
 
+
+//-----------------------------------------------------------------------------
 void NewVisualizationView::UpdateDisplay(bool viewEnabled)
 {
   m_VLQtRenderWindow->ClearScene();

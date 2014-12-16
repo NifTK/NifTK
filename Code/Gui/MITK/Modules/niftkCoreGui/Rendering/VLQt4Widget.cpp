@@ -1,3 +1,16 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 
 #include "VLQt4Widget.h"
@@ -31,6 +44,7 @@
 #include <CUDAManager/CUDAManager.h>
 
 
+//-----------------------------------------------------------------------------
 struct CUDAInterop
 {
   std::string                     m_NodeName;
@@ -54,6 +68,7 @@ struct CUDAInterop { };
 #endif // _USE_CUDA
 
 
+//-----------------------------------------------------------------------------
 struct ScopedOGLContext
 {
   QGLContext*   prevctx;
@@ -83,7 +98,7 @@ struct ScopedOGLContext
 };
 
 
-
+//-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(10) // 100 fps
@@ -101,6 +116,7 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 }
 
 
+//-----------------------------------------------------------------------------
 VLQt4Widget::~VLQt4Widget()
 {
   ScopedOGLContext  ctx(this->context());
@@ -112,6 +128,7 @@ VLQt4Widget::~VLQt4Widget()
 
 
 #if 0
+//-----------------------------------------------------------------------------
 bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
 {
 #if 0
@@ -220,12 +237,14 @@ bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLConte
 #endif
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
 {
   m_OclService = oclserv;
 }
 
 
+//-----------------------------------------------------------------------------
 vl::FramebufferObject* VLQt4Widget::GetFBO()
 {
   // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
@@ -233,6 +252,7 @@ vl::FramebufferObject* VLQt4Widget::GetFBO()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
 {
 #ifdef _USE_CUDA
@@ -266,6 +286,7 @@ void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStora
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::initializeGL()
 {
   // sanity check: context is initialised by Qt
@@ -363,6 +384,7 @@ void VLQt4Widget::initializeGL()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
 {
   // sanity check: internal method, context should have been activated by caller.
@@ -389,6 +411,7 @@ void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::resizeGL(int width, int height)
 {
   // sanity check: context is initialised by Qt
@@ -421,6 +444,7 @@ void VLQt4Widget::resizeGL(int width, int height)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::paintGL()
 {
   // sanity check: context is initialised by Qt
@@ -432,6 +456,7 @@ void VLQt4Widget::paintGL()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::renderScene()
 {
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
@@ -455,6 +480,7 @@ void VLQt4Widget::renderScene()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::ClearScene()
 {
   ScopedOGLContext  ctx(context());
@@ -463,6 +489,7 @@ void VLQt4Widget::ClearScene()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateThresholdVal(int isoVal)
 {
   ScopedOGLContext    ctx(context());
@@ -477,6 +504,7 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
@@ -524,6 +552,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
@@ -618,6 +647,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
@@ -642,6 +672,7 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 }
 
 
+//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -686,6 +717,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -960,6 +992,7 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 }
 
 
+//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -1167,6 +1200,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
 }
 
 
+//-----------------------------------------------------------------------------
 vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 {
   QString   sourceFilename(filename);
@@ -1189,6 +1223,7 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setContinuousUpdate(bool continuous)
 {
   vl::OpenGLContext::setContinuousUpdate(continuous);
@@ -1209,12 +1244,14 @@ void VLQt4Widget::setContinuousUpdate(bool continuous)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setWindowTitle(const vl::String& title)
 {
   QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
 }
 
 
+//-----------------------------------------------------------------------------
 bool VLQt4Widget::setFullscreen(bool fullscreen)
 {
   // fullscreen not allowed (yet)!
@@ -1229,30 +1266,35 @@ bool VLQt4Widget::setFullscreen(bool fullscreen)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::show()
 {
   QGLWidget::show();
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::hide()
 {
   QGLWidget::hide();
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setPosition(int x, int y)
 {
   QGLWidget::move(x,y);
 }
 
 
+//-----------------------------------------------------------------------------
 vl::ivec2 VLQt4Widget::position() const
 {
   return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
   // schedules a repaint, will eventually call into paintGL()
@@ -1260,6 +1302,7 @@ void VLQt4Widget::update()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setSize(int w, int h)
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
@@ -1267,6 +1310,7 @@ void VLQt4Widget::setSize(int w, int h)
 }
 
 
+//-----------------------------------------------------------------------------
 vl::ivec2 VLQt4Widget::size() const
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
@@ -1274,6 +1318,7 @@ vl::ivec2 VLQt4Widget::size() const
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::swapBuffers()
 {
   // on windows, swapBuffers() does not depend on the opengl rendering context.
@@ -1322,6 +1367,7 @@ void VLQt4Widget::swapBuffers()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::makeCurrent()
 {
   QGLWidget::makeCurrent();
@@ -1330,12 +1376,14 @@ void VLQt4Widget::makeCurrent()
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setMousePosition(int x, int y)
 {
   QCursor::setPos(mapToGlobal(QPoint(x,y)));
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setMouseVisible(bool visible)
 {
   vl::OpenGLContext::setMouseVisible(visible);
@@ -1347,12 +1395,14 @@ void VLQt4Widget::setMouseVisible(bool visible)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::getFocus()
 {
   QGLWidget::setFocus(Qt::OtherFocusReason);
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::setRefreshRate(int msec)
 {
   m_Refresh = msec;
@@ -1360,6 +1410,7 @@ void VLQt4Widget::setRefreshRate(int msec)
 }
 
 
+//-----------------------------------------------------------------------------
 int VLQt4Widget::refreshRate()
 {
   return m_Refresh;
@@ -1367,6 +1418,7 @@ int VLQt4Widget::refreshRate()
 
 
 #if 0
+//-----------------------------------------------------------------------------
 void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
 {
   if (ev->mimeData()->hasUrls())
@@ -1374,6 +1426,7 @@ void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::dropEvent(QDropEvent* ev)
 {
   if ( ev->mimeData()->hasUrls() )
@@ -1399,6 +1452,7 @@ void VLQt4Widget::dropEvent(QDropEvent* ev)
 #endif
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
 {
   if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
@@ -1407,6 +1461,7 @@ void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -1422,6 +1477,7 @@ void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -1437,12 +1493,14 @@ void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::wheelEvent(QWheelEvent* ev)
 {
   vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -1452,6 +1510,7 @@ void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -1461,6 +1520,7 @@ void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
 }
 
 
+//-----------------------------------------------------------------------------
 void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
 {
   // translate non unicode characters
@@ -1655,6 +1715,7 @@ void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, 
 }
 
 
+//-----------------------------------------------------------------------------
 QGLContext* VLQt4Widget::context()
 {
   return const_cast<QGLContext*>(QGLWidget::context());
