@@ -1,17 +1,3 @@
-/*=============================================================================
-
-  NifTK: A software platform for medical image computing.
-
-  Copyright (c) University College London (UCL). All rights reserved.
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.
-
-  See LICENSE.txt in the top level directory for details.
-
-=============================================================================*/
-
 #include "VLQt4Widget.h"
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
@@ -32,63 +18,43 @@
 #include <vtkPolyDataNormals.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
-#include <mitkDataStorage.h>
 #include <QFile>
 #include <QTextStream>
-#include <stdexcept>
-#include <sstream>
-#include "ScopedOGLContext.h"
-
-#ifdef _USE_CUDA
-#include <Rendering/VLFramebufferToCUDA.h>
-#include <CUDAManager/CUDAManager.h>
-#include <CUDAImage/CUDAImage.h>
-#include <CUDAImage/LightweightCUDAImage.h>
-#include <CUDAImage/CUDAImageProperty.h>
-#include <Kernels/FlipImage.h>
-#include <cuda_gl_interop.h>
 
 
-//-----------------------------------------------------------------------------
-struct CUDAInterop
+struct ScopedOGLContext
 {
-  std::string                     m_NodeName;
-  mitk::DataStorage::Pointer      m_DataStorage;
+  QGLContext*   prevctx;
+  QGLContext*   ourctx;
 
-  VLFramebufferAdaptor*           m_FBOAdaptor;
-
-  CUDAInterop()
-    : m_FBOAdaptor(0)
+  ScopedOGLContext(QGLContext* newctx)
+    : ourctx(newctx)
   {
+    prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
+    if (prevctx != ourctx)
+      ourctx->makeCurrent();
   }
 
-  ~CUDAInterop()
+  ~ScopedOGLContext()
   {
-    delete m_FBOAdaptor;
+    // did somebody mess up our context?
+    assert(QGLContext::currentContext() == ourctx);
+
+    if (prevctx != ourctx)
+    {
+      if (prevctx)
+        prevctx->makeCurrent();
+      else
+        ourctx->doneCurrent();
+    }
   }
 };
 
 
-//-----------------------------------------------------------------------------
-VLQt4Widget::TextureDataPOD::TextureDataPOD()
-  : m_LastUpdatedID(0)
-  , m_CUDARes(0)
-{
-}
-
-
-#else
-// empty dummy, in case we have no cuda
-struct CUDAInterop { };
-#endif // _USE_CUDA
-
-
-//-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(10) // 100 fps
   , m_OclService(0)
-  , m_CUDAInteropPimpl(0)
   , m_OclTriangleSorter(0)
 {
   setContinuousUpdate(true);
@@ -102,7 +68,6 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 }
 
 
-//-----------------------------------------------------------------------------
 VLQt4Widget::~VLQt4Widget()
 {
   ScopedOGLContext  ctx(this->context());
@@ -113,34 +78,10 @@ VLQt4Widget::~VLQt4Widget()
   m_OclTriangleSorter = 0;
 
   dispatchDestroyEvent();
-
-
-#ifdef _USE_CUDA
-  {
-    for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      i = m_NodeToTextureMap.erase(i);
-    }
-  }
-#endif
-
-  // if no cuda is available then this is most likely a nullptr.
-  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
-  delete m_CUDAInteropPimpl;
 }
 
 
 #if 0
-//-----------------------------------------------------------------------------
 bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
 {
 #if 0
@@ -249,56 +190,12 @@ bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLConte
 #endif
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
 {
   m_OclService = oclserv;
 }
 
 
-//-----------------------------------------------------------------------------
-vl::FramebufferObject* VLQt4Widget::GetFBO()
-{
-  // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
-  return dynamic_cast<vl::FramebufferObject*>(m_FinalBlit->readFramebuffer());
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
-{
-#ifdef _USE_CUDA
-  ScopedOGLContext  ctx(this->context());
-
-  if (enable)
-  {
-    if (datastorage == 0)
-      throw std::runtime_error("Need data storage object");
-
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = new CUDAInterop;
-    m_CUDAInteropPimpl->m_FBOAdaptor = 0;
-    m_CUDAInteropPimpl->m_DataStorage = datastorage;
-    m_CUDAInteropPimpl->m_NodeName = nodename;
-    if (m_CUDAInteropPimpl->m_NodeName.empty())
-    {
-      std::ostringstream    n;
-      n << "0x" << std::hex << (void*) this;
-      m_CUDAInteropPimpl->m_NodeName = n.str();
-    }
-  }
-  else
-  {
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = 0;
-  }
-#else
-  throw std::runtime_error("CUDA support was not enabled");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQt4Widget::initializeGL()
 {
   // sanity check: context is initialised by Qt
@@ -326,8 +223,6 @@ void VLQt4Widget::initializeGL()
   vl::vec3 up     = vl::vec3(0,1,0);
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_Camera->setViewMatrix(view_mat);
-  m_Camera->setObjectName("m_Camera");
-  m_Camera->viewport()->enableScissorSetup(true);
 
   vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
 
@@ -348,23 +243,6 @@ void VLQt4Widget::initializeGL()
 
   m_SceneManager = new vl::SceneManagerActorTree;
 
-  m_BackgroundCamera = new vl::Camera;
-  m_BackgroundCamera->setObjectName("m_BackgroundCamera");
-  // a simple "identity" ortho projection. it maps the background geometry perfectly into the 4 window corners.
-  // actually, clipspace corners. mapping to pixels is done with the viewport, which is dependent on widget sizing.
-  m_BackgroundCamera->setProjectionMatrix(vl::mat4::getOrtho(-1, 1, -1, 1, 1000, -1000), vl::PMT_OrthographicProjection);
-  m_BackgroundCamera->setViewMatrix(vl::mat4::getIdentity());
-
-  m_BackgroundRendering = new vl::Rendering;
-  m_BackgroundRendering->setEnableMask(ENABLEMASK_BACKGROUND);
-  m_BackgroundRendering->setObjectName("m_BackgroundRendering");
-  m_BackgroundRendering->setCamera(m_BackgroundCamera.get());
-  m_BackgroundRendering->sceneManagers()->push_back(m_SceneManager.get());
-  m_BackgroundRendering->setCullingEnabled(false);
-  m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
-  m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
-  m_BackgroundCamera->viewport()->enableScissorSetup(false);
-
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
   m_OpaqueObjectsRendering = new vl::Rendering;
@@ -372,11 +250,8 @@ void VLQt4Widget::initializeGL()
   m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
   m_OpaqueObjectsRendering->setCamera(m_Camera.get());
   m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
-  m_OpaqueObjectsRendering->setCullingEnabled(true);
   // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
   m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
-  // dont trash earlier stages.
-  m_OpaqueObjectsRendering->renderer()->setClearFlags(vl::CF_CLEAR_DEPTH);
 
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
@@ -389,7 +264,6 @@ void VLQt4Widget::initializeGL()
 
   m_RenderingTree = new vl::RenderingTree;
   m_RenderingTree->setObjectName("m_RenderingTree");
-  m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
   m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
   //m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
 
@@ -403,9 +277,11 @@ void VLQt4Widget::initializeGL()
   m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
 
   // updating the size of our fbo is a bit of a pain.
-  CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
+  createAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
 
-  // moves the light with the main camera.
+  m_Camera->viewport()->setClearColor(vl::fuchsia);
+
+  // ???
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
 
 
@@ -423,40 +299,21 @@ void VLQt4Widget::initializeGL()
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::CreateAndUpdateFBOSizes(int width, int height)
+void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
 {
-  // sanity check: internal method, context should have been activated by caller.
-  assert(this->context() == QGLContext::currentContext());
-
-  // sanitise dimensions. depending on how windows are resized we can get zero here.
-  // but that breaks on the ogl side.
-  width  = std::max(1, width);
-  height = std::max(1, height);
-
   vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
   opaqueFBO->setObjectName("opaqueFBO");
   opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
   opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
   opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
 
-  m_BackgroundRendering->renderer()->setFramebuffer(opaqueFBO.get());
   m_OpaqueObjectsRendering->renderer()->setFramebuffer(opaqueFBO.get());
 
   m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
   m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
-
-#ifdef _USE_CUDA
-  if (m_CUDAInteropPimpl)
-  {
-    delete m_CUDAInteropPimpl->m_FBOAdaptor;
-    m_CUDAInteropPimpl->m_FBOAdaptor = new VLFramebufferAdaptor(opaqueFBO.get());
-  }
-#endif
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::resizeGL(int width, int height)
 {
   // sanity check: context is initialised by Qt
@@ -473,7 +330,7 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
 
-  CreateAndUpdateFBOSizes(width, height);
+  createAndUpdateFBOSizes(width, height);
 
   //m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
   //m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
@@ -481,80 +338,29 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
 
-  UpdateViewportAndCamera();
+  m_Camera->viewport()->setWidth(width);
+  m_Camera->viewport()->setHeight(height);
+  m_Camera->setProjectionPerspective();
 
   vl::OpenGLContext::dispatchResizeEvent(width, height);
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateViewportAndCamera()
-{
-  // some sane defaults
-  m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-  m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-
-  if (m_BackgroundNode.IsNotNull())
-  {
-    assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
-    vl::ref<vl::Actor> backgroundactor = m_NodeToActorMap[m_BackgroundNode];
-
-    vl::ref<vl::TextureSampler> ts = backgroundactor->effect()->shader()->getTextureSampler(0);
-    if (ts.get() != 0)
-    {
-      vl::ref<vl::Texture> tex = ts->texture();
-      if (tex.get() != 0)
-      {
-        // this is based on my old araknes video-ar app.
-        float   width_scale  = (float) QWidget::width()  / (float) tex->width();
-        float   height_scale = (float) QWidget::height() / (float) tex->height();
-        int     vpw = QWidget::width();
-        int     vph = QWidget::height();
-        if (width_scale < height_scale)
-          vph = (int) ((float) tex->height() * width_scale);
-        else
-          vpw = (int) ((float) tex->width() * height_scale);
-
-        int   vpx = QWidget::width()  / 2 - vpw / 2;
-        int   vpy = QWidget::height() / 2 - vph / 2;
-
-        m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-        // the main-scene-camera should conform to this viewport too!
-        // otherwise geometry would never line up with the background (for overlays, etc).
-        m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-      }
-    }
-  }
-  // this default perspective depends on the viewport!
-  m_Camera->setProjectionPerspective();
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQt4Widget::paintGL()
 {
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
 
-  RenderScene();
+  renderScene();
 
   vl::OpenGLContext::dispatchRunEvent();
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::RenderScene()
+void VLQt4Widget::renderScene()
 {
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
-
-
-  // update vl-cache for nodes that have been modified since the last frame.
-  for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
-  {
-    UpdateDataNode(*i);
-  }
-  m_NodesQueuedForUpdate.clear();
 
 
   // update scene graph.
@@ -564,20 +370,6 @@ void VLQt4Widget::RenderScene()
 
   // trigger execution of the renderer(s).
   vl::real now_time = vl::Time::currentTime();
-
-  // simple fps stats
-  {
-    static int    counter = 0;
-    ++counter;
-
-    if ((counter % 10) == 0)
-    {
-      static vl::real prev = 0;
-
-      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
-      prev = m_RenderingTree->frameClock();
-    }
-  }
   m_RenderingTree->setFrameClock(now_time);
   m_RenderingTree->render();
 
@@ -588,7 +380,6 @@ void VLQt4Widget::RenderScene()
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::ClearScene()
 {
   ScopedOGLContext  ctx(context());
@@ -597,7 +388,6 @@ void VLQt4Widget::ClearScene()
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateThresholdVal(int isoVal)
 {
   ScopedOGLContext    ctx(context());
@@ -612,152 +402,7 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::Geometry3D* geom, const mitk::DataNode::ConstPointer node)
-{
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
-#ifdef _USE_CUDA
-  assert(lwci != 0);
-
-  float     xscale = 1;
-  float     yscale = 1;
-
-  if (geom != 0)
-  {
-    xscale = geom->GetSpacing()[0];
-    yscale = geom->GetSpacing()[1];
-  }
-
-  vl::mat4  mat;
-  mat = mat.setIdentity();
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
-
-
-  // essentially copied from vl::makeGrid()
-  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
-
-  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 1;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 0;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 0;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 1;
-
-
-  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls()->push_back(polys.get());
-
-
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  // UpdateDataNode() takes care of assigning colour etc.
-
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
-
-
-  std::string   objName = actor->objectName() + "_background";
-  actor->setObjectName(objName.c_str());
-
-  m_NodeToActorMap[node] = actor;
-  m_NodeToTextureMap[node] = TextureDataPOD();
-
-  // UpdateDataNode() depends on m_BackgroundNode.
-  m_BackgroundNode = node;
-
-  UpdateDataNode(node);
-
-#else
-  throw std::runtime_error("No CUDA support enabled at compile time");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
-{
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  ScopedOGLContext    ctx(context());
-
-  // clear up after previous background node.
-  if (m_BackgroundNode.IsNotNull())
-  {
-    const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
-    m_BackgroundNode = 0;
-    RemoveDataNode(oldbackgroundnode);
-    // add back as normal node.
-    AddDataNode(oldbackgroundnode);
-  }
-
-  bool    result = false;
-  mitk::BaseData::Pointer   basedata;
-  if (node.IsNotNull())
-    basedata = node->GetData();
-  if (basedata.IsNotNull())
-  {
-    // clear up whatever we had cached for the new background node.
-    // it's very likely that it was a normal node before.
-    RemoveDataNode(node);
-
-    mitk::Image::Pointer      imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
-    if (imgdata.IsNotNull())
-    {
-#ifdef _USE_CUDA
-      CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
-      if (cudaimgprop.IsNotNull())
-      {
-        LightweightCUDAImage    lwci = cudaimgprop->Get();
-        PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
-        result = true;
-      }
-      else
-#endif
-      {
-        // FIXME: normal mitk image stuff
-      }
-    }
-    else
-    {
-#ifdef _USE_CUDA
-      CUDAImage::Pointer    cudaimgdata = dynamic_cast<CUDAImage*>(basedata.GetPointer());
-      if (cudaimgdata.IsNotNull())
-      {
-        LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
-        PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
-        result = true;
-      }
-      // no else here
-#endif
-    }
-  }
-
-  UpdateViewportAndCamera();
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
@@ -767,20 +412,8 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
-  bool                    doMitkImageIfSuitable = true;
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
-#ifdef _USE_CUDA
-  mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
-  // this check will prefer a CUDAImageProperty attached to the node's data object.
-  // e.g. if there is mitk::Image and an attached CUDAImageProperty then CUDAImageProperty wins and
-  // mitk::Image is ignored.
-  doMitkImageIfSuitable = !(dynamic_cast<CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
-  if (doMitkImageIfSuitable == false)
-  {
-    cudaImg = node->GetData();
-  }
-#endif
 
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -790,7 +423,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
   vl::ref<vl::Actor>    newActor;
   std::string           namePostFix;
-  if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
+  if (mitkImg.IsNotNull())
   {
     newActor = AddImageActor(mitkImg);
     namePostFix = "_image";
@@ -801,16 +434,6 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     newActor = AddSurfaceActor(mitkSurf);
     namePostFix = "_surface";
   }
-#ifdef _USE_CUDA
-  else
-  if (cudaImg.IsNotNull())
-  {
-    newActor = AddCUDAImageActor(cudaImg);
-    namePostFix = "_cudaimage";
-
-    m_NodeToTextureMap[node] = TextureDataPOD();
-  }
-#endif
 
   if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
   {
@@ -826,20 +449,12 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
-{
-  m_NodesQueuedForUpdate.insert(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  std::map< mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
 
@@ -852,15 +467,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
-  bool  isVisble = true;
-  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (visibleProp != 0)
-    isVisble = visibleProp->GetValue();
 
-  float opacity = 1.0f;
+  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
+  bool  isVisble = visibleProp->GetValue();
+
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  if (opacityProp != 0)
-    opacity = opacityProp->GetValue();
+  float opacity = opacityProp->GetValue();
   // if object is too translucent to not have a effect after blending then just skip it.
   if (opacity < (1.0f / 255.0f))
     isVisble = false;
@@ -873,15 +485,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   {
     vlActor->setEnableMask(0xFFFFFFFF);
 
-    vl::fvec4 color(1, 1, 1, opacity);
     mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
-    if (colorProp != 0)
-    {
-      mitk::Color mitkColor = colorProp->GetColor();
-      color[0] = mitkColor[0];
-      color[1] = mitkColor[1];
-      color[2] = mitkColor[2];
-    }
+    mitk::Color mitkColor = colorProp->GetColor();
+
+    vl::fvec4 color;
+    color[0] = mitkColor[0];
+    color[1] = mitkColor[1];
+    color[2] = mitkColor[2];
+    color[3] = opacity;
+
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
@@ -928,200 +540,33 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
       }
     }
   }
-
-  // if we do have live-updating textures then we do need to refresh the vl-side of it!
-  // even if the node is not visible.
-#ifdef _USE_CUDA
-  {
-    LightweightCUDAImage    cudaImage;
-    {
-      CUDAImage::Pointer cudaimg = dynamic_cast<CUDAImage*>(node->GetData());
-      if (cudaimg.IsNotNull())
-      {
-        cudaImage = cudaimg->GetLightweightCUDAImage();
-      }
-      else
-      {
-        mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
-        if (img.IsNotNull())
-        {
-          CUDAImageProperty::Pointer prop = dynamic_cast<CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
-          if (prop.IsNotNull())
-          {
-            cudaImage = prop->Get();
-          }
-        }
-      }
-    }
-
-
-    if (cudaImage.GetId() != 0)
-    {
-      // whatever we had cached from a previous frame.
-      TextureDataPOD          texpod    = m_NodeToTextureMap[node];
-
-      // only need to update the vl texture, if content in our cuda buffer has changed.
-      // and the cuda buffer can change only when we have a different id.
-      if (texpod.m_LastUpdatedID != cudaImage.GetId())
-      {
-        cudaError_t   err = cudaSuccess;
-        bool          neednewvltexture = texpod.m_Texture.get() == 0;
-
-        // check if vl-texture size needs to change
-        if (texpod.m_Texture.get() != 0)
-        {
-          neednewvltexture |= cudaImage.GetWidth()  != texpod.m_Texture->width();
-          neednewvltexture |= cudaImage.GetHeight() != texpod.m_Texture->height();
-        }
-
-        if (neednewvltexture)
-        {
-          if (texpod.m_CUDARes)
-          {
-            err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
-            texpod.m_CUDARes = 0;
-            if (err != cudaSuccess)
-            {
-              MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
-            }
-          }
-
-          texpod.m_Texture = new vl::Texture(cudaImage.GetWidth(), cudaImage.GetHeight(), vl::TF_RGBA8, false);
-          vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-
-          err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
-          if (err != cudaSuccess)
-          {
-            texpod.m_CUDARes = 0;
-            MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
-          }
-        }
-
-
-        if (texpod.m_CUDARes)
-        {
-          CUDAManager*    cudamng   = CUDAManager::GetInstance();
-          cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
-          ReadAccessor    inputRA   = cudamng->RequestReadAccess(cudaImage);
-
-          // make sure producer of the cuda-image finished.
-          err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
-          if (err != cudaSuccess)
-          {
-            // flood the log
-            MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
-          }
-
-          // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
-          err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
-          if (err == cudaSuccess)
-          {
-            // need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-            WriteAccessor   flippedWA   = cudamng->RequestOutputImage(cudaImage.GetWidth(), cudaImage.GetHeight(), 4);
-
-            cudaArray_t   arr = 0;
-            err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
-            if (err == cudaSuccess)
-            {
-              // FIXME: sanity check: array should have same dimensions as our (cpu-side) texture object.
-
-              FlipImage(inputRA, flippedWA, mystream);
-
-              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, flippedWA.m_DevicePointer, flippedWA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
-              if (err == cudaSuccess)
-              {
-                texpod.m_LastUpdatedID = cudaImage.GetId();
-              }
-            }
-
-            err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-            if (err != cudaSuccess)
-            {
-              MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
-            }
-
-            // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-            // otherwise the streamcallback will block subsequent work.
-            // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-            // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-            cudamng->Autorelease(flippedWA, mystream);
-          }
-
-          cudamng->Autorelease(inputRA, mystream);
-        }
-
-        // update cache, even if something went wrong.
-        m_NodeToTextureMap[node] = texpod;
-
-        // helps with debugging
-        vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
-      }
-    }
-  }
-#endif
-
-
-  // background is always visible, even if its datanode is not.
-  if (node == m_BackgroundNode)
-  {
-    assert(vlActor->objectName().find("_background") != std::string::npos);
-    vlActor->setEnableMask(ENABLEMASK_BACKGROUND);
-    vlActor->effect()->shader()->disable(vl::EN_DEPTH_TEST);
-    //vlActor->effect()->shader()->disable(vl::EN_BLEND);
-    vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
-  }
 }
 
 
-//-----------------------------------------------------------------------------
-void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 {
-  // dont leave a dangling update behind.
-  m_NodesQueuedForUpdate.erase(node);
-
   if (node.IsNull() || node->GetData() == 0)
     return;
+
+  std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+
+  vl::ref<vl::Actor>    vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    vl::ref<vl::Actor>    vlActor = it->second;
-    if (vlActor.get() != 0)
-    {
-      m_ActorToRenderableMap.erase(vlActor);
-      m_SceneManager->tree()->eraseActor(vlActor.get());
-      m_NodeToActorMap.erase(it);
-    }
-  }
-
-#ifdef _USE_CUDA
-  {
-    std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
-    if (i != m_NodeToTextureMap.end())
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      m_NodeToTextureMap.erase(i);
-    }
-  }
-#endif
+  m_SceneManager->tree()->eraseActor(vlActor.get());
+  m_NodeToActorMap.erase(it);
 }
 
 
-//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -1160,68 +605,12 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[surfActor] = vlSurf;
 
-  // FIXME: should go somewhere else
   m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
 
   return surfActor;
 }
 
 
-//-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
-{
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
-#ifdef _USE_CUDA
-  vl::mat4  mat;
-  mat = mat.setIdentity();
-  mat = mat.rotateXYZ(90, 0, 0);
-
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitk::Geometry3D*     geom = cudaImg->GetGeometry();
-  if (geom != 0)
-  {
-    vtkLinearTransform*   vtktxf = geom->GetVtkTransform();
-    if (vtktxf != 0)
-    {
-      vtktxf->GetMatrix(geometryTransformMatrix);
-      for (int i = 0; i < 4; i++)
-      {
-        for (int j = 0; j < 4; j++)
-        {
-          double val = geometryTransformMatrix->GetElement(i, j);
-          mat.e(i, j) = val;
-        }
-      }
-    }
-  }
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
-
-
-  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
-
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  // UpdateDataNode() takes care of assigning colour etc.
-
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
-
-  // FIXME: should go somewhere else
-  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
-
-  return actor;
-
-#else
-  throw std::runtime_error("No CUDA-support enabled at compile time!");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -1445,10 +834,8 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   }
 
   // Make sure that the values are copied onto GPU memory
-  vlVerts->updateBufferObject();
-  vlNormals->updateBufferObject();
-  vlTriangles->indexBuffer()->updateBufferObject();
-  glFinish();
+  //vlTriangles->indexBuffer()->updateBufferObject();
+  //glFinish();
 
   /// \brief Buffer in host memory to store cell info
   if (m_IndexBuffer != 0)
@@ -1470,7 +857,6 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 }
 
 
-//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -1526,9 +912,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
       else if (numOfComponents == 3)
         format = vl::IF_RGB_INTEGER;
       else if (numOfComponents == 4)
-        // FIXME: not sure whether we really want integer formats here!
-        //        for now, dont do integer for rgba, we have quite a few rgba images.
-        format = vl::IF_RGBA;//_INTEGER;
+        format = vl::IF_RGBA_INTEGER;
     }
     else if (type == vl::IT_FLOAT)
     {
@@ -1547,10 +931,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
     // we do not own dims!
 
     int bytealign = 1;
-    if (dims[2] <= 1)
-      vlImg = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
-    else
-      vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
+    vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
 
     // sanity check
     unsigned int size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
@@ -1683,7 +1064,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
 }
 
 
-//-----------------------------------------------------------------------------
 vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 {
   QString   sourceFilename(filename);
@@ -1725,14 +1105,9 @@ void VLQt4Widget::sortTranslucentTriangles()
   clCameraPos.s[2] = cameraPos[2];
 
   std::vector<vl::ref<vl::Transform>> transforms;
-  std::vector<vl::ref<vl::Geometry>>  translucentSurfaces;
-  std::vector<vl::ref<vl::Actor>>     translucentActors;
-  std::vector<vl::fvec4>              translucentColors;
-
   std::vector<cl_mem> clTransforms;
-  std::vector<cl_mem> clIndexBufs;
-  std::vector<cl_mem> clVertexBufs;
-
+  std::vector<vl::ref<vl::Geometry>> translucentSurfaces;
+  std::vector<vl::ref<vl::Actor>> translucentActors;
   cl_int clErr = 0;
 
   // Instantiate TriangleSorter
@@ -1767,10 +1142,6 @@ void VLQt4Widget::sortTranslucentTriangles()
 
       vl::ref<vl::Transform> transf = act->transform();
       transforms.push_back(transf);
-
-      vl::ref<vl::Effect> fx = act->effect();
-      vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
-      translucentColors.push_back(color);
     }
   }
 
@@ -1784,24 +1155,8 @@ void VLQt4Widget::sortTranslucentTriangles()
 
   for (int i = 0; i < translucentSurfaces.size(); i++)
   {
-    // Get pointer to the index buffer
-    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls()->size();
-    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls()->at(numOfDrawcalls-1);
-    vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
-
-    // Make sure we have finished all OpenGL operations 
-   // glFinish();
-
-    // Acquire the index buffer from the vl surface a'la OpenCL mem
-    unsigned int numOfTriangles = vlTriangles->countTriangles();
-    vlTriangles->indexBuffer()->updateBufferObject();
-
-    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
-    cl_mem clIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, indexBufferHandle, &clErr);
-    clEnqueueAcquireGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
-    CHECK_OCL_ERR(clErr);
-    clIndexBufs.push_back(clIndexBuf);
-    totalNumOfTriangles += numOfTriangles;
+    // Make sure values are copied onto GPU memory
+    translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
 
     // Acquire the vertex buffer from the vl surface a'la OpenCL mem
     unsigned int numOfVertices = translucentSurfaces.at(i)->vertexArray()->size() /3;
@@ -1811,7 +1166,6 @@ void VLQt4Widget::sortTranslucentTriangles()
     // Update vertex counter
     totalNumOfVertices += numOfVertices;
 
-    translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
     GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
     cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clErr);
     CHECK_OCL_ERR(clErr);
@@ -1819,7 +1173,6 @@ void VLQt4Widget::sortTranslucentTriangles()
     // Have to call glFinish() otherwise the buffer state is not guaranteed to be consistent
     //glFinish();
     clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    clVertexBufs.push_back(clVertexBuf);
     CHECK_OCL_ERR(clErr);
 
     //cl_float * buff = new cl_float[numOfVertices * 3];
@@ -1838,6 +1191,18 @@ void VLQt4Widget::sortTranslucentTriangles()
     //}
 
     //outfile0.close();
+
+    // Acquire the index buffer from the vl surface a'la OpenCL mem
+    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls()->size();
+    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls()->at(numOfDrawcalls-1);
+    vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+
+    unsigned int numOfTriangles = vlTriangles->countTriangles();
+    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
+    cl_mem clIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, indexBufferHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
+    totalNumOfTriangles += numOfTriangles;
 
     // Acquire the transformation matrix
     vl::ref<vl::Transform> transf = transforms[i];
@@ -1860,142 +1225,102 @@ void VLQt4Widget::sortTranslucentTriangles()
     m_OclTriangleSorter->AddIndexBuffer(clIndexBuf, numOfTriangles);
     m_OclTriangleSorter->AddVertexBuffer(clVertexBuf, numOfVertices);
     m_OclTriangleSorter->AddTransform(clTransform);
+
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clIndexBuf, 0, NULL, NULL);
   }
   
   // Pass on the camera position to the sorter
   m_OclTriangleSorter->SetViewPoint(clCameraPos);
-
   // Compute trinagle distances and sort the triangles
   m_OclTriangleSorter->Update();
-
-  // Transfer buffer ownership back to GL
-  for (size_t u = 0; u < clIndexBufs.size(); u++)
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clIndexBufs.at(u), 0, NULL, NULL);
-
-  // Transfer buffer ownership back to GL
-  for (size_t u = 0; u < clVertexBufs.size(); u++)
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBufs.at(u), 0, NULL, NULL);
-
-  clFinish(clCmdQue);
-
-  // Release the GPU mem that was allocated for the transform
-  for (size_t u = 0; u < transforms.size(); u++)
-    clReleaseMemObject(clTransforms.at(u));
-
-  // Release the GPU mem that was allocated for the index buffers
-  for (size_t u = 0; u < clIndexBufs.size(); u++)
-    clReleaseMemObject(clIndexBufs.at(u));
-
-  // Release the GPU mem that was allocated for the vertex buffers
-  for (size_t u = 0; u < clVertexBufs.size(); u++)
-    clReleaseMemObject(clVertexBufs.at(u));
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Allocate VL arrays for the merged object's vertices and normals
 
-  vl::ref<vl::ArrayFloat3>      vlVerts;
-  vl::ref<vl::ArrayFloat3>      vlNormals;
-  vl::ref<vl::ArrayUByte4>      vlColors;
-  vl::ref<vl::DrawElementsUInt> vlTriangles;
+  vl::ref<vl::ArrayFloat3>  vlVerts         = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3>  vlNormals       = new vl::ArrayFloat3;
+  vl::ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
 
-  // Acquire or create the merged VL geometry object that holds all translucent triangles
-  if (m_TranslucentSurface == 0)
-  {
-    m_TranslucentSurface = new vl::Geometry();
-
-    vlVerts     = new vl::ArrayFloat3;
-    vlNormals   = new vl::ArrayFloat3;
-    vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
-    vlColors    = new vl::ArrayUByte4;
-
-    m_TranslucentSurface->setVertexArray(vlVerts.get());
-    m_TranslucentSurface->setNormalArray(vlNormals.get());
-    m_TranslucentSurface->setColorArray(vlColors.get());
-    m_TranslucentSurface->drawCalls()->push_back(vlTriangles.get());
-  }
-  else
-  {
-    vlVerts   = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->vertexArray());
-    vlNormals = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->normalArray());
-    vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
-
-    size_t numOfDrawcalls = m_TranslucentSurface->drawCalls()->size();
-    vl::DrawCall * dc = m_TranslucentSurface->drawCalls()->at(numOfDrawcalls-1);
-    vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
-
-    if (vlVerts == 0 || vlNormals == 0 || vlTriangles == 0)
-    {
-      MITK_ERROR <<"Failed to acquire buffer objects from the VL geometry.";
-      return;
-    }
-  }
-
-  // Resize buffer objects
   vlVerts->resize(totalNumOfVertices *3);
   vlNormals->resize(totalNumOfVertices *3);
-  vlColors->resize(totalNumOfVertices);
+  
+  // Create the merged VL geometry object that holds all translucent triangles
+  vl::ref<vl::Geometry> translucentGeometry = new vl::Geometry();
+
+  translucentGeometry->drawCalls()->push_back(vlTriangles.get());
   vlTriangles->indexBuffer()->resize(totalNumOfTriangles*3);
+  
+  translucentGeometry->setVertexArray(vlVerts.get());
+  translucentGeometry->setNormalArray(vlNormals.get());
 
   // Make sure that the buffers are allocated in GPU memory
-  m_TranslucentSurface->vertexArray()->updateBufferObject();
-  m_TranslucentSurface->normalArray()->updateBufferObject();
-  m_TranslucentSurface->colorArray()->updateBufferObject();
-  vlTriangles->indexBuffer()->updateBufferObject();
-  glFinish();
-
-  // Create a buffer large enough to retrive the merged index buffer
-  unsigned int totalNumOfTriangles2 = 0;
-  cl_mem mergedIndexBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, totalNumOfTriangles*3*sizeof(cl_uint), 0, 0);
-
-  // Here we retrieve the merged and sorted index buffer
-  m_OclTriangleSorter->GetOutput(mergedIndexBufOutput, totalNumOfTriangles2);
-
-  if (totalNumOfTriangles != totalNumOfTriangles2)
-    MITK_ERROR <<"Data error, incorrect output size detected";
-
-  clFinish(clCmdQue);
-
+  translucentGeometry->vertexArray()->updateBufferObject();
+  translucentGeometry->normalArray()->updateBufferObject();
+  //glFinish();
+ 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
-  GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
+
+  GLuint mergedVertexArrayHandle = translucentGeometry->vertexArray()->bufferObject()->handle();
   cl_mem clMergedVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clErr);
   clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedVertexBuf, 0, NULL, NULL);
   CHECK_OCL_ERR(clErr);
 
+  // get CL_MEM_SIZE
+  size_t mergedVertexBufSize;
+  clErr = clGetMemObjectInfo(clMergedVertexBuf, CL_MEM_SIZE, sizeof(size_t), &mergedVertexBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+
   // Get normal array
-  GLuint mergedNormalArrayHandle = vlNormals->bufferObject()->handle();
+  GLuint mergedNormalArrayHandle = translucentGeometry->normalArray()->bufferObject()->handle();
   cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clErr);
   clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
   CHECK_OCL_ERR(clErr);
 
+  // get CL_MEM_SIZE
+  size_t mergedNormalBufSize;
+  clErr = clGetMemObjectInfo(clMergedNormalBuf, CL_MEM_SIZE, sizeof(size_t), &mergedNormalBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+
+/*
+  // Get color array
+  GLuint mergedColorArrayHandle = translucentGeometry->colorArray()->bufferObject()->handle();
+  cl_mem clMergedColorBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedColorArrayHandle, &clErr);
+  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedColorBuf, 0, NULL, NULL);
+  CHECK_OCL_ERR(clErr);
+
+  // get CL_MEM_SIZE
+  size_t mergedColorBufSize;
+  clErr = clGetMemObjectInfo(clMergedColorBuf, CL_MEM_SIZE, sizeof(size_t), &mergedColorBufSize, NULL);
+  CHECK_OCL_ERR( clErr );
+*/
+
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Acquire the index buffer from the vl surface and updated it 
 
-  GLuint mergedIndexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
+  size_t numOfDrawcalls = translucentGeometry->drawCalls()->size();
+  vl::DrawCall * dc = translucentGeometry->drawCalls()->at(numOfDrawcalls-1);
+  vl::ref<vl::DrawElementsUInt> vlMergedTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+
+  vlMergedTriangles->indexBuffer()->updateBufferObject();
+  GLuint mergedIndexBufferHandle = vlMergedTriangles->indexBuffer()->bufferObject()->handle();
   cl_mem clMergedIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clErr);
   clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedIndexBuf, 0, NULL, NULL);
   CHECK_OCL_ERR(clErr);
 
-  // Get CL_MEM_SIZE
-  size_t mergedIndexBufSize = totalNumOfTriangles * sizeof(cl_uint) * 3;
-
-  // Copy to merged buffer
-  clErr = clEnqueueCopyBuffer(clCmdQue, mergedIndexBufOutput, clMergedIndexBuf, 0, 0, mergedIndexBufSize, 0, 0, 0);
-  CHECK_OCL_ERR(clErr);
-
+  unsigned int totalNumOfTriangles2 = 0;
+  
+  // Here we trigger get the merged and sorted index buffer
+  m_OclTriangleSorter->GetOutput(clMergedIndexBuf, totalNumOfTriangles2);
 
   size_t vertexBufferOffset = 0;
   size_t normalBufferOffset = 0;
   size_t colorBufferOffset = 0;
 
-  // Here we merge the rest: vertices and normals and colors
+  // Here we merge the rest: vertices and normals
   for (size_t i = 0; i < translucentSurfaces.size(); i++)
   {
-    // get number of vertices
-    unsigned int numOfVertices2 = translucentSurfaces.at(i)->vertexArray()->size() /3;
-    //MITK_INFO <<"Copying vertices of structure " <<i <<": " <<numOfVertices2;
-    unsigned int computedSize = numOfVertices2 * sizeof(GLfloat) * 3;
-
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get vertex array
     GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
@@ -2003,10 +1328,15 @@ void VLQt4Widget::sortTranslucentTriangles()
     clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     CHECK_OCL_ERR(clErr);
 
+    // Get CL_MEM_SIZE
+    size_t vertBufSize;
+    clErr = clGetMemObjectInfo(clVertexBuf, CL_MEM_SIZE, sizeof(size_t), &vertBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
+
     // Copy to merged buffer
-    clErr = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, clMergedVertexBuf, 0, vertexBufferOffset, computedSize, 0, 0, 0);
+    clErr = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, clMergedVertexBuf, 0, vertexBufferOffset, vertBufSize, 0, 0, 0);
     CHECK_OCL_ERR(clErr);
-    vertexBufferOffset += computedSize;
+    vertexBufferOffset += vertBufSize;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get normal array
@@ -2015,114 +1345,56 @@ void VLQt4Widget::sortTranslucentTriangles()
     clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
     CHECK_OCL_ERR(clErr);
 
+    // get CL_MEM_SIZE
+    size_t normalBufSize;
+    clErr = clGetMemObjectInfo(clNormalBuf, CL_MEM_SIZE, sizeof(size_t), &normalBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
+
     // Copy to merged buffer
-    clErr = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, computedSize, 0, 0, 0);
+    clErr = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, normalBufSize, 0, 0, 0);
     CHECK_OCL_ERR(clErr);
-    normalBufferOffset += computedSize;
-
-
+    normalBufferOffset += normalBufSize;
+  
+/*
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //// Get color array
-    
-    size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
-    vl::fvec4 color = translucentColors.at(i);
+    // Get color array
+    GLuint colorArrayHandle = translucentSurfaces.at(i)->colorArray()->bufferObject()->handle();
+    cl_mem clColorBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, colorArrayHandle, &clErr);
+    clEnqueueAcquireGLObjects(clCmdQue, 1, &clColorBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clErr);
 
-    unsigned int * colorData = new unsigned int[numOfVertices2];
-    for (unsigned int bla = 0; bla < numOfVertices2; bla++)
-    {
-      // Color format: AABBGGRR
-      unsigned char a = color[3] * 255;
-      unsigned char b = color[2] * 255;
-      unsigned char g = color[1] * 255;
-      unsigned char r = color[0] * 255;
-      colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
-    }
+    // get CL_MEM_SIZE
+    size_t colorBufSize;
+    clErr = clGetMemObjectInfo(clColorBuf, CL_MEM_SIZE, sizeof(size_t), &colorBufSize, NULL);
+    CHECK_OCL_ERR( clErr );
 
-    vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+    // Copy to merged buffer
+    clErr = clEnqueueCopyBuffer(clCmdQue, clColorBuf, clMergedColorBuf, 0, colorBufferOffset, colorBufSize, 0, 0, 0);
+    CHECK_OCL_ERR(clErr);
     colorBufferOffset += colorBufSize;
-    delete colorData;
-    
+    clEnqueueReleaseGLObjects(clCmdQue, 1, &clColorBuf, 0, NULL, NULL);
+*/
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
-
-    clFinish(clCmdQue);
-
-    clReleaseMemObject(clVertexBuf);
-    clReleaseMemObject(clNormalBuf);
+    
   }
 
-  clFinish(clCmdQue);
+  // Release the GPU mem that was allocated for the transform
+  for (size_t u = 0; u < transforms.size(); u++)
+    clReleaseMemObject(clTransforms.at(u));
 
-/*
-  cl_float * buff = new cl_float[totalNumOfVertices*3];
-  clErr = clEnqueueReadBuffer(clCmdQue, clMergedVertexBuf, true, 0, totalNumOfVertices*3* sizeof(cl_float), buff, 0, 0, 0);
-  CHECK_OCL_ERR(clErr);
 
-  std::ofstream outfile0;
-  outfile0.open ("d://mergedVBO.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < totalNumOfVertices; r++)
-  {
-    outfile0 <<"Index: " <<r <<" Indices: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
-  }
-
-  outfile0.close();
-*/
-
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedIndexBuf, 0, NULL, NULL);
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedVertexBuf, 0, NULL, NULL);
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  clFinish(clCmdQue);
-  clReleaseMemObject(clMergedIndexBuf);
-  clMergedIndexBuf = 0;
-
-  clReleaseMemObject(clMergedVertexBuf);
-  clMergedVertexBuf = 0;
-
-  clReleaseMemObject(clMergedNormalBuf);
-  clMergedNormalBuf = 0;
-
-  clReleaseMemObject(mergedIndexBufOutput);
-  mergedIndexBufOutput = 0;
-
-  vl::ref<vl::Effect>    fx;
-  vl::ref<vl::Transform> tr;
-
-  if (m_TranslucentSurfaceActor == 0)
-  {
-    // Add the new merged geometry actor
-    tr = new vl::Transform();
-    fx = new vl::Effect;
-    m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
-  }
-  else
-  {
-    fx = m_TranslucentSurfaceActor->effect();
-    tr = m_TranslucentSurfaceActor->transform();
-  }
-  
-  m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-  m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
-  fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
-  fx->shader()->enable(vl::EN_BLEND);
-  // no backface culling for translucent objects: you should be able to see the backside!
-  fx->shader()->disable(vl::EN_CULL_FACE);
-
-  fx->shader()->enable(vl::EN_DEPTH_TEST);
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(m_Light.get(), 0 );
-
+  // Add the new merged geometry actor
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(translucentGeometry.get(), fx.get(), tr.get());
 
   // Disable the translucent geometries
   for (int i = 0; i < translucentActors.size(); i++)
     translucentActors.at(i)->setEnableMask(0x0);
-
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setContinuousUpdate(bool continuous)
 {
   vl::OpenGLContext::setContinuousUpdate(continuous);
@@ -2143,14 +1415,12 @@ void VLQt4Widget::setContinuousUpdate(bool continuous)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setWindowTitle(const vl::String& title)
 {
   QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
 }
 
 
-//-----------------------------------------------------------------------------
 bool VLQt4Widget::setFullscreen(bool fullscreen)
 {
   // fullscreen not allowed (yet)!
@@ -2165,35 +1435,30 @@ bool VLQt4Widget::setFullscreen(bool fullscreen)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::show()
 {
   QGLWidget::show();
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::hide()
 {
   QGLWidget::hide();
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setPosition(int x, int y)
 {
   QGLWidget::move(x,y);
 }
 
 
-//-----------------------------------------------------------------------------
 vl::ivec2 VLQt4Widget::position() const
 {
   return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
   sortTranslucentTriangles();
@@ -2203,7 +1468,6 @@ void VLQt4Widget::update()
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setSize(int w, int h)
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
@@ -2211,7 +1475,6 @@ void VLQt4Widget::setSize(int w, int h)
 }
 
 
-//-----------------------------------------------------------------------------
 vl::ivec2 VLQt4Widget::size() const
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
@@ -2219,7 +1482,6 @@ vl::ivec2 VLQt4Widget::size() const
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::swapBuffers()
 {
   // on windows, swapBuffers() does not depend on the opengl rendering context.
@@ -2227,58 +1489,9 @@ void VLQt4Widget::swapBuffers()
   ScopedOGLContext    ctx(context());
 
   QGLWidget::swapBuffers();
-
-#ifdef _USE_CUDA
-  if (m_CUDAInteropPimpl)
-  {
-    cudaError_t     err         = cudaSuccess;
-    CUDAManager*    cudamanager = CUDAManager::GetInstance();
-    cudaStream_t    mystream    = cudamanager->GetStream(m_CUDAInteropPimpl->m_NodeName);
-    WriteAccessor   outputWA    = cudamanager->RequestOutputImage(QWidget::width(), QWidget::height(), 4);
-    cudaArray_t     fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
-
-    // side note: cuda-arrays are always measured in bytes, never in pixels.
-    err = cudaMemcpy2DFromArrayAsync(outputWA.m_DevicePointer, outputWA.m_BytePitch, fboarr, 0, 0, outputWA.m_PixelWidth * 4, outputWA.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
-    // not sure what to do if it fails. do not throw an exception, that's for sure.
-    assert(err == cudaSuccess);
-
-    // the opengl-interop side is done, renderer can continue from now on.
-    m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
-
-    // need to flip the image! ogl is left-bottom, but everywhere else is left-top origin!
-    WriteAccessor   flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
-    // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
-    FlipImage(outputWA, flippedWA, mystream);
-
-    LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
-    // Finalise() needs to come before Autorelease(), for performance reasons.
-    cudamanager->Autorelease(outputWA, mystream);
-
-    bool    isNewNode = false;
-    mitk::DataNode::Pointer node = m_CUDAInteropPimpl->m_DataStorage->GetNamedNode(m_CUDAInteropPimpl->m_NodeName);
-    if (node.IsNull())
-    {
-      isNewNode = true;
-      node = mitk::DataNode::New();
-      node->SetName(m_CUDAInteropPimpl->m_NodeName);
-      node->SetVisibility(false);
-      //node->SetBoolProperty("helper object", true);
-    }
-    CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
-    if (img.IsNull())
-      img = CUDAImage::New();
-    img->SetLightweightCUDAImage(lwciFlipped);
-    node->SetData(img);
-    if (isNewNode)
-      m_CUDAInteropPimpl->m_DataStorage->Add(node);
-    else
-      node->Modified();
-  }
-#endif
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::makeCurrent()
 {
   QGLWidget::makeCurrent();
@@ -2287,14 +1500,12 @@ void VLQt4Widget::makeCurrent()
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setMousePosition(int x, int y)
 {
   QCursor::setPos(mapToGlobal(QPoint(x,y)));
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setMouseVisible(bool visible)
 {
   vl::OpenGLContext::setMouseVisible(visible);
@@ -2306,14 +1517,12 @@ void VLQt4Widget::setMouseVisible(bool visible)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::getFocus()
 {
   QGLWidget::setFocus(Qt::OtherFocusReason);
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::setRefreshRate(int msec)
 {
   m_Refresh = msec;
@@ -2321,7 +1530,6 @@ void VLQt4Widget::setRefreshRate(int msec)
 }
 
 
-//-----------------------------------------------------------------------------
 int VLQt4Widget::refreshRate()
 {
   return m_Refresh;
@@ -2329,7 +1537,6 @@ int VLQt4Widget::refreshRate()
 
 
 #if 0
-//-----------------------------------------------------------------------------
 void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
 {
   if (ev->mimeData()->hasUrls())
@@ -2337,7 +1544,6 @@ void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::dropEvent(QDropEvent* ev)
 {
   if ( ev->mimeData()->hasUrls() )
@@ -2363,7 +1569,6 @@ void VLQt4Widget::dropEvent(QDropEvent* ev)
 #endif
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
 {
   if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
@@ -2372,7 +1577,6 @@ void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -2388,7 +1592,6 @@ void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -2404,14 +1607,12 @@ void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::wheelEvent(QWheelEvent* ev)
 {
   vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -2421,7 +1622,6 @@ void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -2431,7 +1631,6 @@ void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
 }
 
 
-//-----------------------------------------------------------------------------
 void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
 {
   // translate non unicode characters
@@ -2626,7 +1825,6 @@ void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, 
 }
 
 
-//-----------------------------------------------------------------------------
 QGLContext* VLQt4Widget::context()
 {
   return const_cast<QGLContext*>(QGLWidget::context());
