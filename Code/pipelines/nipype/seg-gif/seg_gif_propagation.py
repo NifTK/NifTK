@@ -10,7 +10,7 @@ import os
 import niftk                            as niftk
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
-
+import cropimage                        as cropimage
 
 
 
@@ -237,7 +237,7 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     dilate_image_mask.inputs.operation = 'dil'
     dilate_image_mask.inputs.operand_value = 10
 
-    crop_image_with_mask = pe.Node(interface = niftk.CropImage(), 
+    crop_image_with_mask = pe.Node(interface = cropimage.CropImage(), 
                                    name='crop_image_with_mask')
 
     resample_image_mask_to_cropped_image = pe.Node(interface = niftyreg.RegResample(),

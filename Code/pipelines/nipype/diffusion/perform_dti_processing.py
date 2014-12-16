@@ -115,8 +115,9 @@ r.base_dir = os.getcwd()
 r.connect(merge_initial_dwis, 'dwis', r.get_node('input_node'), 'in_dwi_4d_file')
 r.connect(merge_initial_dwis, 'bvals', r.get_node('input_node'), 'in_bval_file')
 r.connect(merge_initial_dwis, 'bvecs', r.get_node('input_node'), 'in_bvec_file')
-r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
-r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
+if do_susceptibility_correction == True:
+    r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
+    r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
 r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
 r.inputs.input_node.op_basename = subject_name
 

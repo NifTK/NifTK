@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import nipype.interfaces.utility        as niu     # utility
 import nipype.pipeline.engine           as pe          # pypeline engine
 import nipype.interfaces.niftyseg       as niftyseg

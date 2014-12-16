@@ -1,11 +1,11 @@
 """
-    Simple interface for the niftkN4BiasFieldCorrection executable
+   Interface for niftk filter tools
 """
 
-from nipype.interfaces.niftyseg.base import NIFTYSEGCommand, NIFTYSEGCommandInputSpec
+from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
 from nipype.interfaces.base import (TraitedSpec, File, traits)
 
-class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
+class N4BiasCorrectionInputSpec(NIFTKCommandInputSpec):
     
     in_file = File(argstr="-i %s", exists=True, mandatory=True,
                 desc="Input target image filename")
@@ -33,17 +33,18 @@ class N4BiasCorrectionInputSpec(NIFTYSEGCommandInputSpec):
                               name_source = ['in_file'],
                               name_template = '%s_biasfield')
 
-    in_convergence = traits.Float(desc='Convergence Threshold - optional - default = 0.001', argstr='-c %f')
+    in_convergence = traits.Float(desc='Convergence Threshold - optional - default = 0.001', argstr='--convergence %f')
 
+    in_fwhm = traits.Float(desc='The full width at half maximum of the Gaussian used to model the bias field. (default: 0.15)', argstr='--FWHM %f')
 
 class N4BiasCorrectionOutputSpec(TraitedSpec):
 
     out_file = File(exists=True, desc="output bias corrected image")
     out_biasfield_file = File(desc="output bias field")
 
-class N4BiasCorrection(NIFTYSEGCommand):
+class N4BiasCorrection(NIFTKCommand):
 
-    _cmd = "niftkN4BiasFieldCorrection"
+    _cmd = getNiftkPath("niftkN4BiasFieldCorrection")
 
     input_spec = N4BiasCorrectionInputSpec  
     output_spec = N4BiasCorrectionOutputSpec

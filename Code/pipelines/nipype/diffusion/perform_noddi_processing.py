@@ -182,8 +182,10 @@ for i in range(number_of_shells):
     r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals[i])
     r.inputs.input_node.in_bvec_file = os.path.abspath(args.bvecs[i])
     
-    r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
-    r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
+    if do_susceptibility_correction:
+        r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
+        r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
+    
     r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
     r.inputs.input_node.op_basename = subject_name
     
