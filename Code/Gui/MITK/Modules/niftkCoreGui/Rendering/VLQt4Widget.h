@@ -221,6 +221,7 @@ protected:
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
+  vl::ref<vl::Geometry>      m_TranslucentSurface;
   vl::ref<vl::Actor>         m_TranslucentSurfaceActor;
   mitk::OclTriangleSorter *  m_OclTriangleSorter;
 
