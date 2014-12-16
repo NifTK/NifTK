@@ -33,6 +33,7 @@ class BaseRenderer;
 class DataStorage;
 class IRenderWindowPart;
 class RenderingManager;
+class SliceNavigationController;
 }
 
 class QmitkBaseView;
