@@ -28,7 +28,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkCoreGui
   EXPORT_DEFINE NIFTKCOREGUI_EXPORT
-  INCLUDE_DIRS Events LookupTables
+  INCLUDE_DIRS Events LookupTables Rendering
   DEPENDS ${_modules}
   PACKAGE_DEPENDS Qt4|QtGui CTK|CTKWidgets
 )
