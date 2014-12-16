@@ -20,7 +20,7 @@
 #include <texture_types.h>
 
 
-void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t srcTexture, cudaStream_t stream);
+void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream);
 
 
 #endif // EdgeDetectionKernel_h

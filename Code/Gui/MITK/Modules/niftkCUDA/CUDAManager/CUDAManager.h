@@ -44,6 +44,7 @@ struct ReadAccessor
 {
   const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
+  unsigned int    m_BytePitch;
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -59,6 +60,7 @@ struct WriteAccessor
 {
   void*           m_DevicePointer;
   std::size_t     m_SizeInBytes;
+  unsigned int    m_BytePitch;
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;

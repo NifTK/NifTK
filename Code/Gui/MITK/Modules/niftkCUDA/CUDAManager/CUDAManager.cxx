@@ -315,6 +315,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   wa.m_ReadyEvent     = i->m_ReadyEvent;
   wa.m_DevicePointer  = i->m_DevicePtr;
   wa.m_SizeInBytes    = i->m_SizeInBytes;
+  wa.m_BytePitch      = i->m_BytePitch;
   // the to be returned WriteAccessor has an implicit reference to the image.
   // so keep it alive.
   i->m_RefCount->ref();
@@ -404,6 +405,7 @@ ReadAccessor CUDAManager::RequestReadAccess(const LightweightCUDAImage& lwci)
   ra.m_DevicePointer  = lwci.m_DevicePtr;
   ra.m_ReadyEvent     = lwci.m_ReadyEvent;
   ra.m_SizeInBytes    = lwci.m_SizeInBytes;
+  ra.m_BytePitch      = lwci.m_BytePitch;
   // readaccessor has an implicit ref to the image.
   i->second.m_RefCount->ref();
 

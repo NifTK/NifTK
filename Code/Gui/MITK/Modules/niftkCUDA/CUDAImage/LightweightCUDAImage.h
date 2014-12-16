@@ -56,6 +56,9 @@ public:
    */
   unsigned int GetId() const;
 
+  unsigned int GetWidth() const;
+  unsigned int GetHeight() const;
+  unsigned int GetBytePitch() const;
 
   /**
    * Returns the CUDA event object that can be used to synchronise kernel

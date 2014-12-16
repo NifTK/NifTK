@@ -32,6 +32,27 @@ unsigned int LightweightCUDAImage::GetId() const
 
 
 //-----------------------------------------------------------------------------
+unsigned int LightweightCUDAImage::GetWidth() const
+{
+  return m_Width;
+}
+
+
+//-----------------------------------------------------------------------------
+unsigned int LightweightCUDAImage::GetHeight() const
+{
+  return m_Height;
+}
+
+
+//-----------------------------------------------------------------------------
+unsigned int LightweightCUDAImage::GetBytePitch() const
+{
+  return m_BytePitch;
+}
+
+
+//-----------------------------------------------------------------------------
 cudaEvent_t LightweightCUDAImage::GetReadyEvent() const
 {
   return m_ReadyEvent;

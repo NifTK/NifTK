@@ -21,11 +21,15 @@
 #include <common_functions.h>
 #include <texture_types.h>
 #include <driver_types.h>
+#include <cassert>
 
 
 //-----------------------------------------------------------------------------
-__global__ void edgedetection_kernel(char* outputRGBA, int width, int height, cudaTextureObject_t texture)
+__global__ void edgedetection_kernel(char* outputRGBA, unsigned int outputPixelPitch, const char* inputRGBA, unsigned int inputPixelPitch, int width, int height)
 {
+  // should be static assert
+  assert(sizeof(uchar4) == sizeof(unsigned int));
+
   // these are output coordinates.
   int   x = blockIdx.x * blockDim.x + threadIdx.x;
   int   y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -34,28 +38,29 @@ __global__ void edgedetection_kernel(char* outputRGBA, int width, int height, cu
   // this is because we round up the launch config to multiples of 32 or 16.
   if ((x < width) && (y < height))
   {
-    unsigned int*  outRGBA = &(((unsigned int*) outputRGBA)[y * width + x]);
+    uchar4*        outRGBA = &(((      uchar4*) outputRGBA)[y * outputPixelPitch + x]);
+    const uchar4*  inRGBA  = &(((const uchar4*) inputRGBA )[y * inputPixelPitch  + x]);
 
-    float4  pixel = tex2D<float4>(texture, x, y);
-
-    unsigned int    out =
-        ((unsigned int) (pixel.x * 255))
-     | (((unsigned int) (pixel.y * 255)) << 8)
-     | (((unsigned int) (pixel.z * 255)) << 16)
-     | (((unsigned int) (pixel.w * 255)) << 24);
-
-    *outRGBA = out;
+    *outRGBA = *inRGBA;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void RunEdgeDetectionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t srcTexture, cudaStream_t stream)
+void RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream)
 {
+  // should be static assert
+  assert(sizeof(uchar4) == sizeof(unsigned int));
+
+  assert((outputBytePitch % 4) == 0);
+  assert((inputBytePitch % 4) == 0);
+  assert((width * 4) <= outputBytePitch);
+  assert((width * 4) <= inputBytePitch);
+
   // launch config
   dim3  threads(32, 16);
   dim3  grid((width + threads.x - 1) / threads.x, (height + threads.y - 1) / threads.y);
 
   // note to self: the third param is "dynamically allocated shared mem".
-  edgedetection_kernel<<<grid, threads, 0, stream>>>(outputRGBA, width, height, srcTexture);
+  edgedetection_kernel<<<grid, threads, 0, stream>>>(outputRGBA, outputBytePitch / 4, inputRGBA, inputBytePitch / 4, width, height);
 }
