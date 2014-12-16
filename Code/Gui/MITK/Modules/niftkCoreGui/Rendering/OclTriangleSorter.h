@@ -80,8 +80,6 @@ private:
   void LocalHistogram(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
   void RadixPermute(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem dataIn, cl_mem dataOut, cl_mem histScan, cl_mem blockHists, int bitOffset, unsigned int numBlocks);
   void Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut);
-  //bool AllocateSortBuffers(cl_uint lGlobalSize, cl_uint lScanSize);
-  //bool FreeSortBuffers();
 
   void LaunchBitonicSort(cl_mem bfKeyVal, cl_uint count);
 

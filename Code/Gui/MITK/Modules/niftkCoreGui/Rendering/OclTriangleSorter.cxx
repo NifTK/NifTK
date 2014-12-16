@@ -269,7 +269,9 @@ void mitk::OclTriangleSorter::Execute()
   
   if (m_MergedIndexBuffer)
     clReleaseMemObject(m_MergedIndexBuffer);
-  m_MergedIndexBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum* sizeof(cl_uint3), 0, &clErr);
+  m_MergedIndexBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum*3*sizeof(cl_uint), 0, &clErr);
+
+  MITK_INFO <<"Creating m_MergedIndexBuffer " <<m_TotalTriangleNum <<" " <<m_TotalTriangleNum*3*sizeof(cl_uint);
 
   CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
 
@@ -310,23 +312,25 @@ void mitk::OclTriangleSorter::Execute()
   outfile1.close();
 */
 
-  //cl_uint * buff3 = new cl_uint[m_TotalTriangleNum*2];
-  //clErr = clEnqueueReadBuffer(m_CommandQue, mergedIndexWithDist4Sort, true, 0, m_TotalTriangleNum*2* sizeof(cl_uint), buff3, 0, 0, 0);
-  //CHECK_OCL_ERR(clErr);
+/*
+  cl_uint * buff3 = new cl_uint[m_TotalTriangleNum*2];
+  clErr = clEnqueueReadBuffer(m_CommandQue, mergedIndexWithDist4Sort, true, 0, m_TotalTriangleNum*2* sizeof(cl_uint), buff3, 0, 0, 0);
+  CHECK_OCL_ERR(clErr);
 
-  //std::ofstream outfile2;
-  //outfile2.open ("d://SortedMergedIBO3.txt", std::ios::out);
+  std::ofstream outfile2;
+  outfile2.open ("d://SortedMergedIBO3.txt", std::ios::out);
 
-  //    
-  //// Write out filtered volume
-  //for (int r = 0 ; r < m_TotalTriangleNum; r++)
-  //{
-  //  outfile2 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff3[r*2+0]) <<" Indices: " <<buff3[r*2+1]<<"\n";
-  //}
+      
+  // Write out filtered volume
+  for (int r = 0 ; r < m_TotalTriangleNum; r++)
+  {
+    outfile2 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff3[r*2+0]) <<" Indices: " <<buff3[r*2+1]<<"\n";
+  }
 
-  //outfile2.close();
-
+  outfile2.close();
+*/
   clReleaseMemObject(mergedIndexBuffWithDist);
+  clReleaseMemObject(mergedIndexWithDist4Sort);
 }
 
 void mitk::OclTriangleSorter::AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount)
@@ -348,7 +352,13 @@ void mitk::OclTriangleSorter::AddTransform(const cl_mem trasfBuf)
 
 void mitk::OclTriangleSorter::GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum)
 {
-  mergedAndSortedIndexBuf = m_MergedIndexBuffer;
+  // Compute mem size that will get copied to output
+  size_t indexBufSize = m_TotalTriangleNum*3*sizeof(cl_uint);
+
+  // Copy to merged buffer into output buffer
+  cl_int clErr = clEnqueueCopyBuffer(m_CommandQue, m_MergedIndexBuffer, mergedAndSortedIndexBuf, 0, 0, indexBufSize, 0, 0, 0);
+  CHECK_OCL_ERR(clErr);
+
   totalTriangleNum = m_TotalTriangleNum;
 }
 
@@ -465,21 +475,23 @@ cl_mem mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem verte
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckTransformVertexAndComputeDistance, 1, NULL, &global_128, &local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 
-  //cl_float * buff = new cl_float[numOfVertices];
-  //clStatus = clEnqueueReadBuffer(m_CommandQue, vertexDistances, CL_TRUE, 0, numOfVertices*sizeof(cl_float), buff, 0, 0, 0);
-  //CHECK_OCL_ERR(clStatus);
+/*
+  cl_float * buff = new cl_float[numOfVertices];
+  clStatus = clEnqueueReadBuffer(m_CommandQue, vertexDistances, CL_TRUE, 0, numOfVertices*sizeof(cl_float), buff, 0, 0, 0);
+  CHECK_OCL_ERR(clStatus);
 
-  //MITK_INFO <<"numOfVertices: " <<numOfVertices;
-  //std::ofstream outfile0;
-  //outfile0.open ("d://verticesWithDists.txt", std::ios::out);
-  //  
-  //// Write out filtered volume
-  //for (int r = 0 ; r < numOfVertices; r++)
-  //{
-  //  outfile0 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff[r]) <<"\n";// <<" Vert: " <<buff[r*4+1] <<" " <<buff[r*4+2] <<" " <<buff[r*4+3] <<"\n";
-  //}
+  MITK_INFO <<"numOfVertices: " <<numOfVertices;
+  std::ofstream outfile0;
+  outfile0.open ("d://verticesWithDists.txt", std::ios::out);
+    
+  // Write out filtered volume
+  for (int r = 0 ; r < numOfVertices; r++)
+  {
+    outfile0 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff[r]) <<"\n";// <<" Vert: " <<buff[r*4+1] <<" " <<buff[r*4+2] <<" " <<buff[r*4+3] <<"\n";
+  }
 
-  //outfile0.close();
+  outfile0.close();
+*/
 
   return vertexDistances;
 }
@@ -709,6 +721,8 @@ void mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
 
   if (dataB)
     clReleaseMemObject(dataB);
+
+  delete zeros;
 }
 
 void mitk::OclTriangleSorter::RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset)
