@@ -45,6 +45,13 @@
 
 #include <Rendering/SharedOGLContext.h>
 
+#ifdef _USE_CUDA
+#include <CUDAManager/CUDAManager.h>
+#include <CUDAImage/CUDAImage.h>
+#include <CUDAImage/LightweightCUDAImage.h>
+#include <Example/EdgeDetectionKernel.h>
+#endif
+
 
 const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualization";
 
@@ -165,6 +172,10 @@ void  NewVisualizationView::InitVLRendering()
   // default transparency blending function.
   // vl keeps dumping stuff to the console about blend state mismatch.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#ifdef _USE_CUDA
+  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
+#endif
 }
 
 void NewVisualizationView::On_SliderMoved(int val)
@@ -252,7 +263,60 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
     return;
 
   m_VLQtRenderWindow->UpdateDataNode(node);
-  //MITK_INFO <<"Opacity Change";
+
+
+  // random hack to illustrate how to do cuda kernels in combination with vl rendering
+#ifdef _USE_CUDA
+  {
+    mitk::DataNode::Pointer fbonode = GetDataStorage()->GetNamedNode("vl-framebuffer");
+    if (fbonode.IsNotNull())
+    {
+      CUDAImage::Pointer  cudaImg = dynamic_cast<CUDAImage*>(fbonode->GetData());
+      if (cudaImg.IsNotNull())
+      {
+        LightweightCUDAImage    inputLWCI = cudaImg->GetLightweightCUDAImage();
+        if (inputLWCI.GetId() != 0)
+        {
+          CUDAManager*    cudamanager = CUDAManager::GetInstance();
+          cudaStream_t    mystream    = cudamanager->GetStream("vl example");
+          ReadAccessor    inputRA     = cudamanager->RequestReadAccess(inputLWCI);
+          WriteAccessor   outputWA    = cudamanager->RequestOutputImage(inputLWCI.GetWidth(), inputLWCI.GetHeight(), 4);
+
+          // this is important: it will make our kernel call below wait for vl to finish the fbo copy.
+          cudaError_t err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
+          if (err != cudaSuccess)
+          {
+            // flood the log
+            MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+          }
+
+          RunEdgeDetectionKernel(
+            (char*) outputWA.m_DevicePointer, outputWA.m_BytePitch,
+            (const char*) inputRA.m_DevicePointer, inputRA.m_BytePitch,
+            inputLWCI.GetWidth(), inputLWCI.GetHeight(), mystream);
+
+          // finalise() will queue an event-signal on our stream for us, so that future processing steps can
+          // synchronise, just like we did above before starting our kernel.
+          LightweightCUDAImage      outputLWCI  = cudamanager->FinaliseAndAutorelease(outputWA, inputRA, mystream);
+          mitk::DataNode::Pointer   node        = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
+          if (node.IsNull())
+          {
+            node = mitk::DataNode::New();
+            node->SetName("vl-cuda-interop sample");
+          }
+          CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
+          if (img.IsNull())
+            img = CUDAImage::New();
+          img->SetLightweightCUDAImage(outputLWCI);
+          node->SetData(img);
+          if (GetDataStorage()->Exists(node.GetPointer()))
+            GetDataStorage()->Remove(node);
+          GetDataStorage()->Add(node);
+        }
+      }
+    }
+  }
+#endif
 }
 
 void NewVisualizationView::Visible()

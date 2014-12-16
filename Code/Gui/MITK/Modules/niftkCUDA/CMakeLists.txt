@@ -15,17 +15,21 @@
 MITK_CREATE_MODULE(niftkCUDA
   EXPORT_DEFINE NIFTKCUDA_EXPORT
   INCLUDE_DIRS CUDAManager CUDAImage
-  DEPENDS MitkCore niftkCore
-  PACKAGE_DEPENDS Qt4|QtCore
+  DEPENDS MitkCore
+  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL
 )
 
-include_directories(${CUDA_TOOLKIT_INCLUDE})
+include_directories(
+  ${CUDA_TOOLKIT_INCLUDE}
+  ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels
+)
 
-# FIXME: check whether stuffing this into DEPENDS above actually works
 target_link_libraries(niftkCUDA
   ${CUDA_CUDA_LIBRARY}
   ${CUDA_CUDART_LIBRARY}
+  niftkCUDAKernels
 )
+
 
 if(MSVC AND NIFTK_DELAYLOAD_CUDA)
   # all of the nvidia-driver/cuda dependencies should be delay-loaded

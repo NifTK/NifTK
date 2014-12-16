@@ -32,15 +32,15 @@ public:
 
   itkFactorylessNewMacro(Self);
 
-  /** @name MITK stuff not applicable. will always throw an exception, or fail somehow.*/
+  /** @name MITK stuff not applicable. */
   //@{
-  /** @throws std::runtime_error always */
+  /** Does nothing. */
   virtual void SetRequestedRegionToLargestPossibleRegion();
-  /** @throws std::runtime_error always */
+  /** @returns false always */
   virtual bool RequestedRegionIsOutsideOfTheBufferedRegion();
-  /** @throws std::runtime_error always */
+  /** @returns true always */
   virtual bool VerifyRequestedRegion();
-  /** @throws std::runtime_error always */
+  /** Does nothing. */
   virtual void SetRequestedRegion(const itk::DataObject* data);
   //@}
 
