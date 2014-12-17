@@ -72,8 +72,6 @@ public:
   {
     std::string fileName = argv[1];
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
     mitk::GlobalInteraction::GetInstance()->Initialize("mitkMIDASPaintbrushToolClass");
 
     m_DataStorage = mitk::StandaloneDataStorage::New();
@@ -86,8 +84,7 @@ public:
     files.push_back(fileName);
     files.push_back(fileName);
 
-    mitk::IOUtil::LoadFiles(files, *(m_DataStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = m_DataStorage->GetAll();
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(m_DataStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
     const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];

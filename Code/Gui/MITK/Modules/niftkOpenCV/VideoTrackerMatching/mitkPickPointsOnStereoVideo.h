@@ -75,6 +75,7 @@ public:
   itkSetMacro ( AllowableTimingError, long long);
   itkSetMacro ( OrderedPoints, bool);
   itkSetMacro ( AskOverWrite, bool);
+  itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( Frequency, unsigned int);
 
   itkGetMacro ( InitOK, bool);
@@ -100,6 +101,7 @@ private:
   bool                          m_ProjectOK;
   bool                          m_OrderedPoints; //picked points can be ordered or unordered
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
+  bool                          m_HaltOnVideoReadFail; //halt if video read fail
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
@@ -121,7 +123,7 @@ private:
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
-  CvCapture*                    m_Capture;
+  cv::VideoCapture*             m_Capture;
 
   
   long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;

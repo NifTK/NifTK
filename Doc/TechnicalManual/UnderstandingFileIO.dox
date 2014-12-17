@@ -155,10 +155,6 @@ mitk::CoreObjectFactory::CoreObjectFactory()
     itk::ObjectFactoryBase::RegisterFactory( VtiFileIOFactory::New() );
     itk::ObjectFactoryBase::RegisterFactory( ItkImageFileIOFactory::New() );
 
-    mitk::SurfaceVtkWriterFactory::RegisterOneFactory();
-    mitk::PointSetWriterFactory::RegisterOneFactory();
-    mitk::ImageWriterFactory::RegisterOneFactory();
-
     CreateFileExtensionsMap();
 
     alreadyDone = true;
@@ -255,10 +251,7 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     MITK_INFO << "NifTKCoreObjectFactory c'tor" << std::endl;
 
     // At this point in this constructor, the main MITK CoreObjectFactory has been created,
-    // (because in RegisterNifTKCoreObjectFactory, the call to mitk::CoreObjectFactory::GetInstance()
-    // will instantiate the MITK CoreObjectFactory, which will create lots of Core MITK objects),
     // so MITKs file reader for ITK images will already be available. So, now we remove it.
-    
     std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();
     std::list<itk::ObjectFactoryBase*>::iterator iter;
     mitk::ItkImageFileIOFactory::Pointer itkIOFactory = NULL;
@@ -267,14 +260,16 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
       itkIOFactory = dynamic_cast<mitk::ItkImageFileIOFactory*>(*iter);
       if (itkIOFactory.IsNotNull())
       {
+        itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
+        m_ItkImageFileIOFactory = itkIOFactory;
         break;
       }
     }
-    itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
 
-    // Load our specific factory, which will be used to load all ITK images, just like the MITK one,
-    // but then in addition, will load DRC Analyze files differently.
-    mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
+    itk::ObjectFactoryBase::RegisterFactory(m_NifTKItkImageFileIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataWriterFactory);
 
     // Carry on as per normal.
     CreateFileExtensionsMap();
@@ -284,14 +279,16 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
 }
 \endcode
 which can be seen to remove the mitk::ItkImageFileIOFactory and insert mitk::NifTKItkImageFileIOFactory.
-This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts be calling 
-RegisterNifTKCoreObjectFactory found in mitkNifTKCoreObjectFactory.h, as can be seen in the main NiftyView application
-\verbatim
-NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cxx
-\endverbatim
+This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts because the first 
+thing that loads the niftkCore library will call
+\code
+static RegisterNifTKCoreObjectFactory registerNifTKCoreObjectFactory;
+\endcode
+found in mitkNifTKCoreObjectFactory.cpp.
+
 To summarise, we create a factory called mitk::NifTKItkImageFileIOFactory to load all ITK image types, using the standard ITK mechanism,
 except for Analyze and Nifti files where we provide modified readers. This factory is registered with the ITK ObjectFactory
-at application startup, replacing the default MITK class. This process is not done for command line applications.
+at application startup, replacing the default MITK class.
 
 \section UnderstandingFileIODicomITK Loading DICOM files in ITK
 

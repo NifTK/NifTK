@@ -248,7 +248,7 @@ void mitk::MIDASPolyTool::SetPolyLinePointSetVisible(bool visible)
 
 void mitk::MIDASPolyTool::DrawWholeContour(
     const mitk::ContourModel& contourReferencePointsInput,
-    const PlaneGeometry& planeGeometry,
+    const PlaneGeometry* planeGeometry,
     mitk::ContourModel& feedbackContour,
     mitk::ContourModel& backgroundContour
     )
@@ -271,8 +271,8 @@ void mitk::MIDASPolyTool::DrawWholeContour(
       const mitk::ContourModel::VertexType* v2 = contourReferencePointsInput.GetVertexAt(i);
 
       this->DrawLineAroundVoxelEdges(
-        *m_SegmentationImage,
-        *m_SegmentationImageGeometry,
+        m_SegmentationImage,
+        m_SegmentationImageGeometry,
         planeGeometry,
         v2->Coordinates,
         v1->Coordinates,
@@ -288,7 +288,7 @@ void mitk::MIDASPolyTool::DrawWholeContour(
 void mitk::MIDASPolyTool::UpdateFeedbackContour(
     bool registerNewPoint,
     const mitk::Point3D& closestCornerPoint,
-    const PlaneGeometry& planeGeometry,
+    const PlaneGeometry* planeGeometry,
     mitk::ContourModel& contourReferencePointsInput,
     mitk::ContourModel& feedbackContour,
     mitk::ContourModel& backgroundContour,
@@ -324,7 +324,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
         m_DraggedPointIndex,
         closestCornerPoint,
         &contourReferencePointsInput,
-        &planeGeometry
+        planeGeometry
         );
 
 
@@ -333,7 +333,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
         m_DraggedPointIndex,
         m_PreviousContourReferencePoints->GetVertexAt(m_DraggedPointIndex)->Coordinates,
         &contourReferencePointsInput,
-        &planeGeometry
+        planeGeometry
         );
 
     mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Update PolyLine");
@@ -366,7 +366,7 @@ void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk:
     assert(backgroundContour);
 
     // Make sure we have a valid geometry, otherwise no point continuing.
-    const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+    const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
     if (!planeGeometry)
     {
       return;
@@ -377,10 +377,10 @@ void mitk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk:
     this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetPositionInWorld(), closestCornerPoint);
 
     // Redraw the "previous" contour line in green.
-    this->DrawWholeContour(*(m_PreviousContourReferencePoints.GetPointer()), *planeGeometry, *(m_PreviousContour.GetPointer()), *backgroundContour);
+    this->DrawWholeContour(*(m_PreviousContourReferencePoints.GetPointer()), planeGeometry, *(m_PreviousContour.GetPointer()), *backgroundContour);
 
     // Redraw the "current" contour line in yellow.
-    this->UpdateFeedbackContour(registerNewPoint, closestCornerPoint, *planeGeometry, *(m_ReferencePoints.GetPointer()), *feedbackContour, *backgroundContour, provideUndo);
+    this->UpdateFeedbackContour(registerNewPoint, closestCornerPoint, planeGeometry, *(m_ReferencePoints.GetPointer()), *feedbackContour, *backgroundContour, provideUndo);
 
     // Make sure all views everywhere get updated.
     this->RenderAllWindows();
@@ -409,7 +409,7 @@ bool mitk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Intera
   }
 
   // Similarly, we can't do plane calculations if no geometry set.
-  const PlaneGeometry* planeGeometry( dynamic_cast<const PlaneGeometry*> (positionEvent->GetSender()->GetCurrentWorldGeometry2D() ) );
+  const PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
   if (!planeGeometry) return false;
 
   // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
@@ -529,7 +529,7 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
         }
         this->CopyContour(*contour, *(m_ReferencePoints.GetPointer()));
         m_MostRecentPointInMillimetres = point;
-        this->DrawWholeContour(*(m_ReferencePoints.GetPointer()), *planeGeometry, *feedbackContour, *backgroundContour);
+        this->DrawWholeContour(*(m_ReferencePoints.GetPointer()), planeGeometry, *feedbackContour, *backgroundContour);
       }
     }
     break;
@@ -543,11 +543,11 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
         mitk::ContourModel* contour = op->GetContour();
         const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
 
-        if (pointId >= 0 && pointId < contour->GetNumberOfVertices())
+        if (pointId < contour->GetNumberOfVertices())
         {
           mitk::ContourModel::VertexType* v = const_cast<mitk::ContourModel::VertexType*>(contour->GetVertexAt(pointId));
           v->Coordinates = point;
-          this->DrawWholeContour(*contour, *planeGeometry, *feedbackContour, *backgroundContour);
+          this->DrawWholeContour(*contour, planeGeometry, *feedbackContour, *backgroundContour);
         }
         else
         {

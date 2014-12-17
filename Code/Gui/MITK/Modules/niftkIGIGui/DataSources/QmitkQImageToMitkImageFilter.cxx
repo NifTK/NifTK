@@ -139,7 +139,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
   typename OutputItkImage::Pointer output = converter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::Geometry3D*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
   return mitkImage;
 }
 
@@ -160,7 +160,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
 
   size[0]  = input->width();
   size[1]  = input->height();
-	size[2]  = 1;
+  size[2]  = 1;
 
   typename ImportFilterType::IndexType start;
   start.Fill( 0 );
@@ -195,19 +195,19 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
   importFilter->Update();
 
 /*
-	if ( image.format() == QImage::Indexed_8)
-	{
-		QVector<QRgb> colors=QVector<QRgb> (256);
-		for ( int i = 0 ; i < 256 ; i ++)
-		  colors[i] = qRgb(i,i,i);
-			image.setColorTable(colors);
-	}
+  if ( image.format() == QImage::Indexed_8)
+  {
+    QVector<QRgb> colors=QVector<QRgb> (256);
+    for ( int i = 0 ; i < 256 ; i ++)
+      colors[i] = qRgb(i,i,i);
+      image.setColorTable(colors);
+  }
 */
 
   typename OutputItkImage::Pointer output = importFilter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::Geometry3D*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
   return mitkImage;
 }
 
@@ -215,6 +215,6 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
 //-----------------------------------------------------------------------------
 void QmitkQImageToMitkImageFilter::SetGeometryImage( mitk::Image::Pointer GeomImage)
 {
-	this->m_GeomImage = GeomImage;
-	this->Modified();
+  this->m_GeomImage = GeomImage;
+  this->Modified();
 }

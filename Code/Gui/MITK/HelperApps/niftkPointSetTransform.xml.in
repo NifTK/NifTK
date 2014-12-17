@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Point Set Transformation</title>
+  <description><![CDATA[Transforms a point set using a matrix]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file >
+      <name>source</name>
+      <longflag>source</longflag>
+      <description>Source data</description>
+      <label>Source data</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <file>
+      <name>transform</name>
+      <longflag>transform</longflag>
+      <description>Transform the source by this transform</description>
+      <label>Transform the source by this transform</label>
+      <channel>input</channel>
+    </file>
+  
+    <file>
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>Write the result to file</description>
+      <label>Write the result to file</label>
+      <channel>output</channel>
+    </file>
+
+    <float>
+      <name>perturbTrans</name>
+      <longflag>perturbTrans</longflag>
+      <description>Perturb the initial transform with a random transform (SD of translations)</description>
+      <label>Perturb the initial transform with a random transform (SD of translations)</label>
+      <default>0.0</default>
+    </float>
+	
+    <float>
+      <name>perturbRot</name>
+      <longflag>perturbRot</longflag>
+      <description>Perturb the initial transform with a random transform (SD of rotations)</description>
+      <label>Perturb the initial transform with a random transform (SD of rotations)</label>
+      <default>0.0</default>
+    </float>
+
+  </parameters>
+  
+</executable>

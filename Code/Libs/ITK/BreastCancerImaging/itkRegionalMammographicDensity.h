@@ -42,6 +42,7 @@
 #include <itkTransformFileWriter.h>
 #include <itkImageMomentsCalculator.h>
 #include <itkImageRegistrationFactory.h>
+#include <itkMammogramLeftOrRightSideCalculator.h>
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -242,6 +243,11 @@ public:
 
   typedef itk::PolygonSpatialObject< InputDimension > PolygonType;
 
+  typedef typename itk::MammogramLeftOrRightSideCalculator< ImageType > 
+    LeftOrRightSideCalculatorType;
+
+  typedef typename LeftOrRightSideCalculatorType::BreastSideType BreastSideType;
+
 
   // Setup objects to build registration.
 
@@ -384,6 +390,8 @@ protected:
 
   int m_ThresholdDiagnostic;
 
+  BreastSideType m_BreastSideDiagnostic;
+
   // The pre-diagnostic image
 
   std::string m_IdPreDiagnosticImage;
@@ -391,12 +399,16 @@ protected:
 
   int m_ThresholdPreDiagnostic;
 
+  BreastSideType m_BreastSidePreDiagnostic;
+
   // The control image
 
   std::string m_IdControlImage;
   std::string m_FileControl;
 
   int m_ThresholdControl;
+
+  BreastSideType m_BreastSideControl;
 
   // The tumour
 
@@ -519,8 +531,12 @@ protected:
   ScalesType SetRegistrationParameterScales( typename itk::TransformTypeEnum transformType,
                                              unsigned int nParameters );
 
+  void InitialiseTransformationFromImageMoments( MammogramType mammoType,
+                                                 typename FactoryType::EulerAffineTransformType::Pointer &transform );
+
   void RegisterTheImages();
-  void RegisterTheImages( MammogramType mammoType );
+  void RegisterTheImages( MammogramType mammoType,
+                          typename FactoryType::EulerAffineTransformType::Pointer &transform );
 
   typename LabelImageType::IndexType
     TransformTumourPositionIntoImage( typename LabelImageType::IndexType &idxTumourCenter,
@@ -531,13 +547,14 @@ protected:
                                             MammogramType mammoType );
 
   typename LabelImageType::Pointer 
-    GenerateRegionLabels( typename LabelImageType::IndexType &idxTumourCenter,
-                          typename LabelImageType::RegionType &tumourRegion,
-                          LabelPixelType &tumourRegionValue,
-                          typename ImageType::Pointer &image,
-                          typename ImageType::Pointer &imMask,
-                          typename std::map< LabelPixelType, Patch > &listOfPatches,
-                          int threshold );
+       GenerateRegionLabels( BreastSideType breastSide,
+                             typename LabelImageType::IndexType &idxTumourCenter,
+                             typename LabelImageType::RegionType &tumourRegion,
+                             LabelPixelType &tumourRegionValue,
+                             typename ImageType::Pointer &image,
+                             typename ImageType::Pointer &imMask,
+                             typename std::map< LabelPixelType, Patch > &listOfPatches,
+                             int threshold );
 
 private:
 

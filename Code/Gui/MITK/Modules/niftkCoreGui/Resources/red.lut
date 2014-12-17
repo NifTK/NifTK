@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="7" class="LinearLookupTable" displayName="red" premultiplied="0">
+<lut order="8" class="LinearLookupTable" displayName="red" premultiplied="0">
 <colour r="0" g="0" b="0"/>
 <colour r="1" g="0" b="0"/>
 <colour r="2" g="0" b="0"/>

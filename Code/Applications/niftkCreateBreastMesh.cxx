@@ -800,7 +800,7 @@ int main (int argc, char *argv[])
   // Apply the Marching Cubes algorithm
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkMarchingCubes::New();
+  vtkSmartPointer<vtkMarchingCubes> surfaceExtractor = vtkSmartPointer<vtkMarchingCubes>::New();
 
   if ( distTransThresh )
     // The threshold 'd' corresponds to voxels which are sqrt(d) voxels
@@ -826,7 +826,7 @@ int main (int argc, char *argv[])
   // Create triangles from the (assumed) polygonal data
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkTriangleFilter::New();
+  vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
   triangleFilter->SetInputConnection(pipeVTKAlgorithmConnector);
   pipeVTKPolyDataConnector = triangleFilter->GetOutput();
 
@@ -842,7 +842,7 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~~~~~~~~~
 
   if (preSmooth) {
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> preSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter> preSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
  
     preSmoothingFilter->BoundarySmoothingOff();
 
@@ -866,7 +866,7 @@ int main (int argc, char *argv[])
 
     if ( flgDecimatePro ) {
       
-      vtkSmartPointer<vtkDecimatePro> decimator = vtkDecimatePro::New();
+      vtkSmartPointer<vtkDecimatePro> decimator = vtkSmartPointer<vtkDecimatePro>::New();
       
       decimator->SetTargetReduction( decimation );
       decimator->PreserveTopologyOn();
@@ -889,7 +889,7 @@ int main (int argc, char *argv[])
 
     else {
 
-      vtkSmartPointer<vtkQuadricDecimation> decimatorQD = vtkQuadricDecimation::New();
+      vtkSmartPointer<vtkQuadricDecimation> decimatorQD = vtkSmartPointer<vtkQuadricDecimation>::New();
       
       decimatorQD->SetTargetReduction( decimation );
       decimatorQD->SetInputData( pipeVTKPolyDataConnector );
@@ -910,7 +910,7 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~~~~~~~~~
 
   if (postSmooth) {
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkWindowedSincPolyDataFilter::New();
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter> postSmoothingFilter = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
  
     postSmoothingFilter->BoundarySmoothingOff();
 
@@ -932,7 +932,7 @@ int main (int argc, char *argv[])
 
   if ( fileOutputPolydata.length() > 0 ) {
 
-    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkPolyDataWriter::New();
+    vtkSmartPointer<vtkPolyDataWriter> writer3D = vtkSmartPointer<vtkPolyDataWriter>::New();
     writer3D->SetFileName( fileOutputPolydata.c_str() );
     writer3D->SetInputData(pipeVTKPolyDataConnector);
 
@@ -951,7 +951,7 @@ int main (int argc, char *argv[])
 
   if ( fileOutputSTL.length() > 0 ) {
 
-    vtkSmartPointer<vtkSTLWriter> writer3D = vtkSTLWriter::New();
+    vtkSmartPointer<vtkSTLWriter> writer3D = vtkSmartPointer<vtkSTLWriter>::New();
     writer3D->SetFileName( fileOutputSTL.c_str() );
     writer3D->SetInputData(pipeVTKPolyDataConnector);
 
@@ -977,7 +977,7 @@ int main (int argc, char *argv[])
   // Create surface normals to allow Goraud shading
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  vtkSmartPointer<vtkPolyDataNormals> normals = vtkPolyDataNormals::New();
+  vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New();
 
   normals->SplittingOff();
 
@@ -988,7 +988,7 @@ int main (int argc, char *argv[])
   // Map 3D volume to graphics library
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkPolyDataMapper> map3D = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> map3D = vtkSmartPointer<vtkPolyDataMapper>::New();
 
   map3D->ScalarVisibilityOff();
 
@@ -1008,7 +1008,7 @@ int main (int argc, char *argv[])
   // Create actor
   // ~~~~~~~~~~~~
 
-  vtkSmartPointer<vtkActor> actor3D = vtkActor::New();
+  vtkSmartPointer<vtkActor> actor3D = vtkSmartPointer<vtkActor>::New();
 
   actor3D->SetMapper(map3D);
   actor3D->GetProperty()->SetColor(1, 1, 1);
@@ -1028,10 +1028,10 @@ int main (int argc, char *argv[])
   // ~~~~~~~~~~~~~~~~
     
   if (! noInteractor) {
-    vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkRenderWindowInteractor::New(); 
+    vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     iren->SetRenderWindow(renWin); 
 
-    vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkInteractorStyleTrackballCamera::New();
+    vtkSmartPointer<vtkInteractorStyleTrackballCamera> istyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
     iren->SetInteractorStyle(istyle);
 
     iren->Initialize(); 

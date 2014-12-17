@@ -50,13 +50,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(CoordinateAxesDataReaderFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-  {
-    CoordinateAxesDataReaderFactory::Pointer factory = CoordinateAxesDataReaderFactory::New();
-    ObjectFactoryBase::RegisterFactory(factory);
-  }
-
 protected:
   CoordinateAxesDataReaderFactory(); // Purposefully hidden.
   ~CoordinateAxesDataReaderFactory(); // Purposefully hidden.

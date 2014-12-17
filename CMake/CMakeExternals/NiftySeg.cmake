@@ -25,7 +25,7 @@ endif()
 if(BUILD_NIFTYSEG)
 
   set(proj NiftySeg)
-  set(proj_DEPENDENCIES )
+  set(proj_DEPENDENCIES Eigen)
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYSEG_DEPENDS ${proj})
 
@@ -45,12 +45,14 @@ if(BUILD_NIFTYSEG)
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+        -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DUSE_OPENMP:BOOL=OFF
         -DINSTALL_PRIORS:BOOL=ON
         -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DUSE_SYSTEM_EIGEN=ON
+        -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
       DEPENDS ${proj_DEPENDENCIES}
       )
 

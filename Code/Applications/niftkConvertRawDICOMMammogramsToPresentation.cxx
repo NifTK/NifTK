@@ -26,6 +26,8 @@
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 
+#include <itkCreatePositiveMammogram.h>
+
 #include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -33,11 +35,9 @@
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
 #include <itkGDCMImageIO.h>
-#include <itkLogNonZeroIntensitiesImageFilter.h>
-#include <itkMinimumMaximumImageCalculator.h>
-#include <itkRescaleIntensityImageFilter.h>
 #include <itkCastImageFilter.h>
-#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkMammogramFatSubtractionImageFilter.h>
+#include <itkMammogramMaskSegmentationImageFilter.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -64,6 +64,7 @@ struct arguments
   bool flgOverwrite;
   bool flgRescaleIntensitiesToMaxRange;
   bool flgVerbose;
+  bool flgFatSubtract;
 
   std::string iterFilename;
 };
@@ -96,41 +97,6 @@ void PrintDictionary( DictionaryType &dictionary )
 
     ++tagItr;
   }
-};
-
-
-// -------------------------------------------------------------------------
-// ModifyTag()
-// -------------------------------------------------------------------------
-
-void ModifyTag( DictionaryType &dictionary,
-                std::string tagID,
-                std::string newTagValue )
-{
-  // Search for the tag
-  
-  std::string tagValue;
-  
-  DictionaryType::ConstIterator tagItr = dictionary.Find( tagID );
-  DictionaryType::ConstIterator tagEnd = dictionary.End();
-   
-  if ( tagItr != tagEnd )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-    
-    if ( entryvalue )
-    {
-      std::string tagValue = entryvalue->GetMetaDataObjectValue();
-      
-      std::cout << "Modifying tag (" << tagID <<  ") "
-		<< " from: " << tagValue 
-		<< " to: " << newTagValue << std::endl;
-      
-      itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
-    }
-  }
-
 };
 
 
@@ -196,14 +162,10 @@ std::string AddPresentationFileSuffix( std::string fileName, std::string strAdd2
 template <class OutputPixelType>
 int DoMain(arguments args, OutputPixelType min, OutputPixelType max)
 {
-  bool flgPreInvert = false;
-
   float progress = 0.;
   float iFile = 0.;
   float nFiles;
  
-  itksys_ios::ostringstream value;
-
 
   // Get the list of files in the directory
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -232,11 +194,8 @@ int DoMain(arguments args, OutputPixelType min, OutputPixelType max)
   typedef itk::Image< InternalPixelType, InputDimension > InternalImageType; 
   typedef itk::Image< OutputPixelType, InputDimension > OutputImageType;
 
-  typedef itk::LogNonZeroIntensitiesImageFilter<InternalImageType, InternalImageType> LogFilterType;
-  typedef itk::InvertIntensityBetweenMaxAndMinImageFilter<InternalImageType> InvertFilterType;
-  typedef itk::CastImageFilter<InternalImageType, OutputImageType> CastingFilterType;
-  typedef itk::MinimumMaximumImageCalculator<InternalImageType> MinimumMaximumImageCalculatorType;
   typedef itk::RescaleIntensityImageFilter< InternalImageType, InternalImageType > RescalerType;
+  typedef itk::CastImageFilter< InternalImageType, OutputImageType > CastingFilterType;
  
   typedef itk::ImageFileReader< InternalImageType > ReaderType;
   typedef itk::ImageFileWriter< OutputImageType > WriterType;
@@ -276,133 +235,91 @@ int DoMain(arguments args, OutputPixelType min, OutputPixelType max)
 
   DictionaryType dictionary = image->GetMetaDataDictionary();
   
-  DictionaryType::ConstIterator tagItr;
-  DictionaryType::ConstIterator tagEnd;
 
-  // Check that the modality DICOM tag is 'MG'
+  // Convert a raw DICOM mammogram to a presentation version by log inverting it
 
-  std::string tagModalityID = "0008|0060";
-  std::string tagModalityValue;
-
-  tagItr = dictionary.Find( tagModalityID );
-  tagEnd = dictionary.End();
-   
-  if( tagItr != tagEnd )
+  if ( ! itk::ConvertMammogramFromRawToPresentation< InternalImageType >( image, 
+                                                                          dictionary ) )
   {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-
-    if ( entryvalue )
-    {
-      tagModalityValue = entryvalue->GetMetaDataObjectValue();
-      std::cout << "Modality Name (" << tagModalityID <<  ") "
-                << " is: " << tagModalityValue << std::endl;
-    }
-  }
-
-  // Check that the 'Presentation Intent Type' is 'For Processing'
-
-  std::string tagForProcessingID = "0008|0068";
-  std::string tagForProcessingValue;
-
-  tagItr = dictionary.Find( tagForProcessingID );
-  tagEnd = dictionary.End();
-   
-  if( tagItr != tagEnd )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-
-    if ( entryvalue )
-    {
-      tagForProcessingValue = entryvalue->GetMetaDataObjectValue();
-      std::cout << "Presentation Intent Type (" << tagForProcessingID <<  ") "
-                << " is: " << tagForProcessingValue << std::endl;
-    }
-  }
-
-  // Process this file?
-
-  if ( ( ( tagModalityValue == std::string( "CR" ) ) ||    //  Computed Radiography
-         ( tagModalityValue == std::string( "MG" ) ) ) &&  //  Mammography
-       ( tagForProcessingValue == std::string( "FOR PROCESSING" ) ) )
-  {
-    std::cout << "Image is a raw \"FOR PROCESSING\" mammogram - converting"
-              << std::endl;
-  }
-  else
-  {
-    std::cout << "Skipping image - does not appear to be a \"FOR PROCESSING\" mammogram" 
-              << std::endl << std::endl;
     return EXIT_FAILURE;
   }
 
 
-  // Change the tag to "FOR PRESENTATION"
 
-  ModifyTag( dictionary, "0008|0068", "FOR PRESENTATION" );
+  // Fat subtract the image?
 
-  // Set the pixel intensity relationship sign to linear
-  value.str("");
-  value << "LIN";
-  itk::EncapsulateMetaData<std::string>(dictionary,"0028|1040", value.str());
-
-  // Set the pixel intensity relationship sign to one
-  value.str("");
-  value << 1;
-  itk::EncapsulateMetaData<std::string>(dictionary,"0028|1041", value.str());
-
-  // Set the presentation LUT shape
-  ModifyTag( dictionary, "2050|0020", "IDENTITY" );
-    
-  // Check whether this is MONOCHROME1 or 2 and hence whether to invert
-
-  std::string tagPhotoInterpID = "0028|0004";
-  std::string tagPhotoInterpValue;
-
-  tagItr = dictionary.Find( tagPhotoInterpID );
-  tagEnd = dictionary.End();
-   
-  if( tagItr != tagEnd )
+  if ( args.flgFatSubtract )
   {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+    // First compute the mask
 
-    if ( entryvalue )
-    {
-      tagPhotoInterpValue = entryvalue->GetMetaDataObjectValue();
-      std::cout << "Photometric interportation is (" << tagPhotoInterpID <<  ") "
-                << " is: " << tagPhotoInterpValue << std::endl;
+    typedef unsigned char MaskPixelType;
+    typedef itk::Image< MaskPixelType, InputDimension > MaskImageType;   
+
+    typedef itk::MammogramMaskSegmentationImageFilter<InternalImageType, MaskImageType> 
+      MammogramMaskSegmentationImageFilterType;
+
+    typename MammogramMaskSegmentationImageFilterType::Pointer 
+      maskFilter = MammogramMaskSegmentationImageFilterType::New();
+
+    maskFilter->SetInput( image );
+
+    maskFilter->SetVerbose( args.flgVerbose );
+
+    maskFilter->SetIncludeBorderRegion( true );
+
+    try {
+      maskFilter->Update();
     }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to segment image" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    typename MaskImageType::Pointer mask = maskFilter->GetOutput();
+
+    mask->DisconnectPipeline();
+    
+    // Then calculate the fat subtracted image
+
+    typedef itk::MammogramFatSubtractionImageFilter<InternalImageType> 
+      MammogramFatSubtractionImageFilterType;
+
+    typename MammogramFatSubtractionImageFilterType::Pointer 
+      fatFilter = MammogramFatSubtractionImageFilterType::New();
+
+    fatFilter->SetInput( image );  
+
+    fatFilter->SetVerbose( args.flgVerbose );
+
+    fatFilter->SetComputeFatEstimationFit( true );
+
+    fatFilter->SetMask( mask );
+  
+    try
+    {
+      fatFilter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to calculate the fat subtraction: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+    
+    image = fatFilter->GetOutput( 0 );
+    image->DisconnectPipeline();
   }
 
-  std::size_t found = tagPhotoInterpValue.find( "MONOCHROME2" );
-  if ( found != std::string::npos )
-  {
-    std::cout << "Image is \"MONOCHROME2\" so will not be inverted"
-              << std::endl;
-    flgPreInvert = true;        // Actually we pre-invert it
-  }
 
-  found = tagPhotoInterpValue.find( "MONOCHROME1" );
-  if ( found != std::string::npos )
-  {
-    ModifyTag( dictionary, "0028|0004", "MONOCHROME2" );
-  }
-
-   
-  // Set the desired output range (i.e. the same as the input)
-
-  MinimumMaximumImageCalculatorType::Pointer 
-    imageRangeCalculator = MinimumMaximumImageCalculatorType::New();
-
-  imageRangeCalculator->SetImage( image );
-  imageRangeCalculator->Compute();
-
-  RescalerType::Pointer intensityRescaler = RescalerType::New();
+  // Rescale the image to the maximum range
 
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
+    itksys_ios::ostringstream value;
+
+    typename RescalerType::Pointer intensityRescaler = RescalerType::New();
+  
     intensityRescaler->SetOutputMinimum( min );
     intensityRescaler->SetOutputMaximum( max );
 
@@ -433,47 +350,19 @@ int DoMain(arguments args, OutputPixelType min, OutputPixelType max)
     value.str("");
     value << 1;
     itk::EncapsulateMetaData<std::string>(dictionary, "0028|1053", value.str());
-  }
-  else
-  {
-    intensityRescaler->SetOutputMinimum( 
-      static_cast< InternalPixelType >( imageRangeCalculator->GetMinimum() ) );
-    intensityRescaler->SetOutputMaximum( 
-      static_cast< InternalPixelType >( imageRangeCalculator->GetMaximum() ) );
+
+    intensityRescaler->UpdateLargestPossibleRegion();
+
+    image = intensityRescaler->GetOutput();
+    image->DisconnectPipeline();
   }
 
 
-  std::cout << "Image output range will be: " << intensityRescaler->GetOutputMinimum()
-            << " to " << intensityRescaler->GetOutputMaximum() << std::endl;
-
-
-  // Convert the image to a "FOR PRESENTATION" version by calculating the logarithm and inverting 
-
-  if ( flgPreInvert ) 
-  {
-    InvertFilterType::Pointer invfilter = InvertFilterType::New();
-    invfilter->SetInput( image );
-    invfilter->UpdateLargestPossibleRegion();
-    image = invfilter->GetOutput();
-  }
-
-  LogFilterType::Pointer logfilter = LogFilterType::New();
-  logfilter->SetInput(image);
-  logfilter->UpdateLargestPossibleRegion();
-   
-  InvertFilterType::Pointer invfilter = InvertFilterType::New();
-  invfilter->SetInput(logfilter->GetOutput());
-  invfilter->UpdateLargestPossibleRegion();
-  image = invfilter->GetOutput();
-      
+  // Cast to the output type
 
   typename CastingFilterType::Pointer caster = CastingFilterType::New();
 
-  intensityRescaler->SetInput( image );  
-
-  intensityRescaler->UpdateLargestPossibleRegion();
-
-  caster->SetInput( intensityRescaler->GetOutput() );
+  caster->SetInput( image );
 
   caster->UpdateLargestPossibleRegion();
 
@@ -588,8 +477,9 @@ int main( int argc, char *argv[] )
 
   args.strAdd2Suffix = strAdd2Suffix;                      
 				   	                                                 
-  args.flgOverwrite            = flgOverwrite;                       
-  args.flgVerbose              = flgVerbose;    
+  args.flgOverwrite   = flgOverwrite;                       
+  args.flgVerbose     = flgVerbose;    
+  args.flgFatSubtract = flgFatSubtract;
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
 

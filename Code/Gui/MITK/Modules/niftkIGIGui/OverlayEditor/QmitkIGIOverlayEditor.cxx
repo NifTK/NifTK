@@ -21,7 +21,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
-#include <mitkTrackedImageCommand.h>
+#include <mitkTrackedImage.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
@@ -81,10 +81,12 @@ void QmitkIGIOverlayEditor::OnOverlayCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_3DViewerCheckBox->setEnabled(false);
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
     m_3DViewerCheckBox->setEnabled(true);
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_OverlayViewer->setVisible(checked);
 }
@@ -96,10 +98,12 @@ void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_OverlayCheckBox->setEnabled(false);
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
   }
   else
   {
     m_OverlayCheckBox->setEnabled(true);
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
   }
   m_3DViewer->setVisible(checked);
 }
@@ -170,7 +174,7 @@ void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
   bool propValue = false;
   if (node != NULL
     && !m_OverlayViewer->GetCameraTrackingMode()
-    && node->GetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue) 
+    && node->GetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue)
     && propValue)
   {
     m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));

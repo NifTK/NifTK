@@ -63,6 +63,9 @@
 #include <NifTKConfigure.h>
 #include <mitkDataStorageUtils.h>
 
+
+US_INITIALIZE_MODULE
+
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
 
 //-----------------------------------------------------------------------------
@@ -321,7 +324,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 QmitkCommonAppsApplicationPlugin
 ::ITKGetStatistics(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+    const itk::Image<TPixel, VImageDimension> *itkImage,
     float &min,
     float &max,
     float &mean,
@@ -364,11 +367,13 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 {
   if (mitk::IsNodeAGreyScaleImage(node))
   {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
 
     if (prefNode != NULL && image.IsNotNull())
     {
+      int minRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
+      int maxRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
       double percentageOfRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
       std::string initialisationMethod = prefNode->Get(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME, QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS);
 
@@ -463,6 +468,11 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
           {
             windowMin = minDataLimit;
             windowMax = minDataLimit + (maxDataLimit - minDataLimit)*percentageOfRange/100.0;
+          }
+          else if (initialisationMethod == QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE)
+          {
+            windowMin = minRange; // ignores data completely.
+            windowMax = maxRange; // ignores data completely.
           }
           else
           {
@@ -1133,5 +1143,6 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
 
 
 //-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
-US_INITIALIZE_MODULE("CommonApps", "libuk_ac_ucl_cmic_gui_qt_commonapps")
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
+#endif

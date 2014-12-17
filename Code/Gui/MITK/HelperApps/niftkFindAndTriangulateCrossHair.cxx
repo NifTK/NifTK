@@ -43,6 +43,8 @@ int main(int argc, char** argv)
   {
     mitk::FindAndTriangulateCrossHair::Pointer finder = mitk::FindAndTriangulateCrossHair::New();
     finder->SetVisualise(Visualise);
+    finder->SetFramesToProcess (framesToUse);
+    finder->SetHaltOnVideoReadFail( ! ignoreVideoReadFail );
     finder->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( videoLag != 0 )
     {
@@ -65,7 +67,13 @@ int main(int argc, char** argv)
 
     finder->Triangulate();
    
-    std::vector < cv::Point3d > worldPoints = finder->GetWorldPoints();
+    std::vector < mitk::WorldPoint > mitkWorldPoints = finder->GetWorldPoints();
+    std::vector < cv::Point3d > worldPoints;
+
+    for ( unsigned int i = 0 ; i < mitkWorldPoints.size() ; i ++ ) 
+    {
+      worldPoints.push_back (mitkWorldPoints[i].m_Point);
+    }
     cv::Point3d worldCentroid;
     cv::Point3d* worldStdDev = new cv::Point3d;
     worldCentroid = mitk::GetCentroid (worldPoints, true, worldStdDev);
@@ -89,18 +97,18 @@ int main(int argc, char** argv)
     if ( outputLens.length() !=0 )
     {
       std::ofstream fout (outputLens.c_str());
-      std::vector < cv::Point3d >  leftLensPoints = finder->GetPointsInLeftLensCS();
-      std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints = finder->GetScreenPoints();
+      std::vector < mitk::WorldPoint >  leftLensPoints = finder->GetPointsInLeftLensCS();
+      std::vector < mitk::ProjectedPointPair > screenPoints = finder->GetScreenPoints();
       fout << "#Frame Number " ;
       fout << "PleftLens" << "[x,y,z]" << "PLeftScreen [x,y] , PRightScreen [x,y]";
       fout << std::endl;
       for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
       {
         fout << i << " ";
-        fout << leftLensPoints[i].x << " " <<  leftLensPoints[i].y <<
-             " " << leftLensPoints[i].z << " " <<
-             screenPoints[i].first.x << " " << screenPoints[i].first.y << " " <<
-             screenPoints[i].second.x << " " << screenPoints[i].second.y ;
+        fout << leftLensPoints[i].m_Point.x << " " <<  leftLensPoints[i].m_Point.y <<
+             " " << leftLensPoints[i].m_Point.z << " " <<
+             screenPoints[i].m_Left.x << " " << screenPoints[i].m_Left.y << " " <<
+             screenPoints[i].m_Right.x << " " << screenPoints[i].m_Right.y ;
         fout << std::endl;
       }
       fout.close();

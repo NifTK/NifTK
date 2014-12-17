@@ -61,7 +61,7 @@ namespace mitk
   * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
   * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
-class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D//, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public SegTool2D, public MIDASStateMachine
 {
 
 public:
@@ -223,7 +223,7 @@ private:
   int m_CursorSize;
 
   // This is the 3D geometry associated with the m_WorkingImage, where we assume both working images have same size and geometry.
-  mitk::Geometry3D* m_WorkingImageGeometry;
+  mitk::BaseGeometry* m_WorkingImageGeometry;
 
   // This points to the current working image, assuming that we are only ever processing, left, middle or right mouse button at any one time.
   mitk::Image* m_WorkingImage;

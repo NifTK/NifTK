@@ -167,7 +167,7 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
       for (directionCounter = -1; directionCounter <= 1; directionCounter += 2)
       {
         nextIndex = currIndex + directionCounter * offsets[dimCounter];
-        if (nextIndex >= 0 && nextIndex < numberOfVoxels && imageBuffer[nextIndex] == outputForeground)
+        if (nextIndex < numberOfVoxels && imageBuffer[nextIndex] == outputForeground)
         {
           imageBuffer[nextIndex] = outputBackground;
           componentIndexStack.push(nextIndex);

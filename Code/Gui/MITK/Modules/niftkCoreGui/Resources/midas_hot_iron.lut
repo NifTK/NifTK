@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="5" class="LinearLookupTable" displayName="MIDAS Hot Iron" premultiplied="0">
+<lut order="6" class="LinearLookupTable" displayName="MIDAS Hot Iron" premultiplied="0">
  <colour r="0" g="0" b="0" />
  <colour r="5" g="0" b="0" />
  <colour r="10" g="0" b="0" />

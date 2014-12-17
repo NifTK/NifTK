@@ -15,8 +15,8 @@
 # tests with no extra command line parameter
 set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
-  mitkTrackedImageCommandTest.cxx
-  mitkTrackedPointerManagerTest.cxx
+  mitkTrackedImageTest.cxx
+  mitkTrackedPointerTest.cxx
   mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx
   # does not depend on pcl

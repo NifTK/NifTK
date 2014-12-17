@@ -31,8 +31,9 @@
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
 #include <QmitkIGIDataSource.h>
+#include <igtlTimeStamp.h>
+#include <map>
 
-class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
 class QGridLayout;
@@ -69,6 +70,7 @@ public:
   static const bool   DEFAULT_SAVE_ON_RECEIPT;
   static const bool   DEFAULT_SAVE_IN_BACKGROUND;
   static const bool   DEFAULT_PICK_LATEST_DATA;
+  static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   /**
    * \brief Creates the base class widgets, and connects signals and slots.
@@ -85,16 +87,6 @@ public:
    * \brief Get the Data Storage that this tool manager is currently connected to.
    */
   itkGetConstMacro(DataStorage, mitk::DataStorage*);
-
-  /**
-   * \brief Sets the StdMultiWidget.
-   */
-  itkSetObjectMacro(StdMultiWidget, QmitkStdMultiWidget);
-
-  /**
-   * \brief Gets the StdMultiWidget.
-   */
-  itkGetConstMacro(StdMultiWidget, QmitkStdMultiWidget*);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -192,6 +184,8 @@ protected:
   QmitkIGIDataSourceManager(const QmitkIGIDataSourceManager&); // Purposefully not implemented.
   QmitkIGIDataSourceManager& operator=(const QmitkIGIDataSourceManager&); // Purposefully not implemented.
 
+  bool eventFilter(QObject *obj,  QEvent *event );
+
 private slots:
 
   /**
@@ -265,10 +259,13 @@ private slots:
 
   void OnTimestampEditFinished();
 
+  void AdvancePlaybackTime();
+
+  void OnComputeStats();
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;
-  QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
   QSet<int>                                 m_PortsInUse;
   std::vector<QmitkIGIDataSource::Pointer>  m_Sources;
@@ -287,6 +284,20 @@ private:
   bool                                      m_PickLatestData;
   QTimer                                   *m_GuiUpdateTimer;
   QTimer                                   *m_ClearDownTimer;
+
+  // These all pertain to stats. These are being "investigated".
+  // i.e. we don't know the functional requirements.
+  // So lets "give it a go", and see what seems useful.
+  QTimer                                   *m_StatsTimer;
+  igtlUint64                                m_RequestedFrameRate;
+  igtlUint64                                m_NumberOfTimesRenderingLoopCalled;
+  igtlUint64                                m_NumberOfTimesRenderingIsActuallyCalled;
+  igtl::TimeStamp::Pointer                  m_StatsTimerStart;
+  igtl::TimeStamp::Pointer                  m_StatsTimerEnd;
+  std::vector<double>                       m_ListRenderingTimes;
+  std::vector<double>                       m_ListDataFetchTimes;
+  std::vector<double>                       m_ListLagTimes;
+  std::map<int, std::vector<double> >       m_MapLagTiming;
 
   // either real wallclock time or slider-determined playback time
   igtlUint64                                m_CurrentTime;

@@ -23,6 +23,8 @@
 #include <mitkIDataStorageService.h>
 #include <QmitkLookupTableProviderService.h>
 
+#include <itkImage.h>
+
 #include <QObject>
 #include <QString>
 
@@ -126,7 +128,7 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void
   ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
+      const itk::Image<TPixel, VImageDimension> *itkImage,
       float &min,
       float &max,
       float &mean,

@@ -46,7 +46,7 @@ public:
     MITK_TEST_OUTPUT(<< "Starting DoCalibration...");
 
     double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Run Calibration.
     mitk::PivotCalibration::Pointer calibration = mitk::PivotCalibration::New();

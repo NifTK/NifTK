@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Convert Video To Images</title>
+  <description><![CDATA[Converts and video file and framemap.log file to a set of timestamped images]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>videoInputDirectory</name>
+      <longflag>video</longflag>
+      <description>The directory containing the video and corresponding framemap.</description>
+      <label>The directory containing the video and corresponding framemap.</label>
+      <default>./</default>
+    </directory>    
+   
+    <file>
+      <name>outputPrefix</name>
+      <longflag>outputPrefix</longflag>
+      <description>The output prefix</description>
+      <label>The output prefix</label>
+      <default>./</default>
+      <channel>output</channel>
+    </file>
+    
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+   
+    <boolean>
+      <name>ignoreVideoReadFail</name>
+      <longflag>ignoreVideoReadFail</longflag>
+      <description>If set will attempt to continue in spite of errors reading the video file</description>
+      <label>If set will attempt to continue in spite of errors reading the video file</label>
+      <default>0</default>
+    </boolean>
+    
+    <integer>
+	<name>framesToUse</name>
+	<longflag>framesToUse</longflag>
+	<description>If zero or greater, stop processing after n frames</description>
+	<label>If zero or greater, stop processing after n frames</label>
+	<default>10</default>
+    </integer>
+ 
+  </parameters>
+  
+</executable>

@@ -28,7 +28,7 @@
       <longflag>outputImage</longflag>
       <description>Output image</description>      
       <label>Output image</label>
-      <default>outputInverted.nii.gz</default>
+      <default>ConnectedComponents.nii.gz</default>
       <channel>output</channel>
     </image>
 

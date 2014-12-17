@@ -47,6 +47,19 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_APP_EXCLUDE_PLUGINS}
   )
   
+  ###################################################################
+  # The aim here is to produce a minimal list. Basically:
+  # - all CTK ones and MITK ones that are not specifically excluded.
+  # - ONLY NifTK ones that have have been explicitly included.
+  ###################################################################
+  set(_total_plugins ${all_mitk_ctk_plugins})
+  if(_exclude_plugins)
+    list(REMOVE_ITEM _total_plugins ${_exclude_plugins})
+  endif()
+  if(_include_plugins)
+    list(APPEND _total_plugins ${_include_plugins})
+  endif()
+
   # NOTE: Check CMake/PackageDepends for any additional dependencies.
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
@@ -84,8 +97,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     SOURCES ${MY_APP_NAME}.cxx
-    PLUGINS ${_include_plugins}
-    EXCLUDE_PLUGINS ${_exclude_plugins}
+    PLUGINS ${_total_plugins}
     LINK_LIBRARIES ${_link_libraries}
     LIBRARY_DIRS ${_library_dirs}
     ${_app_options}
@@ -100,8 +112,8 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     set(MACOSX_BUNDLE_NAMES ${TMP_MACOSX_BUNDLE_NAMES})
     set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${MY_APP_NAME})
     set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_LONG_VERSION_STRING "${NIFTK_VERSION_STRING}_${NIFTK_REVISION_SHORTID}_${NIFTK_DATE_TIME}")
-    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${NIFTK_VERSION_STRING})
-    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT ${NIFTK_COPYRIGHT})
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING "${NIFTK_VERSION_STRING}")
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT "${NIFTK_COPYRIGHT}")
   endif()
   
 endmacro()

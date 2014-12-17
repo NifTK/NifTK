@@ -99,9 +99,6 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
 
-  // Need to load images, specifically using MIDAS/DRC object factory.
-  ::RegisterNifTKCoreObjectFactory();
-
   QmitkRegisterClasses();
 
   d->DataStorage = mitk::StandaloneDataStorage::New();
@@ -109,11 +106,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
   d->RenderingManager = mitk::RenderingManager::GetInstance();
   d->RenderingManager->SetDataStorage(d->DataStorage);
 
-  std::vector<std::string> files;
-  files.push_back(d->FileName);
-
-  mitk::IOUtil::LoadFiles(files, *(d->DataStorage.GetPointer()));
-  mitk::DataStorage::SetOfObjects::ConstPointer allImages = d->DataStorage->GetAll();
+  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(d->FileName, *(d->DataStorage.GetPointer()));
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Test image loaded.");
 
   d->ImageNode = (*allImages)[0];

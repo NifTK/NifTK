@@ -26,6 +26,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkImageMapper.h>
 #include <vtkCamera.h>
 #include <vtkImageData.h>
+
+#include <mitkImage.h>
+
 #include <niftkVTKFunctions.h>
 
 //-----------------------------------------------------------------------------

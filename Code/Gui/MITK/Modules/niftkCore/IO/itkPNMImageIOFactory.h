@@ -49,13 +49,6 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(PNMImageIOFactory, ObjectFactoryBase);
 
-  /** Register one factory of this type  */
-  static void RegisterOneFactory(void)
-    {
-    PNMImageIOFactory::Pointer PNMFactory = PNMImageIOFactory::New();
-    ObjectFactoryBase::RegisterFactory(PNMFactory);
-    }
-  
 protected:
   PNMImageIOFactory();
   ~PNMImageIOFactory();

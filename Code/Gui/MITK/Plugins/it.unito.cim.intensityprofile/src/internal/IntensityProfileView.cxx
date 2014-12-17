@@ -530,7 +530,7 @@ IntensityProfileView::ComputeTimeBounds()
 
   foreach (mitk::DataNode* node, d->referenceNodes)
   {
-    const Geometry3D* geometry = node->GetData()->GetUpdatedGeometry();
+    const BaseGeometry* geometry = node->GetData()->GetUpdatedGeometry();
     if (geometry != NULL )
     {
       const TimeBounds & curTimeBounds = geometry->GetTimeBounds();

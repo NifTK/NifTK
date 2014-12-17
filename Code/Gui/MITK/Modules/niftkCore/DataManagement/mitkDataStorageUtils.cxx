@@ -18,6 +18,10 @@
 #include <mitkFileIOUtils.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkCoordinateAxesData.h>
+#include <mitkApplyTransformMatrixOperation.h>
+#include <mitkInteractionConst.h>
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 
@@ -366,7 +370,7 @@ void LoadMatrixOrCreateDefault(
   vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
   if (matrix.GetPointer() == NULL)
   {
-    matrix = vtkMatrix4x4::New();
+    matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity();
   }
 
@@ -411,7 +415,7 @@ void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node , vtkMatr
     mitkThrow() << "In GetCurrentTransform, node is NULL";
   }
 
-  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
+  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3>  matrix;
   itk::Vector<double, 3> offset;
   matrix = affineTransform->GetMatrix();
@@ -440,22 +444,12 @@ void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Poi
     mitkThrow() << "In ComposeTransformWithNode, node is NULL";
   }
 
-  vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   GetCurrentTransformFromNode(node, *currentMatrix);
 
-  vtkSmartPointer<vtkMatrix4x4> newMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> newMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   newMatrix->Multiply4x4(&transform, currentMatrix, newMatrix);
 
-  mitk::CoordinateAxesData::Pointer axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
-  if (axes.IsNotNull())
-  {
-    mitk::AffineTransformDataNodeProperty::Pointer property = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty("niftk.transform"));
-    if (property.IsNotNull())
-    {
-      property->SetTransform(*newMatrix);
-      property->Modified();
-    }
-  }
   ApplyTransformToNode(*newMatrix, node);
 }
 
@@ -474,15 +468,47 @@ void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer
     mitkThrow() << "In ApplyTransformToNode, baseData is NULL";
   }
 
-  mitk::Geometry3D::Pointer geometry = baseData->GetGeometry();
-  if (geometry.IsNull())
+  mitk::BaseGeometry* geometry = baseData->GetGeometry();
+  if (!geometry)
   {
     mitkThrow() << "In ApplyTransformToNode, geometry is NULL";
   }
 
-  vtkMatrix4x4 *nonConstTransform = const_cast<vtkMatrix4x4*>(&transform);
-  geometry->SetIndexToWorldTransformByVtkMatrix(nonConstTransform);
-  geometry->Modified();
+  mitk::CoordinateAxesData::Pointer axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  if (axes.IsNotNull())
+  {
+    mitk::AffineTransformDataNodeProperty::Pointer property = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty("niftk.transform"));
+    if (property.IsNotNull())
+    {
+      property->SetTransform(transform);
+      property->Modified();
+    }
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> nonConstTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+  nonConstTransform->DeepCopy(&transform);
+
+  mitk::Point3D dummyPoint;
+  dummyPoint.Fill(0);
+
+  mitk::ApplyTransformMatrixOperation *doOp = new mitk::ApplyTransformMatrixOperation(OpAPPLYTRANSFORMMATRIX, nonConstTransform, dummyPoint);
+
+  if (mitk::UndoController::GetCurrentUndoModel() != NULL)
+  {
+    vtkSmartPointer<vtkMatrix4x4> inverse = vtkSmartPointer<vtkMatrix4x4>::New();
+    inverse->DeepCopy(&transform);
+    inverse->Invert();
+
+    mitk::ApplyTransformMatrixOperation *undoOp = new mitk::ApplyTransformMatrixOperation(OpAPPLYTRANSFORMMATRIX, inverse, dummyPoint);
+    mitk::OperationEvent* operationEvent = new mitk::OperationEvent( geometry, doOp, undoOp, "ApplyTransformToNode");
+    mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+    geometry->ExecuteOperation(doOp);
+  }
+  else
+  {
+    geometry->ExecuteOperation(doOp);
+    delete doOp;
+  }
 }
 
 

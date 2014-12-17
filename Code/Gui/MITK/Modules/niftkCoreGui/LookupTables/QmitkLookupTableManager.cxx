@@ -38,6 +38,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
   fileList.push_back(":cyan.lut");
   fileList.push_back(":green.lut");
   fileList.push_back(":grey.lut");
+  fileList.push_back(":inverse_grey.lut");
   fileList.push_back(":hot.lut");
   fileList.push_back(":hsv.lut");
   fileList.push_back(":jet.lut");

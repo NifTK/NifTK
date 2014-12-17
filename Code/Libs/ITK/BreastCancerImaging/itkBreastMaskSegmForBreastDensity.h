@@ -41,6 +41,7 @@ public:
 
   typedef typename Superclass::InternalImageType               InternalImageType;
   typedef typename Superclass::PointSetType                    PointSetType;
+  typedef typename Superclass::PointDataIterator               PointDataIterator;
   typedef typename Superclass::RealType                        RealType;
   typedef typename Superclass::IteratorType                    IteratorType;
   typedef typename Superclass::ConnectedSurfaceVoxelFilterType ConnectedSurfaceVoxelFilterType;
@@ -60,7 +61,8 @@ protected:
   ~BreastMaskSegmForBreastDensity();
 
   /// Mask the pectoral muscle using a B-Spline surface
-  void MaskThePectoralMuscleAndLateralChestSkinSurface( RealType rYHeightOffset, 
+  void MaskThePectoralMuscleAndLateralChestSkinSurface( bool flgIncludeChestSkinSurface,
+                                                        RealType rYHeightOffset, 
 							typename PointSetType::Pointer &pecPointSet,
 							unsigned long &iPointPec );
 

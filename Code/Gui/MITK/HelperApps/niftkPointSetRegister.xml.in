@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Point Set Registration</title>
+  <description><![CDATA[Registers two point sets, either ordered or using ICP]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file >
+      <name>source</name>
+      <longflag>source</longflag>
+      <description>Source data</description>
+      <label>Source data</label>
+      <channel>input</channel>
+    </file>
+  <file >
+      <name>target</name>
+      <longflag>target</longflag>
+      <description>Target data</description>
+      <label>Target data</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <file>
+      <name>initTrans</name>
+      <longflag>initTrans</longflag>
+      <description>Transform the source by initial transform</description>
+      <label>Transform the source by initial transform</label>
+      <channel>input</channel>
+    </file>
+  
+    <file>
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>Write the result to file</description>
+      <label>Write the result to file</label>
+      <channel>output</channel>
+    </file>
+
+    <boolean>
+      <name>usePointIDToMatchPoints</name>
+      <longflag>usePointIDToMatchPoints</longflag>
+      <description>If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature</description>
+      <label>If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+   
+    <boolean>
+      <name>useSVDBasedMethod</name>
+      <longflag>useSVDBasedMethod</longflag>
+      <description>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</description>
+      <label>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</label>
+      <default>true</default>
+      <channel>input</channel>
+    </boolean>
+    
+    <boolean>
+      <name>useICPInitialisation</name>
+      <longflag>useICPInitialisation</longflag>
+      <description>If true, points are assumed to be unordered, and so an closest point search is used. Not relevant if you are doing SVD.</description>
+      <label>If true, points are assumed to be unordered, and so an closest point search is used. Not relevant if you are doing SVD</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+
+    <float>
+      <name>perturbTrans</name>
+      <longflag>perturbTrans</longflag>
+      <description>Perturb the initial transform with a random transform (SD of translations)</description>
+      <label>Perturb the initial transform with a random transform (SD of translations)</label>
+      <default>0.0</default>
+    </float>
+	
+    <float>
+      <name>perturbRot</name>
+      <longflag>perturbRot</longflag>
+      <description>Perturb the initial transform with a random transform (SD of rotations)</description>
+      <label>Perturb the initial transform with a random transform (SD of rotations)</label>
+      <default>0.0</default>
+    </float>
+
+  </parameters>
+  
+</executable>

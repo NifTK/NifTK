@@ -100,5 +100,12 @@ NifTK/Testing/Code/Applications/CMakeLists.txt
 \endverbatim
 
 with the results appearing on the nightly dashboard.
+
+To manually run the above test, execute:
+\verbatim
+ctest -V -R Add-Run2D
+ctest -V -R Add-Test2D
+\endverbatim
+
 */
 

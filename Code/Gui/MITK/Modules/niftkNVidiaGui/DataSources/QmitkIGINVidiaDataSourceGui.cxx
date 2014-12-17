@@ -111,7 +111,7 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
     if (!source->GetIsPlayingBack())
     {
       // FIXME: if we are recording do not allow changing it!
-      //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2559
+      //        see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2559
 
       // if we dont stop then preview-widget will reference a deleted texture
       StopPreviewWidget();
@@ -122,7 +122,17 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
         source->StopCapturing();
       }
 
-      source->SetFieldMode((QmitkIGINVidiaDataSource::InterlacedBehaviour) index);
+      QmitkIGINVidiaDataSource::InterlacedBehaviour   ib(QmitkIGINVidiaDataSource::DO_NOTHING_SPECIAL);
+      switch (index)
+      {
+        case 0:   ib = QmitkIGINVidiaDataSource::DO_NOTHING_SPECIAL;             break;
+        case 1:   ib = QmitkIGINVidiaDataSource::DROP_ONE_FIELD;                 break;
+        case 2:   ib = QmitkIGINVidiaDataSource::SPLIT_LINE_INTERLEAVED_STEREO;  break;
+        default:
+          assert(false);
+      }
+
+      source->SetFieldMode(ib);
 
       if (wascapturing)
       {
@@ -181,10 +191,19 @@ void QmitkIGINVidiaDataSourceGui::Update()
     }
 
     int   fieldmodecomboboxindex = FieldModeComboBox->currentIndex();
-    QmitkIGINVidiaDataSource::InterlacedBehaviour   fieldmode = source->GetFieldMode();
-    if (fieldmodecomboboxindex != (int) fieldmode)
+    int   fieldmodeshouldbeindex = 0;
+    switch (source->GetFieldMode())
     {
-      FieldModeComboBox->setCurrentIndex((int) fieldmode);
+      case QmitkIGINVidiaDataSource::DO_NOTHING_SPECIAL:              fieldmodeshouldbeindex = 0;  break;
+      case QmitkIGINVidiaDataSource::DROP_ONE_FIELD:                  fieldmodeshouldbeindex = 1;  break;
+      case QmitkIGINVidiaDataSource::SPLIT_LINE_INTERLEAVED_STEREO:   fieldmodeshouldbeindex = 2;  break;
+      default:
+        assert(false);
+    }
+
+    if (fieldmodecomboboxindex != (int) fieldmodeshouldbeindex)
+    {
+      FieldModeComboBox->setCurrentIndex((int) fieldmodeshouldbeindex);
     }
     FieldModeComboBox->setEnabled(!source->GetIsPlayingBack());
 
@@ -217,8 +236,8 @@ void QmitkIGINVidiaDataSourceGui::Update()
           if (g)
           {
             // disable preview widget for now.
-            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2745
-            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2383
+            // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2745
+            // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2383
             g->SetTextureId(0);
             //g->SetVideoDimensions(width, height);
             //g->SetTextureId(source->GetTextureId(0));

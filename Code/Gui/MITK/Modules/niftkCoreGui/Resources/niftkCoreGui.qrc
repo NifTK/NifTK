@@ -27,5 +27,6 @@
     <file>red.lut</file>
     <file>sea.lut</file>
     <file>yellow.lut</file>
+    <file>inverse_grey.lut</file>
   </qresource>
 </RCC>

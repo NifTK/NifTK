@@ -25,6 +25,8 @@
 
 #include <niftkIOException.h>
 
+#include <niftkCommonWin32ExportHeader.h>
+
 namespace niftk {
   /**
    * \brief Creates a VTK mesh using CGAL as a back-end from any single-file image volume supported by ITK.
@@ -32,7 +34,7 @@ namespace niftk {
    *
    * Can generate tetrahedral volume meshes and triangular surface meshes.
    */
-  class MeshGenerator {
+  class NIFTKCOMMON_WINEXPORT MeshGenerator {
     /**
      * \name I/O
      *  @{

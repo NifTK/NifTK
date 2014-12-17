@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Iterative Closest Point</title>
+  <title>Iterative Closest Point (ICP) Registration</title>
   <description><![CDATA[Runs ICP on a target and source object]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -12,7 +12,6 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-    
     <file >
       <name>source</name>
       <longflag>source</longflag>

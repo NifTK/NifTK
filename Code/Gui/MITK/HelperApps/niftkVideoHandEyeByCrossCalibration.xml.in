@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Video Hand-Eye Calibration Using Invariant Point</title>
+  <description><![CDATA[Calibrates stereo laparoscopic video using a single cross method.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory of 4x4 matrices in plain text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>videoDirectory</name>
+      <longflag>videoDirectory</longflag>
+      <description>Directory containing video (*.264) file.</description>
+      <label>Video Directory</label>
+    </directory>
+    <directory>
+      <name>cameraCalibrationDirectory</name>
+      <longflag>cameraCalibrationDirectory</longflag>
+      <description>Directory containing NifTK camera calibration.</description>
+      <label>Camera Calibration Directory</label>
+    </directory>
+    <file fileExtensions=".txt,.4x4">
+      <name>outputMatrixFile</name>
+      <longflag>outputMatrixFile</longflag>
+      <description>Output 4x4 matrix filename.</description>
+      <label>Output Matrix</label>
+      <default>calib.4x4</default>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>outputVideoData</name>
+      <longflag>outputVideoData</longflag>
+      <description>Output a data file containing time-stamps and extracted camera points.</description>
+      <label>Output Video Data</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <file fileExtensions=".txt">
+      <name>inputVideoData</name>
+      <longflag>inputVideoData</longflag>
+      <description>Input a data file containing time-stamps and extracted camera points (from a previous run).</description>
+      <label>Input Video Data</label>
+      <channel>input</channel>
+    </file>
+    <boolean>
+      <name>optimiseInvariantPoint</name>
+      <longflag>optimiseInvariantPoint</longflag>
+      <description>Optimise the position of the invariant point.</description>
+      <label>Optimise Invariant Point</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+    <point>
+      <name>invariantPoint</name>
+      <longflag>invariantPoint</longflag>
+      <description>Location of the invariant point in tracker coordinates.</description>
+      <label>Invariant Point</label>
+      <default>0,0,0</default>
+      <channel>input</channel>
+    </point>
+    <boolean>
+      <name>optimiseTimingLag</name>
+      <longflag>optimiseTimingLag</longflag>
+      <description>Optimise the timing lag.</description>
+      <label>Optimise Timing Lag</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+    <double>
+      <name>timingLag</name>
+      <longflag>timingLag</longflag>
+      <description>The timing lag in milliseconds, where a +ve number represents the point data lagging behind the tracking data.</description>
+      <label>Timing Lag</label>
+      <default>0</default>
+      <channel>input</channel>
+    </double>
+    <double>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum allowable timing error in milliseconds for performing tracking matrix interpolation</description>
+      <label>Timing Error</label>
+      <default>20</default>
+      <channel>input</channel>
+    </double> 
+    <file fileExtensions=".txt,.mat,.4x4">
+      <name>initialGuess</name>
+      <longflag>initialGuess</longflag>
+      <description>Guess of calibration transformation, stored as a 4x4 matrix.</description>
+      <label>Initial Guess</label>
+      <channel>input</channel>
+    </file>
+    <boolean>
+      <name>verbose</name>
+      <longflag>verbose</longflag>
+      <description>Verbose output.</description>
+      <label>Verbose</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+  </parameters>
+
+</executable>

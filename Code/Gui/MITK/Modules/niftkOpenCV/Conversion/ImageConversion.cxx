@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "ImageConversion.h"
-#include <mitkITKImageImport.txx>
+#include <mitkImageCast.h>
 #include <itkImportImageFilter.h>
 #include <itkRGBPixel.h>
 

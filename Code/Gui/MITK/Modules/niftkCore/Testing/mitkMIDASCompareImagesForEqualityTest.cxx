@@ -48,16 +48,13 @@ public:
     std::string fileName2 = argv[2];
     int mode = atoi(argv[3]);
 
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
-
     // Need to load image, using MITK utils.
     std::vector<std::string> files;
     files.push_back(fileName1);
     files.push_back(fileName2);
     mitk::StandaloneDataStorage::Pointer localStorage = mitk::StandaloneDataStorage::New();
-    mitk::IOUtil::LoadFiles(files, *(localStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = localStorage->GetAll();
+
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(localStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
 
     const mitk::DataNode::Pointer node1 = (*allImages)[0];

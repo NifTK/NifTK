@@ -710,7 +710,19 @@ int main(int argc, char** argv)
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
 
-    (*itPatient)->Compute( gen );
+    try
+    {
+      (*itPatient)->Compute( gen );
+    }
+
+    catch (itk::ExceptionObject &ex)
+    {
+      std::cerr << "ERROR: Could not compute patient: " << iFile << std::endl 
+                << ex << std::endl;
+
+      (*itPatient)->UnloadImages();
+      continue;
+    }
 
     progress = (iFile + 0.5)/nFiles;
     std::cout << "<filter-progress>" << std::endl

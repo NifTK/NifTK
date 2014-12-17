@@ -671,7 +671,7 @@ ImageStatisticsView
     double& stdDev,
     unsigned long& counter,
     TPixel* imagePixelsCopy,
-    double median
+    double& median
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyImageType;
@@ -891,7 +891,7 @@ ImageStatisticsView
     double& stdDev,
     unsigned long& counter,
     TPixel1* imagePixelsCopy,
-    double median
+    double& median
     )
 {
   typedef typename itk::Image<TPixel1, VImageDimension> GreyImage;

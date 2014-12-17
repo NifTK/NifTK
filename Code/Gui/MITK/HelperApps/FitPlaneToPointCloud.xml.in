@@ -12,14 +12,14 @@
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
     
-    <file fileExtensions="*.mps">
+    <file fileExtensions=".mps">
       <name>pointCloudFileName</name>
       <longflag>pointcloud</longflag>
       <description>The file name of the MITK PointSet file to process.</description>
       <label>Point set file</label>
     </file>
  
-    <file fileExtensions="*.txt">
+    <file fileExtensions=".txt">
       <name>outputPlaneEquation</name>
       <longflag>output</longflag>
       <description>Output file for plane equation (optional).</description>

@@ -146,7 +146,7 @@ protected:
 private:
 
   /// \brief Creates a node for storing the axial cut-off plane.
-  mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(mitk::Image* referenceImage);
+  mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage);
 
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
   void SetSegmentationNodePropsFromReferenceImage();

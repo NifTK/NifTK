@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "itkMIDASHelper.h"
+#include <itkAffineTransform.h>
 
 namespace itk
 {
@@ -73,7 +74,7 @@ template<typename TPixel, unsigned int VImageDimension>
 ITK_EXPORT
 void
 GetVolumeFromITKImage(
-  itk::Image<TPixel, VImageDimension>* itkImage,
+  const itk::Image<TPixel, VImageDimension>* itkImage,
   double &imageVolume
   )
 {
@@ -173,6 +174,54 @@ GetUpDirectionFromITKImage(
   if (orientationString != "UNKNOWN" && axisOfInterest != -1)
   {
     upDirection = GetUpDirection(orientationString, axisOfInterest);
+  }
+}
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+ITK_EXPORT
+void GetOrientationLabelFromITKImage(const itk::Image<TPixel, VImageDimension>* itkImage, std::string &label)
+{
+  if (VImageDimension < 3)
+    return;
+  
+  // Get direction cosines from the image
+  typename itk::Image<TPixel, VImageDimension>::DirectionType dirCosines = itkImage->GetDirection();
+
+  // Copy values to a new ITK matrix
+  typename itk::AffineTransform<TPixel, VImageDimension>::MatrixType::InternalMatrixType normalisedMatrix;
+  for (unsigned int i=0; i < 3; i++)
+  {
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      normalisedMatrix[i][j] = dirCosines[i][j];
+    }
+  }
+  // Normalize values
+  normalisedMatrix.normalize_columns();
+
+  // Get major axis label
+  std::string rowAxis = GetMajorAxisFromPatientRelativeDirectionCosine(normalisedMatrix[0][0], normalisedMatrix[1][0], normalisedMatrix[2][0]);
+  std::string colAxis = GetMajorAxisFromPatientRelativeDirectionCosine(normalisedMatrix[0][1], normalisedMatrix[1][1], normalisedMatrix[2][1]);
+  
+  if (!rowAxis.empty() && !colAxis.empty()) 
+  {
+    if ((rowAxis == "R" || rowAxis == "L") && (colAxis == "A" || colAxis == "P"))
+      label="AXIAL";
+    else if ((colAxis == "R" || colAxis == "L") && (rowAxis == "A" || rowAxis == "P"))
+      label="AXIAL";
+    else if ((rowAxis == "R" || rowAxis == "L") && (colAxis == "H" || colAxis == "F"))
+      label="CORONAL";
+    else if ((colAxis == "R" || colAxis == "L") && (rowAxis == "H" || rowAxis == "F"))
+      label="CORONAL";
+    else if ((rowAxis == "A" || rowAxis == "P") && (colAxis == "H" || colAxis == "F"))
+      label="SAGITTAL";
+    else if ((colAxis == "A" || colAxis == "P") && (rowAxis == "H" || rowAxis == "F"))
+      label="SAGITTAL";
+  }
+  else
+  {
+    label="OBLIQUE";
   }
 }
 

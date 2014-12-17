@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="20" class="LinearLookupTable" displayName="Matlab autumn" premultiplied="1">
+<lut order="21" class="LinearLookupTable" displayName="Matlab autumn" premultiplied="1">
 <colour r="1" g="0" b="0" />
 <colour r="1" g="0.0039" b="0" />
 <colour r="1" g="0.0078" b="0" />

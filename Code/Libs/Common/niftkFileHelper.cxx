@@ -216,6 +216,14 @@ bool FileExists(const std::string& fileName)
 
 
 //-----------------------------------------------------------------------------
+bool FileDelete(const std::string& fileName)
+{
+  fs::path full_path = ConvertToFullPath(fileName);
+  return boost::filesystem::remove(full_path);
+}
+
+
+//-----------------------------------------------------------------------------
 int FileSize(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
@@ -311,7 +319,7 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
         itr != end_itr;
         ++itr )
   {
-    if (!fs::is_directory(*itr))
+    if (!fs::is_directory(itr->path()))
     {
       fs::path fullFilePath(fs::initial_path<fs::path>() );
       fullFilePath = fs::system_complete(itr->path());
@@ -319,6 +327,35 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
     }
   }
   return fileNames;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> GetDirectoriesInDirectory(const std::string& fullDirectoryName)
+{
+  if (!DirectoryExists(fullDirectoryName))
+  {
+    std::ostringstream message;
+    message << "Directory " << fullDirectoryName << " does not exist!";
+    throw std::logic_error(message.str());
+  }
+
+  std::vector<std::string> directoryNames;
+  fs::path fullDirectoryPath = ConvertToFullPath(fullDirectoryName);
+
+  fs::directory_iterator end_itr; // default construction yields past-the-end
+  for ( fs::directory_iterator itr( fullDirectoryPath );
+        itr != end_itr;
+        ++itr )
+  {
+    if ( fs::is_directory(*itr) )
+    {
+      fs::path fullDirectoryPath(fs::initial_path<fs::path>() );
+      fullDirectoryPath = fs::system_complete( itr->path() );
+      directoryNames.push_back( fullDirectoryPath.string() );
+    }
+  }
+  return directoryNames;
 }
 
 

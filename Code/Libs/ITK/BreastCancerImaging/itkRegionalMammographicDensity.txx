@@ -32,7 +32,8 @@
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkIntensityWindowingImageFilter.h>
 #include <itkCastImageFilter.h>
-
+#include <itkFlipImageFilter.h>
+#include <itkScaleTransform.h>
 
 namespace fs = boost::filesystem;
 
@@ -98,6 +99,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   m_TransformPreDiag = 0;
   m_TransformControl = 0;
+
+  m_BreastSideDiagnostic    = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
+  m_BreastSidePreDiagnostic = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
+  m_BreastSideControl       = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
 
   UnloadImages();
 };
@@ -738,6 +743,34 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     std::cout << "  image spacing: " << reader->GetOutput()->GetSpacing()
               << std::endl;
   
+  // Compute if this a left or right breast
+
+  BreastSideType breastSide;
+
+  typename LeftOrRightSideCalculatorType::Pointer 
+    leftOrRightCalculator = LeftOrRightSideCalculatorType::New();
+
+  leftOrRightCalculator->SetImage( reader->GetOutput() );
+
+  leftOrRightCalculator->SetDebug(   m_FlgDebug );
+  leftOrRightCalculator->SetVerbose( m_FlgVerbose );
+
+  try {
+    leftOrRightCalculator->Compute();
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "ERROR: Failed to compute left or right breast" << std::endl
+              << err << std::endl; 
+    return;
+  }                
+
+  if ( m_FlgDebug )
+    std::cout << "  breast side: " 
+              << LeftOrRightSideCalculatorType::BreastSideDescription[ leftOrRightCalculator->GetBreastSide() ];
+
+  // Set values for each mammogram
+
   if ( mammoType == DIAGNOSTIC_MAMMO )
   {
     m_ImDiagnostic = reader->GetOutput();
@@ -746,6 +779,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     m_DiagDictionary = m_ImDiagnostic->GetMetaDataDictionary();
 
     m_ImDiagnostic->SetSpacing( GetImageResolutionFromDictionary( m_DiagDictionary ) );
+
+    m_BreastSideDiagnostic = leftOrRightCalculator->GetBreastSide();
   }
   else if ( mammoType == PREDIAGNOSTIC_MAMMO )
   {
@@ -755,6 +790,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     m_PreDiagDictionary = m_ImPreDiagnostic->GetMetaDataDictionary();
 
     m_ImPreDiagnostic->SetSpacing( GetImageResolutionFromDictionary( m_PreDiagDictionary ) );
+
+    m_BreastSidePreDiagnostic = leftOrRightCalculator->GetBreastSide();
   }
   else if ( mammoType == CONTROL_MAMMO )
   {
@@ -764,6 +801,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     m_ControlDictionary = m_ImControl->GetMetaDataDictionary();
 
     m_ImControl->SetSpacing( GetImageResolutionFromDictionary( m_ControlDictionary ) );
+
+    m_BreastSideControl = leftOrRightCalculator->GetBreastSide();
   }
 }
 
@@ -851,9 +890,39 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 ::Compute( boost::random::mt19937 &gen )
 {
   std::string fileMask;
-  std::string diagMaskSuffix( "_DiagMask.dcm" );
+  std::string fileRegnMask;
+
+  std::string diagMaskSuffix(       "_DiagMask.dcm" );
   std::string preDiagMaskSuffix( "_PreDiagMask.dcm" );
   std::string controlMaskSuffix( "_ControlMask.dcm" );
+
+  std::string diagRegnMaskSuffix(       "_DiagRegnMask.dcm" );
+  std::string preDiagRegnMaskSuffix( "_PreDiagRegnMask.dcm" );
+  std::string controlRegnMaskSuffix( "_ControlRegnMask.dcm" );
+  
+
+  // If this is a right mammogram then flip the tumour index in 'x'
+
+  if ( m_BreastSideDiagnostic == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE )
+  {
+    typename ImageType::SizeType 
+      imSizeInPixels = m_ImDiagnostic->GetLargestPossibleRegion().GetSize();
+
+    if ( m_FlgVerbose )
+    {
+      std::cout << "This is a right mammogram so flipping the tumour location in 'x'";
+    }
+
+    m_TumourLeft = imSizeInPixels[0] - m_TumourLeft;
+    m_TumourRight = imSizeInPixels[0] - m_TumourRight;
+  }
+
+
+  // The center of the diagnostic tumour
+
+  m_DiagTumourCenterIndex[0] = (m_TumourLeft +  m_TumourRight) / 2;
+  m_DiagTumourCenterIndex[1] = ( m_TumourTop + m_TumourBottom) / 2;
+
 
   // Generate the Diagnostic Mask
 
@@ -879,6 +948,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImDiagnosticMask = reader->GetOutput();
     m_ImDiagnosticMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FileDiagnostic, diagRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the diagnostic registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImDiagnosticRegnMask = reader->GetOutput();
+        m_ImDiagnosticRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read diagnostic registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -916,6 +1017,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImPreDiagnosticMask = reader->GetOutput();
     m_ImPreDiagnosticMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the pre-diagnostic registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImPreDiagnosticRegnMask = reader->GetOutput();
+        m_ImPreDiagnosticRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read pre-diagnostic registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -952,6 +1085,38 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_ImControlMask = reader->GetOutput();
     m_ImControlMask->DisconnectPipeline();
+
+    // And registration version?
+
+    if ( m_FlgRegister )
+    {
+      fileRegnMask = BuildOutputFilename( m_FileControl, controlRegnMaskSuffix );
+
+      if ( niftk::FileExists( fileRegnMask ) )
+      {
+        reader->SetFileName( fileRegnMask );
+
+        try
+        {
+          std::cout << "Reading the control registration mask: " << fileRegnMask << std::endl;
+          reader->Update();
+        }
+
+        catch (ExceptionObject &ex)
+        {
+          std::cerr << "ERROR: Could not read file: " 
+                    << fileRegnMask << std::endl << ex << std::endl;
+          throw( ex );
+        }
+        
+        m_ImControlRegnMask = reader->GetOutput();
+        m_ImControlRegnMask->DisconnectPipeline();
+      }
+      else
+      {
+        itkExceptionMacro( << "ERROR: Cannot read control registration mask: " << fileRegnMask );
+      }
+    }
   }
   else
   {
@@ -963,6 +1128,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                               m_ImControlMask, 
                                               m_ControlDictionary );
   }
+
 
   // Register the images?
 
@@ -978,10 +1144,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     std::cout << "Computing diagnostic mammo labels." << std::endl;
 
 
-  m_DiagTumourCenterIndex[0] = (m_TumourLeft +  m_TumourRight) / 2;
-  m_DiagTumourCenterIndex[1] = ( m_TumourTop + m_TumourBottom) / 2;
-
-  m_ImDiagnosticLabels = GenerateRegionLabels( m_DiagTumourCenterIndex,
+  m_ImDiagnosticLabels = GenerateRegionLabels( m_BreastSideDiagnostic,
+                                               m_DiagTumourCenterIndex,
                                                m_DiagTumourRegion,
                                                m_DiagTumourRegionValue,
                                                m_ImDiagnostic, 
@@ -1024,7 +1188,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     GenerateRandomTumourPositionInImage( gen, PREDIAGNOSTIC_MAMMO );
   }
 
-  m_ImPreDiagnosticLabels = GenerateRegionLabels( m_PreDiagCenterIndex,
+  m_ImPreDiagnosticLabels = GenerateRegionLabels( m_BreastSidePreDiagnostic,
+                                                  m_PreDiagCenterIndex,
                                                   m_PreDiagTumourRegion,
                                                   m_PreDiagTumourRegionValue,
                                                   m_ImPreDiagnostic, 
@@ -1068,13 +1233,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     GenerateRandomTumourPositionInImage( gen, CONTROL_MAMMO );
   }
 
-  m_ImControlLabels = GenerateRegionLabels( m_ControlCenterIndex,
-                                                  m_ControlTumourRegion,
-                                                  m_ControlTumourRegionValue,
-                                                  m_ImControl, 
-                                                  m_ImControlMask, 
-                                                  m_ControlPatches,
-                                                  m_ThresholdControl );
+  m_ImControlLabels = GenerateRegionLabels( m_BreastSideControl,
+                                            m_ControlCenterIndex,
+                                            m_ControlTumourRegion,
+                                            m_ControlTumourRegionValue,
+                                            m_ImControl, 
+                                            m_ImControlMask, 
+                                            m_ControlPatches,
+                                            m_ThresholdControl );
 
   if ( m_FlgDebug )
   {
@@ -1641,6 +1807,51 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   imMask->SetSpacing( image->GetSpacing() );
 
 
+  // If this is a right mammogram then flip it
+
+  if ( ( ( mammoType == DIAGNOSTIC_MAMMO ) && 
+         ( m_BreastSideDiagnostic    == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE ) ) || 
+       ( ( mammoType == PREDIAGNOSTIC_MAMMO ) && 
+         ( m_BreastSidePreDiagnostic == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE ) ) || 
+       ( ( mammoType == CONTROL_MAMMO ) && 
+         ( m_BreastSideControl       == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE ) ) )
+  {
+    itk::FixedArray<bool, 2> flipAxes;
+    flipAxes[0] = true;
+    flipAxes[1] = false;
+
+    if ( m_FlgDebug )
+    {
+      std::cout << "This is a right mammogram so flipping the mask in 'x'" << std::endl;
+    }
+
+    typename ImageType::PointType origin;
+    origin = imMask->GetOrigin();
+
+    typedef itk::FlipImageFilter< ImageType > FlipImageFilterType;
+ 
+    typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New ();
+
+    flipFilter->SetInput( imMask );
+    flipFilter->SetFlipAxes( flipAxes );
+
+    try
+    {
+      flipFilter->Update();
+    }
+    
+    catch (ExceptionObject &ex)
+    {
+      std::cerr << ex << std::endl;
+      throw( ex );
+    }
+ 
+    imMask = flipFilter->GetOutput();
+    imMask->DisconnectPipeline();
+
+    imMask->SetOrigin( origin );
+  }
+
   return imMask;
 }
 
@@ -1676,14 +1887,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
                                                 std::string( "_PreDiagBreastEdgeMask.dcm" ), 
-                                                "pre-diagnostic mask", 
+                                                "pre-diagnostic breast edge mask", 
                                                 imMask, m_PreDiagDictionary );
     }
     else
     {
       CastImageAndWriteToFile< unsigned char >( m_FileControl, 
                                                 std::string( "_ControlBreastEdgeMask.dcm" ), 
-                                                "control mask", 
+                                                "control breast edge mask", 
                                                 imMask, m_ControlDictionary );
     }
 
@@ -1698,14 +1909,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
                                                 std::string( "_PreDiagPectoralMask.dcm" ), 
-                                                "pre-diagnostic mask", 
+                                                "pre-diagnostic pectoral mask", 
                                                 imMaskPec, m_PreDiagDictionary );
     }
     else
     {
       CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                std::string( "_ControlBreastEdgeMask.dcm" ), 
-                                                "control-diagnostic mask", 
+                                                std::string( "_ControlPectoralMask.dcm" ), 
+                                                "control pectoral mask", 
                                                 imMaskPec, m_ControlDictionary );
     }
   }
@@ -1782,39 +1993,30 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       
       RemoveTumourFromRegnMask();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                                  std::string( "_DiagRegnMask.dcm" ), 
-                                                  "diagnostic pectoral registration mask",
-                                                  m_ImDiagnosticRegnMask, m_DiagDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
+                                                std::string( "_DiagRegnMask.dcm" ), 
+                                                "diagnostic pectoral registration mask",
+                                                m_ImDiagnosticRegnMask, m_DiagDictionary );
     }
     else if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       m_ImPreDiagnosticRegnMask = invertFilter->GetOutput();
       m_ImPreDiagnosticRegnMask->DisconnectPipeline();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                                  std::string( "_PreDiagRegnMask.dcm" ), 
-                                                  "pre-diagnostic registration mask", 
-                                                  m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
+                                                std::string( "_PreDiagRegnMask.dcm" ), 
+                                                "pre-diagnostic registration mask", 
+                                                m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
     }
     else
     {
       m_ImControlRegnMask = invertFilter->GetOutput();
       m_ImControlRegnMask->DisconnectPipeline();
       
-      if ( m_FlgDebug )
-      {
-        CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                  std::string( "_ControlRegnMask.dcm" ), 
-                                                  "control registration mask", 
-                                                  m_ImControlRegnMask, m_ControlDictionary );
-      }
+      CastImageAndWriteToFile< unsigned char >( m_FileControl, 
+                                                std::string( "_ControlRegnMask.dcm" ), 
+                                                "control registration mask", 
+                                                m_ImControlRegnMask, m_ControlDictionary );
     }
   }
 
@@ -1856,7 +2058,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   typename ImageType::RegionType tumourRegion;
   typename ImageType::SizeType   tumourSize;
 
-  typename ImageType::IndexType idxTumourCenter;
   typename ImageType::IndexType idxStart;
   typename ImageType::IndexType idxEnd;
 
@@ -1865,10 +2066,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   typename ImageType::PointType ptStart;
   typename ImageType::PointType ptEnd;
 
-  idxTumourCenter[0] = (m_TumourLeft +  m_TumourRight) / 2;
-  idxTumourCenter[1] = ( m_TumourTop + m_TumourBottom) / 2;
-
-  m_ImDiagnosticRegnMask->TransformIndexToPhysicalPoint( idxTumourCenter, ptTumourCenter );
+  m_ImDiagnosticRegnMask->TransformIndexToPhysicalPoint( m_DiagTumourCenterIndex, 
+                                                         ptTumourCenter );
 
 
   for ( i=0; i<InputDimension; i++)
@@ -2140,16 +2339,65 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
 
 // --------------------------------------------------------------------------
-// RegisterTheImages()
+// InitialiseTransformationFromImageMoments()
 // --------------------------------------------------------------------------
 
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::RegisterTheImages( void )
+::InitialiseTransformationFromImageMoments( MammogramType mammoType,
+                                            typename FactoryType::EulerAffineTransformType::Pointer &transform )
 {
-  RegisterTheImages( PREDIAGNOSTIC_MAMMO );
-  RegisterTheImages( CONTROL_MAMMO );
+  typedef typename ImageMomentCalculatorType::AffineTransformType AffineTransformType;
+  typename ImageType::Pointer imMoving;
+
+  if ( mammoType == PREDIAGNOSTIC_MAMMO )
+  {
+    imMoving = m_ImPreDiagnosticMask;
+  }
+  else
+  {
+    imMoving = m_ImControlMask;
+  }
+
+  typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New(); 
+
+  fixedImageMomentCalculator->SetImage( m_ImDiagnostic ); 
+  fixedImageMomentCalculator->Compute(); 
+
+  typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New(); 
+
+  movingImageMomentCalculator->SetImage( imMoving ); 
+  movingImageMomentCalculator->Compute(); 
+
+  
+  // Compute the scale factors in 'x' and 'y' from the normalised principal moments
+
+  typename ImageMomentCalculatorType::ScalarType 
+    fixedTotalMass = fixedImageMomentCalculator->GetTotalMass();
+
+  typename ImageMomentCalculatorType::VectorType 
+    fixedPrincipalMoments = fixedImageMomentCalculator->GetPrincipalMoments();
+
+  typename ImageMomentCalculatorType::ScalarType 
+    movingTotalMass = movingImageMomentCalculator->GetTotalMass();
+
+  typename ImageMomentCalculatorType::VectorType 
+    movingPrincipalMoments = movingImageMomentCalculator->GetPrincipalMoments(); 
+
+  typename FactoryType::EulerAffineTransformType::ScaleType scaleFactor;
+  scaleFactor.SetSize( InputDimension );
+
+  for ( unsigned int iDim=0; iDim<InputDimension; iDim++ )
+  {
+    scaleFactor[ iDim ] = 
+      sqrt(movingPrincipalMoments[ iDim ] / movingTotalMass )
+      / sqrt( fixedPrincipalMoments[ iDim ] / fixedTotalMass );
+  }
+
+  std::cout << "Scale factors: " << scaleFactor << std::endl;
+
+  transform->SetScale( scaleFactor );
 };
 
 
@@ -2160,7 +2408,22 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::RegisterTheImages( MammogramType mammoType )
+::RegisterTheImages( void )
+{
+  RegisterTheImages( PREDIAGNOSTIC_MAMMO, m_TransformPreDiag );
+  RegisterTheImages( CONTROL_MAMMO, m_TransformControl );
+};
+
+
+// --------------------------------------------------------------------------
+// RegisterTheImages()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+RegionalMammographicDensity< InputPixelType, InputDimension >
+::RegisterTheImages( MammogramType mammoType,
+                     typename FactoryType::EulerAffineTransformType::Pointer &transform )
 {
   int finalInterpolator;
   int registrationInterpolator;
@@ -2202,7 +2465,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   std::string outputMatrixTransformFile; 
   std::string outputUCLTransformFile;
 
-  typename FactoryType::EulerAffineTransformType::Pointer transform;
 
   if ( mammoType == PREDIAGNOSTIC_MAMMO )
   {
@@ -2252,9 +2514,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   useWeighting = false; 
   useCogInitialisation = true; 
   
-  // Create a 
-
-
   // The factory.
 
   typename FactoryType::Pointer factory = FactoryType::New();
@@ -2282,12 +2541,21 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if ( niftk::FileExists( outputUCLTransformFile ) && ( ! m_FlgOverwrite ) )
   {
+    std::cout << "Reading the registration transformation: " << outputUCLTransformFile << std::endl;
     transform = dynamic_cast<typename FactoryType::EulerAffineTransformType*>(builder->CreateTransform( outputUCLTransformFile ).GetPointer());
     transform->SetNumberOfDOF(dof); 
+    if ( m_FlgDebug )
+    {
+      transform->Print( std::cout );
+    }
     return;
   }
     
-    
+  // Compute and initial registration using the image moments
+
+  InitialiseTransformationFromImageMoments( mammoType, transform );
+
+
   typename ImageMomentCalculatorType::VectorType fixedImgeCOG; 
   typename ImageMomentCalculatorType::VectorType movingImgeCOG; 
 
@@ -2577,28 +2845,34 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     std::cout << "Setting fixed image"<< std::endl;
     filter->SetFixedImage(m_ImDiagnostic);
+    if ( m_FlgDebug ) m_ImDiagnostic->Print( std::cout );
 
     std::cout << "Setting moving image"<< std::endl;
     if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       filter->SetMovingImage(m_ImPreDiagnostic);
+      if ( m_FlgDebug ) m_ImPreDiagnostic->Print( std::cout );
     }
     else
     {
       filter->SetMovingImage(m_ImControl);
+      if ( m_FlgDebug ) m_ImControl->Print( std::cout );
     }
 
     std::cout << "Setting fixed mask"<< std::endl;
     filter->SetFixedMask(m_ImDiagnosticRegnMask);  
+    if ( m_FlgDebug ) m_ImDiagnosticRegnMask->Print( std::cout );
 
     std::cout << "Setting moving mask"<< std::endl;
     if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       filter->SetMovingMask(m_ImPreDiagnosticRegnMask);
+      if ( m_FlgDebug ) m_ImPreDiagnosticRegnMask->Print( std::cout );
     }
     else
     {
       filter->SetMovingMask(m_ImControlRegnMask);
+      if ( m_FlgDebug ) m_ImControlRegnMask->Print( std::cout );
     }
 
     // If we havent asked for output, turn off reslicing.
@@ -2727,7 +3001,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   if ( m_FlgDebug )
   {
     transform->Print( std::cout );
-    std::cout << "Tumour index: " << idxTumourCenter 
+    std::cout << "Tumour center: " << idxTumourCenter 
               << ", point: " << inPoint << std::endl
               << "  transforms to point: " << outPoint
               << ", index: " << centerIndex << std::endl
@@ -2905,7 +3179,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 typename RegionalMammographicDensity< InputPixelType, InputDimension >::LabelImageType::Pointer 
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::GenerateRegionLabels( typename LabelImageType::IndexType &idxTumourCenter,
+::GenerateRegionLabels( BreastSideType breastSide,
+                        typename LabelImageType::IndexType &idxTumourCenter,
                         typename LabelImageType::RegionType &tumourRegion,
                         LabelPixelType &tumourRegionValue,
                         typename ImageType::Pointer &image,
@@ -3015,7 +3290,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     std::cout << "  Region size (mm): " << m_RegionSizeInMM << std::endl
               << "  Image resolution: " 
               << imSpacing[0] << ", " << imSpacing[1] << std::endl
-              << "  Tumour index: " 
+              << "  Tumour region index: " 
               << tumourRegionIndex[0] << ", " << tumourRegionIndex[1] << std::endl
               << "  Label grid origin: " 
               << labelOrigin[0] << ", " << labelOrigin[1] << std::endl

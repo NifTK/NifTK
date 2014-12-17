@@ -252,6 +252,99 @@ public:
 
     MITK_TEST_OUTPUT(<< "Finished TestFilterMatchingPoints...");
   }
+  //-----------------------------------------------------------------------------
+  static void TestRemoveNaNPoints()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestRemoveNaNPoints...");
+
+    mitk::PointSet::Pointer naNPoints = mitk::PointSet::New();
+    mitk::PointSet::Pointer noNaNPoints = mitk::PointSet::New();
+
+    mitk::Point3D p1;
+    mitk::Point3D p2;
+    mitk::Point3D p3;
+
+    p1[0] = 0;
+    p1[1] = 1;
+    p1[2] = 2;
+
+    p2[0] = 3;
+    p2[1] = std::numeric_limits<double>::quiet_NaN();
+    p2[2] = 5;
+
+    p3[0] = 6;
+    p3[1] = 7;
+    p3[2] = 8;
+
+    naNPoints->InsertPoint(1, p1);
+    naNPoints->InsertPoint(2, p2);
+    noNaNPoints->InsertPoint(1, p1);
+    noNaNPoints->InsertPoint(3, p3);
+
+    mitk::PointSet::Pointer outputNaNPoints = mitk::PointSet::New();
+    mitk::PointSet::Pointer outputNoNaNPoints = mitk::PointSet::New();
+    int naNRemovedPoints = mitk::RemoveNaNPoints(*naNPoints, *outputNaNPoints);
+    int noNaNRemovedPoints = mitk::RemoveNaNPoints(*noNaNPoints, *outputNoNaNPoints);
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(outputNaNPoints->GetSize(), 1),".. Testing output NaN points has size=1, and it has:" << outputNaNPoints->GetSize());
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(outputNoNaNPoints->GetSize(), 2),".. Testing output fixed points has size=2, and it has:" << outputNoNaNPoints->GetSize());
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(naNRemovedPoints, 1),".. Testing 1 NaN point removed");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(noNaNRemovedPoints, 0),".. Testing 0 non NaN points removed");
+
+    MITK_TEST_OUTPUT(<< "Finished TestRemoveNaNPoints...");
+  }
+
+
+  //-----------------------------------------------------------------------------
+  static void TestCheckForNaNPoint()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestCheckForNaNPoint...");
+
+    mitk::Point3D p1;
+    mitk::Point3D p2;
+    mitk::Point3D p3;
+    mitk::Point3D p4;
+    mitk::Point3D p5;
+    mitk::Point3D p6;
+
+    p1[0] = 0;
+    p1[1] = 1;
+    p1[2] = 2;
+
+    p2[0] = std::numeric_limits<double>::quiet_NaN();
+    p2[1] = 4;
+    p2[2] = 5;
+
+    p3[0] = std::numeric_limits<double>::infinity();
+    p3[1] = 7;
+    p3[2] = 8;
+    
+    p4[0] = 3; 
+    p4[1] = std::numeric_limits<float>::quiet_NaN();
+    p4[2] = 5;
+
+    p5[0] = 3; 
+    p5[1] = 4;
+    p5[2] = std::numeric_limits<double>::quiet_NaN();
+
+    p6[0] = std::numeric_limits<double>::quiet_NaN(); 
+    p6[1] = std::numeric_limits<double>::quiet_NaN(); 
+    p6[2] = std::numeric_limits<double>::quiet_NaN(); 
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p1), false),".. Testing that CheckFormNaNPoint returns false for a point with no NaNs");
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p2), true),".. Testing that CheckFormNaNPoint returns true for a point with double NaN x");
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p4), true),".. Testing that CheckFormNaNPoint returns true for a point with float NaN y");
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p5), true),".. Testing that CheckFormNaNPoint returns true for a point with double NaN z");
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p3), false),".. Testing that CheckFormNaNPoint returns false for a point with infinite x");
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p6), true),".. Testing that CheckFormNaNPoint returns true for a point with all NaNs");
+
+    MITK_TEST_OUTPUT(<< "Finished TestCheckForNaNPoint...");
+  }
 
   //-----------------------------------------------------------------------------
   static void TestRMS()
@@ -330,6 +423,8 @@ int mitkPointUtilsTest(int argc, char * argv[])
   mitkPointUtilsTestClass::TestComputeNormalFromPoints();
   mitkPointUtilsTestClass::TestFilterMatchingPoints();
   mitkPointUtilsTestClass::TestRMS();
+  mitkPointUtilsTestClass::TestRemoveNaNPoints();
+  mitkPointUtilsTestClass::TestCheckForNaNPoint();
   
   MITK_TEST_END();
 }

@@ -150,13 +150,25 @@ MammogramMLOorCCViewCalculator< TInputImage >
 
     if ( ( ( m_ImageFileName.find( "CC" )    != std::string::npos ) || 
            ( m_ImageFileName.find( "-cc-" )  != std::string::npos ) || 
+           ( m_ImageFileName.find( "-rcc-" )  != std::string::npos ) || 
+           ( m_ImageFileName.find( "-lcc-" )  != std::string::npos ) || 
            ( m_ImageFileName.find( ".cc." )  != std::string::npos ) || 
-           ( m_ImageFileName.find( "_cc_" )  != std::string::npos ) )
+           ( m_ImageFileName.find( ".rcc." )  != std::string::npos ) || 
+           ( m_ImageFileName.find( ".lcc." )  != std::string::npos ) || 
+           ( m_ImageFileName.find( "_cc_" )  != std::string::npos ) || 
+           ( m_ImageFileName.find( "_rcc_" )  != std::string::npos ) || 
+           ( m_ImageFileName.find( "_lcc_" )  != std::string::npos ) )
          &&
          ( m_ImageFileName.find( "MLO" )   == std::string::npos ) && 
          ( m_ImageFileName.find( "-mlo-" ) == std::string::npos ) && 
+         ( m_ImageFileName.find( "-rmlo-" ) == std::string::npos ) && 
+         ( m_ImageFileName.find( "-lmlo-" ) == std::string::npos ) && 
          ( m_ImageFileName.find( ".mlo." ) == std::string::npos ) && 
-         ( m_ImageFileName.find( "_mlo_" ) == std::string::npos ) )
+         ( m_ImageFileName.find( ".rmlo." ) == std::string::npos ) && 
+         ( m_ImageFileName.find( ".lmlo." ) == std::string::npos ) && 
+         ( m_ImageFileName.find( "_mlo_" ) == std::string::npos ) && 
+         ( m_ImageFileName.find( "_rmlo_" ) == std::string::npos ) && 
+         ( m_ImageFileName.find( "_lmlo_" ) == std::string::npos ) )
     {
       m_MammogramView = CC_MAMMO_VIEW;
       std::cout << "Mammogram is CC (from file name: '" << m_ImageFileName << "')" << std::endl;
@@ -168,13 +180,25 @@ MammogramMLOorCCViewCalculator< TInputImage >
 
     else if ( ( ( m_ImageFileName.find( "MLO" )   != std::string::npos ) || 
                 ( m_ImageFileName.find( "-mlo-" ) != std::string::npos ) || 
+                ( m_ImageFileName.find( "-lmlo-" ) != std::string::npos ) || 
+                ( m_ImageFileName.find( "-rmlo-" ) != std::string::npos ) || 
                 ( m_ImageFileName.find( ".mlo." ) != std::string::npos ) || 
-                ( m_ImageFileName.find( "_mlo_" ) != std::string::npos ) )
+                ( m_ImageFileName.find( ".lmlo." ) != std::string::npos ) || 
+                ( m_ImageFileName.find( ".rmlo." ) != std::string::npos ) || 
+                ( m_ImageFileName.find( "_mlo_" ) != std::string::npos ) || 
+                ( m_ImageFileName.find( "_lmlo_" ) != std::string::npos ) || 
+                ( m_ImageFileName.find( "_rmlo_" ) != std::string::npos ) )
               &&
               ( m_ImageFileName.find( "CC" )    == std::string::npos ) && 
               ( m_ImageFileName.find( "-cc-" )  == std::string::npos ) && 
+              ( m_ImageFileName.find( "-lcc-" )  == std::string::npos ) && 
+              ( m_ImageFileName.find( "-rcc-" )  == std::string::npos ) && 
               ( m_ImageFileName.find( ".cc." )  == std::string::npos ) && 
-              ( m_ImageFileName.find( "_cc_" )  == std::string::npos ) )
+              ( m_ImageFileName.find( ".lcc." )  == std::string::npos ) && 
+              ( m_ImageFileName.find( ".rcc." )  == std::string::npos ) && 
+              ( m_ImageFileName.find( "_cc_" )  == std::string::npos ) && 
+              ( m_ImageFileName.find( "_lcc_" )  == std::string::npos ) && 
+              ( m_ImageFileName.find( "_rcc_" )  == std::string::npos ) )
     {
       m_MammogramView = MLO_MAMMO_VIEW;
       std::cout << "Mammogram is MLO (from file name: '" << m_ImageFileName << "')" << std::endl;

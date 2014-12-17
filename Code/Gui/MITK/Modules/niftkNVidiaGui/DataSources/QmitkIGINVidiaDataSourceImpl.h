@@ -54,8 +54,14 @@ public:
 
   int GetTextureId(unsigned int stream) const;
   QGLWidget* GetCaptureContext();
+
+  /** Returns the SDI format. Might be different from capture image format. */
   video::StreamFormat GetFormat() const;
+  /** Returns the pixel dimensions of the video data that is being captured. Can be different from the SDI format. */
+  std::pair<int, int> GetCaptureFormat() const;
   int GetStreamCount() const;
+  // FIXME: should have a getter for the above two to avoid excessive locking
+
   CaptureState GetCaptureState() const;
   std::string GetStateMessage() const;
   void Reset();
@@ -63,7 +69,13 @@ public:
   video::SDIInput::InterlacedBehaviour GetFieldMode() const;
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
-  std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
+  /**
+   * targetbuffer needs to have the correct(!) size to fit all channels stacked
+   * together. Try something like cvCreateImage(cvSize(GetCaptureFormat().first, GetCaptureFormat().second * numstreams), IPL_DEPTH_8U, 4).
+   * @returns number of channels, or zero in case of some error.
+   * @throws nothing
+   */
+  int GetRGBAImage(unsigned int sequencenumber, IplImage* targetbuffer);
 
   // returns the next sequence number that has already been captured
   // following ihavealready.
@@ -128,7 +140,21 @@ signals:
 private:
   // has to be called with lock held!
   void InitVideo();
+
+  /**
+   * Reads from GPU-side textures into CPU-side memory, or a PBO (if one is bound to pixelpack).
+   * BEWARE: this does not flip the image, it stays in bottom-left orientation!
+   * @param bufferpitch in bytes
+   * @param width in pixels
+   * @param height in lines (equiv to pixels) of the full receiving image (i.e. with all channels stacked)
+   */
   void ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
+
+  /**
+   * BEWARE: this will flip the image to top-left orientation!
+   */
+  void ReadbackViaPBO(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
+
   void DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg);
 
   // any access to members needs to be locked
@@ -157,6 +183,10 @@ private:
   video::StreamFormat     format;
   int                     streamcount;
   const char*             wireformat;
+
+  // cached capture image dimensions, so that getters can be called from any thread.
+  int                     m_CaptureWidth;
+  int                     m_CaptureHeight;
 
   // we keep our own copy of the texture ids (instead of relying on sdiin)
   //  so that another thread can easily get these.
@@ -197,6 +227,11 @@ private:
 
 
   std::string         m_CompressionOutputFilename;
+
+  // pixel buffer objects used for async readback of the video frames.
+  // some perf testing and profiling revealed that we spend a lot of time in the driver
+  // for synchronously reading a texture image.
+  std::vector<int>    m_ReadbackPBOs;
 };
 
 

@@ -63,10 +63,10 @@ public:
   virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
   void SetPreMultiplyMatrix(const vtkMatrix4x4&);
-  vtkMatrix4x4* ClonePreMultiplyMatrix();
+  vtkSmartPointer<vtkMatrix4x4> ClonePreMultiplyMatrix();
 
   void SetPostMultiplyMatrix(const vtkMatrix4x4&);
-  vtkMatrix4x4* ClonePostMultiplyMatrix();
+  vtkSmartPointer<vtkMatrix4x4> ClonePostMultiplyMatrix();
 
 protected:
 
@@ -90,7 +90,7 @@ protected slots:
 
 private:
 
-  vtkMatrix4x4* CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform);
+  vtkSmartPointer<vtkMatrix4x4> CombineTransformationsWithPreAndPost(const igtl::Matrix4x4& trackerTransform);
 
   std::map<std::string, std::set<igtlUint64> >    m_PlaybackIndex;
   std::string                                     m_PlaybackDirectoryName;

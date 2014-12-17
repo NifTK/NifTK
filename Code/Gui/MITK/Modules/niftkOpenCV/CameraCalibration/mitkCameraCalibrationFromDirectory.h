@@ -20,6 +20,7 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <mitkPoint.h>
 #include <mitkVector.h>
 
 namespace mitk {

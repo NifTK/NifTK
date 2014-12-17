@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   {
     std::cout << "niftkPivotCalibration: matrices         = " << matrixDirectory << std::endl;
 
-    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkMatrix4x4::New();
+    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Do calibration
     mitk::PivotCalibration::Pointer calibration = mitk::PivotCalibration::New();

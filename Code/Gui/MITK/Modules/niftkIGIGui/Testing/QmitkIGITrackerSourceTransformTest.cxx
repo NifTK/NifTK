@@ -37,13 +37,13 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   }
 
   igtl::Matrix4x4 initialMatrix;
-  vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   trackingMatrix->Identity();
-  vtkSmartPointer<vtkMatrix4x4> preMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> preMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   preMatrix->Identity();
-  vtkSmartPointer<vtkMatrix4x4> postMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> postMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   postMatrix->Identity();
-  vtkSmartPointer<vtkMatrix4x4> tmpMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> tmpMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   tmpMatrix->Identity();
 
   // Create some test data. Doesn't have to be real rigid body transforms.
@@ -99,7 +99,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   }
 
   // Calculate the expected output.
-  vtkSmartPointer<vtkMatrix4x4> expectedMatrix = vtkMatrix4x4::New();
+  vtkSmartPointer<vtkMatrix4x4> expectedMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   expectedMatrix->Identity();
 
   vtkMatrix4x4::Multiply4x4(trackingMatrix, preMatrix, tmpMatrix);

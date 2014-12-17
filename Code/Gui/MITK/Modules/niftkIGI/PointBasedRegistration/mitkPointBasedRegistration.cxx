@@ -22,6 +22,7 @@
 const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
 const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
 const bool mitk::PointBasedRegistration::DEFAULT_USE_SVD_BASED_METHOD(true);
+const bool mitk::PointBasedRegistration::DEFAULT_STRIP_NAN_FROM_INPUT(true);
 
 namespace mitk
 {
@@ -31,6 +32,7 @@ PointBasedRegistration::PointBasedRegistration()
 : m_UseICPInitialisation(DEFAULT_USE_ICP_INITIALISATION)
 , m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
 , m_UseSVDBasedMethod(DEFAULT_USE_SVD_BASED_METHOD)
+, m_StripNaNFromInput(DEFAULT_STRIP_NAN_FROM_INPUT)
 {
 }
 
@@ -60,16 +62,36 @@ bool PointBasedRegistration::Update(
 
   mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
   mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer noNaNFixedPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer noNaNMovingPoints = mitk::PointSet::New();
   mitk::PointSet* fixedPoints = fixedPointSet;
   mitk::PointSet* movingPoints = movingPointSet;
 
   bool useICPInit = m_UseICPInitialisation;
 
+  if (m_StripNaNFromInput)
+  {
+    int fixedPointsRemoved = mitk::RemoveNaNPoints(*fixedPointSet, *noNaNFixedPoints);
+    int movingPointsRemoved = mitk::RemoveNaNPoints(*movingPointSet, *noNaNMovingPoints);
+
+    if ( fixedPointsRemoved != 0 ) 
+    {
+      MITK_INFO << "Removed " << fixedPointsRemoved << " NaN points from fixed data";
+    }
+    if ( movingPointsRemoved != 0 ) 
+    {
+      MITK_INFO << "Removed " << movingPointsRemoved << " NaN points from moving data";
+    }
+
+    fixedPoints = noNaNFixedPoints;
+    movingPoints = noNaNMovingPoints;
+
+  }
   if (m_UsePointIDToMatchPoints)
   {
 
-    int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPointSet,
-                                                            *movingPointSet,
+    int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPoints,
+                                                            *movingPoints,
                                                             *filteredFixedPoints,
                                                             *filteredMovingPoints
                                                             );

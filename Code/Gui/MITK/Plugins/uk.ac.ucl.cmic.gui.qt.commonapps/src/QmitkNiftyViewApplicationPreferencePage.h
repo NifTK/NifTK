@@ -46,6 +46,9 @@ public:
   static const std::string IMAGE_INITIALISATION_LEVELWINDOW;
   static const std::string IMAGE_INITIALISATION_PERCENTAGE;
   static const std::string IMAGE_INITIALISATION_PERCENTAGE_NAME;
+  static const std::string IMAGE_INITIALISATION_RANGE;
+  static const std::string IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME;
+  static const std::string IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME;
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -73,15 +76,20 @@ protected slots:
   void OnMIDASInitialisationRadioButtonChecked(bool);
   void OnLevelWindowRadioButtonChecked(bool);
   void OnImageDataRadioButtonChecked(bool);
+  void OnIntensityRangeRadioButtonChecked(bool);
 
-protected:
+private:
+
+  void UpdateSpinBoxes();
 
   QWidget        *m_MainControl;
   QRadioButton   *m_UseMidasInitialisationRadioButton;
   QRadioButton   *m_UseLevelWindowRadioButton;
   QRadioButton   *m_UseImageDataRadioButton;
   QDoubleSpinBox *m_PercentageOfDataRangeDoubleSpinBox;
-
+  QRadioButton   *m_UseSetRange;
+  QSpinBox       *m_RangeLowerBound;
+  QSpinBox       *m_RangeUpperBound;
   bool m_Initializing;
 
   berry::IPreferences::Pointer m_PreferencesNode;

@@ -34,6 +34,14 @@ if(QT_FOUND)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CTK ${NIFTK_LOCATION_CTK})
 
+    set (ctk_qt_args -DCTK_QT_VERSION:STRING=${DESIRED_QT_VERSION})
+
+    if (DESIRED_QT_VERSION MATCHES "5")
+      list(APPEND ctk_qt_args -DQT5_INSTALL_PREFIX:FILEPATH=${QT5_INSTALL_PREFIX})
+    else()
+      list(APPEND ctk_qt_args -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE})
+    endif()
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
@@ -46,8 +54,7 @@ if(QT_FOUND)
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+         ${ctk_qt_args}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DCTK_LIB_CommandLineModules/Backend/LocalProcess:BOOL=ON

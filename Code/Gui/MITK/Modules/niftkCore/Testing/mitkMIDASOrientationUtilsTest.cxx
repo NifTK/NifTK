@@ -45,15 +45,10 @@ public:
   //-----------------------------------------------------------------------------
   void Setup(char* argv[])
   {
-    // Need to load images, specifically using MIDAS/DRC object factory.
-    RegisterNifTKCoreObjectFactory();
-
     m_DataStorage = mitk::StandaloneDataStorage::New();
     std::string fileName = argv[1];
-    std::vector<std::string> files;
-    files.push_back(fileName);
-    mitk::IOUtil::LoadFiles(files, *(m_DataStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = m_DataStorage->GetAll();
+
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(fileName, *(m_DataStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
 
     m_Node = (*allImages)[0];

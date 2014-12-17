@@ -30,8 +30,8 @@ struct LIBVIDEO_DLL_EXPORTS StreamFormat
         PF_NONE     = 0,
         PF_487      = 487,      // 720 x 487
         PF_576      = 576,      // 720 x 576
-        PF_720      = 720,      // FIXME: never tested!
-        PF_1035     = 1035,     // FIXME: never tested!
+        PF_720      = 720,      // 1280 x 720
+        PF_1035     = 1035,     // 1920 x 1035
         PF_1080     = 1080,     // 1920 x 1080
         PF_2048     = 2048      // 2048 x 1080
     }       format;
@@ -43,15 +43,13 @@ struct LIBVIDEO_DLL_EXPORTS StreamFormat
     {
         RR_NONE     = 0,
         RR_23_976   = 23976,
-        RR_24       = 24000,    // FIXME: never tested!
+        RR_24       = 24000,
         RR_25       = 25000,
-        RR_29_97    = 29970,    // FIXME: never tested!
+        RR_29_97    = 29970,
         RR_30       = 30000,
-        RR_47_96    = 47960,    // FIXME: never tested!
-        RR_48_00    = 48000,    // FIXME: never tested!
         RR_50       = 50000,
-        RR_59_94    = 59940,    // FIXME: never tested!
-        RR_60       = 60000     // FIXME: never tested!
+        RR_59_94    = 59940,
+        RR_60       = 60000
     }       refreshrate;
 
     bool is_interlaced;
