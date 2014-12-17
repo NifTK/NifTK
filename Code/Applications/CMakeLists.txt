@@ -110,6 +110,7 @@ if(SlicerExecutionModel_FOUND)
     niftkSubsampleImage
     niftkSubtract
     niftkUnaryImageOperatorsOnDirectoryTree
+    niftkVesselExtractor
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
@@ -257,7 +258,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkThreshold
   niftkTransformation
   niftkTransformPoint3Dto2D
-  niftkVesselExtractor
+  #niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
   niftkKmeansClassifier

@@ -27,6 +27,8 @@ See LICENSE.txt in the top level directory for details.
 #include <itkBinaryErodeImageFilter.h>
 #include <math.h>
 
+#include <niftkVesselExtractorCLP.h>
+
 #include "niftkConversionUtils.h"
 #include "itkBrainMaskFromCTFilter.h"
 #include "itkIntensityFilter.h"
@@ -219,128 +221,75 @@ void closeProgress(std::string img, std::string status)
     std::cout << std::flush;
   }
 }
+struct arguments
+{
+    std::string inputImageName;
+    std::string outputImageName;
+    std::string brainImageName;
+
+    unsigned int scales;
+    unsigned int mod;
+
+    float max;
+    float min;
+    float alphaone;
+    float alphatwo;
+
+    bool isBin;
+    bool isCT;
+    bool isTOF;
+    bool doIntensity;
+
+  arguments() {
+    scales = 0;
+    mod = 0;
+
+    max = 3.09375;
+    min = 1;
+    alphaone = 0.5;
+    alphatwo = 2.0;
+
+    isBin = false;
+    isCT = false;
+    isTOF = false;
+    doIntensity = false;
+
+  }
+};
 
 int main( int argc, char *argv[] )
 {
 
-  // Define command line params
-  std::string inputImageName;
-  std::string outputImageName;
-  std::string brainImageName;
-  unsigned int scales = 0;
-  unsigned int mod = 0;
-  float max = 3.09375;
-  float min = 1;
-  float alphaone = 0.5;
-  float alphatwo = 2.0;
-  bool isBin = false;
-  bool isCT = false;
-  bool isTOF = false;
-  bool doIntensity = false;
+    arguments args;
 
-  // Parse command line args
-  for(int i=1; i < argc; i++)
-  {
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0)
-    {
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "-i") == 0)
-    {
-      inputImageName=argv[++i];
-      std::cout << "Set -i=" << inputImageName << std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0)
-    {
-      outputImageName=argv[++i];
-      std::cout << "Set -o=" << outputImageName << std::endl;
-    }
-    else if(strcmp(argv[i], "-b") == 0)
-    {
-      brainImageName=argv[++i];
-      std::cout << "Set -b=" << brainImageName << std::endl;
-    }
-    else if(strcmp(argv[i], "--mod") == 0)
-    {
-      mod=atoi(argv[++i]);
-      std::cout << "Set -mod=" << niftk::ConvertToString(mod) << std::endl;
-    }
-    else if(strcmp(argv[i], "--aone") == 0)
-    {
-      alphaone=atof(argv[++i]);
-      std::cout << "Set -aone=" << niftk::ConvertToString(alphaone) << std::endl;
-    }
-    else if(strcmp(argv[i], "--atwo") == 0)
-    {
-      alphatwo=atof(argv[++i]);
-      std::cout << "Set -atwo=" << niftk::ConvertToString(alphatwo) << std::endl;
-    }
-    else if(strcmp(argv[i], "--max") == 0)
-    {
-      max=atof(argv[++i]);
-      std::cout << "Set -max=" << niftk::ConvertToString(max) << std::endl;
-    }
-    else if(strcmp(argv[i], "--min") == 0)
-    {
-      min=atof(argv[++i]);
-      std::cout << "Set -min=" << niftk::ConvertToString(min) << std::endl;
-    }
-    else if(strcmp(argv[i], "--bin") == 0)
-    {
-      isBin=true;
-      std::cout << "Set -bin=ON" << std::endl;
-    }
-    else if(strcmp(argv[i], "--ct") == 0)
-    {
-      isCT=true;
-      std::cout << "Set -ct=ON" << std::endl;
-    }
-    else if(strcmp(argv[i], "--tof") == 0)
-    {
-      isTOF=true;
-      std::cout << "Set -tof=ON" << std::endl;
-    }
-    else if(strcmp(argv[i], "--intfil") == 0)
-    {
-      doIntensity=true;
-      std::cout << "Set -intfil=ON" << std::endl;
-    }
-    /*else if(strcmp(argv[i], "--xml") == 0)
-    {
-      std::cout << xml_vesselextractor;
-      return EXIT_SUCCESS;
-    }*/
-    else
-    {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }
-  }
 
-  // Validate command line args
-  if (inputImageName.length() == 0 || outputImageName.length() == 0)
-  {
-    Usage(argv[0]);
-    return EXIT_FAILURE;
-  }
+//    // Validate command line args
+//    // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    PARSE_ARGS;
+
+    if ( args.inputImageName.length() == 0 || args.outputImageName.length() == 0 )
+    {
+      commandLine.getOutput()->usage(commandLine);
+      return EXIT_FAILURE;
+    }
 
   //Check for the extension
-  std::size_t found_nii = outputImageName.rfind(".nii");
-  std::size_t found_mhd = outputImageName.rfind(".mhd");
+  std::size_t found_nii = args.outputImageName.rfind(".nii");
+  std::size_t found_mhd = args.outputImageName.rfind(".mhd");
   if ((found_nii == std::string::npos) && (found_mhd == std::string::npos))
   {
-    outputImageName += ".nii";
+    args.outputImageName += ".nii";
   }
 
-  if (mod != 0 && mod != 1)
+  if (args.mod != 0 && args.mod != 1)
   {
     std::cerr << "Unknown scale mode. Must be 0 (linear) or 1 (exponential)" << std::endl;
     Usage(argv[0]);
     return EXIT_FAILURE;
   }
 
-  if (max < 0 || min < 0)
+  if (args.max < 0 || args.min < 0)
   {
     std::cerr << "Maximum/minimum vessel size must be a positive number" << std::endl;
     Usage(argv[0]);
@@ -380,7 +329,7 @@ int main( int argc, char *argv[] )
   InputImageType::Pointer mask_image;
   InputImageType::SizeType size_mask;
   bool useMask = false;
-  if (brainImageName.length() > 0 )
+  if (args.brainImageName.length() > 0 )
   {
     mask_reader = ReaderType::New();
     mask_reader->SetFileName( brainImageName );
@@ -396,15 +345,15 @@ int main( int argc, char *argv[] )
     }
   }
 
-  if (isCT)
-    min = 0.775438;
+  if (args.isCT)
+    args.min = 0.775438;
 
   progressXML(0, "Computing scales...");
   float min_spacing = static_cast<float>(spacing[0]);
   float z_spacing = static_cast<float>(spacing[2]);
 
-  if (min < min_spacing)
-    min = min_spacing;
+  if (args.min < min_spacing)
+    args.min = min_spacing;
 
   bool anisotropic = false;
   if ((z_spacing / min_spacing) >=2) // highly anisotropic
@@ -413,13 +362,13 @@ int main( int argc, char *argv[] )
   int tasks = 1; //at least computes the vesselness filter response
   if (useMask || isCT)
     tasks++;
-  if (isCT && !useMask)
+  if (args.isCT && !useMask)
     tasks++;
-  if (isCT)
+  if (args.isCT)
     tasks++;
-  if (isBin)
+  if (args.isBin)
     tasks++;
-  if (doIntensity)
+  if (args.doIntensity)
     tasks++;
   if (anisotropic)
     tasks+=2;
@@ -455,7 +404,7 @@ int main( int argc, char *argv[] )
   }
 
   bool neg_img = false;
-  if (isCT)
+  if (args.isCT)
   {
     progressXML(progresscounter, "Indentifying if the image is in Hounsfield Units...");
     progresscounter+=progress_unit;
@@ -470,7 +419,7 @@ int main( int argc, char *argv[] )
   }
 
   //Create a skull mask from CTA
-  if (isCT && !useMask)
+  if (args.isCT && !useMask)
   {
     progressXML(progresscounter, "Creating a skull mask...");
     progresscounter+=progress_unit;
@@ -491,7 +440,7 @@ int main( int argc, char *argv[] )
     typedef itk::BinaryBallStructuringElement<
         InputImageType::PixelType,3>                  StructuringElementType;
     StructuringElementType structuringElement;
-    if (isCT) {
+    if (args.isCT) {
       structuringElement.SetRadius(3);
       structuringElement.CreateStructuringElement();
       typedef itk::BinaryErodeImageFilter<InputImageType,InputImageType,StructuringElementType> ErodeFilter;
@@ -503,37 +452,23 @@ int main( int argc, char *argv[] )
       erode->Update();
       mask_image = erode->GetOutput();
     }
-//    else
-//    {
-//      structuringElement.SetRadius(8);
-//      structuringElement.CreateStructuringElement();
-//      typedef itk::BinaryDilateImageFilter<InputImageType,InputImageType,StructuringElementType> DilateFilter;
-//      DilateFilter::Pointer dilate = DilateFilter::New();
-//      dilate->SetInput( mask_reader->GetOutput() );
-//      dilate->SetKernel(structuringElement);
-//      dilate->SetDilateValue(1);
-//      dilate->SetBackgroundValue(0);
-//      dilate->Update();
-//      mask_image = dilate->GetOutput();
-//    }
-//    mask_image->DisconnectPipeline();
   }
 
   progressXML(progresscounter, "Computing vesselness response...");
   progresscounter+=progress_unit;
   VesselnessFilterType::Pointer vesselnessFilter = VesselnessFilterType::New();
   vesselnessFilter->SetInput( in_image );
-  vesselnessFilter->SetAlphaOne( alphaone );
-  vesselnessFilter->SetAlphaTwo( alphatwo );
-  vesselnessFilter->SetMinScale( min );
-  vesselnessFilter->SetMaxScale( max );
-  vesselnessFilter->SetScaleMode(static_cast<VesselnessFilterType::ScaleModeType>(mod));
+  vesselnessFilter->SetAlphaOne( args.alphaone );
+  vesselnessFilter->SetAlphaTwo( args.alphatwo );
+  vesselnessFilter->SetMinScale(args.min );
+  vesselnessFilter->SetMaxScale( args.max );
+  vesselnessFilter->SetScaleMode(static_cast<VesselnessFilterType::ScaleModeType>(args.mod));
   vesselnessFilter->Update();
   VesselImageType::Pointer maxImage = vesselnessFilter->GetOutput();
   maxImage->DisconnectPipeline();
   itk::ImageRegionIterator<VesselImageType> outimageIterator(maxImage,maxImage->GetLargestPossibleRegion());
 
-  if (useMask && isCT)
+  if (useMask && args.isCT)
   {
     progressXML(progresscounter, "Applying mask...");
     progresscounter+=progress_unit;
@@ -570,7 +505,7 @@ int main( int argc, char *argv[] )
   //parameters
   float min_thresh = 0.003, max_thresh = 1, percentage = 0.04;
 
-  if (isTOF)
+  if (args.isTOF)
   {
     min_thresh = 0.003;
     max_thresh = 1;
@@ -585,7 +520,7 @@ int main( int argc, char *argv[] )
     percentage = 0.02;
   }
 
-  if (doIntensity)
+  if (args.doIntensity)
   {
     progressXML(progresscounter, "Intensity filtering...");
     progresscounter+=progress_unit;
@@ -598,7 +533,7 @@ int main( int argc, char *argv[] )
     maxImage = intensityfilter->GetOutput();
   }
 
-  if (isBin)
+  if (args.isBin)
   {
     progressXML(progresscounter, "Binarizing image...");
     progresscounter+=progress_unit;

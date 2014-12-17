@@ -1,4 +1,4 @@
-<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<?xml version="1.0" encoding="utf-8"?>
   <executable>
     <category>Segmentation</category>
     <title>niftkVesselExtractor</title>
@@ -10,23 +10,26 @@
     <parameters>
         <label>Images</label>
         <description>Input and output images</description>
-        <image fileExtensions=\"nii,nii.gz,mhd\">
+        <image fileExtensions="nii,nii.gz,mhd">
         <name>inputImageName</name>
         <flag>i</flag>
+        <longflag>inputImageName</longflag>
         <description>Input image</description>
         <label>Input Image</label>
         <channel>input</channel>
         </image>
-        <image fileExtensions=\"nii,nii.gz,mhd\">
+        <image fileExtensions="nii,nii.gz,mhd">
         <name>brainImageName</name>
         <flag>b</flag>
+         <longflag>brainImageName</longflag>
         <description>Registered brain mask image</description>
         <label>Brain Mask Image</label>
         <channel>input</channel>
         </image>
-        <image fileExtensions=\"nii,nii.gz,mhd\">
+        <image fileExtensions="nii,nii.gz,mhd">
         <name>outputImageName</name>
         <flag>o</flag>
+        <longflag>outputImageName</longflag>
         <description>Output image</description>
         <label>Output Image</label>
         <default>outputVesselness.nii</default>
