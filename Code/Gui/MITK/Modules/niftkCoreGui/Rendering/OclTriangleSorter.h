@@ -57,6 +57,9 @@ public:
   // and the total num of triangles
   void GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum);
 
+  /// \brief Gets the resulting CL mem object that contains the distance of each veretx
+  void GetDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalVertexNum);
+
   /// \brief Resets all buffers and internal variables
   void Reset();
 
