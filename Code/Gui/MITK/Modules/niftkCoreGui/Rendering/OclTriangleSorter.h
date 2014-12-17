@@ -98,6 +98,9 @@ private:
   /// \brief Copies only the vertex indices, without the distance bit
   void CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);
 
+  /// \brief Copies only the vertex indices and distances separately
+  void CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size, cl_uint sizeDist);
+
   // This one converts back the floats from the uint32 representation that we use in the sorting algorithm.
   // Rather ugly - but useful in debugging the distance sorting
   inline float IFloatFlip(unsigned int f)
@@ -123,6 +126,10 @@ private:
   cl_mem                    m_MergedIndexBuffer;
   // Num of triangles in the merged translucent object
   cl_uint                   m_TotalTriangleNum;
+  // Big fat buffer for storing the merged translucent object's distances
+  cl_mem                    m_MergedDistanceBuffer;
+  // Num of vertices in the merged translucent object
+  cl_uint                   m_TotalVertexNum;
 
   // Parallel Prefix Sum kernel
   cl_kernel    m_ckScanBlockAnyLength;
@@ -151,6 +158,7 @@ private:
   cl_kernel    m_ckComputeTriangleDistances;
   cl_kernel    m_ckCopyAndUpdateIndices;
   cl_kernel    m_ckCopyIndicesOnly;
+  cl_kernel    m_ckCopyIndicesWithDist;
 
   cl_kernel    m_ckTest;
 };

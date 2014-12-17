@@ -72,10 +72,13 @@ mitk::OclTriangleSorter::OclTriangleSorter()
   m_ckComputeTriangleDistances = 0;
   m_ckCopyAndUpdateIndices = 0;
   m_ckCopyIndicesOnly = 0;
+  m_ckCopyIndicesWithDist = 0;
   m_ckTest = 0;
 
   m_MergedIndexBuffer = 0;
+  m_MergedDistanceBuffer = 0;
   m_TotalTriangleNum = 0;
+  m_TotalVertexNum   = 0;
 
   m_KernelsReady = false;
 }
@@ -103,6 +106,7 @@ mitk::OclTriangleSorter::~OclTriangleSorter()
   if (m_ckComputeTriangleDistances) clReleaseKernel(m_ckComputeTriangleDistances);
   if (m_ckCopyAndUpdateIndices) clReleaseKernel(m_ckCopyAndUpdateIndices);
   if (m_ckCopyIndicesOnly) clReleaseKernel(m_ckCopyIndicesOnly);
+  if (m_ckCopyIndicesWithDist) clReleaseKernel(m_ckCopyIndicesWithDist);
 
   if (m_ckTest) clReleaseKernel(m_ckTest);
 
@@ -110,6 +114,11 @@ mitk::OclTriangleSorter::~OclTriangleSorter()
     clReleaseMemObject(m_MergedIndexBuffer);
 
   m_MergedIndexBuffer = 0;
+
+  if (m_MergedDistanceBuffer)
+    clReleaseMemObject(m_MergedDistanceBuffer);
+
+  m_MergedDistanceBuffer = 0;
 }
 
 void mitk::OclTriangleSorter::Reset()
@@ -125,8 +134,13 @@ void mitk::OclTriangleSorter::Reset()
   if (m_MergedIndexBuffer)
     clReleaseMemObject(m_MergedIndexBuffer);
 
+  if (m_MergedDistanceBuffer)
+    clReleaseMemObject(m_MergedDistanceBuffer);
+
+  m_MergedDistanceBuffer = 0;
   m_MergedIndexBuffer = 0;
   m_TotalTriangleNum = 0;
+  m_TotalVertexNum   = 0;
 }
 
 void mitk::OclTriangleSorter::Update()
@@ -153,9 +167,11 @@ bool mitk::OclTriangleSorter::Initialize()
     mitkThrow() << "Input buffers aren't set.";
 
   m_TotalTriangleNum = 0;
+  m_TotalVertexNum   = 0;
   for (unsigned int i = 0; i < m_VertexBuffers.size(); i++)
   {
     m_TotalTriangleNum += m_TriangleCounts[i];
+    m_TotalVertexNum   += m_VertexCounts[i];
   }
 
   //! [Initialize]
@@ -240,6 +256,10 @@ void mitk::OclTriangleSorter::InitKernels()
   CHECK_OCL_ERR( clErr );
   buildErr |= clErr;
 
+  this->m_ckCopyIndicesWithDist = clCreateKernel(this->m_ClProgram, "ckCopyIndicesWithDist", &clErr);
+  CHECK_OCL_ERR( clErr );
+  buildErr |= clErr;
+
   this->m_ckTest = clCreateKernel(this->m_ClProgram, "ckTest", &clErr);
   CHECK_OCL_ERR( clErr );
   buildErr |= clErr;
@@ -270,6 +290,10 @@ void mitk::OclTriangleSorter::Execute()
   if (m_MergedIndexBuffer)
     clReleaseMemObject(m_MergedIndexBuffer);
   m_MergedIndexBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum*3*sizeof(cl_uint), 0, &clErr);
+
+  if (m_MergedDistanceBuffer)
+    clReleaseMemObject(m_MergedDistanceBuffer);
+  m_MergedDistanceBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalVertexNum *sizeof(cl_float), 0, &clErr);
 
   //MITK_INFO <<"Creating m_MergedIndexBuffer " <<m_TotalTriangleNum <<" " <<m_TotalTriangleNum*3*sizeof(cl_uint);
 
@@ -397,6 +421,24 @@ void mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_ui
   clStatus |= clSetKernelArg(m_ckCopyIndicesOnly, a++, sizeof(cl_mem), (const void*)&output);
   clStatus |= clSetKernelArg(m_ckCopyIndicesOnly, a++, sizeof(cl_uint), (const void*)&size);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyIndicesOnly, 1, NULL, global_128, local_128, 0, NULL, NULL);
+  CHECK_OCL_ERR(clStatus);
+}
+
+void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size, cl_uint sizeDist)
+{
+  cl_int clStatus = 0;
+  unsigned int a = 0;
+
+  int workgroupSize = 128;
+  size_t global_128[1] = {ToMultipleOf(size, workgroupSize)};
+  size_t local_128[1] = {workgroupSize};
+
+  clStatus  = clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&input);
+  clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&output);
+  clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&outputDist);
+  clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&size);
+  clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&sizeDist);
+  clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyIndicesWithDist, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 }
 
