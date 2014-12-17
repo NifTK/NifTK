@@ -1723,11 +1723,15 @@ void VLQt4Widget::sortTranslucentTriangles()
   clCameraPos.s[0] = cameraPos[0];
   clCameraPos.s[1] = cameraPos[1];
   clCameraPos.s[2] = cameraPos[2];
+  clCameraPos.s[3] = 1.0f;
 
-  std::vector<vl::ref<vl::Transform>> transforms;
-  std::vector<vl::ref<vl::Geometry>>  translucentSurfaces;
-  std::vector<vl::ref<vl::Actor>>     translucentActors;
-  std::vector<vl::fvec4>              translucentColors;
+
+
+
+  std::vector<vl::mat4>                transforms;
+  std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
+  std::vector<vl::ref<vl::Actor> >     translucentActors;
+  std::vector<vl::fvec4>               translucentColors;
 
   std::vector<cl_mem> clTransforms;
   std::vector<cl_mem> clIndexBufs;
@@ -1766,7 +1770,14 @@ void VLQt4Widget::sortTranslucentTriangles()
       translucentActors.push_back(act);
 
       vl::ref<vl::Transform> transf = act->transform();
-      transforms.push_back(transf);
+      transf->computeWorldMatrixRecursive(m_Camera.get());
+      vl::mat4 actorworld = transf->getComputedWorldMatrix();
+      
+      //m_Camera->projectionMatrix();
+      //m_Camera->viewMatrix();
+      vl::mat4 sorttxf = actorworld * m_Camera->projectionMatrix();
+
+      transforms.push_back(sorttxf.invert());
 
       vl::ref<vl::Effect> fx = act->effect();
       vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
@@ -1822,26 +1833,28 @@ void VLQt4Widget::sortTranslucentTriangles()
     clVertexBufs.push_back(clVertexBuf);
     CHECK_OCL_ERR(clErr);
 
-    //cl_float * buff = new cl_float[numOfVertices * 3];
-    //clErr = clEnqueueReadBuffer(clCmdQue, clVertexBuf, CL_TRUE, 0, (numOfVertices)*3*sizeof(cl_float), buff, 0, 0, 0);
+/*
+    cl_float * buff = new cl_float[numOfVertices * 3];
+    clErr = clEnqueueReadBuffer(clCmdQue, clVertexBuf, CL_TRUE, 0, (numOfVertices)*3*sizeof(cl_float), buff, 0, 0, 0);
 
-    //CHECK_OCL_ERR(clErr);
+    CHECK_OCL_ERR(clErr);
 
-    // MITK_INFO <<"numOfVertices: " <<numOfVertices;
-    //std::ofstream outfile0;
-    //outfile0.open ("d://vertexBuf.txt", std::ios::out);
-    //
-    //// Write out filtered volume
-    //for (int r = 0 ; r < numOfVertices; r++)
-    //{
-    //  outfile0 <<"Index: " <<r <<std::setprecision(10) <<" Vert: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
-    //}
+     MITK_INFO <<"numOfVertices: " <<numOfVertices;
+    std::ofstream outfile0;
+    outfile0.open ("d://vertexBuf.txt", std::ios::out);
+    
+    // Write out filtered volume
+    for (int r = 0 ; r < numOfVertices; r++)
+    {
+      outfile0 <<"Index: " <<r <<std::setprecision(10) <<" Vert: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
+    }
 
-    //outfile0.close();
+    outfile0.close();
+*/
 
     // Acquire the transformation matrix
-    vl::ref<vl::Transform> transf = transforms[i];
-    vl::mat4  mat = transf->localMatrix();
+    //vl::ref<vl::Transform> transf = transforms[i];
+    vl::mat4  mat = transforms[i];// transf->localMatrix();
     //MITK_INFO <<"Mat: " <<mat.e(0,0) <<" " <<mat.e(0,1) <<" " <<mat.e(0,2) <<" " <<mat.e(0,3) <<"\n";
     cl_float clMat[16];
     int index = 0;
@@ -2106,11 +2119,13 @@ void VLQt4Widget::sortTranslucentTriangles()
   m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
   m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
   fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
-  fx->shader()->enable(vl::EN_BLEND);
+  
   // no backface culling for translucent objects: you should be able to see the backside!
   fx->shader()->disable(vl::EN_CULL_FACE);
-
+  
+  fx->shader()->enable(vl::EN_BLEND);
   fx->shader()->enable(vl::EN_DEPTH_TEST);
+
   fx->shader()->enable(vl::EN_LIGHTING);
   fx->shader()->setRenderState(m_Light.get(), 0 );
 
