@@ -1968,6 +1968,45 @@ void VLQt4Widget::sortTranslucentTriangles()
 
   clFinish(clCmdQue);
 
+
+  // Create a buffer large enough to retrive the merged distance buffer
+  unsigned int totalNumOfVertices2 = 0;
+  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, totalNumOfTriangles*sizeof(cl_uint), 0, 0);
+  
+  // Here we retrieve the merged and sorted distance buffer
+  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, totalNumOfVertices2);
+
+  cl_uint * mergedDistances = new cl_uint[totalNumOfTriangles];
+  clErr = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, totalNumOfTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
+  CHECK_OCL_ERR(clErr);
+
+  std::ofstream outfileA;
+  outfileA.open ("d://triangleDists.txt", std::ios::out);
+
+  float maxDist = -FLT_MAX;
+  for (int kk = 0; kk < totalNumOfTriangles; kk++)
+  {
+    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
+
+    if (val > maxDist)
+      maxDist = val;
+
+    outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
+  }
+
+  outfileA.close();
+
+  float minDist = FLT_MAX;
+  for (int kk = 0; kk < totalNumOfTriangles; kk++)
+  {
+    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
+    if (val < minDist)
+      minDist = val;
+  }
+
+  float range = (maxDist-minDist);
+  MITK_INFO <<"maxDist: " <<std::setprecision(10) <<maxDist <<" minDist:" <<minDist <<" range: " <<range;
+
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
@@ -2036,7 +2075,7 @@ void VLQt4Widget::sortTranslucentTriangles()
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //// Get color array
-    
+
     size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
     vl::fvec4 color = translucentColors.at(i);
 
@@ -2064,7 +2103,21 @@ void VLQt4Widget::sortTranslucentTriangles()
     clReleaseMemObject(clNormalBuf);
   }
 
-  clFinish(clCmdQue);
+  //unsigned int * colorData = new unsigned int[totalNumOfVertices];
+  //for (unsigned int bla = 0; bla < totalNumOfTriangles; bla++)
+  //{
+  //  // Color format: AABBGGRR
+  //  unsigned char a = 255;
+  //  unsigned char b = 255;
+  //  unsigned char g = 255;
+  //  unsigned char r = (mergedDistances[bla]/range) * 255;
+  //  colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
+  //}
+
+  //vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
+  //delete colorData;
+
+  //clFinish(clCmdQue);
 
 /*
   cl_float * buff = new cl_float[totalNumOfVertices*3];
