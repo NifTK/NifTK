@@ -22,6 +22,7 @@ set(CPP_FILES
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
   Rendering/SharedOGLContext.cxx
+  Rendering/ScopedOGLContext.cxx
 )
 
 set(MOC_H_FILES

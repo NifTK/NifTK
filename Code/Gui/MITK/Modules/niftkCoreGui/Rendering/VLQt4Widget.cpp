@@ -38,6 +38,7 @@
 #include <QTextStream>
 #include <stdexcept>
 #include <sstream>
+#include "ScopedOGLContext.h"
 
 #ifdef _USE_CUDA
 #include <Rendering/VLFramebufferToCUDA.h>
@@ -66,36 +67,6 @@ struct CUDAInterop
 // empty dummy, in case we have no cuda
 struct CUDAInterop { };
 #endif // _USE_CUDA
-
-
-//-----------------------------------------------------------------------------
-struct ScopedOGLContext
-{
-  QGLContext*   prevctx;
-  QGLContext*   ourctx;
-
-  ScopedOGLContext(QGLContext* newctx)
-    : ourctx(newctx)
-  {
-    prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
-    if (prevctx != ourctx)
-      ourctx->makeCurrent();
-  }
-
-  ~ScopedOGLContext()
-  {
-    // did somebody mess up our context?
-    assert(QGLContext::currentContext() == ourctx);
-
-    if (prevctx != ourctx)
-    {
-      if (prevctx)
-        prevctx->makeCurrent();
-      else
-        ourctx->doneCurrent();
-    }
-  }
-};
 
 
 //-----------------------------------------------------------------------------
