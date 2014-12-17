@@ -37,23 +37,23 @@
       <name>fileInputMITK</name>
       <longflag>mps</longflag>
       <description>The file name of an input MITK PointSet XML file.</description>
-      <label>![CDATA[Input NiftyView (MITK) point set.]]</label>
+      <label>Input NiftyView (MITK) point set.</label>
       <channel>input</channel>
     </file>
 
     <file>
       <name>fileInputPointSet</name>
       <longflag>pts</longflag>
-      <description>![CDATA[An input text file of landmarks: '%f %f %f\\n...', x, y, z.]]</description>
-      <label>![CDATA[Input simple text point set.]]</label>
+      <description><![CDATA[An input text file of landmarks: '%f %f %f\\n...', x, y, z.]]></description>
+      <label>Input simple text point set.</label>
       <channel>input</channel>
     </file>
 
     <string-enumeration>
       <name>dimension</name>
       <longflag>dimension</longflag>
-      <description>![CDATA[The image 'height' dimension to be interpolated by the thin-plate spline.]]</description>
-      <label>![CDATA[Spline height dimension]]</label>
+      <description><![CDATA[The image 'height' dimension to be interpolated by the thin-plate spline.]]></description>
+      <label>Spline height dimension</label>
       <default>z</default>
       <element>x</element>
       <element>y</element>
@@ -63,8 +63,8 @@
     <boolean>
       <name>flgInvert</name>
       <longflag>invert</longflag>
-      <description>![CDATA[Invert the mask (i.e. flip the spline 'height' dimension).]]</description>
-      <label>![CDATA[Invert/flip the mask?]]</label>
+      <description><![CDATA[Invert the mask (i.e. flip the spline 'height' dimension).]]></description>
+      <label>Invert/flip the mask?</label>
     </boolean>
 
   </parameters>
@@ -85,21 +85,21 @@
      <integer-vector>
       <name>size</name>
       <longflag>size</longflag>
-      <description>![CDATA[The size of the output volume [100 x 100 x 100]. For 2D data set nz = 1 or 0. Specifying the input image overides this value.]]</description>
+      <description><![CDATA[The size of the output volume [100 x 100 x 100]. For 2D data set nz = 1 or 0. Specifying the input image overides this value.]]></description>
       <label>Mask size</label>
     </integer-vector>
 
     <double-vector>
       <name>resolution</name>
       <longflag>res</longflag>
-      <description>![CDATA[The resolution of the output volume [1mm x 1mm x 1mm].]]</description>
+      <description><![CDATA[The resolution of the output volume [1mm x 1mm x 1mm].]]></description>
       <label>Mask resolution</label>
     </double-vector>
 
     <double-vector>
       <name>origin</name>
       <longflag>origin</longflag>
-      <description>![CDATA[The origin of the output volume [0mm x 0mm x 0mm].]]</description>
+      <description><![CDATA[The origin of the output volume [0mm x 0mm x 0mm].]]></description>
       <label>Mask origin</label>
     </double-vector>
 
@@ -107,7 +107,7 @@
       <name>stiffness</name>
       <flag>s</flag>
       <longflag>stiffness</longflag>
-      <description>![CDATA[The stiffness of the spline [ 1 ]]]</description>
+      <description><![CDATA[The stiffness of the spline [ 1 ]]]></description>
       <label>Spline stiffness</label>
       <default>1</default>
     </float>
