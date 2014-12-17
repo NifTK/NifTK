@@ -297,7 +297,8 @@ void mitk::OclTriangleSorter::Execute()
 
   //MITK_INFO <<"Creating m_MergedIndexBuffer " <<m_TotalTriangleNum <<" " <<m_TotalTriangleNum*3*sizeof(cl_uint);
 
-  CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
+  //CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
+  CopyIndicesWithDist(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_MergedDistanceBuffer, m_TotalTriangleNum, m_TotalVertexNum);
 
 
 /*
