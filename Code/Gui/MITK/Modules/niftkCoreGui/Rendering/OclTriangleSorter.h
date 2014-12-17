@@ -57,11 +57,21 @@ public:
   // and the total num of triangles
   void GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum);
 
-  /// \brief Gets the resulting CL mem object that contains the distance of each veretx
-  void GetDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalVertexNum);
+  /// \brief Gets the resulting CL mem object that contains the distance of each triangle
+  void GetTriangleDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalTriangleNum);
 
   /// \brief Resets all buffers and internal variables
   void Reset();
+
+  // This one converts back the floats from the uint32 representation that we use in the sorting algorithm.
+  // Rather ugly - but useful in debugging the distance sorting
+  inline static float IFloatFlip(unsigned int f)
+  {
+    unsigned int mask = ((f >> 31) - 1) | 0x80000000;
+    unsigned int val = f ^ mask;
+    float * floatVal = reinterpret_cast<float*>(&val);
+    return *floatVal;
+  }
 
 protected:
   /// \brief Initialize the filter
@@ -103,16 +113,6 @@ private:
 
   /// \brief Copies only the vertex indices and distances separately
   void CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size, cl_uint sizeDist);
-
-  // This one converts back the floats from the uint32 representation that we use in the sorting algorithm.
-  // Rather ugly - but useful in debugging the distance sorting
-  inline float IFloatFlip(unsigned int f)
-  {
-    unsigned int mask = ((f >> 31) - 1) | 0x80000000;
-    unsigned int val = f ^ mask;
-    float * floatVal = reinterpret_cast<float*>(&val);
-    return *floatVal;
-  }
 
 private:
   bool m_KernelsReady;

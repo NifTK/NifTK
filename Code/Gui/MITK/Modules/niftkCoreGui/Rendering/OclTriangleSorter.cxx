@@ -387,16 +387,16 @@ void mitk::OclTriangleSorter::GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint
   totalTriangleNum = m_TotalTriangleNum;
 }
 
-void mitk::OclTriangleSorter::GetDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalVertexNum)
+void mitk::OclTriangleSorter::GetTriangleDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalTriangleNum)
 {
   // Compute mem size that will get copied to output
-  size_t distBufSize = m_TotalVertexNum*sizeof(cl_float);
+  size_t distBufSize = m_TotalTriangleNum*sizeof(cl_uint);
 
   // Copy to merged buffer into output buffer
   cl_int clErr = clEnqueueCopyBuffer(m_CommandQue, m_MergedIndexBuffer, mergedAndSortedDistBuf, 0, 0, distBufSize, 0, 0, 0);
   CHECK_OCL_ERR(clErr);
 
-  totalVertexNum = m_TotalVertexNum;
+  totalTriangleNum = m_TotalTriangleNum;
 }
 
 void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_mem output4Sort,  cl_uint size, cl_uint offset)
