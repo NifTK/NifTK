@@ -324,7 +324,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 QmitkCommonAppsApplicationPlugin
 ::ITKGetStatistics(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+    const itk::Image<TPixel, VImageDimension> *itkImage,
     float &min,
     float &max,
     float &mean,
@@ -367,7 +367,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
 {
   if (mitk::IsNodeAGreyScaleImage(node))
   {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+    mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
 
     if (prefNode != NULL && image.IsNotNull())
