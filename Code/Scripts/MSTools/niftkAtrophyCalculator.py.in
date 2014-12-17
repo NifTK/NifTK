@@ -1418,7 +1418,7 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<element>2</element>
 	</integer-enumeration>
 	<integer-enumeration>
-		<name>Kmeans dilations</name>
+		<name>Kmeansdilations</name>
 		<longflag>dil_kmeans</longflag>
 		<description>Number of classes dilations for the K-Means mask, recommended value: 3</description>
 		<label>Number of tissues</label>
