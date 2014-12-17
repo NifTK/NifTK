@@ -73,6 +73,9 @@ public:
   /// \brief Gets the mitk::ToolManager from this object.
   mitk::ToolManager::Pointer GetToolManager() const;
 
+//  void SetErosionSubtractionsInput(mitk::Image::ConstPointer erosionSubtractions, mitk::Image::Pointer segmentation);
+//  void SetDilationSubtractionsInput(mitk::Image::ConstPointer dilationSubtractions, mitk::Image::Pointer segmentation);
+
   /// \brief Sets the thresholding parameters.
   ///
   /// \param lowerThreshold the lowest intensity value included in the segmentation
@@ -110,7 +113,7 @@ public:
   bool HasSegmentationNode() const;
 
   /// \brief Retrieves the reference image from the tool manager.
-  mitk::Image::Pointer GetReferenceImage() const;
+  mitk::Image::ConstPointer GetReferenceImage() const;
 
   /// \brief Used to retrieve the working image from the tool manager.
   mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
@@ -155,7 +158,7 @@ public:
   void RemoveWorkingData();
 
   /// \brief Completely removes the current pipeline
-  void DestroyPipeline();
+  void DestroyPipeline(mitk::Image::Pointer segmentation);
 
 protected:
 
@@ -182,7 +185,7 @@ private:
   /// \brief ITK method that actually does the work of finalizing the pipeline.
   template<typename TPixel, unsigned int VImageDimension>
   void FinalizeITKPipeline(
-      itk::Image<TPixel, VImageDimension>* referenceImage,
+      const itk::Image<TPixel, VImageDimension>* referenceImage,
       mitk::Image::Pointer segmentation
       );
 

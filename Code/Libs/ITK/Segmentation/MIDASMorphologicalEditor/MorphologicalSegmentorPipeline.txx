@@ -153,6 +153,27 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetErosionSubtractionsInput(const SegmentationImageType* erosionsSubtractionsImage)
+{
+  m_ErosionMaskFilter->SetInput(2, erosionsSubtractionsImage);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetDilationSubtractionsInput(const SegmentationImageType* dilationsSubtractionsImage)
+{
+  m_DilationFilter->SetConnectionBreakerImage(dilationsSubtractionsImage);
+  m_DilationMaskFilter->SetInput(2, dilationsSubtractionsImage);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::SetParams(const MorphologicalSegmentorPipelineParams& params)
 {
   int startStage = params.m_StartStage;

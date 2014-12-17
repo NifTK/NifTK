@@ -93,7 +93,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
   bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImage();
+  mitk::Image::ConstPointer image = m_PipelineManager->GetReferenceImage();
   if (image.IsNotNull())
   {
 
@@ -149,7 +149,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeAddEditingProp->SetSize(1,1,1);
       erodeAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
       erodeAddNode->SetBoolProperty("helper object", true);
       erodeAddNode->SetBoolProperty("visible", false);
       erodeAddNode->SetColor(segCol);
@@ -255,7 +255,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneNode(mitk::Image* referenceImage)
+mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage)
 {
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
@@ -382,11 +382,13 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         // Only if we are switching from tab 2 to 1.
         if (m_TabIndex == 2)
         {
-          mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
+          const mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
           if (dilateSubtractImage != NULL && erodeSubtractImage != NULL)
           {
-            mitk::CopyIntensityData(dilateSubtractImage, erodeSubtractImage);
+//            m_PipelineManager->SetErosionSubtractionsInput(0);
+//            mitk::CopyIntensityData(dilateSubtractImage, erodeSubtractImage);
+//            m_PipelineManager->SetErosionSubtractionsInput(erodeSubtractImage);
           }
         }
       }
@@ -399,11 +401,13 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
         // Only if we are switching from tab 1 to 2.
         if (m_TabIndex == 1)
         {
-          mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
+          const mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
           if (erodeSubtractImage != NULL && dilateSubtractImage != NULL)
           {
-            mitk::CopyIntensityData(erodeSubtractImage, dilateSubtractImage);
+//            m_PipelineManager->SetDilationSubtractionsInput(0);
+//            mitk::CopyIntensityData(erodeSubtractImage, dilateSubtractImage);
+//            m_PipelineManager->SetDilationSubtractionsInput(dilateSubtractImage);
           }
         }
       }
@@ -497,7 +501,8 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
     m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
-    m_PipelineManager->DestroyPipeline();
+    mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
+    m_PipelineManager->DestroyPipeline(segmentationImage);
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
@@ -644,7 +649,8 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
     m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
-    m_PipelineManager->DestroyPipeline();
+    mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
+    m_PipelineManager->DestroyPipeline(segmentationImage);
 //    this->GetDataStorage()->Remove(segmentationNode);
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
@@ -662,7 +668,7 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
   if (nodes.size() == 1)
   {
-    mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
+    mitk::Image::ConstPointer referenceImage = m_PipelineManager->GetReferenceImage();
     mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImage();
 
     if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
@@ -692,7 +698,7 @@ void MIDASMorphologicalSegmentorView::SetSegmentationNodePropsFromReferenceImage
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
 {
-  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImage();
+  mitk::Image::ConstPointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
