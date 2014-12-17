@@ -775,7 +775,17 @@ __kernel
   value += transform[15] * vertexCoords.w;
   transformedVertexCoords.w = value;
 
-  vertexDistances[idx] = fast_distance(viewPoint, transformedVertexCoords);
+  transformedVertexCoords.x /= transformedVertexCoords.w;
+  transformedVertexCoords.y /= transformedVertexCoords.w;
+  transformedVertexCoords.z /= transformedVertexCoords.w;
+  
+  //transformedVertexCoords.x += 1.0f;
+  //transformedVertexCoords.y += 1.0f;
+  transformedVertexCoords.z += 1.0f;
+  transformedVertexCoords.w = 0.0f;
+
+  float4 zero = 0.0f;
+  vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
   //vertexBuf[idx*3+0] = vertexCoords.x;
   //vertexBuf[idx*3+1] = vertexCoords.y;
   //vertexBuf[idx*3+2] = vertexCoords.z;
@@ -867,7 +877,7 @@ __kernel
   void ckCopyIndicesOnly(
   __global uint4  * input,
   __global uint   * output,
-  const  uint     size
+    const  uint     size
   )
 {
   size_t idx = get_global_id(0);
@@ -876,12 +886,34 @@ __kernel
     return;
 
   size_t flippedIndex = ((size-1) -idx)*3;
+  //size_t flippedIndex = idx * 3;
   output[flippedIndex +0] = input[idx].y; 
   output[flippedIndex +1] = input[idx].z; 
   output[flippedIndex +2] = input[idx].w; 
 }
 
+__kernel
+  void ckCopyIndicesWithDist(
+  __global uint4  * input,
+  __global uint   * output,
+  __global float  * outputDist,
+    const  uint     size,
+    const  uint     sizeDist
+  )
+{
+  size_t idx = get_global_id(0);
 
+  if (idx >= size)
+    return;
+
+  size_t flippedIndex = ((size-1) -idx)*3;
+  //size_t flippedIndex = idx * 3;
+  output[flippedIndex +0] = input[idx].y; 
+  output[flippedIndex +1] = input[idx].z; 
+  output[flippedIndex +2] = input[idx].w; 
+
+  outputDist[(size-1) -idx] = input[idx].x; 
+}
 
 
 
