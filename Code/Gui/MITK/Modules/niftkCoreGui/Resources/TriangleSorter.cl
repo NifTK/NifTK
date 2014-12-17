@@ -896,7 +896,7 @@ __kernel
   void ckCopyIndicesWithDist(
   __global uint4  * input,
   __global uint   * output,
-  __global float  * outputDist,
+  __global uint   * outputDist,
     const  uint     size,
     const  uint     sizeDist
   )
@@ -912,7 +912,7 @@ __kernel
   output[flippedIndex +1] = input[idx].z; 
   output[flippedIndex +2] = input[idx].w; 
 
-  outputDist[(size-1) -idx] = IFloatFlip(input[idx].x);
+  outputDist[(size-1) -idx] = input[idx].x;
 }
 
 
