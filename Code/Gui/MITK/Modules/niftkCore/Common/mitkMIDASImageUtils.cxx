@@ -496,7 +496,48 @@ void CopyIntensityData(const mitk::Image* input, mitk::Image* output)
         AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 2);
         break;
       case 3:
-        AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 3);
+        /// Note:
+        /// This line should be used here, but it applies write lock on both images,
+        /// regardless the constness. Therefore, until this is fixed in the upstream,
+        /// I copied the expanded macro definition here, and replaced the 'nonConstImage1'
+        /// variable by 'input' so that the const argument version of SetInput is called
+        /// and it applies read lock on the image.
+        //AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 3);
+        {
+          const mitk::PixelType& pixelType1 = input->GetPixelType();
+          const mitk::PixelType& pixelType2 = output->GetPixelType();
+          const mitk::Image* constImage1 = input;
+          const mitk::Image* constImage2 = output;
+          mitk::Image* nonConstImage1 = const_cast<mitk::Image*>(constImage1);
+          mitk::Image* nonConstImage2 = const_cast<mitk::Image*>(constImage2);
+          nonConstImage1->Update();
+          nonConstImage2->Update();
+          _checkSpecificDimension(input, (3));
+          _checkSpecificDimension(output, (3));
+          if (pixelType1 == mitk::MakePixelType< itk::Image<unsigned char,3u> >() &&
+              pixelType2 == mitk::MakePixelType< itk::Image<unsigned char,3u> >() &&
+              constImage1->GetDimension() == 3u && constImage2->GetDimension() == 3u)
+          {
+            typedef itk::Image<unsigned char,3u> ImageType1;
+            typedef itk::Image<unsigned char,3u> ImageType2;
+            typedef mitk::ImageToItk<ImageType1> ImageToItkType1;
+            typedef mitk::ImageToItk<ImageType2> ImageToItkType2;
+            itk::SmartPointer<ImageToItkType1> imagetoitk1 = ImageToItkType1::New();
+            imagetoitk1->SetInput(input);
+            imagetoitk1->Update();
+            itk::SmartPointer<ImageToItkType2> imagetoitk2 = ImageToItkType2::New();
+            imagetoitk2->SetInput(nonConstImage2);
+            imagetoitk2->Update();
+            ITKCopyIntensityData(imagetoitk1->GetOutput(), imagetoitk2->GetOutput());
+          } else
+          {
+            std::string msg("Pixel type ");
+            msg.append(pixelType1.GetComponentTypeAsString() );
+            msg.append(" or pixel type ");
+            msg.append(pixelType2.GetComponentTypeAsString() );
+            throw mitk::AccessByItkException(msg);
+          }
+        }
         break;
       case 4:
         AccessTwoImagesFixedDimensionByItk(input, output, ITKCopyIntensityData, 4);
