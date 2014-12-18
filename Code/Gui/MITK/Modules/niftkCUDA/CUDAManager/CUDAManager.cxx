@@ -511,6 +511,7 @@ void CUDART_CB CUDAManager::StreamCallback(cudaStream_t stream, cudaError_t stat
 //-----------------------------------------------------------------------------
 void CUDAManager::ReleaseReadAccess(unsigned int id)
 {
+  // FIXME: cannot grab a lock here! instead post a callback onto our thread.
   QMutexLocker    lock(&s_Lock);
 
   std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(id);

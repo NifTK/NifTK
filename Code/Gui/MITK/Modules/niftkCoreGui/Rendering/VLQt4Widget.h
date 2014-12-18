@@ -30,6 +30,7 @@
 #include <vlGraphics/Geometry.hpp>
 #include <vlGraphics/Uniform.hpp>
 #include <vlGraphics/BlitFramebuffer.hpp>
+#include <vlGraphics/Texture.hpp>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWidget>
 #include <QtCore/QTimer>
@@ -42,7 +43,10 @@
 
 
 // forward-decl
+struct cudaGraphicsResource;
+typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
 struct CUDAInterop;
+class CUDAImage;
 namespace mitk
 {
 class DataStorage;
@@ -157,6 +161,7 @@ protected:
 
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
+
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
@@ -164,9 +169,25 @@ protected:
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >    m_ActorToRenderableMap;
 
 
+  /** @name CUDA-interop related bits. */
+  //@{
+
+  /** Will throw if CUDA-support was not enabled at compile time. */
+  vl::ref<vl::Actor> AddCUDAImageActor(const CUDAImage* cudaImg);
+
   // will only be non-null if cuda support is enabled at compile time.
   CUDAInterop*         m_CUDAInteropPimpl;
 
+  struct TextureDataPOD
+  {
+    vl::ref<vl::Texture>    m_Texture;            // on the vl side
+    unsigned int            m_LastUpdatedID;      // on cuda-manager side
+    cudaGraphicsResource_t  m_CUDARes;            // on cuda(-driver) side
+
+    TextureDataPOD();
+  };
+  std::map<mitk::DataNode::Pointer, TextureDataPOD>     m_NodeToTextureMap;
+  //@}
 
 protected:
   int       m_Refresh;
