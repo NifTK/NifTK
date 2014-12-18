@@ -210,14 +210,7 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
   if (isHelper)
     return;
 
-  bool isVisible = false;
-  node->GetVisibility(isVisible, 0);
-
-  if (!isVisible)
-    return;
-
   m_VLQtRenderWindow->AddDataNode(node);
-  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node added";
 }

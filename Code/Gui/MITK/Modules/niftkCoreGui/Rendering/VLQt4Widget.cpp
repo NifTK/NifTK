@@ -568,12 +568,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
-
+  bool  isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  bool  isVisble = visibleProp->GetValue();
+  if (visibleProp != 0)
+    isVisble = visibleProp->GetValue();
 
+  float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  float opacity = opacityProp->GetValue();
+  if (opacityProp != 0)
+    opacity = opacityProp->GetValue();
   // if object is too translucent to not have a effect after blending then just skip it.
   if (opacity < (1.0f / 255.0f))
     isVisble = false;
@@ -586,15 +589,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   {
     vlActor->setEnableMask(0xFFFFFFFF);
 
+    vl::fvec4 color(1, 1, 1, opacity);
     mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
-    mitk::Color mitkColor = colorProp->GetColor();
-
-    vl::fvec4 color;
-    color[0] = mitkColor[0];
-    color[1] = mitkColor[1];
-    color[2] = mitkColor[2];
-    color[3] = opacity;
-
+    if (colorProp != 0)
+    {
+      mitk::Color mitkColor = colorProp->GetColor();
+      color[0] = mitkColor[0];
+      color[1] = mitkColor[1];
+      color[2] = mitkColor[2];
+    }
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
@@ -780,26 +783,32 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const CUDAImage* cudaImg)
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  cudaImg->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
   vl::mat4  mat;
-  for (int i = 0; i < 4; i++)
+  mat.setIdentity();
+
+  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  mitk::Geometry3D*     geom = cudaImg->GetGeometry();
+  if (geom != 0)
   {
-    for (int j = 0; j < 4; j++)
+    vtkLinearTransform*   vtktxf = geom->GetVtkTransform();
+    if (vtktxf != 0)
     {
-      double val = geometryTransformMatrix->GetElement(i, j);
-      mat.e(i, j) = val;
+      vtktxf->GetMatrix(geometryTransformMatrix);
+      for (int i = 0; i < 4; i++)
+      {
+        for (int j = 0; j < 4; j++)
+        {
+          double val = geometryTransformMatrix->GetElement(i, j);
+          mat.e(i, j) = val;
+        }
+      }
     }
   }
   vl::ref<vl::Transform> tr     = new vl::Transform();
   tr->setLocalMatrix(mat);
 
 
-  //vl::ref<vl::ArrayFloat3>      vlVerts   = new vl::ArrayFloat3;
-  //vl::ref<vl::DrawElementsUInt> vlde      = new vl::DrawElementsUInt(vl::PT_TRIANGLES);//,0,numOfTriangles*3);
-  vl::ref<vl::Geometry>         vlquad    = //new vl::Geometry();
-    vl::makeGrid(vl::vec3(0, 0, 0), 1, 1, 1, 1, true);
-  //vlquad->setVertexArray(vlVerts.get());
+  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1, 1, 2, 2, true);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   // UpdateDataNode() takes care of assigning colour etc.
@@ -1439,7 +1448,7 @@ void VLQt4Widget::swapBuffers()
 
     // side note: cuda-arrays are always measured in bytes, never in pixels.
     err = cudaMemcpyFromArrayAsync(outputWA.m_DevicePointer, fboarr, 0, 0, QWidget::width() * QWidget::height() * 4, cudaMemcpyDeviceToDevice, mystream);
-    // not sure what to do if it fails. do not throw and exception, that's for sure.
+    // not sure what to do if it fails. do not throw an exception, that's for sure.
     assert(err == cudaSuccess);
 
     m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
@@ -1454,7 +1463,7 @@ void VLQt4Widget::swapBuffers()
       node = mitk::DataNode::New();
       node->SetName(m_CUDAInteropPimpl->m_NodeName);
       node->SetVisibility(false);
-      node->SetBoolProperty("helper object", true);
+      //node->SetBoolProperty("helper object", true);
     }
     CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
     if (img.IsNull())
