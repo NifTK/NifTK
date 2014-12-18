@@ -210,14 +210,7 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
   if (isHelper)
     return;
 
-  bool isVisible = false;
-  node->GetVisibility(isVisible, 0);
-
-  if (!isVisible)
-    return;
-
   m_VLQtRenderWindow->AddDataNode(node);
-  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node added";
 }
@@ -326,8 +319,10 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
           // synchronise, just like we did above before starting our kernel.
           LightweightCUDAImage      outputLWCI  = cudamanager->FinaliseAndAutorelease(outputWA, inputRA, mystream);
           mitk::DataNode::Pointer   node        = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
+          bool                      isNewNode   = false;
           if (node.IsNull())
           {
+            isNewNode = true;
             node = mitk::DataNode::New();
             node->SetName("vl-cuda-interop sample");
           }
@@ -336,9 +331,8 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
             img = CUDAImage::New();
           img->SetLightweightCUDAImage(outputLWCI);
           node->SetData(img);
-          if (GetDataStorage()->Exists(node.GetPointer()))
-            GetDataStorage()->Remove(node);
-          GetDataStorage()->Add(node);
+          if (isNewNode)
+            GetDataStorage()->Add(node);
         }
       }
     }

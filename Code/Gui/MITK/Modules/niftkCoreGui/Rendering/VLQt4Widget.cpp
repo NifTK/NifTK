@@ -43,6 +43,9 @@
 #ifdef _USE_CUDA
 #include <Rendering/VLFramebufferToCUDA.h>
 #include <CUDAManager/CUDAManager.h>
+#include <CUDAImage/CUDAImage.h>
+#include <CUDAImage/LightweightCUDAImage.h>
+#include <cuda_gl_interop.h>
 
 
 //-----------------------------------------------------------------------------
@@ -63,6 +66,16 @@ struct CUDAInterop
     delete m_FBOAdaptor;
   }
 };
+
+
+//-----------------------------------------------------------------------------
+VLQt4Widget::TextureDataPOD::TextureDataPOD()
+  : m_LastUpdatedID(0)
+  , m_CUDARes(0)
+{
+}
+
+
 #else
 // empty dummy, in case we have no cuda
 struct CUDAInterop { };
@@ -94,6 +107,27 @@ VLQt4Widget::~VLQt4Widget()
 
   dispatchDestroyEvent();
 
+
+#ifdef _USE_CUDA
+  {
+    for (std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+    {
+      if (i->second.m_CUDARes != 0)
+      {
+        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+        if (err != cudaSuccess)
+        {
+          MITK_WARN << "Failed to unregister VL texture from CUDA";
+        }
+      }
+
+      i = m_NodeToTextureMap.erase(i);
+    }
+  }
+#endif
+
+  // if no cuda is available then this is most likely a nullptr.
+  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
   delete m_CUDAInteropPimpl;
 }
 
@@ -488,6 +522,9 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
+#ifdef _USE_CUDA
+  CUDAImage::Pointer      cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
+#endif
 
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -508,6 +545,16 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
     newActor = AddSurfaceActor(mitkSurf);
     namePostFix = "_surface";
   }
+#ifdef _USE_CUDA
+  else
+  if (cudaImg.IsNotNull())
+  {
+    newActor = AddCUDAImageActor(cudaImg);
+    namePostFix = "_cudaimage";
+
+    m_NodeToTextureMap[node] = TextureDataPOD();
+  }
+#endif
 
   if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
   {
@@ -542,12 +589,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
-
+  bool  isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  bool  isVisble = visibleProp->GetValue();
+  if (visibleProp != 0)
+    isVisble = visibleProp->GetValue();
 
+  float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  float opacity = opacityProp->GetValue();
+  if (opacityProp != 0)
+    opacity = opacityProp->GetValue();
   // if object is too translucent to not have a effect after blending then just skip it.
   if (opacity < (1.0f / 255.0f))
     isVisble = false;
@@ -560,15 +610,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
   {
     vlActor->setEnableMask(0xFFFFFFFF);
 
+    vl::fvec4 color(1, 1, 1, opacity);
     mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
-    mitk::Color mitkColor = colorProp->GetColor();
-
-    vl::fvec4 color;
-    color[0] = mitkColor[0];
-    color[1] = mitkColor[1];
-    color[2] = mitkColor[2];
-    color[3] = opacity;
-
+    if (colorProp != 0)
+    {
+      mitk::Color mitkColor = colorProp->GetColor();
+      color[0] = mitkColor[0];
+      color[1] = mitkColor[1];
+      color[2] = mitkColor[2];
+    }
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
@@ -614,6 +664,106 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
         fx->shader()->gocMaterial()->setTransparency(1);
       }
     }
+
+#ifdef _USE_CUDA
+    bool    isCUDAImage = false;
+    CUDAImage::Pointer cudaimg = dynamic_cast<CUDAImage*>(node->GetData());
+    if (cudaimg.IsNotNull())
+    {
+      isCUDAImage = cudaimg->GetLightweightCUDAImage().GetId() != 0;
+    }
+    if (isCUDAImage)
+    {
+      // whatever we had cached from a previous frame.
+      TextureDataPOD          texpod    = m_NodeToTextureMap[node];
+      LightweightCUDAImage    cudaImage = cudaimg->GetLightweightCUDAImage();
+      // only need to update the vl texture, if content in our cuda buffer has changed.
+      // and the cuda buffer can change only when we have a different id.
+      if (texpod.m_LastUpdatedID != cudaImage.GetId())
+      {
+        cudaError_t   err = cudaSuccess;
+        bool          neednewvltexture = texpod.m_Texture.get() == 0;
+
+        // check if vl-texture size needs to change
+        if (texpod.m_Texture.get() != 0)
+        {
+          neednewvltexture |= cudaImage.GetWidth()  != texpod.m_Texture->width();
+          neednewvltexture |= cudaImage.GetHeight() != texpod.m_Texture->height();
+        }
+
+        if (neednewvltexture)
+        {
+          if (texpod.m_CUDARes)
+          {
+            err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
+            texpod.m_CUDARes = 0;
+            if (err != cudaSuccess)
+            {
+              MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
+            }
+          }
+
+          texpod.m_Texture = new vl::Texture(cudaImage.GetWidth(), cudaImage.GetHeight(), vl::TF_RGBA8, false);
+
+          assert(m_NodeToActorMap.find(node) != m_NodeToActorMap.end());
+          m_NodeToActorMap[node]->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+
+          err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
+          if (err != cudaSuccess)
+          {
+            texpod.m_CUDARes = 0;
+            MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
+          }
+        }
+
+
+        if (texpod.m_CUDARes)
+        {
+          CUDAManager*    cudamng   = CUDAManager::GetInstance();
+          cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
+          ReadAccessor    inputRA   = cudamng->RequestReadAccess(cudaImage);
+
+          // make sure procuder of the cuda-image finished.
+          err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
+          if (err != cudaSuccess)
+          {
+            // flood the log
+            MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+          }
+
+          // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
+          err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
+          if (err == cudaSuccess)
+          {
+            cudaArray_t   arr = 0;
+            err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+            if (err == cudaSuccess)
+            {
+              // FIXME: sanity check: array should have some dimensions as our (cpu-side) texture object.
+
+              err = cudaMemcpyToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, cudaImage.GetWidth() * cudaImage.GetHeight() * 4, cudaMemcpyDeviceToDevice, mystream);
+              if (err == cudaSuccess)
+              {
+                texpod.m_LastUpdatedID = cudaImage.GetId();
+              }
+            }
+
+            err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
+            if (err != cudaSuccess)
+            {
+              MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
+            }
+          }
+        }
+
+        // update cache, even if something went wrong.
+        m_NodeToTextureMap[node] = texpod;
+
+        // helps with debugging
+        fx->shader()->disable(vl::EN_CULL_FACE);
+      }
+    }
+#endif
   }
 }
 
@@ -640,6 +790,25 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 
   m_SceneManager->tree()->eraseActor(vlActor.get());
   m_NodeToActorMap.erase(it);
+
+#ifdef _USE_CUDA
+  {
+    std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
+    if (i != m_NodeToTextureMap.end())
+    {
+      if (i->second.m_CUDARes != 0)
+      {
+        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+        if (err != cudaSuccess)
+        {
+          MITK_WARN << "Failed to unregister VL texture from CUDA";
+        }
+      }
+
+      m_NodeToTextureMap.erase(i);
+    }
+  }
+#endif
 }
 
 
@@ -682,9 +851,63 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[surfActor] = vlSurf;
 
+  // FIXME: should go somewhere else
   m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
 
   return surfActor;
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const CUDAImage* cudaImg)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+#ifdef _USE_CUDA
+  vl::mat4  mat;
+  mat.setIdentity();
+
+  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  mitk::Geometry3D*     geom = cudaImg->GetGeometry();
+  if (geom != 0)
+  {
+    vtkLinearTransform*   vtktxf = geom->GetVtkTransform();
+    if (vtktxf != 0)
+    {
+      vtktxf->GetMatrix(geometryTransformMatrix);
+      for (int i = 0; i < 4; i++)
+      {
+        for (int j = 0; j < 4; j++)
+        {
+          double val = geometryTransformMatrix->GetElement(i, j);
+          mat.e(i, j) = val;
+        }
+      }
+    }
+  }
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  tr->setLocalMatrix(mat);
+
+
+  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  // UpdateDataNode() takes care of assigning colour etc.
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlquad;
+
+  // FIXME: should go somewhere else
+  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+
+  return actor;
+
+#else
+  throw std::runtime_error("No CUDA-support enabled at compile time!");
+#endif
 }
 
 
@@ -1309,7 +1532,7 @@ void VLQt4Widget::swapBuffers()
 
     // side note: cuda-arrays are always measured in bytes, never in pixels.
     err = cudaMemcpyFromArrayAsync(outputWA.m_DevicePointer, fboarr, 0, 0, QWidget::width() * QWidget::height() * 4, cudaMemcpyDeviceToDevice, mystream);
-    // not sure what to do if it fails. do not throw and exception, that's for sure.
+    // not sure what to do if it fails. do not throw an exception, that's for sure.
     assert(err == cudaSuccess);
 
     m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
@@ -1324,7 +1547,7 @@ void VLQt4Widget::swapBuffers()
       node = mitk::DataNode::New();
       node->SetName(m_CUDAInteropPimpl->m_NodeName);
       node->SetVisibility(false);
-      node->SetBoolProperty("helper object", true);
+      //node->SetBoolProperty("helper object", true);
     }
     CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
     if (img.IsNull())
@@ -1333,6 +1556,9 @@ void VLQt4Widget::swapBuffers()
     node->SetData(img);
     if (isNewNode)
       m_CUDAInteropPimpl->m_DataStorage->Add(node);
+    else
+      // FIXME: this does not trigger a call into UpdateDataNode()!
+      node->Modified();
   }
 #endif
 }

@@ -90,12 +90,6 @@ struct ModuleCleanup
   }
 };
 
-} // namespace
-
-// remember: objects at file scope are constructed and cleared up in the order of declaration.
-// so this one will be done before the lock above goes away.
-impldetail::ModuleCleanup       s_ModuleCleaner;
-
 
 /**
  * @internal
@@ -107,6 +101,13 @@ struct StreamCallbackReleasePOD
   CUDAManager*        m_Manager;
   unsigned int        m_Id;
 };
+
+} // namespace
+
+
+// remember: objects at file scope are constructed and cleared up in the order of declaration.
+// so this one will be done before the lock above goes away.
+impldetail::ModuleCleanup       s_ModuleCleaner;
 
 
 //-----------------------------------------------------------------------------
@@ -134,6 +135,7 @@ CUDAManager* CUDAManager::GetInstance()
 CUDAManager::CUDAManager()
   // zero is not a valid id, but it's good for init: we'll inc this one and the first valid id is then 1.
   : m_LastIssuedId(0)
+  , m_AutoreleaseQueue(100)   // arbitrary size
 {
 
 }
@@ -238,9 +240,14 @@ cudaStream_t CUDAManager::GetStream(const std::string& name)
 //-----------------------------------------------------------------------------
 WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype)
 {
+  // FIXME: figure out how to best deal with pixel types.
+
+
   QMutexLocker    lock(&s_Lock);
 
-  // FIXME: figure out how to best deal with pixel types.
+  // use this opportunity to clear up auto-released but dangling images.
+  // (could be called without the lock held.)
+  ProcessAutoreleaseQueue();
 
   // round up the length of a line of pixels to make sure access is aligned.
   unsigned int  bytepitch = width * FIXME_pixeltype;
@@ -305,6 +312,9 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     // so these should get a new id.
     ++m_LastIssuedId;
     i->m_Id = m_LastIssuedId;
+    // also dont forget to update the size: our recycled image may have a different size than what is requested right now.
+    i->m_Width      = width;
+    i->m_Height     = height;
   }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
@@ -436,7 +446,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
 
   // the image represented by readAccessor can only be released once the kernel has finished with it.
   // queueing a callback onto the stream will tell us when.
-  StreamCallbackReleasePOD*   pod = new StreamCallbackReleasePOD;
+  impldetail::StreamCallbackReleasePOD*   pod = new impldetail::StreamCallbackReleasePOD;
   pod->m_Manager = this;
   pod->m_Id      = readAccessor.m_Id;
 
@@ -458,7 +468,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
 
 
 //-----------------------------------------------------------------------------
-void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCallback)
+void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
 {
   QMutexLocker    lock(&s_Lock);
 
@@ -473,15 +483,8 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCall
   // queueing a kernel, finalising, and immediately dropping the result.
   // that would trigger a call to here, but the queued kernel is still running so the image
   // is not available yet!
-  if (!fromStreamCallback)
-  {
-    // as this function can also be called from a stream-callback (on which we are not allowed
-    // to call any cuda api functions!) we need to guard for that case.
-    // on stream-callback there is no need to sync on the ready-event: we know it's ready because
-    // the callback happens after event signaling.
-    cudaError_t err = cudaEventSynchronize(lwci.m_ReadyEvent);
-    assert(err == cudaSuccess);
-  }
+  cudaError_t err = cudaEventSynchronize(lwci.m_ReadyEvent);
+  assert(err == cudaSuccess);
 
   std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
   freeList.insert(freeList.begin(), lwci);
@@ -498,13 +501,11 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCall
 //-----------------------------------------------------------------------------
 void CUDART_CB CUDAManager::StreamCallback(cudaStream_t stream, cudaError_t status, void* userData)
 {
-  StreamCallbackReleasePOD*   pod = (StreamCallbackReleasePOD*) userData;
+  impldetail::StreamCallbackReleasePOD*   pod = (impldetail::StreamCallbackReleasePOD*) userData;
 
-  pod->m_Manager->ReleaseReadAccess(pod->m_Id);
-
-  // every callback is guaranteed to be executed only once. (says the cuda doc.)
-  // so we are safe to free the memory.
-  delete pod;
+  // remember: we jump through the stream-callback hoop so that we can be sure the kernel has finished
+  // reading from it.
+  pod->m_Manager->m_AutoreleaseQueue.push(pod);
 }
 
 
@@ -521,6 +522,25 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
   bool dead = !i->second.m_RefCount->deref();
   if (dead)
   {
-    AllRefsDropped(i->second, true);
+    AllRefsDropped(i->second);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::ProcessAutoreleaseQueue()
+{
+  // dont grab s_Lock here. ReleaseReadAccess() will lock itself.
+  // and if called synchronously from RequestOutputImage() then that will/might have locked already.
+  // and if called async from (a not yet existing) worker-thread then not locking will... prob do nothing to improve anthing...
+
+  impldetail::StreamCallbackReleasePOD*   pod = 0;
+  while (m_AutoreleaseQueue.pop(pod))
+  {
+    assert(pod->m_Manager == this);
+    ReleaseReadAccess(pod->m_Id);
+
+    delete pod;
+  }
+
 }
