@@ -312,6 +312,9 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     // so these should get a new id.
     ++m_LastIssuedId;
     i->m_Id = m_LastIssuedId;
+    // also dont forget to update the size: our recycled image may have a different size than what is requested right now.
+    i->m_Width      = width;
+    i->m_Height     = height;
   }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
