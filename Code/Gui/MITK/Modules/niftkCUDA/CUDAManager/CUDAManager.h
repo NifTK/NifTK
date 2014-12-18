@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <boost/lockfree/queue.hpp>
 
 
 // FIXME: not yet implemented
@@ -71,6 +72,7 @@ struct WriteAccessor
 namespace impldetail
 {
 struct ModuleCleanup;
+struct StreamCallbackReleasePOD;
 }
 
 
@@ -182,6 +184,7 @@ private:
    * The callback is queued by FinaliseAndAutorelease() to release an image.
    * Note: this callback will block work on the stream, therefore the image-ready-events are
    * triggered before the callback so that work on other streams can proceed in parallel.
+   * @internal
    */
   static void CUDART_CB StreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
 
@@ -189,8 +192,15 @@ private:
   /**
    * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
    * a previously requested image.
+   * @internal
    */
   void ReleaseReadAccess(unsigned int id);
+
+  /**
+   * Called at opportune moments to free up items on m_AutoreleaseQueue.
+   * @internal
+   */
+  void ProcessAutoreleaseQueue();
 
 
   static CUDAManager*           s_Instance;
@@ -209,6 +219,9 @@ private:
   std::map<unsigned int, LightweightCUDAImage>    m_ValidImages;
 
   std::map<std::string, cudaStream_t>     m_Streams;
+
+  // the auto-release callback cannot acquire s_Lock because that will deadlock within the cuda driver.
+  boost::lockfree::queue<impldetail::StreamCallbackReleasePOD*>     m_AutoreleaseQueue;
 };
 
 

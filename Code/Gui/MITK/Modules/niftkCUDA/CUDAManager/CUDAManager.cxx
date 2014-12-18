@@ -90,12 +90,6 @@ struct ModuleCleanup
   }
 };
 
-} // namespace
-
-// remember: objects at file scope are constructed and cleared up in the order of declaration.
-// so this one will be done before the lock above goes away.
-impldetail::ModuleCleanup       s_ModuleCleaner;
-
 
 /**
  * @internal
@@ -107,6 +101,13 @@ struct StreamCallbackReleasePOD
   CUDAManager*        m_Manager;
   unsigned int        m_Id;
 };
+
+} // namespace
+
+
+// remember: objects at file scope are constructed and cleared up in the order of declaration.
+// so this one will be done before the lock above goes away.
+impldetail::ModuleCleanup       s_ModuleCleaner;
 
 
 //-----------------------------------------------------------------------------
@@ -134,6 +135,7 @@ CUDAManager* CUDAManager::GetInstance()
 CUDAManager::CUDAManager()
   // zero is not a valid id, but it's good for init: we'll inc this one and the first valid id is then 1.
   : m_LastIssuedId(0)
+  , m_AutoreleaseQueue(100)   // arbitrary size
 {
 
 }
@@ -238,9 +240,14 @@ cudaStream_t CUDAManager::GetStream(const std::string& name)
 //-----------------------------------------------------------------------------
 WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype)
 {
+  // FIXME: figure out how to best deal with pixel types.
+
+
   QMutexLocker    lock(&s_Lock);
 
-  // FIXME: figure out how to best deal with pixel types.
+  // use this opportunity to clear up auto-released but dangling images.
+  // (could be called without the lock held.)
+  ProcessAutoreleaseQueue();
 
   // round up the length of a line of pixels to make sure access is aligned.
   unsigned int  bytepitch = width * FIXME_pixeltype;
@@ -436,7 +443,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
 
   // the image represented by readAccessor can only be released once the kernel has finished with it.
   // queueing a callback onto the stream will tell us when.
-  StreamCallbackReleasePOD*   pod = new StreamCallbackReleasePOD;
+  impldetail::StreamCallbackReleasePOD*   pod = new impldetail::StreamCallbackReleasePOD;
   pod->m_Manager = this;
   pod->m_Id      = readAccessor.m_Id;
 
@@ -498,20 +505,17 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCall
 //-----------------------------------------------------------------------------
 void CUDART_CB CUDAManager::StreamCallback(cudaStream_t stream, cudaError_t status, void* userData)
 {
-  StreamCallbackReleasePOD*   pod = (StreamCallbackReleasePOD*) userData;
+  impldetail::StreamCallbackReleasePOD*   pod = (impldetail::StreamCallbackReleasePOD*) userData;
 
-  pod->m_Manager->ReleaseReadAccess(pod->m_Id);
-
-  // every callback is guaranteed to be executed only once. (says the cuda doc.)
-  // so we are safe to free the memory.
-  delete pod;
+  // remember: we jump through the stream-callback hoop so that we can be sure the kernel has finished
+  // reading from it.
+  pod->m_Manager->m_AutoreleaseQueue.push(pod);
 }
 
 
 //-----------------------------------------------------------------------------
 void CUDAManager::ReleaseReadAccess(unsigned int id)
 {
-  // FIXME: cannot grab a lock here! instead post a callback onto our thread.
   QMutexLocker    lock(&s_Lock);
 
   std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(id);
@@ -524,4 +528,21 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
   {
     AllRefsDropped(i->second, true);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::ProcessAutoreleaseQueue()
+{
+  // dont grab s_Lock here. ReleaseReadAccess() will lock itself.
+  // and if called synchronously from RequestOutputImage() then that will/might have locked already.
+  // and if called async from (a not yet existing) worker-thread then not locking will... prob do nothing to improve anthing...
+
+  impldetail::StreamCallbackReleasePOD*   pod = 0;
+  while (m_AutoreleaseQueue.pop(pod))
+  {
+    assert(pod->m_Manager == this);
+    ReleaseReadAccess(pod->m_Id);
+  }
+
 }
