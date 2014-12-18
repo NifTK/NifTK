@@ -681,7 +681,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 
           assert(m_NodeToActorMap.find(node) != m_NodeToActorMap.end());
           m_NodeToActorMap[node]->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-
+          //m_NodeToActorMap[node]->effect()->shader()->enable(vl::EN_);
 
           err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
           if (err != cudaSuccess)
@@ -691,11 +691,43 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
           }
         }
 
-        // FIXME: map vl texture
 
+        if (texpod.m_CUDARes)
+        {
+          CUDAManager*    cudamng   = CUDAManager::GetInstance();
+          cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
+          ReadAccessor    inputRA   = cudamng->RequestReadAccess(cudaImage);
 
-        // everything good, update cache.
+          // make sure procuder of the cuda-image finished.
+          err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
+          if (err != cudaSuccess)
+          {
+            // flood the log
+            MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+          }
+
+          // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
+          err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
+          if (err == cudaSuccess)
+          {
+            cudaArray_t   arr = 0;
+            err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+
+            // FIXME: sanity check: array should have some dimensions as our (cpu-side) texture object.
+
+            err = cudaMemcpyToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, cudaImage.GetWidth() * cudaImage.GetHeight() * 4, cudaMemcpyDeviceToDevice, mystream);
+
+            err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
+
+            texpod.m_LastUpdatedID = cudaImage.GetId();
+          }
+        }
+
+        // update cache, even if something went wrong.
         m_NodeToTextureMap[node] = texpod;
+
+        // helps with debugging
+        fx->shader()->disable(vl::EN_CULL_FACE);
       }
     }
 #endif
@@ -808,7 +840,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const CUDAImage* cudaImg)
   tr->setLocalMatrix(mat);
 
 
-  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1, 1, 2, 2, true);
+  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   // UpdateDataNode() takes care of assigning colour etc.
@@ -1472,6 +1504,9 @@ void VLQt4Widget::swapBuffers()
     node->SetData(img);
     if (isNewNode)
       m_CUDAInteropPimpl->m_DataStorage->Add(node);
+    else
+      // FIXME: this does not trigger a call into UpdateDataNode()!
+      node->Modified();
   }
 #endif
 }
