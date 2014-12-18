@@ -712,14 +712,22 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
           {
             cudaArray_t   arr = 0;
             err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+            if (err == cudaSuccess)
+            {
+              // FIXME: sanity check: array should have some dimensions as our (cpu-side) texture object.
 
-            // FIXME: sanity check: array should have some dimensions as our (cpu-side) texture object.
-
-            err = cudaMemcpyToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, cudaImage.GetWidth() * cudaImage.GetHeight() * 4, cudaMemcpyDeviceToDevice, mystream);
+              err = cudaMemcpyToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, cudaImage.GetWidth() * cudaImage.GetHeight() * 4, cudaMemcpyDeviceToDevice, mystream);
+              if (err == cudaSuccess)
+              {
+                texpod.m_LastUpdatedID = cudaImage.GetId();
+              }
+            }
 
             err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-
-            texpod.m_LastUpdatedID = cudaImage.GetId();
+            if (err != cudaSuccess)
+            {
+              MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
+            }
           }
         }
 
