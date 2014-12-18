@@ -663,7 +663,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
         cudaError_t   err = cudaSuccess;
         bool          neednewvltexture = texpod.m_Texture.get() == 0;
 
-        // FIXME: check if vl-texture size needs to change
+        // check if vl-texture size needs to change
+        if (texpod.m_Texture.get() != 0)
+        {
+          neednewvltexture |= cudaImage.GetWidth()  != texpod.m_Texture->width();
+          neednewvltexture |= cudaImage.GetHeight() != texpod.m_Texture->height();
+        }
 
         if (neednewvltexture)
         {
@@ -681,7 +686,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 
           assert(m_NodeToActorMap.find(node) != m_NodeToActorMap.end());
           m_NodeToActorMap[node]->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-          //m_NodeToActorMap[node]->effect()->shader()->enable(vl::EN_);
 
           err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
           if (err != cudaSuccess)
