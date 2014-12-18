@@ -107,6 +107,27 @@ VLQt4Widget::~VLQt4Widget()
 
   dispatchDestroyEvent();
 
+
+#ifdef _USE_CUDA
+  {
+    for (std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+    {
+      if (i->second.m_CUDARes != 0)
+      {
+        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+        if (err != cudaSuccess)
+        {
+          MITK_WARN << "Failed to unregister VL texture from CUDA";
+        }
+      }
+
+      i = m_NodeToTextureMap.erase(i);
+    }
+  }
+#endif
+
+  // if no cuda is available then this is most likely a nullptr.
+  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
   delete m_CUDAInteropPimpl;
 }
 
@@ -769,6 +790,25 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 
   m_SceneManager->tree()->eraseActor(vlActor.get());
   m_NodeToActorMap.erase(it);
+
+#ifdef _USE_CUDA
+  {
+    std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
+    if (i != m_NodeToTextureMap.end())
+    {
+      if (i->second.m_CUDARes != 0)
+      {
+        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+        if (err != cudaSuccess)
+        {
+          MITK_WARN << "Failed to unregister VL texture from CUDA";
+        }
+      }
+
+      m_NodeToTextureMap.erase(i);
+    }
+  }
+#endif
 }
 
 
