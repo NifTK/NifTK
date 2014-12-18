@@ -465,7 +465,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
 
 
 //-----------------------------------------------------------------------------
-void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCallback)
+void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
 {
   QMutexLocker    lock(&s_Lock);
 
@@ -480,15 +480,8 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCall
   // queueing a kernel, finalising, and immediately dropping the result.
   // that would trigger a call to here, but the queued kernel is still running so the image
   // is not available yet!
-  if (!fromStreamCallback)
-  {
-    // as this function can also be called from a stream-callback (on which we are not allowed
-    // to call any cuda api functions!) we need to guard for that case.
-    // on stream-callback there is no need to sync on the ready-event: we know it's ready because
-    // the callback happens after event signaling.
-    cudaError_t err = cudaEventSynchronize(lwci.m_ReadyEvent);
-    assert(err == cudaSuccess);
-  }
+  cudaError_t err = cudaEventSynchronize(lwci.m_ReadyEvent);
+  assert(err == cudaSuccess);
 
   std::list<LightweightCUDAImage>&  freeList = m_AvailableImagePool[SizeToTier(lwci.m_SizeInBytes)];
   freeList.insert(freeList.begin(), lwci);
@@ -526,7 +519,7 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
   bool dead = !i->second.m_RefCount->deref();
   if (dead)
   {
-    AllRefsDropped(i->second, true);
+    AllRefsDropped(i->second);
   }
 }
 
@@ -543,6 +536,8 @@ void CUDAManager::ProcessAutoreleaseQueue()
   {
     assert(pod->m_Manager == this);
     ReleaseReadAccess(pod->m_Id);
+
+    delete pod;
   }
 
 }
