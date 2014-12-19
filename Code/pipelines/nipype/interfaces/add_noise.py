@@ -95,7 +95,6 @@ class NoiseAdder(BaseInterface):
         noise_type = self.inputs.noise_type
         sigma_val = self.inputs.sigma_val
         out_file = self._list_outputs()['out_file']
-        print out_file
         mask_file = self.inputs.mask_file
 
         nib_output = apply_noise(in_file, mask_file, noise_type, sigma_val)

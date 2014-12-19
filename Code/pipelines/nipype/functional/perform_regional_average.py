@@ -5,11 +5,12 @@ import nipype.interfaces.io             as nio          # Input Output
 import nipype.pipeline.engine           as pe           # pypeline engine
 from regional_average                   import create_reg_avg_value_pipeline
 from nipype                             import config, logging
-from distutils                          import spawn
+from distutils.spawn                    import find_executable
 
 import sys
 import glob
 import os
+import shutil
 import textwrap
 import argparse
 
@@ -86,13 +87,16 @@ class reg_avg_value_variables():
             default='', required=False)
         self.parser.add_argument('--output_suf',dest='output_suf', type=str, \
             metavar='suffix', help='Output result suffix', \
-            default='', required=False)
+            default='', required=False)            
+        self.parser.add_argument('--keep_temp',dest='keep_temp', action='store_const', \
+            default=False, const=True, help='to keep the temporary files', \
+            required=False)
         """ Processing options"""
         self.parser.add_argument('--use_aff',dest='affine_flag', action='store_const', \
             default=False, const=True, help='use an affine registration '+ \
             'between the function image and MRI. Rigid is used by default. This'+ \
             'option is only used when no input transformations are specified', \
-            required=False)        
+            required=False)
         self.parser.add_argument('--roi', metavar='roi', nargs=1, type=str, \
             choices=self.roi_choices, default=[self.roi_choices[0]], \
             help='ROI to use to perform the function image intensities normalisation. ' + \
@@ -106,6 +110,12 @@ class reg_avg_value_variables():
         self.parser.add_argument('--smoo', metavar='value', type=float, \
             default=0, help='FWHM of the Gaussian kernel to apply to the '+ \
             'input functional images. No Smoothing is applied by default.')
+        self.parser.add_argument('--freepar',dest='input_freesurfer_par', type=str, nargs='+', \
+            metavar='image', help='Freesurfer parcelation image or list of freesurfer parcelation images', \
+            required=False)
+        self.parser.add_argument('--input_freepar_dir',dest='input_freesurfer_par_dir', type=str, \
+            metavar='directory', help='Input directory containing freesurfer parcelation images', \
+            required=False)
     def reg_avg_value_parse_arguments(self):
         args=self.parser.parse_args()
         # Perform some checks
@@ -148,11 +158,17 @@ class reg_avg_value_variables():
             self.input_trans=glob.glob(args.input_trans_dir).sort()
         self.output_folder=args.output_dir
         self.output_prefix=args.output_pre
-        self.output_suffix=args.output_suf
-        self.func_mri_use_affine=args.affine_flag        
+        self.output_suffix=args.output_suf    
+        self.keep_temp=args.keep_temp
+        self.func_mri_use_affine=args.affine_flag
         self.roi=args.roi[0]
         self.seg_threshold=args.thr[0]
         self.fwhm=args.smoo
+        self.input_freesurfer_par=[]
+        if args.input_freesurfer_par:
+            self.input_freesurfer_par=args.input_freesurfer_par
+        elif args.input_freesurfer_par_dir:
+            self.input_freesurfer_par=get_all_images_in_directory(args.input_freesurfer_par_dir)
         if len(self.input_img)==0:
             print('No input image has been specified')
             sys.exit(1)        
@@ -176,7 +192,11 @@ class reg_avg_value_variables():
             'to be identical to the number of functional/MRI images (' + \
             str(len(self.input_mri))+' vs '+str(len(self.input_trans))+')')
             sys.exit(1)
-
+        if not len(self.input_img)==len(self.input_freesurfer_par) and len(self.input_freesurfer_par) > 0:
+            print('The number of freesurfer parcelation is expected ' + \
+            'to be identical to the number of functional/MRI images (' + \
+            str(len(self.input_freesurfer_par))+' vs '+str(len(self.input_mri))+')')
+            sys.exit(1)
 
 def gen_substitutions(functional_files, mri_files, roi, prefix, suffix):    
     from nipype.utils.filemanip import split_filename
@@ -192,6 +212,8 @@ def gen_substitutions(functional_files, mri_files, roi, prefix, suffix):
                      prefix+'suvr_'+roi+'_'+func_bn+suffix))
         subs.append((mri_bn+'_aff', \
                      prefix+'ref_'+func_bn+'_flo_'+mri_bn+'_aff'+suffix))
+        subs.append(('freesurfer_array_'+str(i), \
+                     prefix+'suvr_'+roi+'_freesurfer_'+func_bn+suffix))
     return subs
     
 """
@@ -238,15 +260,21 @@ def main():
     workflow.connect(reg_avg_value_pipeline, 'output_node.out_files', ds, '@out')
     workflow.connect(reg_avg_value_pipeline, 'output_node.norm_files', ds, '@norm')
     workflow.connect(reg_avg_value_pipeline, 'output_node.aff_files', ds, '@aff')
+    if len(reg_avg_value_var.input_freesurfer_par) > 0:
+        workflow.connect(reg_avg_value_pipeline, 'output_node.freesurfer_out_files', ds, '@fs')
     
     # Run the overall workflow
-#     workflow.write_graph(graph2use='colored')
-    qsub_exec=spawn.find_executable('qsub')
+#    workflow.write_graph(graph2use='colored')
+    qsub_exec=find_executable('qsub')
     if not qsub_exec == None:
         qsubargs='-l h_rt=01:00:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=1.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
         workflow.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
     else:
         workflow.run(plugin='MultiProc')
+    
+    if reg_avg_value_var.keep_temp == False:
+        os.remove(reg_avg_value_var.output_folder+'/pypeline.lock')
+        shutil.rmtree(reg_avg_value_var.output_folder+'/reg_avg_value')
     
 if __name__ == "__main__":
     main()

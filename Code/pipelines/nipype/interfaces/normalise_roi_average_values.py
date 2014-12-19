@@ -27,9 +27,6 @@ class NormaliseRoiAverageValuesOutputSpec(TraitedSpec):
         "label index, mean value, std value, roi volume in mm")
     out_file = File(desc="Output array organised as follow: "+ \
         "label index, mean value, std value, roi volume in mm")
-    test_roi1=File()
-    test_roi2=File()
-    test_roi3=File()
 
 
 class NormaliseRoiAverageValues(BaseInterface):
@@ -82,7 +79,7 @@ class NormaliseRoiAverageValues(BaseInterface):
             normalisation_value=in_array[i,1]
         elif norm_roi=='cereb':
             total_volume=0.0
-            for label in [39,40,41,42,72,73,74]:
+            for label in self.cereb_list:
                 i=np.where(in_array[:,0]==label)[0]
                 normalisation_value=normalisation_value+in_array[i,1]*in_array[i,3]
                 total_volume=total_volume+in_array[i,3]
