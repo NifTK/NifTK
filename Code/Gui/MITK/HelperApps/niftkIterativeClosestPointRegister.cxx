@@ -14,16 +14,16 @@
 
 #include <cstdlib>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <vtkTransform.h>
+#include <vtkSmartPointer.h>
+#include <vtkMinimalStandardRandomSequence.h>
 #include <mitkTestingMacros.h>
-#include <mitkSurfaceBasedRegistration.h>
 #include <mitkPointSetReader.h>
 #include <mitkSTLFileReader.h>
 #include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
-#include <vtkTransform.h>
-#include <vtkSmartPointer.h>
-#include <vtkMinimalStandardRandomSequence.h>
+#include <mitkSurfaceBasedRegistration.h>
 #include <niftkIterativeClosestPointRegisterCLP.h>
 
 int main(int argc, char** argv)

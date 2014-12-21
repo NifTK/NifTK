@@ -16,12 +16,12 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkPointSetReader.h>
 #include <mitkPointSetWriter.h>
-#include <mitkPointUtils.h>
-
-#include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
+
+#include <niftkVTKFunctions.h>
+#include <mitkPointUtils.h>
 #include <niftkPointSetTransformCLP.h>
 
 int main(int argc, char** argv)

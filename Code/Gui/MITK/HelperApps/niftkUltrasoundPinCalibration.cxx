@@ -14,12 +14,13 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkUltrasoundPinCalibration.h>
-#include <niftkUltrasoundPinCalibrationCLP.h>
 #include <mitkVector.h>
+#include <mitkExceptionMacro.h>
+
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkTrackingAndTimeStampsContainer.h>
-#include <mitkExceptionMacro.h>
+#include <mitkUltrasoundPinCalibration.h>
+#include <niftkUltrasoundPinCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {

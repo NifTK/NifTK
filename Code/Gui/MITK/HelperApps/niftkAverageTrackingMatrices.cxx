@@ -15,15 +15,16 @@
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
-#include <iostream>
 #include <sstream>
-#include <niftkAverageTrackingMatricesCLP.h>
-#include <niftkFileHelper.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <mitkExceptionMacro.h>
+#include <iostream>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkExceptionMacro.h>
+
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkFileIOUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkAverageTrackingMatricesCLP.h>
 
 int main(int argc, char** argv)
 {

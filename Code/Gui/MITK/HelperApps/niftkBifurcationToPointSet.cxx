@@ -12,16 +12,17 @@
 
 =============================================================================*/
 
-#include <niftkBifurcationToPointSetCLP.h>
-#include <mitkExceptionMacro.h>
-#include <mitkPointSet.h>
-#include <mitkIOUtil.h>
-#include <mitkBifurcationToPointSet.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkTubeFilter.h>
 #include <vtkTriangleFilter.h>
+#include <mitkExceptionMacro.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
+
+#include <mitkBifurcationToPointSet.h>
+#include <niftkBifurcationToPointSetCLP.h>
 
 int main(int argc, char** argv)
 {

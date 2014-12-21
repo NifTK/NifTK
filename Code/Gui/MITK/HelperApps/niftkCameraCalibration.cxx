@@ -15,11 +15,12 @@
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
+#include <mitkVector.h>
+
 #include <mitkCameraCalibrationFromDirectory.h>
 #include <mitkStereoCameraCalibration.h>
-#include <niftkCameraCalibrationCLP.h>
-#include <mitkVector.h>
 #include <niftkFileHelper.h>
+#include <niftkCameraCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {

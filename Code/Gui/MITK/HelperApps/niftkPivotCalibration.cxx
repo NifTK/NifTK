@@ -14,12 +14,13 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkPivotCalibration.h>
-#include <niftkPivotCalibrationCLP.h>
-#include <mitkVector.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
+#include <mitkVector.h>
+
 #include <niftkVTKFunctions.h>
+#include <mitkPivotCalibration.h>
+#include <niftkPivotCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {
