@@ -1533,6 +1533,24 @@ int main( int argc, char *argv[] )
 
         if ( args.foutOutputCSV )
         {
+          if ( flgVeryFirstRow )    // Include the title row?
+          {
+            *args.foutOutputCSV << "Study ID, "
+                                << "Number of left breast voxels, "
+                                << "Volume of left breast (mm^3), "
+                                << "Density of left breast (fraction of glandular tissue), "
+              
+                                << "Number of right breast voxels, "
+                                << "Volume of right breast (mm^3), "
+                                << "Density of right breast (fraction of glandular tissue), "
+              
+                                << "Total number of breast voxels, "
+                                << "Total volume of both breasts (mm^3), "
+                                << "Combined density of both breasts (fraction of glandular tissue)" 
+                                << std::endl;
+            flgVeryFirstRow = false;
+          }
+
           *args.foutOutputCSV << dirBaseName << ", "
                               << nLeftVoxels << ", "
                               << leftBreastVolume << ", "

@@ -236,7 +236,6 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to normalize</li>
-   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
    <li><i>Output image</i>, select the name and the directory of the output file where the normalized image will be recorded.</li>
@@ -338,6 +337,14 @@ ATLAS_IMAGE=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard
 N3_bfc=True
 # If no arguments, we print usage message
 if arg <= 4: 
+	i=1
+	while i < arg:
+		# Clean unnecessary whitespaces
+		argv[i]=argv[i].strip()
+		if argv[i].upper() in ['--XML','-XML']: 
+			usage(xml,0)
+		i=i+1
+	# end while
 	usage(help)
 
 i=1

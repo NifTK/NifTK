@@ -15,7 +15,6 @@
 
 set(Eigen_FOUND 0)
 set(Eigen_DIR @Eigen_DIR@)
-if(Eigen_DIR)
-  #set(Eigen_INCLUDE_DIR ${Eigen_DIR})
+if(Eigen_DIR AND EXISTS "@Eigen_DIR@")
   set(Eigen_FOUND 1)
 endif()

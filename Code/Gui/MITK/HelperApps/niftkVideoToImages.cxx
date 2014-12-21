@@ -14,13 +14,14 @@
 
 #include <cstdlib>
 #include <limits>
+#include <fstream>
+#include <mitkExceptionMacro.h>
+
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkVideoToImagesCLP.h>
-#include <mitkExceptionMacro.h>
 
-#include <fstream>
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
