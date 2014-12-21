@@ -37,7 +37,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <mitkGeometry3D.h>
+#include <mitkBaseGeometry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <QmitkRenderWindow.h>

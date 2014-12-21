@@ -19,7 +19,8 @@
 
 #include <deque>
 
-#include <mitkGeometry3D.h>
+#include <mitkDataStorage.h>
+#include <mitkBaseGeometry.h>
 #include <mitkTimeGeometry.h>
 #include <mitkRenderingManager.h>
 #include <QmitkRenderWindow.h>

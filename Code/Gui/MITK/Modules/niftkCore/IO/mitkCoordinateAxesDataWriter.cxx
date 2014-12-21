@@ -171,5 +171,12 @@ std::vector<std::string> CoordinateAxesDataWriter::GetPossibleFileExtensions()
   return possibleFileExtensions;
 }
 
+
+//-----------------------------------------------------------------------------
+std::string mitk::CoordinateAxesDataWriter::GetSupportedBaseData() const
+{
+  return CoordinateAxesDataWriter::GetStaticNameOfClass();
+}
+
 } // end namespace
 

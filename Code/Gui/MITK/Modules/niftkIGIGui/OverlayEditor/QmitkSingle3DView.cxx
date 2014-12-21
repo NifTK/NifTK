@@ -19,7 +19,7 @@
 #include <mitkTrackedImage.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
-#include <mitkGeometry3D.h>
+#include <mitkBaseGeometry.h>
 #include <vtkCamera.h>
 #include <vtkTransform.h>
 #include <niftkVTKFunctions.h>
@@ -493,7 +493,7 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
     double xAxis[3];
     double yAxis[3];
 
-    mitk::Geometry3D::Pointer geometry = m_Image->GetGeometry();
+    mitk::BaseGeometry* geometry = m_Image->GetGeometry();
     mitk::Point3D geometryOrigin = geometry->GetOrigin();
     mitk::Vector3D geometrySpacing = geometry->GetSpacing();
     mitk::Vector3D geometryXAxis = geometry->GetAxisVector(0);

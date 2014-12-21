@@ -21,6 +21,7 @@
 #include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
 #include <mitkCommon.h>
+#include <mitkPoint.h>
 #include <mitkVector.h>
 #include <cv.h>
 

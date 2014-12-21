@@ -331,8 +331,8 @@ void TrackedImageView::OnClonePushButtonClicked()
 
       // clone the origin ultrasound image (changing orientation) to disk.
       mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
-      mitk::Geometry3D::Pointer geometry = untouchedImage->GetGeometry();
-      if (geometry.IsNotNull())
+      mitk::BaseGeometry* geometry = untouchedImage->GetGeometry();
+      if (geometry)
       {
         vtkSmartPointer<vtkMatrix4x4> identityMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
         identityMatrix->Identity();

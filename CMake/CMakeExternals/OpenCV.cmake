@@ -34,7 +34,7 @@ if(BUILD_IGI)
       -DBUILD_opencv_java:BOOL=OFF
     )
 
-    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.6.1.cmake)
+    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
     

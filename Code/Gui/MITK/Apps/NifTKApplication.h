@@ -206,7 +206,7 @@ int ApplicationMain(int argc, char** argv,
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPath.toStdString()+CTK_LIB_PREFIX "CTKDICOMCore:0.1");
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPath.toStdString()+CTK_LIB_PREFIX "CTKDICOMCore$0.1");
 #else
   // On Windows, there are libraries that are missing an Unregister() in their cleanup code.
   // When the plugin mechanism unloads these they trash the ITK class factory, leaving dead pointers.

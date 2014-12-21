@@ -49,6 +49,9 @@
 #include <NifTKConfigure.h>
 #include <mitkDataStorageUtils.h>
 
+
+US_INITIALIZE_MODULE
+
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
 
 //-----------------------------------------------------------------------------
@@ -636,5 +639,6 @@ void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor
 
 
 //-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
-US_INITIALIZE_MODULE("CommonApps", "libuk_ac_ucl_cmic_gui_qt_commonapps")
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonapps, QmitkCommonAppsApplicationPlugin)
+#endif

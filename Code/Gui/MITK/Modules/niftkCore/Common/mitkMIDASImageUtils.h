@@ -182,7 +182,7 @@ namespace mitk
    * \param itkImage2 An ITK image.
    */
   template <typename TPixel1, unsigned int VImageDimension1, typename TPixel2, unsigned int VImageDimension2>
-  void ITKCopyIntensityData(itk::Image<TPixel1, VImageDimension1>* itkImage1,
+  void ITKCopyIntensityData(const itk::Image<TPixel1, VImageDimension1>* itkImage1,
                         itk::Image<TPixel2, VImageDimension2>* itkImage2
                        );
 

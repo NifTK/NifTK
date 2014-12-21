@@ -30,7 +30,7 @@
 #include <mitkAffineTransformParametersDataNodeProperty.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkGeometry3D.h>
+#include <mitkBaseGeometry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkWeakPointer.h>
 #include <mitkBoundingObject.h>

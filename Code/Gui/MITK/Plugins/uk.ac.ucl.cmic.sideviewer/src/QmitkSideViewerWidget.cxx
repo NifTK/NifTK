@@ -23,7 +23,7 @@
 #include <mitkBaseRenderer.h>
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
-#include <mitkGeometry3D.h>
+#include <mitkBaseGeometry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkIRenderWindowPart.h>
 #include <mitkRenderingManager.h>

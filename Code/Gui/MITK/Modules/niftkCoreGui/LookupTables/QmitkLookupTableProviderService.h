@@ -20,7 +20,7 @@
 #include <mitkNamedLookupTableProperty.h>
 
 // Microservices
-#include <usServiceInterface.h>
+#include <mitkServiceInterface.h>
 
 class vtkLookupTable;
 
@@ -59,6 +59,6 @@ struct QmitkLookupTableProviderService
   std::string GetName(unsigned int lookupTableIndex);
 };
 
-US_DECLARE_SERVICE_INTERFACE(QmitkLookupTableProviderService, "QmitkLookupTableProviderService/1.0")
+MITK_DECLARE_SERVICE_INTERFACE(QmitkLookupTableProviderService, "QmitkLookupTableProviderService/1.0")
 
 #endif

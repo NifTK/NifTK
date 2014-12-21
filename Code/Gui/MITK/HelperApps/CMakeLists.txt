@@ -36,12 +36,12 @@ if(BUILD_IGI)
   ##########################################################
   include(${PROJECT_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
 
-  list(APPEND HELPER_APPS_REQUIRED_MODULES 
+  list(APPEND HELPER_APPS_REQUIRED_MODULES
     niftkCore
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
-  ) 
+  )
 endif()
 
 # This sets up all the include and library folders using the above macro.
@@ -73,15 +73,16 @@ include (${MITK_DIR}/MITKConfig.cmake)
 include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
 include (${MITK_DIR}/modulesConf/mbilogConfig.cmake)
 include (${MITK_DIR}/modulesConf/MitkCoreConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
+include (${MITK_DIR}/modulesConf/MitkLegacyIOConfig.cmake)
 include (${MITK_DIR}/modulesConf/MitkTestingHelperConfig.cmake)
 include (${CppUnit_DIR}/CppUnitConfig.cmake)
 include (${tinyxml_DIR}/tinyxmlConfig.cmake)
 
 list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  
   ${MITK_INCLUDE_DIRS} 
-  ${MitkCore_INCLUDE_DIRS} 
-  ${MitkExt_INCLUDE_DIRS} 
+  ${MitkCore_INCLUDE_DIRS}
+  ${MitkLegacyIO_INCLUDE_DIRS}
+  ${MitkExt_INCLUDE_DIRS}
   ${MitkTestingHelper_INCLUDE_DIRS} 
   ${CppMicroServices_INCLUDE_DIRS} 
   ${CppUnit_INCLUDE_DIRS}
@@ -97,6 +98,7 @@ list(APPEND HELPER_APP_LIBRARIES
   niftkcommon 
   niftkOpenCV 
   niftkIGIGui
+  MitkLegacyIO
 )
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)

@@ -173,8 +173,8 @@ void TrackedPointer::Update(
     mitk::BaseData::Pointer model = dynamic_cast<mitk::BaseData*>(probeModel->GetData());
     if (model.IsNotNull())
     {
-      mitk::Geometry3D::Pointer geometry = model->GetGeometry();
-      if (geometry.IsNotNull())
+      mitk::BaseGeometry* geometry = model->GetGeometry();
+      if (geometry)
       {
         geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
         geometry->Modified();

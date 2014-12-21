@@ -20,6 +20,7 @@
 #include <QmitkBaseView.h>
 #include <mitkLevelWindowManager.h>
 #include <mitkDataNode.h>
+#include <mitkImage.h>
 
 class QWidget;
 class QSlider;

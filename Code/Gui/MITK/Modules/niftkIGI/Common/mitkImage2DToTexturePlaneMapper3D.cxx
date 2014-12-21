@@ -30,6 +30,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
 #include <vtkPointData.h>
+#include <vtkImageData.h>
 
 namespace mitk {
 

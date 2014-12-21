@@ -209,22 +209,22 @@ set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
 set(NIFTK_VERSION_DATA "cefeb2364e" CACHE STRING "Version of NifTKData" FORCE)
-set(NIFTK_VERSION_Boost "86799.1" CACHE STRING "Version of Boost" FORCE)
+set(NIFTK_VERSION_Boost "1_56_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
-set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
+set(NIFTK_VERSION_VTK "6.1.0+74f4888" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "68a1ce2b42" CACHE STRING "Version of CTK" FORCE)
-set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "c00657bd0c" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_CTK "9331130fe3" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_OPENCV "2.4.8.2" CACHE STRING "Version of OpenCV" FORCE)
+set(NIFTK_VERSION_MITK "1ef88e90f0" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "d1680fd98a" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "b2decf5160" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
-set(NIFTK_VERSION_NIFTYSIM "f36708639c" CACHE STRING "Version of NiftySim" FORCE)
+set(NIFTK_VERSION_NIFTYSIM "29132ae860" CACHE STRING "Version of NiftySim" FORCE)
 set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
@@ -232,9 +232,9 @@ set(NIFTK_VERSION_CAMINO "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "3.2.2" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
-set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
-set(NIFTK_VERSION_qRestAPI "e0f498dfac" CACHE STRING "Version of qRestAPI" FORCE) 
-set(NIFTK_LOCATION_DATA_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NifTKData" CACHE STRING "Version of NifTKData in git")
+set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
+set(NIFTK_VERSION_qRestAPI "5f3a03b15d" CACHE STRING "Version of qRestAPI" FORCE) 
+set(NIFTK_LOCATION_DATA_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
 set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
@@ -243,7 +243,7 @@ set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightTo
 set(NIFTK_LOCATION_RTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/VTK-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
 set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
-set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
+set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyLink" CACHE STRING "Location of NiftyLink repository" FORCE)
@@ -259,7 +259,7 @@ set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino
 set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/Eigen-${NIFTK_VERSION_EIGEN}-headers-only.tar.gz" CACHE STRING "Location of Eigen" FORCE)
 set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-apriltags-${NIFTK_VERSION_APRILTAGS}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
 set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
-set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
+set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
 set(NIFTK_LOCATION_qRestAPI "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
 
 ######################################################################
@@ -605,6 +605,8 @@ endif (BUILD_MESHING)
 # the Superbuild, because VTK needs to know if we have Qt.
 ######################################################################
 
+set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+
 # We ALWAYS need Qt. This is because MITK always needs it.
 if(BUILD_IGI)
   find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
@@ -619,7 +621,7 @@ if(QT_FOUND)
   include(${QT_USE_FILE})
   if(BUILD_SUPERBUILD)
     set(VTK_QT_ARGS
-      -DDESIRED_QT_VERSION:STRING=4
+      -DVTK_QT_VERSION:STRING=@DESIRED_QT_VERSION@
       -DVTK_USE_GUISUPPORT:BOOL=ON
       -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
       -DVTK_USE_QT:BOOL=ON
@@ -898,9 +900,8 @@ set(MITK_USE_Boost 1)
 set(MITK_USE_DCMTK 1)
 set(MITK_USE_BLUEBERRY ${QT_FOUND})
 set(MITK_USE_QT ${QT_FOUND})
-#set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-#set(MITK_DESIRED_QT_VERSION @DESIRED_QT_VERSION@)
-set(MITK_DESIRED_QT_VERSION 4)
+set(MITK_DESIRED_QT_VERSION @DESIRED_QT_VERSION@)
+#set(MITK_DESIRED_QT_VERSION 4)
 set(MITK_USE_OpenCV ${BUILD_IGI})
 
 if(NIFTK_GENERATE_DOXYGEN_HELP)

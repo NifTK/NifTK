@@ -415,7 +415,7 @@ void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node , vtkMatr
     mitkThrow() << "In GetCurrentTransform, node is NULL";
   }
 
-  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
+  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3>  matrix;
   itk::Vector<double, 3> offset;
   matrix = affineTransform->GetMatrix();
@@ -468,8 +468,8 @@ void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer
     mitkThrow() << "In ApplyTransformToNode, baseData is NULL";
   }
 
-  mitk::Geometry3D::Pointer geometry = baseData->GetGeometry();
-  if (geometry.IsNull())
+  mitk::BaseGeometry* geometry = baseData->GetGeometry();
+  if (!geometry)
   {
     mitkThrow() << "In ApplyTransformToNode, geometry is NULL";
   }

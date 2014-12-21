@@ -43,8 +43,8 @@ protected:
 
 bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
 {
-  mitk::Geometry3D::Pointer geometry = node->GetData()->GetGeometry();
-  if (geometry.IsNotNull())
+  mitk::BaseGeometry* geometry = node->GetData()->GetGeometry();
+  if (geometry)
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(matrix);
     geometry->Modified();

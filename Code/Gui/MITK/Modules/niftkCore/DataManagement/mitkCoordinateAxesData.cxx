@@ -107,8 +107,8 @@ const CoordinateAxesData::RegionType& CoordinateAxesData::GetRequestedRegion() c
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 {
-  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
-  if (geometry.IsNotNull())
+  mitk::BaseGeometry* geometry = this->GetGeometry();
+  if (geometry)
   {
     mitk::AffineTransform3D::ConstPointer itkTrans = geometry->GetIndexToWorldTransform();
     itk::Matrix<mitk::ScalarType, 3,3> matrix = itkTrans->GetMatrix();
@@ -130,8 +130,8 @@ void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
 {
-  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
-  if (geometry.IsNotNull())
+  mitk::BaseGeometry* geometry = this->GetGeometry();
+  if (geometry)
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&matrix));
     geometry->Modified();
