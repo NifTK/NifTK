@@ -52,7 +52,7 @@ if(BUILD_VL)
     Rendering/VLQt4Widget.h
   )
 endif()
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
+if(CUDA_FOUND AND NIFTK_USE_CUDA AND BUILD_VL)
   set(CPP_FILES
     ${CPP_FILES}
     Rendering/VLFramebufferToCUDA.cxx
