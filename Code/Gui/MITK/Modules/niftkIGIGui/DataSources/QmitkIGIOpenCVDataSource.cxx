@@ -226,6 +226,28 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
 
     // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
     mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
+
+#ifdef _USE_CUDA
+    // a compatibility stop-gap to interface with new renderer and cuda bits.
+    {
+      CUDAManager*    cm = CUDAManager::GetInstance();
+      if (cm != 0)
+      {
+        cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
+        WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
+
+        cudaMemsetAsync(wa.m_DevicePointer, 0xFF, wa.m_SizeInBytes, mystream);
+
+        LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+
+        CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
+        lwciprop->Set(lwci);
+
+        convertedImage->SetProperty("CUDAImageProperty", lwciprop);
+      }
+    }
+#endif
+
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
     if (imageInNode.IsNull())
     {
@@ -234,8 +256,6 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
       m_DataStorage->Remove(node);
       node->SetData(convertedImage);
       m_DataStorage->Add(node);
-
-      imageInNode = convertedImage;
     }
     else
     {
@@ -253,26 +273,10 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
       {
         MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
       }
-    }
-
 #ifdef _USE_CUDA
-    // a compatibility stop-gap to interface with new renderer and cuda bits.
-    {
-      CUDAManager*    cm = CUDAManager::GetInstance();
-      if (cm != 0)
-      {
-        cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
-        WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
-
-        LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-        CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-        lwciprop->Set(lwci);
-
-        imageInNode->SetProperty("CUDAImageProperty", lwciprop);
-      }
-    }
+      imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
 #endif
+    }
 
     // We tell the node that it is modified so the next rendering event
     // will redraw it. Triggering this does not in itself guarantee a re-rendering.

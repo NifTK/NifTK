@@ -45,6 +45,7 @@
 #include <CUDAManager/CUDAManager.h>
 #include <CUDAImage/CUDAImage.h>
 #include <CUDAImage/LightweightCUDAImage.h>
+#include <CUDAImage/CUDAImageProperty.h>
 #include <cuda_gl_interop.h>
 
 
@@ -520,10 +521,16 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
+  bool                    doImgIfSuitable = true;
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
 #ifdef _USE_CUDA
-  CUDAImage::Pointer      cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
+  mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
+  doImgIfSuitable = !(dynamic_cast<CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
+  if (doImgIfSuitable == false)
+  {
+    cudaImg = node->GetData();
+  }
 #endif
 
 
@@ -534,7 +541,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 
   vl::ref<vl::Actor>    newActor;
   std::string           namePostFix;
-  if (mitkImg.IsNotNull())
+  if (mitkImg.IsNotNull() && doImgIfSuitable)
   {
     newActor = AddImageActor(mitkImg);
     namePostFix = "_image";
@@ -666,17 +673,33 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
     }
 
 #ifdef _USE_CUDA
-    bool    isCUDAImage = false;
-    CUDAImage::Pointer cudaimg = dynamic_cast<CUDAImage*>(node->GetData());
-    if (cudaimg.IsNotNull())
+    LightweightCUDAImage    cudaImage;
     {
-      isCUDAImage = cudaimg->GetLightweightCUDAImage().GetId() != 0;
+      CUDAImage::Pointer cudaimg = dynamic_cast<CUDAImage*>(node->GetData());
+      if (cudaimg.IsNotNull())
+      {
+        cudaImage = cudaimg->GetLightweightCUDAImage();
+      }
+      else
+      {
+        mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
+        if (img.IsNotNull())
+        {
+          CUDAImageProperty::Pointer prop = dynamic_cast<CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
+          if (prop.IsNotNull())
+          {
+            cudaImage = prop->Get();
+          }
+        }
+      }
     }
-    if (isCUDAImage)
+
+
+    if (cudaImage.GetId() != 0)
     {
       // whatever we had cached from a previous frame.
       TextureDataPOD          texpod    = m_NodeToTextureMap[node];
-      LightweightCUDAImage    cudaImage = cudaimg->GetLightweightCUDAImage();
+
       // only need to update the vl texture, if content in our cuda buffer has changed.
       // and the cuda buffer can change only when we have a different id.
       if (texpod.m_LastUpdatedID != cudaImage.GetId())
@@ -859,7 +882,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const CUDAImage* cudaImg)
+vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.

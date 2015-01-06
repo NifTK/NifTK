@@ -173,7 +173,7 @@ protected:
   //@{
 
   /** Will throw if CUDA-support was not enabled at compile time. */
-  vl::ref<vl::Actor> AddCUDAImageActor(const CUDAImage* cudaImg);
+  vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
 
   // will only be non-null if cuda support is enabled at compile time.
   CUDAInterop*         m_CUDAInteropPimpl;
