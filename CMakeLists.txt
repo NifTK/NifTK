@@ -34,7 +34,7 @@ mark_as_advanced(NIFTK_VERSION_PATCH)
 # Set the minimum CMake version.
 ######################################################################
 if(WIN32)
-  cmake_minimum_required(VERSION 2.8.11.2)
+  cmake_minimum_required(VERSION 3.1)
 else()
   cmake_minimum_required(VERSION 2.8.9)
 endif()
