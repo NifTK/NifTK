@@ -1242,7 +1242,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
       else if (numOfComponents == 3)
         format = vl::IF_RGB_INTEGER;
       else if (numOfComponents == 4)
-        format = vl::IF_RGBA_INTEGER;
+        // FIXME: not sure whether we really want integer formats here!
+        //        for now, dont do integer for rgba, we have quite a few rgba images.
+        format = vl::IF_RGBA;//_INTEGER;
     }
     else if (type == vl::IT_FLOAT)
     {
@@ -1261,7 +1263,10 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
     // we do not own dims!
 
     int bytealign = 1;
-    vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
+    if (dims[2] <= 1)
+      vlImg = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
+    else
+      vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
 
     // sanity check
     unsigned int size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
