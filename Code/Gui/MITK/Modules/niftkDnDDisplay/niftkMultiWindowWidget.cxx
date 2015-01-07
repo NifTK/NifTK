@@ -1262,7 +1262,6 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
         mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
 
         mitk::ProportionalTimeGeometry::Pointer createdTimeGeometry = mitk::ProportionalTimeGeometry::New();
-        createdTimeGeometry->Initialize();
         createdTimeGeometry->Expand(numberOfTimeSteps);
 
         // TODO Commented out when migrating to the redesigned MITK geometry framework.
