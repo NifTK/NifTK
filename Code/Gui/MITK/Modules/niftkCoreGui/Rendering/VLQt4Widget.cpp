@@ -521,13 +521,16 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
-  bool                    doImgIfSuitable = true;
+  bool                    doMitkImageIfSuitable = true;
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
 #ifdef _USE_CUDA
   mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
-  doImgIfSuitable = !(dynamic_cast<CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
-  if (doImgIfSuitable == false)
+  // this check will prefer a CUDAImageProperty attached to the node's data object.
+  // e.g. if there is mitk::Image and an attached CUDAImageProperty then CUDAImageProperty wins and
+  // mitk::Image is ignored.
+  doMitkImageIfSuitable = !(dynamic_cast<CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
+  if (doMitkImageIfSuitable == false)
   {
     cudaImg = node->GetData();
   }
@@ -541,7 +544,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 
   vl::ref<vl::Actor>    newActor;
   std::string           namePostFix;
-  if (mitkImg.IsNotNull() && doImgIfSuitable)
+  if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
   {
     newActor = AddImageActor(mitkImg);
     namePostFix = "_image";
