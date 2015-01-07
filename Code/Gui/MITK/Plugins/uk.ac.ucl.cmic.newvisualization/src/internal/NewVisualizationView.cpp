@@ -183,6 +183,7 @@ void  NewVisualizationView::InitVLRendering()
 
 
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
+  m_VLQtRenderWindow->setSizePolicy(QSizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding));
   m_VLQtRenderWindow->show();
 
   // default transparency blending function.

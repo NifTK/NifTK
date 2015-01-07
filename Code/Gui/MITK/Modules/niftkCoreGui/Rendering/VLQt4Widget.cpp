@@ -396,6 +396,11 @@ void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
   // sanity check: internal method, context should have been activated by caller.
   assert(this->context() == QGLContext::currentContext());
 
+  // sanitise dimensions. depending on how windows are resized we can get zero here.
+  // but that breaks on the ogl side.
+  width  = std::max(1, width);
+  height = std::max(1, height);
+
   vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
   opaqueFBO->setObjectName("opaqueFBO");
   opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
