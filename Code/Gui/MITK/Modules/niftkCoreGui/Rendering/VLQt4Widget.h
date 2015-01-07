@@ -40,6 +40,7 @@
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
 #include <map>
+#include <set>
 
 
 // forward-decl
@@ -72,9 +73,11 @@ public:
 
   void setOclResourceService(OclResourceService* oclserv);
 
-  void AddDataNode(const mitk::DataNode::Pointer& node);
-  void RemoveDataNode(const mitk::DataNode::Pointer& node);
-  void UpdateDataNode(const mitk::DataNode::Pointer& node);
+  void AddDataNode(const mitk::DataNode::ConstPointer& node);
+  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
+  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
+
+  void QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node);
 
   void ClearScene();
 
@@ -165,8 +168,9 @@ protected:
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
-  std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >    m_NodeToActorMap;
-  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >    m_ActorToRenderableMap;
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
+  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;
+  std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
 
 
   /** @name CUDA-interop related bits. */
@@ -186,7 +190,7 @@ protected:
 
     TextureDataPOD();
   };
-  std::map<mitk::DataNode::Pointer, TextureDataPOD>     m_NodeToTextureMap;
+  std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
 protected:

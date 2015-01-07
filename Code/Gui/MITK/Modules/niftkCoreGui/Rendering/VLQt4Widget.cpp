@@ -111,7 +111,7 @@ VLQt4Widget::~VLQt4Widget()
 
 #ifdef _USE_CUDA
   {
-    for (std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+    for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
     {
       if (i->second.m_CUDARes != 0)
       {
@@ -469,6 +469,14 @@ void VLQt4Widget::renderScene()
   assert(this->context() == QGLContext::currentContext());
 
 
+  // update vl-cache for nodes that have been modified since the last frame.
+  for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
+  {
+    UpdateDataNode(*i);
+  }
+  m_NodesQueuedForUpdate.clear();
+
+
   // update scene graph.
   vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
   m_LightTr->setLocalMatrix(cameraMatrix);
@@ -511,7 +519,7 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
+void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
@@ -581,12 +589,19 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::Pointer& node)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
+void VLQt4Widget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
+{
+  m_NodesQueuedForUpdate.insert(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  std::map< mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
 
@@ -795,12 +810,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::Pointer& node)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
+void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 {
+  // dont leave a dangling update behind.
+  m_NodesQueuedForUpdate.erase(node);
+
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  std::map<mitk::DataNode::Pointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
 
@@ -819,7 +837,7 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::Pointer& node)
 
 #ifdef _USE_CUDA
   {
-    std::map<mitk::DataNode::Pointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
+    std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
     if (i != m_NodeToTextureMap.end())
     {
       if (i->second.m_CUDARes != 0)

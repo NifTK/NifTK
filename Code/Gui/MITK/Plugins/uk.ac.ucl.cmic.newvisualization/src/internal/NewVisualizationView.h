@@ -72,6 +72,7 @@ protected:
   /// \brief Called by framework when a node was added to the datastorage
   virtual void OnNodeAdded(mitk::DataNode* node);
   virtual void OnNodeDeleted(mitk::DataNode* node);
+  virtual void OnNodeUpated(const mitk::DataNode* node);
 
   void OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   void OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
