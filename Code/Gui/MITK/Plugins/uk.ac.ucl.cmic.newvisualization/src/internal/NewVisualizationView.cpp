@@ -347,12 +347,12 @@ void NewVisualizationView::Visible()
   QmitkBaseView::Visible();
 
   // Make sure that we show all the nodes that are already present in DataStorage
-  UpdateDisplay();
+  ReinitDisplay();
 }
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::UpdateDisplay(bool viewEnabled)
+void NewVisualizationView::ReinitDisplay(bool viewEnabled)
 {
   m_VLQtRenderWindow->ClearScene();
 
