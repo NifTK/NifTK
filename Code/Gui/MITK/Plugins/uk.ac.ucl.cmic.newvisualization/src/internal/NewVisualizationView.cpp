@@ -26,6 +26,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateOr.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkDataNodePropertyListener.h>
@@ -116,7 +117,21 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::NewVisualizationViewControls();
     m_Controls->setupUi(parent);
 
-    connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
+    bool  ok = false;
+    ok = QObject::connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
+    assert(ok);
+
+    m_Controls->m_BackgroundNode->SetDataStorage(GetDataStorage());
+    m_Controls->m_BackgroundNode->SetAutoSelectNewItems(false);
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer    isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+#ifdef _USE_CUDA
+    mitk::TNodePredicateDataType<CUDAImage>::Pointer      isCuda = mitk::TNodePredicateDataType<CUDAImage>::New();
+    mitk::NodePredicateOr::Pointer                        isSuitable = mitk::NodePredicateOr::New(isImage, isCuda);
+    m_Controls->m_BackgroundNode->SetPredicate(isSuitable);
+#else
+    m_Controls->m_BackgroundNode->SetPredicate(isImage);
+#endif
+    ok = QObject::connect(m_Controls->m_BackgroundNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnBackgroundNodeSelected(const mitk::DataNode*)));
 
     // if someone calls node->Modified() we need to redraw.
     GetDataStorage()->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<NewVisualizationView, const mitk::DataNode*>(this, &NewVisualizationView::OnNodeUpated));
@@ -201,6 +216,12 @@ void NewVisualizationView::On_SliderMoved(int val)
 {
   m_VLQtRenderWindow->UpdateThresholdVal(val);
   m_VLQtRenderWindow->update();
+}
+
+
+//-----------------------------------------------------------------------------
+void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
+{
 }
 
 

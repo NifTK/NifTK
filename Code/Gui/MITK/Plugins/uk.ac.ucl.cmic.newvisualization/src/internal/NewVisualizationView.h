@@ -82,6 +82,7 @@ protected:
   virtual void Visible();
 
 private slots: 
+  void OnBackgroundNodeSelected(const mitk::DataNode* node);
 
 
 private: 
