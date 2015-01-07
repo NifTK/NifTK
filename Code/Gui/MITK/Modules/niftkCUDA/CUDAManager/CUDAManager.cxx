@@ -377,6 +377,10 @@ LightweightCUDAImage CUDAManager::Finalise(WriteAccessor& writeAccessor, cudaStr
   err = cudaEventRecord(lwci.m_ReadyEvent, stream);
   assert(err == cudaSuccess);
 
+  // debugging
+  lwci.m_LastUsedByStream = stream;
+
+
   bool inserted = m_ValidImages.insert(std::make_pair(lwci.GetId(), lwci)).second;
   assert(inserted);
   // important to update the two lists (m_ValidImages and m_InFlightOutputImages) close together so

@@ -84,6 +84,7 @@ LightweightCUDAImage::LightweightCUDAImage(const LightweightCUDAImage& copyme)
   , m_Width(copyme.m_Width)
   , m_Height(copyme.m_Height)
   , m_BytePitch(copyme.m_BytePitch)
+  , m_LastUsedByStream(copyme.m_LastUsedByStream)
 {
   if (m_RefCount)
   {
@@ -113,6 +114,7 @@ LightweightCUDAImage& LightweightCUDAImage::operator=(const LightweightCUDAImage
   m_Width       = assignme.m_Width;
   m_Height      = assignme.m_Height;
   m_BytePitch   = assignme.m_BytePitch;
+  m_LastUsedByStream = assignme.m_LastUsedByStream;
 
   if (m_RefCount)
   {

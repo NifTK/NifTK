@@ -82,6 +82,9 @@ private:
   unsigned int    m_Height;         // in (pixel) lines
   unsigned int    m_BytePitch;      // length of a line of pixels in bytes.
   // FIXME: pixel type descriptor
+
+  // debugging
+  cudaStream_t    m_LastUsedByStream;
 };
 
 #endif // LightweightCUDAImage_h

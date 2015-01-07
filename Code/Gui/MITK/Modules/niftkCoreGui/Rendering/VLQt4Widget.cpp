@@ -795,6 +795,8 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
               MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
             }
           }
+
+          cudamng->Autorelease(inputRA, mystream);
         }
 
         // update cache, even if something went wrong.

@@ -54,6 +54,10 @@ class DataStorage;
 }
 
 
+/**
+ * This class is not thread-safe! Methods should only ever be called on the main
+ * GUI thread.
+ */
 class NIFTKCOREGUI_EXPORT VLQt4Widget : public QGLWidget, public vl::OpenGLContext
 {
   Q_OBJECT
