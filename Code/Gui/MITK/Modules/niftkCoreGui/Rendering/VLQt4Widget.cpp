@@ -350,6 +350,7 @@ void VLQt4Widget::initializeGL()
   m_BackgroundRendering->setCullingEnabled(false);
   m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
   m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
+  m_BackgroundCamera->viewport()->enableScissorSetup(false);
 
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
@@ -664,28 +665,26 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
 //-----------------------------------------------------------------------------
 bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
-  if (node.IsNull())
-    return false;
-
-  mitk::BaseData::Pointer   basedata = node->GetData();
-  if (basedata.IsNull())
-    return false;
-
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
-
-  // FIXME: clear up after previous background node!
+  // clear up after previous background node.
   if (m_BackgroundNode.IsNotNull())
   {
     const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
     m_BackgroundNode = 0;
     RemoveDataNode(oldbackgroundnode);
+    // add back as normal node.
     AddDataNode(oldbackgroundnode);
   }
 
-  // FIXME: dodgy
+  mitk::BaseData::Pointer   basedata = node->GetData();
+  if (basedata.IsNull())
+    return false;
+
+  // clear up whatever we had cached for the new background node.
+  // it's very likely that it was a normal node before.
   RemoveDataNode(node);
 
 
@@ -1021,7 +1020,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     assert(vlActor->objectName().find("_background") != std::string::npos);
     vlActor->setEnableMask(ENABLEMASK_BACKGROUND);
     vlActor->effect()->shader()->disable(vl::EN_DEPTH_TEST);
-    vlActor->effect()->shader()->disable(vl::EN_BLEND);
+    //vlActor->effect()->shader()->disable(vl::EN_BLEND);
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
     vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
   }
