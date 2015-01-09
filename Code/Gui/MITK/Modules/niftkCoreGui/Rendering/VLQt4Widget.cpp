@@ -315,6 +315,7 @@ void VLQt4Widget::initializeGL()
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_Camera->setViewMatrix(view_mat);
   m_Camera->setObjectName("m_Camera");
+  m_Camera->viewport()->enableScissorSetup(true);
 
   vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
 
@@ -468,15 +469,18 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
 
-  m_Camera->viewport()->setWidth(width);
-  m_Camera->viewport()->setHeight(height);
-  m_Camera->setProjectionPerspective();
-  // some sane defaults
-  m_BackgroundCamera->viewport()->setX(0);
-  m_BackgroundCamera->viewport()->setY(0);
-  m_BackgroundCamera->viewport()->setWidth(width);
-  m_BackgroundCamera->viewport()->setHeight(height);
+  updateViewportAndCamera();
 
+  vl::OpenGLContext::dispatchResizeEvent(width, height);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::updateViewportAndCamera()
+{
+  // some sane defaults
+  m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
+  m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
 
   if (m_BackgroundNode.IsNotNull())
   {
@@ -490,27 +494,27 @@ void VLQt4Widget::resizeGL(int width, int height)
       if (tex.get() != 0)
       {
         // this is based on my old araknes video-ar app.
-        float   width_scale  = (float) width  / (float) tex->width();
-        float   height_scale = (float) height / (float) tex->height();
-        int     vpw = width;
-        int     vph = height;
+        float   width_scale  = (float) QWidget::width()  / (float) tex->width();
+        float   height_scale = (float) QWidget::height() / (float) tex->height();
+        int     vpw = QWidget::width();
+        int     vph = QWidget::height();
         if (width_scale < height_scale)
           vph = (int) ((float) tex->height() * width_scale);
         else
           vpw = (int) ((float) tex->width() * height_scale);
 
-        int   vpx = width  / 2 - vpw / 2;
-        int   vpy = height / 2 - vph / 2;
+        int   vpx = QWidget::width()  / 2 - vpw / 2;
+        int   vpy = QWidget::height() / 2 - vph / 2;
 
-        m_BackgroundCamera->viewport()->setX(vpx);
-        m_BackgroundCamera->viewport()->setY(vpy);
-        m_BackgroundCamera->viewport()->setWidth(vpw);
-        m_BackgroundCamera->viewport()->setHeight(vph);
+        m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+        // the main-scene-camera should conform to this viewport too!
+        // otherwise geometry would never line up with the background (for overlays, etc).
+        m_Camera->viewport()->set(vpx, vpy, vpw, vph);
       }
     }
   }
-
-  vl::OpenGLContext::dispatchResizeEvent(width, height);
+  // this default perspective depends on the viewport!
+  m_Camera->setProjectionPerspective();
 }
 
 
@@ -679,44 +683,51 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     AddDataNode(oldbackgroundnode);
   }
 
-  mitk::BaseData::Pointer   basedata = node->GetData();
-  if (basedata.IsNull())
-    return false;
-
-  // clear up whatever we had cached for the new background node.
-  // it's very likely that it was a normal node before.
-  RemoveDataNode(node);
-
-
-  mitk::Image::Pointer      imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
-  if (imgdata.IsNotNull())
+  bool    result = false;
+  mitk::BaseData::Pointer   basedata;
+  if (node.IsNotNull())
+    basedata = node->GetData();
+  if (basedata.IsNotNull())
   {
-#ifdef _USE_CUDA
-    CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
-    if (cudaimgprop.IsNotNull())
-    {
-      LightweightCUDAImage    lwci = cudaimgprop->Get();
-      PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
-      return true;
-    }
-#endif
+    // clear up whatever we had cached for the new background node.
+    // it's very likely that it was a normal node before.
+    RemoveDataNode(node);
 
-    // FIXME: normal mitk image stuff
-  }
-  else
-  {
-#ifdef _USE_CUDA
-    CUDAImage::Pointer    cudaimgdata = dynamic_cast<CUDAImage*>(basedata.GetPointer());
-    if (cudaimgdata.IsNotNull())
+    mitk::Image::Pointer      imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
+    if (imgdata.IsNotNull())
     {
-      LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
-      PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
-      return true;
-    }
+#ifdef _USE_CUDA
+      CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
+      if (cudaimgprop.IsNotNull())
+      {
+        LightweightCUDAImage    lwci = cudaimgprop->Get();
+        PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
+        result = true;
+      }
+      else
 #endif
+      {
+        // FIXME: normal mitk image stuff
+      }
+    }
+    else
+    {
+#ifdef _USE_CUDA
+      CUDAImage::Pointer    cudaimgdata = dynamic_cast<CUDAImage*>(basedata.GetPointer());
+      if (cudaimgdata.IsNotNull())
+      {
+        LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
+        PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
+        result = true;
+      }
+      // no else here
+#endif
+    }
   }
 
-  return false;
+  updateViewportAndCamera();
+
+  return result;
 }
 
 

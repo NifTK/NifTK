@@ -155,6 +155,7 @@ private:
 protected:
   void renderScene();
   void createAndUpdateFBOSizes(int width, int height);
+  void updateViewportAndCamera();
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
