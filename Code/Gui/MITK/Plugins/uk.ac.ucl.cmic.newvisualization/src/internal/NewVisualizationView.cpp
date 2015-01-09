@@ -222,6 +222,8 @@ void NewVisualizationView::On_SliderMoved(int val)
 //-----------------------------------------------------------------------------
 void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
+  m_VLQtRenderWindow->SetBackgroundNode(node);
+  // can fail, but we just ignore that.
 }
 
 

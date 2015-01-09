@@ -48,6 +48,8 @@ struct cudaGraphicsResource;
 typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
 struct CUDAInterop;
 class CUDAImage;
+class CUDAImageProperty;
+class LightweightCUDAImage;
 namespace mitk
 {
 class DataStorage;
@@ -86,6 +88,16 @@ public:
   void ClearScene();
 
   void UpdateThresholdVal(int isoVal);
+
+  /**
+   * node can have as data object:
+   * - mitk::Image
+   * - CUDAImage
+   * - mitk::Image with CUDAImageProperty attached.
+   * And for now the image has to be 2D.
+   * Anything else will just be ignored.
+   */
+  bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
 
   /**
    * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
@@ -150,13 +162,16 @@ protected:
   static const int      ENABLEMASK_OPAQUE             = 1 << 0;
   static const int      ENABLEMASK_TRANSLUCENT        = 1 << 1;
   static const int      ENABLEMASK_VOLUME             = 1 << 2;
+  static const int      ENABLEMASK_BACKGROUND         = 1 << 3;
 
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
   vl::ref<vl::Rendering>                m_VolumeRendering;
+  vl::ref<vl::Rendering>                m_BackgroundRendering;
   vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
   vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
   vl::ref<vl::Camera>                   m_Camera;
+  vl::ref<vl::Camera>                   m_BackgroundCamera;
   vl::ref<vl::Light>                    m_Light;
   vl::ref<vl::Transform>                m_LightTr;
   vl::ref<vl::TrackballManipulator>     m_Trackball;
@@ -165,20 +180,25 @@ protected:
 
   OclResourceService*                   m_OclService;
 
-
-  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
-  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
-
-  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
-  static vl::String LoadGLSLSourceFromResources(const char* filename);
-
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;
   std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
+  mitk::DataNode::ConstPointer                                    m_BackgroundNode;
+
+
+  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
+  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
+  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
+  static vl::String LoadGLSLSourceFromResources(const char* filename);
 
 
   /** @name CUDA-interop related bits. */
   //@{
+
+  /**
+   * @throws an exception if CUDA support was not enabled at compile time.
+   */
+  void PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::Geometry3D* geom, const mitk::DataNode::ConstPointer node);
 
   /** Will throw if CUDA-support was not enabled at compile time. */
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
