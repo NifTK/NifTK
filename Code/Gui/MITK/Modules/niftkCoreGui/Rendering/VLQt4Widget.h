@@ -153,9 +153,14 @@ private:
 
 
 protected:
-  void renderScene();
-  void createAndUpdateFBOSizes(int width, int height);
-  void updateViewportAndCamera();
+  void RenderScene();
+  void CreateAndUpdateFBOSizes(int width, int height);
+  void UpdateViewportAndCamera();
+  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
+  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
+  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
+  static vl::String LoadGLSLSourceFromResources(const char* filename);
+
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
@@ -187,12 +192,6 @@ protected:
   mitk::DataNode::ConstPointer                                    m_BackgroundNode;
 
 
-  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
-  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
-  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
-  static vl::String LoadGLSLSourceFromResources(const char* filename);
-
-
   /** @name CUDA-interop related bits. */
   //@{
 
@@ -217,6 +216,7 @@ protected:
   };
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
+
 
 protected:
   int       m_Refresh;

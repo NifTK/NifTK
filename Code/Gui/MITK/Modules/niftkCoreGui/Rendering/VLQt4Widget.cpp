@@ -391,7 +391,7 @@ void VLQt4Widget::initializeGL()
   m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
 
   // updating the size of our fbo is a bit of a pain.
-  createAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
+  CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
 
   // moves the light with the main camera.
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
@@ -412,7 +412,7 @@ void VLQt4Widget::initializeGL()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::createAndUpdateFBOSizes(int width, int height)
+void VLQt4Widget::CreateAndUpdateFBOSizes(int width, int height)
 {
   // sanity check: internal method, context should have been activated by caller.
   assert(this->context() == QGLContext::currentContext());
@@ -461,7 +461,7 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
 
-  createAndUpdateFBOSizes(width, height);
+  CreateAndUpdateFBOSizes(width, height);
 
   //m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
   //m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
@@ -469,14 +469,14 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
 
-  updateViewportAndCamera();
+  UpdateViewportAndCamera();
 
   vl::OpenGLContext::dispatchResizeEvent(width, height);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::updateViewportAndCamera()
+void VLQt4Widget::UpdateViewportAndCamera()
 {
   // some sane defaults
   m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
@@ -524,14 +524,14 @@ void VLQt4Widget::paintGL()
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
 
-  renderScene();
+  RenderScene();
 
   vl::OpenGLContext::dispatchRunEvent();
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::renderScene()
+void VLQt4Widget::RenderScene()
 {
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
@@ -725,7 +725,7 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     }
   }
 
-  updateViewportAndCamera();
+  UpdateViewportAndCamera();
 
   return result;
 }
