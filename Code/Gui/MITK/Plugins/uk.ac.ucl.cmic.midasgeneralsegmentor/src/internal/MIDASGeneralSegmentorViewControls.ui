@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>371</width>
+    <width>343</width>
     <height>174</height>
    </rect>
   </property>
@@ -57,6 +57,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>reset</string>
        </property>
@@ -69,6 +75,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="text">
         <string>clean</string>
@@ -83,6 +95,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>wipe</string>
        </property>
@@ -95,6 +113,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="text">
         <string>wipe+</string>
@@ -109,6 +133,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>wipe-</string>
        </property>
@@ -121,6 +151,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="text">
         <string>OK</string>
@@ -135,6 +171,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>cancel</string>
        </property>
@@ -147,6 +189,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="text">
         <string>restart</string>
@@ -230,6 +278,12 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>prop dn</string>
           </property>
@@ -242,6 +296,12 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
           </property>
           <property name="text">
            <string>apply</string>
@@ -256,6 +316,12 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>prop up</string>
           </property>
@@ -268,6 +334,12 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
           </property>
           <property name="text">
            <string>prop 3D</string>
@@ -286,6 +358,21 @@
      </property>
      <item row="0" column="0">
       <widget class="QCheckBox" name="m_ThresholdingCheckBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>thresholding</string>
+       </property>
        <property name="text">
         <string>thresholding</string>
        </property>
@@ -293,6 +380,21 @@
      </item>
      <item row="0" column="1">
       <widget class="QCheckBox" name="m_SeePriorCheckBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>see prior</string>
+       </property>
        <property name="text">
         <string>see prior</string>
        </property>
@@ -300,6 +402,21 @@
      </item>
      <item row="0" column="3">
       <widget class="QCheckBox" name="m_RetainMarksCheckBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>retain marks</string>
+       </property>
        <property name="text">
         <string>retain marks</string>
        </property>
@@ -307,6 +424,21 @@
      </item>
      <item row="0" column="2">
       <widget class="QCheckBox" name="m_SeeNextCheckBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>see next</string>
+       </property>
        <property name="text">
         <string>see next</string>
        </property>
