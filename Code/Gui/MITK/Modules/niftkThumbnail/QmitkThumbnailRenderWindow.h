@@ -177,7 +177,7 @@ private:
   void OnBoundingBoxZoomed(double scaleFactor);
 
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
-  void UpdateWorldGeometry(bool fitToDisplay);
+  void UpdateWorldGeometry();
 
   /// \brief Updates the bounding box by taking the 4 corners of the tracked render window, by Get3DPoint().
   void UpdateBoundingBox();

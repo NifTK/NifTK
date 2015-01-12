@@ -401,7 +401,7 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
 {
-  this->UpdateWorldGeometry(true);
+  this->UpdateWorldGeometry();
   this->UpdateSliceAndTimeStep();
 
   this->UpdateBoundingBox();
@@ -469,12 +469,12 @@ void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::OnWorldGeometryChanged()
 {
-  this->UpdateWorldGeometry(true);
+  this->UpdateWorldGeometry();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
+void QmitkThumbnailRenderWindow::UpdateWorldGeometry()
 {
   if (m_TrackedRenderer)
   {
@@ -482,10 +482,7 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
     m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(m_TrackedRenderer->GetWorldTimeGeometry()));
 
     // Display geometry of widget must encompass whole of world geometry
-    if (fitToDisplay)
-    {
-      m_Renderer->GetDisplayGeometry()->Fit();
-    }
+    m_Renderer->GetDisplayGeometry()->Fit();
 
     // Request a single update at the end of the method.
     m_Renderer->RequestUpdate();
@@ -577,7 +574,7 @@ void QmitkThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::ConstPoi
   // the bounding box will not be included, and not visible.
   this->AddBoundingBoxToDataStorage(true);
 
-  this->UpdateWorldGeometry(true);
+  this->UpdateWorldGeometry();
   this->UpdateSliceAndTimeStep();
 
   // Setup the visibility tracker.
