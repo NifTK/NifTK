@@ -81,7 +81,7 @@ private:
   unsigned int    m_Width;          // in pixel
   unsigned int    m_Height;         // in (pixel) lines
   unsigned int    m_BytePitch;      // length of a line of pixels in bytes.
-  // FIXME: pixel type descriptor
+  int             m_PixelType;      // FIXME: not fully spec'd!
 
   // debugging
   cudaStream_t    m_LastUsedByStream;

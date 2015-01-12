@@ -19,9 +19,16 @@
 
 
 /**
+ * Flips the image upside down. This implementation is likely not very efficient.
  * @throws std::runtime_error
  */
 void NIFTKCUDA_EXPORT FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t stream);
+
+/**
+ * Flips the image upside down. This implementation is likely not very efficient.
+ * @throws std::runtime_error
+ */
+void NIFTKCUDA_EXPORT FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream);
 
 
 #endif // FlipImage_h

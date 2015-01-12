@@ -46,6 +46,9 @@ struct ReadAccessor
   const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
   unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -153,6 +156,8 @@ public:
    * Make sure you call this method after Finalise(), or use FinaliseAndAutorelease().
    */
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
+
+  // FIXME: i should have an Autorelease() for WriteAccessor too, so we can drop a temp buffer without having to Finalise() it.
 
 
 protected:

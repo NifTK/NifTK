@@ -236,8 +236,8 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
         cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
         WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
 
-        assert(rgbaOpenCVImage->widthStep == (rgbaOpenCVImage->width * 4));
-        cudaMemcpyAsync(wa.m_DevicePointer, rgbaOpenCVImage->imageData, rgbaOpenCVImage->width * rgbaOpenCVImage->height * 4, cudaMemcpyHostToDevice, mystream);
+        assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
+        cudaMemcpy2DAsync(wa.m_DevicePointer, wa.m_BytePitch, rgbaOpenCVImage->imageData, rgbaOpenCVImage->widthStep, rgbaOpenCVImage->width * 4, rgbaOpenCVImage->height, cudaMemcpyHostToDevice, mystream);
         // no error handling...
 
         LightweightCUDAImage lwci = cm->Finalise(wa, mystream);

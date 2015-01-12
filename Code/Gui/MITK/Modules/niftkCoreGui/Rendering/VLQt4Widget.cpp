@@ -997,12 +997,18 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
             {
               // FIXME: sanity check: array should have same dimensions as our (cpu-side) texture object.
 
-              // FIXME: need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin!
-              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+              // need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+              WriteAccessor   flippedWA   = cudamng->RequestOutputImage(cudaImage.GetWidth(), cudaImage.GetHeight(), 4);
+              FlipImage(inputRA, flippedWA, mystream);
+
+              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, flippedWA.m_DevicePointer, flippedWA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
               if (err == cudaSuccess)
               {
                 texpod.m_LastUpdatedID = cudaImage.GetId();
               }
+
+              cudamng->Finalise(flippedWA, mystream);
+              // FIXME: this will effectively stall on mystream
             }
 
             err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
@@ -1823,7 +1829,9 @@ void VLQt4Widget::swapBuffers()
     // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
     FlipImage(outputWA, flippedWA, mystream);
 
-    LightweightCUDAImage lwci        = cudamanager->Finalise(outputWA, mystream);
+    // FIXME: this may expose a race-condition in cudamanager
+    cudamanager->Finalise(outputWA, mystream);
+
     LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
 
     bool    isNewNode = false;

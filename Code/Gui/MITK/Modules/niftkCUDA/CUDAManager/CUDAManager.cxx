@@ -294,6 +294,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     lwci.m_Height     = height;
     lwci.m_BytePitch  = bytepitch;
     lwci.m_SizeInBytes = fullTierSize;
+    lwci.m_PixelType  = FIXME_pixeltype;
 
     // the ready-event is specifically not for timing, only for stream-sync.
     err = cudaEventCreateWithFlags(&lwci.m_ReadyEvent, cudaEventDisableTiming);
@@ -315,6 +316,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     // also dont forget to update the size: our recycled image may have a different size than what is requested right now.
     i->m_Width      = width;
     i->m_Height     = height;
+    i->m_PixelType  = FIXME_pixeltype;
   }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;
@@ -423,6 +425,9 @@ ReadAccessor CUDAManager::RequestReadAccess(const LightweightCUDAImage& lwci)
   ra.m_ReadyEvent     = lwci.m_ReadyEvent;
   ra.m_SizeInBytes    = lwci.m_SizeInBytes;
   ra.m_BytePitch      = lwci.m_BytePitch;
+  ra.m_PixelWidth     = lwci.m_Width;
+  ra.m_PixelHeight    = lwci.m_Height;
+  ra.m_FIXME_pixeltype= lwci.m_PixelType;
   // readaccessor has an implicit ref to the image.
   i->second.m_RefCount->ref();
 

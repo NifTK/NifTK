@@ -31,7 +31,28 @@ void FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t strea
       widthInBytes,
       height,
       dest.m_BytePitch,
-      (char*) src.m_DevicePointer,
+      (const char*) src.m_DevicePointer,
+      src.m_BytePitch,
+      stream
+  );
+}
+
+
+//-----------------------------------------------------------------------------
+void FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream)
+{
+  if (dest.m_SizeInBytes < src.m_SizeInBytes)
+    throw std::runtime_error("Output buffer is smaller than input");
+
+  int     widthInBytes  = std::min(dest.m_PixelWidth, src.m_PixelWidth) * dest.m_FIXME_pixeltype;
+  int     height        = std::min(dest.m_PixelHeight, src.m_PixelHeight);
+
+  RunFlipImageKernel(
+      (char*) dest.m_DevicePointer,
+      widthInBytes,
+      height,
+      dest.m_BytePitch,
+      (const char*) src.m_DevicePointer,
       src.m_BytePitch,
       stream
   );
