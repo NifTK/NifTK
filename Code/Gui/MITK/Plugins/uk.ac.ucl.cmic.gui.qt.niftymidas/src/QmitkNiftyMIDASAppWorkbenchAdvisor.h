@@ -44,6 +44,8 @@ class CMIC_QT_NIFTYMIDASAPP QmitkNiftyMIDASAppWorkbenchAdvisor: public QmitkBase
 {
 public:
 
+  typedef QmitkBaseAppWorkbenchAdvisor Superclass;
+
   /// \brief Returns uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective which should match that in plugin.xml.
   virtual std::string GetInitialWindowPerspectiveId();
 
@@ -61,8 +63,6 @@ protected:
       berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
 private:
-
-  mitk::DataStorage* GetDataStorage();
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 

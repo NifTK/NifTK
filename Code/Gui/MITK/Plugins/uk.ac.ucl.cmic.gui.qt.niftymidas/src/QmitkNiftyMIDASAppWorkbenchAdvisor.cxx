@@ -54,6 +54,8 @@ QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyMIDASAppWorkbenchAdvisor::CreateQmitk
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 {
+  Superclass::PostStartup();
+
   std::vector<std::string> args = berry::Platform::GetApplicationArgs();
 
   berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
@@ -627,27 +629,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       multiViewer->SetBindingOptions(bindingOptions);
     }
   }
-}
-
-
-// --------------------------------------------------------------------------
-mitk::DataStorage* QmitkNiftyMIDASAppWorkbenchAdvisor::GetDataStorage()
-{
-  mitk::DataStorage::Pointer dataStorage = 0;
-
-  ctkPluginContext* context = QmitkCommonAppsApplicationPlugin::GetDefault()->GetPluginContext();
-  ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
-  if (dsServiceRef)
-  {
-    mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
-    if (dsService)
-    {
-      mitk::IDataStorageReference::Pointer dataStorageRef = dsService->GetActiveDataStorage();
-      dataStorage = dataStorageRef->GetDataStorage();
-    }
-  }
-
-  return dataStorage;
 }
 
 

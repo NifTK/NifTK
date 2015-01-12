@@ -28,6 +28,11 @@
 
 class QmitkBaseWorkbenchWindowAdvisor;
 
+namespace mitk
+{
+class DataStorage;
+}
+
 /**
  * \class QmitkBaseAppWorkbenchAdvisor
  * \brief Abstract advisor class to set up an initial workbench.
@@ -52,6 +57,8 @@ public:
    */
   virtual std::string GetInitialWindowPerspectiveId() = 0;
 
+  virtual void PostStartup();
+
   /**
    * Overriden from berry::WorkbenchAdvisor so that we can pop up a dialog box
    * asking the user whether they really want to close the application.
@@ -72,6 +79,8 @@ protected:
    */
   virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
       berry::IWorkbenchWindowConfigurer::Pointer configurer);
+
+  mitk::DataStorage* GetDataStorage();
 
 };
 
