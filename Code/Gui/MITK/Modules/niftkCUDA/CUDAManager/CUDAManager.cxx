@@ -463,7 +463,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
   pod->m_Id      = readAccessor.m_Id;
 
   cudaError_t   err = cudaSuccess;
-  err = cudaStreamAddCallback(stream, StreamCallback, pod, 0);
+  err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
   if (err != cudaSuccess)
   {
     // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
@@ -476,6 +476,53 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
   // to be done immediately, completion callback would be too late!
   readAccessor.m_Id = 0;
   readAccessor.m_DevicePointer = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void CUDAManager::Autorelease(WriteAccessor& writeAccessor, cudaStream_t stream)
+{
+  QMutexLocker    lock(&s_Lock);
+
+  // auto-releasing a write-accessor is slightly different to read-accessor.
+  // it kind of combines half of Finalise() and most of Autorelease()
+
+  // the only way to get a WriteAccessor is via RequestOutputImage() which puts it on m_InFlightOutputImages.
+  // so if it's not on that list then something is wrong.
+  std::map<unsigned int, LightweightCUDAImage>::iterator i = m_InFlightOutputImages.find(writeAccessor.m_Id);
+  if (i == m_InFlightOutputImages.end())
+  {
+    throw std::runtime_error("Invalid WriteAccessor passed to Autorelease()");
+  }
+  // sanity check
+  assert(i->second.GetId() == i->first);
+
+  // debugging
+  i->second.m_LastUsedByStream = stream;
+
+
+  // beware: at this point we can not yet add the image back on the free-pool.
+  // we need to be sure that any kernel queued/running has finished with it. and to do
+  // that we need to queue a stream-callback.
+
+  impldetail::StreamCallbackReleasePOD*   pod = new impldetail::StreamCallbackReleasePOD;
+  pod->m_Manager = this;
+  pod->m_Id      = writeAccessor.m_Id;
+
+  cudaError_t   err = cudaSuccess;
+  err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
+  if (err != cudaSuccess)
+  {
+    // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
+    delete pod;
+    throw std::runtime_error("Cannot queue stream callback");
+  }
+
+
+  // invalidate writeAccessor.
+  // to be done immediately, completion callback would be too late!
+  writeAccessor.m_Id = 0;
+  writeAccessor.m_DevicePointer = 0;
 }
 
 
@@ -511,12 +558,12 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
 
 
 //-----------------------------------------------------------------------------
-void CUDART_CB CUDAManager::StreamCallback(cudaStream_t stream, cudaError_t status, void* userData)
+void CUDART_CB CUDAManager::AutoReleaseStreamCallback(cudaStream_t stream, cudaError_t status, void* userData)
 {
   impldetail::StreamCallbackReleasePOD*   pod = (impldetail::StreamCallbackReleasePOD*) userData;
 
   // remember: we jump through the stream-callback hoop so that we can be sure the kernel has finished
-  // reading from it.
+  // reading from or writing to it.
   pod->m_Manager->m_AutoreleaseQueue.push(pod);
 }
 
@@ -526,15 +573,49 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
 {
   QMutexLocker    lock(&s_Lock);
 
+  // this bit for read-accessor autoreleased.
   std::map<unsigned int, LightweightCUDAImage>::iterator i = m_ValidImages.find(id);
-  assert(i != m_ValidImages.end());
-
-  // this effectively drops the reference from the readaccessor (that is dead already) that was
-  // passed into FinaliseAndAutorelease().
-  bool dead = !i->second.m_RefCount->deref();
-  if (dead)
+  if (i != m_ValidImages.end())
   {
-    AllRefsDropped(i->second);
+    // this effectively drops the reference from the readaccessor (that is dead already) that was
+    // passed into FinaliseAndAutorelease().
+    bool dead = !i->second.m_RefCount->deref();
+    if (dead)
+    {
+      AllRefsDropped(i->second);
+    }
+  }
+  else
+  {
+    // this for write-accessor autoreleased.
+    i = m_InFlightOutputImages.find(id);
+    // for now, the autoreleased id has to be either on m_ValidImages (see above), or on m_InFlightOutputImages.
+    assert(i != m_InFlightOutputImages.end());
+
+    // copy it out! because the iterator will become invalid shortly.
+    LightweightCUDAImage  lwci = i->second;
+
+    bool inserted = m_ValidImages.insert(std::make_pair(lwci.GetId(), lwci)).second;
+    assert(inserted);
+
+    // while being held by m_ValidImages, refs in there dont count towards the reference count.
+    // this is so that m_ValidImages does not keep them artificially alive.
+    // i.e. their refcount would never drop to zero if all datastorage nodes are gone, hence
+    // they'd never end up back on the m_AvailableImagePool.
+    lwci.m_RefCount->deref();
+
+    // and drop it.
+    m_InFlightOutputImages.erase(i);
+
+
+    // Autorelease() does not adjust the refcount! it needs to wait for the stream to finish.
+    // so that is done here.
+    bool dead = !lwci.m_RefCount->deref();
+    if (dead)
+    {
+      // FIXME: never called due to the extra ref in lwci above!
+      AllRefsDropped(i->second);
+    }
   }
 }
 

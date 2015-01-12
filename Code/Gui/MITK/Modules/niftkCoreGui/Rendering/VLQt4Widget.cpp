@@ -1007,8 +1007,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
                 texpod.m_LastUpdatedID = cudaImage.GetId();
               }
 
-              cudamng->Finalise(flippedWA, mystream);
-              // FIXME: this will effectively stall on mystream
+              cudamng->Autorelease(flippedWA, mystream);
             }
 
             err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
@@ -1830,7 +1829,8 @@ void VLQt4Widget::swapBuffers()
     FlipImage(outputWA, flippedWA, mystream);
 
     // FIXME: this may expose a race-condition in cudamanager
-    cudamanager->Finalise(outputWA, mystream);
+    //cudamanager->Finalise(outputWA, mystream);
+    cudamanager->Autorelease(outputWA, mystream);
 
     LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
 

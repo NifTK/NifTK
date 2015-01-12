@@ -157,7 +157,8 @@ public:
    */
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
-  // FIXME: i should have an Autorelease() for WriteAccessor too, so we can drop a temp buffer without having to Finalise() it.
+
+  void Autorelease(WriteAccessor& writeAccessor, cudaStream_t stream);
 
 
 protected:
@@ -194,7 +195,7 @@ private:
    * triggered before the callback so that work on other streams can proceed in parallel.
    * @internal
    */
-  static void CUDART_CB StreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
+  static void CUDART_CB AutoReleaseStreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
 
 
   /**
