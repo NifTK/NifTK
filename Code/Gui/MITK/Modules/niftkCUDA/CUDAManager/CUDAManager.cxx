@@ -326,6 +326,9 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   wa.m_DevicePointer  = i->m_DevicePtr;
   wa.m_SizeInBytes    = i->m_SizeInBytes;
   wa.m_BytePitch      = i->m_BytePitch;
+  wa.m_PixelWidth     = i->m_Width;
+  wa.m_PixelHeight    = i->m_Height;
+  wa.m_FIXME_pixeltype= FIXME_pixeltype;
   // the to be returned WriteAccessor has an implicit reference to the image.
   // so keep it alive.
   i->m_RefCount->ref();

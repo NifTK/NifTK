@@ -17,4 +17,5 @@ set(CPP_FILES
   CUDAImage/CUDAImage.cxx
   CUDAImage/LightweightCUDAImage.cxx
   CUDAImage/CUDAImageProperty.cxx
+  Kernels/FlipImage.cxx
 )

@@ -62,6 +62,9 @@ struct WriteAccessor
   void*           m_DevicePointer;
   std::size_t     m_SizeInBytes;
   unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;

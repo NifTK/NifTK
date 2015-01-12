@@ -46,6 +46,7 @@
 #include <CUDAImage/CUDAImage.h>
 #include <CUDAImage/LightweightCUDAImage.h>
 #include <CUDAImage/CUDAImageProperty.h>
+#include <Kernels/FlipImage.h>
 #include <cuda_gl_interop.h>
 
 
@@ -608,7 +609,6 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
 
   vl::mat4  mat;
   mat = mat.setIdentity();
-//  mat = mat.rotateXYZ(45, 45, 0);
   vl::ref<vl::Transform> tr     = new vl::Transform();
   tr->setLocalMatrix(mat);
 
@@ -627,10 +627,10 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
   //  0---3
   //  |   |
   //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 2;
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 1;
   vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 0;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 2; text2->at(2).t() = 0;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 2; text2->at(3).t() = 2;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 0;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 1;
 
 
   vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
@@ -997,7 +997,8 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
             {
               // FIXME: sanity check: array should have same dimensions as our (cpu-side) texture object.
 
-              err = cudaMemcpyToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, cudaImage.GetWidth() * cudaImage.GetHeight() * 4, cudaMemcpyDeviceToDevice, mystream);
+              // FIXME: need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin!
+              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
               if (err == cudaSuccess)
               {
                 texpod.m_LastUpdatedID = cudaImage.GetId();
@@ -1810,13 +1811,20 @@ void VLQt4Widget::swapBuffers()
     cudaArray_t     fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
 
     // side note: cuda-arrays are always measured in bytes, never in pixels.
-    err = cudaMemcpyFromArrayAsync(outputWA.m_DevicePointer, fboarr, 0, 0, QWidget::width() * QWidget::height() * 4, cudaMemcpyDeviceToDevice, mystream);
+    err = cudaMemcpy2DFromArrayAsync(outputWA.m_DevicePointer, outputWA.m_BytePitch, fboarr, 0, 0, outputWA.m_PixelWidth * 4, outputWA.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
     // not sure what to do if it fails. do not throw an exception, that's for sure.
     assert(err == cudaSuccess);
 
+    // the opengl-interop side is done, renderer can continue from now on.
     m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
 
-    LightweightCUDAImage lwci = cudamanager->Finalise(outputWA, mystream);
+    // need to flip the image! ogl is left-bottom, but everywhere else is left-top origin!
+    WriteAccessor   flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
+    // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
+    FlipImage(outputWA, flippedWA, mystream);
+
+    LightweightCUDAImage lwci        = cudamanager->Finalise(outputWA, mystream);
+    LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
 
     bool    isNewNode = false;
     mitk::DataNode::Pointer node = m_CUDAInteropPimpl->m_DataStorage->GetNamedNode(m_CUDAInteropPimpl->m_NodeName);
@@ -1831,12 +1839,11 @@ void VLQt4Widget::swapBuffers()
     CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
     if (img.IsNull())
       img = CUDAImage::New();
-    img->SetLightweightCUDAImage(lwci);
+    img->SetLightweightCUDAImage(lwciFlipped);
     node->SetData(img);
     if (isNewNode)
       m_CUDAInteropPimpl->m_DataStorage->Add(node);
     else
-      // FIXME: this does not trigger a call into UpdateDataNode()!
       node->Modified();
   }
 #endif
