@@ -59,7 +59,7 @@ class ExtractRoiStatistics(BaseInterface):
         
         im_shape = img_data.shape
         roi_shape = roi_data.shape
-        
+                
         self.number_of_ims = 1
         self.number_of_roi_ims = 1
         if len(im_shape) > 3:
@@ -77,7 +77,7 @@ class ExtractRoiStatistics(BaseInterface):
             unique_values = np.unique(roi_data)
 
         unique_values_number = len(unique_values)
-        
+
         stats_array= np.zeros((unique_values_number*self.number_of_ims,4))
         
         for im_index in range(0, self.number_of_ims):
