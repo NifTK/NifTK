@@ -7,11 +7,10 @@ import nipype.interfaces.io             as nio
 import inspect
 import os
 
-import cropimage as cropimage
-import n4biascorrection                 as biascorrection
+import niftk                            as niftk
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
-
+import cropimage                        as cropimage
 
 
 
@@ -248,9 +247,12 @@ def create_niftyseg_gif_propagation_pipeline(name='niftyseg_gif_propagation'):
     '''
     Bias correct the cropped image.
     '''
-    bias_correction = pe.Node(interface = biascorrection.N4BiasCorrection(),
+    bias_correction = pe.Node(interface = niftk.N4BiasCorrection(),
                               name = 'bias_correction')
     bias_correction.inputs.in_downsampling=2
+    bias_correction.inputs.in_maxiter=1000
+    bias_correction.inputs.in_convergence=0.000100
+    bias_correction.inputs.in_fwhm=0.050000
 
     '''
     *****************************************************************************

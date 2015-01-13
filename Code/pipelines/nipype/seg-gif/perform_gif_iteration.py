@@ -82,7 +82,10 @@ r.connect(datasource, 'cpp_dir', r.get_node('input_node'), 'in_cpp_dir')
 r.inputs.input_node.in_db_file = database_file
 r.inputs.input_node.out_dir = os.path.abspath(args.output_dir)
 
-r.write_graph(graph2use='colored')
+# Run the overall workflow
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

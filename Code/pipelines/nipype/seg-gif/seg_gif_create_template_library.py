@@ -10,9 +10,9 @@ import os
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
 import seg_gif_propagation              as gif
-import cropimage                        as cropimage
-import n4biascorrection                 as biascorrection
+import niftk                            as niftk
 import registration                     as reg
+import cropimage                        as cropimage
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
@@ -106,7 +106,7 @@ def preprocessing_inputs_pipeline(name='preprocessing_inputs_pipeline', number_o
     resample_image_mask_to_cropped_image.inputs.inter_val = 'NN'
     resample_image_mask_to_cropped_image.inputs.flo_file = mni_template_mask
 
-    bias_correction = pe.MapNode(interface = biascorrection.N4BiasCorrection(),
+    bias_correction = pe.MapNode(interface = niftk.N4BiasCorrection(),
                                        name = 'bias_correction',
                                        iterfield = ['in_file', 'mask_file'])
     bias_correction.inputs.in_downsampling=2

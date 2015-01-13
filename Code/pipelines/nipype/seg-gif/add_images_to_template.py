@@ -9,8 +9,8 @@ from distutils import spawn
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
 import seg_gif_create_template_library  as seggif
+import niftk                        	as niftk
 import cropimage                        as cropimage
-import n4biascorrection                 as biascorrection
 
 
 
@@ -82,9 +82,12 @@ def preprocessing_input_pipeline(name='preprocessing_inputs_pipeline', number_of
     resample_image_mask_to_cropped_image.inputs.inter_val = 'NN'
     resample_image_mask_to_cropped_image.inputs.flo_file = mni_template_mask
 
-    bias_correction = pe.Node(interface = biascorrection.N4BiasCorrection(),
+    bias_correction = pe.Node(interface = niftk.N4BiasCorrection(),
                                        name = 'bias_correction')
     bias_correction.inputs.in_downsampling=2
+    bias_correction.inputs.in_maxiter=1000
+    bias_correction.inputs.in_convergence=0.000100
+    bias_correction.inputs.in_fwhm=0.050000
 
     '''
     *****************************************************************************
@@ -295,7 +298,9 @@ cpp_sink.inputs.base_directory = os.path.abspath(input_cpp_dir)
 r.connect(r.get_node('output_node'), 'out_cpps', cpp_sink, '@cpp')
 r.connect(r.get_node('output_node'), 'out_invcpps', cpp_sink, '@invcpp')
 
-r.write_graph(graph2use='hierarchical')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='hierarchical')
 
 qsub_exec=spawn.find_executable('qsub')
 

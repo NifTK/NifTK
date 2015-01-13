@@ -182,8 +182,10 @@ for i in range(number_of_shells):
     r.inputs.input_node.in_bval_file = os.path.abspath(args.bvals[i])
     r.inputs.input_node.in_bvec_file = os.path.abspath(args.bvecs[i])
     
-    r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
-    r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
+    if do_susceptibility_correction:
+        r.inputs.input_node.in_fm_magnitude_file = os.path.abspath(args.fieldmapmag)
+        r.inputs.input_node.in_fm_phase_file = os.path.abspath(args.fieldmapphase)
+    
     r.inputs.input_node.in_t1_file = os.path.abspath(args.t1)
     r.inputs.input_node.op_basename = subject_name
     
@@ -217,7 +219,9 @@ for i in range(number_of_shells):
     r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
     r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
     
-    r.write_graph(graph2use = 'colored')
+    dot_exec=spawn.find_executable('dot')   
+    if not dot_exec == None:
+        r.write_graph(graph2use='colored')
     
     qsub_exec=spawn.find_executable('qsub')
 
@@ -390,7 +394,9 @@ workflow.connect(merge_dwis_images, 'merged_file', data_sink, '@corrected_dwis')
 workflow.connect(merge_bv_files, 'bvals', data_sink, '@bvals')
 workflow.connect(merge_bv_files, 'bvecs', data_sink, '@bvecs')
 
-workflow.write_graph(graph2use = 'colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    workflow.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

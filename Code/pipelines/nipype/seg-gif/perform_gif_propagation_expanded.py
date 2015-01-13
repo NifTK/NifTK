@@ -129,7 +129,10 @@ r.connect(mask_resample, 'res_file', r.get_node('input_node'), 'in_mask_file')
 r.inputs.input_node.in_db_file = os.path.abspath(args.database)
 r.inputs.input_node.out_dir = result_dir
 
-r.write_graph(graph2use='colored')
+# Run the overall workflow
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

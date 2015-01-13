@@ -60,7 +60,9 @@ r.connect(r.get_node('output_node'), 'asl_to_m0_transformations', ds, 'asl_to_m0
 if args.t1:
     r.connect(r.get_node('output_node'), 'm0_to_t1_transformation', ds, 'm0_to_t1_transformation')
 
-r.write_graph(graph2use = 'colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

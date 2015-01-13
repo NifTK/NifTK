@@ -240,7 +240,10 @@ def main():
     workflow.connect(reg_avg_value_pipeline, 'output_node.aff_files', ds, '@aff')
     
     # Run the overall workflow
-#     workflow.write_graph(graph2use='colored')
+    dot_exec=spawn.find_executable('dot')   
+    if not dot_exec == None:
+        workflow.write_graph(graph2use='colored')
+
     qsub_exec=spawn.find_executable('qsub')
 
     # Can we provide the QSUB options using an environment variable QSUB_OPTIONS otherwise, we use the default options

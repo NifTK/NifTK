@@ -11,6 +11,15 @@ from string import Template
 
 from nipype.interfaces.base import TraitedSpec, BaseInterface, BaseInterfaceInputSpec, File
 
+# A custom function for getting specific noddi path
+def getNoddiPath(cmd):
+    try:    
+        specific_dir=os.environ['NODDIDIR']
+        cmd=os.path.join(specific_dir,cmd)
+        return cmd
+    except KeyError:                
+        return cmd
+
 class NoddiInputSpec( BaseInterfaceInputSpec):
 
     in_dwis = File(exists=True, 
@@ -79,7 +88,7 @@ class Noddi( BaseInterface):
     def _my_script(self):
         """This is where you implement your script"""
 
-        matlab_scriptname = 'noddi_fitting'
+        matlab_scriptname = getNoddiPath('noddi_fitting')
 
         d = dict(in_dwis=self.inputs.in_dwis,
                  in_mask=self.inputs.in_mask,

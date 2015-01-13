@@ -104,8 +104,9 @@ r.connect(r.get_node('output_node'), 'out_fmri_to_t1_transformation', ds, '@fmri
 
 
 # Run the overall workflow
-
-r.write_graph(graph2use='colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
 
 qsub_exec=spawn.find_executable('qsub')
 

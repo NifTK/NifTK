@@ -6,13 +6,14 @@ import nipype.pipeline.engine           as pe           # pypeline engine
 from nipype                             import config, logging
 from distutils                          import spawn
 
-from n4biascorrection import N4BiasCorrection
+#from n4biascorrection import N4BiasCorrection
 import sys
 import os
 import textwrap
 import argparse
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
+import niftk as niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
@@ -25,9 +26,7 @@ def gen_substitutions(in_files, prefix, suffix):
         in_file=in_files[i]
         _, in_bn, _ = split_filename(in_file)
         subs.append((in_bn+'_corrected', \
-            prefix+in_bn+'_corrected'+suffix))
-        subs.append((in_bn+'_biasfield', \
-            prefix+in_bn+'_biasfield'+suffix))
+            prefix+in_bn+suffix))
     return subs
 
 """
@@ -111,10 +110,13 @@ def main():
     input_node.inputs.mask_files=args.input_mask
     
     # Fnding masks to use for bias correction:
-    bias_correction=pe.MapNode(interface = N4BiasCorrection(),
+    bias_correction=pe.MapNode(interface = niftk.N4BiasCorrection(),
                                name='bias_correction', 
                                iterfield=['in_file', 'mask_file'])
     bias_correction.inputs.in_downsampling=2
+    bias_correction.inputs.in_maxiter=1000
+    bias_correction.inputs.in_convergence=0.000100
+    bias_correction.inputs.in_fwhm=0.050000
 
     if args.input_mask is None:
 	mni_to_input = pe.MapNode(interface=niftyreg.RegAladin(), 
@@ -158,10 +160,12 @@ def main():
     ds.inputs.base_directory = os.path.abspath(os.path.abspath(args.output_dir))
     workflow.connect(subsgen, 'substitutions', ds, 'substitutions')
     workflow.connect(output_node, 'out_img_files', ds, '@img')
-    workflow.connect(output_node, 'out_bias_files', ds, '@field')
     
-    # Run the overall workflow    
-    # workflow.write_graph(graph2use='colored')
+    # Run the overall workflow 
+    dot_exec=spawn.find_executable('dot')   
+    if not dot_exec == None:
+	workflow.write_graph(graph2use='colored')
+
     qsub_exec=spawn.find_executable('qsub')
 
     # Can we provide the QSUB options using an environment variable QSUB_OPTIONS otherwise, we use the default options

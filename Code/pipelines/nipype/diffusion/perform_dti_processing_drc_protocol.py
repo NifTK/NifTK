@@ -221,7 +221,10 @@ print codes
 r = create_drc_diffusion_processing_workflow(codes, args.output, dwi_interp_type = args.interpolation, log_data=False,resample_t1=args.resample_t1)
 
 # Run the overall workflow
-# r.write_graph(graph2use='colored')
+dot_exec=spawn.find_executable('dot')   
+if not dot_exec == None:
+    r.write_graph(graph2use='colored')
+
 qsub_exec=spawn.find_executable('qsub')
 
 # Can we provide the QSUB options using an environment variable QSUB_OPTIONS otherwise, we use the default options
