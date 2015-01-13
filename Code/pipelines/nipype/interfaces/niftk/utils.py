@@ -1,13 +1,14 @@
-#!/usr/bin/env python
+"""
+   Interface for niftk filter tools
+"""
 
-import numpy as np
-import os.path
-import nibabel as nib
-
-from nipype.interfaces.base import BaseInterface, BaseInterfaceInputSpec
+from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
 from nipype.interfaces.base import (TraitedSpec, File, traits)
 
-class WriteArrayToCsvInputSpec(BaseInterfaceInputSpec):
+import os
+
+
+class WriteArrayToCsvInputSpec(NIFTKCommandInputSpec):
     in_array = traits.Array(exists=True, mandatory=True,
                         desc="array")           
     in_name = traits.String(mandatory=True, desc="Name of the output file")
@@ -16,7 +17,7 @@ class WriteArrayToCsvOutputSpec(TraitedSpec):
     out_file   = File(desc="Output file")
 
 
-class WriteArrayToCsv(BaseInterface):
+class WriteArrayToCsv(NIFTKCommand):
 
     """
 
@@ -51,3 +52,7 @@ class WriteArrayToCsv(BaseInterface):
         outfile = os.path.abspath(in_name + '.csv')
         return outfile
         
+
+
+
+
