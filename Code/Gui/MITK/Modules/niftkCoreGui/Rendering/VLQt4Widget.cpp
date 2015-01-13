@@ -553,6 +553,20 @@ void VLQt4Widget::RenderScene()
 
   // trigger execution of the renderer(s).
   vl::real now_time = vl::Time::currentTime();
+
+  // simple fps stats
+  {
+    static int    counter = 0;
+    ++counter;
+
+    if ((counter % 10) == 0)
+    {
+      static vl::real prev = 0;
+
+      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
+      prev = m_RenderingTree->frameClock();
+    }
+  }
   m_RenderingTree->setFrameClock(now_time);
   m_RenderingTree->render();
 
@@ -991,14 +1005,15 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
           err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
           if (err == cudaSuccess)
           {
+            // need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+            WriteAccessor   flippedWA   = cudamng->RequestOutputImage(cudaImage.GetWidth(), cudaImage.GetHeight(), 4);
+
             cudaArray_t   arr = 0;
             err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
             if (err == cudaSuccess)
             {
               // FIXME: sanity check: array should have same dimensions as our (cpu-side) texture object.
 
-              // need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-              WriteAccessor   flippedWA   = cudamng->RequestOutputImage(cudaImage.GetWidth(), cudaImage.GetHeight(), 4);
               FlipImage(inputRA, flippedWA, mystream);
 
               err = cudaMemcpy2DToArrayAsync(arr, 0, 0, flippedWA.m_DevicePointer, flippedWA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
@@ -1006,8 +1021,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
               {
                 texpod.m_LastUpdatedID = cudaImage.GetId();
               }
-
-              cudamng->Autorelease(flippedWA, mystream);
             }
 
             err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
@@ -1015,6 +1028,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
             {
               MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
             }
+
+            // make sure Autorelease() and Finalise() are always the last things to do for a stream!
+            // otherwise the streamcallback will block subsequent work.
+            // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
+            // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
+            cudamng->Autorelease(flippedWA, mystream);
           }
 
           cudamng->Autorelease(inputRA, mystream);
@@ -1828,11 +1847,9 @@ void VLQt4Widget::swapBuffers()
     // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
     FlipImage(outputWA, flippedWA, mystream);
 
-    // FIXME: this may expose a race-condition in cudamanager
-    //cudamanager->Finalise(outputWA, mystream);
-    cudamanager->Autorelease(outputWA, mystream);
-
     LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
+    // Finalise() needs to come before Autorelease(), for performance reasons.
+    cudamanager->Autorelease(outputWA, mystream);
 
     bool    isNewNode = false;
     mitk::DataNode::Pointer node = m_CUDAInteropPimpl->m_DataStorage->GetNamedNode(m_CUDAInteropPimpl->m_NodeName);

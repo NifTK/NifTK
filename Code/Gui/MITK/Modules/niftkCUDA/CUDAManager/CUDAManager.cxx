@@ -250,11 +250,11 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
   ProcessAutoreleaseQueue();
 
   // round up the length of a line of pixels to make sure access is aligned.
-  unsigned int  bytepitch = width * FIXME_pixeltype;
-  bytepitch = std::max(bytepitch, 64u);
-  // 64 byte alignment sounds good.
-  bytepitch = ((bytepitch / 64) + 1) * 64;
-  assert((bytepitch % 64) == 0);
+  unsigned int        bytepitch = width * FIXME_pixeltype;
+  const unsigned int  alignment = 128;    // 64 byte alignment is not enough!
+  bytepitch = std::max(bytepitch, alignment);
+  bytepitch = ((bytepitch / alignment) + 1) * alignment;
+  assert((bytepitch % alignment) == 0);
 
   std::size_t   minSizeInBytes = bytepitch * height;
 
@@ -593,27 +593,26 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
     assert(i != m_InFlightOutputImages.end());
 
     // copy it out! because the iterator will become invalid shortly.
-    LightweightCUDAImage  lwci = i->second;
+    //LightweightCUDAImage  lwci = i->second;
 
-    bool inserted = m_ValidImages.insert(std::make_pair(lwci.GetId(), lwci)).second;
-    assert(inserted);
+    std::pair<std::map<unsigned int, LightweightCUDAImage>::iterator, bool>   inserted = m_ValidImages.insert(std::make_pair(i->second.GetId(), i->second));
+    assert(inserted.second);
+
+    // and drop it.
+    m_InFlightOutputImages.erase(i);
+    i = inserted.first;
 
     // while being held by m_ValidImages, refs in there dont count towards the reference count.
     // this is so that m_ValidImages does not keep them artificially alive.
     // i.e. their refcount would never drop to zero if all datastorage nodes are gone, hence
     // they'd never end up back on the m_AvailableImagePool.
-    lwci.m_RefCount->deref();
-
-    // and drop it.
-    m_InFlightOutputImages.erase(i);
-
+    i->second.m_RefCount->deref();
 
     // Autorelease() does not adjust the refcount! it needs to wait for the stream to finish.
     // so that is done here.
-    bool dead = !lwci.m_RefCount->deref();
+    bool dead = !i->second.m_RefCount->deref();
     if (dead)
     {
-      // FIXME: never called due to the extra ref in lwci above!
       AllRefsDropped(i->second);
     }
   }
