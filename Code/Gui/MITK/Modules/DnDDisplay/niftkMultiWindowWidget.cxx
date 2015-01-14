@@ -24,6 +24,12 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkOverlayManager.h>
+#include <mitkOverlay2DLayouter.h>
 #include <mitkProportionalTimeGeometry.h>
 #include <mitkSlicedGeometry3D.h>
 #include <mitkVtkLayerController.h>
@@ -272,6 +278,24 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
+
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer textOverlay = mitk::TextOverlay2D::New();
+    m_TextOverlays[i] = textOverlay;
+    textOverlay->SetFontSize(14);
+    textOverlay->SetColor(0.0f, 1.0f, 0.0f);
+    textOverlay->SetOpacity(1.0f);
+
+    overlayManager->AddOverlay(textOverlay.GetPointer(), renderer);
+    overlayManager->SetLayouter(textOverlay.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+  }
 }
 
 
@@ -473,7 +497,22 @@ void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
       m_FocusHasChanged = true;
       m_FocusLosingWindowIndex = m_SelectedWindowIndex;
     }
+
+    MITK_INFO << "void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)";
+    if (m_SelectedWindowIndex < 3)
+    {
+      m_TextOverlays[m_SelectedWindowIndex]->SetVisibility(false, m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+      m_TextOverlays[m_SelectedWindowIndex]->Modified();
+    }
+
     m_SelectedWindowIndex = selectedWindowIndex;
+
+    if (m_SelectedWindowIndex < 3)
+    {
+      m_TextOverlays[m_SelectedWindowIndex]->SetVisibility(true, m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
+      m_TextOverlays[m_SelectedWindowIndex]->Modified();
+    }
+
     this->BlockUpdate(updateWasBlocked);
   }
 }
@@ -2107,7 +2146,96 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
       this->SynchroniseCursorPositions(windowIndex);
     }
 
+    this->UpdateIntensityAnnotation();
+
     this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::UpdateIntensityAnnotation() const
+{
+  if (m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < 3)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[m_SelectedWindowIndex]->GetRenderer();
+    mitk::TextOverlay2D::Pointer textOverlay = m_TextOverlays[m_SelectedWindowIndex];
+
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+    mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+    mitk::NodePredicateNot::Pointer isNotBinary = mitk::NodePredicateNot::New(isBinary);
+    mitk::NodePredicateAnd::Pointer isImageAndNotBinary = mitk::NodePredicateAnd::New(isImage, isNotBinary);
+    mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
+    mitk::NodePredicateAnd::Pointer isVisibleAndImageAndNotBinary = mitk::NodePredicateAnd::New(isVisible, isImageAndNotBinary);
+
+    /// Note:
+    /// The nodes are printed in the order of their layer.
+    std::multimap<int, mitk::DataNode*> visibleNonBinaryImageNodes;
+
+    mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImageAndNotBinary).GetPointer();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+    {
+      mitk::DataNode* node = it->Value();
+      int layer = 0;
+      if (node->GetIntProperty("layer", layer, renderer))
+      {
+        visibleNonBinaryImageNodes.insert(std::make_pair(layer, node));
+      }
+    }
+
+    std::stringstream stream;
+    stream.precision(2);
+    stream.imbue(std::locale::classic());
+
+    itk::Index<3> selectedIndex;
+    m_Geometry->WorldToIndex(m_SelectedPosition, selectedIndex);
+//      stream << "Position: <" << std::fixed << m_SelectedPosition[0] << ", "
+//             << std::fixed << m_SelectedPosition[1] << ", "
+//             << std::fixed << m_SelectedPosition[2] << "> mm" << std::endl
+//             << "Index: <" << selectedIndex[0] << ", " << selectedIndex[1] << ", " << selectedIndex[2] << "> ";
+
+    if (visibleNonBinaryImageNodes.size() == 1)
+    {
+      stream << "Intensity: ";
+    }
+    else if (visibleNonBinaryImageNodes.size() > 1)
+    {
+      stream << "Intensities: ";
+    }
+
+    for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
+    {
+      mitk::DataNode* node = it->second;
+
+      int component = 0;
+      node->GetIntProperty("Image.Displayed Component", component);
+
+      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+      mitk::ScalarType pixelValue = image->GetPixelValueByIndex(selectedIndex, renderer->GetTimeStep(), component);
+
+      if (it != visibleNonBinaryImageNodes.begin())
+      {
+        stream << "; ";
+      }
+
+      if (visibleNonBinaryImageNodes.size() != 1)
+      {
+        stream << node->GetName() << ": ";
+      }
+
+      if (std::fabs(pixelValue) > 10e6 || std::fabs(pixelValue) < 10e-3)
+      {
+//          stream << "; Time: " << renderer->GetTime() << " ms; Pixelvalue: " << std::scientific << pixelValue << "  ";
+        stream << std::scientific << pixelValue;
+      }
+      else
+      {
+        stream << pixelValue;
+      }
+    }
+
+    textOverlay->SetText(stream.str());
+    textOverlay->Modified();
   }
 }
 

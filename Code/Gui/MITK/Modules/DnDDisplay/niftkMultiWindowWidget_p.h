@@ -17,9 +17,10 @@
 
 #include <QColor>
 
+#include <mitkBaseGeometry.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkBaseGeometry.h>
+#include <mitkTextOverlay2D.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -450,6 +451,9 @@ private:
   /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Updates the annotation that shows the intensity values in the visible images.
+  void UpdateIntensityAnnotation() const;
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
 
   /// \brief The name of the viewer.
@@ -567,6 +571,8 @@ private:
   std::vector<bool> m_ScaleFactorHasChanged;
   bool m_CursorPositionBindingHasChanged;
   bool m_ScaleFactorBindingHasChanged;
+
+  mitk::TextOverlay2D::Pointer m_TextOverlays[3];
 
   friend class DisplayGeometryModificationCommand;
 
