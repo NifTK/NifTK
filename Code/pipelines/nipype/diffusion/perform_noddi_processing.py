@@ -5,16 +5,15 @@ import nipype.interfaces.io             as nio
 import nipype.pipeline.engine           as pe
 import diffusion_mri_processing         as dmri
 import nipype.interfaces.fsl            as fsl
-
-import noddi as noddi
 from distutils                          import spawn
 import argparse
 import os, sys
 
-import registration
-
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
+
+import registration
+import niftk
 
 def merge_bv_function (input_bvals, input_bvecs):
 
@@ -368,7 +367,7 @@ merge_bv_files = pe.Node(interface = niu.Function(input_names = ['input_bvals',
 merge_bv_files.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
 merge_bv_files.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]
 
-noddi_fitting = pe.Node(interface = noddi.Noddi(),
+noddi_fitting = pe.Node(interface = niftk.Noddi(),
                         name = 'noddi_fitting')
 
 workflow.connect(merge_dwis_images, 'merged_file', noddi_fitting, 'in_dwis')

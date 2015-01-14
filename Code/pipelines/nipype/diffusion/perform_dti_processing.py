@@ -3,13 +3,14 @@
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
-import diffusion_mri_processing         as dmri
 from distutils                          import spawn
 import argparse
 import os, sys
 
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
+
+import diffusion_mri_processing         as dmri
 
 
 

@@ -7,8 +7,9 @@ from nipype                             import config, logging
 from distutils                          import spawn
 import sys, os
 import argparse, textwrap
-from extract_roi_statistics import ExtractRoiStatistics
 import nipype.interfaces.niftyreg as niftyreg
+
+from extract_roi_statistics import ExtractRoiStatistics
 
 def print_array_function(in_array, subject_id):
     import os, numpy as np

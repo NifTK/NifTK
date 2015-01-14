@@ -6,12 +6,13 @@ import nipype.pipeline.engine           as pe
 import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
-import diffusion_mri_processing         as dmri
 
-from midas2dicom import Midas2Dicom
 from distutils import spawn
 import argparse
 import os
+
+import diffusion_mri_processing         as dmri
+import niftk
 
 def gen_substitutions(op_basename):    
     from nipype.utils.filemanip import split_filename
@@ -94,7 +95,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 		                   name = 'infosource')
 	infosource.iterables = ('subject_id', midas_code)
 
-	midas2dicom = pe.Node(Midas2Dicom(), name='m2d')
+	midas2dicom = pe.Node(niftk.Midas2Dicom(), name='m2d')
 
 	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/']#,
 		               # '/var/lib/midas/data/ppadti/images/ims-study/']

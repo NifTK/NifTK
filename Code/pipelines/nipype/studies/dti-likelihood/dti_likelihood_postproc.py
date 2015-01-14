@@ -7,8 +7,6 @@ import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyfit       as niftyfit
 import nipype.interfaces.fsl            as fsl
 from extract_roi_statistics import ExtractRoiStatistics
-from write_array_to_csv import WriteArrayToCsv
-from calculate_distance_between_affines import CalculateAffineDistances
 
 def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
 
@@ -69,17 +67,17 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     # We need to merge the resampled parcellations before calculating the statistics    
     merge_parc = pe.Node(interface = fsl.Merge(dimension = 't'), name = 'merge_parc')
     
-    calculate_affine_distance = pe.Node(interface=CalculateAffineDistances(), name="calculate_affine_distance")
-    array_affine_writer = pe.Node(interface=WriteArrayToCsv(),name='affine_stat_writer')
+    calculate_affine_distance = pe.Node(interface=niftk.CalculateAffineDistances(), name="calculate_affine_distance")
+    array_affine_writer = pe.Node(interface=niftk.WriteArrayToCsv(),name='affine_stat_writer')
     array_affine_writer.inputs.in_name = 'affine_stats'
     
-    array_tensor_writer = pe.Node(interface=WriteArrayToCsv(),name='tensor_stat_writer')
+    array_tensor_writer = pe.Node(interface=niftk.WriteArrayToCsv(),name='tensor_stat_writer')
     array_tensor_writer.inputs.in_name = 'tensor_stats'
     
-    array_dwi_writer = pe.Node(interface=WriteArrayToCsv(),name='dwi_stat_writer')
+    array_dwi_writer = pe.Node(interface=niftk.WriteArrayToCsv(),name='dwi_stat_writer')
     array_dwi_writer.inputs.in_name = 'dwi_stats'
     
-    array_residual_writer = pe.Node(interface=WriteArrayToCsv(),name='residual_stat_writer')
+    array_residual_writer = pe.Node(interface=niftk.WriteArrayToCsv(),name='residual_stat_writer')
     array_residual_writer.inputs.in_name = 'proc_residual_stats'
     
     
@@ -87,7 +85,7 @@ def create_dti_likelihood_post_proc_workflow(name='dti_likelihood_post_proc'):
     roi_tensor_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_tensor_stats')
     roi_dwi_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_dwi_stats')
     roi_residual_stats = pe.Node(interface=ExtractRoiStatistics(), name='roi_residual_stats')  
-    array_dwi_writer = pe.Node(interface=WriteArrayToCsv(),name='dwi_stat_writer')
+    array_dwi_writer = pe.Node(interface=niftk.WriteArrayToCsv(),name='dwi_stat_writer')
     array_dwi_writer.inputs.in_name = 'dwi_stats'
     
     output_node = pe.Node(

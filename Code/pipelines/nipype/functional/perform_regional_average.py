@@ -3,7 +3,6 @@
 import nipype.interfaces.utility        as niu          # utility
 import nipype.interfaces.io             as nio          # Input Output
 import nipype.pipeline.engine           as pe           # pypeline engine
-from regional_average                   import create_reg_avg_value_pipeline
 from nipype                             import config, logging
 from distutils.spawn                    import find_executable
 
@@ -13,6 +12,8 @@ import os
 import shutil
 import textwrap
 import argparse
+
+from regional_average                   import create_reg_avg_value_pipeline
 
 def get_all_images_in_directory(path):
     list_of_images=[]

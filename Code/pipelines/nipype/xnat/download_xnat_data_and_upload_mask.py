@@ -7,7 +7,6 @@ import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.fsl            as fsl
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
-import diffusion_mri_processing         as dmri
 import argparse
 import os, sys
 import pyxnat

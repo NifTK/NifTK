@@ -3,11 +3,12 @@
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
-import registration as reg
 import argparse
 import os
 import nipype.interfaces.niftyreg as niftyreg
 from distutils import spawn
+
+import registration as reg
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 

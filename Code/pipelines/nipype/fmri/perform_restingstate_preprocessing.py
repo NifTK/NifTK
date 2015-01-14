@@ -4,11 +4,10 @@ import nipype.interfaces.utility        as niu          # utility
 import nipype.interfaces.io             as nio          # Input Output
 import nipype.pipeline.engine           as pe           # pypeline engine
 from distutils                          import spawn
-
-import restingstatefmri as fmri
 import os
 import argparse
 
+import restingstatefmri as fmri
 
 
 def create_restingstatefmri_preprocessing_pipeline(name):

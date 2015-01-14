@@ -3,13 +3,14 @@
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe          
-import diffusion_mri_processing         as dmri
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
 import os
 import glob
 import nipype.interfaces.fsl as fsl
 import shutil
+
+import diffusion_mri_processing         as dmri
 
 def merge_vector_files(input_files, basename):
         import numpy as np

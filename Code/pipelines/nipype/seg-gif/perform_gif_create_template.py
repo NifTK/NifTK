@@ -7,6 +7,7 @@ import argparse
 import os
 from distutils import spawn
 import nipype.interfaces.niftyreg       as niftyreg
+
 import seg_gif_create_template_library  as seggif
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')

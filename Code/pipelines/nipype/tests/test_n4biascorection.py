@@ -3,7 +3,7 @@ import nipype.pipeline.engine           as pe          # pypeline engine
 import os
 import argparse
 
-import n4biascorrection
+import niftk
 
 name = 'test_n4biascorrection'
 
@@ -23,7 +23,7 @@ workflow.base_dir=name
 
 directory = os.getcwd()
 
-node = pe.Node(interface = n4biascorrection.N4BiasCorrection(), name = 'n4')
+node = pe.Node(interface = niftk.N4BiasCorrection(), name = 'n4')
 output_node = pe.Node(interface = niu.IdentityInterface(fields = ['out_file', 'out_biasfield_file']), name = 'output_node')
 workflow.connect(node, 'out_file',  output_node, 'out_file')
 workflow.connect(node, 'out_biasfield_file',   output_node, 'out_biasfield_file')

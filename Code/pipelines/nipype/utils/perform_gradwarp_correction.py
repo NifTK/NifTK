@@ -10,7 +10,6 @@ import os
 import textwrap
 import argparse
 import nipype.interfaces.niftyreg as niftyreg
-from gradwarp_correction import GradwarpCorrection
 
 
 def gen_substitutions(in_file, prefix, suffix):    
@@ -123,7 +122,7 @@ def main():
     input_node.inputs.input_coeff=args.input_coeff
     
     # The gradwarp field is computed.
-    gradwarp=pe.Node(interface = GradwarpCorrection(),
+    gradwarp=pe.Node(interface = niftk.GradwarpCorrection(),
                      name='gradwarp')
     gradwarp.inputs.offset_x=-1*args.offset_x
     gradwarp.inputs.offset_y=-1*args.offset_y
