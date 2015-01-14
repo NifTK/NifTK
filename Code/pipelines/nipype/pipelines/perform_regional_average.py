@@ -13,7 +13,8 @@ import shutil
 import textwrap
 import argparse
 
-from regional_average                   import create_reg_avg_value_pipeline
+import niftk
+
 
 def get_all_images_in_directory(path):
     list_of_images=[]
@@ -230,11 +231,11 @@ def main():
     workflow = pe.Workflow(name='reg_avg_value')
     workflow.base_dir = reg_avg_value_var.output_folder
     workflow.base_output_dir='reg_avg_value'
-
+    
     # Create the output folder if it does not exists    
     if not os.path.exists(os.path.abspath(reg_avg_value_var.output_folder)):
         os.mkdir(os.path.abspath(reg_avg_value_var.output_folder))
-
+    
     # Specify how and where to save the log files
     config.update_config({'logging': {'log_directory': os.path.abspath(reg_avg_value_var.output_folder),
                                       'log_to_file': True}})
@@ -242,7 +243,7 @@ def main():
     config.enable_debug_mode()
     
     # Create the input node interface
-    reg_avg_value_pipeline=create_reg_avg_value_pipeline(reg_avg_value_var)
+    reg_avg_value_pipeline=niftk.functional.create_reg_avg_value_pipeline(reg_avg_value_var)
         
     # Create a node to add the suffix and prefix if required
     subsgen = pe.Node(interface = niu.Function(input_names = ['functional_files', \

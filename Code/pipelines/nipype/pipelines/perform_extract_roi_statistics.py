@@ -9,7 +9,7 @@ import sys, os
 import argparse, textwrap
 import nipype.interfaces.niftyreg as niftyreg
 
-from extract_roi_statistics import ExtractRoiStatistics
+import niftk
 
 def print_array_function(in_array, subject_id):
     import os, numpy as np
@@ -89,7 +89,7 @@ input_filenames = [os.path.basename(f) for f in input_files]
 # extracting the 'subject list simply for iterable purposes
 subject_list = [f.replace('.nii.gz','') for f in input_filenames]
 
-extract_roi_stats = pe.MapNode(interface=ExtractRoiStatistics(),
+extract_roi_stats = pe.MapNode(interface=niftk.stats.ExtractRoiStatistics(),
                                name='extract_roi_stats',
                                iterfield = ['in_file', 'roi_file'])
 

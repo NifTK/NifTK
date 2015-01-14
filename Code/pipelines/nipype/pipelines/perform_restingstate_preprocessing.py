@@ -7,7 +7,7 @@ from distutils                          import spawn
 import os
 import argparse
 
-import niftk.fmri as fmri
+import niftk
 
 
 def create_restingstatefmri_preprocessing_pipeline(name):
@@ -25,7 +25,7 @@ def create_restingstatefmri_preprocessing_pipeline(name):
                     'in_parcellation']),
         name='input_node')
 
-    resting_state_preproc = pe.Node(interface = fmri.RestingStatefMRIPreprocess(),
+    resting_state_preproc = pe.Node(interface = niftk.fmri.RestingStatefMRIPreprocess(),
                                     name = 'resting_state_preproc')
 
     workflow.connect(input_node, 'in_fmri', resting_state_preproc, 'in_fmri')
@@ -110,21 +110,21 @@ if not dot_exec == None:
 qsub_exec=spawn.find_executable('qsub')
 
 # Can we provide the QSUB options using an environment variable QSUB_OPTIONS otherwise, we use the default options
-try:    
+try:
     qsubargs=os.environ['QSUB_OPTIONS']
-except KeyError:                
+except KeyError:
     print 'The environtment variable QSUB_OPTIONS is not set up, we cannot queue properly the process. Using the default script options.'
     qsubargs='-l h_rt=00:05:00 -l tmem=1.8G -l h_vmem=1.8G -l vf=2.8G -l s_stack=10240 -j y -b y -S /bin/csh -V'
     print qsubargs
 
 # We can use qsub or not depending of this environment variable, by default we use it.
-try:    
+try:
     run_qsub=os.environ['RUN_QSUB'] in ['true', '1', 't', 'y', 'yes', 'TRUE', 'YES', 'T', 'Y']
-except KeyError:                
+except KeyError:
     run_qsub=True
 
 if not qsub_exec == None and run_qsub:
-	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+    r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
-	r.run(plugin='MultiProc')
+    r.run(plugin='MultiProc')
 

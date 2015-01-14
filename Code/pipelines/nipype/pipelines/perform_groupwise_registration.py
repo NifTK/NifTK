@@ -96,7 +96,7 @@ except KeyError:
     run_qsub=True
 
 if not qsub_exec == None and run_qsub:
-	r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+    r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
-	r.run(plugin='MultiProc')
+    r.run(plugin='MultiProc')
 
