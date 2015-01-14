@@ -46,6 +46,9 @@ struct ReadAccessor
   const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
   unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -62,6 +65,9 @@ struct WriteAccessor
   void*           m_DevicePointer;
   std::size_t     m_SizeInBytes;
   unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -152,6 +158,9 @@ public:
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
 
+  void Autorelease(WriteAccessor& writeAccessor, cudaStream_t stream);
+
+
 protected:
   CUDAManager();
   virtual ~CUDAManager();
@@ -186,7 +195,7 @@ private:
    * triggered before the callback so that work on other streams can proceed in parallel.
    * @internal
    */
-  static void CUDART_CB StreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
+  static void CUDART_CB AutoReleaseStreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
 
 
   /**

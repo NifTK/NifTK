@@ -72,6 +72,7 @@ protected:
   /// \brief Called by framework when a node was added to the datastorage
   virtual void OnNodeAdded(mitk::DataNode* node);
   virtual void OnNodeDeleted(mitk::DataNode* node);
+  virtual void OnNodeUpated(const mitk::DataNode* node);
 
   void OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   void OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
@@ -81,13 +82,14 @@ protected:
   virtual void Visible();
 
 private slots: 
+  void OnBackgroundNodeSelected(const mitk::DataNode* node);
 
 
 private: 
   void InitVLRendering();
 
   /// \brief 
-  void UpdateDisplay(bool viewEnabled = true);
+  void ReinitDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
   Ui::NewVisualizationViewControls* m_Controls;

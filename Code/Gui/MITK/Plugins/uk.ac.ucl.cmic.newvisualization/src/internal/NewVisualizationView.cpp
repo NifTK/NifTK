@@ -26,6 +26,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateOr.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkDataNodePropertyListener.h>
@@ -90,6 +91,8 @@ NewVisualizationView::~NewVisualizationView()
   if (m_OpacityPropertyListener)
     m_OpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
 
+  GetDataStorage()->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<NewVisualizationView, const mitk::DataNode*>(this, &NewVisualizationView::OnNodeUpated));
+
   MITK_INFO <<"Destructing NewViz plugin";
 
 //  m_RenderApplet = 0;
@@ -114,7 +117,24 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::NewVisualizationViewControls();
     m_Controls->setupUi(parent);
 
-    connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
+    bool  ok = false;
+    ok = QObject::connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
+    assert(ok);
+
+    m_Controls->m_BackgroundNode->SetDataStorage(GetDataStorage());
+    m_Controls->m_BackgroundNode->SetAutoSelectNewItems(false);
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer    isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+#ifdef _USE_CUDA
+    mitk::TNodePredicateDataType<CUDAImage>::Pointer      isCuda = mitk::TNodePredicateDataType<CUDAImage>::New();
+    mitk::NodePredicateOr::Pointer                        isSuitable = mitk::NodePredicateOr::New(isImage, isCuda);
+    m_Controls->m_BackgroundNode->SetPredicate(isSuitable);
+#else
+    m_Controls->m_BackgroundNode->SetPredicate(isImage);
+#endif
+    ok = QObject::connect(m_Controls->m_BackgroundNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnBackgroundNodeSelected(const mitk::DataNode*)));
+
+    // if someone calls node->Modified() we need to redraw.
+    GetDataStorage()->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<NewVisualizationView, const mitk::DataNode*>(this, &NewVisualizationView::OnNodeUpated));
 
     // Init listener
     m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
@@ -178,6 +198,7 @@ void  NewVisualizationView::InitVLRendering()
 
 
   m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
+  m_VLQtRenderWindow->setSizePolicy(QSizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding));
   m_VLQtRenderWindow->show();
 
   // default transparency blending function.
@@ -195,6 +216,25 @@ void NewVisualizationView::On_SliderMoved(int val)
 {
   m_VLQtRenderWindow->UpdateThresholdVal(val);
   m_VLQtRenderWindow->update();
+}
+
+
+//-----------------------------------------------------------------------------
+void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
+{
+  m_VLQtRenderWindow->SetBackgroundNode(node);
+  // can fail, but we just ignore that.
+}
+
+
+//-----------------------------------------------------------------------------
+void NewVisualizationView::OnNodeUpated(const mitk::DataNode* node)
+{
+  if (node == 0 || node->GetData()== 0)
+    return;
+
+  mitk::DataNode::ConstPointer   dn(node);
+  m_VLQtRenderWindow->QueueUpdateDataNode(dn);
 }
 
 
@@ -260,7 +300,7 @@ void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, con
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_VLQtRenderWindow->UpdateDataNode(node);
+  m_VLQtRenderWindow->QueueUpdateDataNode(node);
   //MITK_INFO <<"Visibility Change";
 }
 
@@ -271,7 +311,7 @@ void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mi
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_VLQtRenderWindow->UpdateDataNode(node);
+  m_VLQtRenderWindow->QueueUpdateDataNode(node);
   //MITK_INFO <<"Color Change";
 }
 
@@ -282,7 +322,7 @@ void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const 
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_VLQtRenderWindow->UpdateDataNode(node);
+  m_VLQtRenderWindow->QueueUpdateDataNode(node);
 
 
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
@@ -347,12 +387,12 @@ void NewVisualizationView::Visible()
   QmitkBaseView::Visible();
 
   // Make sure that we show all the nodes that are already present in DataStorage
-  UpdateDisplay();
+  ReinitDisplay();
 }
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::UpdateDisplay(bool viewEnabled)
+void NewVisualizationView::ReinitDisplay(bool viewEnabled)
 {
   m_VLQtRenderWindow->ClearScene();
 
@@ -380,7 +420,7 @@ void NewVisualizationView::UpdateDisplay(bool viewEnabled)
     if (!isVisible)
       continue;
     
-    m_VLQtRenderWindow->AddDataNode(currentDataNode);
+    m_VLQtRenderWindow->AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
     //m_RenderApplet->rendering()->render();
     MITK_INFO <<"Node added";
   }
