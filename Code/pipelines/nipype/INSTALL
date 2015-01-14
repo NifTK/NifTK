@@ -53,15 +53,12 @@ On a terminal, type the following commands
 1) Install MacPorts: https://www.macports.org/install.php
 2) sudo port install git python27 sqlite3 graphviz py27-ipython py27-numpy py27-scipy py27-traits py27-dateutil py27-sphinx py27-nibabel py27-networkx py27-six py27-nose py27-matplotlib; sudo easy_install dipy
 3) cd $HOME/Projects/; git clone https://github.com/ntoussaint/nipype.git nipype; cd nipype; sudo python setup.py install
-4) cd $HOME/Projects/NifTK/src; git fetch origin; git checkout b3421-nipype-workflows
+3) cd ~/Projects/NifTK/src; git fetch niftymidas; git checkout dev
 5) Add the following lines in your $HOME/.bash_profile:
 
 NIFTK_SRC_DIR=$HOME/Projects/NifTK/src
 PYTHONPATH=${PYTHONPATH}:.
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/diffusion
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/registration
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/seg-gif
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/utils
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/pipelines/nipype/interfaces
 export PYTHONPATH
 
 Debian
@@ -70,15 +67,12 @@ On a terminal, type the following commands
 
 1) sudo apt-get install git sqlite3 python python-dev ipython python-dateutil python-six python-nibabel python-networkx python-dipy python-scipy python-traits python-sphinx python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose graphviz
 2) cd ~/Projects/; git clone https://github.com/ntoussaint/nipype.git nipype; cd nipype; sudo python setup.py install
-3) cd ~/Projects/NifTK/src; git fetch origin; git checkout b3421-nipype-workflows
+3) cd ~/Projects/NifTK/src; git fetch niftymidas; git checkout dev
 4) Add the following lines in your $HOME/.bashrc
 
 NIFTK_SRC_DIR=$HOME/Projects/NifTK/src
 PYTHONPATH=${PYTHONPATH}:.
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/diffusion
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/registration
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/seg-gif
-PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/nipype-workflows/utils
+PYTHONPATH=${PYTHONPATH}:$NIFTK_SRC_DIR/Code/pipelines/nipype/interfaces
 export PYTHONPATH
 
 
