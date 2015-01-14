@@ -115,7 +115,7 @@ void SnapshotView::OnTakeSnapshotButtonPressed()
         magnifier->SetInput(renderer);
         magnifier->SetMagnification(magnificationFactor);
 
-        fileWriter->SetInputData(magnifier->GetOutput());
+        fileWriter->SetInputConnection(magnifier->GetOutputPort());
         fileWriter->SetFileName(fileName.toLatin1());
         fileWriter->Write();
         fileWriter->Delete();
