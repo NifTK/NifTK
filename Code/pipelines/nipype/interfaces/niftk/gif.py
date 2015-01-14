@@ -10,8 +10,8 @@ import os
 import nipype.interfaces.niftyseg       as niftyseg
 import nipype.interfaces.niftyreg       as niftyreg
 
-import .operations
-import .filters
+import operations
+import filters
 
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
