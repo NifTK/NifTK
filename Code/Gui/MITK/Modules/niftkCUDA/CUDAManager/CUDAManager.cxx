@@ -592,14 +592,13 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
     // for now, the autoreleased id has to be either on m_ValidImages (see above), or on m_InFlightOutputImages.
     assert(i != m_InFlightOutputImages.end());
 
-    // copy it out! because the iterator will become invalid shortly.
-    //LightweightCUDAImage  lwci = i->second;
-
     std::pair<std::map<unsigned int, LightweightCUDAImage>::iterator, bool>   inserted = m_ValidImages.insert(std::make_pair(i->second.GetId(), i->second));
     assert(inserted.second);
 
     // and drop it.
     m_InFlightOutputImages.erase(i);
+    // the original i is now invalid but we replace it here.
+    // so that we don't copy out a LightweightCUDAImage so the if (dead) block below is triggered.
     i = inserted.first;
 
     // while being held by m_ValidImages, refs in there dont count towards the reference count.
@@ -614,6 +613,7 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
     if (dead)
     {
       AllRefsDropped(i->second);
+      // beware: i is now invalid! AllRefsDropped() modifies m_ValidImages, into which i is pointing.
     }
   }
 }
