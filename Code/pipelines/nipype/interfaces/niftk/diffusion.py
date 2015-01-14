@@ -3,7 +3,7 @@
 """
 
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, traits)
+from nipype.interfaces.base import (TraitedSpec, File, OutputMultiPath, traits)
 from nipype.interfaces.matlab import MatlabCommand, MatlabInputSpec
 
 from nipype.utils.filemanip import split_filename
@@ -23,7 +23,8 @@ import numpy as np
 import numpy.random
 import dipy.core.gradients
 from string import Template
-import .registration
+
+import registration
 
 
 
