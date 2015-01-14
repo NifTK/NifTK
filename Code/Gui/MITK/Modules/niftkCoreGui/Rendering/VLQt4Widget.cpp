@@ -1725,9 +1725,6 @@ void VLQt4Widget::sortTranslucentTriangles()
   clCameraPos.s[2] = cameraPos[2];
   clCameraPos.s[3] = 1.0f;
 
-
-
-
   std::vector<vl::mat4>                transforms;
   std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
   std::vector<vl::ref<vl::Actor> >     translucentActors;
@@ -1773,11 +1770,8 @@ void VLQt4Widget::sortTranslucentTriangles()
       transf->computeWorldMatrixRecursive(m_Camera.get());
       vl::mat4 actorworld = transf->getComputedWorldMatrix();
       
-      //m_Camera->projectionMatrix();
-      //m_Camera->viewMatrix();
       vl::mat4 sorttxf = actorworld * m_Camera->projectionMatrix();
-
-      transforms.push_back(sorttxf.invert());
+      transforms.push_back(sorttxf);
 
       vl::ref<vl::Effect> fx = act->effect();
       vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
