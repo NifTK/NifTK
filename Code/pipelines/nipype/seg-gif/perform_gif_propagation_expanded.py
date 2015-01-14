@@ -8,7 +8,8 @@ import os
 from distutils import spawn
 
 import nipype.interfaces.niftyreg as niftyreg
-import seg_gif_propagation as gif
+
+import niftk
 
 def find_data_directory_function(in_db_file):
     def find_xml_data_path(in_file):
@@ -91,7 +92,7 @@ datasource.inputs.sort_filelist = True
 
 
 # The processing pipeline itself is instantiated
-r = gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
+r = niftk.gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
 r.base_dir = basedir
 
 # the input image is registered to the MNI for masking purpose

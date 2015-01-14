@@ -8,7 +8,7 @@ import os
 import nipype.interfaces.niftyreg as niftyreg
 from distutils import spawn
 
-import registration as reg
+import niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 
@@ -57,7 +57,7 @@ dg.inputs.sort_filelist = False
 dg.inputs.template = '*'
 dg.inputs.field_template = dict(in_files = '*.nii*')
 
-r = reg.create_atlas(name="atlas_creation", 
+r = niftk.registration.create_atlas(name="atlas_creation", 
                          itr_rigid = args.rigiditerations,
                          itr_affine = args.affineiterations,
                          itr_non_lin = args.nonlineariterations,

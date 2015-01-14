@@ -7,9 +7,6 @@ import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyfit       as niftyfit
 import nipype.interfaces.fsl            as fsl
 
-import inspect
-
-from registration import *
 
 '''
 This file provides the creation of the whole workflow necessary for 

@@ -11,7 +11,6 @@ from distutils import spawn
 import argparse
 import os
 
-import diffusion_mri_processing         as dmri
 import niftk
 
 def gen_substitutions(op_basename):    
@@ -33,7 +32,7 @@ mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI1
 def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_files):
 
     import os, glob, sys, errno
-    import diffusion_mri_processing as dmri
+    import niftk
 
     input_path = os.path.dirname(input_files[0])
     dwis_files = []
@@ -50,7 +49,7 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
             input_bvals.remove(dwi_base+'.bval')
             input_bvecs.remove(dwi_base+'.bvec')
 
-    dwis, bvals, bvecs = dmri.merge_dwi_function(dwis_files, input_bvals, input_bvecs)
+    dwis, bvals, bvecs = niftk.diffusion.merge_dwi_function(dwis_files, input_bvals, input_bvecs)
 
     fms = glob.glob(input_path + os.sep + '*fieldmap*.nii*')
     fms.sort()
@@ -79,7 +78,7 @@ def find_and_merge_dwi_data (input_bvals, input_bvecs, input_files, reoriented_f
 
 # Create a drc diffusion pipeline
 def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_type = 'CUB', log_data=False,resample_t1=False): 
-	r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
+	r = niftk.diffusion.create_diffusion_mri_processing_workflow(name = 'dmri_workflow', 
                                                           resample_in_t1 = resample_t1, 
                                                           log_data = log_data,
                                                           correct_susceptibility = True,

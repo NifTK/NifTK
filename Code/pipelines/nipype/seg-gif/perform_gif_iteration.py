@@ -9,7 +9,8 @@ import glob
 from distutils import spawn
 
 import nipype.interfaces.niftyreg as niftyreg
-import seg_gif_propagation as gif
+
+import niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil1.nii.gz')
@@ -71,7 +72,7 @@ datasource.inputs.template_args = info
 datasource.inputs.sort_filelist = True
 
 # The processing pipeline itself is instantiated
-r = gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_iteration')
+r = niftk.gif.create_niftyseg_gif_propagation_pipeline_simple(name='gif_iteration')
 r.base_dir = basedir
 
 # Connect all the nodes together

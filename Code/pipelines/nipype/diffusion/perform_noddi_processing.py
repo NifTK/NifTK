@@ -3,7 +3,6 @@
 import nipype.interfaces.utility        as niu            
 import nipype.interfaces.io             as nio     
 import nipype.pipeline.engine           as pe
-import diffusion_mri_processing         as dmri
 import nipype.interfaces.fsl            as fsl
 from distutils                          import spawn
 import argparse
@@ -12,7 +11,6 @@ import os, sys
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
 
-import registration
 import niftk
 
 def merge_bv_function (input_bvals, input_bvecs):
@@ -165,7 +163,7 @@ diffusion_preprocs_sinks = []
 
 for i in range(number_of_shells):
     
-    r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow_shell_'+str(i+1),
+    r = niftk.diffusion.create_diffusion_mri_processing_workflow(name = 'dmri_workflow_shell_'+str(i+1),
                                                       resample_in_t1 = False,
                                                       log_data = True,
                                                       correct_susceptibility = do_susceptibility_correction,
@@ -287,7 +285,7 @@ for i in range(number_of_shells):
 
 
 # Perform rigid groupwise registration
-groupwise_B0_coregistration = registration.create_atlas('groupwise_B0_coregistration', 
+groupwise_B0_coregistration = niftk.registration.create_atlas('groupwise_B0_coregistration', 
                                                         initial_ref = False, 
                                                         itr_rigid = 2, 
                                                         itr_affine = 0, 

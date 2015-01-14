@@ -6,7 +6,7 @@ import nipype.pipeline.engine           as pe
 import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
-import asl_processing                   as asl
+import niftk.asl                        as asl
 import argparse
 import os
 from distutils                          import spawn

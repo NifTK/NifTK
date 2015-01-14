@@ -8,7 +8,7 @@ import os
 from distutils import spawn
 import nipype.interfaces.niftyreg       as niftyreg
 
-import seg_gif_create_template_library  as seggif
+import niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
@@ -45,7 +45,7 @@ if not os.path.exists(result_dir):
 
 basedir = os.getcwd()
 
-r = seggif.create_seg_gif_template_database_workflow_1(name = 'gif_create_template_1', 
+r = niftk.gif.create_seg_gif_template_database_workflow_1(name = 'gif_create_template_1', 
                                                        ref_file = mni_template, 
                                                        ref_mask = mni_template_mask,
                                                        number_of_affine_iterations = 1)
@@ -91,7 +91,7 @@ if args.propagate >= 1:
     masks_dir = os.path.join(result_dir, 'masks')
     cpps_dir = os.path.join(result_dir, 'cpps')
     
-    r2 = seggif.create_seg_gif_template_database_workflow_2(name = 'gif_create_template_2', 
+    r2 = niftk.gif.create_seg_gif_template_database_workflow_2(name = 'gif_create_template_2', 
                                                             number_of_iterations = 2)
     
     r2.base_dir = basedir

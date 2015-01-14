@@ -2,7 +2,7 @@
 
 import argparse
 
-import diffusion_mri_processing as dmri
+import niftk.diffusion as dmri
 
 parser = argparse.ArgumentParser(description='Diffusion usage example')
 parser.add_argument('-b','--basedir', help='Base directory that contains the diffusion data in the required format',

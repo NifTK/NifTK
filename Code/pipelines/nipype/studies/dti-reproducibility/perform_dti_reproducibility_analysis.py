@@ -10,7 +10,7 @@ import glob
 import nipype.interfaces.fsl as fsl
 import shutil
 
-import diffusion_mri_processing         as dmri
+import niftk
 
 def merge_vector_files(input_files, basename):
         import numpy as np
@@ -86,7 +86,7 @@ for interp_option in interp_options:
                             merge_vector_files(bvals_files, temp_data_basename)
                             merge_vector_files(bvecs_files, temp_data_basename)
 
-                        r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
+                        r = niftk.diffusion.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                           resample_in_t1 = False,
                                                           log_data = False,
                                                           correct_susceptibility = True,

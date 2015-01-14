@@ -7,7 +7,7 @@ from distutils                          import spawn
 import os
 import argparse
 
-import restingstatefmri as fmri
+import niftk.fmri as fmri
 
 
 def create_restingstatefmri_preprocessing_pipeline(name):

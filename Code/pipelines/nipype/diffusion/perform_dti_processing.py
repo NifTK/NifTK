@@ -10,7 +10,7 @@ import os, sys
 import nipype.interfaces.niftyreg as niftyreg
 import nipype.interfaces.niftyseg as niftyseg
 
-import diffusion_mri_processing         as dmri
+import niftk
 
 
 
@@ -93,7 +93,7 @@ merge_initial_dwis = pe.Node(interface = niu.Function(input_names = ['input_dwis
                                                                      'input_bvals', 
                                                                      'input_bvecs'],
                                                       output_names = ['dwis', 'bvals', 'bvecs'],
-                                                      function = dmri.merge_dwi_function),
+                                                      function = niftk.diffusion.merge_dwi_function),
                              name = 'merge_initial_dwis')
 
 merge_initial_dwis.inputs.input_dwis = [os.path.abspath(f) for f in args.dwis]
@@ -101,7 +101,7 @@ merge_initial_dwis.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
 merge_initial_dwis.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]
 merge_initial_dwis.base_dir = os.getcwd()
 
-r = dmri.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
+r = niftk.diffusion.create_diffusion_mri_processing_workflow(name = 'dmri_workflow',
                                                   resample_in_t1 = False,
                                                   log_data = True,
                                                   correct_susceptibility = do_susceptibility_correction,
