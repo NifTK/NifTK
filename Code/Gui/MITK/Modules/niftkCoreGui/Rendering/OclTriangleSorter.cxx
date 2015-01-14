@@ -279,25 +279,8 @@ void mitk::OclTriangleSorter::Execute()
   cl_int clStatus = 0;
   cl_mem mergedIndexBuffWithDist  = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum* sizeof(cl_uint4), 0, &clStatus);
 
-  //// Merge input buffers in one fat buffer, that includes the distance of the triangle as val.x
+  // Merge input buffers in one fat buffer, that includes the distance of the triangle as val.x
   MergeBuffers(mergedIndexBuffWithDist);
-
-  cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*4];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff0, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  std::ofstream outfile0;
-  outfile0.open ("d://NonSortedMergedIBO.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < m_TotalTriangleNum; r++)
-  {
-    outfile0 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff0[r*4+0]) <<" Indices: " <<buff0[r*4+1] <<" " <<buff0[r*4+2] <<" " <<buff0[r*4+3] <<"\n";
-  }
-
-  outfile0.close();
-
 
   //// Sort the triangles based on the distance
   //LaunchBitonicSort(mergedIndexBuffWithDist, m_TotalTriangleNum);
@@ -309,17 +292,14 @@ void mitk::OclTriangleSorter::Execute()
 
   if (m_MergedDistanceBuffer)
     clReleaseMemObject(m_MergedDistanceBuffer);
-  m_MergedDistanceBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalVertexNum *sizeof(cl_float), 0, &clStatus);
-
-  //MITK_INFO <<"Creating m_MergedIndexBuffer " <<m_TotalTriangleNum <<" " <<m_TotalTriangleNum*3*sizeof(cl_uint);
+  m_MergedDistanceBuffer = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum *sizeof(cl_float), 0, &clStatus);
 
   //CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
-  //CopyIndicesWithDist(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_MergedDistanceBuffer, m_TotalTriangleNum, m_TotalVertexNum);
-
+  CopyIndicesWithDist(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_MergedDistanceBuffer, m_TotalTriangleNum);
 
 /*
-  cl_uint * buff = new cl_uint[m_TotalTriangleNum*3];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedIndexBuffer, true, 0, m_TotalTriangleNum*3* sizeof(cl_uint), buff, 0, 0, 0);
+  cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*3];
+  clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedIndexBuffer, true, 0, m_TotalTriangleNum*3* sizeof(cl_uint), buff0, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
 
   std::ofstream outfile0;
@@ -329,28 +309,48 @@ void mitk::OclTriangleSorter::Execute()
   // Write out filtered volume
   for (int r = 0 ; r < m_TotalTriangleNum; r++)
   {
-    outfile0 <<"Index: " <<r <<" Indices: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
+    outfile0 <<"Index: " <<r <<" Indices: " <<buff0[r*3+0] <<" " <<buff0[r*3+1] <<" " <<buff0[r*3+2] <<"\n";
   }
 
   outfile0.close();
-*/
+  delete buff0;
+
+
+  cl_uint * buff1 = new cl_uint[m_TotalTriangleNum];
+  clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedDistanceBuffer, true, 0, m_TotalTriangleNum* sizeof(cl_uint), buff1, 0, 0, 0);
+  CHECK_OCL_ERR(clStatus);
+
+  std::ofstream outfile1;
+  outfile1.open ("d://SortedMergedDistances.txt", std::ios::out);
+
+      
+  // Write out filtered volume
+  for (int r = 0 ; r < m_TotalTriangleNum; r++)
+  {
+    outfile1 <<"Index: " <<r <<" Dist-uint: " <<buff1[r] <<" Dist-float: " <<std::setprecision(10) <<IFloatFlip(buff1[r])  <<"\n";
+  }
+
+  outfile1.close();
+  delete buff1;
 
 
   cl_uint * buff2 = new cl_uint[m_TotalTriangleNum*4];
   clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff2, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
 
-  std::ofstream outfile1;
-  outfile1.open ("d://SortedMergedIBO2.txt", std::ios::out);
+  std::ofstream outfile2;
+  outfile2.open ("d://SortedMergedIBO2.txt", std::ios::out);
 
       
   // Write out filtered volume
   for (int r = 0 ; r < m_TotalTriangleNum; r++)
   {
-    outfile1 <<"Index: " <<r <<" Dist-uint: " <<buff2[r*4+0] <<" Dist-float: " <<std::setprecision(10) <<IFloatFlip(buff2[r*4+0]) <<" Indices: " <<buff2[r*4+1] <<" " <<buff2[r*4+2] <<" " <<buff2[r*4+3] <<"\n";
+    outfile2 <<"Index: " <<r <<" Dist-uint: " <<buff2[r*4+0] <<" Dist-float: " <<std::setprecision(10) <<IFloatFlip(buff2[r*4+0]) <<" Indices: " <<buff2[r*4+1] <<" " <<buff2[r*4+2] <<" " <<buff2[r*4+3] <<"\n";
   }
 
-  outfile1.close();
+  outfile2.close();
+  delete buff2;
+*/
 
   clReleaseMemObject(mergedIndexBuffWithDist);
 }
@@ -390,7 +390,7 @@ void mitk::OclTriangleSorter::GetTriangleDistOutput(cl_mem &mergedAndSortedDistB
   size_t distBufSize = m_TotalTriangleNum*sizeof(cl_uint);
 
   // Copy to merged buffer into output buffer
-  cl_int clStatus = clEnqueueCopyBuffer(m_CommandQue, m_MergedIndexBuffer, mergedAndSortedDistBuf, 0, 0, distBufSize, 0, 0, 0);
+  cl_int clStatus = clEnqueueCopyBuffer(m_CommandQue, m_MergedDistanceBuffer, mergedAndSortedDistBuf, 0, 0, distBufSize, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
 
   totalTriangleNum = m_TotalTriangleNum;
@@ -429,7 +429,7 @@ void mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_ui
   CHECK_OCL_ERR(clStatus);
 }
 
-void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size, cl_uint sizeDist)
+void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size)
 {
   cl_int clStatus = 0;
   unsigned int a = 0;
@@ -442,7 +442,6 @@ void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, c
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&output);
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&outputDist);
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&size);
-  clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&sizeDist);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyIndicesWithDist, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 }

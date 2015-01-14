@@ -112,7 +112,7 @@ private:
   void CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);
 
   /// \brief Copies only the vertex indices and distances separately
-  void CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size, cl_uint sizeDist);
+  void CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size);
 
 private:
   bool m_KernelsReady;
