@@ -2029,6 +2029,8 @@ void VLQt4Widget::sortTranslucentTriangles()
   clErr = clEnqueueCopyBuffer(clCmdQue, mergedIndexBufOutput, clMergedIndexBuf, 0, 0, mergedIndexBufSize, 0, 0, 0);
   CHECK_OCL_ERR(clErr);
 
+  cl_uint * mergedIBO = new cl_uint[totalNumOfTriangles*3];
+  clEnqueueReadBuffer(clCmdQue, mergedIndexBufOutput, true, 0, mergedIndexBufSize, mergedIBO, 0, 0, 0);
 
   size_t vertexBufferOffset = 0;
   size_t normalBufferOffset = 0;
@@ -2070,23 +2072,23 @@ void VLQt4Widget::sortTranslucentTriangles()
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //// Get color array
 
-    size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
-    vl::fvec4 color = translucentColors.at(i);
+    //size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
+    //vl::fvec4 color = translucentColors.at(i);
 
-    unsigned int * colorData = new unsigned int[numOfVertices2];
-    for (unsigned int bla = 0; bla < numOfVertices2; bla++)
-    {
-      // Color format: AABBGGRR
-      unsigned char a = color[3] * 255;
-      unsigned char b = color[2] * 255;
-      unsigned char g = color[1] * 255;
-      unsigned char r = color[0] * 255;
-      colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
-    }
+    //unsigned int * colorData = new unsigned int[numOfVertices2];
+    //for (unsigned int bla = 0; bla < numOfVertices2; bla++)
+    //{
+    //  // Color format: AABBGGRR
+    //  unsigned char a = color[3] * 255;
+    //  unsigned char b = color[2] * 255;
+    //  unsigned char g = color[1] * 255;
+    //  unsigned char r = color[0] * 255;
+    //  colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
+    //}
 
-    vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
-    colorBufferOffset += colorBufSize;
-    delete colorData;
+    //vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+    //colorBufferOffset += colorBufSize;
+    //delete colorData;
     
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
@@ -2097,39 +2099,66 @@ void VLQt4Widget::sortTranslucentTriangles()
     clReleaseMemObject(clNormalBuf);
   }
 
-  //unsigned int * colorData = new unsigned int[totalNumOfVertices];
-  //for (unsigned int bla = 0; bla < totalNumOfTriangles; bla++)
-  //{
-  //  // Color format: AABBGGRR
-  //  unsigned char a = 255;
-  //  unsigned char b = 255;
-  //  unsigned char g = 255;
-  //  unsigned char r = (mergedDistances[bla]/range) * 255;
-  //  colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
-  //}
+  //range = 1024;
+  float step = 255.0f/range;
 
-  //vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
-  //delete colorData;
+  unsigned int * colorData = new unsigned int[totalNumOfVertices];
+  float * vertDistData = new float[totalNumOfVertices];
+  memset(vertDistData, 0, totalNumOfVertices*sizeof(float));
 
-  //clFinish(clCmdQue);
-
-/*
-  cl_float * buff = new cl_float[totalNumOfVertices*3];
-  clErr = clEnqueueReadBuffer(clCmdQue, clMergedVertexBuf, true, 0, totalNumOfVertices*3* sizeof(cl_float), buff, 0, 0, 0);
-  CHECK_OCL_ERR(clErr);
-
-  std::ofstream outfile0;
-  outfile0.open ("d://mergedVBO.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < totalNumOfVertices; r++)
+  for (unsigned int bla = 0; bla < totalNumOfTriangles; bla++)
   {
-    outfile0 <<"Index: " <<r <<" Indices: " <<buff[r*3+0] <<" " <<buff[r*3+1] <<" " <<buff[r*3+2] <<"\n";
+    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
+    //if (distVal >= 1024.0f)
+    //  distVal = 1023.0f;
+    
+    // Color format: AABBGGRR
+    unsigned char a = 255;
+    unsigned char b = 0;
+    unsigned char g = (distVal-minDist)*step;
+    unsigned char r = 255 - (distVal-minDist)*step;
+    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
+  
+//    if (bla < 1000)
+//      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
+
+    cl_uint vertIndex0 = mergedIBO[bla*3 +0];
+    cl_uint vertIndex1 = mergedIBO[bla*3 +1];
+    cl_uint vertIndex2 = mergedIBO[bla*3 +2];    
+
+    if (distVal > vertDistData[vertIndex0])
+    {
+      vertDistData[vertIndex0] = distVal;
+      colorData[vertIndex0]    = colorVal;
+    }
+
+    if (distVal > vertDistData[vertIndex1])
+    {
+      vertDistData[vertIndex1] = distVal;
+      colorData[vertIndex1]    = colorVal;
+    }
+
+    if (distVal > vertDistData[vertIndex2])
+    {
+      vertDistData[vertIndex2] = distVal;
+      colorData[vertIndex2]    = colorVal;
+    }
   }
 
-  outfile0.close();
-*/
+  std::ofstream outfileColor;
+  outfileColor.open ("d://triangleColor.txt", std::ios::out);
+
+  for (unsigned int bla = 0; bla < totalNumOfVertices; bla++)
+  {
+    outfileColor <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<vertDistData[bla] <<"\n";
+  }
+  outfileColor.close();
+
+
+  vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
+  delete colorData;
+
+  clFinish(clCmdQue);
 
   clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedIndexBuf, 0, NULL, NULL);
   clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedVertexBuf, 0, NULL, NULL);

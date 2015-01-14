@@ -797,7 +797,8 @@ __kernel
   transformedVertexCoords.w = 0.0f;
 
   float4 zero = 0.0f;
-  vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
+  vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
+  //vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
   //vertexBuf[idx*3+0] = vertexCoords.x;
   //vertexBuf[idx*3+1] = vertexCoords.y;
   //vertexBuf[idx*3+2] = vertexCoords.z;
@@ -886,8 +887,7 @@ __kernel
   __global uint4  * input,
   __global uint   * output,
   __global uint   * outputDist,
-    const  uint     size,
-    const  uint     sizeDist
+    const  uint     size
   )
 {
   size_t idx = get_global_id(0);
