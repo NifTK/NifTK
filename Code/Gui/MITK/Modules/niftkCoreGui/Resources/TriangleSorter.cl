@@ -340,19 +340,19 @@ __kernel
 
 __kernel
   void kernel ckRadixPermute(
-  __global const KV_TYPE* dataIn, // size 4*4 int2s per block
-  __global KV_TYPE* dataOut, // size 4*4 int2s per block
-  __global const int* histSum, // size 16 per block (64 B)
-  __global const int* blockHists, // size 16 int2s per block (64 B)
-  const int bitOffset, // k*4, k=0..7
-  const int N,
-  const int numBlocks)
+  __global const KV_TYPE * dataIn, // size 4*4 int2s per block
+  __global       KV_TYPE * dataOut, // size 4*4 int2s per block
+  __global const int     * histSum, // size 16 per block (64 B)
+  __global const int     * blockHists, // size 16 int2s per block (64 B)
+           const int       bitOffset, // k*4, k=0..7
+           const int       N,
+           const int       numBlocks)
 {
-  const int tid = get_local_id(0);
+  const int tid     = get_local_id(0);
   const int groupId = get_group_id(0);
+  
   const int4 tid4 = (int4)(tid << 2) + (const int4)(0,1,2,3);
   const int4 gid4 = (int4)(get_global_id(0) << 2) + (const int4)(0,1,2,3);
-
 
   __local int sharedHistSum[16];
   __local int localHistStart[16];
@@ -377,7 +377,11 @@ __kernel
 
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.x - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
-  if (finalOffset < N) dataOut[finalOffset] = myData;
+  
+  if (finalOffset < N)
+    dataOut[finalOffset] = myData;
+
+  //~~~~~~~~~~~~~~~~~~~~~~
 
   if (gid4.y < N)
     myData = dataIn[gid4.y];
@@ -386,8 +390,11 @@ __kernel
 
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.y - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
-  if (finalOffset < N) dataOut[finalOffset] = myData;
+  
+  if (finalOffset < N)
+    dataOut[finalOffset] = myData;
 
+  //~~~~~~~~~~~~~~~~~~~~~~
   if (gid4.z < N)
     myData = dataIn[gid4.z];
   else
@@ -395,7 +402,10 @@ __kernel
 
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.z - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
-  if (finalOffset < N) dataOut[finalOffset] = myData;
+  
+  if (finalOffset < N)
+    dataOut[finalOffset] = myData;
+  //~~~~~~~~~~~~~~~~~~~~~~
 
   if (gid4.w < N)
     myData = dataIn[gid4.w];
@@ -404,7 +414,9 @@ __kernel
 
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.w - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
-  if (finalOffset < N) dataOut[finalOffset] = myData;
+  
+  if (finalOffset < N)
+    dataOut[finalOffset] = myData;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
