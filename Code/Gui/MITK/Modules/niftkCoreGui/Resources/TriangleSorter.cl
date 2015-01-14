@@ -844,7 +844,7 @@ __kernel
 }
 
 __kernel
-  void ckCopyAndUpdateIndicesOrig(
+  void ckCopyAndUpdateIndices(
   __global uint4  * input,
   __global uint4  * output,
   const  uint     size,
@@ -860,29 +860,6 @@ __kernel
   output[idx + offset].y = input[idx].y + offset; 
   output[idx + offset].z = input[idx].z + offset; 
   output[idx + offset].w = input[idx].w + offset; 
-}
-
-__kernel
-  void ckCopyAndUpdateIndices(
-  __global uint4  * input,
-  __global uint4  * output,
-  __global uint2  * outputForSorting,
-  const  uint     size,
-  const  uint     offset
-  )
-{
-  size_t idx = get_global_id(0);
-
-  if (idx >= size)
-    return;
-
-  output[idx + offset].x = input[idx].x;
-  output[idx + offset].y = input[idx].y + offset;
-  output[idx + offset].z = input[idx].z + offset;
-  output[idx + offset].w = input[idx].w + offset;
-
-  outputForSorting[idx + offset].x = input[idx].x;
-  outputForSorting[idx + offset].y = idx + offset;
 }
 
 __kernel

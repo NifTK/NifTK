@@ -97,7 +97,7 @@ private:
   void LaunchBitonicSort(cl_mem bfKeyVal, cl_uint count);
 
   /// \brief Merges the input IBO's into one large buffer while updating the triangle indices
-  void MergeBuffers(cl_mem mergedIndexBuffWithDist, cl_mem mergedIndexWithDist4Sort);
+  void MergeBuffers(cl_mem mergedIndexBuffWithDist);
 
   /// \brief Performs coordinate transform and computes distance of the viewpoint from each vertex. Returns with the resulting mem object
   cl_mem TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_mem transform, cl_float4 viewPoint);
@@ -106,7 +106,7 @@ private:
   cl_mem ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
 
   /// \brief Copies the contents of one IBO (vetex indices + distance) to the merged IBO while updating the indices
-  void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_mem output4Sort, cl_uint size, cl_uint offset);
+  void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint offset);
 
   /// \brief Copies only the vertex indices, without the distance bit
   void CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);

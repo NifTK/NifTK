@@ -278,10 +278,9 @@ void mitk::OclTriangleSorter::Execute()
 {
   cl_int clStatus = 0;
   cl_mem mergedIndexBuffWithDist  = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum* sizeof(cl_uint4), 0, &clStatus);
-  cl_mem mergedIndexWithDist4Sort = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, m_TotalTriangleNum* sizeof(cl_uint2), 0, &clStatus);
 
   //// Merge input buffers in one fat buffer, that includes the distance of the triangle as val.x
-  MergeBuffers(mergedIndexBuffWithDist, mergedIndexWithDist4Sort);
+  MergeBuffers(mergedIndexBuffWithDist);
 
   cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*4];
   clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff0, 0, 0, 0);
@@ -353,26 +352,7 @@ void mitk::OclTriangleSorter::Execute()
 
   outfile1.close();
 
-
-/*
-  cl_uint * buff3 = new cl_uint[m_TotalTriangleNum*2];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexWithDist4Sort, true, 0, m_TotalTriangleNum*2* sizeof(cl_uint), buff3, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  std::ofstream outfile2;
-  outfile2.open ("d://SortedMergedIBO3.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < m_TotalTriangleNum; r++)
-  {
-    outfile2 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff3[r*2+0]) <<" Indices: " <<buff3[r*2+1]<<"\n";
-  }
-
-  outfile2.close();
-*/
   clReleaseMemObject(mergedIndexBuffWithDist);
-  clReleaseMemObject(mergedIndexWithDist4Sort);
 }
 
 void mitk::OclTriangleSorter::AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount)
@@ -416,7 +396,7 @@ void mitk::OclTriangleSorter::GetTriangleDistOutput(cl_mem &mergedAndSortedDistB
   totalTriangleNum = m_TotalTriangleNum;
 }
 
-void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_mem output4Sort,  cl_uint size, cl_uint offset)
+void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint offset)
 {
   cl_int clStatus = 0;
   unsigned int a = 0;
@@ -427,7 +407,6 @@ void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, 
 
   clStatus  = clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&input);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&output);
-  clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&output4Sort);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&size);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&offset);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyAndUpdateIndices, 1, NULL, global_128, local_128, 0, NULL, NULL);
@@ -468,7 +447,7 @@ void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, c
   CHECK_OCL_ERR(clStatus);
 }
 
-void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist, cl_mem mergedIndexWithDist4Sort)
+void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 {
   cl_int clStatus = 0;
 
@@ -478,7 +457,7 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist, cl_me
     cl_mem vertexDistances = TransformVerticesAndComputeDistance(m_VertexBuffers[i], m_VertexCounts[i], m_TransformBuffers[i], m_ViewPoint);
     cl_mem indexBufferWithDist = ComputeTriangleDistances(vertexDistances, m_VertexCounts[i], m_IndexBuffers[i], m_TriangleCounts[i]);
 
-    CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, mergedIndexWithDist4Sort, m_TriangleCounts[i], offset);
+    CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, m_TriangleCounts[i], offset);
 
     offset += m_TriangleCounts[i];
 
