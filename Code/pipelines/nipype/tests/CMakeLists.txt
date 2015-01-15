@@ -12,10 +12,12 @@
 #
 #============================================================================*/
 
-file(GLOB __python_files    "*.py")
-file(GLOB __bash_files      "*.sh")
-file(GLOB __python_programs "perform_*.py")
+# Do not install the test python files.
 
-install(FILES    ${__python_files}    DESTINATION python)
-install(PROGRAMS ${__bash_files}      DESTINATION bin)
-install(PROGRAMS ${__python_programs} DESTINATION bin)
+
+# Install the mature xnat download python scripts
+
+install(
+  PROGRAMS download_xnat_data.py download_xnat_data_regexp.py
+  DESTINATION python
+  )

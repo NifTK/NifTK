@@ -12,10 +12,12 @@
 #
 #============================================================================*/
 
-file(GLOB __python_files    "*.py")
-file(GLOB __bash_files      "*.sh")
-file(GLOB __python_programs "perform_*.py")
+## #################################################################
+## Installation of the niftk python module in the install bin path
+## #################################################################
 
-install(FILES    ${__python_files}    DESTINATION python)
-install(PROGRAMS ${__bash_files}      DESTINATION bin)
-install(PROGRAMS ${__python_programs} DESTINATION bin)
+install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/niftk 
+  DESTINATION python 
+  USE_SOURCE_PERMISSIONS
+  )
