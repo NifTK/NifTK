@@ -374,13 +374,15 @@ void VLQt4Widget::initializeGL()
   m_VolumeRendering->setObjectName("m_VolumeRendering");
   m_VolumeRendering->setCamera(m_Camera.get());
   m_VolumeRendering->sceneManagers()->push_back(m_SceneManager.get());
+  m_VolumeRendering->setCullingEnabled(true);
+  m_VolumeRendering->renderer()->setClearFlags(vl::CF_DO_NOT_CLEAR);
   // FIXME: only single volume supported for now, so no queue sorting.
 
   m_RenderingTree = new vl::RenderingTree;
   m_RenderingTree->setObjectName("m_RenderingTree");
   m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
   m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
-  //m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
+  m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
 
   // once rendering to fbo has finished, blit it to the screen's backbuffer.
   // a final swapbuffers in renderScene() and/or paintGL() will show it on screen.
@@ -395,6 +397,7 @@ void VLQt4Widget::initializeGL()
   CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
 
   // moves the light with the main camera.
+  // FIXME: attaching this to the rendering looks wrong
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
 
 
@@ -431,6 +434,7 @@ void VLQt4Widget::CreateAndUpdateFBOSizes(int width, int height)
 
   m_BackgroundRendering->renderer()->setFramebuffer(opaqueFBO.get());
   m_OpaqueObjectsRendering->renderer()->setFramebuffer(opaqueFBO.get());
+  m_VolumeRendering->renderer()->setFramebuffer(opaqueFBO.get());
 
   m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
   m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
@@ -457,15 +461,15 @@ void VLQt4Widget::resizeGL(int width, int height)
   if ((width <= 0) || (height <= 0))
     return;
 
+  // no idea if this is necessary...
   framebuffer()->setWidth(width);
   framebuffer()->setHeight(height);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
+  m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
+  m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
 
   CreateAndUpdateFBOSizes(width, height);
-
-  //m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
-  //m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
 
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
