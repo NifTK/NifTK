@@ -229,27 +229,6 @@ int ApplicationMain(int argc, char** argv,
   // So, for now we block them completely.  This could be command line driven, or just done on Windows.
   vtkObject::GlobalWarningDisplayOff();
 
-  int returnStatus = -1;
-
-  try
-  {
-    returnStatus = berry::Starter::Run(argc, argv, sbConfig);
-  }
-  catch (Poco::Exception& e)
-  {
-    MITK_ERROR << "Caught Poco::Exception:" << e.displayText();
-    returnStatus = -2;
-  }
-  catch (std::exception& e)
-  {
-    MITK_ERROR << "Caught std::exception:" << e.what();
-    returnStatus = -3;
-  }
-  catch (...)
-  {
-    MITK_ERROR << "Caught unknown exception:";
-    returnStatus = -4;
-  }
-
-  return returnStatus;
+  // Run the workbench.
+  return berry::Starter::Run(argc, argv, sbConfig);
 }
