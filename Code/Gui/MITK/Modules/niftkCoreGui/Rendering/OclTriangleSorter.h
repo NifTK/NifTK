@@ -50,14 +50,6 @@ public:
   /// \brief Adds an index buffer to be merged
   void AddGLIndexBuffer(const GLuint idxBufHandle, unsigned int idxCount);
   
-  
-  ///// \brief Adds a vertex buffer to be merged
-  //void AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount);
-  ///// \brief Adds an index buffer to be merged
-  //void AddIndexBuffer(const cl_mem idxBuf, unsigned int idxCount);
-  ///// \brief Adds the transform that is assigned to the object to be merged
-  //void AddTransform(const cl_mem trasfBuf);
-
   /// \brief Adds camera position that is used for distance computation
   inline void SetViewPoint(cl_float4 vp) { m_ViewPoint = vp; }
   /// \brief Gets the resulting CL mem object that contains the IBO of the merged translucent object
@@ -127,9 +119,6 @@ private:
   // Inputs
   std::vector<GLuint>       m_GLVertexBuffers;
   std::vector<GLuint>       m_GLIndexBuffers;
-  //std::vector<cl_mem>       m_VertexBuffers;
-  //std::vector<cl_mem>       m_IndexBuffers;
-  //std::vector<cl_mem>       m_TransformBuffers;
   std::vector<unsigned int> m_VertexCounts;
   std::vector<unsigned int> m_TriangleCounts;
   cl_float4                 m_ViewPoint;

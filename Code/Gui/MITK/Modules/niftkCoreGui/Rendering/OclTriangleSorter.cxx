@@ -367,25 +367,6 @@ void mitk::OclTriangleSorter::AddGLIndexBuffer(const GLuint idxBufHandle, unsign
   m_TriangleCounts.push_back(idxCount);
 } 
 
-/*
-void mitk::OclTriangleSorter::AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount)
-{ 
-  m_VertexBuffers.push_back(vertBuf);
-  m_VertexCounts.push_back(vertCount);
-} 
-
-void mitk::OclTriangleSorter::AddIndexBuffer(const cl_mem idxBuf, unsigned int idxCount)
-{ 
-  m_IndexBuffers.push_back(idxBuf);
-  m_TriangleCounts.push_back(idxCount);
-} 
-
-void mitk::OclTriangleSorter::AddTransform(const cl_mem trasfBuf) 
-{ 
-  m_TransformBuffers.push_back(trasfBuf);
-} 
-*/
-
 void mitk::OclTriangleSorter::GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum)
 {
   // Compute mem size that will get copied to output
