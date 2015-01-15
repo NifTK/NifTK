@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-file(GLOB __python_files    "*.py")
 file(GLOB __bash_files      "*.sh")
+file(GLOB __matlab_files    "*.m")
 file(GLOB __python_programs "perform_*.py")
 
-install(FILES    ${__python_files}    DESTINATION python)
+install(FILES    ${__matlab_files}    DESTINATION bin)
 install(PROGRAMS ${__bash_files}      DESTINATION bin)
-install(PROGRAMS ${__python_programs} DESTINATION bin)
+install(PROGRAMS ${__python_programs} DESTINATION python)
