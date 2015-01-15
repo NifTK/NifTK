@@ -133,6 +133,7 @@ int ApplicationMain(int argc, char** argv,
   // In the latter case, a path to a temporary directory for
   // the new application's storage directory is returned.
   QString storageDir = handleNewAppInstance(&myApp, argc, argv, "BlueBerry.newInstance");
+
   if (storageDir.isEmpty())
   {
     // This is a new instance and no other instance is already running. We specify
@@ -142,8 +143,12 @@ int ApplicationMain(int argc, char** argv,
 
     // Append a hash value of the absolute path of the executable to the data location.
     // This allows to start the same application from different build or install trees.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    storageDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + '_';
+#else
     storageDir = QDesktopServices::storageLocation(QDesktopServices::DataLocation) + '_';
-    storageDir += QString::number(qHash(QCoreApplication::applicationDirPath())) + "/";
+#endif
+    storageDir += QString::number(qHash(QCoreApplication::applicationDirPath())) + QDir::separator();
   }
   us::ModuleSettings::SetStoragePath((storageDir + "us/").toStdString());
 
