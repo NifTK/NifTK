@@ -155,7 +155,7 @@ private:
 
 
 protected:
-<<<<<<< HEAD
+
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCamera();
@@ -164,7 +164,7 @@ protected:
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
-  void sortTranslucentTriangles();
+  void SortTranslucentTriangles();
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;

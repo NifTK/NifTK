@@ -327,7 +327,7 @@ void VLQt4Widget::initializeGL()
   vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
   m_Camera->setViewMatrix(view_mat);
   m_Camera->setObjectName("m_Camera");
-  m_Camera->viewport()->enableScissorSetup(true);
+  //m_Camera->viewport()->enableScissorSetup(true);
 
   vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
 
@@ -363,7 +363,7 @@ void VLQt4Widget::initializeGL()
   m_BackgroundRendering->setCullingEnabled(false);
   m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
   m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
-  m_BackgroundCamera->viewport()->enableScissorSetup(false);
+  //m_BackgroundCamera->viewport()->enableScissorSetup(false);
 
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
@@ -574,7 +574,7 @@ void VLQt4Widget::RenderScene()
     {
       static vl::real prev = 0;
 
-      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
+      //std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
       prev = m_RenderingTree->frameClock();
     }
   }
@@ -1705,7 +1705,7 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
   }
 }
 
-void VLQt4Widget::sortTranslucentTriangles()
+void VLQt4Widget::SortTranslucentTriangles()
 {
   vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
   int numOfActors = actors->size();
@@ -2311,8 +2311,8 @@ vl::ivec2 VLQt4Widget::position() const
 //-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
-  MITK_INFO <<"Update called";
-  sortTranslucentTriangles();
+  //MITK_INFO <<"Update called";
+  SortTranslucentTriangles();
 
   // schedules a repaint, will eventually call into paintGL()
   QGLWidget::update();
