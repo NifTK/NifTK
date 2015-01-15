@@ -461,6 +461,7 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 
     // Release CL vertex buffer
     clEnqueueReleaseGLObjects(m_CommandQue, 1, &clVertexBuf, 0, NULL, NULL);
+    //clFinish(m_CommandQue);
     clReleaseMemObject(clVertexBuf);
 
     // Get hold of the index buffer in OpenCL
@@ -474,6 +475,7 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 
     // Release CL index buffer
     clEnqueueReleaseGLObjects(m_CommandQue, 1, &clIndexBuf, 0, NULL, NULL);
+    //clFinish(m_CommandQue);
     clReleaseMemObject(clIndexBuf);
 
     // Copy the updated indices into the merged buffer
