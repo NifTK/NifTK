@@ -741,7 +741,6 @@ __kernel
   void ckTransformVertexAndComputeDistance(
   __global       float  * vertexDistances,
   __global       float  * vertexBuf,
-  __global       float  * transform,
            const float4   viewPoint,
            const uint     numOfVertices
   )
@@ -760,51 +759,6 @@ __kernel
   vertexCoords.w = 0.0f;
 
   vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
-/*
-  float value = 0.0f;
-  value += transform[0] * vertexCoords.x;
-  value += transform[1] * vertexCoords.y;
-  value += transform[2] * vertexCoords.z;
-  value += transform[3] * vertexCoords.w;
-  transformedVertexCoords.x = value;
-
-  value = 0.0f;
-  value += transform[4] * vertexCoords.x;
-  value += transform[5] * vertexCoords.y;
-  value += transform[6] * vertexCoords.z;
-  value += transform[7] * vertexCoords.w;
-  transformedVertexCoords.y = value;
-
-  value = 0.0f;
-  value += transform[8] * vertexCoords.x;
-  value += transform[9] * vertexCoords.y;
-  value += transform[10] * vertexCoords.z;
-  value += transform[11] * vertexCoords.w;
-  transformedVertexCoords.z = value;
-
-  value = 0.0f;
-  value += transform[12] * vertexCoords.x;
-  value += transform[13] * vertexCoords.y;
-  value += transform[14] * vertexCoords.z;
-  value += transform[15] * vertexCoords.w;
-  transformedVertexCoords.w = value;
-
-  vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
-
-  return;
-
-  transformedVertexCoords.x /= transformedVertexCoords.w;
-  transformedVertexCoords.y /= transformedVertexCoords.w;
-  transformedVertexCoords.z /= transformedVertexCoords.w;
-  transformedVertexCoords.z += 1.0f;
-  transformedVertexCoords.w = 0.0f;
-
-  float4 zero = 0.0f;
-  vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
-  //vertexBuf[idx*3+0] = vertexCoords.x;
-  //vertexBuf[idx*3+1] = vertexCoords.y;
-  //vertexBuf[idx*3+2] = vertexCoords.z;
-*/
 }
 
 inline unsigned int FloatFlip(float f)

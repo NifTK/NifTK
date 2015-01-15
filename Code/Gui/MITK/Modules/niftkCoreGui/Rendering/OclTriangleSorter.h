@@ -46,11 +46,18 @@ public:
   void ReleaseGPUBuffers();
 
   /// \brief Adds a vertex buffer to be merged
-  void AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount);
+  void AddGLVertexBuffer(const GLuint vertBufHandle, unsigned int vertCount);
   /// \brief Adds an index buffer to be merged
-  void AddIndexBuffer(const cl_mem idxBuf, unsigned int idxCount);
-  /// \brief Adds the transform that is assigned to the object to be merged
-  void AddTransform(const cl_mem trasfBuf);
+  void AddGLIndexBuffer(const GLuint idxBufHandle, unsigned int idxCount);
+  
+  
+  ///// \brief Adds a vertex buffer to be merged
+  //void AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount);
+  ///// \brief Adds an index buffer to be merged
+  //void AddIndexBuffer(const cl_mem idxBuf, unsigned int idxCount);
+  ///// \brief Adds the transform that is assigned to the object to be merged
+  //void AddTransform(const cl_mem trasfBuf);
+
   /// \brief Adds camera position that is used for distance computation
   inline void SetViewPoint(cl_float4 vp) { m_ViewPoint = vp; }
   /// \brief Gets the resulting CL mem object that contains the IBO of the merged translucent object
@@ -100,7 +107,7 @@ private:
   void MergeBuffers(cl_mem mergedIndexBuffWithDist);
 
   /// \brief Performs coordinate transform and computes distance of the viewpoint from each vertex. Returns with the resulting mem object
-  cl_mem TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_mem transform, cl_float4 viewPoint);
+  cl_mem TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
   
   /// \brief Computes the triangle distances from the vertex distances. Returns the array of floats as cl_mem
   cl_mem ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
@@ -118,9 +125,11 @@ private:
   bool m_KernelsReady;
 
   // Inputs
-  std::vector<cl_mem>       m_VertexBuffers;
-  std::vector<cl_mem>       m_IndexBuffers;
-  std::vector<cl_mem>       m_TransformBuffers;
+  std::vector<GLuint>       m_GLVertexBuffers;
+  std::vector<GLuint>       m_GLIndexBuffers;
+  //std::vector<cl_mem>       m_VertexBuffers;
+  //std::vector<cl_mem>       m_IndexBuffers;
+  //std::vector<cl_mem>       m_TransformBuffers;
   std::vector<unsigned int> m_VertexCounts;
   std::vector<unsigned int> m_TriangleCounts;
   cl_float4                 m_ViewPoint;

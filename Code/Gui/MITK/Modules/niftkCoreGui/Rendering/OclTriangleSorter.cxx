@@ -123,9 +123,9 @@ mitk::OclTriangleSorter::~OclTriangleSorter()
 
 void mitk::OclTriangleSorter::Reset()
 {
-  m_VertexBuffers.clear();
-  m_IndexBuffers.clear();
-  m_TransformBuffers.clear();
+  m_GLVertexBuffers.clear();
+  m_GLIndexBuffers.clear();
+
   m_VertexCounts.clear();
   m_TriangleCounts.clear();
   cl_float4 float4Max = {FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX};
@@ -163,12 +163,12 @@ bool mitk::OclTriangleSorter::Initialize()
 {
   cl_int clStatus = 0;
 
-  if (m_IndexBuffers.size() == 0 || m_VertexBuffers.size() == 0)
+  if (m_GLIndexBuffers.size() == 0 || m_GLVertexBuffers.size() == 0)
     mitkThrow() << "Input buffers aren't set.";
 
   m_TotalTriangleNum = 0;
   m_TotalVertexNum   = 0;
-  for (unsigned int i = 0; i < m_VertexBuffers.size(); i++)
+  for (unsigned int i = 0; i < m_GLVertexBuffers.size(); i++)
   {
     m_TotalTriangleNum += m_TriangleCounts[i];
     m_TotalVertexNum   += m_VertexCounts[i];
@@ -355,6 +355,19 @@ void mitk::OclTriangleSorter::Execute()
   clReleaseMemObject(mergedIndexBuffWithDist);
 }
 
+void mitk::OclTriangleSorter::AddGLVertexBuffer(const GLuint vertBufHandle, unsigned int vertCount)
+{ 
+  m_GLVertexBuffers.push_back(vertBufHandle);
+  m_VertexCounts.push_back(vertCount);
+} 
+
+void mitk::OclTriangleSorter::AddGLIndexBuffer(const GLuint idxBufHandle, unsigned int idxCount)
+{ 
+  m_GLIndexBuffers.push_back(idxBufHandle);
+  m_TriangleCounts.push_back(idxCount);
+} 
+
+/*
 void mitk::OclTriangleSorter::AddVertexBuffer(const cl_mem vertBuf, unsigned int vertCount)
 { 
   m_VertexBuffers.push_back(vertBuf);
@@ -371,6 +384,7 @@ void mitk::OclTriangleSorter::AddTransform(const cl_mem trasfBuf)
 { 
   m_TransformBuffers.push_back(trasfBuf);
 } 
+*/
 
 void mitk::OclTriangleSorter::GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum)
 {
@@ -453,14 +467,35 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 
   cl_uint triOffset  = 0;
   cl_uint vertOffset = 0;
-  for (unsigned int i = 0; i < m_VertexBuffers.size(); i++)
+  for (unsigned int i = 0; i < m_GLVertexBuffers.size(); i++)
   {
-    cl_mem vertexDistances = TransformVerticesAndComputeDistance(m_VertexBuffers[i], m_VertexCounts[i], m_TransformBuffers[i], m_ViewPoint);
-    cl_mem indexBufferWithDist = ComputeTriangleDistances(vertexDistances, m_VertexCounts[i], m_IndexBuffers[i], m_TriangleCounts[i]);
+    // Get hold of the vertex buffer in OpenCL
+    cl_mem clVertexBuf = clCreateFromGLBuffer(m_Context, CL_MEM_READ_WRITE, m_GLVertexBuffers[i], &clStatus);
+    CHECK_OCL_ERR(clStatus);
+    clEnqueueAcquireGLObjects(m_CommandQue, 1, &clVertexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clStatus);
 
-    //MITK_INFO <<"triOffset:  " <<triOffset <<" m_TriangleCounts[i]: " <<m_TriangleCounts[i];
-    //MITK_INFO <<"vertOffset: " <<vertOffset <<" m_VertexCounts[i]: " <<m_VertexCounts[i];
+    // Transform vertices and compute the vertex distance
+    cl_mem vertexDistances = TransformVerticesAndComputeDistance(clVertexBuf, m_VertexCounts[i], m_ViewPoint);
 
+    // Release CL vertex buffer
+    clEnqueueReleaseGLObjects(m_CommandQue, 1, &clVertexBuf, 0, NULL, NULL);
+    clReleaseMemObject(clVertexBuf);
+
+    // Get hold of the index buffer in OpenCL
+    cl_mem clIndexBuf = clCreateFromGLBuffer(m_Context, CL_MEM_READ_WRITE, m_GLIndexBuffers[i], &clStatus);
+    CHECK_OCL_ERR(clStatus);
+    clEnqueueAcquireGLObjects(m_CommandQue, 1, &clIndexBuf, 0, NULL, NULL);
+    CHECK_OCL_ERR(clStatus);
+
+    // Compute the triangle distances
+    cl_mem indexBufferWithDist = ComputeTriangleDistances(vertexDistances, m_VertexCounts[i], clIndexBuf, m_TriangleCounts[i]);
+
+    // Release CL index buffer
+    clEnqueueReleaseGLObjects(m_CommandQue, 1, &clIndexBuf, 0, NULL, NULL);
+    clReleaseMemObject(clIndexBuf);
+
+    // Copy the updated indices into the merged buffer
     CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, m_TriangleCounts[i], triOffset, vertOffset);
 
     triOffset  += m_TriangleCounts[i];
@@ -506,7 +541,7 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 
 inline int roundUpDiv(int A, int B) { return (A + B - 1) / (B); }
 
-cl_mem mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_mem transform, cl_float4 viewPoint)
+cl_mem mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint)
 {
   cl_int clStatus = 0;
   cl_mem vertexDistances = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, numOfVertices*sizeof(cl_float), 0, &clStatus);
@@ -520,7 +555,6 @@ cl_mem mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem verte
 
   clStatus  = clSetKernelArg(m_ckTransformVertexAndComputeDistance, a++, sizeof(cl_mem), &vertexDistances);
   clStatus |= clSetKernelArg(m_ckTransformVertexAndComputeDistance, a++, sizeof(cl_mem), &vertexBuf);
-  clStatus |= clSetKernelArg(m_ckTransformVertexAndComputeDistance, a++, sizeof(cl_mem), &transform);
   clStatus |= clSetKernelArg(m_ckTransformVertexAndComputeDistance, a++, sizeof(cl_float4), &viewPoint);
   clStatus |= clSetKernelArg(m_ckTransformVertexAndComputeDistance, a++, sizeof(cl_uint), &numOfVertices);
 
@@ -861,5 +895,4 @@ void mitk::OclTriangleSorter::Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem da
   CHECK_OCL_ERR(clStatus);
 
   clFinish(m_CommandQue);
-
 }
