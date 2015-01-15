@@ -454,9 +454,6 @@ private:
   /// \brief Updates the annotation that shows the intensity values in the visible images.
   void UpdateIntensityAnnotation(int windowIndex) const;
 
-  template <typename TPixel, int Dimension>
-  static void AccessPixel(mitk::PixelType ptype, const mitk::Image::Pointer image, mitk::Point3D worldPosition, mitk::ScalarType& value);
-
   std::vector<QmitkRenderWindow*> m_RenderWindows;
 
   /// \brief The name of the viewer.

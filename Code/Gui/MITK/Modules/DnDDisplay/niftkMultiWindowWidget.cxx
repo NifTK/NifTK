@@ -24,7 +24,6 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
-#include <mitkImagePixelReadAccessor.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateNot.h>
@@ -2212,7 +2211,7 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 
       mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
 
-      mitk::ScalarType pixelValue = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
+      mitk::ScalarType intensity = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
 
       if (it != visibleNonBinaryImageNodes.begin())
       {
@@ -2224,28 +2223,19 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
         stream << node->GetName() << ": ";
       }
 
-      if (std::fabs(pixelValue) > 10e6 || std::fabs(pixelValue) < 10e-3)
+      if (std::fabs(intensity) > 10e6 || std::fabs(intensity) < 10e-3)
       {
-//          stream << "; Time: " << renderer->GetTime() << " ms; Pixelvalue: " << std::scientific << pixelValue << "  ";
-        stream << std::scientific << pixelValue;
+        stream << std::scientific << intensity;
       }
       else
       {
-        stream << pixelValue;
+        stream << intensity;
       }
     }
 
     intensityAnnotation->SetText(stream.str());
     intensityAnnotation->Modified();
   }
-}
-
-
-template <typename TPixel, int Dimension>
-void niftkMultiWindowWidget::AccessPixel(mitk::PixelType pixelType, const mitk::Image::Pointer image, mitk::Point3D worldPosition, mitk::ScalarType& value)
-{
-  mitk::ImagePixelReadAccessor<TPixel, Dimension> access(image);
-  value = access.GetPixelByWorldCoordinates(worldPosition);
 }
 
 
