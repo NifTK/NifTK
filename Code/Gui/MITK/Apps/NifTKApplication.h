@@ -203,7 +203,7 @@ int ApplicationMain(int argc, char** argv,
     if (!preloadLibrary.exists())
     {
       // In case the application is started from a build tree
-      QString relPath = "/../../../plugins/" + preloadLib + libSuffix;
+      QString relPath = "/../../../../../MITK-build/MITK-build/bin/plugins/" + preloadLib + libSuffix;
       tempLibraryPath = QCoreApplication::applicationDirPath() + relPath;
       preloadLibrary.setFileName(tempLibraryPath);
     }
