@@ -1725,6 +1725,8 @@ void VLQt4Widget::sortTranslucentTriangles()
   clCameraPos.s[2] = cameraPos[2];
   clCameraPos.s[3] = 1.0f;
 
+  //std::cout <<"CameraPos: " <<cameraPos[0] <<" " <<cameraPos[1] <<" " <<cameraPos[2] <<"\n";
+
   std::vector<vl::mat4>                transforms;
   std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
   std::vector<vl::ref<vl::Actor> >     translucentActors;
@@ -1772,6 +1774,11 @@ void VLQt4Widget::sortTranslucentTriangles()
       
       vl::mat4 sorttxf = actorworld * m_Camera->projectionMatrix();
       transforms.push_back(sorttxf);
+
+      //std::cout <<"Transform:\n" <<sorttxf.e(0,0) <<" " <<sorttxf.e(0,1) <<" " <<sorttxf.e(0,2) <<" " <<sorttxf.e(0,3) <<"\n" 
+      //                          <<sorttxf.e(1,0) <<" " <<sorttxf.e(1,1) <<" " <<sorttxf.e(1,2) <<" " <<sorttxf.e(1,3) <<"\n"
+      //                          <<sorttxf.e(2,0) <<" " <<sorttxf.e(2,1) <<" " <<sorttxf.e(2,2) <<" " <<sorttxf.e(2,3) <<"\n"
+      //                          <<sorttxf.e(3,0) <<" " <<sorttxf.e(3,1) <<" " <<sorttxf.e(3,2) <<" " <<sorttxf.e(3,3) <<"\n";
 
       vl::ref<vl::Effect> fx = act->effect();
       vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
@@ -2150,13 +2157,14 @@ void VLQt4Widget::sortTranslucentTriangles()
 
   for (unsigned int bla = 0; bla < totalNumOfVertices; bla++)
   {
-    outfileColor <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<vertDistData[bla] <<"\n";
+    outfileColor <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<vertDistData[bla] <<" color: " <<std::hex <<colorData[bla]  <<"\n";
   }
   outfileColor.close();
 
-
   vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
+
   delete colorData;
+  delete vertDistData;
 
   clFinish(clCmdQue);
 

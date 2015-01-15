@@ -759,6 +759,8 @@ __kernel
   vertexCoords.z = vertexBuf[idx*3+2];
   vertexCoords.w = 0.0f;
 
+  vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
+/*
   float value = 0.0f;
   value += transform[0] * vertexCoords.x;
   value += transform[1] * vertexCoords.y;
@@ -787,21 +789,22 @@ __kernel
   value += transform[15] * vertexCoords.w;
   transformedVertexCoords.w = value;
 
+  vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
+
+  return;
+
   transformedVertexCoords.x /= transformedVertexCoords.w;
   transformedVertexCoords.y /= transformedVertexCoords.w;
   transformedVertexCoords.z /= transformedVertexCoords.w;
-  
-  //transformedVertexCoords.x += 1.0f;
-  //transformedVertexCoords.y += 1.0f;
   transformedVertexCoords.z += 1.0f;
   transformedVertexCoords.w = 0.0f;
 
   float4 zero = 0.0f;
-  vertexDistances[idx] = fast_distance(viewPoint, vertexCoords);
-  //vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
+  vertexDistances[idx] = fast_distance(zero, transformedVertexCoords);
   //vertexBuf[idx*3+0] = vertexCoords.x;
   //vertexBuf[idx*3+1] = vertexCoords.y;
   //vertexBuf[idx*3+2] = vertexCoords.z;
+*/
 }
 
 inline unsigned int FloatFlip(float f)
