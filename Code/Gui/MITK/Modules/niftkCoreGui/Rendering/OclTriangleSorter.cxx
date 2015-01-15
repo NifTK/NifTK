@@ -297,7 +297,7 @@ void mitk::OclTriangleSorter::Execute()
   //CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
   CopyIndicesWithDist(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_MergedDistanceBuffer, m_TotalTriangleNum);
 
-
+/*
   cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*3];
   clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedIndexBuffer, true, 0, m_TotalTriangleNum*3* sizeof(cl_uint), buff0, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
@@ -332,7 +332,7 @@ void mitk::OclTriangleSorter::Execute()
 
   outfile1.close();
   delete buff1;
-
+*/
 /*
   cl_uint * buff2 = new cl_uint[m_TotalTriangleNum*4];
   clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff2, 0, 0, 0);
@@ -458,8 +458,8 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
     cl_mem vertexDistances = TransformVerticesAndComputeDistance(m_VertexBuffers[i], m_VertexCounts[i], m_TransformBuffers[i], m_ViewPoint);
     cl_mem indexBufferWithDist = ComputeTriangleDistances(vertexDistances, m_VertexCounts[i], m_IndexBuffers[i], m_TriangleCounts[i]);
 
-    MITK_INFO <<"triOffset:  " <<triOffset <<" m_TriangleCounts[i]: " <<m_TriangleCounts[i];
-    MITK_INFO <<"vertOffset: " <<vertOffset <<" m_VertexCounts[i]: " <<m_VertexCounts[i];
+    //MITK_INFO <<"triOffset:  " <<triOffset <<" m_TriangleCounts[i]: " <<m_TriangleCounts[i];
+    //MITK_INFO <<"vertOffset: " <<vertOffset <<" m_VertexCounts[i]: " <<m_VertexCounts[i];
 
     CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, m_TriangleCounts[i], triOffset, vertOffset);
 

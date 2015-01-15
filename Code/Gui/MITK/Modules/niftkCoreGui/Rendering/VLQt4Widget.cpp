@@ -1981,8 +1981,8 @@ void VLQt4Widget::sortTranslucentTriangles()
   clErr = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, totalNumOfTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
   CHECK_OCL_ERR(clErr);
 
-  std::ofstream outfileA;
-  outfileA.open ("d://triangleDists.txt", std::ios::out);
+  //std::ofstream outfileA;
+  //outfileA.open ("d://triangleDists.txt", std::ios::out);
 
   float maxDist = -FLT_MAX;
   for (int kk = 0; kk < totalNumOfTriangles; kk++)
@@ -1992,10 +1992,10 @@ void VLQt4Widget::sortTranslucentTriangles()
     if (val > maxDist)
       maxDist = val;
 
-    outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
+    //outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
   }
 
-  outfileA.close();
+  //outfileA.close();
 
   float minDist = FLT_MAX;
   for (int kk = 0; kk < totalNumOfTriangles; kk++)
