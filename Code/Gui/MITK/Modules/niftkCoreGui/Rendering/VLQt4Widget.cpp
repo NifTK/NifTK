@@ -2077,7 +2077,7 @@ void VLQt4Widget::sortTranslucentTriangles()
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //// Get color array
+    // Get color array
 
     //size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
     //vl::fvec4 color = translucentColors.at(i);
@@ -2106,6 +2106,8 @@ void VLQt4Widget::sortTranslucentTriangles()
     clReleaseMemObject(clNormalBuf);
   }
 
+  MITK_INFO <<"Total num of triangles: " <<totalNumOfTriangles <<" Total num of vertices: " <<totalNumOfVertices;
+
   //range = 1024;
   float step = 255.0f/range;
 
@@ -2131,7 +2133,25 @@ void VLQt4Widget::sortTranslucentTriangles()
 
     cl_uint vertIndex0 = mergedIBO[bla*3 +0];
     cl_uint vertIndex1 = mergedIBO[bla*3 +1];
-    cl_uint vertIndex2 = mergedIBO[bla*3 +2];    
+    cl_uint vertIndex2 = mergedIBO[bla*3 +2];
+
+    if (vertIndex0 >= totalNumOfVertices)
+    {
+      MITK_INFO <<"vertIndex0: " <<vertIndex0 <<" Total num of vertices: " <<totalNumOfVertices;
+      break;
+    }
+
+    if (vertIndex1 >= totalNumOfVertices)
+    {
+      MITK_INFO <<"vertIndex1: " <<vertIndex1 <<" Total num of vertices: " <<totalNumOfVertices;
+      break;
+    }
+
+    if (vertIndex2 >= totalNumOfVertices)
+    {
+      MITK_INFO <<"vertIndex2: " <<vertIndex2 <<" Total num of vertices: " <<totalNumOfVertices;
+      break;
+    }
 
     if (distVal > vertDistData[vertIndex0])
     {
@@ -2152,6 +2172,7 @@ void VLQt4Widget::sortTranslucentTriangles()
     }
   }
 
+  /*
   std::ofstream outfileColor;
   outfileColor.open ("d://triangleColor.txt", std::ios::out);
 
@@ -2160,11 +2181,15 @@ void VLQt4Widget::sortTranslucentTriangles()
     outfileColor <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<vertDistData[bla] <<" color: " <<std::hex <<colorData[bla]  <<"\n";
   }
   outfileColor.close();
+*/
 
+  colorBufferOffset = 0;
   vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
 
   delete colorData;
   delete vertDistData;
+
+
 
   clFinish(clCmdQue);
 
