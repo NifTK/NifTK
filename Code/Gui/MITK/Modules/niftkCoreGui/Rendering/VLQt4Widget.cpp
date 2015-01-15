@@ -2079,23 +2079,23 @@ void VLQt4Widget::sortTranslucentTriangles()
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get color array
 
-    //size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
-    //vl::fvec4 color = translucentColors.at(i);
+    size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
+    vl::fvec4 color = translucentColors.at(i);
 
-    //unsigned int * colorData = new unsigned int[numOfVertices2];
-    //for (unsigned int bla = 0; bla < numOfVertices2; bla++)
-    //{
-    //  // Color format: AABBGGRR
-    //  unsigned char a = color[3] * 255;
-    //  unsigned char b = color[2] * 255;
-    //  unsigned char g = color[1] * 255;
-    //  unsigned char r = color[0] * 255;
-    //  colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
-    //}
+    unsigned int * colorData = new unsigned int[numOfVertices2];
+    for (unsigned int bla = 0; bla < numOfVertices2; bla++)
+    {
+      // Color format: AABBGGRR
+      unsigned char a = color[3] * 255;
+      unsigned char b = color[2] * 255;
+      unsigned char g = color[1] * 255;
+      unsigned char r = color[0] * 255;
+      colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
+    }
 
-    //vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
-    //colorBufferOffset += colorBufSize;
-    //delete colorData;
+    vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+    colorBufferOffset += colorBufSize;
+    delete colorData;
     
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
     clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
@@ -2106,6 +2106,7 @@ void VLQt4Widget::sortTranslucentTriangles()
     clReleaseMemObject(clNormalBuf);
   }
 
+/*
   MITK_INFO <<"Total num of triangles: " <<totalNumOfTriangles <<" Total num of vertices: " <<totalNumOfVertices;
 
   //range = 1024;
@@ -2172,23 +2173,12 @@ void VLQt4Widget::sortTranslucentTriangles()
     }
   }
 
-  /*
-  std::ofstream outfileColor;
-  outfileColor.open ("d://triangleColor.txt", std::ios::out);
-
-  for (unsigned int bla = 0; bla < totalNumOfVertices; bla++)
-  {
-    outfileColor <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<vertDistData[bla] <<" color: " <<std::hex <<colorData[bla]  <<"\n";
-  }
-  outfileColor.close();
-*/
-
   colorBufferOffset = 0;
   vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
 
   delete colorData;
   delete vertDistData;
-
+*/
 
 
   clFinish(clCmdQue);
