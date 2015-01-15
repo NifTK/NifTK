@@ -739,11 +739,11 @@ __kernel
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 __kernel
   void ckTransformVertexAndComputeDistance(
-  __global float * vertexDistances,
-  __global float * vertexBuf,
-  __global float * transform,
-  const  float4    viewPoint,
-  const  uint      numOfVertices
+  __global       float  * vertexDistances,
+  __global       float  * vertexBuf,
+  __global       float  * transform,
+           const float4   viewPoint,
+           const uint     numOfVertices
   )
 {
   uint idx = get_global_id(0);
@@ -822,11 +822,11 @@ inline float IFloatFlip(unsigned int f)
 
 __kernel
   void ckComputeTriangleDistances(
-  __global uint   * indexBufWithDist,
-  __global float  * vertexDist,
-  __global uint   * indexBuf,
-  const  uint       numOfVertices,
-  const  uint       numOfTriangles
+  __global       uint  * indexBufWithDist,
+  __global       float * vertexDist,
+  __global       uint  * indexBuf,
+           const uint    numOfVertices,
+           const uint    numOfTriangles
   )
 {
   size_t idx = get_global_id(0);
@@ -849,10 +849,11 @@ __kernel
 
 __kernel
   void ckCopyAndUpdateIndices(
-  __global uint4  * input,
-  __global uint4  * output,
-  const  uint     size,
-  const  uint     offset
+  __global       uint4 * input,
+  __global       uint4 * output,
+           const uint    size,
+           const uint    triangleOffset,
+           const uint    vertexOffset
   )
 {
   size_t idx = get_global_id(0);
@@ -860,17 +861,17 @@ __kernel
   if (idx >= size)
     return;
 
-  output[idx + offset].x = input[idx].x;
-  output[idx + offset].y = input[idx].y + offset; 
-  output[idx + offset].z = input[idx].z + offset; 
-  output[idx + offset].w = input[idx].w + offset; 
+  output[idx + triangleOffset].x = input[idx].x;
+  output[idx + triangleOffset].y = input[idx].y + vertexOffset; 
+  output[idx + triangleOffset].z = input[idx].z + vertexOffset; 
+  output[idx + triangleOffset].w = input[idx].w + vertexOffset; 
 }
 
 __kernel
   void ckCopyIndicesOnly(
-  __global uint4  * input,
-  __global uint   * output,
-    const  uint     size
+  __global       uint4 * input,
+  __global       uint  * output,
+           const uint    size
   )
 {
   size_t idx = get_global_id(0);
@@ -887,10 +888,10 @@ __kernel
 
 __kernel
   void ckCopyIndicesWithDist(
-  __global uint4  * input,
-  __global uint   * output,
-  __global uint   * outputDist,
-    const  uint     size
+  __global       uint4 * input,
+  __global       uint  * output,
+  __global       uint  * outputDist,
+           const uint    size
   )
 {
   size_t idx = get_global_id(0);
