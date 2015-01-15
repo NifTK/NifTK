@@ -297,7 +297,7 @@ void mitk::OclTriangleSorter::Execute()
   //CopyIndicesOnly(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_TotalTriangleNum);
   CopyIndicesWithDist(mergedIndexBuffWithDist, m_MergedIndexBuffer, m_MergedDistanceBuffer, m_TotalTriangleNum);
 
-/*
+
   cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*3];
   clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedIndexBuffer, true, 0, m_TotalTriangleNum*3* sizeof(cl_uint), buff0, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
@@ -333,7 +333,7 @@ void mitk::OclTriangleSorter::Execute()
   outfile1.close();
   delete buff1;
 
-
+/*
   cl_uint * buff2 = new cl_uint[m_TotalTriangleNum*4];
   clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff2, 0, 0, 0);
   CHECK_OCL_ERR(clStatus);
@@ -396,7 +396,7 @@ void mitk::OclTriangleSorter::GetTriangleDistOutput(cl_mem &mergedAndSortedDistB
   totalTriangleNum = m_TotalTriangleNum;
 }
 
-void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint offset)
+void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint triOffset, cl_uint vertOffset)
 {
   cl_int clStatus = 0;
   unsigned int a = 0;
@@ -408,7 +408,8 @@ void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, 
   clStatus  = clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&input);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&output);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&size);
-  clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&offset);
+  clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&triOffset);
+  clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&vertOffset);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyAndUpdateIndices, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 }
@@ -450,15 +451,20 @@ void mitk::OclTriangleSorter::MergeBuffers(cl_mem mergedIndexBuffWithDist)
 {
   cl_int clStatus = 0;
 
-  cl_uint offset = 0;
+  cl_uint triOffset  = 0;
+  cl_uint vertOffset = 0;
   for (unsigned int i = 0; i < m_VertexBuffers.size(); i++)
   {
     cl_mem vertexDistances = TransformVerticesAndComputeDistance(m_VertexBuffers[i], m_VertexCounts[i], m_TransformBuffers[i], m_ViewPoint);
     cl_mem indexBufferWithDist = ComputeTriangleDistances(vertexDistances, m_VertexCounts[i], m_IndexBuffers[i], m_TriangleCounts[i]);
 
-    CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, m_TriangleCounts[i], offset);
+    MITK_INFO <<"triOffset:  " <<triOffset <<" m_TriangleCounts[i]: " <<m_TriangleCounts[i];
+    MITK_INFO <<"vertOffset: " <<vertOffset <<" m_VertexCounts[i]: " <<m_VertexCounts[i];
 
-    offset += m_TriangleCounts[i];
+    CopyAndUpdateIndices(indexBufferWithDist, mergedIndexBuffWithDist, m_TriangleCounts[i], triOffset, vertOffset);
+
+    triOffset  += m_TriangleCounts[i];
+    vertOffset += m_VertexCounts[i];
 
     clReleaseMemObject(vertexDistances);
     clReleaseMemObject(indexBufferWithDist);

@@ -106,7 +106,7 @@ private:
   cl_mem ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
 
   /// \brief Copies the contents of one IBO (vetex indices + distance) to the merged IBO while updating the indices
-  void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint offset);
+  void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint triOffset, cl_uint vertOffset);
 
   /// \brief Copies only the vertex indices, without the distance bit
   void CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);
