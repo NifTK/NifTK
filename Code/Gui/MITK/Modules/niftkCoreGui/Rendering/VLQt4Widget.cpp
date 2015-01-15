@@ -1133,7 +1133,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
 
-  MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size()/3;
+  //MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size()/3;
   //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
   if (!vlSurf->normalArray())
     vlSurf->computeNormals();
@@ -1969,7 +1969,7 @@ void VLQt4Widget::sortTranslucentTriangles()
 
   clFinish(clCmdQue);
 
-
+/*
   // Create a buffer large enough to retrive the merged distance buffer
   unsigned int totalNumOfVertices2 = 0;
   cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, totalNumOfTriangles*sizeof(cl_uint), 0, 0);
@@ -2006,7 +2006,8 @@ void VLQt4Widget::sortTranslucentTriangles()
   }
 
   float range = (maxDist-minDist);
-  MITK_INFO <<"maxDist: " <<std::setprecision(10) <<maxDist <<" minDist:" <<minDist <<" range: " <<range;
+  //MITK_INFO <<"maxDist: " <<std::setprecision(10) <<maxDist <<" minDist:" <<minDist <<" range: " <<range;
+*/
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
@@ -2310,6 +2311,7 @@ vl::ivec2 VLQt4Widget::position() const
 //-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
+  MITK_INFO <<"Update called";
   sortTranslucentTriangles();
 
   // schedules a repaint, will eventually call into paintGL()
