@@ -24,6 +24,7 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
+#include <mitkImagePixelReadAccessor.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateNot.h>
@@ -287,14 +288,15 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
           mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
     overlayManager->AddLayouter(topLeftLayouter.GetPointer());
 
-    mitk::TextOverlay2D::Pointer textOverlay = mitk::TextOverlay2D::New();
-    m_TextOverlays[i] = textOverlay;
-    textOverlay->SetFontSize(14);
-    textOverlay->SetColor(0.0f, 1.0f, 0.0f);
-    textOverlay->SetOpacity(1.0f);
+    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
+    m_IntensityAnnotations[i] = intensityAnnotation;
+    intensityAnnotation->SetFontSize(12);
+    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
+    intensityAnnotation->SetOpacity(1.0f);
+    intensityAnnotation->SetVisibility(false);
 
-    overlayManager->AddOverlay(textOverlay.GetPointer(), renderer);
-    overlayManager->SetLayouter(textOverlay.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
   }
 }
 
@@ -498,19 +500,16 @@ void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
       m_FocusLosingWindowIndex = m_SelectedWindowIndex;
     }
 
-    MITK_INFO << "void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)";
     if (m_SelectedWindowIndex < 3)
     {
-      m_TextOverlays[m_SelectedWindowIndex]->SetVisibility(false, m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
-      m_TextOverlays[m_SelectedWindowIndex]->Modified();
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
     }
 
     m_SelectedWindowIndex = selectedWindowIndex;
 
     if (m_SelectedWindowIndex < 3)
     {
-      m_TextOverlays[m_SelectedWindowIndex]->SetVisibility(true, m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
-      m_TextOverlays[m_SelectedWindowIndex]->Modified();
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -1407,6 +1406,9 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     m_TimeStep = 0;
     m_TimeStepHasChanged = true;
 
+    this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+    m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+
     this->BlockUpdate(updateWasBlocked);
   }
   else
@@ -2144,9 +2146,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
         windowIndex = CORONAL;
       }
       this->SynchroniseCursorPositions(windowIndex);
+      this->UpdateIntensityAnnotation(windowIndex);
     }
-
-    this->UpdateIntensityAnnotation();
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2154,12 +2155,12 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::UpdateIntensityAnnotation() const
+void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 {
-  if (m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < 3)
+  if (windowIndex >= 0 && windowIndex < 3)
   {
-    mitk::BaseRenderer* renderer = m_RenderWindows[m_SelectedWindowIndex]->GetRenderer();
-    mitk::TextOverlay2D::Pointer textOverlay = m_TextOverlays[m_SelectedWindowIndex];
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::TextOverlay2D::Pointer intensityAnnotation = m_IntensityAnnotations[windowIndex];
 
     mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
     mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
@@ -2184,23 +2185,22 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation() const
     }
 
     std::stringstream stream;
-    stream.precision(2);
+    stream.precision(3);
     stream.imbue(std::locale::classic());
 
-    itk::Index<3> selectedIndex;
-    m_Geometry->WorldToIndex(m_SelectedPosition, selectedIndex);
-//      stream << "Position: <" << std::fixed << m_SelectedPosition[0] << ", "
-//             << std::fixed << m_SelectedPosition[1] << ", "
-//             << std::fixed << m_SelectedPosition[2] << "> mm" << std::endl
-//             << "Index: <" << selectedIndex[0] << ", " << selectedIndex[1] << ", " << selectedIndex[2] << "> ";
-
-    if (visibleNonBinaryImageNodes.size() == 1)
+    if (visibleNonBinaryImageNodes.size() == 0)
+    {
+      intensityAnnotation->SetVisibility(false);
+    }
+    else if (visibleNonBinaryImageNodes.size() == 1)
     {
       stream << "Intensity: ";
+      intensityAnnotation->SetVisibility(true);
     }
     else if (visibleNonBinaryImageNodes.size() > 1)
     {
       stream << "Intensities: ";
+      intensityAnnotation->SetVisibility(true);
     }
 
     for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
@@ -2211,7 +2211,8 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation() const
       node->GetIntProperty("Image.Displayed Component", component);
 
       mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-      mitk::ScalarType pixelValue = image->GetPixelValueByIndex(selectedIndex, renderer->GetTimeStep(), component);
+
+      mitk::ScalarType pixelValue = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
 
       if (it != visibleNonBinaryImageNodes.begin())
       {
@@ -2234,9 +2235,17 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation() const
       }
     }
 
-    textOverlay->SetText(stream.str());
-    textOverlay->Modified();
+    intensityAnnotation->SetText(stream.str());
+    intensityAnnotation->Modified();
   }
+}
+
+
+template <typename TPixel, int Dimension>
+void niftkMultiWindowWidget::AccessPixel(mitk::PixelType pixelType, const mitk::Image::Pointer image, mitk::Point3D worldPosition, mitk::ScalarType& value)
+{
+  mitk::ImagePixelReadAccessor<TPixel, Dimension> access(image);
+  value = access.GetPixelByWorldCoordinates(worldPosition);
 }
 
 
@@ -2870,7 +2879,8 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       {
         if (m_RenderWindows[i]->isVisible() && rendererNeedsUpdate[i])
         {
-          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+//          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+          m_RenderingManager->ForceImmediateUpdate(m_RenderWindows[i]->GetRenderWindow());
         }
       }
 

@@ -452,7 +452,10 @@ private:
   void OnFocusChanged();
 
   /// \brief Updates the annotation that shows the intensity values in the visible images.
-  void UpdateIntensityAnnotation() const;
+  void UpdateIntensityAnnotation(int windowIndex) const;
+
+  template <typename TPixel, int Dimension>
+  static void AccessPixel(mitk::PixelType ptype, const mitk::Image::Pointer image, mitk::Point3D worldPosition, mitk::ScalarType& value);
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
 
@@ -572,7 +575,7 @@ private:
   bool m_CursorPositionBindingHasChanged;
   bool m_ScaleFactorBindingHasChanged;
 
-  mitk::TextOverlay2D::Pointer m_TextOverlays[3];
+  mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
 
   friend class DisplayGeometryModificationCommand;
 
