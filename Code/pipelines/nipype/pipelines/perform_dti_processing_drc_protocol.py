@@ -96,7 +96,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 		                   name = 'infosource')
 	infosource.iterables = ('subject_id', midas_code)
 
-	midas2dicom = pe.Node(niftk.Midas2Dicom(), name='m2d')
+	midas2dicom = pe.Node(niftk.io.Midas2Dicom(), name='m2d')
 
 	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/']#,
 		               # '/var/lib/midas/data/ppadti/images/ims-study/']
@@ -165,7 +165,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
                                     name = 'matrixrotation_qc')
         
         r.connect(r.get_node('output_node'), 'dwis', interslice_qc, 'in_file')
-        r.connect(merge_initial_dwis, 'bvals', interslice_qc, 'bval_file')
+        r.connect(find_and_merge_dwis, 'bvals', interslice_qc, 'bval_file')
         r.connect(r.get_node('output_node'), 'transformations', matrixrotation_qc, 'in_files')
 	
 
