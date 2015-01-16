@@ -3,7 +3,7 @@
 """
 
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath)
+from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath, BaseInterface, BaseInterfaceInputSpec)
 
 from nipype.utils.filemanip import split_filename
 import os
@@ -77,14 +77,14 @@ def convert_midas2_dicom(midas_code, midas_dirs):
     # return the directory
     return dicom_dir
 
-class Midas2DicomInputSpec(NIFTKCommandInputSpec):
+class Midas2DicomInputSpec(BaseInterfaceInputSpec):
     midas_code = traits.String(mandatory=True, desc="4/5 digit midas code")
     midas_dirs = InputMultiPath(mandatory=True, desc="Midas database directories to search")
     
 class Midas2DicomOutputSpec(TraitedSpec):
     dicom_dir   = Directory(exists=True, desc="Dicom directory path of inputted midas image")
 
-class Midas2Dicom(NIFTKCommand):
+class Midas2Dicom(BaseInterface):
 
     """
 
@@ -111,7 +111,7 @@ class Midas2Dicom(NIFTKCommand):
 
 
 
-class GetAxisOrientationInputSpec(NIFTKCommandInputSpec):
+class GetAxisOrientationInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True, \
                 desc="Input target image filename")
@@ -120,7 +120,7 @@ class GetAxisOrientationOutputSpec(TraitedSpec):
 
     out_dict = traits.Dict(desc='Dictionnary containing the axis orientation.')
 
-class GetAxisOrientation(NIFTKCommand):
+class GetAxisOrientation(BaseInterface):
 
     input_spec = GetAxisOrientationInputSpec  
     output_spec = GetAxisOrientationOutputSpec

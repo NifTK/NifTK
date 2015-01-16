@@ -2,8 +2,8 @@
    Interface for niftk filter tools
 """
 
+from nipype.interfaces.base import (TraitedSpec, File, traits, BaseInterface, BaseInterfaceInputSpec, OutputMultiPath)
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, OutputMultiPath, traits)
 from nipype.interfaces.matlab import MatlabCommand, MatlabInputSpec
 
 from nipype.utils.filemanip import split_filename
@@ -76,7 +76,7 @@ def generate_distortion(std_trans,std_rot,std_shear):
     return M.tolist()
 
 
-class DistortionGeneratorInputSpec(NIFTKCommandInputSpec):
+class DistortionGeneratorInputSpec(BaseInterfaceInputSpec):
     
     bval_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input b-factor file to generate appropriate distortions")
@@ -91,7 +91,7 @@ class DistortionGeneratorOutputSpec(TraitedSpec):
     bval_files  = OutputMultiPath(desc="Output bval files")
     bvec_files  = OutputMultiPath(desc="Output bvec files")
 
-class DistortionGenerator(NIFTKCommand):
+class DistortionGenerator(BaseInterface):
 
     """
 
@@ -218,7 +218,7 @@ class GradwarpCorrectionOutputSpec(TraitedSpec):
 
     out_file = File(exists=True, desc="output deformation field image")
 
-class GradwarpCorrection(NIFTKCommandInputSpec):
+class GradwarpCorrection(NIFTKCommand):
 
     _cmd = "gradient_unwarp"
 
@@ -242,7 +242,7 @@ def getNoddiPath(cmd):
     except KeyError:                
         return cmd
 
-class NoddiInputSpec( NIFTKCommandInputSpec):
+class NoddiInputSpec( BaseInterfaceInputSpec):
 
     in_dwis = File(exists=True, 
                    desc='The input 4D DWIs image file',
@@ -274,7 +274,7 @@ class NoddiOutputSpec( TraitedSpec):
 
     matlab_output = traits.Str()
 
-class Noddi( NIFTKCommand):
+class Noddi( BaseInterface):
 
     """ NODDI estimation interface for the MATLAB toolbox (http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab)
 

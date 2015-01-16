@@ -13,6 +13,7 @@ import nipype.interfaces.niftyreg       as niftyreg
 import operations
 import filters
 
+import niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')

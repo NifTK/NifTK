@@ -2,8 +2,7 @@
    Interface for niftk filter tools
 """
 
-from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, traits)
+from nipype.interfaces.base import (TraitedSpec, File, traits, BaseInterface, BaseInterfaceInputSpec)
 
 
 import os.path
@@ -15,7 +14,7 @@ import matplotlib.pyplot as plt
 from nipype.utils.filemanip import split_filename
 
 
-class InterSliceCorrelationPlotInputSpec(NIFTKCommandInputSpec):    
+class InterSliceCorrelationPlotInputSpec(BaseInterfaceInputSpec):    
     in_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input image")
     bval_file = File(argstr="%s", exists=True, mandatory=False,
@@ -25,7 +24,7 @@ class InterSliceCorrelationPlotOutputSpec(TraitedSpec):
     out_file   = File(exists=False, genfile = True,
                       desc="Interslice correlation plot")
 
-class InterSliceCorrelationPlot(NIFTKCommand):
+class InterSliceCorrelationPlot(BaseInterface):
     input_spec = InterSliceCorrelationPlotInputSpec
     output_spec = InterSliceCorrelationPlotOutputSpec
     _suffix = "_interslice_ncc"
@@ -147,7 +146,7 @@ class InterSliceCorrelationPlot(NIFTKCommand):
 
 
 
-class MatrixRotationPlotInputSpec(NIFTKCommandInputSpec):    
+class MatrixRotationPlotInputSpec(BaseInterfaceInputSpec):    
     in_files = traits.List(File(exists=True),
                            exists=True,
                            mandatory=True,
@@ -157,7 +156,7 @@ class MatrixRotationPlotOutputSpec(TraitedSpec):
     out_file   = File(exists=False, genfile = True,
                       desc="Matrix rotation plot")
 
-class MatrixRotationPlot(NIFTKCommand):
+class MatrixRotationPlot(BaseInterface):
     input_spec = MatrixRotationPlotInputSpec
     output_spec = MatrixRotationPlotOutputSpec
     _suffix = "_rotation"

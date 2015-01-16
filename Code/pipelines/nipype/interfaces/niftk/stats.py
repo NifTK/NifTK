@@ -3,7 +3,7 @@
 """
 
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, traits)
+from nipype.interfaces.base import (TraitedSpec, File, traits, BaseInterface, BaseInterfaceInputSpec)
 
 import os
 import numpy as np
@@ -11,7 +11,7 @@ import nibabel as nib
 
 
 
-class ComputeDiceScoreInputSpec(NIFTKCommandInputSpec):
+class ComputeDiceScoreInputSpec(BaseInterfaceInputSpec):
     
     in_file1 = File(argstr="%s", exists=True, mandatory=True,
                         desc="First roi image")
@@ -23,7 +23,7 @@ class ComputeDiceScoreOutputSpec(TraitedSpec):
         'The first value is the label index and the second is the Dice score')
 
 
-class ComputeDiceScore(NIFTKCommand):
+class ComputeDiceScore(BaseInterface):
     
     input_spec = ComputeDiceScoreInputSpec  
     output_spec = ComputeDiceScoreOutputSpec
@@ -76,7 +76,7 @@ class ComputeDiceScore(NIFTKCommand):
 
 
 
-class CalculateAffineDistancesInputSpec(NIFTKCommandInputSpec):
+class CalculateAffineDistancesInputSpec(BaseInterfaceInputSpec):
     transformation1_list = traits.List(traits.File(exists=True), mandatory=True, desc='List of affine transformations')
     transformation2_list = traits.List(traits.File(exists=True), mandatory=True, desc='List of affine transformations')
     
@@ -84,7 +84,7 @@ class CalculateAffineDistancesInputSpec(NIFTKCommandInputSpec):
 class CalculateAffineDistancesOutputSpec(TraitedSpec):
     out_array   = traits.Array(desc='Array of distances between the paired transformations')
 
-class CalculateAffineDistances(NIFTKCommand):
+class CalculateAffineDistances(BaseInterface):
 
     """
 
@@ -142,7 +142,7 @@ class CalculateAffineDistances(NIFTKCommand):
 
 
 
-class ExtractRoiStatisticsInputSpec(NIFTKCommandInputSpec):
+class ExtractRoiStatisticsInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True,
                         desc="Input image to extract the statistics from")
@@ -156,7 +156,7 @@ class ExtractRoiStatisticsOutputSpec(TraitedSpec):
         "label index, mean value, std value, roi volume in mm")
 
 
-class ExtractRoiStatistics(NIFTKCommand):
+class ExtractRoiStatistics(BaseInterface):
 
     """
 
