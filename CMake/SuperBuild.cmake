@@ -14,6 +14,10 @@
 
 include(ExternalProject)
 
+set(EP_BASE "${CMAKE_BINARY_DIR}/CMakeExternals" CACHE PATH "Directory where the external projects are configured and built")
+mark_as_advanced(EP_BASE)
+set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
+
 # For external projects like ITK, VTK we always want to turn their testing targets off.
 set(EP_BUILD_TESTING OFF)
 set(EP_BUILD_EXAMPLES OFF)
