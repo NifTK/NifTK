@@ -39,9 +39,6 @@ public:
   OclTriangleSorter();
   virtual ~OclTriangleSorter();
 
-  /// \brief Performs the coord tranfrom, computes triangle distances and sorts triangles based on distance
-  void Update();
-
   /// \brief Allows to force-release the GPU buffers when needed
   void ReleaseGPUBuffers();
 
@@ -52,9 +49,12 @@ public:
   
   /// \brief Adds camera position that is used for distance computation
   inline void SetViewPoint(cl_float4 vp) { m_ViewPoint = vp; }
-  /// \brief Gets the resulting CL mem object that contains the IBO of the merged translucent object
-  // and the total num of triangles
-  void GetOutput(cl_mem &mergedAndSortedIndexBuf, cl_uint &totalTriangleNum);
+  
+  /// \brief Sorts the merged index buffer based on triangle distance
+  void SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triCount, cl_uint vertCount);
+
+  /// \brief Merges index buffers that were previously set to be merged
+  void MergeIndexBuffers(cl_mem &mergedBuffer, cl_uint &numOfElements);
 
   /// \brief Gets the resulting CL mem object that contains the distance of each triangle
   void GetTriangleDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalTriangleNum);
@@ -76,9 +76,6 @@ protected:
   /// \brief Initialize the filter
   bool Initialize();
 
-  /// \brief Main processing function
-  void Execute();
-
   /// \brief
   virtual us::Module* GetModule() { return 0; }
 
@@ -95,14 +92,11 @@ private:
 
   void LaunchBitonicSort(cl_mem bfKeyVal, cl_uint count);
 
-  /// \brief Merges the input IBO's into one large buffer while updating the triangle indices
-  void MergeBuffers(cl_mem mergedIndexBuffWithDist);
-
   /// \brief Performs coordinate transform and computes distance of the viewpoint from each vertex. Returns with the resulting mem object
-  cl_mem TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
+  void TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
   
   /// \brief Computes the triangle distances from the vertex distances. Returns the array of floats as cl_mem
-  cl_mem ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
+  void ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
 
   /// \brief Copies the contents of one IBO (vetex indices + distance) to the merged IBO while updating the indices
   void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint triOffset, cl_uint vertOffset);
@@ -123,14 +117,11 @@ private:
   std::vector<unsigned int> m_TriangleCounts;
   cl_float4                 m_ViewPoint;
 
-  // Big fat buffer for storing the merged translucent object's indices
-  cl_mem                    m_MergedIndexBuffer;
-  // Num of triangles in the merged translucent object
-  cl_uint                   m_TotalTriangleNum;
-  // Big fat buffer for storing the merged translucent object's distances
-  cl_mem                    m_MergedDistanceBuffer;
-  // Num of vertices in the merged translucent object
-  cl_uint                   m_TotalVertexNum;
+
+  // Buffer for storing translucent triangles' distances
+  cl_mem                    m_VertexDistances;
+  // Buffer for storing the index buffer together with distance for sorting
+  cl_mem                    m_IndexBufferWithDist;
 
   // Parallel Prefix Sum kernel
   cl_kernel    m_ckScanBlockAnyLength;
@@ -144,6 +135,13 @@ private:
   cl_kernel    m_ckRadixLocalSort;
   cl_kernel    m_ckLocalHistogram;
   cl_kernel    m_ckRadixPermute;
+
+  // Release temporary objects
+  cl_mem m_bfRadixHist1;
+  cl_mem m_bfRadixHist2;
+  cl_mem m_bfRadixHist1Scan;
+  cl_mem m_bfDataA;
+  cl_mem m_bfDataB;
 
   /// Bitonic Sort stuff
   cl_kernel    m_ckParallelBitonic_B2;

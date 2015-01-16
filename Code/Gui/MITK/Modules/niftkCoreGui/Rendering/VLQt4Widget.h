@@ -164,7 +164,9 @@ protected:
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
+  void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();
+  void MergeTranslucentTriangles();
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
@@ -221,9 +223,17 @@ protected:
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
-  vl::ref<vl::Geometry>      m_TranslucentSurface;
-  vl::ref<vl::Actor>         m_TranslucentSurfaceActor;
-  mitk::OclTriangleSorter *  m_OclTriangleSorter;
+  std::vector<vl::ref<vl::Actor> >    m_TranslucentActors;
+  vl::ref<vl::Geometry>               m_TranslucentSurface;
+  vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
+  mitk::OclTriangleSorter           * m_OclTriangleSorter;
+
+  bool m_TranslucentStructuresMerged;
+  bool m_TranslucentStructuresSorted;
+  cl_uint m_TotalNumOfTranslucentTriangles;
+  cl_uint m_TotalNumOfTranslucentVertices;
+  cl_mem m_MergedTranslucentIndexBuf;
+  cl_mem m_MergedTranslucentVertexBuf;
 
 protected:
   int       m_Refresh;

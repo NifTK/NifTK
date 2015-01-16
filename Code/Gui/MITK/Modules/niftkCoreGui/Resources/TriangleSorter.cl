@@ -802,7 +802,7 @@ __kernel
 }
 
 __kernel
-  void ckCopyAndUpdateIndices(
+  void ckCopyAndUpdateIndicesOrig(
   __global       uint4 * input,
   __global       uint4 * output,
            const uint    size,
@@ -819,6 +819,25 @@ __kernel
   output[idx + triangleOffset].y = input[idx].y + vertexOffset; 
   output[idx + triangleOffset].z = input[idx].z + vertexOffset; 
   output[idx + triangleOffset].w = input[idx].w + vertexOffset; 
+}
+
+__kernel
+  void ckCopyAndUpdateIndices(
+  __global       uint * input,
+  __global       uint * output,
+           const uint   size,
+           const uint   triangleOffset,
+           const uint   vertexOffset
+  )
+{
+  size_t idx = get_global_id(0);
+
+  if (idx >= size)
+    return;
+
+  output[(idx + triangleOffset)*3 +0] = input[idx*3 +0] + vertexOffset;
+  output[(idx + triangleOffset)*3 +1] = input[idx*3 +1] + vertexOffset;
+  output[(idx + triangleOffset)*3 +2] = input[idx*3 +2] + vertexOffset;
 }
 
 __kernel
