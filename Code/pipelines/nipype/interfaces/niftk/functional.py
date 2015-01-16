@@ -6,8 +6,9 @@ import os
 import numpy as np
 import nibabel as nib
 
+from nipype.interfaces.base import (TraitedSpec, File, traits, BaseInterface, BaseInterfaceInputSpec)
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
-from nipype.interfaces.base import (TraitedSpec, File, traits)
+
 import nipype.interfaces.utility        as niu          # utility
 import nipype.pipeline.engine           as pe           # pypeline engine
 import nipype.interfaces.niftyseg       as niftyseg     # NiftySeg
@@ -17,7 +18,7 @@ from .stats import ExtractRoiStatistics
 from .utils import WriteArrayToCsv
 
 
-class ExtractSideInputSpec(NIFTKCommandInputSpec):
+class ExtractSideInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True, \
                 desc="Input target image filename")
@@ -32,7 +33,7 @@ class ExtractSideOutputSpec(TraitedSpec):
 
     out_file = traits.File(desc='Image that contains the requested half.')
 
-class ExtractSide(NIFTKCommand):
+class ExtractSide(BaseInterface):
 
     input_spec = ExtractSideInputSpec  
     output_spec = ExtractSideOutputSpec
@@ -108,7 +109,7 @@ class ExtractSide(NIFTKCommand):
 
 
 
-class NormaliseRoiAverageValuesInputSpec(NIFTKCommandInputSpec):
+class NormaliseRoiAverageValuesInputSpec(BaseInterfaceInputSpec):
     
     in_file = File(argstr="%s", exists=True, mandatory=True,
                    desc="Input image to extract the uptake values")
@@ -129,7 +130,7 @@ class NormaliseRoiAverageValuesOutputSpec(TraitedSpec):
         "label index, mean value, std value, roi volume in mm")
 
 
-class NormaliseRoiAverageValues(NIFTKCommand):
+class NormaliseRoiAverageValues(BaseInterface):
     
     input_spec = NormaliseRoiAverageValuesInputSpec  
     output_spec = NormaliseRoiAverageValuesOutputSpec
