@@ -317,7 +317,6 @@ class MatrixRotationPlot(BaseInterface):
         plt.ylim([-15,15])
         self.out_file = self._gen_output_filename(all_matrices[0])
         fig.savefig(self.out_file, format='PDF')
-        plt.show()
-#        plt.close()
+        plt.close()
         return runtime
         
