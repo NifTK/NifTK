@@ -12,6 +12,20 @@ import nipype.interfaces.niftyseg as niftyseg
 
 import niftk
 
+def gen_substitutions(op_basename):    
+    subs = []    
+
+    subs.append(('average_output_res_maths', op_basename+'_average_b0'))
+    subs.append(('vol0000_maths_res_merged_thresh_maths', op_basename+'_corrected_dwi'))
+    subs.append(('MNI152_T1_2mm_brain_mask_dil_res_maths_res', op_basename+'_mask'))
+    subs.append((r'/([^/;]+)_merged.bval', '/' + op_basename + '_corrected_dwi.bval'))
+    subs.append((r'/([^/;]+)_merged.bvec', '/' + op_basename + '_corrected_dwi.bvec'))
+    subs.append((r'/([^/;]+)_aff_reg_transform.txt', '/' + op_basename + '_T1_to_B0.txt'))
+    subs.append((r'/transformations/vol', '/transformations/' + op_basename + '_dwi_to_b0_'))
+    subs.append(('_log_maths_aff.txt', '_aff.txt'))
+    subs.append(('vol0000_aff_rotation', op_basename + '_dwi_to_b0_rotation'))
+
+    return subs
 
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
@@ -141,15 +155,28 @@ r.connect(mni_to_input, 'aff_file', mask_resample, 'aff_file')
 r.connect(mask_resample, 'res_file', mask_eroder, 'in_file')
 r.connect(mask_eroder, 'out_file', r.get_node('input_node'), 'in_t1_mask')
 
+interslice_qc = pe.Node(interface = niftk.qc.InterSliceCorrelationPlot(), 
+                             name = 'interslice_qc')
+
+matrixrotation_qc = pe.Node(interface = niftk.qc.MatrixRotationPlot(), 
+                             name = 'matrixrotation_qc')
+
+r.connect(r.get_node('output_node'), 'dwis', interslice_qc, 'in_file')
+r.connect(merge_initial_dwis, 'bvals', interslice_qc, 'bval_file')
+r.connect(r.get_node('output_node'), 'transformations', matrixrotation_qc, 'in_files')
+
 ds = pe.Node(nio.DataSink(), name='ds')
 ds.inputs.base_directory = result_dir
 ds.inputs.parameterization = False
 
-subs = []
-subs.append(('vol0000_maths_res_merged_thresh_maths', subject_name + '_corrected_dwi'))
-subs.append(('average_output_res_maths', subject_name + '_average_b0'))
-subs.append((subject_t1_name+ '_aff_reg_transform', subject_name + '_t1_transform'))
-ds.inputs.regexp_substitutions = subs
+
+subsgen = pe.Node(interface = niu.Function(input_names = ['op_basename'], 
+                                           output_names = ['substitutions'], 
+                                           function = gen_substitutions), 
+                  name = 'subsgen')
+subsgen.inputs.op_basename =  subject_name
+
+r.connect(subsgen, 'substitutions', ds, 'regexp_substitutions')
 
 r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
 r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
@@ -163,6 +190,11 @@ r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
 r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
 r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
 r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
+r.connect(merge_initial_dwis, 'bvals', ds, '@bvals')
+r.connect(merge_initial_dwis, 'bvecs', ds, '@bvecs')
+
+r.connect(interslice_qc, 'out_file', ds, '@interslice_qc')
+r.connect(matrixrotation_qc, 'out_file', ds, '@matrixrotation_qc')
 
 dot_exec=spawn.find_executable('dot')   
 if not dot_exec == None:

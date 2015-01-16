@@ -13,6 +13,22 @@ import nipype.interfaces.niftyseg as niftyseg
 
 import niftk
 
+
+def gen_substitutions(op_basename):    
+    subs = []    
+
+    subs.append(('average_output_res_maths', op_basename+'_average_b0'))
+    subs.append(('vol0000_maths_res_merged_thresh_maths', op_basename+'_corrected_dwi'))
+    subs.append(('MNI152_T1_2mm_brain_mask_dil_res_maths_res', op_basename+'_mask'))
+    subs.append((r'/([^/;]+)_merged.bval', '/' + op_basename + '_corrected_dwi.bval'))
+    subs.append((r'/([^/;]+)_merged.bvec', '/' + op_basename + '_corrected_dwi.bvec'))
+    subs.append((r'/([^/;]+)_aff_reg_transform.txt', '/' + op_basename + '_T1_to_B0.txt'))
+    subs.append((r'/transformations/vol', '/transformations/' + op_basename + '_dwi_to_b0_'))
+    subs.append(('_log_maths_aff.txt', '_aff.txt'))
+    subs.append(('vol0000_aff_rotation', op_basename + '_dwi_to_b0_rotation'))
+
+    return subs
+
 def merge_bv_function (input_bvals, input_bvecs):
 
     import os, glob, sys, errno
@@ -164,14 +180,14 @@ diffusion_preprocs_sinks = []
 for i in range(number_of_shells):
     
     r = niftk.diffusion.create_diffusion_mri_processing_workflow(name = 'dmri_workflow_shell_'+str(i+1),
-                                                      resample_in_t1 = False,
-                                                      log_data = True,
-                                                      correct_susceptibility = do_susceptibility_correction,
-                                                      dwi_interp_type = 'CUB',
-                                                      t1_mask_provided = True,
-                                                      ref_b0_provided = False,
-                                                      wls_tensor_fit = False,
-                                                      set_op_basename = True)
+                                                                 resample_in_t1 = False,
+                                                                 log_data = True,
+                                                                 correct_susceptibility = do_susceptibility_correction,
+                                                                 dwi_interp_type = 'CUB',
+                                                                 t1_mask_provided = True,
+                                                                 ref_b0_provided = False,
+                                                                 wls_tensor_fit = False,
+                                                                 set_op_basename = True)
     
     r.base_dir = os.getcwd()
     
@@ -193,17 +209,31 @@ for i in range(number_of_shells):
     shell_outputdir = os.path.join(result_dir, 'shell_'+str(i+1))
     if not os.path.exists(shell_outputdir):
         os.mkdir(shell_outputdir)
+
+    interslice_qc = pe.Node(interface = niftk.qc.InterSliceCorrelationPlot(), 
+                            name = 'interslice_qc')
     
+    matrixrotation_qc = pe.Node(interface = niftk.qc.MatrixRotationPlot(), 
+                                name = 'matrixrotation_qc')
+    
+    r.connect(r.get_node('output_node'), 'dwis', interslice_qc, 'in_file')
+    interslice_qc.inputs.bval_file = os.path.abspath(args.bvals[i])
+
+    r.connect(r.get_node('output_node'), 'transformations', matrixrotation_qc, 'in_files')
+    
+
     ds = pe.Node(nio.DataSink(), name='ds')
     ds.inputs.base_directory = shell_outputdir
     ds.inputs.parameterization = False
 
-    subs = []
-    subs.append(('vol0000_maths_res_merged_thresh_maths', subject_name + '_corrected_dwi'))
-    subs.append(('average_output_res_maths', subject_name + '_average_b0'))
-    subs.append((subject_t1_name+ '_aff_reg_transform', subject_name + '_t1_transform'))
-    ds.inputs.regexp_substitutions = subs
-    
+    subsgen = pe.Node(interface = niu.Function(input_names = ['op_basename'], 
+                                               output_names = ['substitutions'], 
+                                               function = gen_substitutions), 
+                      name = 'subsgen')
+    subsgen.inputs.op_basename =  subject_name
+
+    r.connect(subsgen, 'substitutions', ds, 'regexp_substitutions')
+
     r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
     r.connect(r.get_node('output_node'), 'FA', ds, '@fa')
     r.connect(r.get_node('output_node'), 'MD', ds, '@md')
@@ -215,7 +245,11 @@ for i in range(number_of_shells):
     r.connect(r.get_node('output_node'), 'transformations', ds, 'transformations')
     r.connect(r.get_node('output_node'), 'average_b0', ds, '@b0')
     r.connect(r.get_node('output_node'), 'T1toB0_transformation', ds, '@transformation')
-    
+    r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
+
+    r.connect(interslice_qc, 'out_file', ds, '@interslice_qc')
+    r.connect(matrixrotation_qc, 'out_file', ds, '@matrixrotation_qc')
+
     dot_exec=spawn.find_executable('dot')   
     if not dot_exec == None:
         r.write_graph(graph2use='colored')
@@ -358,9 +392,9 @@ workflow.connect(resampling, 'res_file',
 
 merge_bv_files = pe.Node(interface = niu.Function(input_names = ['input_bvals', 
                                                                  'input_bvecs'],
-                                              output_names = ['bvals', 'bvecs'],
-                                              function = merge_bv_function),
-                     name = 'merge_bv_files')
+                                                  output_names = ['bvals', 'bvecs'],
+                                                  function = merge_bv_function),
+                         name = 'merge_bv_files')
 
 merge_bv_files.inputs.input_bvals = [os.path.abspath(f) for f in args.bvals]
 merge_bv_files.inputs.input_bvecs = [os.path.abspath(f) for f in args.bvecs]

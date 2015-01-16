@@ -14,7 +14,6 @@ import os
 import niftk
 
 def gen_substitutions(op_basename):    
-    from nipype.utils.filemanip import split_filename
     subs = []
     
     subs.append(('average_output_res_maths', op_basename+'_average_b0'))
@@ -24,6 +23,9 @@ def gen_substitutions(op_basename):
     subs.append((r'/([^/;]+)_merged.bvec', '/' + op_basename + '_corrected_dwi.bvec'))
     subs.append((r'/([^/;]+)_aff_reg_transform.txt', '/' + op_basename + '_T1_to_B0.txt'))
     subs.append((r'/transformations/vol', '/transformations/' + op_basename + '_dwi_to_b0_'))
+    subs.append(('_log_maths_aff.txt', '_aff.txt'))
+    subs.append(('vol0000_aff_rotation', op_basename + '_dwi_to_b0_rotation'))
+
     return subs
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
@@ -94,7 +96,7 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 		                   name = 'infosource')
 	infosource.iterables = ('subject_id', midas_code)
 
-	midas2dicom = pe.Node(niftk.Midas2Dicom(), name='m2d')
+	midas2dicom = pe.Node(niftk.io.Midas2Dicom(), name='m2d')
 
 	database_paths = ['/var/lib/midas/data/fidelity/images/ims-study/']#,
 		               # '/var/lib/midas/data/ppadti/images/ims-study/']
@@ -156,6 +158,15 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	ds.inputs.parameterization = False
 	r.connect(subsgen, 'substitutions', ds, 'regexp_substitutions')
 
+        interslice_qc = pe.Node(interface = niftk.qc.InterSliceCorrelationPlot(), 
+                                name = 'interslice_qc')
+
+        matrixrotation_qc = pe.Node(interface = niftk.qc.MatrixRotationPlot(), 
+                                    name = 'matrixrotation_qc')
+        
+        r.connect(r.get_node('output_node'), 'dwis', interslice_qc, 'in_file')
+        r.connect(find_and_merge_dwis, 'bvals', interslice_qc, 'bval_file')
+        r.connect(r.get_node('output_node'), 'transformations', matrixrotation_qc, 'in_files')
 	
 
 	r.connect(r.get_node('output_node'), 'tensor', ds, '@tensors')
@@ -172,6 +183,9 @@ def create_drc_diffusion_processing_workflow(midas_code, output_dir, dwi_interp_
 	r.connect(r.get_node('output_node'), 'dwi_mask', ds, '@dwi_mask')
 	r.connect(find_and_merge_dwis, 'bvals', ds, '@bvals')
 	r.connect(find_and_merge_dwis, 'bvecs', ds, '@bvecs')
+        r.connect(interslice_qc, 'out_file', ds, '@interslice_qc')
+        r.connect(matrixrotation_qc, 'out_file', ds, '@matrixrotation_qc')
+
 
 	return r
 
