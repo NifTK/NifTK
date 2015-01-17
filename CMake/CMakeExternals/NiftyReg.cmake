@@ -25,8 +25,12 @@ endif()
 if(BUILD_NIFTYREG)
 
   set(proj NiftyReg)
+  set(proj_VERSION ${NIFTK_VERSION_NIFTYREG})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES )
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYREG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYREG_ROOT)
@@ -34,10 +38,10 @@ if(BUILD_NIFTYREG)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_NIFTYREG}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYREG}
       CMAKE_GENERATOR ${GEN}
@@ -49,7 +53,7 @@ if(BUILD_NIFTYREG)
         -DUSE_CUDA:BOOL=OFF
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYREG_ROOT ${proj_INSTALL})
 
