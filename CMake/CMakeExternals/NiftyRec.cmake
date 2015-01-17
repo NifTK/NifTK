@@ -25,8 +25,12 @@ endif()
 if(BUILD_NIFTYREC)
 
   set(proj NiftyRec)
+  set(proj_VERSION ${NIFTK_VERSION_NIFTYREC})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES NiftyReg )
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYREC_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYREC_ROOT)
@@ -34,10 +38,10 @@ if(BUILD_NIFTYREC)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREC ${NIFTK_LOCATION_NIFTYREC})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_NIFTYREC}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYREC}
       CMAKE_GENERATOR ${GEN}
@@ -49,7 +53,7 @@ if(BUILD_NIFTYREC)
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DCUDA_SDK_ROOT_DIR=${CUDA_SDK_ROOT_DIR}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYREC_ROOT ${proj_INSTALL})
     set(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
