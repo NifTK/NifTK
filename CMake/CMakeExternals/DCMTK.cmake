@@ -27,6 +27,11 @@ if(MITK_USE_DCMTK)
   endif()
 
   set(proj DCMTK)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES )
   set(DCMTK_DEPENDS ${proj})
 
@@ -43,34 +48,34 @@ if(MITK_USE_DCMTK)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_DCMTK ${NIFTK_LOCATION_DCMTK})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_DCMTK}
       URL_MD5 ${NIFTK_CHECKSUM_DCMTK}
-      INSTALL_DIR ${proj}-install
       PATCH_COMMAND ${DCMTK_PATCH_COMMAND}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
-         ${EP_COMMON_ARGS}
-         #-DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
-         -DBUILD_SHARED_LIBS:BOOL=ON
-         "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${DCMTK_CXX_FLAGS}"
-         "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${DCMTK_C_FLAGS}"
-         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
-         -DDCMTK_INSTALL_BINDIR:STRING=bin/${CMAKE_CFG_INTDIR}
-         -DDCMTK_INSTALL_LIBDIR:STRING=lib/${CMAKE_CFG_INTDIR}
-         -DDCMTK_WITH_DOXYGEN:BOOL=OFF
-         -DDCMTK_WITH_ZLIB:BOOL=OFF # see MITK bug #9894
-         -DDCMTK_WITH_OPENSSL:BOOL=OFF # see MITK bug #9894
-         -DDCMTK_WITH_PNG:BOOL=OFF # see MITK bug #9894
-         -DDCMTK_WITH_TIFF:BOOL=OFF  # see MITK bug #9894
-         -DDCMTK_WITH_XML:BOOL=OFF  # see MITK bug #9894
-         -DDCMTK_WITH_ICONV:BOOL=OFF  # see MITK bug #9894
-         -DCMAKE_INSTALL_NAME_DIR:STRING=<INSTALL_DIR>/lib
+        ${EP_COMMON_ARGS}
+        #-DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=ON
+        "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${DCMTK_CXX_FLAGS}"
+        "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${DCMTK_C_FLAGS}"
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DDCMTK_INSTALL_BINDIR:STRING=bin/${CMAKE_CFG_INTDIR}
+        -DDCMTK_INSTALL_LIBDIR:STRING=lib/${CMAKE_CFG_INTDIR}
+        -DDCMTK_WITH_DOXYGEN:BOOL=OFF
+        -DDCMTK_WITH_ZLIB:BOOL=OFF # see MITK bug #9894
+        -DDCMTK_WITH_OPENSSL:BOOL=OFF # see MITK bug #9894
+        -DDCMTK_WITH_PNG:BOOL=OFF # see MITK bug #9894
+        -DDCMTK_WITH_TIFF:BOOL=OFF  # see MITK bug #9894
+        -DDCMTK_WITH_XML:BOOL=OFF  # see MITK bug #9894
+        -DDCMTK_WITH_ICONV:BOOL=OFF  # see MITK bug #9894
+        -DCMAKE_INSTALL_NAME_DIR:STRING=<INSTALL_DIR>/lib
       DEPENDS ${proj_DEPENDENCIES}
-      )
-    set(DCMTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+    )
+    set(DCMTK_DIR ${proj_INSTALL})
     message("SuperBuild loading DCMTK from ${DCMTK_DIR}")
 
   else()
