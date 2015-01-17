@@ -25,9 +25,13 @@ endif()
 if(BUILD_IGI)
 
   set(proj apriltags)
+  set(proj_VERSION ${NIFTK_VERSION_APRILTAGS})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES OpenCV Eigen)
   set(apriltags_DEPENDS ${proj})
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
  
   if(NOT DEFINED apriltags_DIR)
 
@@ -39,24 +43,24 @@ if(BUILD_IGI)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
   
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_APRILTAGS}
       URL_MD5 ${NIFTK_CHECKSUM_APRILTAGS}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_APRILTAGS}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
-          ${EP_COMMON_ARGS}
-          -DBUILD_SHARED_LIBS:BOOL=OFF
-          -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-          -DOpenCV_DIR:PATH=${CMAKE_BINARY_DIR}/OpenCV-build
-          -DEigen_DIR:PATH=${Eigen_DIR}
-          "-DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS} ${APRILTAGS_CXX_FLAGS}"
-          "-DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS} ${APRILTAGS_C_FLAGS}"
-       DEPENDS ${proj_DEPENDENCIES}
-      )
+        ${EP_COMMON_ARGS}
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DEigen_DIR:PATH=${Eigen_DIR}
+        "-DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS} ${APRILTAGS_CXX_FLAGS}"
+        "-DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS} ${APRILTAGS_C_FLAGS}"
+      DEPENDS ${proj_DEPENDENCIES}
+    )
 
     set(apriltags_DIR ${proj_INSTALL})
     message("SuperBuild loading AprilTags from ${apriltags_DIR}")
@@ -68,5 +72,3 @@ if(BUILD_IGI)
   endif(NOT DEFINED apriltags_DIR)
 
 endif()
-
-
