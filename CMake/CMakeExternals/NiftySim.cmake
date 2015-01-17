@@ -24,7 +24,11 @@ endif()
 
 if(BUILD_NIFTYSIM)
   set(proj NiftySim)
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
+  set(proj_VERSION ${NIFTK_VERSION_NIFTYSIM})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(NIFTYSIM_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
@@ -46,37 +50,38 @@ if(BUILD_NIFTYSIM)
     # to manually set paths should they not be found by NiftySim.
     if (NIFTK_USE_CUDA)
       if (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
-	find_path(CUDA_SDK_COMMON_INCLUDE_DIR
-	  helper_cuda.h
-	  PATHS ${CUDA_SDK_SEARCH_PATH}
-	  PATH_SUFFIXES "common/inc"
-	  DOC "Location of helper_cuda.h"
-	  NO_DEFAULT_PATH
-	  )
-	mark_as_advanced(CUDA_SDK_COMMON_INCLUDE_DIR)
+        find_path(CUDA_SDK_COMMON_INCLUDE_DIR
+          helper_cuda.h
+          PATHS ${CUDA_SDK_SEARCH_PATH}
+          PATH_SUFFIXES "common/inc"
+          DOC "Location of helper_cuda.h"
+          NO_DEFAULT_PATH
+        )
+        mark_as_advanced(CUDA_SDK_COMMON_INCLUDE_DIR)
       else ()
-	find_path(CUDA_CUT_INCLUDE_DIR
-	  cutil.h
-	  PATHS ${CUDA_SDK_SEARCH_PATH}
-	  PATH_SUFFIXES "common/inc"
-	  DOC "Location of cutil.h"
-	  NO_DEFAULT_PATH
-	  )
-	mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
+        find_path(CUDA_CUT_INCLUDE_DIR
+          cutil.h
+          PATHS ${CUDA_SDK_SEARCH_PATH}
+          PATH_SUFFIXES "common/inc"
+          DOC "Location of cutil.h"
+          NO_DEFAULT_PATH
+        )
+        mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
       endif (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
     else ()
       if (NIFTYSIM_USE_CUDA) 
-	MESSAGE(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
+        message(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
       endif (NIFTYSIM_USE_CUDA) 
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_NIFTYSIM}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYSIM}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -87,16 +92,15 @@ if(BUILD_NIFTYSIM)
         -DUSE_BOOST:BOOL=OFF
         -DUSE_VIZ:BOOL=${USE_VTK}
         -DVTK_DIR:PATH=${VTK_DIR}
-	-DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
-	-DCUDA_SDK_ROOT_DIR:PATH=${CUDA_SDK_ROOT_DIR}
-	-DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
-	-DCUDA_COMMON_INCLUDE_DIR:PATH=${CUDA_COMMON_INCLUDE_DIR}
-	-DCUDA_HOST_COMPILER:PATH=${CUDA_HOST_COMPILER}
+        -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
+        -DCUDA_SDK_ROOT_DIR:PATH=${CUDA_SDK_ROOT_DIR}
+        -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
+        -DCUDA_COMMON_INCLUDE_DIR:PATH=${CUDA_COMMON_INCLUDE_DIR}
+        -DCUDA_HOST_COMPILER:PATH=${CUDA_HOST_COMPILER}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYSIM}
-      )
+    )
 
     set(NIFTYSIM_ROOT ${proj_INSTALL})
     set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
