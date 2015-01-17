@@ -25,8 +25,12 @@ endif()
 if(BUILD_NIFTYSEG)
 
   set(proj NiftySeg)
+  set(proj_VERSION ${NIFTK_VERSION_NIFTYSEG})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES Eigen)
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYSEG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSEG_ROOT)
@@ -34,15 +38,15 @@ if(BUILD_NIFTYSEG)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_NIFTYSEG}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYSEG}
       CMAKE_GENERATOR ${GEN}
       #CONFIGURE_COMMAND ""
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYSEG}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       #BUILD_COMMAND ""
       #INSTALL_COMMAND ""
       CMAKE_ARGS
@@ -57,7 +61,7 @@ if(BUILD_NIFTYSEG)
         -DUSE_SYSTEM_EIGEN=ON
         -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYSEG_ROOT ${proj_INSTALL})
     set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
