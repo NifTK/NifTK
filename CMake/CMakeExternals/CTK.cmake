@@ -27,6 +27,11 @@ endif()
 if(QT_FOUND)
 
   set(proj CTK)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES VTK ITK DCMTK)
   set(CTK_DEPENDS ${proj})
 
@@ -43,13 +48,13 @@ if(QT_FOUND)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_CTK}
       URL_MD5 ${NIFTK_CHECKSUM_CTK}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
@@ -78,8 +83,8 @@ if(QT_FOUND)
         -DqRestAPI_URL:STRING=${NIFTK_LOCATION_qRestAPI}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-    set(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
+    set(CTK_DIR ${proj_BUILD})
+    set(CTK_SOURCE_DIR ${proj_SOURCE})
 
     message("SuperBuild loading CTK from ${CTK_DIR}")
 
