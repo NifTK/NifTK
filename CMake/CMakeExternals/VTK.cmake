@@ -23,6 +23,11 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
 endif()
 
 set(proj VTK)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
 set(proj_DEPENDENCIES )
 set(VTK_DEPENDS ${proj})
 
@@ -82,10 +87,10 @@ if(NOT DEFINED VTK_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_VTK}
     URL_MD5 ${NIFTK_CHECKSUM_VTK}
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
@@ -108,7 +113,7 @@ if(NOT DEFINED VTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
     )
 
-  set(VTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(VTK_DIR ${proj_BUILD})
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)
