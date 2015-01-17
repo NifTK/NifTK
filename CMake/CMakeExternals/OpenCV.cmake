@@ -25,6 +25,11 @@ endif()
 if(BUILD_IGI)
 
   set(proj OpenCV)
+  set(proj_VERSION ${NIFTK_VERSION_OPENCV})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES)
   set(OpenCV_DEPENDS ${proj})
   
@@ -39,10 +44,10 @@ if(BUILD_IGI)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
     
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_OPENCV}
       URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
       UPDATE_COMMAND  ""
@@ -74,7 +79,7 @@ if(BUILD_IGI)
         ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+    set(OpenCV_DIR ${proj_BUILD})
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
   
   else()
