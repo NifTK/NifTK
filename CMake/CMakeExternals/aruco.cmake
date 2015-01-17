@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# ARUCO - external project for tracking AR markers.
+# aruco - external project for tracking AR markers.
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -25,29 +25,33 @@ endif()
 if(BUILD_IGI)
 
   set(proj aruco)
+  set(proj_VERSION ${NIFTK_VERSION_ARUCO})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES OpenCV)
   set(aruco_DEPENDS ${proj})
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
   
   if(NOT DEFINED aruco_DIR)
   
     niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
   
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_ARUCO}
       URL_MD5 ${NIFTK_CHECKSUM_ARUCO}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
-          ${EP_COMMON_ARGS}
-          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-          -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-          -DOpenCV_DIR:PATH=${CMAKE_BINARY_DIR}/OpenCV-build
-       DEPENDS ${proj_DEPENDENCIES}
-      )
+        ${EP_COMMON_ARGS}
+        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DOpenCV_DIR:PATH=${OpenCV_DIR}
+      DEPENDS ${proj_DEPENDENCIES}
+    )
   
     set(aruco_DIR ${proj_INSTALL})
     message("SuperBuild loading ARUCO from ${aruco_DIR}")
