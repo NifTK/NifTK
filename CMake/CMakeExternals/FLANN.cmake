@@ -25,30 +25,34 @@ endif()
 if(BUILD_IGI AND BUILD_PCL)
 
   set(proj FLANN)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES)
   set(FLANN_DEPENDS ${proj})
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
   
   if(NOT DEFINED FLANN_DIR)
   
     niftkMacroGetChecksum(NIFTK_CHECKSUM_FLANN ${NIFTK_LOCATION_FLANN})
   
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_FLANN}
       URL_MD5 ${NIFTK_CHECKSUM_FLANN}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
-          ${EP_COMMON_ARGS}
-          -DBUILD_MATLAB_BINDINGS:BOOL=OFF
-          -DBUILD_PYTHON_BINDINGS:BOOL=OFF
-          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-          -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-       DEPENDS ${proj_DEPENDENCIES}
-      )
+        ${EP_COMMON_ARGS}
+        -DBUILD_MATLAB_BINDINGS:BOOL=OFF
+        -DBUILD_PYTHON_BINDINGS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+      DEPENDS ${proj_DEPENDENCIES}
+    )
   
     set(FLANN_DIR ${proj_INSTALL})
     set(FLANN_ROOT ${FLANN_DIR})
@@ -62,5 +66,3 @@ if(BUILD_IGI AND BUILD_PCL)
   endif(NOT DEFINED FLANN_DIR)
 
 endif()
-
-
