@@ -23,6 +23,11 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
 endif()
 
 set(proj ITK)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -106,10 +111,10 @@ if(NOT DEFINED ITK_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_ITK}
     URL_MD5 ${NIFTK_CHECKSUM_ITK}
     INSTALL_COMMAND ""
@@ -126,7 +131,7 @@ if(NOT DEFINED ITK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(ITK_DIR ${proj_BUILD})
   message("SuperBuild loading ITK from ${ITK_DIR}")
 
 else()
