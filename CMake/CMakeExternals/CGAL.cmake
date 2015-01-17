@@ -19,9 +19,13 @@
 if(BUILD_MESHING)
 
   set(proj CGAL)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
   set(proj_DEPENDENCIES Boost)
   set(CGAL_DEPENDS ${proj})
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
 
   if(NOT DEFINED CGAL_DIR)
     ######################################################################
@@ -37,10 +41,10 @@ if(BUILD_MESHING)
     endif(UNIX)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_CGAL}
       URL_MD5 ${NIFTK_CHECKSUM_CGAL}
       CMAKE_GENERATOR ${GEN}
@@ -60,7 +64,7 @@ if(BUILD_MESHING)
         -DVTK_DIR:PATH=${VTK_DIR}
         -DCMAKE_CXX_FLAGS:STRING=${CGAL_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
     set(CGAL_DIR "${proj_INSTALL}/lib/CGAL")
     set(CGAL_INCLUDE_DIRS "${proj_INSTALL}/include")
 
