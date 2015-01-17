@@ -23,6 +23,11 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
 endif()
 
 set(proj SlicerExecutionModel)
+set(proj_VERSION ${NIFTK_VERSION_SEM})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
 set(proj_DEPENDENCIES ITK)
 set(SlicerExecutionModel_DEPENDS ${proj})
 
@@ -31,13 +36,13 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_SEM ${NIFTK_LOCATION_SEM})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_SEM}
     URL_MD5 ${NIFTK_CHECKSUM_SEM}
-    UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_SEM}
+    UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
@@ -51,7 +56,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
  
-  set(SlicerExecutionModel_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(SlicerExecutionModel_DIR ${proj_BUILD})
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 
 else(NOT DEFINED SlicerExecutionModel_DIR)
