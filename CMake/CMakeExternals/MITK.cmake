@@ -23,6 +23,11 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 endif()
 
 set(proj MITK)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
 set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
@@ -92,10 +97,10 @@ if(NOT DEFINED MITK_DIR)
     endif()
     
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_MITK}
       URL_MD5 ${NIFTK_CHECKSUM_MITK}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
@@ -131,8 +136,8 @@ if(NOT DEFINED MITK_DIR)
         -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
-      )
-    set(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
+    )
+    set(MITK_DIR ${proj_BUILD}/${proj}-build)
     message("SuperBuild loading MITK from ${MITK_DIR}")
 
 else()
