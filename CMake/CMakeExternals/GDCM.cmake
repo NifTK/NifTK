@@ -37,6 +37,11 @@ endif()
 
 
 set(proj GDCM)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
 set(proj_DEPENDENCIES )
 set(GDCM_DEPENDS ${proj})
 
@@ -47,10 +52,10 @@ if(NOT DEFINED GDCM_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_GDCM}
     URL_MD5 ${NIFTK_CHECKSUM_GDCM}
     INSTALL_COMMAND ""
@@ -64,7 +69,7 @@ if(NOT DEFINED GDCM_DIR)
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
     DEPENDS ${proj_DEPENDENCIES}
   )
-  set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(GDCM_DIR ${proj_BUILD})
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
 else()
