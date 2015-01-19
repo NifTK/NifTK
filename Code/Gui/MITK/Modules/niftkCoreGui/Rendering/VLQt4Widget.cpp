@@ -1973,7 +1973,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
     return;
   }
 
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
 
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
