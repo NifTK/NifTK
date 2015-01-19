@@ -24,12 +24,14 @@ endif ()
 
 if (BUILD_TESTING)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj NifTKData)
   set(proj_VERSION ${NIFTK_VERSION_DATA})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES )
   set(NifTKData_DEPENDS ${proj})
 
@@ -72,14 +74,14 @@ if (BUILD_TESTING)
       INSTALL_COMMAND ""
       DEPENDS ${proj_DEPENDENCIES}
     )
-    
+
     set(NIFTK_DATA_DIR ${proj_SOURCE})
     message("SuperBuild loading ${proj} from ${NIFTK_DATA_DIR}")
-    
+
   else ()
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-    
+
   endif (NOT DEFINED NIFTK_DATA_DIR)
 
 endif (BUILD_TESTING)

@@ -24,19 +24,21 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj PCL)
   set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
   set(PCL_DEPENDS ${proj})
-  
+
   if(NOT DEFINED PCL_DIR)
-  
+
     niftkMacroGetChecksum(NIFTK_CHECKSUM_PCL ${NIFTK_LOCATION_PCL})
-  
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
@@ -68,11 +70,11 @@ if(BUILD_IGI AND BUILD_PCL)
       set(PCL_DIR ${proj_INSTALL}/share/pcl-1.8)
     endif()
     message("SuperBuild loading PCL from ${PCL_DIR}")
-  
+
   else(NOT DEFINED PCL_DIR)
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif(NOT DEFINED PCL_DIR)
 
 endif()

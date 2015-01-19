@@ -28,17 +28,19 @@ if(BUILD_CAMINO AND NOT WIN32)
 
   if(NOT "${Java_VERSION}" STREQUAL "")
 
+    niftkMacroGetCommitHashOfCurrentFile(config_version)
+
     set(proj camino)
     set(proj_VERSION ${NIFTK_VERSION_CAMINO})
-    set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-    set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
+    set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+    set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
     set(proj_DEPENDENCIES)
     set(camino_DEPENDS ${proj})
-  
+
     if(NOT DEFINED camino_DIR)
-  
+
       niftkMacroGetChecksum(NIFTK_CHECKSUM_CAMINO ${NIFTK_LOCATION_CAMINO})
-  
+
       ExternalProject_Add(${proj}
         SOURCE_DIR ${proj_SOURCE}
         PREFIX ${proj_CONFIG}
@@ -53,14 +55,14 @@ if(BUILD_CAMINO AND NOT WIN32)
           ${EP_COMMON_ARGS}
         DEPENDS ${proj_DEPENDENCIES}
       )
- 
+
       set(camino_DIR ${proj_SOURCE})
       message("SuperBuild loading Camino from ${camino_DIR}")
 
     else(NOT DEFINED camino_DIR)
-  
+
       mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
     endif(NOT DEFINED camino_DIR)
 
   endif()

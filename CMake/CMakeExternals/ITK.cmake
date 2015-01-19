@@ -22,12 +22,14 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
+niftkMacroGetCommitHashOfCurrentFile(config_version)
+
 set(proj ITK)
 set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -47,7 +49,7 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
-  
+
   if(MITK_USE_Python)
 
     list(APPEND additional_cmake_args
@@ -82,7 +84,7 @@ if(NOT DEFINED ITK_DIR)
          -DOpenCV_DIR:PATH=${OpenCV_DIR}
         )
   endif()
-  
+
   if (BUILD_ITKFFTW)
     if(WIN32)
       # On Windows, you have to precompile one.

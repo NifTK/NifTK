@@ -24,12 +24,14 @@ endif()
 
 if(BUILD_NIFTYREG)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj NiftyReg)
   set(proj_VERSION ${NIFTK_VERSION_NIFTYREG})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES )
   set(NIFTYREG_DEPENDS ${proj})
 

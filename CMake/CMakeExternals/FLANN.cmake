@@ -24,19 +24,21 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj FLANN)
   set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES)
   set(FLANN_DEPENDS ${proj})
-  
+
   if(NOT DEFINED FLANN_DIR)
-  
+
     niftkMacroGetChecksum(NIFTK_CHECKSUM_FLANN ${NIFTK_LOCATION_FLANN})
-  
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
@@ -53,16 +55,16 @@ if(BUILD_IGI AND BUILD_PCL)
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
     )
-  
+
     set(FLANN_DIR ${proj_INSTALL})
     set(FLANN_ROOT ${FLANN_DIR})
-    
+
     message("SuperBuild loading FLANN from ${FLANN_DIR}")
-  
+
   else(NOT DEFINED FLANN_DIR)
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif(NOT DEFINED FLANN_DIR)
 
 endif()

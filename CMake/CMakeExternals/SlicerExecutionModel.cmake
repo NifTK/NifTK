@@ -22,12 +22,14 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
 endif()
 
+niftkMacroGetCommitHashOfCurrentFile(config_version)
+
 set(proj SlicerExecutionModel)
 set(proj_VERSION ${NIFTK_VERSION_SEM})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
 set(proj_DEPENDENCIES ITK)
 set(SlicerExecutionModel_DEPENDS ${proj})
 
@@ -55,7 +57,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
       -DITK_DIR:PATH=${ITK_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
- 
+
   set(SlicerExecutionModel_DIR ${proj_BUILD})
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 

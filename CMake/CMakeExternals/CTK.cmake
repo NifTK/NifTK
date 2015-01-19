@@ -14,7 +14,7 @@
 
 #-----------------------------------------------------------------------------
 # CTK. Note, we are building it ourselves, rather than rely on the MITK
-# settings. This mean that the default MITK build may have different 
+# settings. This mean that the default MITK build may have different
 # settings than what we are specifying here. So NIFTK and MITK may be out
 # of sync. However, this gives us a bit more flexibility.
 #-----------------------------------------------------------------------------
@@ -26,12 +26,14 @@ endif()
 
 if(QT_FOUND)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj CTK)
   set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES VTK ITK DCMTK)
   set(CTK_DEPENDS ${proj})
 
@@ -70,7 +72,7 @@ if(QT_FOUND)
         -DCTK_LIB_WIDGETS:BOOL=ON
         -DCTK_PLUGIN_org.commontk.eventadmin:BOOL=ON
         -DCTK_PLUGIN_org.commontk.configadmin:BOOL=ON
-        # CTK ignores the other standard flags variables: 
+        # CTK ignores the other standard flags variables:
         #   CMAKE_*_FLAGS_DEBUG, CMAKE_*_FLAGS_RELEASE, CMAKE_*_FLAGS_RELWITHDEBINFO, CMAKE_*_LINKER_FLAGS
         -DADDITIONAL_C_FLAGS:STRING=${CTK_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${CTK_ADDITIONAL_CXX_FLAGS}

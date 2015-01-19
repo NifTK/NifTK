@@ -24,24 +24,26 @@ endif()
 
 if(BUILD_IGI)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj apriltags)
   set(proj_VERSION ${NIFTK_VERSION_APRILTAGS})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES OpenCV Eigen)
   set(apriltags_DEPENDS ${proj})
- 
+
   if(NOT DEFINED apriltags_DIR)
 
     if(UNIX)
       set(APRILTAGS_CXX_FLAGS "-fPIC")
       set(APRILTAGS_C_FLAGS "-fPIC")
     endif()
-  
+
     niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
-  
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
@@ -64,11 +66,11 @@ if(BUILD_IGI)
 
     set(apriltags_DIR ${proj_INSTALL})
     message("SuperBuild loading AprilTags from ${apriltags_DIR}")
- 
+
   else(NOT DEFINED apriltags_DIR)
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif(NOT DEFINED apriltags_DIR)
 
 endif()

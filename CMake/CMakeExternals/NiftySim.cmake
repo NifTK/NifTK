@@ -23,12 +23,15 @@ if(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
 endif()
 
 if(BUILD_NIFTYSIM)
+
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj NiftySim)
   set(proj_VERSION ${NIFTK_VERSION_NIFTYSIM})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-install)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(NIFTYSIM_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
@@ -69,9 +72,9 @@ if(BUILD_NIFTYSIM)
         mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
       endif (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
     else ()
-      if (NIFTYSIM_USE_CUDA) 
+      if (NIFTYSIM_USE_CUDA)
         message(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
-      endif (NIFTYSIM_USE_CUDA) 
+      endif (NIFTYSIM_USE_CUDA)
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
