@@ -30,10 +30,10 @@ macro(niftkMacroGetChecksum RESULT_VAR FILE_URI)
   string(REGEX REPLACE ".*/" "" MD5_FILE ${MD5_FILE_URI})
 
   # Downloads the md5 file:
-  file(DOWNLOAD "${MD5_FILE_URI}" "${CMAKE_CURRENT_BINARY_DIR}/${MD5_FILE}")
+  file(DOWNLOAD "${MD5_FILE_URI}" "${proj_CONFIG}/src/${MD5_FILE}")
 
   # Reads the first 32B to the output variable. (MD5 checksums are 128b.)
-  file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/${MD5_FILE}" checksum LIMIT_INPUT 32)
+  file(STRINGS "${proj_CONFIG}/src/${MD5_FILE}" checksum LIMIT_INPUT 32)
 
   set(${RESULT_VAR} ${checksum})
 endmacro(niftkMacroGetChecksum)
