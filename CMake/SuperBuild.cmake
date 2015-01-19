@@ -14,7 +14,7 @@
 
 include(ExternalProject)
 
-set(EP_BASE "${CMAKE_BINARY_DIR}/CMakeExternals" CACHE PATH "Directory where the external projects are configured and built")
+set(EP_BASE "${CMAKE_BINARY_DIR}" CACHE PATH "Directory where the external projects are configured and built")
 mark_as_advanced(EP_BASE)
 set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 
