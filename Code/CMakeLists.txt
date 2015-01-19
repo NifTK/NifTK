@@ -12,6 +12,8 @@
 #
 #============================================================================*/
 
+add_subdirectory(pipelines)
+
 add_subdirectory(Libs)
 
 if(BUILD_COMMAND_LINE_PROGRAMS)
@@ -26,4 +28,3 @@ if(BUILD_GUI)
   add_subdirectory(Gui)
 endif(BUILD_GUI)
 
-add_subdirectory(pipelines)
