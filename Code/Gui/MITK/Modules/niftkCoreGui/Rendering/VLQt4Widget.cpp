@@ -86,7 +86,7 @@ struct CUDAInterop { };
 //-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
-  , m_Refresh(10) // 100 fps
+  , m_Refresh(33) // 30 fps
   , m_OclService(0)
   , m_CUDAInteropPimpl(0)
   , m_OclTriangleSorter(0)
