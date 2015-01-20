@@ -1942,6 +1942,18 @@ void VLQt4Widget::MergeTranslucentTriangles()
     }
   }
 
+  // hack bounding box. vl uses it for scene culling.
+  vl::AABB    mergedbb;
+  vl::Sphere  mergedbs;
+  for (int i = 0; i < translucentSurfaces.size(); ++i)
+  {
+    mergedbb += translucentSurfaces[i]->boundingBox();
+    mergedbs += translucentSurfaces[i]->boundingSphere();
+  }
+  m_TranslucentSurface->setBoundingBox(mergedbb);
+  m_TranslucentSurface->setBoundingSphere(mergedbs);
+  m_TranslucentSurface->setBoundsDirty(false);
+
   // Resize buffer objects
   vlVerts->resize(m_TotalNumOfTranslucentVertices *3);
   vlNormals->resize(m_TotalNumOfTranslucentVertices *3);
@@ -1973,7 +1985,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
     return;
   }
 
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
 
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
@@ -2411,6 +2423,9 @@ vl::ivec2 VLQt4Widget::position() const
 void VLQt4Widget::update()
 {
   //MITK_INFO <<"Update called";
+  // FIXME: not sure this is the right place. i would defer the update to render time.
+  //        because update() can be called any number of times to redraw the screen at the
+  //        next convenient opportunity.
   UpdateTranslucentTriangles();
 
   // schedules a repaint, will eventually call into paintGL()

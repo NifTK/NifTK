@@ -331,7 +331,7 @@ void mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
   
   cl_int clStatus = 0;
 
-  clEnqueueAcquireGLObjects(m_CommandQue, 1, &mergedIndexBuf, 0, NULL, NULL);
+  clEnqueueAcquireGLObjects(m_CommandQue, 1, &mergedVertexBuf, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
 
   // Transform vertices and compute the vertex distance
