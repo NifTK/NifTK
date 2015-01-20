@@ -760,10 +760,10 @@ foreach(file_to_copy ${package_depends_files})
 endforeach()
 
 
-if (BUILD_MESHING)
-  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
-    ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
-endif (BUILD_MESHING)
+# if (BUILD_MESHING)
+#   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
+#     ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
+# endif (BUILD_MESHING)
 
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
@@ -926,16 +926,16 @@ endif(MITK_FOUND)
 # Find CGAL.
 ######################################################################
 
+set(BUILD_MESHING ON)
 if (BUILD_MESHING)
-  # on windows, you have to build cgal yourself because it has dependencies
-  # on other libraries that cannot be built with the superbuild.
-  # so in case, do not overwrite the carefully user-configured CGAL_DIR with
-  # our superbuild path.
-  if (NOT CGAL_DIR)
-    set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL" CACHE PATH "")
-  endif()
-  find_package(CGAL QUIET COMPONENTS Core ImageIO)
-  link_directories("${CGAL_DIR}/..")
+  find_package(CGAL REQUIRED COMPONENTS Core ImageIO)
+  include("${CGAL_USE_FILE}")
+  # UseCGAL.cmake is buggy: despite reading the correct requested modules
+  # it only adds the libCGAL.so base library to CGAL_LIBRARIES
+  set(CGAL_LIBRARIES 
+    CGAL
+    CGAL_Core
+    CGAL_ImageIO)
 endif (BUILD_MESHING)
 
 ######################################################################
