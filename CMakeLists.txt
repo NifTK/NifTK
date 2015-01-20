@@ -759,12 +759,6 @@ foreach(file_to_copy ${package_depends_files})
   file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
 endforeach()
 
-
-# if (BUILD_MESHING)
-#   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
-#     ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
-# endif (BUILD_MESHING)
-
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
 endif()
@@ -926,7 +920,6 @@ endif(MITK_FOUND)
 # Find CGAL.
 ######################################################################
 
-set(BUILD_MESHING ON)
 if (BUILD_MESHING)
   find_package(CGAL REQUIRED COMPONENTS Core ImageIO)
   include("${CGAL_USE_FILE}")
