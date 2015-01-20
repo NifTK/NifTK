@@ -251,7 +251,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
 
   // round up the length of a line of pixels to make sure access is aligned.
   unsigned int        bytepitch = width * FIXME_pixeltype;
-  const unsigned int  alignment = 128;    // 64 byte alignment is not enough!
+  const unsigned int  alignment = 512;    // 64 byte alignment is not enough!
   bytepitch = std::max(bytepitch, alignment);
   bytepitch = ((bytepitch / alignment) + 1) * alignment;
   assert((bytepitch % alignment) == 0);
@@ -317,6 +317,7 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     i->m_Width      = width;
     i->m_Height     = height;
     i->m_PixelType  = FIXME_pixeltype;
+    i->m_BytePitch  = bytepitch;
   }
 
   bool inserted = m_InFlightOutputImages.insert(std::make_pair(i->m_Id, *i)).second;

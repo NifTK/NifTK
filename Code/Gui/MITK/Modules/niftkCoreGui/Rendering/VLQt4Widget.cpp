@@ -2474,7 +2474,10 @@ void VLQt4Widget::swapBuffers()
     // side note: cuda-arrays are always measured in bytes, never in pixels.
     err = cudaMemcpy2DFromArrayAsync(outputWA.m_DevicePointer, outputWA.m_BytePitch, fboarr, 0, 0, outputWA.m_PixelWidth * 4, outputWA.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
     // not sure what to do if it fails. do not throw an exception, that's for sure.
-    assert(err == cudaSuccess);
+    if (err != cudaSuccess)
+    {
+      assert(false);
+    }
 
     // the opengl-interop side is done, renderer can continue from now on.
     m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
