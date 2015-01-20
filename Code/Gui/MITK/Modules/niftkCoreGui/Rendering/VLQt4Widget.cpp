@@ -381,7 +381,7 @@ void VLQt4Widget::initializeGL()
   m_BackgroundRendering->setCullingEnabled(false);
   m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
   m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
-  //m_BackgroundCamera->viewport()->enableScissorSetup(false);
+  m_BackgroundCamera->viewport()->enableScissorSetup(false);
 
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
