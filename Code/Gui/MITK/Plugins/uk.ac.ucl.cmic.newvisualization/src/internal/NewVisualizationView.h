@@ -30,7 +30,7 @@
 
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodePropertyListener.h>
+
 
 // VL includes
 #include <vlCore/VisualizationLibrary.hpp>
@@ -72,12 +72,8 @@ protected:
   /// \brief Called by framework when a node was added to the datastorage
   virtual void OnNodeAdded(mitk::DataNode* node);
   virtual void OnNodeDeleted(mitk::DataNode* node);
-  virtual void OnNodeUpated(const mitk::DataNode* node);
 
   void OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  void OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  void OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  void OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
   virtual void Visible();
 
@@ -100,14 +96,11 @@ private:
 
   // VL rendering specific members
   vl::ref<VLQt4Widget>       m_VLQtRenderWindow;
-  //vl::ref<VLRenderingApplet> m_RenderApplet;
 
   // Listeners
   mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
-  mitk::DataNodePropertyListener::Pointer    m_VisibilityListener;
   mitk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
-  mitk::DataNodePropertyListener::Pointer    m_ColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer    m_OpacityPropertyListener;
+
 };
 
 #endif // NewVisualizationView_h

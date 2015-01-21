@@ -111,6 +111,9 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 //-----------------------------------------------------------------------------
 VLQt4Widget::~VLQt4Widget()
 {
+  RemoveDataStorageListeners();
+
+
   ScopedOGLContext  ctx(this->context());
 
   if (m_OclTriangleSorter)
@@ -157,119 +160,113 @@ VLQt4Widget::~VLQt4Widget()
 }
 
 
-#if 0
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480)
+void VLQt4Widget::OnNodeModified(const mitk::DataNode* node)
 {
-#if 0
-  // setFormat(fmt) is marked as deprecated so we use this other method
-  QGLContext* glctx = new QGLContext(context()->format(), this);
-  QGLFormat fmt = context()->format();
-
-  // double buffer
-  fmt.setDoubleBuffer( info.doubleBuffer() );
-
-  // color buffer
-  fmt.setRedBufferSize( info.rgbaBits().r() );
-  fmt.setGreenBufferSize( info.rgbaBits().g() );
-  fmt.setBlueBufferSize( info.rgbaBits().b() );
-  // setAlpha == true makes the create() function alway fail
-  // even if the returned format has the requested alpha channel
-  fmt.setAlphaBufferSize( info.rgbaBits().a() );
-  fmt.setAlpha( info.rgbaBits().a() != 0 );
-
-  // accumulation buffer
-  int accum = vl::max( info.accumRGBABits().r(), info.accumRGBABits().g() );
-  accum = vl::max( accum, info.accumRGBABits().b() );
-  accum = vl::max( accum, info.accumRGBABits().a() );
-  fmt.setAccumBufferSize( accum );
-  fmt.setAccum( accum != 0 );
-
-  // multisampling
-  if (info.multisample())
-    fmt.setSamples( info.multisampleSamples() );
-  fmt.setSampleBuffers( info.multisample() );
-
-  // depth buffer
-  fmt.setDepthBufferSize( info.depthBufferBits() );
-  fmt.setDepth( info.depthBufferBits() != 0 );
-
-  // stencil buffer
-  fmt.setStencilBufferSize( info.stencilBufferBits() );
-  fmt.setStencil( info.stencilBufferBits() != 0 );
-
-  // stereo
-  fmt.setStereo( info.stereo() );
-
-  // swap interval / v-sync
-  fmt.setSwapInterval( info.vSync() ? 1 : 0 );
-
-  glctx->setFormat(fmt);
-  // this function returns false when we request an alpha buffer
-  // even if the created context seem to have the alpha buffer
-  /*bool ok = */glctx->create(shareContext);
-  setContext(glctx);
-#endif
-
-  initGLContext();
-
-  framebuffer()->setWidth(width);
-  framebuffer()->setHeight(height);
-
-#if 0//ndef NDEBUG
-  printf("--------------------------------------------\n");
-  printf("REQUESTED OpenGL Format:\n");
-  printf("--------------------------------------------\n");
-  printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
-  printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
-  printf("depth buffer size = %d\n", fmt.depthBufferSize() );
-  printf("depth buffer = %d\n", fmt.depth() );
-  printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
-  printf("stencil buffer = %d\n", fmt.stencil() );
-  printf("accum buffer size %d\n", fmt.accumBufferSize() );
-  printf("accum buffer %d\n", fmt.accum() );
-  printf("stereo = %d\n", (int)fmt.stereo() );
-  printf("swap interval = %d\n", fmt.swapInterval() );
-  printf("multisample = %d\n", (int)fmt.sampleBuffers() );
-  printf("multisample samples = %d\n", (int)fmt.samples() );
-
-  fmt = format();
-
-  printf("--------------------------------------------\n");
-  printf("OBTAINED OpenGL Format:\n");
-  printf("--------------------------------------------\n");
-  printf("rgba = %d %d %d %d\n", fmt.redBufferSize(), fmt.greenBufferSize(), fmt.blueBufferSize(), fmt.alphaBufferSize() );
-  printf("double buffer = %d\n", (int)fmt.doubleBuffer() );
-  printf("depth buffer size = %d\n", fmt.depthBufferSize() );
-  printf("depth buffer = %d\n", fmt.depth() );
-  printf("stencil buffer size = %d\n", fmt.stencilBufferSize() );
-  printf("stencil buffer = %d\n", fmt.stencil() );
-  printf("accum buffer size %d\n", fmt.accumBufferSize() );
-  printf("accum buffer %d\n", fmt.accum() );
-  printf("stereo = %d\n", (int)fmt.stereo() );
-  printf("swap interval = %d\n", fmt.swapInterval() );
-  printf("multisample = %d\n", (int)fmt.sampleBuffers() );
-  printf("multisample samples = %d\n", (int)fmt.samples() );
-  printf("--------------------------------------------\n");
-#endif
-
-  setWindowTitle(title);
-  move(x,y);
-  resize(width,height);
-
-#if 0
-  if (info.fullscreen())
-    setFullscreen(true);
-#endif
-
-  return true;
+  mitk::DataNode::ConstPointer   dn(node);
+  QueueUpdateDataNode(dn);
 }
-#endif
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setOclResourceService(OclResourceService* oclserv)
+void VLQt4Widget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+  mitk::DataNode::ConstPointer  cdn(node);
+
+  if (!m_TranslucentActors.empty())
+  {
+    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::const_iterator i = m_NodeToActorMap.find(cdn);
+    if (i != m_NodeToActorMap.end())
+    {
+      vl::ref<vl::Actor>    nodeActor = i->second;
+      assert(nodeActor.get() != 0);
+
+      std::set<vl::ref<vl::Actor> >::const_iterator j = m_TranslucentActors.find(nodeActor);
+      if (j != m_TranslucentActors.end())
+      {
+        // we only need to recompute the merged buffer if the changed node is actually translucent.
+        m_TranslucentStructuresMerged = false;
+      }
+    }
+  }
+
+  QueueUpdateDataNode(cdn);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+  m_TranslucentStructuresMerged = false;
+
+  mitk::DataNode::ConstPointer  cdn(node);
+  QueueUpdateDataNode(cdn);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::AddDataStorageListeners()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    // if someone calls node->Modified() we need to redraw.
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQt4Widget, const mitk::DataNode*>(this, &VLQt4Widget::OnNodeModified));
+
+    m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
+    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeVisibilityPropertyChanged);
+
+    m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
+    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeColorPropertyChanged);
+
+    m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
+    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQt4Widget::OnNodeOpacityPropertyChanged);
+
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::RemoveDataStorageListeners()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQt4Widget, const mitk::DataNode*>(this, &VLQt4Widget::OnNodeModified));
+
+    if (m_NodeVisibilityListener)
+      m_NodeVisibilityListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeVisibilityPropertyChanged);
+    if (m_NodeColorPropertyListener)
+      m_NodeColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeColorPropertyChanged);
+    if (m_NodeOpacityPropertyListener)
+      m_NodeOpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQt4Widget::OnNodeOpacityPropertyChanged);
+
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
+{
+  RemoveDataStorageListeners();
+  m_DataStorage = dataStorage;
+  AddDataStorageListeners();
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::SetOclResourceService(OclResourceService* oclserv)
+{
+  // no idea if this is really a necessary restriction.
+  // if it is then maybe the ocl-service should be a constructor parameter.
+  if (m_OclService != 0)
+    throw std::runtime_error("Can set OpenCL service only once");
+
   m_OclService = oclserv;
 }
 
@@ -1089,10 +1086,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     assert(vlActor->objectName().find("_background") != std::string::npos);
     vlActor->setEnableMask(ENABLEMASK_BACKGROUND);
     vlActor->effect()->shader()->disable(vl::EN_DEPTH_TEST);
-    //vlActor->effect()->shader()->disable(vl::EN_BLEND);
+    vlActor->effect()->shader()->enable(vl::EN_BLEND);
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
     vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
   }
+
+  UpdateTranslucentTriangles();
 }
 
 
@@ -1109,6 +1108,8 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   // so we always need our opengl context current.
   ScopedOGLContext    ctx(context());
 
+  // recompute the big-fat-translucent-triangle-buffer.
+  m_TranslucentStructuresMerged = false;
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
   if (it != m_NodeToActorMap.end())
@@ -1727,6 +1728,8 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateTranslucentTriangles()
 {
   if (!m_TranslucentStructuresMerged)
@@ -1801,12 +1804,19 @@ void VLQt4Widget::UpdateTranslucentTriangles()
 
 
   // Disable the translucent geometries
-  for (int i = 0; i < m_TranslucentActors.size(); i++)
-    m_TranslucentActors.at(i)->setEnableMask(0x0);
+  for (std::set<vl::ref<vl::Actor> >::iterator i = m_TranslucentActors.begin(); i != m_TranslucentActors.end(); ++i)
+  {
+    i->get_writable()->setEnableMask(0);
+  }
 }
 
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::MergeTranslucentTriangles()
 {
+  // sanity check: internal method, context should have been activated by caller.
+  assert(this->context() == QGLContext::currentContext());
+
   vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
   int numOfActors = actors->size();
 
@@ -1864,7 +1874,8 @@ void VLQt4Widget::MergeTranslucentTriangles()
         continue;
 
       translucentSurfaces.push_back(surface);
-      m_TranslucentActors.push_back(act);
+      //m_TranslucentActors.push_back(act);
+      m_TranslucentActors.insert(act);
 
       vl::ref<vl::Effect> fx = act->effect();
       vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
@@ -2207,6 +2218,8 @@ void VLQt4Widget::MergeTranslucentTriangles()
   m_TranslucentStructuresMerged = true;
 }
 
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::SortTranslucentTriangles()
 {
   // Get context 
@@ -2426,12 +2439,6 @@ vl::ivec2 VLQt4Widget::position() const
 //-----------------------------------------------------------------------------
 void VLQt4Widget::update()
 {
-  //MITK_INFO <<"Update called";
-  // FIXME: not sure this is the right place. i would defer the update to render time.
-  //        because update() can be called any number of times to redraw the screen at the
-  //        next convenient opportunity.
-  UpdateTranslucentTriangles();
-
   // schedules a repaint, will eventually call into paintGL()
   QGLWidget::update();
 }

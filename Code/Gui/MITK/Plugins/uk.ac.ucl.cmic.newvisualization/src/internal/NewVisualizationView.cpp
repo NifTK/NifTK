@@ -79,19 +79,9 @@ NewVisualizationView::~NewVisualizationView()
     m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
   }
 
-  if (m_VisibilityListener)
-    m_VisibilityListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnVisibilityPropertyChanged);
-
   if (m_NamePropertyListener)
     m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
 
-  if (m_ColorPropertyListener)
-    m_ColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnColorPropertyChanged);
-  
-  if (m_OpacityPropertyListener)
-    m_OpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
-
-  GetDataStorage()->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<NewVisualizationView, const mitk::DataNode*>(this, &NewVisualizationView::OnNodeUpated));
 
   MITK_INFO <<"Destructing NewViz plugin";
 
@@ -133,8 +123,6 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 #endif
     ok = QObject::connect(m_Controls->m_BackgroundNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnBackgroundNodeSelected(const mitk::DataNode*)));
 
-    // if someone calls node->Modified() we need to redraw.
-    GetDataStorage()->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<NewVisualizationView, const mitk::DataNode*>(this, &NewVisualizationView::OnNodeUpated));
 
     // Init listener
     m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
@@ -144,17 +132,9 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
     m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
 
-    m_VisibilityListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "visible");
-    m_VisibilityListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnVisibilityPropertyChanged);
-
     m_NamePropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "name");
     m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
 
-    m_ColorPropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "color");
-    m_ColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnColorPropertyChanged);
-
-    m_OpacityPropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "opacity");
-    m_OpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>( this, &NewVisualizationView::OnOpacityPropertyChanged);
 
     // Init the VL visualization part
     InitVLRendering();
@@ -166,22 +146,12 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 void  NewVisualizationView::InitVLRendering()
 {
   /* init Visualization Library */
+  // FIXME: this needs to go somewhere else.
   vl::VisualizationLibrary::init();
-
-#if 0
-  /* setup the OpenGL context format */
-  vl::OpenGLContextFormat format;
-  format.setDoubleBuffer(true);
-  format.setRGBABits( 8,8,8,8 );
-  format.setDepthBufferBits(24);
-  format.setStencilBufferBits(8);
-  format.setFullscreen(false);
-#endif
 
   assert(m_VLQtRenderWindow == 0);
   m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
-
-//  assert(m_RenderApplet == 0);
+  m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
 
 
   // renderer uses ocl kernels to sort triangles.
@@ -192,7 +162,7 @@ void  NewVisualizationView::InitVLRendering()
   {
     mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
   }
-  m_VLQtRenderWindow->setOclResourceService(oclService);
+  m_VLQtRenderWindow->SetOclResourceService(oclService);
   // note: m_VLQtRenderWindow will use that service instance in initializeGL(), which will only be called
   // once we have been bounced through the event-loop, i.e. after we return from this method here.
 
@@ -228,17 +198,6 @@ void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnNodeUpated(const mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  mitk::DataNode::ConstPointer   dn(node);
-  m_VLQtRenderWindow->QueueUpdateDataNode(dn);
-}
-
-
-//-----------------------------------------------------------------------------
 void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
@@ -269,7 +228,6 @@ void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
     return;
 
   m_VLQtRenderWindow->RemoveDataNode(node);
-  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node removed";
 }
@@ -282,7 +240,6 @@ void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
     return;
 
   m_VLQtRenderWindow->RemoveDataNode(node);
-  //m_RenderApplet->rendering()->render();
 
   MITK_INFO <<"Node deleted";
 }
@@ -291,42 +248,8 @@ void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-}
-
-
-//-----------------------------------------------------------------------------
-void NewVisualizationView::OnVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  m_VLQtRenderWindow->QueueUpdateDataNode(node);
-  //MITK_INFO <<"Visibility Change";
-}
-
-
-//-----------------------------------------------------------------------------
-void NewVisualizationView::OnColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  m_VLQtRenderWindow->QueueUpdateDataNode(node);
-  //MITK_INFO <<"Color Change";
-}
-
-
-//-----------------------------------------------------------------------------
-void NewVisualizationView::OnOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  m_VLQtRenderWindow->QueueUpdateDataNode(node);
-
-
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
-#ifdef _USE_CUDA
+#if 0//def _USE_CUDA
   {
     mitk::DataNode::Pointer fbonode = GetDataStorage()->GetNamedNode("vl-framebuffer");
     if (fbonode.IsNotNull())

@@ -39,6 +39,8 @@
 #include <mitkOclResourceService.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
+#include <mitkDataStorage.h>
+#include <mitkDataNodePropertyListener.h>
 #include <map>
 #include <set>
 
@@ -74,12 +76,11 @@ public:
 
   virtual ~VLQt4Widget();
 
-  //bool initQt4Widget(const vl::String& title/*, const vl::OpenGLContextFormat& info, const QGLContext* shareContext=0*/, int x=0, int y=0, int width=640, int height=480);
-
   void setRefreshRate(int msec);
   int refreshRate();
 
-  void setOclResourceService(OclResourceService* oclserv);
+  void SetOclResourceService(OclResourceService* oclserv);
+  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
 
   void AddDataNode(const mitk::DataNode::ConstPointer& node);
   void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
@@ -156,6 +157,17 @@ private:
 
 protected:
 
+  virtual void AddDataStorageListeners();
+  virtual void RemoveDataStorageListeners();
+
+  //virtual void OnNodeAdded(mitk::DataNode* node);
+  virtual void OnNodeModified(const mitk::DataNode* node);
+  virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
+  virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
+  virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
+
+
+
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCamera();
@@ -167,6 +179,13 @@ protected:
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();
   void MergeTranslucentTriangles();
+
+
+  mitk::DataStorage::Pointer                  m_DataStorage;
+  mitk::DataNodePropertyListener::Pointer     m_NodeVisibilityListener;
+  mitk::DataNodePropertyListener::Pointer     m_NodeColorPropertyListener;
+  mitk::DataNodePropertyListener::Pointer     m_NodeOpacityPropertyListener;
+
 
   // side note: default actor block is zero
   static const int      RENDERBLOCK_OPAQUE            = -1000;
@@ -189,8 +208,6 @@ protected:
   vl::ref<vl::TrackballManipulator>     m_Trackball;
 
   vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
-
-  OclResourceService*                   m_OclService;
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;
@@ -223,7 +240,9 @@ protected:
   std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
   //@}
 
-  std::vector<vl::ref<vl::Actor> >    m_TranslucentActors;
+
+  OclResourceService*                 m_OclService;
+  std::set<vl::ref<vl::Actor> >       m_TranslucentActors;
   vl::ref<vl::Geometry>               m_TranslucentSurface;
   vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
   mitk::OclTriangleSorter           * m_OclTriangleSorter;
@@ -234,6 +253,7 @@ protected:
   cl_uint m_TotalNumOfTranslucentVertices;
   cl_mem m_MergedTranslucentIndexBuf;
   cl_mem m_MergedTranslucentVertexBuf;
+
 
 protected:
   int       m_Refresh;
