@@ -31,6 +31,10 @@
 
 #include <vtkObject.h>
 
+#ifdef Q_OS_MAC
+#include <NifTKConfigure.h>
+#endif
+
 /**
  * \file NifTKApplication.h
  * \brief Contains classes to startup all NifTK GUI based applications,
@@ -203,8 +207,7 @@ int ApplicationMain(int argc, char** argv,
     if (!preloadLibrary.exists())
     {
       // In case the application is started from a build tree
-      QString relPath = "/../../../../../MITK-build/MITK-build/bin/plugins/" + preloadLib + libSuffix;
-      tempLibraryPath = QCoreApplication::applicationDirPath() + relPath;
+      tempLibraryPath = QString(MITK_DIR) + "/bin/plugins/" + preloadLib + libSuffix;
       preloadLibrary.setFileName(tempLibraryPath);
     }
 #endif
