@@ -24,7 +24,14 @@ endif()
 
 if(BUILD_IGI)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj NiftyLink)
+  set(proj_VERSION ${NIFTK_VERSION_NIFTYLINK})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES)
   set(NIFTYLINK_DEPENDS ${proj})
 
@@ -48,7 +55,7 @@ if(BUILD_IGI)
       # But we still want a specific version
       set(NiftyLink_location_options
         GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${NIFTK_VERSION_NIFTYLINK}
+        GIT_TAG ${proj_VERSION}
       )
     endif ()
 
@@ -76,12 +83,12 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       ${NiftyLink_location_options}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYLINK}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
@@ -93,9 +100,9 @@ if(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NiftyLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/NiftyLink-build)
-    set(NiftyLink_SOURCE_DIR ${CMAKE_BINARY_DIR}/NiftyLink-src)
-    set(OpenIGTLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
+    set(NiftyLink_DIR ${proj_BUILD}/NiftyLink-build)
+    set(NiftyLink_SOURCE_DIR ${proj_SOURCE})
+    set(OpenIGTLink_DIR ${proj_BUILD}/OPENIGTLINK-build)
 
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")

@@ -24,9 +24,15 @@ if(MITK_USE_Boost)
 
   string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj Boost)
   set(proj_DEPENDENCIES )
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(Boost_DEPENDS ${proj})
 
   if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
@@ -37,7 +43,7 @@ if(MITK_USE_Boost)
     if(MITK_USE_Boost_LIBRARIES)
 
       # Set the boost root to the libraries install directory
-      set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${proj}-install")
+      set(BOOST_ROOT "${proj_INSTALL}")
 
       # We need binary boost libraries
       string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")
@@ -74,7 +80,7 @@ if(MITK_USE_Boost)
       endif()
 
       if(APPLE)
-        set(APPLE_CMAKE_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/${proj}-cmake/ChangeBoostLibsInstallNameForMac.cmake)
+        set(APPLE_CMAKE_SCRIPT ${proj_CONFIG}/ChangeBoostLibsInstallNameForMac.cmake)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
         set(INSTALL_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
 
@@ -85,18 +91,18 @@ if(MITK_USE_Boost)
         endif()
 
         # Set the boost build command for apple
-        set(_boost_build_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bjam ${APPLE_SYSROOT_FLAG} --builddir=${CMAKE_CURRENT_BINARY_DIR}/${proj}-build --prefix=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+        set(_boost_build_cmd ${proj_SOURCE}/bjam ${APPLE_SYSROOT_FLAG} --builddir=${proj_BUILD} --prefix=${proj_INSTALL}
             ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
       else()
-        set(_boost_build_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bjam --build-dir=${CMAKE_CURRENT_BINARY_DIR}/${proj}-build --prefix=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install ${_boost_toolset} ${_boost_address_model}
+        set(_boost_build_cmd ${proj_SOURCE}/bjam --build-dir=${proj_BUILD} --prefix=${proj_INSTALL} ${_boost_toolset} ${_boost_address_model}
             ${_boost_variant} ${_boost_libs} link=shared threading=multi runtime-link=shared -q install)
       endif()
-      
-      set(_boost_cfg_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bootstrap${_shell_extension})
-    
+
+      set(_boost_cfg_cmd ${proj_SOURCE}/bootstrap${_shell_extension})
+
     else()
       # If no libraries are specified set the boost root to the boost src directory
-      set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${proj}-src")
+      set(BOOST_ROOT "${proj_SOURCE}")
       set(_boost_cfg_cmd )
       set(_boost_build_cmd )
     endif()
@@ -104,13 +110,13 @@ if(MITK_USE_Boost)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_Boost ${NIFTK_LOCATION_Boost})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
+      SOURCE_DIR ${proj_SOURCE}
       # Boost needs in-source builds
-      BINARY_DIR ${proj}-src
-      PREFIX ${proj}-cmake
+      BINARY_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
       URL ${NIFTK_LOCATION_Boost}
       URL_MD5 ${NIFTK_CHECKSUM_Boost}
-      INSTALL_DIR ${proj}-install
+      INSTALL_DIR ${proj_INSTALL}
       CONFIGURE_COMMAND "${_boost_cfg_cmd}"
       BUILD_COMMAND "${_boost_build_cmd}"
       INSTALL_COMMAND "${INSTALL_COMMAND}"

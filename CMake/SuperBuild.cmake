@@ -14,6 +14,10 @@
 
 include(ExternalProject)
 
+set(EP_BASE "${CMAKE_BINARY_DIR}" CACHE PATH "Directory where the external projects are configured and built")
+mark_as_advanced(EP_BASE)
+set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
+
 # For external projects like ITK, VTK we always want to turn their testing targets off.
 set(EP_BUILD_TESTING OFF)
 set(EP_BUILD_EXAMPLES OFF)
@@ -39,7 +43,7 @@ else()
   # the variable bits below symmetric.
   set(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
   set(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
-  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")  
+  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 endif()
 
 set(EP_COMMON_ARGS
@@ -67,7 +71,7 @@ set(EP_COMMON_ARGS
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
 )
 
-if(APPLE)                         
+if(APPLE)
   set(EP_COMMON_ARGS
        -DCMAKE_OSX_ARCHITECTURES:PATH=${CMAKE_OSX_ARCHITECTURES}
        -DCMAKE_OSX_DEPLOYMENT_TARGET:PATH=${CMAKE_OSX_DEPLOYMENT_TARGET}
@@ -84,20 +88,20 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   set(target_info_list ${target_info})
   list(GET target_info_list 1 option_name)
   list(GET target_info_list 0 app_name)
-  
+
   # Set flag.
   set(option_string)
   if(${option_name})
     set(option_string "-D${option_name}:BOOL=ON")
   else()
-    set(option_string "-D${option_name}:BOOL=OFF")  
+    set(option_string "-D${option_name}:BOOL=OFF")
   endif()
-  
+
   set(NIFTK_APP_OPTIONS
     ${NIFTK_APP_OPTIONS}
     ${option_string}
-  )    
-  
+  )
+
   # Add to list.
 endforeach()
 
@@ -109,10 +113,11 @@ else()
 endif()
 
 ######################################################################
-# Include NifTK macro for md5 checking
+# Include NifTK helper macros
 ######################################################################
 
 include(niftkMacroGetChecksum)
+include(niftkMacroGetCommitHashOfCurrentFile)
 
 ######################################################################
 # Loop round for each external project, compiling it
@@ -120,28 +125,28 @@ include(niftkMacroGetChecksum)
 
 set(EXTERNAL_PROJECTS
   camino
-  Boost  
+  Boost
   VTK
   DCMTK
   GDCM
   OpenCV
   aruco
-  Eigen 
+  Eigen
   apriltags
   FLANN
   PCL
   ITK
   RTK
-  CTK          
-  MITK         
-  CGAL           
+  CTK
+  MITK
+  CGAL
   NiftyLink
   NiftySim
   NiftyReg
   NiftyRec
   NiftySeg
-  NifTKData  
-  SlicerExecutionModel 
+  NifTKData
+  SlicerExecutionModel
 )
 
 if(BUILD_IGI)
@@ -173,7 +178,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   if(BUILD_IGI AND BUILD_PCL)
     list(APPEND proj_DEPENDENCIES ${FLANN_DEPENDS} ${PCL_DEPENDS})
   endif()
-  
+
   if(BUILD_NIFTYREG)
     list(APPEND proj_DEPENDENCIES ${NIFTYREG_DEPENDS})
   endif(BUILD_NIFTYREG)
@@ -228,7 +233,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       ${NIFTK_APP_OPTIONS}
-      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}      
+      -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.

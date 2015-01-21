@@ -22,7 +22,14 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
+niftkMacroGetCommitHashOfCurrentFile(config_version)
+
 set(proj ITK)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -42,7 +49,7 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
-  
+
   if(MITK_USE_Python)
 
     list(APPEND additional_cmake_args
@@ -77,7 +84,7 @@ if(NOT DEFINED ITK_DIR)
          -DOpenCV_DIR:PATH=${OpenCV_DIR}
         )
   endif()
-  
+
   if (BUILD_ITKFFTW)
     if(WIN32)
       # On Windows, you have to precompile one.
@@ -106,10 +113,10 @@ if(NOT DEFINED ITK_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_ITK}
     URL_MD5 ${NIFTK_CHECKSUM_ITK}
     INSTALL_COMMAND ""
@@ -126,7 +133,7 @@ if(NOT DEFINED ITK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(ITK_DIR ${proj_BUILD})
   message("SuperBuild loading ITK from ${ITK_DIR}")
 
 else()

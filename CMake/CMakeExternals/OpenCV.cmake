@@ -24,12 +24,19 @@ endif()
 
 if(BUILD_IGI)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj OpenCV)
+  set(proj_VERSION ${NIFTK_VERSION_OPENCV})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES)
   set(OpenCV_DEPENDS ${proj})
-  
+
   if(NOT DEFINED OpenCV_DIR)
-  
+
     set(additional_cmake_args
       -DBUILD_opencv_java:BOOL=OFF
     )
@@ -37,12 +44,12 @@ if(BUILD_IGI)
     set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
-    
+
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_OPENCV}
       URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
       UPDATE_COMMAND  ""
@@ -67,20 +74,20 @@ if(BUILD_IGI)
         -DBUILD_PERF_TESTS:BOOL=OFF
         -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
         -DWITH_QT:BOOL=OFF
-        -DWITH_EIGEN:BOOL=OFF      
+        -DWITH_EIGEN:BOOL=OFF
         -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
         -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
         ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+    set(OpenCV_DIR ${proj_BUILD})
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
-  
+
   else()
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif()
 
 endif()

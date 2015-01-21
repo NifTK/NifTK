@@ -148,7 +148,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*openigtlink.*"
   
   # Trac 2137: Tidying dashboard
-  "OpenCV-build"
+  "OpenCV-.*-build"
   "itk.*Point.*may be used uninitialized in this function" 
   "itk.*Index.*may be used uninitialized in this function"
   "itk.*Vector.*may be used uninitialized in this function"
@@ -159,9 +159,9 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
 
   # Trac 2332: Tidying dashboard
   ".*itk.*FixedArray.*is used uninitialized in this function.*"
-  ".*CTK-src.*"
-  ".*DCMTK-src.*"
-  ".*OpenCV-src.*"
+  ".*CTK-.*-src.*"
+  ".*DCMTK-.*-src.*"
+  ".*OpenCV-.*-src.*"
 
   # Trac 2495: Removing warning for Kelvin
   ".*itkShapeBasedAveragingImageFilter.*"

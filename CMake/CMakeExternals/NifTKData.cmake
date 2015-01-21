@@ -24,7 +24,14 @@ endif ()
 
 if (BUILD_TESTING)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj NifTKData)
+  set(proj_VERSION ${NIFTK_VERSION_DATA})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES )
   set(NifTKData_DEPENDS ${proj})
 
@@ -40,15 +47,13 @@ if (BUILD_TESTING)
   if (NOT DEFINED NIFTK_DATA_DIR)
 
     if (${proj}_archtype STREQUAL "git")
-      set(${proj}_version ${NIFTK_VERSION_DATA})
       set(${proj}_location ${NIFTK_LOCATION_DATA_GIT})
       set(${proj}_location_options
         GIT_REPOSITORY ${${proj}_location}
-        GIT_TAG ${${proj}_version}
-        UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_DATA}
+        GIT_TAG ${proj_VERSION}
+        UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       )
     elseif (${proj}_archtype STREQUAL "tar")
-      set(${proj}_version ${NIFTK_VERSION_DATA})
       set(${proj}_location ${NIFTK_LOCATION_DATA_TAR})
       niftkMacroGetChecksum(${proj}_checksum ${${proj}_location})
       set(${proj}_location_options
@@ -61,22 +66,22 @@ if (BUILD_TESTING)
     endif ()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      PREFIX ${proj}-cmake
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
       ${${proj}_location_options}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""
       DEPENDS ${proj_DEPENDENCIES}
     )
-    
-    set(NIFTK_DATA_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
+
+    set(NIFTK_DATA_DIR ${proj_SOURCE})
     message("SuperBuild loading ${proj} from ${NIFTK_DATA_DIR}")
-    
+
   else ()
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-    
+
   endif (NOT DEFINED NIFTK_DATA_DIR)
 
 endif (BUILD_TESTING)

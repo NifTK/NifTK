@@ -17,7 +17,7 @@
 # GDCM
 #
 # Note: NifTK as such doesn't need GDCM. However, if we use MITK,
-# then MITK needs a version of ITK that has been built with a specfic 
+# then MITK needs a version of ITK that has been built with a specfic
 # version of GDCM. So we build GDCM, and then ITK in that same fashion.
 #-----------------------------------------------------------------------------
 
@@ -35,8 +35,14 @@ if(ITK_DIR)
   endif()
 endif()
 
+niftkMacroGetCommitHashOfCurrentFile(config_version)
 
 set(proj GDCM)
+set(proj_VERSION ${NIFTK_VERSION_${proj}})
+set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
 set(proj_DEPENDENCIES )
 set(GDCM_DEPENDS ${proj})
 
@@ -47,10 +53,10 @@ if(NOT DEFINED GDCM_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${proj_SOURCE}
+    PREFIX ${proj_CONFIG}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
     URL ${NIFTK_LOCATION_GDCM}
     URL_MD5 ${NIFTK_CHECKSUM_GDCM}
     INSTALL_COMMAND ""
@@ -64,7 +70,7 @@ if(NOT DEFINED GDCM_DIR)
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
     DEPENDS ${proj_DEPENDENCIES}
   )
-  set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(GDCM_DIR ${proj_BUILD})
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
 else()

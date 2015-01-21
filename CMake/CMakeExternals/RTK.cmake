@@ -24,7 +24,14 @@ endif()
 
 if(BUILD_RTK)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj RTK)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES GDCM ITK)
   set(RTK_DEPENDS ${proj})
 
@@ -34,13 +41,13 @@ if(BUILD_RTK)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_RTK ${NIFTK_LOCATION_RTK})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_RTK}
       URL_MD5 ${NIFTK_CHECKSUM_RTK}
-      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_RTK}
+      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
@@ -54,7 +61,7 @@ if(BUILD_RTK)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(RTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+    set(RTK_DIR ${proj_BUILD})
     message("SuperBuild loading RTK from ${RTK_DIR}")
 
   else()

@@ -14,7 +14,7 @@
 
 #-----------------------------------------------------------------------------
 # CTK. Note, we are building it ourselves, rather than rely on the MITK
-# settings. This mean that the default MITK build may have different 
+# settings. This mean that the default MITK build may have different
 # settings than what we are specifying here. So NIFTK and MITK may be out
 # of sync. However, this gives us a bit more flexibility.
 #-----------------------------------------------------------------------------
@@ -26,7 +26,14 @@ endif()
 
 if(QT_FOUND)
 
+  niftkMacroGetCommitHashOfCurrentFile(config_version)
+
   set(proj CTK)
+  set(proj_VERSION ${NIFTK_VERSION_${proj}})
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
+  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
+  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES VTK ITK DCMTK)
   set(CTK_DEPENDS ${proj})
 
@@ -43,13 +50,13 @@ if(QT_FOUND)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
+      SOURCE_DIR ${proj_SOURCE}
+      PREFIX ${proj_CONFIG}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
       URL ${NIFTK_LOCATION_CTK}
       URL_MD5 ${NIFTK_CHECKSUM_CTK}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
@@ -65,7 +72,7 @@ if(QT_FOUND)
         -DCTK_LIB_WIDGETS:BOOL=ON
         -DCTK_PLUGIN_org.commontk.eventadmin:BOOL=ON
         -DCTK_PLUGIN_org.commontk.configadmin:BOOL=ON
-        # CTK ignores the other standard flags variables: 
+        # CTK ignores the other standard flags variables:
         #   CMAKE_*_FLAGS_DEBUG, CMAKE_*_FLAGS_RELEASE, CMAKE_*_FLAGS_RELWITHDEBINFO, CMAKE_*_LINKER_FLAGS
         -DADDITIONAL_C_FLAGS:STRING=${CTK_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${CTK_ADDITIONAL_CXX_FLAGS}
@@ -78,8 +85,8 @@ if(QT_FOUND)
         -DqRestAPI_URL:STRING=${NIFTK_LOCATION_qRestAPI}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-    set(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
+    set(CTK_DIR ${proj_BUILD})
+    set(CTK_SOURCE_DIR ${proj_SOURCE})
 
     message("SuperBuild loading CTK from ${CTK_DIR}")
 

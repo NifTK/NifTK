@@ -701,7 +701,7 @@ message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 # are already built.
 ######################################################################
 set(CMAKE_MODULE_PATH
-    ${CMAKE_BINARY_DIR}/../aruco-install/lib/cmake
+    ${aruco_DIR}/lib/cmake
     ${CMAKE_MODULE_PATH}
    )
 
@@ -760,12 +760,6 @@ file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake
 foreach(file_to_copy ${package_depends_files})
   file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
 endforeach()
-
-
-if (BUILD_MESHING)
-  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
-    ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
-endif (BUILD_MESHING)
 
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
@@ -928,15 +922,14 @@ endif(MITK_FOUND)
 ######################################################################
 
 if (BUILD_MESHING)
-  # on windows, you have to build cgal yourself because it has dependencies
-  # on other libraries that cannot be built with the superbuild.
-  # so in case, do not overwrite the carefully user-configured CGAL_DIR with
-  # our superbuild path.
-  if (NOT CGAL_DIR)
-    set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL" CACHE PATH "")
-  endif()
-  find_package(CGAL QUIET COMPONENTS Core ImageIO)
-  link_directories("${CGAL_DIR}/..")
+  find_package(CGAL REQUIRED COMPONENTS Core ImageIO)
+  include("${CGAL_USE_FILE}")
+  # UseCGAL.cmake is buggy: despite reading the correct requested modules
+  # it only adds the libCGAL.so base library to CGAL_LIBRARIES
+  set(CGAL_LIBRARIES 
+    CGAL
+    CGAL_Core
+    CGAL_ImageIO)
 endif (BUILD_MESHING)
 
 ######################################################################
@@ -1281,12 +1274,12 @@ endif()
 # NiftyReg
 if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
   file(GLOB NIFTY_REG_LIB_FILES
-       ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.so
-       ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.dylib
+       ${NIFTYREG_ROOT}/lib/*.so
+       ${NIFTYREG_ROOT}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftyReg-install/bin/*)
+  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_ROOT}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
 
   foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
@@ -1298,12 +1291,12 @@ endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 # NiftySeg
 if(BUILD_NIFTYSEG)
   file(GLOB NIFTY_SEG_LIB_FILES
-       ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.so
-       ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.dylib
+       ${NIFTYSEG_ROOT}/lib/*.so
+       ${NIFTYSEG_ROOT}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySeg-install/bin/*)
+  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_ROOT}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
 
   foreach(prog seg_EM seg_LabFusion)
@@ -1318,34 +1311,34 @@ endif(BUILD_NIFTYSEG)
 # NiftyRec
 if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
   file(GLOB NIFTY_REC_LIB_FILES
-       ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.so
-       ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.dylib
+       ${NIFTYREC_ROOT}/lib/*.so
+       ${NIFTYREC_ROOT}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${CMAKE_BINARY_DIR}/../NiftyRec-install/include/*)
+  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_ROOT}/include/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
 endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
 if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   file(GLOB NIFTY_SIM_LIB_FILES
-       ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.so
-       ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.dylib
+       ${NIFTYSIM_ROOT}/lib/*.so
+       ${NIFTYSIM_ROOT}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySim-install/bin/*)
+  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_ROOT}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
 # Camino
 if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
   file(GLOB CAMINO_BIN_FILES
-       ${CMAKE_BINARY_DIR}/../camino-src/bin/*
+       ${camino_DIR}/bin/*
       )
   file(GLOB CAMINO_MAN_FILES
-       ${CMAKE_BINARY_DIR}/../camino-src/man/man1/*
+       ${camino_DIR}/man/man1/*
       )
   install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
