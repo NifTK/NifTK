@@ -13,13 +13,20 @@
 #============================================================================*/
 
 set(_modules MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore)
+
 if(BUILD_VL)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+  link_directories(${VL_LIBRARIES})
+  include_directories(${VL_INCLUDE_DIRS})
+
+  # render code needs opencl for translucent triangle sorting.
   set(_modules
     ${_modules}
     MitkOpenCL
   )
 endif()
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  # if cuda is available then it can dump the renderer output into datastorage.
   set(_modules
     ${_modules}
     niftkCUDA

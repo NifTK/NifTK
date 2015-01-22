@@ -941,11 +941,6 @@ endif(MITK_FOUND)
 # Find Optional External packages
 ######################################################################
 
-if(BUILD_VL)
-  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
-  link_directories(${VL_LIBRARIES})
-  include_directories(${VL_INCLUDE_DIRS})
-endif()
 
 ######################################################################
 # Find CGAL.
