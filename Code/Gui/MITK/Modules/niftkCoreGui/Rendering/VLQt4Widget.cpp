@@ -169,20 +169,22 @@ void VLQt4Widget::OnNodeModified(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+bool VLQt4Widget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
 {
-
+  float opacity = 1.0f;
+  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
+  if (opacityProp != 0)
+    opacity = opacityProp->GetValue();
+  return opacity < 1.0f;
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+bool VLQt4Widget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node)
 {
-  mitk::DataNode::ConstPointer  cdn(node);
-
   if (!m_TranslucentActors.empty())
   {
-    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::const_iterator i = m_NodeToActorMap.find(cdn);
+    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::const_iterator i = m_NodeToActorMap.find(node);
     if (i != m_NodeToActorMap.end())
     {
       vl::ref<vl::Actor>    nodeActor = i->second;
@@ -191,10 +193,39 @@ void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::B
       std::set<vl::ref<vl::Actor> >::const_iterator j = m_TranslucentActors.find(nodeActor);
       if (j != m_TranslucentActors.end())
       {
-        // we only need to recompute the merged buffer if the changed node is actually translucent.
-        m_TranslucentStructuresMerged = false;
+        return true;
       }
     }
+  }
+
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+  mitk::DataNode::ConstPointer  cdn(node);
+
+  if (NodeIsTranslucent(cdn))
+  {
+    // we only need to recompute the merged buffer if the changed node is actually translucent.
+    m_TranslucentStructuresMerged = false;
+  }
+
+  QueueUpdateDataNode(cdn);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+  mitk::DataNode::ConstPointer  cdn(node);
+
+  if (NodeIsTranslucent(cdn))
+  {
+    // we only need to recompute the merged buffer if the changed node is actually translucent.
+    m_TranslucentStructuresMerged = false;
   }
 
   QueueUpdateDataNode(cdn);
@@ -383,7 +414,7 @@ void VLQt4Widget::initializeGL()
   // opaque objects dont need any sorting (in theory).
   // but they have to happen before anything else.
   m_OpaqueObjectsRendering = new vl::Rendering;
-  m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT);
+  m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
   m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
   m_OpaqueObjectsRendering->setCamera(m_Camera.get());
   m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
@@ -1733,10 +1764,12 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 //-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateTranslucentTriangles()
 {
+  bool    thereIsSomethingTranslucent = true;
   if (!m_TranslucentStructuresMerged)
   {
-    MergeTranslucentTriangles();
+    thereIsSomethingTranslucent = MergeTranslucentTriangles();
   }
+#if 0
   else
   {
     vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
@@ -1764,13 +1797,23 @@ void VLQt4Widget::UpdateTranslucentTriangles()
     }
 
     if (summedNumOfVerts != m_TotalNumOfTranslucentVertices && summedNumOfVerts != 0)
-      MergeTranslucentTriangles();
+    {
+      thereIsSomethingTranslucent = MergeTranslucentTriangles();
+    }
     else if (summedNumOfVerts == 0)
-      return;
+    {
+      thereIsSomethingTranslucent = false;
+    }
   }
-  
-  if (m_TotalNumOfTranslucentVertices == 0 || m_TranslucentActors.size() == 0)
+#endif
+  // m_TotalNumOfTranslucentVertices is set by MergeTranslucentTriangles().
+
+  if (m_TotalNumOfTranslucentVertices == 0 || m_TranslucentActors.size() == 0 || !thereIsSomethingTranslucent)
+  {
+    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
     return;
+  }
 
   SortTranslucentTriangles();
 
@@ -1790,8 +1833,8 @@ void VLQt4Widget::UpdateTranslucentTriangles()
     tr = m_TranslucentSurfaceActor->transform();
   }
   
-  m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-  m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
+  m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
+  m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
   fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
   
   // no backface culling for translucent objects: you should be able to see the backside!
@@ -1804,16 +1847,13 @@ void VLQt4Widget::UpdateTranslucentTriangles()
   fx->shader()->setRenderState(m_Light.get(), 0 );
 
 
-  // Disable the translucent geometries
-  for (std::set<vl::ref<vl::Actor> >::iterator i = m_TranslucentActors.begin(); i != m_TranslucentActors.end(); ++i)
-  {
-    i->get_writable()->setEnableMask(0);
-  }
+  // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
+  m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::MergeTranslucentTriangles()
+bool VLQt4Widget::MergeTranslucentTriangles()
 {
   // sanity check: internal method, context should have been activated by caller.
   assert(this->context() == QGLContext::currentContext());
@@ -1826,7 +1866,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
   cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
 
   if (clContext == 0 || clCmdQue == 0)
-    return;
+    return false;
 
   std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
   std::vector<vl::fvec4>               translucentColors;
@@ -1862,31 +1902,35 @@ void VLQt4Widget::MergeTranslucentTriangles()
 
   for (int i = 0; i < numOfActors; i++)
   {
-    vl::ref<vl::Actor> act = actors->at(i);
-    std::string objName = act->objectName();
-    int renderBlock = act->renderBlock();
-    
-    size_t found =objName.find("_surface");
-    if ((found != std::string::npos) && (renderBlock == RENDERBLOCK_TRANSLUCENT))
+    vl::ref<vl::Actor>  act           = actors->at(i);
+    const std::string&  objName       = act->objectName();
+    int                 renderBlock   = act->renderBlock();
+    bool                enabled       = act->enableMask() != 0;
+    bool                nameOk        = objName.find("_surface") != std::string::npos;
+
+    if (nameOk && (renderBlock == RENDERBLOCK_TRANSLUCENT) && enabled)
     {
       vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
       vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
       if (surface == 0)
         continue;
 
-      translucentSurfaces.push_back(surface);
-      //m_TranslucentActors.push_back(act);
       m_TranslucentActors.insert(act);
 
       vl::ref<vl::Effect> fx = act->effect();
       vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
       translucentColors.push_back(color);
+      translucentSurfaces.push_back(surface);
     }
   }
 
   // Return if there's nothing to do 
   if (translucentSurfaces.size() == 0)
-    return;
+  {
+    // dont call again, there is nothing to merge.
+    m_TranslucentStructuresMerged = true;
+    return false;
+  }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Acquire the VBO/IBO handles of the translucent objects
@@ -1954,7 +1998,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
     if (vlVerts == 0 || vlNormals == 0 || vlTriangles == 0)
     {
       MITK_ERROR <<"Failed to acquire buffer objects from the VL geometry.";
-      return;
+      return false;
     }
   }
 
@@ -1998,7 +2042,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
   if (totalNumOfVertices != m_TotalNumOfTranslucentVertices)
   {
     MITK_ERROR <<"Index buffer merge error, returning!";
-    return;
+    return false;
   }
 
   clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
@@ -2217,6 +2261,7 @@ void VLQt4Widget::MergeTranslucentTriangles()
   clMergedNormalBuf = 0;
 
   m_TranslucentStructuresMerged = true;
+  return true;
 }
 
 
