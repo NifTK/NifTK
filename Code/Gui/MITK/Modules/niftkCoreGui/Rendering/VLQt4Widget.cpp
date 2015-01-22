@@ -575,6 +575,9 @@ void VLQt4Widget::RenderScene()
   }
   m_NodesQueuedForUpdate.clear();
 
+  // UpdateTranslucentTriangles() is clever enough to do work only if necessary.
+  UpdateTranslucentTriangles();
+
 
   // update scene graph.
   vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
@@ -1090,8 +1093,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
     vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
   }
-
-  UpdateTranslucentTriangles();
 }
 
 
