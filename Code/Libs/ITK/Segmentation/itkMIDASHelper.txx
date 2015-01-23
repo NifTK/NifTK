@@ -20,7 +20,7 @@ namespace itk
 
 //-----------------------------------------------------------------------------
 template <class TImage>
-ITK_EXPORT void LimitMaskByRegion(TImage* mask,
+void LimitMaskByRegion(TImage* mask,
                        typename TImage::RegionType &region,
                        typename TImage::PixelType outValue
                       )
@@ -71,7 +71,6 @@ ITK_EXPORT void LimitMaskByRegion(TImage* mask,
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-ITK_EXPORT
 void
 GetVolumeFromITKImage(
   const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -103,7 +102,6 @@ GetVolumeFromITKImage(
 
 //-----------------------------------------------------------------------------
 template<unsigned int VImageDimension>
-ITK_EXPORT
 void
 GetOrientationString(
   const itk::Matrix<double, VImageDimension, VImageDimension>& directionMatrix,
@@ -119,7 +117,6 @@ GetOrientationString(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-ITK_EXPORT
 void
 GetOrientationStringFromITKImage(
   const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -133,7 +130,6 @@ GetOrientationStringFromITKImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-ITK_EXPORT
 void
 GetAxisFromITKImage(
   const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -155,7 +151,6 @@ GetAxisFromITKImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-ITK_EXPORT
 void
 GetUpDirectionFromITKImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
@@ -179,7 +174,6 @@ GetUpDirectionFromITKImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-ITK_EXPORT
 void GetOrientationLabelFromITKImage(const itk::Image<TPixel, VImageDimension>* itkImage, std::string &label)
 {
   if (VImageDimension < 3)
