@@ -62,7 +62,14 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   this->CalculateTheMaximumImage();
 
   // Segment the backgound using the maximum image histogram
-  this->SegmentBackground();
+  if ( this->bgndThresholdProb )
+  {
+    this->SegmentBackground();
+  }
+  else
+  {
+    this->SegmentForegroundFromBackground();
+  }
 
   // Find the nipple and mid-sternum landmarks
   this->FindBreastLandmarks();
