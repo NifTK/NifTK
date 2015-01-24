@@ -45,7 +45,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_INT, "yrg", "yCoord", "The 'y' voxel coordinate to regio-grow the bgnd from [ny/4]."},
   {OPT_INT, "zrg", "zCoord", "The 'z' voxel coordinate to regio-grow the bgnd from [nz/2]."},
   
-  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0.25]."},
+  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0]. "
+   "If zero then estimate automatically."},
 
   {OPT_FLOAT, "tsg", "threshold", "The value at which to threshold the final segmentation (0<tsg<1). Changing this value influences the final size of the breast mask with tsg<0.5 expanding the mask and tsg>0.5 contracting it [0.45]"},
 
@@ -189,7 +190,7 @@ int main( int argc, char *argv[] )
   int regGrowYcoord = 0;
   int regGrowZcoord = 0;
 
-  float bgndThresholdProb = 0.25;
+  float bgndThresholdProb = 0.;
 
   float finalSegmThreshold = 0.45;
 
