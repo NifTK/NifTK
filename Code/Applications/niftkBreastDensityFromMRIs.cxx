@@ -27,6 +27,10 @@
 #include <fstream>
 #include <iostream>
 
+#include <QProcess>
+#include <QString>
+#include <QDebug>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/progress.hpp>
@@ -36,8 +40,9 @@
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>
 #include <niftkCSVRow.h>
-#include <itkCommandLineHelper.h>
+#include <niftkEnvironmentHelper.h>
 
+#include <itkCommandLineHelper.h>
 #include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -476,6 +481,8 @@ int main( int argc, char *argv[] )
   typedef itk::ImageSeriesReader< ImageType > SeriesReaderType;
   typedef itk::UCLN4BiasFieldCorrectionFilter< ImageType, ImageType > BiasFieldCorrectionType;
 
+  fs::path pathExecutable( argv[0] );
+  fs::path dirExecutables = pathExecutable.parent_path();
 
 
   // Validate command line args
@@ -495,7 +502,6 @@ int main( int argc, char *argv[] )
 
 
   args.Print();
-
 
 
   // Initialise the output file names
@@ -1311,6 +1317,22 @@ int main( int argc, char *argv[] )
            ( ! args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
                                        "breast parenchyma", imParenchyma ) ) )
       {
+        
+        // Can we find the seg_EM executable or verify the path?
+
+        if ( ! niftk::FileExists( fileSegEM ) )
+        {
+          std::string fileSearchSegEM = niftk::ConcatenatePath( dirExecutables.string(), fileSegEM );
+
+          if ( niftk::FileExists( fileSearchSegEM ) )
+          {
+            fileSegEM = fileSearchSegEM;
+          }
+        }
+          
+#if 0
+
+        // system() call to seg_EM
 
         std::stringstream commandNiftySeg;
 
@@ -1327,6 +1349,56 @@ int main( int argc, char *argv[] )
 
         int ret = system( commandNiftySeg.str().c_str() );
         message << std::endl << "Returned: " << ret << std::endl;
+        args.PrintMessage( message );
+
+#else
+
+        // QProcess call to seg_EM
+
+        QStringList argumentsNiftySeg; 
+        argumentsNiftySeg 
+          << "-v" << "2" 
+          << "-bc_order" << "4" 
+          << "-nopriors" << "2" 
+          << "-in"   << niftk::ConcatenatePath( dirOutput, fileI02_t2_tse_tra_Resampled ).c_str()
+          << "-mask" << niftk::ConcatenatePath( dirOutput, fileOutputBreastMask ).c_str()
+          << "-out"  << niftk::ConcatenatePath( dirOutput, fileOutputParenchyma ).c_str();
+
+        message << std::endl << "Executing parenchyma segmentation (QProcess): "
+                << std::endl << "   " << fileSegEM;
+        for(int i=0;i<argumentsNiftySeg.size();i++)
+        {
+          message << " " << argumentsNiftySeg[i].toStdString();
+        }
+        message << std::endl << std::endl;
+        args.PrintMessage( message );
+
+        QProcess callSegEM;
+        QString outSegEM;
+
+        callSegEM.setProcessChannelMode( QProcess::MergedChannels );
+        callSegEM.start( fileSegEM.c_str(), argumentsNiftySeg );
+
+        bool flgFinished = callSegEM.waitForFinished( 300000 ); // Wait 5 mins
+
+        outSegEM = callSegEM.readAllStandardOutput();
+
+        message << outSegEM.toStdString();
+
+        if ( ! flgFinished )
+        {
+          message << "ERROR: Could not execute: " << fileSegEM << " ( " 
+                  << callSegEM.errorString().toStdString() << " )" << std::endl;
+          args.PrintMessage( message );
+
+          continue;
+        }
+
+        args.PrintMessage( message );
+
+        callSegEM.close();
+
+#endif
 
         args.ReadImageFromFile( dirOutput, fileOutputParenchyma, 
                                 "breast parenchyma", imParenchyma );

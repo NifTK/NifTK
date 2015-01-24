@@ -136,7 +136,6 @@ if(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
       niftkBreastDCEandADC
-      niftkBreastDensityFromMRIs
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
       niftkMakeLapUSProbeAprilTagsModel
@@ -156,6 +155,27 @@ if(SlicerExecutionModel_FOUND)
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
     endforeach()
+
+    if(QT_FOUND)
+
+      #-------------------------------------------------------------
+      # Add new programs to this list.
+      #-------------------------------------------------------------
+      set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT
+        niftkBreastDensityFromMRIs
+        )
+      list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
+
+      foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
+        NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+          NAME ${APP}
+          BUILD_SLICER
+          INSTALL_SCRIPT
+          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES}
+          )
+      endforeach()
+
+    endif(QT_FOUND)
 
   endif(VTK_FOUND)
 
