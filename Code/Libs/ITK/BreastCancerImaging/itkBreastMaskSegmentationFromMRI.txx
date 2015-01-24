@@ -52,7 +52,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   maxIntensity = 0;
   minIntensity = 0;
 
-  bgndThresholdProb = 0.6;
+  bgndThresholdProb = 0.;
 
   finalSegmThreshold = 0.45;
 
@@ -1564,7 +1564,6 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::ComputeElevationOfAnteriorSurface( void )
 {
-
   typename InternalImageType::RegionType region3D;
   typename InternalImageType::SizeType   size3D;
   typename InternalImageType::IndexType  start3D;
@@ -1572,6 +1571,9 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename AxialImageType::RegionType region2D;
   typename AxialImageType::SizeType   size2D;
   typename AxialImageType::IndexType  start2D;
+
+  float elevation;
+  float maxElevation = 0.;
 
 
   region3D = imSegmented->GetLargestPossibleRegion();
@@ -1645,10 +1647,31 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
     if ( flgFoundSurface ) 
     {
-      itElevation.Set( size3D[1] - 1 - idx[1] );
+      elevation = size3D[1] - 1 - idx[1];
+      itElevation.Set( elevation );
+
+      if ( elevation > maxElevation )
+      {
+        maxElevation = elevation;
+      }
     }
   }
   
+  if ( flgVerbose )
+  {
+    std::cout << "Max skin surface anterior elevation: " << maxElevation << std::endl;
+  }
+
+  // Subtract 30mm to ensure we avoid local minimum near the nipple ('y' axis = AP)
+
+  maxElevation -= 30./spacing3D[1];
+
+  if ( flgVerbose )
+  {
+    std::cout << "Max skin surface anterior elevation (less 30mm): " << maxElevation << std::endl;
+  }
+
+
 
   // Smooth the elevation map
 
@@ -1662,6 +1685,23 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   imSkinElevationMap = smoothing->GetOutput();
   imSkinElevationMap->DisconnectPipeline();
+
+  // Write the image to a file
+
+  if ( fileOutputSkinElevationMap.length() )
+  {
+    typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+    typename FileWriterType::Pointer writer = FileWriterType::New();
+
+    writer->SetFileName( fileOutputSkinElevationMap );
+    writer->SetInput( imSkinElevationMap );
+
+    std::cout << "Writing elevation map to file: "
+              << fileOutputSkinElevationMap << std::endl;
+
+    writer->Update();
+  }
 
 
   // Scan from nipple x coordinates and eliminate arms - Left side
@@ -1709,7 +1749,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
             && ( ( minElevation > startElevation - posElevationTolerance )
                  || ( itLeftNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
     {
-      if ( itLeftNippleElevation.Get() < minElevation )
+      if ( ( itLeftNippleElevation.Get() < minElevation ) &&
+           ( itLeftNippleElevation.Get() < maxElevation ) )
       {
         minElevation = itLeftNippleElevation.Get();
         leftAxialCutoff = itLeftNippleElevation.GetIndex();
@@ -1720,7 +1761,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
 
-  // Set the whole region to zero
+  // Set this whole region in the elevation map to zero
 
   leftAxialStart2D  = start2D;
 
@@ -1746,7 +1787,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
       itLeftLinearElevation.Set( 0 );
       --itLeftLinearElevation;
     }
-
   }
 
 
@@ -1788,7 +1828,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
             && ( ( minElevation > startElevation - posElevationTolerance )
                  || ( itRightNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
     {
-      if ( itRightNippleElevation.Get() < minElevation )
+      if ( ( itRightNippleElevation.Get() < minElevation ) &&
+           ( itRightNippleElevation.Get() < maxElevation ) )
       {
         minElevation = itRightNippleElevation.Get();
         rightAxialCutoff = itRightNippleElevation.GetIndex();
@@ -1798,7 +1839,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     }
   }
 
-  // Set the whole region to zero
+  // Set this whole region in the elevation map to zero
 
   rightAxialStart2D[0] = rightAxialCutoff[0];
   rightAxialStart2D[1] = start2D[1];
@@ -1828,23 +1869,29 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   }
 
-
   // Write the image to a file
 
   if ( fileOutputSkinElevationMap.length() )
   {
+    std::string fileOutputSkinElevationMapCropped;
+
     typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
 
     typename FileWriterType::Pointer writer = FileWriterType::New();
 
-    writer->SetFileName( fileOutputSkinElevationMap );
+    fileOutputSkinElevationMapCropped = ModifySuffix( fileOutputSkinElevationMap,
+                                                      std::string( "_Cropped" ) );
+
+    writer->SetFileName( fileOutputSkinElevationMapCropped );
     writer->SetInput( imSkinElevationMap );
 
     std::cout << "Writing elevation map to file: "
-              << fileOutputSkinElevationMap << std::endl;
+              << fileOutputSkinElevationMapCropped << std::endl;
 
     writer->Update();
   }
+
+  imSkinElevationMap = 0;
 
 
   // Hence crop the patient mask
