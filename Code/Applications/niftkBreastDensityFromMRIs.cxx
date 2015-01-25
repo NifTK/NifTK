@@ -192,6 +192,8 @@ public:
   std::string progRegNonRigid;
   std::string progRegResample;
 
+  float detJacobianPenalty;
+
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
   std::ostream *newCout;
@@ -217,7 +219,8 @@ public:
                    std::string segEM,
                    std::string regAladin,
                    std::string regNonRigid,
-                   std::string regResample ) {
+                   std::string regResample,
+                   float detJacPenalty ) {
 
     std::stringstream message;
 
@@ -245,6 +248,8 @@ public:
     progRegAladin   = regAladin;
     progRegNonRigid = regNonRigid;
     progRegResample = regResample;
+
+    detJacobianPenalty = detJacPenalty;
 
     if ( fileLog.length() > 0 )
     {
@@ -360,6 +365,7 @@ public:
             << "NiftyReg 'reg_aladin' executable: " << progRegAladin << std::endl
             << "NiftyReg 'reg_f3d' executable: "    << progRegNonRigid << std::endl
             << "NiftyReg 'reg_resample' executable: "    << progRegResample << std::endl
+            << "NiftyReg 'reg_f3d' Jacobian penalty: " << detJacobianPenalty << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -570,8 +576,12 @@ bool NonRigidRegisterImages( std::string fileTarget,
 
   if ( args.flgCompression ) fileNonRigidTransform.append( ".gz" );
 
+  std::stringstream ssDetJacobianPenalty;
+  ssDetJacobianPenalty << args.detJacobianPenalty;
+
   QStringList argsRegNonRigid; 
   argsRegNonRigid 
+    << "-jl"     << ssDetJacobianPenalty.str().c_str()
     << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
     << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
@@ -789,7 +799,8 @@ int main( int argc, char *argv[] )
                         fileSegEM,
                         fileRegAladin,
                         fileRegF3D,
-                        fileRegResample );
+                        fileRegResample,
+                        detJacobianPenalty );
 
 
   args.Print();

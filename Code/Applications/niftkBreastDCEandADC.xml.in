@@ -152,6 +152,19 @@
       <channel>input</channel>
     </file>
 
+    <float>
+      <name>detJacobianPenalty</name>
+      <longflag>jl</longflag>
+      <description>Weight of log of the Jacobian determinant penalty term.</description>
+      <label>reg_f3d Jacobian determinant penalty</label>
+      <default>0.95</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10</maximum>
+        <step>0.05</step>
+      </constraints>
+     </float>
+
   </parameters>
 
 </executable>
