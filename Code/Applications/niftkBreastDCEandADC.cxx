@@ -27,6 +27,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <QProcess>
+#include <QString>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/progress.hpp>
@@ -133,6 +136,23 @@ std::string GetTag( const DictionaryType &dictionary,
 };
 
 
+// -------------------------------------------------------------------------
+// CreateRegisteredFilename()
+// -------------------------------------------------------------------------
+
+std::string CreateRegisteredFilename( std::string fileTarget, 
+                                      std::string fileSource,
+                                      std::string description ) 
+{
+  std::string fileTargetWithoutSuffix;
+  std::string suffixTarget = niftk::ExtractImageFileSuffix( fileTarget, fileTargetWithoutSuffix );
+
+  std::string fileSourceWithoutSuffix;
+  std::string suffixSource = niftk::ExtractImageFileSuffix( fileSource, fileSourceWithoutSuffix );
+
+  return fileSourceWithoutSuffix + "_" + description + "_" + fileTargetWithoutSuffix + suffixSource;
+};
+
 
 // -------------------------------------------------------------------------
 // class InputParameters
@@ -159,7 +179,9 @@ public:
   std::string strSeriesDescADC;
   std::string strSeriesDescDCE;
 
-  std::string fileSegEM;
+  std::string progSegEM;
+  std::string progRegAladin;
+  std::string progRegNonRigid;
 
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
@@ -179,7 +201,9 @@ public:
                    std::string strT2,
                    std::string strADC,
                    std::string strDCE,
-                   std::string segEM ) {
+                   std::string segEM,
+                   std::string regAladin,
+                   std::string regNonRigid ) {
 
     std::stringstream message;
 
@@ -199,7 +223,9 @@ public:
     strSeriesDescADC = strADC;
     strSeriesDescDCE = strDCE;
 
-    fileSegEM = segEM;
+    progSegEM       = segEM;
+    progRegAladin   = regAladin;
+    progRegNonRigid = regNonRigid;
 
     if ( fileLog.length() > 0 )
     {
@@ -296,7 +322,7 @@ public:
 
     message << std::endl
             << "Input DICOM directory: " << dirInput << std::endl 
-            << "Output directory: " << dirInput << std::endl 
+            << "Output directory: "      << dirOutput << std::endl 
             << std::endl
             << "Verbose output?: "   << std::boolalpha << flgVerbose     
             << std::noboolalpha << std::endl
@@ -315,7 +341,9 @@ public:
             << "ADC map series description:      " << strSeriesDescADC << std::endl
             << "DCE sequence series description: " << strSeriesDescDCE << std::endl
             << std::endl
-            << "NiftySeg 'seg_EM' executable: " << fileSegEM << std::endl
+            << "NiftySeg 'seg_EM' executable: "     << progSegEM << std::endl
+            << "NiftyReg 'reg_aladin' executable: " << progRegAladin << std::endl
+            << "NiftyReg 'reg_f3d' executable: "    << progRegNonRigid << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -399,11 +427,11 @@ public:
     }
   }
 
-  void WriteImageToFile( std::string outDir, std::string filename, 
+  void WriteImageToFile( std::string filename, 
                          std::string description, ImageType::Pointer image ) {
   
     std::stringstream message;
-    std::string fileOutput = niftk::ConcatenatePath( outDir, filename );
+    std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
               
     message << std::endl << "Writing " << description << " to file: "
             << fileOutput << std::endl;
@@ -412,11 +440,11 @@ public:
     itk::WriteImageToFile< ImageType >( fileOutput, image );
   }
 
-  void WriteImageToFile( std::string outDir, std::string filename, 
+  void WriteImageToFile( std::string filename, 
                          std::string description, nifti_image *image ) {
   
     std::stringstream message;
-    std::string fileOutput = niftk::ConcatenatePath( outDir, filename );
+    std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
               
     message << std::endl << "Writing " << description << " to file: "
             << fileOutput << std::endl;
@@ -425,10 +453,10 @@ public:
     nifti_image_write( image );
   }
 
-  void DeleteFile( std::string outDir, std::string filename ) {
+  void DeleteFile( std::string filename ) {
 
     std::stringstream message;
-    std::string filePath = niftk::ConcatenatePath( outDir, filename );
+    std::string filePath = niftk::ConcatenatePath( dirOutput, filename );
 
     if ( ! niftk::FileExists( filePath ) )
     {
@@ -450,6 +478,153 @@ public:
 };
 
 
+// -------------------------------------------------------------------------
+// AffineRegisterImages()
+// -------------------------------------------------------------------------
+
+bool AffineRegisterImages( std::string fileTarget, 
+                           std::string fileSource, 
+                           std::string fileRegistered,
+                           std::string &fileTransform,
+                           InputParameters &args ) 
+{
+  std::stringstream message;
+
+  fileTransform = niftk::ModifyImageFileSuffix( fileRegistered, std::string( "_Transform.txt" ) );
+
+  QStringList argsRegAffine; 
+  argsRegAffine 
+    << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
+    << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
+    << "-result" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
+    << "-aff"    << niftk::ConcatenatePath( args.dirOutput, fileTransform.c_str() ).c_str();
+  
+  message << std::endl << "Executing affine registration (QProcess): "
+          << std::endl << "   " << args.progRegAladin;
+  for(int i=0;i<argsRegAffine.size();i++)
+  {
+    message << " " << argsRegAffine[i].toStdString();
+  }
+  message << std::endl << std::endl;
+  args.PrintMessage( message );
+  
+  QProcess callRegAffine;
+  QString outRegAffine;
+  
+  callRegAffine.setProcessChannelMode( QProcess::MergedChannels );
+  callRegAffine.start( args.progRegAladin.c_str(), argsRegAffine );
+  
+  bool flgFinished = callRegAffine.waitForFinished( 1800000 ); // Wait 30 mins
+  
+  outRegAffine = callRegAffine.readAllStandardOutput();
+  
+  message << outRegAffine.toStdString();
+  
+  if ( ! flgFinished )
+  {
+    message << "ERROR: Could not execute: " << args.progRegAladin << " ( " 
+            << callRegAffine.errorString().toStdString() << " )" << std::endl;
+    args.PrintMessage( message );
+    return false;
+  }
+  
+  args.PrintMessage( message );
+  
+  callRegAffine.close();
+
+  return true;
+};
+
+
+// -------------------------------------------------------------------------
+// NonRigidRegisterImages()
+// -------------------------------------------------------------------------
+
+bool NonRigidRegisterImages( std::string fileTarget, 
+                             std::string fileSource, 
+                             std::string fileRegistered,
+                             std::string fileAffineTransform,
+                             InputParameters &args ) 
+{
+  std::stringstream message;
+
+  std::string fileTransform = niftk::ModifyImageFileSuffix( fileRegistered, 
+                                                            std::string( "_Transform.nii" ) );
+
+  if ( args.flgCompression ) fileTransform.append( ".gz" );
+
+  QStringList argsRegNonRigid; 
+  argsRegNonRigid 
+    << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
+    << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
+    << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
+    << "-aff"    << niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() ).c_str()
+    << "-cpp"    << niftk::ConcatenatePath( args.dirOutput, fileTransform.c_str() ).c_str();
+  
+  message << std::endl << "Executing non-rigid registration (QProcess): "
+          << std::endl << "   " << args.progRegNonRigid;
+  for(int i=0;i<argsRegNonRigid.size();i++)
+  {
+    message << " " << argsRegNonRigid[i].toStdString();
+  }
+  message << std::endl << std::endl;
+  args.PrintMessage( message );
+  
+  QProcess callRegNonRigid;
+  QString outRegNonRigid;
+  
+  callRegNonRigid.setProcessChannelMode( QProcess::MergedChannels );
+  callRegNonRigid.start( args.progRegNonRigid.c_str(), argsRegNonRigid );
+  
+  bool flgFinished = callRegNonRigid.waitForFinished( 3600000 ); // Wait one hour
+  
+  outRegNonRigid = callRegNonRigid.readAllStandardOutput();
+  
+  message << outRegNonRigid.toStdString();
+  
+  if ( ! flgFinished )
+  {
+    message << "ERROR: Could not execute: " << args.progRegNonRigid << " ( " 
+            << callRegNonRigid.errorString().toStdString() << " )" << std::endl;
+    args.PrintMessage( message );
+    return false;
+  }
+  
+  args.PrintMessage( message );
+  
+  callRegNonRigid.close();
+
+  return true;
+};
+
+
+// -------------------------------------------------------------------------
+// RegisterImages()
+// -------------------------------------------------------------------------
+
+bool RegisterImages( std::string fileTarget, 
+                     std::string fileSource, 
+                     std::string fileRegistered,
+                     InputParameters &args ) 
+{
+  std::string fileAffineTransform;
+  std::string fileAffineRegistered = CreateRegisteredFilename( fileTarget,
+                                                               fileSource,
+                                                               std::string( "AffineTo" ) );
+
+  return ( AffineRegisterImages( fileTarget, 
+                                 fileSource, 
+                                 fileAffineRegistered,
+                                 fileAffineTransform, 
+                                 args )
+           &&
+           NonRigidRegisterImages( fileTarget, 
+                                   fileSource, 
+                                   fileRegistered,
+                                   fileAffineTransform,
+                                   args ) );
+};
+
 
 // -------------------------------------------------------------------------
 // main()
@@ -460,8 +635,8 @@ int main( int argc, char *argv[] )
   bool flgVeryFirstRow = true;
 
   float progress = 0.;
-  float iDirectory = 1.;
-  float nDirectories;
+  float iTask = 0.;
+  float nTasks;
 
   std::stringstream message;
   std::stringstream ss;
@@ -478,6 +653,8 @@ int main( int argc, char *argv[] )
   typedef itk::ImageSeriesReader< ImageType > SeriesReaderType;
   typedef itk::UCLN4BiasFieldCorrectionFilter< ImageType, ImageType > BiasFieldCorrectionType;
 
+  fs::path pathExecutable( argv[0] );
+  fs::path dirExecutables = pathExecutable.parent_path();
 
 
   // Validate command line args
@@ -493,11 +670,57 @@ int main( int argc, char *argv[] )
                         strSeriesDescT2W,
                         strSeriesDescADC,
                         strSeriesDescDCE,
-                        fileSegEM );
+                        fileSegEM,
+                        fileRegAladin,
+                        fileRegF3D );
 
 
   args.Print();
 
+   
+  // Can we find the seg_EM executable or verify the path?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( ! niftk::FileExists( args.progSegEM ) )
+  {
+    std::string fileSearchSegEM = niftk::ConcatenatePath( dirExecutables.string(), 
+                                                          args.progSegEM );
+          
+    if ( niftk::FileExists( fileSearchSegEM ) )
+    {
+      args.progSegEM = fileSearchSegEM;
+    }
+  }
+
+
+  // Can we find the reg_aladin executable or verify the path?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( ! niftk::FileExists( args.progRegAladin ) )
+  {
+    std::string fileSearchRegAladin = niftk::ConcatenatePath( dirExecutables.string(), 
+                                                              args.progRegAladin );
+          
+    if ( niftk::FileExists( fileSearchRegAladin ) )
+    {
+      args.progRegAladin = fileSearchRegAladin;
+    }
+  }
+
+
+  // Can we find the reg_f3d executable or verify the path?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( ! niftk::FileExists( args.progRegNonRigid ) )
+  {
+    std::string fileSearchRegNonRigid = niftk::ConcatenatePath( dirExecutables.string(), 
+                                                                args.progRegNonRigid );
+          
+    if ( niftk::FileExists( fileSearchRegNonRigid ) )
+    {
+      args.progRegNonRigid = fileSearchRegNonRigid;
+    }
+  }
 
 
   // Initialise the output file names
@@ -511,8 +734,6 @@ int main( int argc, char *argv[] )
     = std::string( "I01_" ) + strSeriesDescT1W + "_BiasFieldCorrection.nii";
   std::string fileI01_T2_BiasFieldCorr
     = std::string( "I01_" ) + strSeriesDescT2W + "_BiasFieldCorrection.nii";
-
-  std::string fileI02_T2_Resampled( "I02_T2_Resampled.nii" );
 
   std::string fileOutputVTKSurface( "I13_BreastSurface.vtk" );
   std::string fileOutputBreastMask( "I14_BreastMaskSegmentation.nii" );
@@ -541,6 +762,10 @@ int main( int argc, char *argv[] )
 
   std::string fileOutputFittedBreastMask( "I12_AnteriorSurfaceCropMask.nii" );
 
+  std::string fileRegistrationTarget( fileI01_T1_BiasFieldCorr );
+
+
+
   if ( flgCompression )
   {
     fileI00_T1.append( ".gz" );
@@ -549,8 +774,6 @@ int main( int argc, char *argv[] )
 
     fileI01_T1_BiasFieldCorr.append( ".gz" );
     fileI01_T2_BiasFieldCorr.append( ".gz" );
-
-    fileI02_T2_Resampled.append( ".gz" );
 
     fileOutputBreastMask.append( ".gz" );
     fileOutputParenchyma.append( ".gz" );
@@ -574,7 +797,7 @@ int main( int argc, char *argv[] )
     if ( fileOutputPectoralSurfaceVoxels.length() > 0 ) fileOutputPectoralSurfaceVoxels.append( ".gz" );
     if ( fileOutputFittedBreastMask.length() > 0 )      fileOutputFittedBreastMask.append( ".gz" );
 
-
+    if ( fileRegistrationTarget.length() > 0 )          fileRegistrationTarget.append( ".gz" );
   }
 
 
@@ -588,10 +811,6 @@ int main( int argc, char *argv[] )
 
   ImageType::Pointer imSegmentedBreastMask = 0;
   ImageType::Pointer imParenchyma = 0;
-
-  std::cout  << std::endl << "<filter-progress>" << std::endl
-             << 0.2 << std::endl
-             << "</filter-progress>" << std::endl << std::endl;
 
   message << std::endl << "Directory: " << args.dirInput << std::endl << std::endl;
   args.PrintMessage( message );
@@ -729,10 +948,19 @@ int main( int argc, char *argv[] )
     seriesItr++;
   }
 
+  // The total number of tasks T1W + Seg + T2W + ADC + N_DCE
+
+  nTasks = 4 + seriesDCE.size();
+
+  progress = iTask/nTasks;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
+
 
   // Load the T1W image
   // ~~~~~~~~~~~~~~~~~~
-        
+
   if ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T1_BiasFieldCorr, 
                                  std::string( "bias field corrected '") +
                                  args.strSeriesDescT1W + "' image", 
@@ -756,7 +984,7 @@ int main( int argc, char *argv[] )
         imT1 = seriesReader->GetOutput();
         imT1->DisconnectPipeline();
             
-        args.WriteImageToFile( args.dirOutput, fileI00_T1, 
+        args.WriteImageToFile( fileI00_T1, 
                                std::string( "T1W '" ) + args.strSeriesDescT1W +
                                "' image", imT1 );
       }
@@ -779,19 +1007,32 @@ int main( int argc, char *argv[] )
       imT1 = biasFieldCorrector->GetOutput();
       imT1->DisconnectPipeline();
           
-      args.WriteImageToFile( args.dirOutput, fileI01_T1_BiasFieldCorr, 
+      args.WriteImageToFile( fileI01_T1_BiasFieldCorr, 
                              std::string( "bias field corrected '" ) + 
                              args.strSeriesDescT1W + "' image", imT1 );
     }
   }
 
+  iTask++;
+  progress = iTask/nTasks;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
+
 
   // Load the T2W image
   // ~~~~~~~~~~~~~~~~~~
 
-  if ( ! args.ReadImageFromFile( args.dirOutput, fileI02_T2_Resampled, 
-                                 std::string( "resampled '" ) + args.strSeriesDescT2W +
-                                 "' image", imT2 ) )
+  std::string fileRegisteredT2W = CreateRegisteredFilename( fileRegistrationTarget,
+                                                            fileI01_T2_BiasFieldCorr,
+                                                            std::string( "NonRigidTo" ) );
+
+  
+
+  if ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredT2W, 
+                                 std::string( "registered '") +
+                                 args.strSeriesDescT2W + "' image", 
+                                 imT2 ) )
   {
     if ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T2_BiasFieldCorr, 
                                    std::string( "bias field corrected '" ) + 
@@ -816,7 +1057,7 @@ int main( int argc, char *argv[] )
           imT2 = seriesReader->GetOutput();
           imT2->DisconnectPipeline();
 
-          args.WriteImageToFile( args.dirOutput, fileI00_T2,
+          args.WriteImageToFile( fileI00_T2,
                                  std::string( "T2W '" ) + args.strSeriesDescT2W +
                                  "' image", imT2 );
         }
@@ -858,37 +1099,25 @@ int main( int argc, char *argv[] )
         imT2 = rescaleFilter->GetOutput();
         imT2->DisconnectPipeline();          
             
-        args.WriteImageToFile( args.dirOutput, fileI01_T2_BiasFieldCorr, 
+        args.WriteImageToFile( fileI01_T2_BiasFieldCorr, 
                                std::string( "bias field corrected '" ) +
                                args.strSeriesDescT2W + "' image", imT2 );
       }
     }
       
-    // Resample the T2W image to match the T1W image
+    // Register the T2W image to the T1W image
 
-    if ( imT2 && imT1 ) 
+    if ( ! ( RegisterImages( fileRegistrationTarget,
+                             fileI01_T2_BiasFieldCorr,
+                             fileRegisteredT2W,
+                             args ) 
+             &&
+             args.ReadImageFromFile( args.dirOutput, fileRegisteredT2W, 
+                                     std::string( "registered '") +
+                                     args.strSeriesDescT2W + "' image", 
+                                     imT2 ) ) )
     {
-      typedef itk::IdentityTransform<double, Dimension> TransformType;
-      TransformType::Pointer identityTransform = TransformType::New();
-
-      typedef itk::ResampleImageFilter<ImageType, ImageType > ResampleFilterType;
-      ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
-
-      resampleFilter->SetUseReferenceImage( true ); 
-      resampleFilter->SetReferenceImage( imT1 ); 
-
-      resampleFilter->SetTransform( identityTransform );
-
-      resampleFilter->SetInput( imT2 );
-
-      resampleFilter->Update();
-
-      imT2 = resampleFilter->GetOutput();
-      imT2->DisconnectPipeline();
-
-      args.WriteImageToFile( args.dirOutput, fileI02_T2_Resampled, 
-                             std::string( "resampled '" ) + args.strSeriesDescT2W +
-                             "' image", imT2 );
+      imT2 = 0;
     }
   }
 
@@ -901,6 +1130,12 @@ int main( int argc, char *argv[] )
     args.PrintError( message );
     return EXIT_FAILURE;
   }
+  
+  iTask++;
+  progress = iTask/nTasks;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
           
 
   // Run the breast mask segmentation?
@@ -1043,110 +1278,130 @@ int main( int argc, char *argv[] )
 
     imSegmentedBreastMask = breastMaskSegmentor->GetSegmentedImage();
 
-    args.WriteImageToFile( args.dirOutput, fileOutputBreastMask, 
+    args.WriteImageToFile( fileOutputBreastMask, 
                            "breast mask segmentation image", imSegmentedBreastMask );
 
   }
       
-  // Segment the parenchyma
+
+  // SEGMENT the parenchyma
   // ~~~~~~~~~~~~~~~~~~~~~~
-
-#ifdef LINK_TO_SEG_EM
-
-  nifti_image *niftiParenchyma;
-
-  if ( ! args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
-                                 "breast parenchyma", niftiParenchyma ) )
-  {
-
-    nifti_image *niftiStructuralT2 = 
-      ConvertITKImageToNiftiImage< PixelType, PixelType, Dimension >( imT2 );
-        
-    nifti_image *niftiMask = 
-      ConvertITKImageToNiftiImage< PixelType, PixelType, Dimension >( imSegmentedBreastMask );
-        
-
-
-    int nPriors = 2;
-    int NumbMultiSpec = 1;
-    int NumbTimePoints = 1;
-    int verboseLevel = 2;
-        
-    seg_EM SEG( nPriors, NumbMultiSpec, NumbTimePoints);
-        
-    SEG.SetInputImage( niftiStructuralT2 );
-    SEG.SetMaskImage( niftiMask );
-
-    SEG.SetVerbose( verboseLevel );
-
-    SEG.SetFilenameOut( niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ) );
-
-    SEG.Turn_MRF_ON( 0.4 );
-
-    SEG.Run_EM();
-
-    niftiParenchyma = SEG.GetResult();
-
-    args.WriteImageToFile( args.dirOutput, fileOutputParenchyma, 
-                           "breast mask segmentation image", niftiParenchyma );
-
-  }
-
-#else
 
   if ( ! args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
                                  "breast parenchyma", imParenchyma ) )
   {
+     
+    QStringList argumentsNiftySeg; 
+    argumentsNiftySeg 
+      << "-v" << "2" 
+      << "-bc_order" << "4" 
+      << "-nopriors" << "2" 
+      << "-in"   << niftk::ConcatenatePath( args.dirOutput, fileI01_T1_BiasFieldCorr ).c_str()
+      << "-mask" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ).c_str()
+      << "-out"  << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ).c_str();
 
-    std::stringstream commandNiftySeg;
-
-    commandNiftySeg 
-      << "\"" << fileSegEM << "\""
-      << " -v 2 -bc_order 4 -nopriors 2" 
-      << " -in \"" << niftk::ConcatenatePath( args.dirOutput, fileI02_T2_Resampled ) << "\" "
-      << " -mask \"" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ) << "\" "
-      << " -out \"" << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ) << "\" ";
-
-    message << std::endl << "Executing parenchyma segmentation: "
-            << std::endl << "   " << commandNiftySeg.str() << std::endl << std::endl;
+    message << std::endl << "Executing parenchyma segmentation (QProcess): "
+            << std::endl << "   " << args.progSegEM;
+    for(int i=0;i<argumentsNiftySeg.size();i++)
+    {
+      message << " " << argumentsNiftySeg[i].toStdString();
+    }
+    message << std::endl << std::endl;
     args.PrintMessage( message );
-
-    int ret = system( commandNiftySeg.str().c_str() );
-    message << std::endl << "Returned: " << ret << std::endl;
-
+    
+    QProcess callSegEM;
+    QString outSegEM;
+    
+    callSegEM.setProcessChannelMode( QProcess::MergedChannels );
+    callSegEM.start( args.progSegEM.c_str(), argumentsNiftySeg );
+    
+    bool flgFinished = callSegEM.waitForFinished( 600000 ); // Wait 10 mins
+    
+    outSegEM = callSegEM.readAllStandardOutput();
+    
+    message << outSegEM.toStdString();
+    
+    if ( ! flgFinished )
+    {
+      message << "ERROR: Could not execute: " << args.progSegEM << " ( " 
+              << callSegEM.errorString().toStdString() << " )" << std::endl;
+      args.PrintErrorAndExit( message );
+    }
+    
+    args.PrintMessage( message );
+    
+    callSegEM.close();
+    
     args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
                             "breast parenchyma", imParenchyma );
   }
-
-#endif
+  
+  iTask++;
+  progress = iTask/nTasks;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
 
 
   // Load the ADC image
   // ~~~~~~~~~~~~~~~~~~
-        
-  if ( ! args.ReadImageFromFile( args.dirOutput, fileI00_ADC, 
-                                 std::string( "ADC '" ) + args.strSeriesDescADC 
-                                 + "' image", imADC ) )
-  {
-    if ( fileNamesADC.size() > 0 )
+
+  std::string fileRegisteredADC = CreateRegisteredFilename( fileRegistrationTarget,
+                                                            fileI00_ADC,
+                                                            std::string( "NonRigidTo" ) );
+
+  
+
+  if ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredADC, 
+                                 std::string( "registered '") +
+                                 args.strSeriesDescADC + "' image", 
+                                 imADC ) )
+  {        
+    if ( ! args.ReadImageFromFile( args.dirOutput, fileI00_ADC, 
+                                   std::string( "ADC '" ) + args.strSeriesDescADC 
+                                   + "' image", imADC ) )
     {
+      if ( fileNamesADC.size() > 0 )
+      {
             
-      SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
-      seriesReader->SetFileNames( fileNamesADC );
+        SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
+        seriesReader->SetFileNames( fileNamesADC );
 
-      message << std::endl << "Reading '" << args.strSeriesDescADC << "' image" << std::endl;  
-      args.PrintMessage( message );
+        message << std::endl << "Reading '" << args.strSeriesDescADC << "' image" << std::endl;  
+        args.PrintMessage( message );
 
-      seriesReader->UpdateLargestPossibleRegion();
+        seriesReader->UpdateLargestPossibleRegion();
 
-      imADC = seriesReader->GetOutput();
-      imADC->DisconnectPipeline();
+        imADC = seriesReader->GetOutput();
+        imADC->DisconnectPipeline();
             
-      args.WriteImageToFile( args.dirOutput, fileI00_ADC, 
-                             std::string( "ADC '" ) + args.strSeriesDescADC +
-                             "' image", imADC );
+        args.WriteImageToFile( fileI00_ADC, 
+                               std::string( "ADC '" ) + args.strSeriesDescADC +
+                               "' image", imADC );
+      }
+    }
+      
+    // Register the ADC image to the T1W image
+
+    if ( ! ( RegisterImages( fileRegistrationTarget,
+                             fileI00_ADC,
+                             fileRegisteredADC,
+                             args ) 
+             &&
+             args.ReadImageFromFile( args.dirOutput, fileRegisteredADC, 
+                                     std::string( "registered '") +
+                                     args.strSeriesDescADC + "' image", 
+                                     imADC ) ) )
+    {
+      imADC = 0;
     }
   }
+  
+  iTask++;
+  progress = iTask/nTasks;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
 
 
   // Create the DCE images
@@ -1184,65 +1439,97 @@ int main( int argc, char *argv[] )
       fileI00_DCE.append( ".gz" );
     }
 
-    if ( fileNames.size() > 0 )
-    {
-            
-      fileNamesDCEImages.insert( std::pair< unsigned int, 
-                                            std::string >( itSeriesDCE->first, 
-                                                           fileI00_DCE ) );
 
-      SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
-      seriesReader->SetFileNames( fileNames );
+    std::string fileRegisteredDCE = CreateRegisteredFilename( fileRegistrationTarget,
+                                                              fileI00_DCE,
+                                                              std::string( "NonRigidTo" ) );
 
-      message << std::endl << "Reading '" << args.strSeriesDescDCE << "' image" << std::endl;  
-      args.PrintMessage( message );
-
-      seriesReader->UpdateLargestPossibleRegion();
-
-      imDCE = seriesReader->GetOutput();
-      imDCE->DisconnectPipeline();
-            
-      args.WriteImageToFile( args.dirOutput, fileI00_DCE, 
-                             std::string( "DCE '" ) + args.strSeriesDescDCE +
-                             "' image", imDCE );
-    }
-  }
   
 
+    if ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredDCE, 
+                                   std::string( "registered '") +
+                                   args.strSeriesDescDCE + "' image", 
+                                   imDCE ) )
+    {        
+      if ( ! args.ReadImageFromFile( args.dirOutput, fileI00_DCE, 
+                                     std::string( "DCE '" ) + args.strSeriesDescDCE 
+                                     + "' image", imDCE ) )
+      {
+        if ( fileNames.size() > 0 )
+        {
+            
+          fileNamesDCEImages.insert( std::pair< unsigned int, 
+                                     std::string >( itSeriesDCE->first, 
+                                                    fileI00_DCE ) );
 
+          SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
+          seriesReader->SetFileNames( fileNames );
 
+          message << std::endl << "Reading '" << args.strSeriesDescDCE << "' image" << std::endl;  
+          args.PrintMessage( message );
+
+          seriesReader->UpdateLargestPossibleRegion();
+
+          imDCE = seriesReader->GetOutput();
+          imDCE->DisconnectPipeline();
+            
+          args.WriteImageToFile( fileI00_DCE, 
+                                 std::string( "DCE '" ) + args.strSeriesDescDCE +
+                                 "' image", imDCE );
+        }
+      }
+      
+      // Register the DCE image to the T1W image
+
+      if ( ! ( RegisterImages( fileRegistrationTarget,
+                               fileI00_DCE,
+                               fileRegisteredDCE,
+                               args ) 
+               &&
+               args.ReadImageFromFile( args.dirOutput, fileRegisteredDCE, 
+                                       std::string( "registered '") +
+                                       args.strSeriesDescDCE + "' image", 
+                                       imDCE ) ) )
+      {
+        imDCE = 0;
+      }
+    }
+  
+    iTask++;
+    progress = iTask/nTasks;
+    std::cout << "<filter-progress>" << std::endl
+              << progress << std::endl
+              << "</filter-progress>" << std::endl;
+  }
+  
 
   // Delete unwanted images
   // ~~~~~~~~~~~~~~~~~~~~~~
 
   if ( ! ( flgDebug || flgSaveImages ) )
   {
-    args.DeleteFile( args.dirOutput, fileI01_T2_BiasFieldCorr );
-    args.DeleteFile( args.dirOutput, fileI01_T1_BiasFieldCorr );
-    args.DeleteFile( args.dirOutput, fileI02_T2_Resampled );
+    args.DeleteFile( fileBIFs );
 
-    args.DeleteFile( args.dirOutput, fileBIFs );
+    args.DeleteFile( fileOutputSmoothedStructural );
+    args.DeleteFile( fileOutputSmoothedFatSat );
+    args.DeleteFile( fileOutputClosedStructural );
 
-    args.DeleteFile( args.dirOutput, fileOutputSmoothedStructural );
-    args.DeleteFile( args.dirOutput, fileOutputSmoothedFatSat );
-    args.DeleteFile( args.dirOutput, fileOutputClosedStructural );
+    args.DeleteFile( fileOutputMaxImage );
+    args.DeleteFile( fileOutputCombinedHistogram );
+    args.DeleteFile( fileOutputRayleigh );
+    args.DeleteFile( fileOutputFreqLessBgndCDF );
+    args.DeleteFile( fileOutputBackground );
+    args.DeleteFile( fileOutputSkinElevationMap );
+    args.DeleteFile( fileOutputGradientMagImage );
+    args.DeleteFile( fileOutputSpeedImage );
+    args.DeleteFile( fileOutputFastMarchingImage );
+    args.DeleteFile( fileOutputPectoral );
+    args.DeleteFile( fileOutputChestPoints );
+    args.DeleteFile( fileOutputPectoralSurfaceMask );
 
-    args.DeleteFile( args.dirOutput, fileOutputMaxImage );
-    args.DeleteFile( args.dirOutput, fileOutputCombinedHistogram );
-    args.DeleteFile( args.dirOutput, fileOutputRayleigh );
-    args.DeleteFile( args.dirOutput, fileOutputFreqLessBgndCDF );
-    args.DeleteFile( args.dirOutput, fileOutputBackground );
-    args.DeleteFile( args.dirOutput, fileOutputSkinElevationMap );
-    args.DeleteFile( args.dirOutput, fileOutputGradientMagImage );
-    args.DeleteFile( args.dirOutput, fileOutputSpeedImage );
-    args.DeleteFile( args.dirOutput, fileOutputFastMarchingImage );
-    args.DeleteFile( args.dirOutput, fileOutputPectoral );
-    args.DeleteFile( args.dirOutput, fileOutputChestPoints );
-    args.DeleteFile( args.dirOutput, fileOutputPectoralSurfaceMask );
+    args.DeleteFile( fileOutputPectoralSurfaceVoxels );
 
-    args.DeleteFile( args.dirOutput, fileOutputPectoralSurfaceVoxels );
-
-    args.DeleteFile( args.dirOutput, fileOutputFittedBreastMask );
+    args.DeleteFile( fileOutputFittedBreastMask );
   }
 
   

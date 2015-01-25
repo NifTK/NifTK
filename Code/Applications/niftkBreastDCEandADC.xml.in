@@ -134,6 +134,24 @@
       <channel>input</channel>
     </file>
 
+    <file>
+      <name>fileRegAladin</name>
+      <longflag>regAladin</longflag>
+      <description>The NiftyReg 'reg_aladin' program to perform an affine registration of two images.</description>
+      <label>Reg_Aladin executable</label>
+      <default>reg_aladin</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileRegF3D</name>
+      <longflag>regF3D</longflag>
+      <description>The NiftyReg 'reg_f3d' program to perform a non-rigid B-Spline registration of two images.</description>
+      <label>Reg_F3D executable</label>
+      <default>reg_f3d</default>
+      <channel>input</channel>
+    </file>
+
   </parameters>
 
 </executable>
