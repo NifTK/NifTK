@@ -96,10 +96,10 @@ if(NOT DEFINED VTK_DIR)
     URL ${NIFTK_LOCATION_VTK}
     URL_MD5 ${NIFTK_CHECKSUM_VTK}
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
-    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
@@ -115,7 +115,8 @@ if(NOT DEFINED VTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
     )
 
-  set(VTK_DIR ${proj_BUILD})
+  #set(VTK_DIR ${proj_INSTALL})
+  set(VTK_DIR ${proj_INSTALL}/lib/cmake/vtk-6.1)
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)
