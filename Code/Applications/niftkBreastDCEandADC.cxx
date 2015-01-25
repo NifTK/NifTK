@@ -183,6 +183,8 @@ public:
   std::string progRegAladin;
   std::string progRegNonRigid;
 
+  float detJacobianPenalty;
+
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
   std::ostream *newCout;
@@ -203,7 +205,8 @@ public:
                    std::string strDCE,
                    std::string segEM,
                    std::string regAladin,
-                   std::string regNonRigid ) {
+                   std::string regNonRigid,
+                   float detJacPenalty ) {
 
     std::stringstream message;
 
@@ -226,6 +229,8 @@ public:
     progSegEM       = segEM;
     progRegAladin   = regAladin;
     progRegNonRigid = regNonRigid;
+
+    detJacobianPenalty = detJacPenalty;
 
     if ( fileLog.length() > 0 )
     {
@@ -344,6 +349,7 @@ public:
             << "NiftySeg 'seg_EM' executable: "     << progSegEM << std::endl
             << "NiftyReg 'reg_aladin' executable: " << progRegAladin << std::endl
             << "NiftyReg 'reg_f3d' executable: "    << progRegNonRigid << std::endl
+            << "NiftyReg 'reg_f3d' Jacobian penalty: " << detJacobianPenalty << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -553,8 +559,12 @@ bool NonRigidRegisterImages( std::string fileTarget,
 
   if ( args.flgCompression ) fileTransform.append( ".gz" );
 
+  std::stringstream ssDetJacobianPenalty;
+  ssDetJacobianPenalty << args.detJacobianPenalty;
+
   QStringList argsRegNonRigid; 
   argsRegNonRigid 
+    << "-jl"     << ssDetJacobianPenalty.str().c_str()
     << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
     << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
@@ -672,7 +682,8 @@ int main( int argc, char *argv[] )
                         strSeriesDescDCE,
                         fileSegEM,
                         fileRegAladin,
-                        fileRegF3D );
+                        fileRegF3D,
+                        detJacobianPenalty );
 
 
   args.Print();
