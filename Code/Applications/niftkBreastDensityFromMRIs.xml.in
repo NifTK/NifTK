@@ -57,6 +57,14 @@
     </boolean>
 
     <boolean>
+      <name>flgRegister</name>
+      <flag>r</flag>
+      <longflag>register</longflag>
+      <description>Register the images prior to segmenting them.</description>
+      <label>Register the images?</label>
+    </boolean>
+
+    <boolean>
       <name>flgSaveImages</name>
       <flag>s</flag>
       <longflag>save</longflag>
@@ -151,6 +159,33 @@
       <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
       <default>seg_EM</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileRegAladin</name>
+      <longflag>regAladin</longflag>
+      <description>The NiftyReg 'reg_aladin' program to perform an affine registration of two images.</description>
+      <label>Reg_Aladin executable</label>
+      <default>reg_aladin</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileRegF3D</name>
+      <longflag>regF3D</longflag>
+      <description>The NiftyReg 'reg_f3d' program to perform a non-rigid B-Spline registration of two images.</description>
+      <label>Reg_F3D executable</label>
+      <default>reg_f3d</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileRegResample</name>
+      <longflag>regResample</longflag>
+      <description>The NiftyReg 'reg_resample' program to resample an image using the results of a previous registration.</description>
+      <label>Reg_Resample executable</label>
+      <default>reg_resample</default>
       <channel>input</channel>
     </file>
 
