@@ -95,7 +95,7 @@ if(MITK_USE_Boost)
             ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
       else()
         set(_boost_build_cmd ${proj_SOURCE}/bjam --build-dir=${proj_BUILD} --prefix=${proj_INSTALL} ${_boost_toolset} ${_boost_address_model}
-            ${_boost_variant} ${_boost_libs} link=shared threading=multi runtime-link=shared -q install)
+            ${_boost_variant} ${_boost_libs} link=shared threading=multi runtime-link=shared -q install --ignore-site-config)
       endif()
 
       set(_boost_cfg_cmd ${proj_SOURCE}/bootstrap${_shell_extension})
