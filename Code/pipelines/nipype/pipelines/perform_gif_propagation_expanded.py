@@ -11,6 +11,7 @@ import nipype.interfaces.niftyreg as niftyreg
 
 import niftk
 
+
 def find_data_directory_function(in_db_file):
     def find_xml_data_path(in_file):
         import xml.etree.ElementTree as ET
@@ -54,6 +55,12 @@ parser.add_argument('-o','--output',
                     help='output directory to which the gif outputs are stored',
                     required=True)
 
+parser.add_argument('-u','--username',
+                    dest='username',
+                    metavar='username',
+                    help='Username to use to submit jobs on the cluster',
+                    required=False)
+
 args = parser.parse_args()
 
 result_dir = os.path.abspath(args.output)
@@ -92,7 +99,12 @@ datasource.inputs.sort_filelist = True
 
 
 # The processing pipeline itself is instantiated
-r = niftk.gif.create_niftyseg_gif_propagation_pipeline(name='gif_propagation_workflow')
+workflow_name='gif_propagation_workflow'
+if len(subject_list) == 1:
+    workflow_name=workflow_name + '_' + subject_list[0]
+
+r = niftk.gif.create_niftyseg_gif_propagation_pipeline(name=workflow_name)
+
 r.base_dir = basedir
 
 # the input image is registered to the MNI for masking purpose
@@ -150,7 +162,10 @@ except KeyError:
     run_qsub=True
 
 if not qsub_exec == None and run_qsub:
-    r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
+    if args.username:
+        r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs, 'username' : args.username})
+    else:
+        r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
     r.run(plugin='MultiProc')
     

@@ -39,7 +39,7 @@ def find_gif_substitutions_function(in_db_file):
     subs.append(('_'+in_fname+'_Segmentation', ''))
     subs.append(('_'+in_fname+'_Brain', ''))
     subs.append(('_'+in_fname+'_BiasCorrected', ''))
-    subs.append(('_crop_image_corrected', ''))
+    subs.append(('_cropped_corrected', ''))
     return subs
 
 def create_niftyseg_gif_propagation_pipeline_simple(name='niftyseg_gif_propagation'):
