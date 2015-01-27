@@ -11,6 +11,7 @@ import textwrap
 import argparse
 import nipype.interfaces.niftyreg as niftyreg
 
+import niftk
 
 def gen_substitutions(in_file, prefix, suffix):    
     from nipype.utils.filemanip import split_filename

@@ -6,10 +6,12 @@ import nipype.pipeline.engine           as pe
 import nipype.interfaces.dcm2nii        as mricron
 import nipype.interfaces.niftyreg       as niftyreg
 import nipype.interfaces.niftyseg       as niftyseg
-import niftk.asl                        as asl
 import argparse
 import os
 from distutils                          import spawn
+
+import niftk
+
 help_message = \
 'Perform Arterial Spin Labelling Fitting with pre-processing steps. \n\n' + \
 'Mandatory Input is the 4D nifti image ASL sequence. \n' + \
@@ -41,7 +43,7 @@ result_dir = os.path.abspath(args.output)
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
-r = asl.create_asl_processing_workflow(name = 'asl_workflow')
+r = niftk.asl.create_asl_processing_workflow(name = 'asl_workflow')
 r.base_dir = os.getcwd()
 
 r.get_node('input_node').inputs.in_source = os.path.abspath(args.source)

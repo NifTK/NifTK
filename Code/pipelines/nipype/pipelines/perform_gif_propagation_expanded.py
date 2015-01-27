@@ -9,7 +9,7 @@ from distutils import spawn
 
 import nipype.interfaces.niftyreg as niftyreg
 
-from niftk import gif
+import niftk
 
 
 def find_data_directory_function(in_db_file):
@@ -103,7 +103,7 @@ workflow_name='gif_propagation_workflow'
 if len(subject_list) == 1:
     workflow_name=workflow_name + '_' + subject_list[0]
 
-r = gif.create_niftyseg_gif_propagation_pipeline(name=workflow_name)
+r = niftk.gif.create_niftyseg_gif_propagation_pipeline(name=workflow_name)
 
 r.base_dir = basedir
 
