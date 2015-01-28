@@ -23,7 +23,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
-  INCLUDE_DIRS Common CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration
+  INCLUDE_DIRS Common CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
   DEPENDS ${_depends}
   PACKAGE_DEPENDS OpenCV
 )

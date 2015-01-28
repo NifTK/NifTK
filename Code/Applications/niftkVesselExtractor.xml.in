@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <executable>
+    <category>Segmentation</category>
+    <title>niftkVesselExtractor</title>
+    <description>Vesselness filter</description>
+    <version>0.0.1</version>
+    <documentation-url></documentation-url>
+    <license>BSD</license>
+    <contributor>Maria A. Zuluaga (UCL)</contributor>
+    <parameters>
+        <label>Images</label>
+        <description>Input and output images</description>
+        <image fileExtensions="nii,nii.gz,mhd">
+        <name>inputImageName</name>
+        <flag>i</flag>
+        <longflag>inputImageName</longflag>
+        <description>Input image</description>
+        <label>Input Image</label>
+        <channel>input</channel>
+        </image>
+        <image fileExtensions="nii,nii.gz,mhd">
+        <name>brainImageName</name>
+        <flag>b</flag>
+         <longflag>brainImageName</longflag>
+        <description>Registered brain mask image</description>
+        <label>Brain Mask Image</label>
+        <channel>input</channel>
+        </image>
+        <image fileExtensions="nii,nii.gz,mhd">
+        <name>outputImageName</name>
+        <flag>o</flag>
+        <longflag>outputImageName</longflag>
+        <description>Output image</description>
+        <label>Output Image</label>
+        <default>outputVesselness.nii</default>
+        <channel>output</channel>
+        </image>
+    </parameters>
+    <parameters>
+        <label>Scales</label>
+        <description>Vessel sizes</description>
+        <float>
+        <name>max</name>
+        <longflag>max</longflag>
+        <description>Maximum vessel size to be detected</description>
+        <label>Maximum vessel size</label>
+        <default>3.09375</default>
+        </float>
+        <float>
+        <name>min</name>
+        <longflag>min</longflag>
+        <description>Minimum vessel size to be detected</description>
+        <label>Minimum vessel size</label>
+        <default>0.775438</default>
+        </float>
+    </parameters>
+    <parameters>
+        <label>Filter parameters</label>
+        <description>Vesselness filter configuration parameters</description>
+        <integer-enumeration>
+        <name>mode</name>
+        <longflag>mod</longflag>
+        <description>Scale generation method: linear (0) or exponential (1)</description>
+        <label>Mode</label>
+        <default>0</default>
+        <element>0</element>
+        <element>1</element>
+        </integer-enumeration>
+        <float>
+        <name>alphaone</name>
+        <longflag>aone</longflag>
+        <description>Alpha 1 parameter from Sato's filter</description>
+        <label>Alpha one</label>
+        <default>0.5</default>
+        </float>
+        <float>
+        <name>alphatwo</name>
+        <longflag>atwo</longflag>
+        <description>Alpha 2 parameter from Sato's filter</description>
+        <label>Alpha two</label>
+        <default>2</default>
+        </float>
+        <boolean>
+        <name>isCT</name>
+        <longflag>ct</longflag>
+        <description>Input image is CT.</description>
+        <label>CT input</label>
+        <default>false</default>
+        </boolean>
+        <boolean>
+        <name>isTOF</name>
+        <longflag>tof</longflag>
+        <description>Input image is TOF.</description>
+        <label>TOF input</label>
+        <default>false</default>
+        </boolean>
+        <boolean>
+        <name>doIntensity</name>
+        <longflag>intfil</longflag>
+        <description>Use image intensity to filter</description>
+        <label>Intensity filter</label>
+        <default>true</default>
+        </boolean>
+        <boolean>
+        <name>isBin</name>
+        <longflag>bin</longflag>
+        <description>Volume binarisation.</description>
+        <label>Binarisation</label>
+        <default>false</default>
+        </boolean>
+    </parameters>
+  </executable>

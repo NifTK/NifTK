@@ -35,69 +35,70 @@ import webbrowser
 dir_output='bsi/'
 
 # Output result webpage pattern 
-html="""<html>
+html="""
+<html>
 <head>
+<link href="http://cmictig.cs.ucl.ac.uk/templates/design_control/favicon.ico" rel="shortcut icon" type="image/x-icon">
 <title>BSI - Id: PATIENT</title>
 <style>
 body { 
 	font-family:"Tahoma",Helvetica,Sans-serif; 
-	background-image: url("bg.jpg");
 }
 p { font-family:"Tahoma",Helvetica,Sans-serif; }
 td { font-family:"Tahoma",Helvetica,Sans-serif; }
+.title {
+	background:#E0E0E0;
+	border-top:solid 1px #EEEDED;
+	border-bottom:solid 1px #EEEDED;
+	width:100% !important;
+	max-width:100% !important;
+	height:40x;
+	padding-top:5px;
+	padding-left:5px;
+	padding-bottom:5px;
+	z-index:3
+}
 </style>
 </head>
 <body>
-<hr>
-<table border=0 width="100%">
-<tr>
-	<td align=center width="90%">
-		<h1>BSI Report:</h1> PATIENT
-	</td>
-	<td align=right width="10%">
-		<a href="http://cmic.cs.ucl.ac.uk" target="a"><img border src="http://cmic.cs.ucl.ac.uk/fileadmin/CMIC/images/CMIC-Logo_Web240.gif"></a>
-	</td>
-</tr>
-</table>
-<hr>
-<p><b>Brain extraction results</b></p>
+<div><a href="http://cmictig.cs.ucl.ac.uk/" target="a"><img border src="http://cmictig.cs.ucl.ac.uk/templates/design_control/images/s5_logo.png"></a></div>
+<br>
+<div><h3>Atrophy report: PATIENT</h3></div>
+<div class="title"><b>Brain extraction results</b></div>
 <p>These images show the tissue segmentation used to find the brain/non-brain boundary.</p>
-<p><i>Baseline:</i> B_MASK <br><i>Volume:</i> VOLUME_1 mm^3<br><img border=0 src="FILE_B_MASK"></p>
-<p><i>Follow-up:</i> F_MASK <br><i>Volume:</i> VOLUME_2 mm^3<br><img border=0 src="FILE_F_MASK"></p>
-<hr>
-<p><b>Brain extraction comparation between two time-points</b></p>
-<p><img border=0 src="FILE_SEGMENTATION_COMPARATION"></p>
-<hr>
-<p><b>Baseline to follow-up registration results</b></p>
-<p><img border=0 src="FILE_REGISTRATION_COMPARATION"></p>
-<hr>
-<p><b>XOR region where BSI is computed</b></p>
-<p>Probability 0 <IMG SRC="orange.gif"> 1
-<p><img border=0 src="FILE_XOR_REGION"></p>
-<hr>
-<p><b>Final brain edge movement image results</b></p>
-<p>Atrophy <IMG SRC="blue.gif"> 0 <IMG SRC="orange.gif"> Growth</p>
-<p><img border=0 src="FILE_BSI_RESULT"></p>
-<hr>
-<p><b>Estimated BSI and PBVC</b></p>
-<p>BSI (ml)= BSI_VALUE<br>PBVC (%)= PBVC_VALUE<br>ATROPHY (%)= ATROPHY_VALUE<br>GROWTH (%)= GROWTH_VALUE</p>
-<hr>
-<p><b>Executed command line:</b></p>
+<p><i>Baseline:</i> B_MASK <br><i>Volume:</i> VOLUME_1 mm^3<br><img border=0 width="100%" src="FILE_B_MASK"></p>
+<p><i>Follow-up:</i> F_MASK <br><i>Volume:</i> VOLUME_2 mm^3<br><img border=0 width="100%" src="FILE_F_MASK"></p>
+<br>
+<div class="title"><b>Brain extraction comparation between two time-points</b></div>
+<p><img border=0 width="100%" src="FILE_SEGMENTATION_COMPARATION"></p>
+<br>
+<div class="title"><b>Baseline to follow-up registration results</b></div>
+<p><img border=0 width="100%" src="FILE_REGISTRATION_COMPARATION"></p>
+<br>
+<div class="title"><b>XOR region where BSI is computed</b></div>
+<p>Probability 0 <IMG SRC="http://cmictig.cs.ucl.ac.uk/softweb/img/orange.gif"> 1
+<p><img border=0 width="100%" src="FILE_XOR_REGION"></p>
+<br>
+<div class="title"><b>Final brain edge movement image results</b></div>
+<p>Atrophy <IMG SRC="http://cmictig.cs.ucl.ac.uk/softweb/img/blue.gif"> 0 <IMG SRC="http://cmictig.cs.ucl.ac.uk/softweb/img/orange.gif"> Growth</p>
+<p><img border=0 width="100%" src="FILE_BSI_RESULT"></p>
+<br>
+<div class="title"><b>Estimated BSI and PBVC</b></div>
+<p><font face="courier" size="3">BSI (ml)= BSI_VALUE<br>PBVC (%)= PBVC_VALUE<br>ATROPHY (%)= ATROPHY_VALUE<br>GROWTH (%)= GROWTH_VALUE</font></p>
+<div class="title"><b>Executed command line:</b></div>
 <p><font face="courier" size="-1">COMMAND_LINE</font></p>
-<hr>
-<b>Referencing GBSI</b>
-
-<p>Two-timepoint percentage brain volume change was estimated with GBSI [XXX], part of NifTK software tools 
-[URL:<a href="http://cmic.cs.ucl.ac.uk/home/software/" target="a">http://cmic.cs.ucl.ac.uk/home/software/</a>].</p>
-
+<div class="title"><b>Referencing this work</b></div>
+<p>Two-timepoint percentage brain volume change was estimated with GBSI [Prados et al. 2014], part of NifTK software tools 
+[URL:<a href="http://cmictig.cs.ucl.ac.uk/research/software/" target="a">http://cmictig.cs.ucl.ac.uk/research/software</a>].</p>
+<b>GBSI method</b>
 <font size="-1"><em>
-<p>[X] ???. 
-<BR>&nbsp;&nbsp;&nbsp;<a href="" target="a">???.</a>
-<BR>&nbsp;&nbsp;&nbsp;???.
+<p>[Prados 2014] Prados, F., Cardoso, M. J., Leung, K. K., Cash, D. M., Modat, M., Fox, N. C., Wheeler-Kingshott, C. A. M., Ourselin, S., for the Alzheimer's Disease Neuroimaging Initiative. (2014)
+<BR>&nbsp;&nbsp;&nbsp;<a href="http://www.sciencedirect.com/science/article/pii/S0197458014005508" target="a">Measuring brain atrophy with a generalized formulation of the boundary shift integral.</a>
+<BR>&nbsp;&nbsp;&nbsp;Neurobiology of Aging.
 </p></em></font>
 
 <br>
-<b>Referencing BSI main method</b>
+<b>BSI main method</b>
 <font size="-1"><em>
 <p>[Freeborough 1997] Freeborough, P. A., & Fox, N. C. (1997). 
 <BR>&nbsp;&nbsp;&nbsp;<a href="http://www.ncbi.nlm.nih.gov/pubmed/9368118" target="a">The boundary shift integral: an accurate and robust measure of cerebral volume changes from registered repeat MRI.</a> 
@@ -105,7 +106,7 @@ td { font-family:"Tahoma",Helvetica,Sans-serif; }
 </p></em></font>
 
 <br>
-<b>Referencing KN-BSI method</b>
+<b>KN-BSI method</b>
 <font size="-1"><em>
 <p>[Leung 2010] Leung, K. K., Clarkson, M. J., Bartlett, J. W., Clegg, S. L., Jack, C. R., Weiner, M. W., Fox, N. C., Ourselin, S. (2010). 
 <BR>&nbsp;&nbsp;&nbsp;<a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=2828361&tool=pmcentrez&rendertype=abstract" target="a">Robust atrophy rate measurement in Alzheimer's disease using multi-site serial MRI: tissue-specific intensity normalization and parameter selection.</a>
@@ -113,7 +114,7 @@ td { font-family:"Tahoma",Helvetica,Sans-serif; }
 </p></em></font>
 
 <br>
-<b>Referencing pBSI method</b>
+<b>pBSI method</b>
 <font size="-1"><em>
 <p>[Ledig 2012] Ledig, C., Wolz, R., Aljabar, P., Jyrki, L., & Rueckert, D. (2012) 
 <BR>&nbsp;&nbsp;&nbsp;<a href="http://picsl.upenn.edu/docs/nibad12_proceedings_reduced_20120905.pdf" target="a">PBSI: A symmetric probabilistic extension of the Boundary Shift Integral.</a>
@@ -121,14 +122,14 @@ td { font-family:"Tahoma",Helvetica,Sans-serif; }
 </p></em></font>
 
 <br>
-<b>Referencing DW-BSI</b>
+<b>Double Window-BSI</b>
 <font size="-1"><em>
 <p>[Schott 2010] Schott, J. M., Bartlett, J. W., Barnes, J., Leung, K. K., Ourselin, S., & Fox, N. C. (2010) 
 <BR>&nbsp;&nbsp;&nbsp;<a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=2947486&tool=pmcentrez&rendertype=abstract" target="a">Reduced sample sizes for atrophy outcomes in Alzheimer's disease trials: baseline adjustment.</a>
 <BR>&nbsp;&nbsp;&nbsp;Neurobiology of aging, 31(8), 1452-62, 1462.e1-2.
 </p></em></font>
 <br>
-<div align="center"><a href="http://cmic.cs.ucl.ac.uk" target="a">Centre for Medical Image Computing</a> - <a href="http://ucl.ac.uk" target="a">University College London</a></div>
+<div align="center"><a href="http://cmictig.cs.ucl.ac.uk" target="a">Translational Imaging Group</a> - <a href="http://ucl.ac.uk" target="a">University College London</a></div>
 <br>
 </body>
 </html>"""
@@ -285,12 +286,11 @@ def filling_lesions(img,mask,lesions,les_dil):
 			dilation='-dil '+str(les_dil);
 		
 		execute_command_or_else_stop('seg_FillLesions \
-			-in '+img+' \
-			'+dilation+' \
-			-smo 1 \
+			'+img+' \
+			'+lesions+' \
+			'+output_file+' \
 			-mask '+mask+' \
-			-les '+lesions+' \
-			-out '+output_file)
+			'+dilation+'')
 
 		copy_geometry(img,output_file)
 	else:
@@ -300,26 +300,26 @@ def filling_lesions(img,mask,lesions,les_dil):
 # End of filling_lesions function
 
 
-# Begin of normalization function
-def normalization(img,orientation): 
+# Begin of bias field correction function
+def bias_field_correction(img,n4_bfc): 
 	"""
 	###########################################################################
-	# def normalization(img,orientation)
-	# Function  : N3 normalization using Boyes et al. Neuroimage 2008 normalization process 
+	# def bias_field_correction(img,n4_bfc)
+	# Function  : N3 bias field correction using Boyes et al. Neuroimage 2008 normalization process 
 	# Param	    : img, input image
-	# Param	    : orientation, slice orientation
+	# Param	    : n4_bfc, use n4 instead than n3
 	# Return    : new file name 
 	###########################################################################
 	"""	
 	global	ATLAS_MASK_IMAGE
 	global	ATLAS_HEAD_IMAGE	
 	
-	output_file=make_name_output_file(img,'_n3')
+	output_file=make_name_output_file(img,'_bc')
 	
 	if not os.path.isfile(output_file):
-		execute_command_or_else_stop('niftkNormalization.py \
+		execute_command_or_else_stop('niftkBiasFieldCorrection.py \
 			-in '+img+' \
-			-orient '+orientation+' \
+			'+n4_bfc+' \
 			-mask '+ATLAS_MASK_IMAGE+' \
 			-atlas '+ATLAS_HEAD_IMAGE+' \
 			-out '+output_file)
@@ -329,7 +329,7 @@ def normalization(img,orientation):
 		print('File '+output_file+' detected, we don\'t repeat the calculus')
 	
 	return output_file
-# End of normalization function
+# End of bias_field_correction function
 
 
 # Begin of dilate_mask function
@@ -715,7 +715,7 @@ def write_results(data):
 	# Return    : 
 	###########################################################################
 	"""
-	report_file=os.path.abspath('report.kn-bsi')
+	report_file=os.path.abspath('report.bsi')
 
 	# Open a file
 	fo = open(report_file,"ab")
@@ -729,7 +729,7 @@ def write_results(data):
 
 
 # Begin of calculate_sw_BSI function
-def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
+def calculate_sw_BSI(method,tkn,tissue_to_remove_file,dil_kmeans,t2_mode):
 	"""
 	###########################################################################
 	# def calculate_sw_BSI(method,tkn,tissue_to_remove_file)
@@ -737,6 +737,8 @@ def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
 	# Param     : method, technique to be applied
 	# Param	    : tkn, number of tissues
 	# Param     : tissue_to_remove_file, mask with the tissue to be removed
+	# Param     : dil_kmeans, number of mask dilations for kmeans
+	# Param	    : t2_mode, indicates if we are working with T1 images or T2 images
 	# Return    : array with the bsi (ml), pbvc (%) and baseline volume (mm3)
 	###########################################################################
 	"""
@@ -778,6 +780,11 @@ def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
 		dilation=1
 		erosion=1
 		
+	if t2_mode:	
+		t2_image=1
+	else:
+		t2_image=0
+	
 	output=execute_command_or_else_stop('niftkKMeansWindowWithLinearRegressionNormalisationBSI \
 		'+B_INPUT_IMAGE+' \
 		'+B_MASK_bin+' \
@@ -789,7 +796,8 @@ def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
 		'+f_bsi_mask+' \
 		'+str(dilation)+' \
 		'+str(erosion)+' \
-		3 -1 -1 \
+		'+str(dil_kmeans)+' \
+		-1 -1 \
 		'+b_kmeans+' \
 		'+f_kmeans+' \
 		'+f_norm+' \
@@ -798,7 +806,8 @@ def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
 		'+str(method)+' \
 		'+bsi_file+' \
 		'+xor_file+' \
-		'+tissue_to_remove_file,'ON')
+		'+tissue_to_remove_file+' \
+		'+str(t2_image),'ON')
 
 	copy_geometry(B_INPUT_IMAGE,bsi_file)
 	copy_geometry(B_INPUT_IMAGE,xor_file)
@@ -832,7 +841,7 @@ def calculate_sw_BSI(method,tkn,tissue_to_remove_file):
 
 
 # Begin of calculate_dw_BSI function
-def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
+def calculate_dw_BSI(method,tkn,tissue_to_remove_file,dil_kmeans,t2_mode):
 	"""
 	###########################################################################
 	# def calculate_sw_BSI(method,tkn,tissue_to_remove_file)
@@ -840,6 +849,8 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 	# Param     : method, technique to be applied
 	# Param	    : tkn, number of tissues
 	# Param     : tissue_to_remove_file, mask with the tissue to be removed
+	# Param     : dil_kmeans, number of mask dilations for kmeans
+	# Param	    : t2_mode, indicates if we are working with T1 images or T2 images
 	# Return    : array with the bsi (ml), pbvc (%) and baseline volume (mm3)
 	###########################################################################
 	"""
@@ -886,7 +897,12 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 	else:
 		dilation=1
 		erosion=1
-		
+	
+	if t2_mode:	
+		t2_image=1
+	else:
+		t2_image=0
+			
 	output=execute_command_or_else_stop('niftkKNDoubleWindowBSI \
 		'+B_INPUT_IMAGE+' \
 		'+B_MASK_bin+' \
@@ -898,7 +914,7 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 		'+f_bsi_mask+' \
 		'+str(dilation)+' \
 		'+str(erosion)+' \
-		3 \
+		'+str(dil_kmeans)+' \
 		'+b_kmeans+' \
 		'+f_kmeans+' \
 		dummy \
@@ -912,7 +928,8 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 		-1 -1 -1 -1 \
 		'+str(method)+' \
 		'+bsi_file+' \
-		'+tissue_to_remove_file,'ON')
+		'+tissue_to_remove_file+' \
+		'+str(t2_image),'ON')
 
 	copy_geometry(B_INPUT_IMAGE,bsi_file)
 	copy_geometry(B_INPUT_IMAGE,xor_file)
@@ -1197,20 +1214,20 @@ def generate_report(patient,results,command):
 
 	html=html.replace('PATIENT',patient)
 	html=html.replace('COMMAND_LINE',command)
-	html=html.replace('VOLUME_1',str(v1))
-	html=html.replace('VOLUME_2',str(v2))
+	html=html.replace('VOLUME_1',"{:.0f}".format(v1))
+	html=html.replace('VOLUME_2',"{:.0f}".format(v2))
 	html=html.replace('FILE_B_MASK',seg_1)
 	html=html.replace('FILE_F_MASK',seg_2)
-	html=html.replace('B_MASK',B_MASK)
-	html=html.replace('F_MASK',F_MASK)
+	html=html.replace('B_MASK',os.path.basename(B_MASK))
+	html=html.replace('F_MASK',os.path.basename(F_MASK))
 	html=html.replace('FILE_SEGMENTATION_COMPARATION',segmentation_file)
 	html=html.replace('FILE_REGISTRATION_COMPARATION',registration_file)
 	html=html.replace('FILE_XOR_REGION',xor_file)
 	html=html.replace('FILE_BSI_RESULT',bsi_file)
-	html=html.replace('BSI_VALUE',str(results[0]))
-	html=html.replace('PBVC_VALUE',str(results[1]))
-	html=html.replace('ATROPHY_VALUE',str(atrophy))
-	html=html.replace('GROWTH_VALUE',str(growth))
+	html=html.replace('BSI_VALUE',"{:.2f}".format(results[0]))
+	html=html.replace('PBVC_VALUE',"{:.3f}".format(results[1]))
+	html=html.replace('ATROPHY_VALUE',"{:.3f}".format(atrophy))
+	html=html.replace('GROWTH_VALUE',"{:.3f}".format(growth))
 	
 	html_file=os.path.abspath('index.html')
 
@@ -1239,11 +1256,6 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <br>
    <p><h2>Recomendations:</h2></p>
    <p>If we want to calculate the atrophy in a region like hippocampus, we must to specify the region using a ROI in each time point and use double window BSI.</p>
-   <p>
-   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
-   atlas head maks, mask and data files. For other data sources you would need to check it.
-   Check that it exists an important overlapping between mask, headmask, head and input file.<br>
-   </p>
    ]]></description>
    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811909013482</documentation-url>
@@ -1252,35 +1264,35 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <parameters advanced="false">
       <label>Mandatory arguments</label>
       <description>Mandatory arguments: input data, input brain masks and output filename</description>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName1</name>
           <longflag>in1</longflag>
 	  <description>Input baseline image name</description>
 	  <label>Baseline image</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName2</name>
           <longflag>in2</longflag>
 	  <description>Input follow-up image name</description>
 	  <label>Follow-up image</label>
 	  <channel>input</channel>
       </image>      
-       <image fileExtensions=".nii,.nii.gz,.img">
+       <image fileExtensions="nii,nii.gz,img">
           <name>inputMaskName1</name>
           <longflag>mask1</longflag>
 	  <description>Input baseline brain mask</description>
 	  <label>Baseline brain mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputMaskName2</name>
           <longflag>mask2</longflag>
 	  <description>Input follow-up brain mask</description>
 	  <label>Follow-up brain mask</label>
 	  <channel>input</channel>
       </image>      
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>BSI output image name</description>
@@ -1312,8 +1324,8 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<name>bsiWindow</name>
 		<longflag>window</longflag>
 		<description><![CDATA[Select a window:
-			Single: single window BSI, it computes atrophy between CSF-WM, Freeborough et al. 1997 TMI 
-			Double: double window BSI, it computes atrophy between CSF-WM and WM-GM as in Leung et al. Neuroimage 2010 
+			Single: single window BSI, it computes atrophy between CSF-GM, Freeborough et al. 1997 TMI 
+			Double: double window BSI, it computes atrophy between CSF-GM and WM-GM as in Leung et al. Neuroimage 2010 
 		]]></description>
 		<label>BSI window</label>
 		<default>single</default>
@@ -1324,14 +1336,14 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
     <parameters advanced="true">
 	<label>Optional extra arguments</label>
 	<description>Optional extra arguments</description>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputLesionName1</name>
 		<longflag>lesion1</longflag>
 		<description>Input baseline lesion mask</description>
 		<label>Baseline lesion mask</label>
 		<channel>input</channel>
 	</image>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputLesionName2</name>
 		<longflag>lesion2</longflag>
 		<description>Input follow-up lesion mask</description>
@@ -1374,21 +1386,21 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<element>3</element>
 		<element>4</element>
 	</integer-enumeration>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputROIName1</name>
 		<longflag>roi1</longflag>
 		<description>Input baseline roi mask</description>
 		<label>Baseline roi mask</label>
 		<channel>input</channel>
 	</image>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputROIName2</name>
 		<longflag>roi2</longflag>
 		<description>Input follow-up roi mask</description>
 		<label>Follow-up roi mask</label>
 		<channel>input</channel>
 	</image>   
-      <image fileExtensions=".nii,.nii.gz,.img">
+    	<image fileExtensions="nii,nii.gz,img">
 		<name>outputXORImageName</name>
 		<longflag>xor</longflag>
 		<description>XOR output image name</description>
@@ -1405,34 +1417,38 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<element>3</element>
 		<element>2</element>
 	</integer-enumeration>
+	<integer-enumeration>
+		<name>Kmeansdilations</name>
+		<longflag>dil_kmeans</longflag>
+		<description>Number of classes dilations for the K-Means mask, recommended value: 3</description>
+		<label>Number of tissues</label>
+		<default>3</default>
+		<element>3</element>
+		<element>0</element>
+		<element>1</element>
+		<element>2</element>
+		<element>4</element>
+	</integer-enumeration>
 	<boolean>
 		<name>normalize</name>
 		<longflag>norm</longflag>
-		<description>Apply Boyes et al. Neuroimage 2008 normalization process</description>
-		<label>Normalization (N3)</label>
+		<description>Apply Boyes et al. Neuroimage 2008 bias field correction process using N3</description>
+		<label>Bias field correction</label>
 	</boolean>
-	<string-enumeration>
-		<name>orientation</name>
-		<longflag>orient</longflag>
-		<description><![CDATA[Input images are in:
-			A - Axial orientation
-			C - Coronal orientation
-			S - Sagittal orientation
-		]]></description>
-		<label>Input image orientation</label>
-		<default>A</default>
-		<element>A</element>
-		<element>C</element>
-		<element>S</element>
-	</string-enumeration>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<boolean>
+		<name>n4_bfc</name>
+		<longflag>n4</longflag>
+		<description>Apply Boyes et al. Neuroimage 2008 bias field correction using N4 instead than N3</description>
+		<label>Bias field correction (N4)</label>
+	</boolean>
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputAtlasMask</name>
 		<longflag>atlas_mask</longflag>
 		<description>Input atlas mask</description>
 		<label>Input atlas mask</label>
 		<channel>input</channel>
 	</image>
-  <image fileExtensions=".nii,.nii.gz,.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputAtlasHead</name>
 		<longflag>atlas_head</longflag>
 		<description>Input atlas head</description>
@@ -1484,11 +1500,12 @@ Optional Arguments BSI computation:
   -knbsi		: computes BSI using K-means BSI by Leung et al. Neuroimage 2010 
   -pbsi			: computes BSI using probabilistic BSI by Ledig et al. MICCAI 2012 
   -pbsig		: computes BSI using probabilistic BSI with gamma=1 as in Ledig et al. MICCAI 2012 
-  -sw			: single window BSI, CSF-WM, Freeborough et al. 1997 TMI [DEFAULT]
-  -dw			: applies double window BSI, it computes BSI between CSF-WM and WM-GM as in Leung et al. Neuroimage 2010 
+  -sw			: single window BSI, CSF-GM, Freeborough et al. 1997 TMI [DEFAULT]
+  -dw			: applies double window BSI, it computes BSI between CSF-GM and WM-GM as in Leung et al. Neuroimage 2010 
   
 Optional Arguments:
 
+  -t2			: computes BSI taking into account that we are using T2 images as input data
   -lesion <f1> <f2>	: are the two input lesion masks (f1 baseline and f2 follow-up)
   -dil_sub		: number of dilations for lesion masks, useful for lesion substraction. [0-4, by default 1] 
   -sublesion        	: substract lesions mask from the brain mask for BSI calculation
@@ -1496,11 +1513,12 @@ Optional Arguments:
   -dil_fill		: number of dilations for lesion masks during the lesion filling. [0-4, by default 0] 
   -roi <f1> <f2>	: are two extra ROI masks for BSI calculation over a specific region like hippocampus (f1 baseline and f2 follow-up)
   -xor <filename>   	: outputs file with the XOR region where BSI integral is calculated
-  -norm			: applies Boyes et al. Neuroimage 2008 normalization process
-  -orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
-  -atlas_mask <filename>: is the mask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii)
-  -atlas_head <filename>: is to the atlas data file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii)
+  -n3			: apply Boyes et al. Neuroimage 2008 bias field correction method process using N3
+  -n4			: apply Boyes et al. Neuroimage 2008 bias field correction method process using N4, mutual exclusive with -n3 argument
+  -atlas_mask <filename>: is the mask atlas file (default: /usr/share/fsl/data/standard/MNI152_T1_2mm_brain_mask_dil.nii.gz)
+  -atlas_head <filename>: is to the atlas data file (ex: /usr/share/fsl/data/standard/MNI152_T1_2mm.nii.gz)
   -tkn <n>      	: number of classes for K-Means [2 or 3, by default 3]
+  -dil_kmeans		: number of dilations for K-Means [0-4, by default 3]
   -iso          	: transform input images to 1mm isometric voxels
   -debug		: debug mode doesn't delete temporary intermediate images
   -output_dir <path>	: specify the output dir name
@@ -1508,8 +1526,6 @@ Optional Arguments:
 
 Recomendations:
 
-	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
-	Atlas head maks, mask and data files. For other data sources you would need to check it.
 	Check that it exists an important overlapping between mask, headmask, head and input file.
 """
 
@@ -1524,12 +1540,14 @@ arg=len(sys.argv)
 argv=sys.argv
 orientation=''
 norm=False
+n4_bfc=''
 fill_lesions=False
 sublesion=False
 single_window=True
 tkn=3
 dil_sub=1
 dil_fill=0
+dil_kmeans=3
 debug_mode=False
 iso=False
 output_dir_name=''
@@ -1544,13 +1562,14 @@ B_LESION_MASK=''
 F_LESION_MASK=''
 B_ROI_MASK=''
 F_ROI_MASK=''
-ATLAS_MASK_IMAGE=''
-ATLAS_HEAD_IMAGE=''
+ATLAS_MASK_IMAGE=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz') # MNI space
+ATLAS_HEAD_IMAGE=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm.nii.gz') # MNI space
 XOR_IMAGE=''
 B_BSI_MASK=''
 F_BSI_MASK=''
 B_BSI_ROI_MASK=''
 F_BSI_ROI_MASK=''
+t2_mode=False
 
 # If no arguments, we print usage message
 if arg < 9: 
@@ -1571,196 +1590,209 @@ while i < arg:
     # Clean unnecessary whitespaces
     argv[i]=argv[i].strip()
     if argv[i].upper() in ['--XML','-XML']:
-	usage(xml,0)
+        usage(xml,0)
 	
     elif argv[i] in ['--H','--HELP','-H','-HELP']:
-	usage(text)
+        usage(text)
 
     elif argv[i].upper() in ['--IN','-IN']:
-	B_INPUT_IMAGE=argv[i+1]
-	F_INPUT_IMAGE=argv[i+2]
-	i=i+2
+        B_INPUT_IMAGE=argv[i+1]
+        F_INPUT_IMAGE=argv[i+2]
+        i=i+2
 
     elif argv[i].upper() in ['--IN1','-IN1']:
-	B_INPUT_IMAGE=argv[i+1]
-	i=i+1
+        B_INPUT_IMAGE=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--IN2','-IN2']:
-	F_INPUT_IMAGE=argv[i+1]
-	i=i+1
+        F_INPUT_IMAGE=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--MASK','-MASK']:
-	B_MASK=argv[i+1]
-	F_MASK=argv[i+2]
-	i=i+2
+        B_MASK=argv[i+1]
+        F_MASK=argv[i+2]
+        i=i+2
 
     elif argv[i].upper() in ['--MASK1','-MASK1']:
-	B_MASK=argv[i+1]
-	i=i+1
+        B_MASK=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--MASK2','-MASK2']:
-	F_MASK=argv[i+1]
-	i=i+1
+        F_MASK=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--LESION','-LESION']:
-	B_LESION_MASK=argv[i+1]
-	F_LESION_MASK=argv[i+2]
-	i=i+2
+        B_LESION_MASK=argv[i+1]
+        F_LESION_MASK=argv[i+2]
+        i=i+2
 
     elif argv[i].upper() in ['--LESION1','-LESION1']:
-	B_LESION_MASK=argv[i+1]
-	i=i+1
+        B_LESION_MASK=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--LESION2','-LESION2']:
-	F_LESION_MASK=argv[i+1]
-	i=i+1
+        F_LESION_MASK=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--ROI','-ROI']:
-	B_ROI_MASK=argv[i+1]
-	F_ROI_MASK=argv[i+2]
-	i=i+2
+        B_ROI_MASK=argv[i+1]
+        F_ROI_MASK=argv[i+2]
+        i=i+2
 	
     elif argv[i].upper() in ['--ROI1','-ROI1']:
-	B_ROI_MASK=argv[i+1]
-	i=i+1
+        B_ROI_MASK=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--ROI2','-ROI2']:
-	F_ROI_MASK=argv[i+1]
-	i=i+1
+        F_ROI_MASK=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--OUT','-OUT']:
-	OUTPUT_IMAGE=argv[i+1]
-	i=i+1
+        OUTPUT_IMAGE=argv[i+1]
+        i=i+1
 
     elif argv[i].upper() in ['--XOR','-XOR']:
-	XOR_IMAGE=argv[i+1]
-	i=i+1
+        XOR_IMAGE=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--GBSI','-GBSI']:
-	bsi_method=1
+        bsi_method=1
 	
     elif argv[i].upper() in ['--KNBSI','-KNBSI']:
-	bsi_method=0
+        bsi_method=0
 	
     elif argv[i].upper() in ['--PBSI','-PBSI']:
-	bsi_method=2
+        bsi_method=2
 
     elif argv[i].upper() in ['--PBSIG','-PBSIG']:
-	bsi_method=3
+        bsi_method=3
 
     elif argv[i].upper() in ['--METHOD','-METHOD']:
-	if argv[i+1].upper() in ['GBSI']:
-		bsi_method=1
+        if argv[i+1].upper() in ['GBSI']:
+            bsi_method=1
 		
-	elif argv[i+1].upper() in ['KNBSI']: 
-		bsi_method=0
+        elif argv[i+1].upper() in ['KNBSI']:
+            bsi_method=0
 		
-	elif argv[i+1].upper() in ['PBSI']: 
-		bsi_method=2
+        elif argv[i+1].upper() in ['PBSI']:
+            bsi_method=2
 	
-	elif argv[i+1].upper() in ['PBSIG']: 
-		bsi_method=3
+        elif argv[i+1].upper() in ['PBSIG']:
+            bsi_method=3
 		
-	else:
-		print "\n\nERROR: BSI method ",argv[i]," ",argv[i+1]," not recognised\n\n"
-		usage(help)
+        else:
+            print "\n\nERROR: BSI method ",argv[i]," ",argv[i+1]," not recognised\n\n"
+            usage(help)
 
-	i=i+1
+        i=i+1
 
     elif argv[i].upper() in ['--SW','-SW']:
-	single_window=True
+        single_window=True
 	
     elif argv[i].upper() in ['--DW','-DW']:
-	single_window=False
+        single_window=False
 	
     elif argv[i].upper() in ['--WINDOW','-window']:
-	if argv[i+1].upper() in ['SW','SINGLE']:
-		single_window=True
+        if argv[i+1].upper() in ['SW','SINGLE']:
+            single_window=True
 		
-	elif argv[i+1].upper() in ['DW','DOUBLE']: 
-		single_window=False
+        elif argv[i+1].upper() in ['DW','DOUBLE']:
+            single_window=False
 		
-	else:
-		print "\n\nERROR: BSI window ",argv[i]," ",argv[i+1]," not recognised\n\n"
-		usage(help)
-
-	i=i+1	
+        else:
+            print "\n\nERROR: BSI window ",argv[i]," ",argv[i+1]," not recognised\n\n"
+            usage(help)
+        i=i+1
 	
     elif argv[i].upper() in ['--FILL','-FILL']:
-	fill_lesions=True
+        fill_lesions=True
 	
     elif argv[i].upper() in ['--SUBLESION','-SUBLESION']:
-	sublesion=True
+        sublesion=True
 	
-    elif argv[i].upper() in ['--NORM','-NORM']:
-	norm=True
+    elif argv[i].upper() in ['--N3','-N3','-NORM','--NORM']:
+        norm=True
 	
-    elif argv[i].upper() in ['--ORIENT','-ORIENT']:
-	if argv[i+1].upper() in ['A']:
-		orientation="a"
-		
-	elif argv[i+1].upper() in ['C']: 
-		orientation="c"
-		
-	elif argv[i+1].upper() in ['S']: 
-		orientation="s"
-	
-	else:
-		print "\n\nERROR: orientation ",argv[i]," ",argv[i+1]," not recognised\n\n"
-		usage(help)
+    elif argv[i].upper() in ['--N4','-N4']:
+        n4_bfc='-N4'
+        norm=True
 
-	i=i+1
+    # We keep for compatibility reasons with old versions	
+    elif argv[i].upper() in ['--ORIENT','-ORIENT']:
+        if argv[i+1].upper() in ['A']:
+            orientation="a"
+		
+        elif argv[i+1].upper() in ['C']:
+            orientation="c"
+		
+        elif argv[i+1].upper() in ['S']:
+            orientation="s"
+	
+        i=i+1
 	
     elif argv[i].upper() in ['--ATLAS_MASK','-ATLAS_MASK']:
-	ATLAS_MASK_IMAGE=argv[i+1]
-	i=i+1
+        ATLAS_MASK_IMAGE=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--ATLAS_HEAD','-ATLAS_HEAD']:
-	ATLAS_HEAD_IMAGE=argv[i+1]
-	i=i+1
+        ATLAS_HEAD_IMAGE=argv[i+1]
+        i=i+1
 	
     elif argv[i].upper() in ['--TKN','-TKN']:
-	if int(argv[i+1]) < 2 or int(argv[i+1]) > 3:
-		print "\n\nERROR: number of classes ",argv[i]," ",argv[i+1]," incorrect, you can only select 2 or 3\n\n"
-		usage(help)
-	else:
-		tkn=int(argv[i+1])
+        if int(argv[i+1]) < 2 or int(argv[i+1]) > 3:
+            print "\n\nERROR: number of classes ",argv[i]," ",argv[i+1]," incorrect, you can only select 2 or 3\n\n"
+            usage(help)
+        else:
+            tkn=int(argv[i+1])
 		
-	i=i+1
+        i=i+1
+
     elif argv[i].upper() in ['--DIL_SUB','-DIL_SUB']:
-	if int(argv[i+1]) < 0 or int(argv[i+1]) > 4:
-		print "\n\nERROR: The number of dilation for lesion mask substraction is wrong ",argv[i]," ",argv[i+1],", it has to be between 0 and 4\n\n"
-		usage(help)
-	else:
-		dil_sub=int(argv[i+1])
+        if int(argv[i+1]) < 0 or int(argv[i+1]) > 4:
+            print "\n\nERROR: The number of dilation for lesion mask substraction is wrong ",argv[i]," ",argv[i+1],", it has to be between 0 and 4\n\n"
+            usage(help)
+        else:
+            dil_sub=int(argv[i+1])
 		
-	i=i+1
+        i=i+1
+    
+    elif argv[i].upper() in ['--DIL_KMEANS','-DIL_KMEANS']:
+        if int(argv[i+1]) < 0 or int(argv[i+1]) > 4:
+            print "\n\nERROR: The number of dilation for kmeans is wrong ",argv[i]," ",argv[i+1],", it has to be between 0 and 4\n\n"
+            usage(help)
+        else:
+            dil_kmeans=int(argv[i+1])
+		
+        i=i+1	
 	
     elif argv[i].upper() in ['--DIL_FILL','-DIL_FILL']:
-	if int(argv[i+1]) < 0 or int(argv[i+1]) > 4:
-		print "\n\nERROR: The number of dilation for lesion filling is wrong ",argv[i]," ",argv[i+1],", it has to be between 0 and 4\n\n"
-		usage(help)
-	else:
-		dil_fill=int(argv[i+1])
+        if int(argv[i+1]) < 0 or int(argv[i+1]) > 4:
+            print "\n\nERROR: The number of dilation for lesion filling is wrong ",argv[i]," ",argv[i+1],", it has to be between 0 and 4\n\n"
+            usage(help)
+        else:
+            dil_fill=int(argv[i+1])
 		
-	i=i+1
+        i=i+1
 	
     elif argv[i].upper() in ['--ISO','-ISO']:
-	iso=True
+        iso=True
+	
+    elif argv[i].upper() in ['--T2','-T2']:
+        t2_mode=True
 	
     elif argv[i].upper() in ['--DEBUG','-DEBUG']:
-	debug_mode=True
+        debug_mode=True
 	
     elif argv[i].upper() in ['--NOT_WEB','-NOT_WEB']:
-	open_web_browser=False
+        open_web_browser=False
 
     elif argv[i].upper() in ['--OUTPUT_DIR','-OUTPUT_DIR']:
-	output_dir_name=argv[i+1]
-	i=i+1
+        output_dir_name=argv[i+1]
+        i=i+1
 	
     else:
-	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
-	usage(help)
+        print "\n\nERROR: option ",argv[i]," not recognised\n\n"
+        usage(help)
 	
     i=i+1
 # end while
@@ -1800,14 +1832,10 @@ if len(XOR_IMAGE)>0 and os.path.isdir(XOR_IMAGE):
 	progress_xml(0.02,"Failed, specify an xor output filename is needed.")
 	exit_program(XOR_IMAGE+" is not a file, select a file")
 	
-# Verify normalization parameters	
+# Verify bias field correction parameters	
 if norm:
-	progress_xml(0.03,"Checking atlas files needed for intensity normalization.")
-	check_program_exists('niftkNormalization.py')
-	check_file_exists(ATLAS_MASK_IMAGE)
-	check_file_exists(ATLAS_HEAD_IMAGE)
-	if orientation == '':
-		exit_program("Failed, specify an orientation is needed --orient")
+	progress_xml(0.03,"Checking files needed for intensity bias field correction.")
+	check_program_exists('niftkBiasFieldCorrection.py')
 		
 # Verify lesion parameters
 if fill_lesions:
@@ -1906,9 +1934,9 @@ if fill_lesions:
 # Normalize intensity for each image Boyes et al.
 if norm:
 	progress_xml(0.16,"Normalization - baseline image")
-	B_INPUT_IMAGE=normalization(B_INPUT_IMAGE,orientation)
+	B_INPUT_IMAGE=bias_field_correction(B_INPUT_IMAGE,n4_bfc)
 	progress_xml(0.20,"Normalization - follow up image")
-	F_INPUT_IMAGE=normalization(F_INPUT_IMAGE,orientation)
+	F_INPUT_IMAGE=bias_field_correction(F_INPUT_IMAGE,n4_bfc)
 	progress_xml(0.25,"Normalization finished.")
 	
 # Brain extraction code here if we desire		
@@ -1939,7 +1967,7 @@ if sublesion:
 		B_BSI_ROI_MASK=remove_tissue_from_image(B_ROI_MASK,tissue_to_remove_file)
 		F_BSI_ROI_MASK=remove_tissue_from_image(F_ROI_MASK,tissue_to_remove_file)
 else:
-	tissue_to_remove_file=''
+	tissue_to_remove_file='dummy'
 	B_BSI_MASK=B_MASK
 	F_BSI_MASK=F_MASK
 	B_BSI_ROI_MASK=B_ROI_MASK
@@ -1948,19 +1976,14 @@ else:
 # BSI calculation
 progress_xml(0.81,"BSI calculation.")
 if single_window:
-	results=calculate_sw_BSI(bsi_method,tkn,tissue_to_remove_file)
+	results=calculate_sw_BSI(bsi_method,tkn,tissue_to_remove_file,dil_kmeans,t2_mode)
 else:
-	results=calculate_dw_BSI(bsi_method,tkn,tissue_to_remove_file)
+	results=calculate_dw_BSI(bsi_method,tkn,tissue_to_remove_file,dil_kmeans,t2_mode)
 	
 progress_xml(0.90,"BSI calculation finished. PBVC="+str(results[1]))
 
 progress_xml(0.91,"Generating report.")
 generate_report(bname,results,' '.join(argv))
-
-# We download from internet the images that are used as legend
-download_from_web("http://blakey.cs.ucl.ac.uk/blue.gif","blue.gif")
-download_from_web("http://blakey.cs.ucl.ac.uk/orange.gif","orange.gif")
-download_from_web("http://blakey.cs.ucl.ac.uk/bg.jpg","bg.jpg")
 progress_xml(0.97,"Report finished.")		
 		
 # Copy data to working directory

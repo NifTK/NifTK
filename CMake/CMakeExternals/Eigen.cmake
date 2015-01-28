@@ -22,7 +22,7 @@ if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
   message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
-if(BUILD_IGI OR BUILD_NIFTYREG)
+if(BUILD_IGI OR BUILD_NIFTYREG OR BUILD_NIFTYSEG)
 
   set(proj Eigen)
   set(proj_DEPENDENCIES )
@@ -42,7 +42,7 @@ if(BUILD_IGI OR BUILD_NIFTYREG)
       #CONFIGURE_COMMAND ""
       UPDATE_COMMAND ""
       BUILD_COMMAND ""
-      #INSTALL_COMMAND ""
+      INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
@@ -55,10 +55,9 @@ if(BUILD_IGI OR BUILD_NIFTYREG)
 
     set(Eigen_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
     set(Eigen_ROOT ${Eigen_DIR})
-    set(Eigen_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include/eigen3)
+    set(Eigen_INCLUDE_DIR ${Eigen_DIR})
     
     message("SuperBuild loading Eigen from ${Eigen_DIR}")
-    message("Eigen_INCLUDE_DIR: ${Eigen_INCLUDE_DIR}")
 
   else(NOT DEFINED Eigen_DIR)
 

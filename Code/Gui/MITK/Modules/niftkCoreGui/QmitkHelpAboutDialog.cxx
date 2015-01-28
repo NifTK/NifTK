@@ -47,10 +47,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString originURL(NIFTK_ORIGIN_URL);
   QString originShortText(NIFTK_ORIGIN_SHORT_TEXT);
   QString originLongText(NIFTK_ORIGIN_LONG_TEXT);
-  QString wikiURL(NIFTK_WIKI_URL);
-  QString wikiText(NIFTK_WIKI_TEXT);
-  QString dashboardURL(NIFTK_DASHBOARD_URL);
-  QString dashboardText(NIFTK_DASHBOARD_TEXT);
   QString userContact(NIFTK_USER_CONTACT);
   QString qtVersion(NIFTK_QT_VERSION);
   QString boostVersion(NIFTK_BOOST_VERSION);
@@ -221,35 +217,14 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "</table></p>"
       );
 
-  // Over time, insert more platforms that we have tested on,
-  // (but these should be backed up with a Dashboard or else it ain't worth diddly-squat).
-  QString testingDetails = QObject::tr(
-      "<p>"
-      "%1 has been compiled and tested on the following platforms:"
-      "<ul>"
-      "<li>Mac OSX 10.9 (Mavericks)</li>"
-      "<li>Mac OSX 10.8 (Mountain Lion)</li>"
-      "<li>Ubuntu 12.04</li>"
-      "<li>Ubuntu 11.04</li>"
-      "<li>Linux Mint 14</li>"
-      "<li>Scientific Linux 6.1</li>"
-      "<li>Debian 7.0.4</li>"
-      "<li>Windows 7</li>"
-      "<li>Windows 8</li>"
-      "</ul>"
-      "We use a 64 bit operating system. Our software quality control statistics can be seen on this <a href=\"%2\">%3</a>."
-      "</p>"
-      ).arg(applicationName).arg(dashboardURL).arg(dashboardText);
-
   QString furtherInformation = QObject::tr(
       "<p>"
       "Further information can be obtained by:"
       "<ul>"
       "<li>Emailing the %1 <a href=\"%2\">users mailing list</a>.</li>"
-      "<li>Visiting the %1 <a href=\"%3\">%4</a>.</li>"
       "</ul>"
       "</p>"
-      ).arg(platformName).arg(userContact).arg(wikiURL).arg(wikiText);
+      ).arg(platformName).arg(userContact);
 
   // Stick it all together.
   QString totalText =
@@ -277,7 +252,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(openCVText)
 #endif
       .append(versionsEnd)
-      .append(testingDetails)
       ;
 
   this->setWindowTitle(tr("About %1").arg(applicationName));

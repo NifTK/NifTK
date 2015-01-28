@@ -14,10 +14,11 @@
 
 #include <cstdlib>
 #include <limits>
-#include <niftkUltrasoundPinCalibrationClickerCLP.h>
 #include <mitkVector.h>
 #include <QApplication>
+
 #include <QmitkUltrasoundPinCalibrationWidget.h>
+#include <niftkUltrasoundPinCalibrationClickerCLP.h>
 
 int main(int argc, char** argv)
 {

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include <PointClouds/mitkMergePointClouds.h>
+#include <fstream>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
-#include <fstream>
-#include <niftkMergePointCloudsCLP.h>
+#include <PointClouds/mitkMergePointClouds.h>
 
+#include <niftkMergePointCloudsCLP.h>
 
 int main(int argc, char* argv[])
 {

@@ -14,8 +14,9 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkFindAndTriangulateCrossHair.h>
+
 #include <mitkOpenCVMaths.h>
+#include <mitkFindAndTriangulateCrossHair.h>
 #include <niftkFindAndTriangulateCrossHairCLP.h>
 
 #include <fstream>

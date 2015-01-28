@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 14 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 10 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 11 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
@@ -199,10 +199,6 @@ set(NIFTK_COPYRIGHT "Copyright (C) 2008-2014 University College London (UCL). Al
 set(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 set(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 set(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
-set(NIFTK_WIKI_URL "https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform" CACHE STRING "Wiki URL" FORCE )
-set(NIFTK_WIKI_TEXT "wiki" CACHE STRING "Wiki text" FORCE )
-set(NIFTK_DASHBOARD_URL "https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK" CACHE STRING "Dashboard URL" FORCE)
-set(NIFTK_DASHBOARD_TEXT "dashboard" CACHE STRING "Dashboard text" FORCE)
 set(NIFTK_USER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users" CACHE STRING "Contact address for users." FORCE )
 if(WIN32)
   set(NIFTK_BASE_NAME "NifTK" CACHE STRING "Base name for installation folder. Windows convention is upper case letters" FORCE )
@@ -211,9 +207,6 @@ else(WIN32)
 endif(WIN32)
 set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
-set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACHE STRING "Nightly generated documentation" )
-set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
-set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
 set(NIFTK_VERSION_DATA "cefeb2364e" CACHE STRING "Version of NifTKData" FORCE)
 set(NIFTK_VERSION_Boost "86799.1" CACHE STRING "Version of Boost" FORCE)
@@ -227,7 +220,7 @@ set(NIFTK_VERSION_VTK "6.1.0" CACHE STRING "Version of VTK" FORCE)
 set(NIFTK_VERSION_CTK "68a1ce2b42" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "c00657bd0c" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "2ac0c6b187" CACHE STRING "Version of NiftyLink" FORCE)
+set(NIFTK_VERSION_NIFTYLINK "24e0c98646" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "b2decf5160" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
@@ -236,7 +229,7 @@ set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
-set(NIFTK_VERSION_EIGEN "3.2.0.1" CACHE STRING "Version of EIGEN" FORCE)
+set(NIFTK_VERSION_EIGEN "3.2.2" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
 set(NIFTK_VERSION_PCL "f6c1d585cd" CACHE STRING "Version of PCL" FORCE)
@@ -253,7 +246,7 @@ set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
-set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyLink" CACHE STRING "Location of NiftyLink repository")
+set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyLink" CACHE STRING "Location of NiftyLink repository" FORCE)
 set(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
 set(NIFTK_LOCATION_NIFTYREG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyReg-${NIFTK_VERSION_NIFTYREG}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
 set(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySeg-${NIFTK_VERSION_NIFTYSEG}.tar.gz" CACHE STRING  "Location of NiftySeg" FORCE)
@@ -263,7 +256,7 @@ set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${N
 set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
 set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
-set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${NIFTK_VERSION_EIGEN}.tar.gz" CACHE STRING "Location of Eigen" FORCE)
+set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/Eigen-${NIFTK_VERSION_EIGEN}-headers-only.tar.gz" CACHE STRING "Location of Eigen" FORCE)
 set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-apriltags-${NIFTK_VERSION_APRILTAGS}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
 set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
 set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
@@ -279,10 +272,6 @@ mark_as_advanced(NIFTK_ORIGIN_URL)
 mark_as_advanced(NIFTK_ORIGIN_SHORT_TEXT)
 mark_as_advanced(NIFTK_ORIGIN_LONG_TEXT)
 mark_as_advanced(NIFTK_HELP_URL_TEXT)
-mark_as_advanced(NIFTK_WIKI_URL)
-mark_as_advanced(NIFTK_WIKI_TEXT)
-mark_as_advanced(NIFTK_DASHBOARD_URL)
-mark_as_advanced(NIFTK_DASHBOARD_TEXT)
 mark_as_advanced(NIFTK_USER_CONTACT)
 mark_as_advanced(NIFTK_BASE_NAME)
 mark_as_advanced(NIFTK_VERSION_STRING)
@@ -292,9 +281,6 @@ mark_as_advanced(NIFTK_BUILD_ALL_PLUGINS)
 mark_as_advanced(NIFTK_CHECK_COVERAGE)
 mark_as_advanced(NIFTK_VERBOSE_COMPILER_WARNINGS)
 mark_as_advanced(NIFTK_GENERATE_DOXYGEN_HELP)
-mark_as_advanced(NIFTK_NIGHTLY_DOCS)
-mark_as_advanced(NIFTK_BUILD_INSTRUCTIONS)
-mark_as_advanced(NIFTK_INSTALL_INSTRUCTIONS)
 mark_as_advanced(NIFTK_ARCHTYPE_DATA)
 mark_as_advanced(NIFTK_VERSION_DATA)
 mark_as_advanced(NIFTK_VERSION_Boost)
@@ -399,6 +385,8 @@ include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateCommandLineScript)
 include(niftkMacroCreateGuiApplication)
 include(niftkMacroFixupCommandLineApps)
+include(niftkMacroForcePluginCacheValue)
+include(CMakePackageConfigHelpers)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -527,6 +515,8 @@ set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a lon
 mark_as_advanced(OPENCV_WITH_CUDA)
 set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
 mark_as_advanced(OPENCV_WITH_FFMPEG)
+set(OPENCV_WITH_NONFREE OFF CACHE BOOL "Build OpenCV with nonfree library")
+mark_as_advanced(OPENCV_WITH_NONFREE)
 
 set(NIFTYSIM_USE_CUDA OFF CACHE BOOL "Build NiftySim with CUDA support")
 mark_as_advanced(NIFTYSIM_USE_CUDA)
@@ -598,6 +588,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
   ${CMAKE_SOURCE_DIR}/Testing/Code/
   ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
@@ -743,20 +734,29 @@ endif()
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
 
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake
-  ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
-  ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake
-  ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake
-  ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
+file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
+foreach(file_to_copy ${package_depends_files})
+  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
+endforeach()
+
 
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
@@ -1156,6 +1156,8 @@ endif(WIN32)
 
 # This should now always be true as MITK is required.
 if(MITK_FOUND)
+  set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
+  list(INSERT MODULES_PACKAGE_DEPENDS_DIRS 0 ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})
   include(mitkCompilerSettings)
 endif()
 
@@ -1197,9 +1199,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.sh.in ${CMAKE_BINARY
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINARY_DIR}/SetupDependencies.csh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
-configure_file(${CMAKE_SOURCE_DIR}/Config/UseNifTK.cmake.in ${CMAKE_BINARY_DIR}/UseNifTK.cmake)
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
@@ -1354,19 +1353,19 @@ endif()
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
-subdirs(Doc)
-subdirs(Code)
+add_subdirectory(Doc)
+add_subdirectory(Code)
 
 if(BUILD_UTILITIES)
-  subdirs(Utilities)
+  add_subdirectory(Utilities)
 endif(BUILD_UTILITIES)
 
 if(BUILD_TESTING)
-  subdirs(Testing)
+  add_subdirectory(Testing)
 endif(BUILD_TESTING)
 
 if(BUILD_PROTOTYPE)
-  subdirs(Prototype)
+  add_subdirectory(Prototype)
 endif(BUILD_PROTOTYPE)
 
 ######################################################################
@@ -1427,7 +1426,6 @@ include(NIFTKCPackOptions)
 include(CPack)
 
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
-
 include(mitkInstallRules)
 
 ######################################################################
@@ -1496,3 +1494,60 @@ if(WIN32)
 else(WIN32)
   message( "CreateWindowsBatchScript: WIN32 not found" )
 endif(WIN32)
+
+######################################################################
+# Start: "NifTK Package Config"
+######################################################################
+set(NIFTK_EXPORTS_FILE "${NIFTK_BINARY_DIR}/NifTKExports.cmake")
+file(REMOVE ${NIFTK_EXPORTS_FILE})
+
+set(targets_to_export)
+get_property(module_targets GLOBAL PROPERTY MITK_MODULE_TARGETS)
+if(module_targets)
+  list(APPEND targets_to_export ${module_targets})
+endif()
+
+if(MITK_USE_BLUEBERRY)
+  get_property(plugin_targets GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS)
+  if(plugin_targets)
+    list(APPEND targets_to_export ${plugin_targets})
+  endif()
+endif()
+
+export(TARGETS ${targets_to_export} APPEND FILE ${NIFTK_EXPORTS_FILE})
+
+set(NIFTK_EXPORTED_TARGET_PROPERTIES )
+foreach(target_to_export ${targets_to_export})
+  get_target_property(autoload_targets ${target_to_export} MITK_AUTOLOAD_TARGETS)
+  if(autoload_targets)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+  endif()
+  get_target_property(autoload_dir ${target_to_export} MITK_AUTOLOAD_DIRECTORY)
+  if(autoload_dir)
+    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+  endif()
+endforeach()
+
+get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+set(VISIBILITY_AVAILABLE 0)
+set(visibility_test_flag "")
+mitkFunctionCheckCompilerFlags("-fvisibility=hidden" visibility_test_flag)
+if(visibility_test_flag)
+  # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
+  set(VISIBILITY_AVAILABLE 1)
+endif()
+
+# This generates a C++ header file with values that need compiling into code.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
+
+# This generates a C++ header file for GUI apps only.
+configure_file(${CMAKE_SOURCE_DIR}/Code/Gui/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
+
+# The next two generate CMake code to enable external projects to correctly use NifTK.
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
+write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
+
+######################################################################
+# End: "NifTK Package Config"
+######################################################################

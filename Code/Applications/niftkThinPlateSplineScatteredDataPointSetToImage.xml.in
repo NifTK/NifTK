@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Binary Mask Image Operators</category>
+  <title>Fit smooth spline surface to points</title>
+  <description><![CDATA[Computes a thin plate spline mask approximation to a set of landmarks.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>im</longflag>
+      <description>An optional image to define the reference volume</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>mask</longflag>
+      <description>The output spline surface mask image</description>      
+      <label>Output mask</label>
+      <default>MaskedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+    <file>
+      <name>fileInputMITK</name>
+      <longflag>mps</longflag>
+      <description>The file name of an input MITK PointSet XML file.</description>
+      <label>Input NiftyView (MITK) point set.</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileInputPointSet</name>
+      <longflag>pts</longflag>
+      <description><![CDATA[An input text file of landmarks: '%f %f %f\\n...', x, y, z.]]></description>
+      <label>Input simple text point set.</label>
+      <channel>input</channel>
+    </file>
+
+    <string-enumeration>
+      <name>dimension</name>
+      <longflag>dimension</longflag>
+      <description><![CDATA[The image 'height' dimension to be interpolated by the thin-plate spline.]]></description>
+      <label>Spline height dimension</label>
+      <default>z</default>
+      <element>x</element>
+      <element>y</element>
+      <element>z</element>
+    </string-enumeration>
+
+    <boolean>
+      <name>flgInvert</name>
+      <longflag>invert</longflag>
+      <description><![CDATA[Invert the mask (i.e. flip the spline 'height' dimension).]]></description>
+      <label>Invert/flip the mask?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Print verbose information?</label>
+    </boolean>
+
+     <integer-vector>
+      <name>size</name>
+      <longflag>size</longflag>
+      <description><![CDATA[The size of the output volume [100 x 100 x 100]. For 2D data set nz = 1 or 0. Specifying the input image overides this value.]]></description>
+      <label>Mask size</label>
+    </integer-vector>
+
+    <double-vector>
+      <name>resolution</name>
+      <longflag>res</longflag>
+      <description><![CDATA[The resolution of the output volume [1mm x 1mm x 1mm].]]></description>
+      <label>Mask resolution</label>
+    </double-vector>
+
+    <double-vector>
+      <name>origin</name>
+      <longflag>origin</longflag>
+      <description><![CDATA[The origin of the output volume [0mm x 0mm x 0mm].]]></description>
+      <label>Mask origin</label>
+    </double-vector>
+
+    <float>
+      <name>stiffness</name>
+      <flag>s</flag>
+      <longflag>stiffness</longflag>
+      <description><![CDATA[The stiffness of the spline [ 1 ]]]></description>
+      <label>Spline stiffness</label>
+      <default>1</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Advanced parameters]]></description>
+
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output.</description>
+      <label>Print debugging output?</label>
+    </boolean>
+ 
+  </parameters>
+
+</executable>

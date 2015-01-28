@@ -1,0 +1,673 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+#
+# This script is for ms registration preprocessing 
+#
+# The basic method is:
+# If the user runs niftkRegPreprocessingMS.py --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+# Import needed libraries
+import atexit
+import tempfile
+from datetime import datetime, date, time
+from _niftkCommon import *
+from glob import glob
+
+###### DEFAULT OPTIONS #######
+output_dir=''
+temp_dir=''
+
+###########################################################################
+###########################################################################
+# Function definition
+###########################################################################
+###########################################################################
+
+# Begin of cleanup function
+def cleanup():
+	"""
+	###########################################################################
+	# Function  : Clean temp working directory 
+	###########################################################################
+	"""
+	global 	temp_dir
+	global	debug_mode
+	
+	# Check if we are in the directory that we want to remove
+	if os.path.isdir(os.path.join(os.pardir,temp_dir)):
+		os.chdir(os.pardir)
+
+	if os.path.isdir(temp_dir):
+		if (not debug_mode) and (len(temp_dir)>0) :
+			#shutil.rmtree(output_dir) 
+			for f in glob (os.path.join(temp_dir,"*.nii")):
+				os.unlink (f)
+			for f in glob (os.path.join(temp_dir,"*.txt")):
+				os.unlink (f)
+
+
+	return
+# End of cleanup function
+
+
+# Begin of reg_resample function
+def reg_resample(ref,flo,typet,transform,result,interpolation=''):
+	"""
+	#####################################################################################
+	# def reg_resample(ref,flo,type,transform,result)
+	# Function   : Resample the image
+	#####################################################################################
+	"""
+  
+	if not os.path.isfile(result):
+		execute_command_or_else_stop('reg_resample \
+				-ref '+ref+' \
+				-flo '+flo+' \
+				'+typet+' '+transform+' \
+				-res '+result+' \
+				'+interpolation+' ')
+	else:
+		print 'File '+result+' does exist, we don\'t repeat the calculation' 	
+	
+	return 
+# End of reg_resample function
+
+# Begin of reg_resample_2_space function
+def reg_resample_2_space(ref,mid,flo,trans1,trans2,result,interpolation=''):
+	"""
+	#####################################################################################
+	# def reg_resample_2_space(ref,mid,flo,trans1,trans2,result)
+	# Function   : Resample the image
+	#####################################################################################
+	"""
+  
+	if not os.path.isfile(result):
+		execute_command_or_else_stop('reg_resample \
+				-ref '+mid+' \
+				-flo '+flo+' \
+				-def '+trans1+' \
+				-res temp1.nii \
+				'+interpolation+' ')
+		
+		execute_command_or_else_stop('reg_resample \
+				-ref '+ref+' \
+				-flo temp1.nii \
+				-def '+trans2+' \
+				-res '+result+' \
+				'+interpolation+' ')
+
+		removeFile ('temp1.nii')
+	else:
+		print 'File '+result+' does exist, we don\'t repeat the calculation' 	
+	
+	return 
+# End of reg_resample_2_space function
+
+def removeFile(filename):
+	if os.path.isfile(filename):
+		os.unlink (filename)
+
+	return 
+
+# XML Definition
+xml="""<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Multiple Sclerosis Tools.Preprocessing</category>
+    <title>T1 to B0 transformation</title>
+    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to calculate the transformation between T1 image and B0 image.<br>
+    T2, PD and B0 have to belong to the same time point, and T1 to a different time point. We do the following steps:
+    <ul>
+    	<li>Calcute the PSEUDOT1 image substracting T2 image to PD</li>
+    	<li>Obtain the affine transformation between PSEUDO T1 image and T1 image</li>
+    	<li>Align T2 image to B0 via affine registration</li>
+    	<li>Computation of the nonrigid transformation between aligned T2 and B0</li>
+    	<li>Calculation of the deformation fields for the T1 to PT1 transformation and for the T2 to B0 transformation</li>
+    	<li>Concatenation of the deformation fields to have a transformation that brings from the T1 to the B0</li>
+    </ul>
+    <br>
+    <p><h2>Indications:</h2></p>
+    <p>
+    Once we obtain the transformation from T1 to B0 in the file: T1ToB0_transformation.nii
+    We can transform any image from T1 space to B0 space doing:<br>
+    <br>
+    reg_resample -ref &lt;B0_filename&gt; -flo &lt;filename_image_to_transform&gt; -def T1ToB0_transformation.nii -res &lt;output_filename&gt; -LIN<br>
+    <br>
+    And if we want to transform a mask:<br>
+    <br>
+    reg_resample -ref &lt;B0_filename&gt; -flo &lt;filename_image_to_transform&gt; -def T1ToB0_transformation.nii -res &lt;output_filename&gt; -NN<br>
+    </p>
+    <br>
+     ]]></description>
+    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+    <documentation-url>http://cmic.cs.ucl.ac.uk/home/software</documentation-url>
+    <license>BSD</license>
+    <contributor>Ferran Prados (UCL)</contributor>
+    <parameters advanced="false">
+	    <label>Mandatory arguments</label>
+	    <description>Mandatory arguments: Input image: T1, T2, B0 and PD</description>
+	    <image fileExtensions="nii,nii.gz,img">
+		<name>T1inputImageName</name>
+		<longflag>t1</longflag>
+		<description>T1 Input image name</description>
+		<label>T1 image</label>
+		<channel>input</channel>
+	    </image>
+	    <image fileExtensions="nii,nii.gz,img">
+		<name>T2inputImageName</name>
+		<longflag>t2</longflag>
+		<description>T2 Input image name</description>
+		<label>T2 image</label>
+		<channel>input</channel>
+	    </image>
+	    <image fileExtensions="nii,nii.gz,img">
+		<name>PDinputImageName</name>
+		<longflag>pd</longflag>
+		<description>PD Input image name</description>
+		<label>PD image</label>
+		<channel>input</channel>
+	    </image>
+	    <image fileExtensions="nii,nii.gz,img">
+		<name>B0inputImageName</name>
+		<longflag>b0</longflag>
+		<description>B0 Input image name</description>
+		<label>B0 image</label>
+		<channel>input</channel>
+	    </image>
+    </parameters>
+    <parameters advanced="true">
+	    <label>Optional arguments</label>
+	    <description>Optional arguments</description>
+	    <image fileExtensions="nii,nii.gz,img">
+		<name>PT1FileName</name>
+		<longflag>pt1</longflag>
+		<description>PseudoT1 filename</description>
+		<label>Pseudo T1 ouput name</label>
+		<channel>output</channel>
+	    </image>
+	    <directory>
+		<name>outputdir</name>
+		<longflag>output_dir</longflag>
+		<description>Select the output directory</description>
+		<label>Output directory</label>
+		</directory>
+	    <boolean>
+		<name>debugMode</name>
+		<longflag>debug</longflag>
+		<description>Debug mode doesn't delete temporary intermediate images</description>
+		<label>Debug mode</label>
+	    </boolean>
+    </parameters>
+</executable>
+"""
+
+# Help usage message definition
+help="""
+This script is for MS registration preprocessing. It calculates the transformation from Atlas to T1, and form T1 to B0 following the guidelines of: Muhlert et al. JMRI 2013. DOI: 10.1002/jmri.23970
+
+Usage: niftkRegMNI-T1-B0.py -t1 <filename> -t2 <filename> -pd <filename> -b0 <filename> ...
+
+Optional Arguments:
+ 
+  -atlas <filename>      : T1 ATLAS filename 
+  -atlas_t2 <filename>   : T2 ATLAS filename 
+  -atlas_mask <filename> : Mask ATLAS filename 
+  -t1 <filename>         : T1 image filename 
+  -t2 <filename>         : T2 image filename
+  -pd <filename>         : PD image filename [optional, not required if pseudo T1 is specified]
+  -b0 <filename>         : B0 image filename
+  -pt1 <filename>        : pseudo T1 input filename [optional, not required if T2 and PD are specified PT1=T2-PD]
+  -debug                 : debug mode doesn't delete temporary intermediate images
+  -space <value> 	 : where we want to resampling the images [b0,MNI,T1 or All] Default: B0 
+  
+"""
+
+
+# Main program start
+
+# We register cleanup function as a function to be executed at termination
+#atexit.register(cleanup)
+os.environ['FSLOUTPUTTYPE']='NIFTI_GZ'
+# We get the arguments
+arg=len(sys.argv)
+argv=sys.argv
+debug_mode=False
+output_dir_name=''
+ATLAS=''
+ATLAS_T2=''
+ATLAS_MASK=''
+T1_INPUT_IMAGE=''
+T1_FILL_INPUT_IMAGE=''
+T2_INPUT_IMAGE=''
+PD_INPUT_IMAGE=''
+B0_INPUT_IMAGE=''
+PSEUDOT1_INPUT_IMAGE=''
+MASK_INPUT_IMAGE=''
+pseudo_t1_output_name='PSEUDO_T1.nii'
+SPACE='B0'
+
+# If no arguments, we print usage message
+if arg < 7: 
+	i=1
+	while i < arg:
+		if argv[i].upper() in ['--XML','-XML']: 
+			usage(xml,0)
+		i=i+1
+	# end while
+	usage(help)
+# End if, few arguments
+
+i=1
+# Parse remaining command line options
+while i < arg:
+    if argv[i].upper() in ['--XML','-XML']:
+	usage(xml,0)
+	
+    elif argv[i] in ['--H','--HELP','-H','-HELP']:
+	usage(text)
+
+    elif argv[i].upper() in ['--ATLAS','-ATLAS']:
+	ATLAS=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--ATLAS_T2','-ATLAS_T2']:
+	ATLAS_T2=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--ATLAS_MASK','-ATLAS_MASK']:
+	ATLAS_MASK=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--T1','-T1']:
+	T1_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--T2','-T2']:
+	T2_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--PD','-PD']:
+	PD_INPUT_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--B0','-B0']:
+	B0_INPUT_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--DEBUG','-DEBUG']:
+	debug_mode=True
+	
+    elif argv[i].upper() in ['--OUTPUT_DIR','-OUTPUT_DIR']:
+	output_dir_name=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--PT1','-PT1']:
+	PSEUDOT1_INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--SPACE','-SPACE']:
+	SPACE=argv[i+1].upper()
+	i=i+1
+	
+    else:
+	print "\nERROR: option ",argv[i]," not recognised\n\n"
+	usage(help)
+	
+    i=i+1
+# end while
+
+current_dir=os.getcwd()
+if ATLAS=='':
+    ATLAS=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_1mm.nii.gz') # MNI space
+
+if ATLAS_T2=='':
+	# MNI space is the same brain than the MNI152_T1_1mm but in 2mmm
+	ATLAS_T2=os.path.join(os.getenv('SPMDIR','/local/SPM12b'), 'canonical', 'avg152T2.nii')
+
+if ATLAS_MASK=='':
+    ATLAS_MASK=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_1mm_brain_mask.nii.gz') # MNI space
+
+if T1_INPUT_IMAGE=='':
+	T1_INPUT_IMAGE=os.path.join(current_dir,'T1.nii.gz')
+
+if T2_INPUT_IMAGE=='':
+	T2_INPUT_IMAGE=os.path.join(current_dir,'T2.nii.gz')
+
+if PD_INPUT_IMAGE=='':
+	PD_INPUT_IMAGE=os.path.join(current_dir,'PD.nii.gz')
+
+if B0_INPUT_IMAGE=='':
+	B0_INPUT_IMAGE=os.path.join(current_dir,'meanb0.nii.gz') 
+
+if PSEUDOT1_INPUT_IMAGE=='':
+	PSEUDOT1_INPUT_IMAGE=os.path.join(current_dir,'PSEUDO_T1.nii.gz')
+
+# We put all path in a normalized absolutized version of the pathname
+ATLAS=os.path.abspath(ATLAS)
+ATLAS_T2=os.path.abspath(ATLAS_T2)
+ATLAS_MASK=os.path.abspath(ATLAS_MASK)
+T1_INPUT_IMAGE=os.path.abspath(T1_INPUT_IMAGE)
+T2_INPUT_IMAGE=os.path.abspath(T2_INPUT_IMAGE)
+PD_INPUT_IMAGE=os.path.abspath(PD_INPUT_IMAGE)
+B0_INPUT_IMAGE=os.path.abspath(B0_INPUT_IMAGE)
+
+# Check if all needed files exist
+check_file_exists(ATLAS) 
+check_file_exists(ATLAS_T2) 
+check_file_exists(ATLAS_MASK) 
+check_file_exists(T1_INPUT_IMAGE) 
+check_file_exists(T2_INPUT_IMAGE)
+if not os.path.isfile(PSEUDOT1_INPUT_IMAGE):
+	check_file_exists(PD_INPUT_IMAGE)
+check_file_exists(B0_INPUT_IMAGE)
+
+# Checking Nifty Tools
+check_program_exists('reg_aladin')
+check_program_exists('reg_transform')
+check_program_exists('reg_tools')
+check_program_exists('reg_f3d')
+check_program_exists('seg_maths')
+
+# We get the filename and extensions	
+name = get_file_name(T1_INPUT_IMAGE)
+
+# Create the work temp dir
+if output_dir_name!='':
+	if os.path.isdir(output_dir_name):
+		output_dir=os.path.join(output_dir_name)
+	else:
+		output_dir=os.path.join(current_dir,output_dir_name)
+else:
+	output_dir=os.path.join(current_dir,"transformations"+output_dir)
+	
+if not os.path.isdir(output_dir):
+	os.makedirs(output_dir)
+
+# Go to the temp directory
+os.chdir(output_dir)
+progress_xml(0.01,"Changing to ouput dir: "+output_dir)
+
+###################################################
+# Start process
+###################################################
+progress_xml(0.02,"Computing pseudoT1")
+# Calculation of pseudo T1 extracted from SJ Hickman et al. 2002, Multiple Sclerosis Journal
+# http://msj.sagepub.com/content/8/5/433.full.pdf
+if not os.path.isfile(PSEUDOT1_INPUT_IMAGE):
+	execute_command_or_else_stop('reg_tools \
+				-in '+PD_INPUT_IMAGE+' \
+				-sub '+T2_INPUT_IMAGE+' \
+				-out '+PSEUDOT1_INPUT_IMAGE+'')
+
+progress_xml(0.15,"Registering T1 to pseudo T1 image")
+if not os.path.isfile('T2ToT1_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_aladin \
+				-ref '+PSEUDOT1_INPUT_IMAGE+' \
+				-flo '+T1_INPUT_IMAGE+' \
+				-aff T1ToT2_transformation.txt \
+				-res T1ToT2_affine.nii \
+				-rigOnly')
+
+if not os.path.isfile('T1ToAtlas_transformation.nii.gz'):
+	if not os.path.isfile('ATLAS_MASK_T1.nii.gz'):
+		execute_command_or_else_stop('reg_aladin \
+				-ref '+T1_INPUT_IMAGE+' \
+				-flo '+ATLAS+' \
+				-aff ATLASToT1_affine.txt \
+				-res ATLASToT1_affine.nii.gz')
+	
+		reg_resample(T1_INPUT_IMAGE,ATLAS_MASK,'-aff','ATLASToT1_affine.txt','ATLAS_MASK_T1.nii.gz')
+	
+	removeFile ('ATLASToT1_affine.nii.gz')
+	removeFile ('ATLASToT1_affine.txt')
+
+	execute_command_or_else_stop('seg_maths \
+					ATLAS_MASK_T1.nii.gz \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_T1_dilated.nii.gz')	
+
+	execute_command_or_else_stop('seg_maths \
+					'+ATLAS_MASK+' \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_original_dilated.nii.gz')
+
+	execute_command_or_else_stop('reg_aladin \
+				-ref '+ATLAS+' \
+				-rmask ATLAS_MASK_original_dilated.nii.gz \
+				-flo '+T1_INPUT_IMAGE+' \
+				-fmask ATLAS_MASK_T1_dilated.nii.gz \
+				-aff T1ToAtlas_affine.txt \
+				-res T1ToAtlas_affine.nii \
+				-rigOnly')
+
+	execute_command_or_else_stop('reg_f3d \
+				-ref '+ATLAS+' \
+				-flo '+T1_INPUT_IMAGE+' \
+				-aff T1ToAtlas_affine.txt  \
+				-cpp T1ToAtlas_cpp.nii.gz \
+				-res T1ToAtlas_affine.nii')
+
+	execute_command_or_else_stop('reg_transform \
+				-ref '+ATLAS+' \
+				-def T1ToAtlas_cpp.nii.gz \
+				T1ToAtlas_transformation.nii.gz')
+
+	#removeFile ('ATLAS_MASK_T1.nii.gz')
+	removeFile ('ATLAS_MASK_T1_dilated.nii.gz')
+	removeFile ('ATLAS_MASK_original_dilated.nii.gz')
+
+progress_xml(0.40,"Registering B0 to T2")
+if not os.path.isfile('B0ToT2_transformation.nii.gz'):
+	if not os.path.isfile('ATLAS_MASK_T2.nii.gz'):
+		# We are computing the T2 mask
+		execute_command_or_else_stop('reg_aladin \
+				-ref '+T2_INPUT_IMAGE+' \
+				-flo '+ATLAS_T2+' \
+				-aff ATLASToT2_affine.txt \
+				-res ATLASToT2_affine.nii')
+	
+		reg_resample(T2_INPUT_IMAGE,ATLAS_MASK,'-aff','ATLASToT2_affine.txt','ATLAS_MASK_T2.nii.gz')
+		removeFile ('ATLASToT2_affine.nii')
+		removeFile ('ATLASToT2_affine.txt')
+
+	if not os.path.isfile('ATLAS_MASK_B0.nii.gz'):
+		# We are computing the B0 mask
+		execute_command_or_else_stop('reg_aladin \
+				-ref '+B0_INPUT_IMAGE+' \
+				-flo '+ATLAS_T2+' \
+				-aff ATLASToB0_affine.txt \
+				-res ATLASToB0_affine.nii')
+	
+		reg_resample(B0_INPUT_IMAGE,ATLAS_MASK,'-aff','ATLASToB0_affine.txt','ATLAS_MASK_B0.nii.gz')
+		removeFile ('ATLASToB0_affine.nii')
+		removeFile ('ATLASToB0_affine.txt')
+
+	execute_command_or_else_stop('seg_maths \
+					ATLAS_MASK_T2.nii.gz \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_T2_dilated.nii.gz')
+
+	execute_command_or_else_stop('seg_maths \
+					ATLAS_MASK_B0.nii.gz \
+					-thr 0.5 \
+					-bin \
+					-dil 8\
+					ATLAS_MASK_B0_dilated.nii.gz')
+
+	execute_command_or_else_stop('reg_aladin \
+				-ref '+T2_INPUT_IMAGE+' \
+				-rmask ATLAS_MASK_T2_dilated.nii.gz \
+				-flo '+B0_INPUT_IMAGE+' \
+				-fmask ATLAS_MASK_B0_dilated.nii.gz \
+				-aff B0ToT2_affine.txt \
+				-res B0ToT2_affine.nii \
+				-rigOnly')
+			
+	execute_command_or_else_stop('reg_f3d \
+				-ref '+T2_INPUT_IMAGE+' \
+				-flo '+B0_INPUT_IMAGE+' \
+				-aff B0ToT2_affine.txt \
+				-cpp B0ToT2_cpp.nii.gz \
+				-res B0ToT2_affine.nii')
+
+	#removeFile ('ATLAS_MASK_T2.nii.gz')
+	#removeFile ('ATLAS_MASK_B0.nii.gz')
+	removeFile ('ATLAS_MASK_T2_dilated.nii.gz')
+	removeFile ('ATLAS_MASK_B0_dilated.nii.gz')
+
+progress_xml(0.80,"Computation of the corresponding deformation fields")
+
+if not os.path.isfile('T2ToT1_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-invAff T1ToT2_transformation.txt \
+				T2ToT1_transformation.txt')
+
+	execute_command_or_else_stop('reg_transform \
+				-ref '+T2_INPUT_IMAGE+' \
+				-def T2ToT1_transformation.txt \
+				T2ToT1_transformation.nii.gz')
+
+if not os.path.isfile('T1ToT2_transformation.nii.gz'):				
+	execute_command_or_else_stop('reg_transform \
+				-ref '+T1_INPUT_IMAGE+' \
+				-def T1ToT2_transformation.txt \
+				T1ToT2_transformation.nii.gz')
+
+if not os.path.isfile('T2ToAtlas_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-comp T2ToT1_transformation.nii.gz \
+				T1ToAtlas_transformation.nii.gz \
+				T2ToAtlas_transformation.nii.gz')
+
+if not os.path.isfile('B0ToT2_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-ref '+T2_INPUT_IMAGE+' \
+				-def B0ToT2_cpp.nii.gz \
+				B0ToT2_transformation.nii.gz')
+
+if not os.path.isfile('B0ToT1_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-ref '+T2_INPUT_IMAGE+' \
+				-ref2 '+T2_INPUT_IMAGE+' \
+				-comp B0ToT2_cpp.nii.gz \
+				T2ToT1_transformation.txt \
+				B0ToT1_transformation.nii.gz')
+
+removeFile ('T1ToAtlas_cpp.nii.gz')
+removeFile ('B0ToT2_cpp_DefField.nii.gz')
+removeFile ('T1ToT2_affine_DefField.nii.gz')
+removeFile ('T1ToT2_affine.nii')
+removeFile ('T1ToT2_transformation.txt')
+removeFile ('T2ToT1_transformation.txt')
+removeFile ('T1ToAtlas_affine.nii')
+removeFile ('T1ToAtlas_affine.txt')
+removeFile ('B0ToT2_affine.nii')
+removeFile ('B0ToT2_affine.txt')
+removeFile ('B0ToT2_cpp.nii.gz')
+
+if not os.path.isfile('AtlasToT1_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-invNrr T1ToAtlas_transformation.nii.gz \
+				'+T1_INPUT_IMAGE+' \
+				AtlasToT1_transformation.nii.gz')
+
+if not os.path.isfile('T1ToB0_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-invNrr B0ToT1_transformation.nii.gz \
+				'+B0_INPUT_IMAGE+' \
+				T1ToB0_transformation.nii.gz')
+
+if not os.path.isfile('T2ToB0_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-invNrr B0ToT2_transformation.nii.gz \
+				'+B0_INPUT_IMAGE+' \
+				T2ToB0_transformation.nii.gz')
+
+if not os.path.isfile('AtlasToT2_transformation.nii.gz'):
+	execute_command_or_else_stop('reg_transform \
+				-invNrr T2ToAtlas_transformation.nii.gz \
+				'+T2_INPUT_IMAGE+' \
+				AtlasToT2_transformation.nii.gz')
+
+if SPACE=='MNI' or SPACE=='ATLAS' or SPACE=='ALL' :
+	output_image_dir=os.path.join(current_dir,"ATLAS_Space")
+	
+	if not os.path.isdir(output_image_dir):
+		os.makedirs(output_image_dir)
+
+	# We move from T1 to ATLAS space
+	reg_resample(ATLAS,T1_INPUT_IMAGE,'-def','T1ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'T1.nii.gz'))
+	# We move from T2 to ATLAS space
+	reg_resample(ATLAS,T2_INPUT_IMAGE,'-def','T2ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'T2.nii.gz'))
+	# We move from PD to ATLAS space
+	reg_resample(ATLAS,PD_INPUT_IMAGE,'-def','T2ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'PD.nii.gz'))
+	# We move from PSEUDO_T1 to ATLAS space
+	reg_resample(ATLAS,PSEUDOT1_INPUT_IMAGE,'-def','T2ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'PSEUDO_T1.nii.gz'))
+	# We move from B0 to ATLAS space
+	reg_resample_2_space(ATLAS,T1_INPUT_IMAGE,B0_INPUT_IMAGE,'B0ToT1_transformation.nii.gz','T1ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'b0.nii.gz'))
+
+if SPACE=='B0' or SPACE=='DTI' or SPACE=='DWI' or SPACE=='NODDI' or SPACE=='ALL' :
+	output_image_dir=os.path.join(current_dir,"B0_Space")
+	
+	if not os.path.isdir(output_image_dir):
+		os.makedirs(output_image_dir)
+
+	# We move from T1 to B0 space
+	reg_resample(B0_INPUT_IMAGE,T1_INPUT_IMAGE,'-def','T1ToB0_transformation.nii.gz',os.path.join(output_image_dir,'T1.nii.gz'))
+	# We move from T2 to B0 space
+	reg_resample(B0_INPUT_IMAGE,T2_INPUT_IMAGE,'-def','T2ToB0_transformation.nii.gz',os.path.join(output_image_dir,'T2.nii.gz'))
+	# We move from PD to B0 space
+	reg_resample(B0_INPUT_IMAGE,PD_INPUT_IMAGE,'-def','T2ToB0_transformation.nii.gz',os.path.join(output_image_dir,'PD.nii.gz'))
+	# We move from PSEUDO_T1 to B0 space
+	reg_resample(B0_INPUT_IMAGE,PSEUDOT1_INPUT_IMAGE,'-def','T2ToB0_transformation.nii.gz',os.path.join(output_image_dir,'PSEUDO_T1.nii.gz'))
+	# We move from ATLAS to B0 space
+	reg_resample_2_space(B0_INPUT_IMAGE,T1_INPUT_IMAGE,ATLAS,'AtlasToT1_transformation.nii.gz','T1ToB0_transformation.nii.gz',os.path.join(output_image_dir,'ATLAS.nii.gz'))
+
+if SPACE=='T1' or SPACE=='ALL' :
+	output_image_dir=os.path.join(current_dir,"T1_Space")
+	
+	if not os.path.isdir(output_image_dir):
+		os.makedirs(output_image_dir)
+
+	# We move from ATLAS to T1 space
+	reg_resample(T1_INPUT_IMAGE,ATLAS,'-def','AtlasToT1_transformation.nii.gz',os.path.join(output_image_dir,'ATLAS.nii.gz'))
+	# We move from T2 to T1 space
+	reg_resample(T1_INPUT_IMAGE,T2_INPUT_IMAGE,'-def','T2ToT1_transformation.nii.gz',os.path.join(output_image_dir,'T2.nii.gz'))
+	# We move from PD to T1 space
+	reg_resample(T1_INPUT_IMAGE,PD_INPUT_IMAGE,'-def','T2ToT1_transformation.nii.gz',os.path.join(output_image_dir,'PD.nii.gz'))
+	# We move from PSEUDO_T1 to T1 space
+	reg_resample(T1_INPUT_IMAGE,PSEUDOT1_INPUT_IMAGE,'-def','T2ToT1_transformation.nii.gz',os.path.join(output_image_dir,'PSEUDO_T1.nii.gz'))
+	# We move from B0 to T1 space
+	reg_resample(T1_INPUT_IMAGE,B0_INPUT_IMAGE,'-def','B0ToT1_transformation.nii.gz',os.path.join(output_image_dir,'b0.nii.gz'))
+
+
+
+# Go back to the corresponding directory
+os.chdir(current_dir)
+
+progress_xml(1,"Done. The results are in: "+output_image_dir)
+
+# End of the main program
+exit(0)
+

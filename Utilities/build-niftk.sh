@@ -21,20 +21,14 @@
 build_root="."
 source_dir="NifTK"
 build_type="Release"
+uri=git@cmiclab.cs.ucl.ac.uk:CMIC/NifTK
 branch="dev"
-commit_time="now"
 threads=1
 do_coverage=false
 do_memcheck=false
-use_gcc44=false
 build_testing=true
 build_docs=true
-build_niftysim=false
 build_command_line_tools=true
-build_all_apps=true
-build_midas=true
-build_igi=true
-build_niftyview=true
 ctest_type="Nightly"
 make_install=false
 install_prefix="/usr/local"
@@ -91,6 +85,8 @@ Options:
 
     -d, --debug                     Sets the build type to Debug.
 
+    -u, --uri                       Tells which URI to clone the repository from.
+
     -b, --branch <branch>           Checks out the given branch. Default is 'dev'.
 
     -t, --time <time>               Checks out the commit from the given time. Default is 'now'.
@@ -101,15 +97,11 @@ Options:
 
     -v, --valgrind                  Does memory checks with valgrind.
 
-    --gcc44                         Uses gcc4.4. Deprecated. Set the CC and CXX variables, instead.
-
     -D <variable=value>             Sets a CMake variable for the build. Space after -D is optional.
 
     --no-testing                    Does not build the tests.
 
     --no-docs                       Does not build the documentation pages.
-
-    --build-niftysim                Builds NiftySim. (Switched off by default.)
 
     --no-command-line-tools         Does not build the command line applications and scripts.
 
@@ -153,23 +145,17 @@ Directories:
 
 Build options:
 
+  uri:                   $uri
   branch:                $branch
-  commit time:           $commit_time
   build type:            $build_type
   threads:               $threads
-  gcc44:                 $use_gcc44
   CMake variables:       $cmake_vars
 
 Components:
 
   testing:               $build_testing
   documentation:         $build_docs
-  NiftySim:              $build_niftysim
   command line tools:    $build_command_line_tools
-  all apps:              $build_all_apps
-  NiftyMIDAS:            $build_midas
-  NiftyIGI:              $build_igi
-  NiftyView:             $build_niftyview
 
 Test options:
 
@@ -237,15 +223,15 @@ do
   then
     build_type="Debug"
     shift 1
+  elif [ "$1" == "-u" ] || [ "$1" == "--uri" ]
+  then
+    check_next_arg ${@}
+    uri="$2"
+    shift 2
   elif [ "$1" == "-b" ] || [ "$1" == "--branch" ]
   then
     check_next_arg ${@}
     branch="$2"
-    shift 2
-  elif [ "$1" == "-t" ] || [ "$1" == "--time" ]
-  then
-    check_next_arg ${@}
-    commit_time="$2"
     shift 2
   elif [ "$1" == "-j" ] || [ "$1" == "--threads" ]
   then
@@ -259,10 +245,6 @@ do
   elif [ "$1" == "-v" ] || [ "$1" == "--valgrind" ]
   then
     do_memcheck=true
-    shift 1
-  elif [ "$1" == "--gcc44" ]
-  then
-    use_gcc44=true
     shift 1
   elif [ "$1" == "-D" ]
   then
@@ -281,29 +263,9 @@ do
   then
     build_docs=false
     shift 1
-  elif [ "$1" == "--build-niftysim" ]
-  then
-    build_niftysim=true
-    shift 1
   elif [ "$1" == "--no-command-line-tools" ]
   then
     build_command_line_tools=false
-    shift 1
-  elif [ "$1" == "--no-all-apps" ]
-  then
-    build_all_apps=false
-    shift 1
-  elif [ "$1" == "--no-midas" ]
-  then
-    build_midas=false
-    shift 1
-  elif [ "$1" == "--no-igi" ]
-  then
-    build_igi=false
-    shift 1
-  elif [ "$1" == "--no-niftyview" ]
-  then
-    build_niftyview=false
     shift 1
   elif [ "$1" == "--ctest-type" ]
   then
@@ -436,11 +398,6 @@ else
   ctest_command="make clean ; ctest -D ${ctest_type}"
 fi
 
-if $use_gcc44
-then
-  cmake_args="${cmake_args} -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
-fi
-
 if $build_docs
 then
   cmake_args="${cmake_args} -DNIFTK_GENERATE_DOXYGEN_HELP=ON"
@@ -455,46 +412,11 @@ else
   cmake_args="${cmake_args} -DBUILD_TESTING=OFF"
 fi
 
-if $build_niftysim
-then
-  cmake_args="${cmake_args} -DBUILD_NIFTYSIM=ON"
-else
-  cmake_args="${cmake_args} -DBUILD_NIFTYSIM=OFF"
-fi
-
 if $build_command_line_tools
 then
   cmake_args="${cmake_args} -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON"
 else
   cmake_args="${cmake_args} -DBUILD_COMMAND_LINE_PROGRAMS=OFF -DBUILD_COMMAND_LINE_SCRIPTS=OFF"
-fi
-
-if $build_all_apps
-then
-  cmake_args="${cmake_args} -DNIFTK_BUILD_ALL_APPS=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_BUILD_ALL_APPS=OFF"
-fi
-
-if $build_midas
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyMIDAS=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyMIDAS=OFF"
-fi
-
-if $build_igi
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyIGI=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyIGI=OFF"
-fi
-
-if $build_niftyview
-then
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyView=ON"
-else
-  cmake_args="${cmake_args} -DNIFTK_Apps/NiftyView=OFF"
 fi
 
 # -----------------------------------------------------------------------------
@@ -503,11 +425,10 @@ fi
 
 echo "Build started at `date` on `hostname -f`." > ${log_path}/1-start.log
 print_options >> ${log_path}/1-start.log
-run_command "git clone git@cmicdev.cs.ucl.ac.uk:CMIC/NifTK ${source_path}" 2-clone.log
+run_command "git clone ${uri} ${source_path}" 2-clone.log
 cd ${source_path}
 # For some reason the time-based checkout works only if the branch has already been checked out once.
 run_command "git checkout $branch" 3-checkout.log
-run_command "git checkout $branch@{$commit_time}" 3-checkout.log
 cd ${build_path}
 run_command "cmake ${cmake_args} ${source_path}" 4-cmake.log
 run_command "make -j ${threads}" 5-build.log

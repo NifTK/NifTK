@@ -81,9 +81,14 @@ public:
   itkSetObjectMacro(KernelTransform, KernelTransformType);
   itkGetModifiableObjectMacro(KernelTransform, KernelTransformType);
 
+  itkSetMacro(Invert, bool);
+  itkGetMacro(Invert, bool);
+
+  itkSetMacro(SplineHeightDimension, unsigned int);
+  itkGetMacro(SplineHeightDimension, unsigned int);
+
   itkSetMacro(Stiffness, double);
   itkGetMacro(Stiffness, double);
-
 
   /** Method Compute the Modified Time based on changed to the components. */
   ModifiedTimeType GetMTime(void) const;
@@ -109,6 +114,12 @@ private:
   void operator=( const Self & );
 
   KernelTransformPointerType m_KernelTransform;      // Coordinate transform to use
+
+  /// Invert the mask
+  bool m_Invert;
+
+  /// The image dimension to interpret as the spline 'height'
+  unsigned int m_SplineHeightDimension;
 
   /// The spline stiffness
   double m_Stiffness;

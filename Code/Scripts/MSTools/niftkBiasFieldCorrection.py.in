@@ -32,7 +32,8 @@ from _niftkCommon import *
 
 # This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 n3_options='-clobber -stop 0.000100 -fwhm 0.050000 -distance 150 -iterations 1000 -shrink 2'
-dir_output='norm_n3/'
+n4_options='--convergence 0.000100 --FWHM 0.050000 --niters 1000'
+dir_output='bfc/'
 
 # Directory configurations for change the default
 dir_niftyreg=""
@@ -66,15 +67,15 @@ def cleanup():
 	return
 # End of cleanup function
 
-# Begin of normalization function
-def normalization(img,dir_output,orientation,output_image):
+# Begin of bias_field_correction_n3 function
+def bias_field_correction_N3(img,dir_output,output_image):
 	"""
 	###########################################################################
-	# def normalization(img,dir_output,orientation) 
+	# def bias_field_correction_n3(img,dir_output,orientation) 
 	# Function  : Data normalization
 	# Param	    : img, input image 
 	# Param	    : dir_output, dir_output where we are working
-	# Param	    : orientation, volume orientation
+	# Param     : output_image, output filename	
 	###########################################################################
 	"""
 	global 	MASK_IMAGE
@@ -87,7 +88,7 @@ def normalization(img,dir_output,orientation,output_image):
 		# Delete temporally files
 		remove_files('*.mnc')
 		remove_files(img+'_n3*')
-		remove_files(img+'_ICBM152_mask_register*') 
+		remove_files(img+'_ATLAS_mask_register*') 
 		
 		progress_xml(0.10,"Register atlas to target space")
 		
@@ -95,7 +96,7 @@ def normalization(img,dir_output,orientation,output_image):
 		if not os.path.isfile('source-to-target-12dof.txt'):	
 			execute_command_or_else_stop(dir_niftyreg+'reg_aladin \
 				-ref '+img+'.nii.gz \
-				-flo '+HEAD_IMAGE+' \
+				-flo '+ATLAS_IMAGE+' \
 				-aff source-to-target-12dof.txt \
 				-res '+img+'_register.nii.gz \
 				-lp 5')
@@ -109,31 +110,31 @@ def normalization(img,dir_output,orientation,output_image):
 			-ref '+img+'.nii.gz \
 			-flo '+MASK_IMAGE+' \
 			-aff source-to-target-12dof.txt \
-			-res '+img+'_ICBM152_mask_register.nii.gz \
+			-res '+img+'_ATLAS_mask_register.nii.gz \
 			-NN')
 				
 		# Set tissues mask from float to char
 		execute_command_or_else_stop('fslmaths \
-			'+img+'_ICBM152_mask_register.nii.gz \
+			'+img+'_ATLAS_mask_register.nii.gz \
 			-bin \
-			'+img+'_ICBM152_mask_register-bin.nii.gz \
+			'+img+'_ATLAS_mask_register-bin.nii.gz \
 			-odt char')
 
 		progress_xml(0.40,"Set tissues mask from float to char")
 
 		# Change format to NIFTI
-		remove_files(img+'_ICBM152_mask_register.nii.gz') 
-		execute_command_or_else_stop('fslchfiletype NIFTI '+img+'_ICBM152_mask_register-bin '+img+'_ICBM152_mask_register.nii')
-		remove_files(img+'_ICBM152_mask_register-bin.*') 
+		remove_files(img+'_ATLAS_mask_register.nii.gz') 
+		execute_command_or_else_stop('fslchfiletype NIFTI '+img+'_ATLAS_mask_register-bin '+img+'_ATLAS_mask_register.nii')
+		remove_files(img+'_ATLAS_mask_register-bin.*') 
 		execute_command_or_else_stop('fslchfiletype NIFTI '+img+'.nii.gz '+img+'_2.nii')
 		
 		# Change format to mnc
-		execute_command_or_else_stop(mnidir+'nii2mnc '+orientation+' '+img+'_2.nii '+img+'.mnc')
-		execute_command_or_else_stop(mnidir+'nii2mnc '+orientation+' '+img+'_ICBM152_mask_register.nii '+img+'_ICBM152_mask_register.mnc')
+		execute_command_or_else_stop(mnidir+'nii2mnc '+img+'_2.nii '+img+'.mnc')
+		execute_command_or_else_stop(mnidir+'nii2mnc '+img+'_ATLAS_mask_register.nii '+img+'_ATLAS_mask_register.mnc')
 		
 		progress_xml(0.45,'Image ready to be normalized')
 		
-		mask=os.path.join(dir_output,img+'_ICBM152_mask_register.mnc')
+		mask=os.path.join(dir_output,img+'_ATLAS_mask_register.mnc')
 		input_file=os.path.join(dir_output,img+'.mnc')
 		output_file=os.path.join(dir_output,img+'_n3.mnc')
 		output_file_tmp=os.path.join(dir_output,img+'_n3_temp.nii')
@@ -158,29 +159,89 @@ def normalization(img,dir_output,orientation,output_image):
 		print "File input_image_normalized.nii exists, we don't repeat the calculation"
 
 	return 
-# End of normalization function
+# End of bias_field_correction_n3 function
+
+# Begin of bias_field_correction_n4 function
+def bias_field_correction_N4(img,dir_output,output_image):
+        """
+        ###########################################################################
+        # def bias_field_correction_n4(img,dir_output,output_image) 
+        # Function  : Data normalization
+        # Param     : img, input image 
+        # Param     : dir_output, dir_output where we are working
+        # Param     : output_image, output filename
+        ###########################################################################
+        """
+
+        # Normalization
+        if not os.path.isfile('input_image_normalized.nii'):
+                # Delete temporally files
+                remove_files(img+'_n4*')
+                remove_files(img+'_ATLAS_mask_register*') 
+
+                progress_xml(0.10,"Register atlas to target space")
+
+                # Register atlas to target space
+                if not os.path.isfile('source-to-target-12dof.txt'):
+                        execute_command_or_else_stop('reg_aladin \
+                                -ref '+img+'.nii.gz \
+                                -flo '+ATLAS_IMAGE+' \
+                                -aff source-to-target-12dof.txt \
+                                -res '+img+'_register.nii.gz \
+                                -lp 5')
+                else:
+                        print "File source-to-target-12dof.txt exists, we don't repeat the calculation"
+
+                progress_xml(0.35,"Moving tissues mask to target space")
+
+                # Move tissues mask to target space
+                execute_command_or_else_stop('reg_resample \
+                        -ref '+img+'.nii.gz \
+                        -flo '+MASK_IMAGE+' \
+                        -aff source-to-target-12dof.txt \
+                        -res '+img+'_ATLAS_mask_register.nii.gz \
+                        -NN')
+
+                # Set tissues mask from float to char
+                progress_xml(0.40,"Set tissues mask from float to char")
+                execute_command_or_else_stop('fslmaths \
+                        '+img+'_ATLAS_mask_register.nii.gz \
+                        -bin \
+                        '+img+'_ATLAS_mask_register-bin.nii.gz \
+                        -odt char')
+
+                progress_xml(0.50,"Starting N4")
+
+                # This options for n4 are the same than n3 in Boyes et al. Neuroimage 2008 page 1756
+                if not os.path.isfile(output_image):
+                        execute_command_or_else_stop('niftkN4BiasFieldCorrection '+n4_options+' \
+                        --inMask '+img+'_ATLAS_mask_register-bin.nii.gz \
+                        -i '+img+'.nii.gz \
+                        -o '+output_image+'')
+
+                progress_xml(0.90,'Image bias corrected.')
+
+        else:
+                print "File input_image_normalized.nii exists, we don't repeat the calculation"
+
+        return 
+# End of bias_field_correction_n4 function
+
 
 # XML Definition
 xml="""<?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>Multiple Sclerosis Tools.Normalization</category>
-   <title>N3 Data Normalization</title>
+   <category>Multiple Sclerosis Tools.Bias field correction</category>
+   <title>Bias Field Correction</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
    <li><i>Input image</i>, selects the file that you would like to normalize</li>
-   <li><i>Orient</i>, indicates in which orientation is the input images: AXIAL, CORONAL or SAGITALL.</li>
    <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
    <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
    <li><i>Output image</i>, select the name and the directory of the output file where the normalized image will be recorded.</li>
    </ul>
    <br>
-   <p><h2>Recomendations:</h2></p>
-   <p>
-   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
-   atlas head maks, mask and data files. For other data sources you would need to check it.
-   Check that it exists an important overlapping between mask, headmask, head and input file.<br>
-   </p>
-   ]]></description>
+    ]]></description>
    <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@</version>
    <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811907009494</documentation-url>
    <license>BSD</license>
@@ -188,41 +249,34 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <parameters>
       <label>Mandatory arguments</label>
       <description>Input image to be normalized and the name of output image</description>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName</name>
           <longflag>in</longflag>
 	  <description>Input image name</description>
 	  <label>Input image</label>
 	  <channel>input</channel>
       </image>
-      <string-enumeration>
-      <name>orientation</name>
-      <longflag>orient</longflag>
-      <description><![CDATA[Input images are in:
-      A - Axial orientation 
-      C - Coronal orientation 
-      S - Sagitall orientation]]></description>
-      <label>Input image orientation</label>
-      <default>A</default>
-      <element>A</element>
-      <element>C</element>
-      <element>S</element>
-    </string-enumeration>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <boolean>
+          <name>n4</name>
+          <longflag>n4</longflag>      
+          <description>Bias field correction using N4 method</description>
+          <label>N4 method</label>
+      </boolean>
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputHead</name>
           <longflag>atlas</longflag>
 	  <description>Input atlas data</description>
 	  <label>Input atlas data</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputMask</name>
           <longflag>mask</longflag>
 	  <description>Input atlas mask</description>
 	  <label>Input atlas mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions=".nii,.nii.gz,.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>Output image name</description>
@@ -246,27 +300,23 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 </executable>"""
 
 # Help usage message definition
-help="""This script is for N3 normalization using Boyes et al. Neuroimage 2008 normalization process. 
+help="""This script is for N3 or N4 bias field correction using Boyes et al. Neuroimage 2008 normalization process. 
 
-Usage: niftkNormalization.py -in input_file -orient <value> -out output_file -mask mask_file -atlas head_file
+Usage: niftkNormalization.py -in input_file -out output_file 
 
 Mandatory Arguments:
  
   -in			: is the input file 
-  -orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITALL (s) orientation
   -out			: is the output file 
-  -mask			: is the mask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii)
-  -atlas		: is the atlas data file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii)
 
 Optional Arguments: 
+  -mask			: is the mask atlas file
+  -atlas		: is the atlas data file
+  -n4			: runs N4 bias field correction method instead than N3, by default: N3
   -debug		: debug mode doesn't delete temporary intermediate images
   -same			: Always use the same temp directory for computing (this option is useful mixed with -debug)
 
-Recomendations:
-
-	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
-	atlas head maks, mask and data files. For other data sources you would need to check it.
-	Check it exists an important overlapping between mask, headmask, head and input file."""
+"""
 
 	
 # Program start
@@ -282,11 +332,19 @@ debug_mode=False
 same=False
 INPUT_IMAGE=''
 OUTPUT_IMAGE=''
-MASK_IMAGE=''
-HEAD_IMAGE=''
-
+MASK_IMAGE=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz') # MNI space
+ATLAS_IMAGE=os.path.join(os.getenv('FSLDIR','/usr/share/fsl'), 'data', 'standard', 'MNI152_T1_2mm.nii.gz') # MNI space
+N3_bfc=True
 # If no arguments, we print usage message
-if arg <= 1: 
+if arg <= 4: 
+	i=1
+	while i < arg:
+		# Clean unnecessary whitespaces
+		argv[i]=argv[i].strip()
+		if argv[i].upper() in ['--XML','-XML']: 
+			usage(xml,0)
+		i=i+1
+	# end while
 	usage(help)
 
 i=1
@@ -313,7 +371,7 @@ while i < arg:
 	i=i+1
 	
     elif argv[i].upper() in ['--ATLAS','-ATLAS']:
-	HEAD_IMAGE=argv[i+1]
+	ATLAS_IMAGE=argv[i+1]
 	i=i+1
 	
     elif argv[i].upper() in ['--ORIENT','-ORIENT']:
@@ -325,10 +383,6 @@ while i < arg:
 		
 	elif argv[i+1].upper() in ['S']: 
 		orientation="-sagittal"
-	else:
-		print "\n\nError: orientation ",argv[i]," ",argv[i+1]," not recognised\n\n"
-		usage(help)
-
 	i=i+1
 
     elif argv[i].upper() in ['--DEBUG','-DEBUG']:
@@ -336,6 +390,9 @@ while i < arg:
 
     elif argv[i].upper() in ['--SAME','-SAME']:
 	same=True
+	
+    elif argv[i].upper() in ['--N4','-N4']:
+	N3_bfc=False
 
     else:
 	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
@@ -345,11 +402,7 @@ while i < arg:
 # end while
 	
 # Start of the main program
-open_progress_xml('N3 Starts')
-
-if orientation == '' :
-	progress_xml(0.01,"Failed, specify an orientation.")
-	exit_program("Failed, specify an orientation is needed --orient")
+open_progress_xml('Bias Field Correction Starts')
 
 progress_xml(0.02,'Checking programs')
 
@@ -360,9 +413,13 @@ check_program_exists('fslmaths')
 check_program_exists('reg_aladin')
 check_program_exists('reg_resample')
 check_program_exists('reg_tools')
-check_program_exists('nii2mnc')
-check_program_exists('mnc2nii')
-check_program_exists('nu_correct')
+if N3_bfc:
+	check_program_exists('nii2mnc')
+	check_program_exists('mnc2nii')
+	check_program_exists('nu_correct')
+else: 
+	check_program_exists('niftkN4BiasFieldCorrection')
+
 
 # Checking the correctness of the output file 
 progress_xml(0.03,'Checking input and output file')
@@ -384,13 +441,13 @@ if len(glob.glob(os.path.basename(OUTPUT_IMAGE)+'*'))>0 :
 
 # We put all path in a normalized absolutized version of the pathname
 INPUT_IMAGE=os.path.abspath(INPUT_IMAGE)
-HEAD_IMAGE=os.path.abspath(HEAD_IMAGE)
+ATLAS_IMAGE=os.path.abspath(ATLAS_IMAGE)
 MASK_IMAGE=os.path.abspath(MASK_IMAGE)
 OUTPUT_IMAGE=os.path.abspath(OUTPUT_IMAGE)
 
 # Check if all needed files exist
 check_file_exists(INPUT_IMAGE) 
-check_file_exists(HEAD_IMAGE)
+check_file_exists(ATLAS_IMAGE)
 check_file_exists(MASK_IMAGE)
 
 # Get specific information
@@ -414,7 +471,10 @@ current_dir=os.getcwd()
 os.chdir(dir_output)
 
 # Start process
-normalization("input_image",dir_output,orientation,OUTPUT_IMAGE)
+if N3_bfc:
+	bias_field_correction_N3("input_image",dir_output,OUTPUT_IMAGE)
+else:
+	bias_field_correction_N4("input_image",dir_output,OUTPUT_IMAGE)
 
 # Go back to the corresponding directory
 os.chdir(current_dir)

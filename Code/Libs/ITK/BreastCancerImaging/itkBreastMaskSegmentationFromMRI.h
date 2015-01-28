@@ -195,6 +195,7 @@ public:
   void SetOutputFit( std::string fn ) { fileOutputRayleigh = fn; }
   void SetOutputCDF( std::string fn ) { fileOutputFreqLessBgndCDF = fn; }
   void SetOutputImageMax( std::string fn ) { fileOutputMaxImage = fn; }
+  void SetOutputImageMaxClosed( std::string fn ) { fileOutputMaxClosedImage = fn; }
   void SetOutputBackground( std::string fn ) { fileOutputBackground = fn; }
   void SetOutputChestPoints( std::string fn ) { fileOutputChestPoints = fn; }
   void SetOutputPectoralMask( std::string fn ) { fileOutputPectoral = fn; }
@@ -328,6 +329,7 @@ protected:
   std::string fileOutputRayleigh;
   std::string fileOutputFreqLessBgndCDF;
   std::string fileOutputMaxImage;
+  std::string fileOutputMaxClosedImage;
   std::string fileOutputBackground;
   std::string fileOutputPectoralSurfaceMask;
   std::string fileOutputChestPoints;
@@ -350,7 +352,8 @@ protected:
   typename InternalImageType::Pointer imBIFs;
 
   typename InternalImageType::Pointer imSpeedFuncInputImage; // This will be a copy of the structural image after smoothing
-  typename InternalImageType::Pointer imMax;
+  typename InternalImageType::Pointer imMaximum;
+  typename InternalImageType::Pointer imMaxClosed;
   typename InternalImageType::Pointer imPectoralVoxels;
   typename InternalImageType::Pointer imPectoralSurfaceVoxels;
   typename InternalImageType::Pointer imChestSurfaceVoxels;

@@ -85,6 +85,13 @@
       <label>Study directory prefix</label>
     </string>
  
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>The default behaviour is to only process new data. Selecting this option will recalculate all the data and overwrite any existing files.</description>
+      <label>Regenerate output files?</label>
+    </boolean>
+
   </parameters>
 
   <parameters advanced="true">

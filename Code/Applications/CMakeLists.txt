@@ -109,7 +109,9 @@ if(SlicerExecutionModel_FOUND)
     niftkSegmentForegroundFromBackground
     niftkSubsampleImage
     niftkSubtract
+    niftkThinPlateSplineScatteredDataPointSetToImage
     niftkUnaryImageOperatorsOnDirectoryTree
+    niftkVesselExtractor
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
@@ -131,6 +133,7 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
+      niftkBreastDCEandADC
       niftkBreastDensityFromMRIs
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
@@ -253,11 +256,10 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
-  niftkThinPlateSplineScatteredDataPointSetToImage
   niftkThreshold
   niftkTransformation
   niftkTransformPoint3Dto2D
-  niftkVesselExtractor
+  #niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
   niftkKmeansClassifier

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<lut order="17" class="LinearLookupTable" displayName="Matlab cool" premultiplied="1">
+<lut order="18" class="LinearLookupTable" displayName="Matlab cool" premultiplied="1">
 <colour r="0" g="1" b="1" />
 <colour r="0.0039" g="0.9961" b="1" />
 <colour r="0.0078" g="0.9922" b="1" />

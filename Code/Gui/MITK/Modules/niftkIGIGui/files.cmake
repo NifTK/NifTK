@@ -84,3 +84,21 @@ set(UI_FILES
 set(QRC_FILES
   #Resources/niftkIGIGui.qrc
 )
+
+# optional audio data source depends on qt-multimedia, which may not be available.
+if(QT_QTMULTIMEDIA_INCLUDE_DIR)
+  set(CPP_FILES
+    ${CPP_FILES}
+    DataSources/AudioDataSource.cxx
+    DataSources/AudioDataSourceGui.cxx
+  )
+  set(MOC_H_FILES
+    ${MOC_H_FILES}
+    DataSources/AudioDataSource.h
+    DataSources/AudioDataSourceGui.h
+  )
+  set(UI_FILES
+    ${UI_FILES}
+    DataSources/AudioDataSourceGui.ui
+  )
+endif()

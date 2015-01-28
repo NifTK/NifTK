@@ -119,6 +119,7 @@ private:
 
   bool                                         m_ShowCloneImageGroup;
   int                                          m_NameCounter;
+  bool                                         m_Show2DWindow;
 };
 
 #endif // TrackedImageView_h

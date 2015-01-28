@@ -16,6 +16,7 @@
 #define __itkThinPlateSplineScatteredDataPointSetToImageFilter_txx
 
 #include <itkThinPlateSplineScatteredDataPointSetToImageFilter.h>
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkProgressReporter.h>
 #include <itkThinPlateSplineKernelTransform.h>
 #include <itkImageRegionIterator.h>
@@ -42,7 +43,10 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
 {
 
   m_KernelTransform = KernelTransformType::New();
-  
+
+  m_Invert = false;
+  m_SplineHeightDimension = ImageDimension - 1;
+  m_Stiffness = 1.;
 }
 
 /**
@@ -68,9 +72,28 @@ void
 ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage >
 ::PrepareKernelBaseSpline()
 {
+
+  unsigned int i = 0;
   unsigned int iLandmark = 0;
 
-  // Need to generate the 'z=0' point set
+  typedef typename KernelTransformType::InputPointType  InputPointType;
+  typedef typename KernelTransformType::OutputPointType OutputPointType;
+
+  OutputIndexType idxBaseline;  // Index to current output pixel
+  InputPointType ptBaseline;   // Coordinates of current output pixel
+
+  OutputImageType *outputPtr = this->GetOutput();
+
+  OutputSizeType outSize = outputPtr->GetLargestPossibleRegion().GetSize();
+
+  for ( i=0; i<ImageDimension; i++ )
+  {
+    idxBaseline[ i ] = 0;
+  }
+
+  outputPtr->TransformIndexToPhysicalPoint( idxBaseline, ptBaseline );
+
+  // Need to generate the 'height = min' point set
 
   const TInputPointSet *inputPointSet = this->GetInput();
 
@@ -82,19 +105,31 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
 
   typename LandmarkContainer::Iterator pointDataIterator;
 
-  typename LandmarkContainer::ConstIterator It = inputPointSet->GetPoints()->Begin();
+  typename LandmarkContainer::ConstIterator itInputPoints;
 
-  while( It != inputPointSet->GetPoints()->End() )
+  itInputPoints = inputPointSet->GetPoints()->Begin();
+
+  while( itInputPoints != inputPointSet->GetPoints()->End() )
   {
-    LandmarkPointType landmark = It.Value();
+    LandmarkPointType landmark = itInputPoints.Value();
+
+    if ( this->GetDebug() )
+    {
+      std::cout << "Landmark " << iLandmark << " Target: " << landmark;
+    }
 
     targetLandmarks->InsertElement( iLandmark, landmark );
 
-    landmark[ImageDimension - 1] = 0.;
+    landmark[ m_SplineHeightDimension ] = ptBaseline[ m_SplineHeightDimension ];
     sourceLandmarks->InsertElement( iLandmark, landmark );
 
+    if ( this->GetDebug() )
+    {
+      std::cout << " Source: " << landmark << std::endl;
+    }
+
     iLandmark++;
-    It++;
+    itInputPoints++;
   }
 
   m_KernelTransform->GetModifiableTargetLandmarks()->SetPoints( targetLandmarks );
@@ -133,10 +168,6 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
   typedef ImageRegionIteratorWithIndex< TOutputImage > OutputIterator;
   typedef itk::ImageLinearIteratorWithIndex< TOutputImage > LineIteratorType;
 
-  // First subsample the input displacement field in order to create
-  // the KernelBased spline.
-  this->PrepareKernelBaseSpline();
-
   itkDebugMacro(<< "Actually executing");
 
   // Get the output pointers
@@ -158,6 +189,10 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
   outputPtr->Allocate();
   outputPtr->FillBuffer( 0 );
 
+  // First subsample the input displacement field in order to create
+  // the KernelBased spline.
+  this->PrepareKernelBaseSpline();
+
   // Create an iterator that will generate the indices for which the
   // height of the spline will be calculated
   OutputImageRegionType region;
@@ -166,7 +201,7 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
   region = outputPtr->GetRequestedRegion();
   size = region.GetSize();
 
-  size[ ImageDimension - 1 ] = 1; // We're only interested in the xy plane (3D) or x (2D)
+  size[ m_SplineHeightDimension ] = 1; // We're only interested in the xy plane (3D) or x (2D)
   region.SetSize( size );
 
   OutputIterator outIt(outputPtr, region);
@@ -183,9 +218,12 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
   region = outputPtr->GetRequestedRegion();
   size = region.GetSize();
 
-  for ( i=0; i<ImageDimension - 1; i++ )
+  for ( i=0; i<ImageDimension; i++ )
   {
-    size[ i ] = 1;              // Single column of voxels to set the height in the mask
+    if ( i != m_SplineHeightDimension )
+    {
+      size[ i ] = 1;              // Single column of voxels to set the height in the mask
+    }
   }
 
   region.SetSize( size );
@@ -196,7 +234,10 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
     outputIndex = outIt.GetIndex();
     outputPtr->TransformIndexToPhysicalPoint( outputIndex, outputPoint );
 
-    //std::cout << "Index: " << outputIndex << "  Point: " << outputPoint;
+    if ( this->GetDebug() )
+    {
+      std::cout << "Index: " << outputIndex << "  Point: " << outputPoint;
+    }
 
     // Compute corresponding spline height
     interpolatedDisplacement = m_KernelTransform->TransformPoint( outputPoint );
@@ -204,18 +245,21 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
     region.SetIndex( outputIndex );
     LineIteratorType itHeight( outputPtr, region );
 
-    itHeight.SetDirection( ImageDimension - 1 );
+    itHeight.SetDirection( m_SplineHeightDimension );
 
     outputPtr->TransformPhysicalPointToIndex( interpolatedDisplacement, outputIndex );
     
     itHeight.GoToBegin();
     itHeight.GoToBeginOfLine();
 
-    //std::cout << "   Displacement: " << interpolatedDisplacement 
-    //          << "   Index: " << outputIndex << std::endl;
+    if ( this->GetDebug() )
+    {
+      std::cout << "   Displacement: " << interpolatedDisplacement 
+                << "   Index: " << outputIndex << std::endl;
+    }
 
     for ( i=0; 
-          i<=outputIndex[ ImageDimension - 1 ] && ( ! itHeight.IsAtEndOfLine() );
+          i<=outputIndex[ m_SplineHeightDimension ] && ( ! itHeight.IsAtEndOfLine() );
           i++, ++itHeight )
     {
       itHeight.Set( 1 );
@@ -225,6 +269,22 @@ ThinPlateSplineScatteredDataPointSetToImageFilter< TInputPointSet, TOutputImage 
     ++outIt;
     progress.CompletedPixel();
   }
+
+
+  // Invert the mask?
+
+  if ( m_Invert )
+  {
+    typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<OutputImageType> InvertFilterType;
+    typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+    
+    invertFilter->SetInput( outputPtr );
+    
+    invertFilter->Update( );
+
+    this->GraftOutput( invertFilter->GetOutput() );
+  }
+
 }
 
 

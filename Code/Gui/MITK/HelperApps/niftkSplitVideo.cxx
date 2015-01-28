@@ -14,10 +14,11 @@
 
 #include <cstdlib>
 #include <limits>
+#include <fstream>
+
 #include <mitkSplitVideo.h>
 #include <niftkSplitVideoCLP.h>
 
-#include <fstream>
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
