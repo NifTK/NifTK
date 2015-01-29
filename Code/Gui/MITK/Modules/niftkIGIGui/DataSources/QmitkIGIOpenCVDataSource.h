@@ -121,9 +121,9 @@ private:
   std::string                       m_PlaybackDirectoryName;
   int                               m_ChannelNumber;
   std::string                       m_SourceName;
-  
-  QMutex                            m_Lock;
-  static QSet<int>                  m_SourcesInUse;  
+
+  static QMutex                     s_Lock;
+  static QSet<int>                  s_SourcesInUse;
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)
