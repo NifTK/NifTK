@@ -924,12 +924,15 @@ endif(MITK_FOUND)
 if (BUILD_MESHING)
   find_package(CGAL REQUIRED COMPONENTS Core ImageIO)
   include("${CGAL_USE_FILE}")
-  # UseCGAL.cmake is buggy: despite reading the correct requested modules
-  # it only adds the libCGAL.so base library to CGAL_LIBRARIES
-  set(CGAL_LIBRARIES 
-    CGAL
-    CGAL_Core
-    CGAL_ImageIO)
+
+  if(NOT WIN32)
+    # UseCGAL.cmake is buggy: despite reading the correct requested modules
+    # it only adds the libCGAL.so base library to CGAL_LIBRARIES
+    set(CGAL_LIBRARIES
+      CGAL
+      CGAL_Core
+      CGAL_ImageIO)
+  endif()
 endif (BUILD_MESHING)
 
 ######################################################################
