@@ -955,7 +955,7 @@ bool RegisterAndResample( std::string fileTarget,
   std::string fileNonRigidTransform;
   std::string fileNonRigidRegistered = CreateRegisteredFilename( fileTarget,
                                                                  fileSource,
-                                                                 std::string( "NonAffineTo" ) );
+                                                                 std::string( "NonRigidTo" ) );
 
   return ( AffineRegisterImages( fileTarget, 
                                  fileSource, 
