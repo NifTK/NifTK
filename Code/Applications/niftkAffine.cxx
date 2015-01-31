@@ -636,39 +636,39 @@ int main(int argc, char** argv)
 
   // The similarity measure
 
-  if     ( strSimilarityMeasure == std::string( "Sum Squared Difference" ) )
+  if     ( strSimilarityMeasure == std::string( "Sum_Squared_Difference" ) )
   {
     args.similarityMeasure = 1;
   }
-  else if( strSimilarityMeasure == std::string( "Mean Squared Difference" ) )
+  else if( strSimilarityMeasure == std::string( "Mean_Squared_Difference" ) )
   {
     args.similarityMeasure = 2;
   }
-  else if( strSimilarityMeasure == std::string( "Sum Absolute Difference" ) )
+  else if( strSimilarityMeasure == std::string( "Sum_Absolute_Difference" ) )
   {
     args.similarityMeasure = 3;
   }
-  else if( strSimilarityMeasure == std::string( "Normalized Cross Correlation" ) )
+  else if( strSimilarityMeasure == std::string( "Normalized_Cross_Correlation" ) )
   {
     args.similarityMeasure = 4;
   }
-  else if( strSimilarityMeasure == std::string( "Ratio Image Uniformity" ) )
+  else if( strSimilarityMeasure == std::string( "Ratio_Image_Uniformity" ) )
   {
     args.similarityMeasure = 5;
   }
-  else if( strSimilarityMeasure == std::string( "Partitioned Image Uniformity" ) )
+  else if( strSimilarityMeasure == std::string( "Partitioned_Image_Uniformity" ) )
   {
     args.similarityMeasure = 6;
   }
-  else if( strSimilarityMeasure == std::string( "Joint Entropy" ) )
+  else if( strSimilarityMeasure == std::string( "Joint_Entropy" ) )
   {
     args.similarityMeasure = 7;
   }
-  else if( strSimilarityMeasure == std::string( "Mutual Information" ) )
+  else if( strSimilarityMeasure == std::string( "Mutual_Information" ) )
   {
     args.similarityMeasure = 8;
   }
-  else if( strSimilarityMeasure == std::string( "Normalized Mutual Information" ) )
+  else if( strSimilarityMeasure == std::string( "Normalized_Mutual_Information" ) )
   {
     args.similarityMeasure = 9;
   }
@@ -679,11 +679,11 @@ int main(int argc, char** argv)
   {
     args.transformation = 2;
   }
-  else if( strTransformation == std::string( "Rigid and Scale" ) )
+  else if( strTransformation == std::string( "Rigid_and_Scale" ) )
   {
     args.transformation = 3;
   }
-  else if( strTransformation == std::string( "Full Affine" ) )
+  else if( strTransformation == std::string( "Full_Affine" ) )
   {
     args.transformation = 4;
   }
@@ -694,15 +694,15 @@ int main(int argc, char** argv)
   {
     args.registrationStrategy = 1;
   }
-  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate" ) )
+  else if( strRegnStrategy == std::string( "Switching_Trans_Rotate" ) )
   {
     args.registrationStrategy = 2;
   }
-  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate, Scale" ) )
+  else if( strRegnStrategy == std::string( "Switching_Trans_Rotate_Scale" ) )
   {
     args.registrationStrategy = 3;
   }
-  else if( strRegnStrategy == std::string( "Switching:Rigid, Scale" ) )
+  else if( strRegnStrategy == std::string( "Switching_Rigid_Scale" ) )
   {
     args.registrationStrategy = 4;
   }
@@ -714,23 +714,23 @@ int main(int argc, char** argv)
   {
     args.optimizer = 1;
   }
-  else if( strOptimizer == std::string( "Gradient Descent" ) )
+  else if( strOptimizer == std::string( "Gradient_Descent" ) )
   {
     args.optimizer = 2;
   }
-  else if( strOptimizer == std::string( "Regular Step Size Gradient Descent" ) )
+  else if( strOptimizer == std::string( "Regular_Step_Size_Gradient_Descent" ) )
   {
     args.optimizer = 3;
   }
-  else if( strOptimizer == std::string( "Powell optimisation" ) )
+  else if( strOptimizer == std::string( "Powell_optimisation" ) )
   {
     args.optimizer = 5;
   }
-  else if( strOptimizer == std::string( "Regular Step Size" ) )
+  else if( strOptimizer == std::string( "Regular_Step_Size" ) )
   {
     args.optimizer = 6;
   }
-  else if( strOptimizer == std::string( "UCL Powell optimisation" ) )
+  else if( strOptimizer == std::string( "UCL_Powell_optimisation" ) )
   {
     args.optimizer = 7;
   }

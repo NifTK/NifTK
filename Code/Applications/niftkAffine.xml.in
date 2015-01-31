@@ -95,16 +95,16 @@
       <longflag>similarity</longflag>
       <description>The image similarity metric.</description>
       <label>Similarity metric</label>
-      <default>Normalized Cross Correlation</default>
-      <element>Normalized Cross Correlation</element>
-      <element>Sum Squared Difference</element>
-      <element>Mean Squared Difference</element>
-      <element>Sum Absolute Difference</element>
-      <element>Ratio Image Uniformity</element>
-      <element>Partitioned Image Uniformity</element>
-      <element>Joint Entropy</element>
-      <element>Mutual Information</element>
-      <element>Normalized Mutual Information</element>
+      <default>Normalized_Cross_Correlation</default>
+      <element>Normalized_Cross_Correlation</element>
+      <element>Sum_Squared_Difference</element>
+      <element>Mean_Squared_Difference</element>
+      <element>Sum_Absolute_Difference</element>
+      <element>Ratio_Image_Uniformity</element>
+      <element>Partitioned_Image_Uniformity</element>
+      <element>Joint_Entropy</element>
+      <element>Mutual_Information</element>
+      <element>Normalized_Mutual_Information</element>
     </string-enumeration>
 
     <string-enumeration>
@@ -112,10 +112,10 @@
       <longflag>tr</longflag>
       <description>The transformation to use.</description>
       <label>Transformation</label>
-      <default>Rigid and Scale</default>
-      <element>Rigid and Scale</element>
+      <default>Rigid_and_Scale</default>
+      <element>Rigid_and_Scale</element>
       <element>Rigid</element>
-      <element>Full Affine</element>
+      <element>Full_Affine</element>
     </string-enumeration>
 
     <string-enumeration>
@@ -124,13 +124,13 @@
       <longflag>optimiser</longflag>
       <description>The specific registration optimiser to use.</description>
       <label>Optimiser</label>
-      <default>Regular Step Size</default>
-      <element>Regular Step Size</element>
+      <default>Regular_Step_Size</default>
+      <element>Regular_Step_Size</element>
       <element>Simplex</element>
-      <element>Gradient Descent</element>
-      <element>Regular Step Size Gradient Descent</element>
-      <element>Powell Optimisation</element>
-      <element>UCL Powell optimisation</element>
+      <element>Gradient_Descent</element>
+      <element>Regular_Step_Size_Gradient_Descent</element>
+      <element>Powell_Optimisation</element>
+      <element>UCL_Powell_optimisation</element>
     </string-enumeration>
 
     <integer>
@@ -221,9 +221,9 @@
       <label>Registration strategy</label>
       <default>Normal</default>
       <element>Normal</element>
-      <element>Switching:Trans, Rotate</element>
-      <element>Switching:Trans, Rotate, Scale</element>
-      <element>Switching:Rigid, Scale</element>
+      <element>Switching_Trans_Rotate</element>
+      <element>Switching_Trans_Rotate_Scale</element>
+      <element>Switching_Rigid_Scale</element>
     </string-enumeration>
 
     <integer>

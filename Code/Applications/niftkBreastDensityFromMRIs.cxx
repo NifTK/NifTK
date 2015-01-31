@@ -22,10 +22,12 @@
  */
 
 
+#include <string>
 #include <vector>
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 
 #include <QProcess>
 #include <QString>
@@ -36,6 +38,7 @@
 #include <boost/progress.hpp>
 #include <boost/iostreams/tee.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>
@@ -63,6 +66,11 @@
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkITKImageToNiftiImage.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
+#include <itkOrientImageFilter.h>
+#include <itkConversionUtils.h>
+#include <itkTransformFileReader.h>
+#include <itkTransformFactoryBase.h>
+#include <itkAffineTransform.h>
 
 
 //#define LINK_TO_SEG_EM
@@ -157,6 +165,90 @@ std::string CreateRegisteredFilename( std::string fileTarget,
 
 
 // -------------------------------------------------------------------------
+// GetOrientationInfo()
+// -------------------------------------------------------------------------
+
+std::string GetOrientationInfo( ImageType::Pointer image )
+{
+  itk::SpatialOrientationAdapter adaptor;
+  ImageType::DirectionType direction;
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      direction[i][j] = image->GetDirection()[i][j];
+    }
+  }
+
+  return itk::ConvertSpatialOrientationToString(adaptor.FromDirectionCosines(direction));
+}
+
+
+// -------------------------------------------------------------------------
+// PrintOrientationInfo()
+// -------------------------------------------------------------------------
+
+void PrintOrientationInfo( ImageType::Pointer image )
+{
+  std::cout << "ITK orientation: " << GetOrientationInfo( image ) << std::endl;
+}
+
+
+// -------------------------------------------------------------------------
+// ReorientateImage()
+// -------------------------------------------------------------------------
+
+ImageType::Pointer ReorientateImage( ImageType::Pointer inImage, 
+                                     std::string desiredOrientation )
+{
+  std::string inOrientation = GetOrientationInfo( inImage );
+  std::cout << "Input ITK orientation: " << inOrientation << std::endl;
+
+  if ( inOrientation.compare( desiredOrientation ) == 0 )
+  {
+    return inImage;
+  }
+  
+  typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
+
+  OrientImageFilterType::FlipAxesArrayType flipAxes;
+  OrientImageFilterType::PermuteOrderArrayType permuteAxes;
+
+  OrientImageFilterType::Pointer orienter = OrientImageFilterType::New();
+
+  orienter->UseImageDirectionOn();
+  orienter->SetDesiredCoordinateOrientation( itk::ConvertStringToSpatialOrientation( desiredOrientation.c_str() ) );
+
+  orienter->SetInput( inImage );
+
+  try
+  {
+    orienter->Update();
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "ERROR: Failed to reorientate image: " << err << std::endl; 
+    return 0;
+  }                
+
+  flipAxes = orienter->GetFlipAxes();
+  permuteAxes = orienter->GetPermuteOrder();
+
+  std::cout << std::endl
+            << "Permute Axes: " << permuteAxes << std::endl
+            << "Flip Axes: "    << flipAxes << std::endl << std::endl;
+
+  ImageType::Pointer reorientatedImage = orienter->GetOutput();
+  reorientatedImage->DisconnectPipeline();
+    
+  std::cout << "Output ITK orientation: " << GetOrientationInfo( reorientatedImage ) << std::endl;
+
+  return reorientatedImage;
+};
+
+
+// -------------------------------------------------------------------------
 // class InputParameters
 // -------------------------------------------------------------------------
 
@@ -188,11 +280,14 @@ public:
   std::string strSeriesDescDixonFat;
 
   std::string progSegEM;
-  std::string progRegAladin;
+  std::string progRegAffine;
   std::string progRegNonRigid;
   std::string progRegResample;
 
-  float detJacobianPenalty;
+  QStringList argsSegEM;
+  QStringList argsRegAffine;
+  QStringList argsRegNonRigid;
+  QStringList argsRegResample;
 
   std::ofstream *foutLog;
   std::ofstream *foutOutputCSV;
@@ -216,11 +311,10 @@ public:
                    std::string strFatSatT1,
                    std::string strDixonWater,
                    std::string strDixonFat,
-                   std::string segEM,
-                   std::string regAladin,
-                   std::string regNonRigid,
-                   std::string regResample,
-                   float detJacPenalty ) {
+                   std::string segEM,       QStringList aSegEM,
+                   std::string regAffine,   QStringList aRegAffine,
+                   std::string regNonRigid, QStringList aRegNonRigid,
+                   std::string regResample, QStringList aRegResample ) {
 
     std::stringstream message;
 
@@ -244,12 +338,15 @@ public:
     strSeriesDescDixonWater = strDixonWater;
     strSeriesDescDixonFat = strDixonFat;
 
-    progSegEM = segEM;
-    progRegAladin   = regAladin;
+    progSegEM       = segEM;
+    progRegAffine   = regAffine;
     progRegNonRigid = regNonRigid;
     progRegResample = regResample;
 
-    detJacobianPenalty = detJacPenalty;
+    argsSegEM       = aSegEM;
+    argsRegAffine   = aRegAffine;
+    argsRegNonRigid = aRegNonRigid;
+    argsRegResample = aRegResample;
 
     if ( fileLog.length() > 0 )
     {
@@ -361,11 +458,14 @@ public:
             << "DIXON water image series description: " << strSeriesDescDixonWater << std::endl
             << "DIXON fat image series description: " << strSeriesDescDixonFat << std::endl
             << std::endl
-            << "NiftySeg 'seg_EM' executable: " << progSegEM << std::endl
-            << "NiftyReg 'reg_aladin' executable: " << progRegAladin << std::endl
-            << "NiftyReg 'reg_f3d' executable: "    << progRegNonRigid << std::endl
-            << "NiftyReg 'reg_resample' executable: "    << progRegResample << std::endl
-            << "NiftyReg 'reg_f3d' Jacobian penalty: " << detJacobianPenalty << std::endl
+            << "Segmentation executable: "
+            << progSegEM       << " " << argsSegEM.join(" ").toStdString() << std::endl
+            << "Affine registration executable: "
+            << progRegAffine   << " " << argsRegAffine.join(" ").toStdString() << std::endl
+            << "Non-rigid registration executable: "
+            << progRegNonRigid << " " << argsRegNonRigid.join(" ").toStdString() << std::endl
+            << "Resampling executable: "
+            << progRegResample << " " << argsRegResample.join(" ").toStdString() << std::endl
             << std::endl;
 
     PrintMessage( message );
@@ -421,6 +521,7 @@ public:
     {   
       message << std::endl << "Read " << description << " from file: " << fileInput << std::endl;
       PrintMessage( message );
+
       return true;
     }
     else
@@ -501,28 +602,131 @@ public:
 
 
 // -------------------------------------------------------------------------
+// ConvertAffineTransformationMatrixToRegF3D()
+// -------------------------------------------------------------------------
+
+bool ConvertAffineTransformationMatrixToRegF3D( std::string fileAffineTransformFullPath,
+                                                InputParameters &args ) 
+{
+  std::stringstream message;
+
+  typedef itk::AffineTransform<double,3> DoubleAffineType;
+
+  itk::TransformFactoryBase::RegisterDefaultTransforms();
+
+  typedef itk::TransformFileReader TransformReaderType;
+  TransformReaderType::Pointer transformFileReader = TransformReaderType::New();
+
+  transformFileReader->SetFileName( fileAffineTransformFullPath );
+
+  try
+  {
+    transformFileReader->Update();         
+  }
+  catch ( itk::ExceptionObject &e )
+  {
+    message << "ERROR: Failed to read " << fileAffineTransformFullPath << std::endl;
+    args.PrintError( message );
+    return false;
+  }
+ 
+  typedef TransformReaderType::TransformListType TransformListType;
+  typedef TransformReaderType::TransformType BaseTransformType;
+  
+  TransformListType *list = transformFileReader->GetTransformList();
+  BaseTransformType::Pointer transform = list->front();
+  
+  transform->Print( std::cout );
+
+  DoubleAffineType *doubleAffine = static_cast< DoubleAffineType * >( transform.GetPointer() );
+ 
+  if( doubleAffine == NULL )
+  {
+    message << "ERROR: Could not cast: " << fileAffineTransformFullPath << std::endl;
+    args.PrintError( message );
+    return false;
+  }
+
+  std::ofstream *foutMatrix;
+
+  foutMatrix = new std::ofstream( fileAffineTransformFullPath.c_str() );
+  
+  if ( (! *foutMatrix) || foutMatrix->bad() ) {
+    message << "ERROR: Could not open output file: " << fileAffineTransformFullPath << std::endl;
+    args.PrintMessage( message );
+    return false;
+  }
+
+
+  DoubleAffineType::MatrixType matrix = doubleAffine->GetMatrix();
+  DoubleAffineType::OffsetType offset = doubleAffine->GetOffset();
+
+  int i, j;
+
+  for ( j=0; j<3; j++ )
+  {
+    for ( i=0; i<3; i++ )
+    {
+      *foutMatrix << matrix[j][i] << " ";
+    }
+  }
+
+  for ( j=0; j<3; j++ )
+  {
+    *foutMatrix << offset[j] << " ";
+  }
+
+  *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
+
+  message << "Affine matrix: " << matrix << std::endl;
+  args.PrintMessage( message );
+
+  foutMatrix->close();
+  delete foutMatrix;
+};
+
+
+// -------------------------------------------------------------------------
 // AffineRegisterImages()
 // -------------------------------------------------------------------------
 
 bool AffineRegisterImages( std::string fileTarget, 
-                           std::string fileSource, 
-                           std::string fileRegistered,
-                           std::string &fileAffineTransform,
-                           InputParameters &args ) 
+                          std::string fileSource, 
+                          std::string fileRegistered,
+                          std::string &fileAffineTransform,
+                          InputParameters &args ) 
 {
+  bool flgUsingNiftkAffine = false;
   std::stringstream message;
 
   fileAffineTransform = niftk::ModifyImageFileSuffix( fileRegistered, std::string( "_Transform.txt" ) );
 
-  QStringList argsRegAffine; 
-  argsRegAffine 
-    << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
-    << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
-    << "-result" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
-    << "-aff"    << niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() ).c_str();
-  
+  std::string fileAffineTransformFullPath 
+    = niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() );
+
+  QStringList argsRegAffine = args.argsRegAffine; 
+
+  if ( args.progRegAffine.find( "niftkAffine" ) != std::string::npos ) 
+  {
+    flgUsingNiftkAffine = true;
+
+    argsRegAffine 
+      << "--ti" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
+      << "--si" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
+      << "--oi" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
+      << "--om" << fileAffineTransformFullPath.c_str();
+  }
+  else if ( args.progRegAffine.find( "reg_aladin" ) != std::string::npos ) 
+  {
+    argsRegAffine 
+      << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
+      << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
+      << "-result" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
+      << "-aff"    << fileAffineTransformFullPath.c_str();
+  }
+
   message << std::endl << "Executing affine registration (QProcess): "
-          << std::endl << "   " << args.progRegAladin;
+          << std::endl << "   " << args.progRegAffine;
   for(int i=0;i<argsRegAffine.size();i++)
   {
     message << " " << argsRegAffine[i].toStdString();
@@ -534,17 +738,25 @@ bool AffineRegisterImages( std::string fileTarget,
   QString outRegAffine;
   
   callRegAffine.setProcessChannelMode( QProcess::MergedChannels );
-  callRegAffine.start( args.progRegAladin.c_str(), argsRegAffine );
+
+
+  boost::posix_time::ptime startTime = boost::posix_time::second_clock::local_time();
+
+  callRegAffine.start( args.progRegAffine.c_str(), argsRegAffine );
   
-  bool flgFinished = callRegAffine.waitForFinished( 3600000 ); // Wait one hour
+  bool flgFinished = callRegAffine.waitForFinished( 7200000 ); // Wait two hours
   
+  boost::posix_time::ptime endTime = boost::posix_time::second_clock::local_time();
+  boost::posix_time::time_duration duration = endTime - startTime;
+
   outRegAffine = callRegAffine.readAllStandardOutput();
   
   message << outRegAffine.toStdString();
+  message << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl;
   
   if ( ! flgFinished )
   {
-    message << "ERROR: Could not execute: " << args.progRegAladin << " ( " 
+    message << "ERROR: Could not execute: " << args.progRegAffine << " ( " 
             << callRegAffine.errorString().toStdString() << " )" << std::endl;
     args.PrintMessage( message );
     return false;
@@ -553,6 +765,14 @@ bool AffineRegisterImages( std::string fileTarget,
   args.PrintMessage( message );
   
   callRegAffine.close();
+
+
+  // Convert the transformation to reg_f3d compatibility
+
+  if ( flgUsingNiftkAffine )
+  {
+    return ConvertAffineTransformationMatrixToRegF3D( fileAffineTransformFullPath, args );
+  }
 
   return true;
 };
@@ -576,12 +796,9 @@ bool NonRigidRegisterImages( std::string fileTarget,
 
   if ( args.flgCompression ) fileNonRigidTransform.append( ".gz" );
 
-  std::stringstream ssDetJacobianPenalty;
-  ssDetJacobianPenalty << args.detJacobianPenalty;
+  QStringList argsRegNonRigid = args.argsRegNonRigid; 
 
-  QStringList argsRegNonRigid; 
-  argsRegNonRigid 
-    << "-jl"     << ssDetJacobianPenalty.str().c_str()
+  argsRegNonRigid
     << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
     << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
@@ -601,14 +818,22 @@ bool NonRigidRegisterImages( std::string fileTarget,
   QString outRegNonRigid;
   
   callRegNonRigid.setProcessChannelMode( QProcess::MergedChannels );
+
+
+  boost::posix_time::ptime startTime = boost::posix_time::second_clock::local_time();
+
   callRegNonRigid.start( args.progRegNonRigid.c_str(), argsRegNonRigid );
   
-  bool flgFinished = callRegNonRigid.waitForFinished( 3600000 ); // Wait one hour
+  bool flgFinished = callRegNonRigid.waitForFinished( 10800000 ); // Wait three hours
   
+  boost::posix_time::ptime endTime = boost::posix_time::second_clock::local_time();
+  boost::posix_time::time_duration duration = endTime - startTime;
+
   outRegNonRigid = callRegNonRigid.readAllStandardOutput();
   
   message << outRegNonRigid.toStdString();
-  
+  message << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl;
+
   if ( ! flgFinished )
   {
     message << "ERROR: Could not execute: " << args.progRegNonRigid << " ( " 
@@ -636,8 +861,8 @@ bool RegisterImages( std::string fileTarget,
 {
   std::string fileAffineTransform;
   std::string fileAffineRegistered = CreateRegisteredFilename( fileTarget,
-                                                               fileSource,
-                                                               std::string( "AffineTo" ) );
+                                                              fileSource,
+                                                              std::string( "AffineTo" ) );
 
   std::string fileNonRigidTransform;
 
@@ -663,7 +888,6 @@ bool RegisterImages( std::string fileTarget,
 bool ResampleImages( std::string fileTarget, 
                      std::string fileResampleInput, 
                      std::string fileResampleOutput,
-                     std::string fileAffineTransform,
                      std::string fileNonRigidTransform,
                      InputParameters &args ) 
 {
@@ -674,7 +898,6 @@ bool ResampleImages( std::string fileTarget,
     << "-ref" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-flo" << niftk::ConcatenatePath( args.dirOutput, fileResampleInput.c_str() ).c_str()
     << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileResampleOutput.c_str() ).c_str()
-    << "-aff"    << niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() ).c_str()
     << "-cpp"    << niftk::ConcatenatePath( args.dirOutput, fileNonRigidTransform.c_str() ).c_str();
   
   message << std::endl << "Executing registration resampling (QProcess): "
@@ -750,9 +973,34 @@ bool RegisterAndResample( std::string fileTarget,
            ResampleImages( fileTarget, 
                            fileResampleInput,
                            fileResampleOutput,
-                           fileAffineTransform,
                            fileNonRigidTransform,
                            args ) );
+};
+
+
+// -------------------------------------------------------------------------
+// SplitStringIntoCommandAndArguments()
+// -------------------------------------------------------------------------
+
+std::string SplitStringIntoCommandAndArguments( std::string inString,
+                                                QStringList &arguments )
+{
+  std::string command;
+
+  std::stringstream ssString( inString );
+
+  std::istream_iterator< std::string > itStringStream( ssString );
+  std::istream_iterator< std::string > itEnd;
+
+  command = *itStringStream;
+  itStringStream++;
+  
+  for (; itStringStream != itEnd; itStringStream++)
+  {
+    arguments << (*itStringStream).c_str();
+  }
+
+  return command;
 };
 
 
@@ -787,6 +1035,20 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
+  // Extract any arguments from the input commands
+
+  QStringList argsSegEM;
+  std::string progSegEM = SplitStringIntoCommandAndArguments( comSegEM, argsSegEM );
+
+  QStringList argsRegAffine;
+  std::string progRegAffine = SplitStringIntoCommandAndArguments( comRegAffine, argsRegAffine );
+
+  QStringList argsRegNonRigid;
+  std::string progRegNonRigid = SplitStringIntoCommandAndArguments( comRegNonRigid, argsRegNonRigid );
+
+  QStringList argsRegResample;
+  std::string progRegResample = SplitStringIntoCommandAndArguments( comRegResample, argsRegResample );
+
   InputParameters args( commandLine, 
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
@@ -796,15 +1058,11 @@ int main( int argc, char *argv[] )
                         strSeriesDescFatSatT1,
                         strSeriesDescDixonWater,
                         strSeriesDescDixonFat,
-                        fileSegEM,
-                        fileRegAladin,
-                        fileRegF3D,
-                        fileRegResample,
-                        detJacobianPenalty );
+                        progSegEM,       argsSegEM,
+                        progRegAffine,   argsRegAffine,
+                        progRegNonRigid, argsRegNonRigid,
+                        progRegResample, argsRegResample );
 
-
-  args.Print();
-        
 
   // Can we find the seg_EM executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -824,14 +1082,14 @@ int main( int argc, char *argv[] )
   // Can we find the reg_aladin executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( ! niftk::FileExists( args.progRegAladin ) )
+  if ( ! niftk::FileExists( args.progRegAffine ) )
   {
-    std::string fileSearchRegAladin = niftk::ConcatenatePath( dirExecutables.string(), 
-                                                              args.progRegAladin );
+    std::string fileSearchRegAffine = niftk::ConcatenatePath( dirExecutables.string(), 
+                                                              args.progRegAffine );
           
-    if ( niftk::FileExists( fileSearchRegAladin ) )
+    if ( niftk::FileExists( fileSearchRegAffine ) )
     {
-      args.progRegAladin = fileSearchRegAladin;
+      args.progRegAffine = fileSearchRegAffine;
     }
   }
 
@@ -851,6 +1109,9 @@ int main( int argc, char *argv[] )
   }
 
 
+  args.Print();
+        
+
   // Initialise the output file names
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -862,6 +1123,7 @@ int main( int argc, char *argv[] )
 
   std::string fileI01_t2_tse_tra_BiasFieldCorrection( "I01_t2_tse_tra_BiasFieldCorrection.nii" );
   std::string fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection( "I01_t1_fl3d_tra_VIBE_BiasFieldCorrection.nii" );
+  std::string fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient( "I01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient.nii" );
 
   std::string fileI02_t2_tse_tra_Resampled;
   
@@ -903,6 +1165,8 @@ int main( int argc, char *argv[] )
   std::string fileOutputVTKSurface( "I13_BreastSurface.vtk" );
 
   std::string fileOutputBreastMask( "I14_BreastMaskSegmentation.nii" );
+  std::string fileOutputBreastMaskReorient( "I14_BreastMaskSegmentationReorient.nii" );
+
   std::string fileOutputDixonMask( "I14_DixonMaskSegmentation.nii" );
 
   std::string fileOutputParenchyma( "I15_BreastParenchyma.nii" );
@@ -922,10 +1186,13 @@ int main( int argc, char *argv[] )
 
     fileI01_t2_tse_tra_BiasFieldCorrection.append( ".gz" );
     fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection.append( ".gz" );
+    fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient.append( ".gz" );
 
     fileI02_t2_tse_tra_Resampled.append( ".gz" );
 
     fileOutputBreastMask.append( ".gz" );
+    fileOutputBreastMaskReorient.append( ".gz" );
+
     fileOutputDixonMask.append( ".gz" );
 
 
@@ -1442,14 +1709,14 @@ int main( int argc, char *argv[] )
         int regGrowYcoord = 0;
         int regGrowZcoord = 0;
 
-        float bgndThresholdProb = 0.5;
+        float bgndThresholdProb = 0.;
 
         float finalSegmThreshold = 0.49;
 
         float sigmaInMM = 1;
 
         float fMarchingK1   = 30.0;
-        float fMarchingK2   = 15.0;
+        float fMarchingK2   = 7.5;
         float fMarchingTime = 0.;
 
         float sigmaBIF = 3.0;
@@ -1642,64 +1909,6 @@ int main( int argc, char *argv[] )
                  << "</filter-progress>" << std::endl << std::endl;
 
 
-      // Resample the breast mask to match the Dixon images
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      if ( flgOverwrite || 
-           ( ! args.ReadImageFromFile( args.dirOutput, fileOutputDixonMask, 
-                                       "Dixon breast mask", imDixonBreastMask ) ) )
-      {
-
-        // Also register 
-        if ( args.flgRegisterImages )
-        {
-          RegisterAndResample( fileI00_sag_dixon_bilateral_W,
-                               fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection,
-                               fileOutputBreastMask,
-                               fileOutputDixonMask,
-                               args );
-        }
-        
-        // Just resample
-        else
-        {
-          
-          if ( imDixonWater && imDixonFat ) 
-          {
-            typedef itk::IdentityTransform<double, Dimension> TransformType;
-            TransformType::Pointer identityTransform = TransformType::New();
-            
-            typedef itk::NearestNeighborInterpolateImageFunction<ImageType, double> InterpolatorType;
-            InterpolatorType::Pointer interpolator = InterpolatorType::New();
-            
-            typedef itk::ResampleImageFilter<ImageType, ImageType > ResampleFilterType;
-            ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
-            
-            resampleFilter->SetUseReferenceImage( true ); 
-            resampleFilter->SetReferenceImage( imDixonWater ); 
-            
-            resampleFilter->SetTransform( identityTransform );
-            resampleFilter->SetInterpolator( interpolator );
-            
-            resampleFilter->SetInput( imSegmentedBreastMask );
-            
-            resampleFilter->Update();
-            
-            imDixonBreastMask = resampleFilter->GetOutput();
-            imDixonBreastMask->DisconnectPipeline();
-            
-            args.WriteImageToFile( fileOutputDixonMask, 
-                                   "Dixon breast mask", imDixonBreastMask );
-          }
-        }
-      }
-
-      progress = ( iDirectory + 0.8 )/nDirectories;
-      std::cout  << std::endl << "<filter-progress>" << std::endl
-                 << progress << std::endl
-                 << "</filter-progress>" << std::endl << std::endl;
-    
-      
       // Segment the parenchyma
       // ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1777,11 +1986,9 @@ int main( int argc, char *argv[] )
 
         // QProcess call to seg_EM
 
-        QStringList argumentsNiftySeg; 
+        QStringList argumentsNiftySeg = args.argsSegEM; 
+
         argumentsNiftySeg 
-          << "-v" << "2" 
-          << "-bc_order" << "4" 
-          << "-nopriors" << "2" 
           << "-in"   << niftk::ConcatenatePath( args.dirOutput, fileI02_t2_tse_tra_Resampled ).c_str()
           << "-mask" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ).c_str()
           << "-out"  << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ).c_str();
@@ -1828,7 +2035,7 @@ int main( int argc, char *argv[] )
 
 #endif
 
-      progress = ( iDirectory + 0.9 )/nDirectories;
+      progress = ( iDirectory + 0.8 )/nDirectories;
       std::cout  << std::endl << "<filter-progress>" << std::endl
                  << progress << std::endl
                  << "</filter-progress>" << std::endl << std::endl;
@@ -2072,6 +2279,90 @@ int main( int argc, char *argv[] )
       }
 
 
+      // Resample the breast mask to match the Dixon images
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      if ( flgOverwrite || 
+           ( ! args.ReadImageFromFile( args.dirOutput, fileOutputDixonMask, 
+                                       "Dixon breast mask", imDixonBreastMask ) ) )
+      {
+
+        // Also register 
+        if ( args.flgRegisterImages )
+        {
+          if ( flgOverwrite || 
+               ( ! args.ReadImageFromFile( args.dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient, 
+                                           std::string( "bias field corrected '") +
+                                           args.strSeriesDescFatSatT1 + "' reorient image", 
+                                           imFatSatT1 ) ) )
+          {
+            imFatSatT1 = ReorientateImage( imFatSatT1, 
+                                           GetOrientationInfo( imDixonWater ) );
+
+            args.WriteImageToFile( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient, 
+                                   std::string( "bias field corrected '" ) + 
+                                   args.strSeriesDescFatSatT1 + "' reorient image", imFatSatT1 );
+          }
+
+          if ( flgOverwrite || 
+               ( ! args.ReadImageFromFile( args.dirOutput, fileOutputBreastMaskReorient, 
+                                           "segmented breast Reorient mask", 
+                                           imSegmentedBreastMask ) ) )
+          {
+            imSegmentedBreastMask = ReorientateImage( imSegmentedBreastMask,
+                                                      GetOrientationInfo( imDixonWater ) );
+
+            args.WriteImageToFile( fileOutputBreastMaskReorient, 
+                                   "breast mask segmentation reorient image", imSegmentedBreastMask );
+          }
+
+          RegisterAndResample( fileI00_sag_dixon_bilateral_W,
+                               fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient,
+                               fileOutputBreastMaskReorient,
+                               fileOutputDixonMask,
+                               args );
+        }
+        
+        // Just resample
+        else
+        {
+          
+          if ( imDixonWater && imDixonFat ) 
+          {
+            typedef itk::IdentityTransform<double, Dimension> TransformType;
+            TransformType::Pointer identityTransform = TransformType::New();
+            
+            typedef itk::NearestNeighborInterpolateImageFunction<ImageType, double> InterpolatorType;
+            InterpolatorType::Pointer interpolator = InterpolatorType::New();
+            
+            typedef itk::ResampleImageFilter<ImageType, ImageType > ResampleFilterType;
+            ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
+            
+            resampleFilter->SetUseReferenceImage( true ); 
+            resampleFilter->SetReferenceImage( imDixonWater ); 
+            
+            resampleFilter->SetTransform( identityTransform );
+            resampleFilter->SetInterpolator( interpolator );
+            
+            resampleFilter->SetInput( imSegmentedBreastMask );
+            
+            resampleFilter->Update();
+            
+            imDixonBreastMask = resampleFilter->GetOutput();
+            imDixonBreastMask->DisconnectPipeline();
+            
+            args.WriteImageToFile( fileOutputDixonMask, 
+                                   "Dixon breast mask", imDixonBreastMask );
+          }
+        }
+      }
+
+      progress = ( iDirectory + 0.9 )/nDirectories;
+      std::cout  << std::endl << "<filter-progress>" << std::endl
+                 << progress << std::endl
+                 << "</filter-progress>" << std::endl << std::endl;
+    
+      
       // Delete unwanted images
       // ~~~~~~~~~~~~~~~~~~~~~~
 
