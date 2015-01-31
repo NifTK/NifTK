@@ -41,6 +41,27 @@
       <channel>output</channel>
     </file>
 
+    <string>
+      <name>dirSubMRI</name>
+      <longflag>dirSubMRI</longflag>
+      <description>The sub-directory of each study containing the input MRI DICOM data.</description>
+      <label>Input MRI DICOM data sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirSubData</name>
+      <longflag>dirSubData</longflag>
+      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
+      <label>Output data sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirPrefix</name>
+      <longflag>dirPrefix</longflag>
+      <description>Only study directories with this prefix will be included in the processing.</description>
+      <label>Study directory prefix</label>
+    </string>
+
   </parameters>
 
   <parameters advanced="false">
@@ -63,27 +84,6 @@
       <description>Save all the intermediate images used in the processing pipeline.</description>
       <label>Save images?</label>
     </boolean>
-
-    <string>
-      <name>dirSubMRI</name>
-      <longflag>dirSubMRI</longflag>
-      <description>The sub-directory of each study containing the input MRI DICOM data.</description>
-      <label>Input MRI DICOM data sub-directory name</label>
-    </string>
-
-    <string>
-      <name>dirSubData</name>
-      <longflag>dirSubData</longflag>
-      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
-      <label>Output data sub-directory name</label>
-    </string>
-
-    <string>
-      <name>dirPrefix</name>
-      <longflag>dirPrefix</longflag>
-      <description>Only study directories with this prefix will be included in the processing.</description>
-      <label>Study directory prefix</label>
-    </string>
  
     <boolean>
       <name>flgOverwrite</name>
@@ -92,19 +92,26 @@
       <label>Regenerate output files?</label>
     </boolean>
 
-  </parameters>
-
-  <parameters advanced="true">
-
-    <label>Options</label>
-    <description><![CDATA[Optional parameters]]></description>
-
     <boolean>
       <name>flgCompression</name>
       <longflag>compress</longflag>
       <description>Select this checkbox to compress all the saved images and hence save on disk space.</description>
       <label>Compress images?</label>
     </boolean>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output (i.e. print the DICOM header).</description>
+      <label>Print debugging output?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>DICOM Series Descriptions</label>
+    <description><![CDATA[DICOM Series Descriptions]]></description>
 
     <string>
       <name>strSeriesDescStructuralT2</name>
@@ -138,12 +145,12 @@
       <default>sag_dixon_bilateral_F</default>
     </string>
 
-    <boolean>
-      <name>flgDebug</name>
-      <longflag>dbg</longflag>
-      <description>Generate debug output (i.e. print the DICOM header).</description>
-      <label>Print debugging output?</label>
-    </boolean>
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Segmentation</label>
+    <description><![CDATA[Segmentation]]></description>
 
     <file>
       <name>comSegEM</name>
@@ -153,11 +160,12 @@
       <default>seg_EM -v 2 -nopriors 2</default>
       <channel>input</channel>
     </file>
+
   </parameters>
 
   <parameters advanced="true">
 
-    <label>Options</label>
+    <label>Registration</label>
     <description><![CDATA[Registration]]></description>
 
     <boolean>
@@ -171,7 +179,7 @@
     <file>
       <name>comRegAffine</name>
       <longflag>regAffine</longflag>
-      <description>The NiftyReg reg_aladin or niftkAffine path and command line to perform an affine registration of two images (e.g. C:\bin\niftkAffine --tr Rigid --levels2use 2  --rmin 0.1).</description>
+      <description>The NiftyReg reg_aladin or niftkAffine path and command line to perform an affine registration of two images.</description>
       <label>Affine registration executable</label>
       <default>niftkAffine --tr Rigid --levels2use 2  --rmin 0.1 -s Normalized_Mutual_Information</default>
       <channel>input</channel>
@@ -180,7 +188,7 @@
     <file>
       <name>comRegNonRigid</name>
       <longflag>regNonRigid</longflag>
-      <description>The NiftyReg reg_f3d path and command line to perform a non-rigid B-Spline registration of two images (e.g. C:\bin\reg_f3D -jl 0.1).</description>
+      <description>The NiftyReg reg_f3d path and command line to perform a non-rigid B-Spline registration of two images.</description>
       <label>Non-rigid registration executable</label>
       <default>reg_f3d -jl 0.1</default>
       <channel>input</channel>
