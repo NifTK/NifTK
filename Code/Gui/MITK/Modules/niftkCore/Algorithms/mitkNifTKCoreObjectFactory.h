@@ -20,6 +20,8 @@
 
 namespace mitk {
 
+class AbstractFileIO;
+
 /**
  * \class NifTKCoreObjectFactory
  * \brief Object factory class to create and register our factory classes.
@@ -69,6 +71,8 @@ private:
   itk::ObjectFactoryBase::Pointer m_PNMImageIOFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataReaderFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataWriterFactory;
+
+  std::vector<mitk::AbstractFileIO*> m_FileIOs;
 
 };
 

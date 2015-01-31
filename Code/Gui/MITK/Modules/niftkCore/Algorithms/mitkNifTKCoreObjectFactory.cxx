@@ -15,11 +15,15 @@
 #include "mitkNifTKCoreObjectFactory.h"
 
 #include <itkObjectFactory.h>
+
+#include <mitkAbstractFileIO.h>
 #include <mitkItkImageFileIOFactory.h>
+#include <mitkItkImageIO_p.h>
 #include <mitkProperties.h>
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
+#include <mitkIOMimeTypes.h>
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCoordinateAxesDataWriter.h>
@@ -32,6 +36,10 @@
 #include <mitkNifTKItkImageFileIOFactory.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
+
+#include <niftkEnvironmentHelper.h>
+#include <itkNiftiImageIO3201.h>
+#include <itkDRCAnalyzeImageIO3160.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
@@ -70,6 +78,19 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 
     m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
 
+    bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
+
+    if (useDRCAnalyze)
+    {
+      itk::DRCAnalyzeImageIO3160::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
+      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
+      m_FileIOs.push_back(drcAnalyzeIO);
+    }
+
+    itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
+    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 1);
+    m_FileIOs.push_back(niftiIO);
+
     CreateFileExtensionsMap();
     alreadyDone = true;
 
@@ -91,8 +112,13 @@ mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
   {
     itk::ObjectFactoryBase::RegisterFactory(m_ItkImageFileIOFactory);
   }
-}
 
+  for(std::vector<mitk::AbstractFileIO*>::iterator iter = m_FileIOs.begin(),
+      endIter = m_FileIOs.end(); iter != endIter; ++iter)
+  {
+    delete *iter;
+  }
+}
 
 //-----------------------------------------------------------------------------
 mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
