@@ -135,7 +135,7 @@
     <file>
       <name>comSegEM</name>
       <longflag>segEM</longflag>
-      <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
+      <description>The NiftySeg seg_EM program to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
       <default>seg_EM</default>
       <channel>input</channel>
@@ -150,7 +150,7 @@
     <file>
       <name>comRegAffine</name>
       <longflag>regAffine</longflag>
-      <description>The NiftyReg 'reg_aladin' or 'niftkAffine' path and command line to perform an affine registration of two images (e.g. C:\bin\niftkAffine --tr Rigid --levels2use 2  --rmin 0.1).</description>
+      <description>The NiftyReg reg_aladin or niftkAffine path and command line to perform an affine registration of two images (e.g. C:\bin\niftkAffine --tr Rigid --levels2use 2  --rmin 0.1).</description>
       <label>Affine registration executable</label>
       <default>niftkAffine --tr Rigid --levels2use 2  --rmin 0.1 -s Normalized_Mutual_Information</default>
       <channel>input</channel>
@@ -159,7 +159,7 @@
     <file>
       <name>comRegNonRigid</name>
       <longflag>regNonRigid</longflag>
-      <description>The NiftyReg 'reg_f3d' path and command line to perform a non-rigid B-Spline registration of two images (e.g. C:\bin\reg_f3D -jl 0.1).</description>
+      <description>The NiftyReg reg_f3d path and command line to perform a non-rigid B-Spline registration of two images (e.g. C:\bin\reg_f3D -jl 0.1).</description>
       <label>Non-rigid registration executable</label>
       <default>reg_f3d -jl 0.1</default>
       <channel>input</channel>
