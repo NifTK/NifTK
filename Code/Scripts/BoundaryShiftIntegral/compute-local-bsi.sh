@@ -227,8 +227,8 @@ then
       --tm ${baseline_local_region_img} \
       --sm ${repeat_local_region_img} \
       --ot ${dof_init_file} \
-      --ri "Linear" --fi "BSpline" -s "Sum Squared Difference" \
-      --tr "Rigid" -o "Regular Step Size" --rmax 0.5 --rmin 0.1 --sym \
+      --ri "Linear" --fi "BSpline" -s "Sum_Squared_Difference" \
+      --tr "Rigid" -o "Regular_Step_Size" --rmax 0.5 --rmin 0.1 --sym \
       -d ${reg_dil} --nlevels 3 --levels2use 1
       
   niftkAffine \
@@ -237,8 +237,8 @@ then
       --sm ${repeat_local_region_img} \
       --it ${dof_init_file} \
       --ot ${dof_file} \
-      --ri "Linear" --fi "BSpline" -s "Normalized Cross Correlation" \
-      --tr "Rigid" -o "Regular Step Size"  --rmax 0.5 --rmin 0.1 --sym \
+      --ri "Linear" --fi "BSpline" -s "Normalized_Cross_Correlation" \
+      --tr "Rigid" -o "Regular_Step_Size"  --rmax 0.5 --rmin 0.1 --sym \
       -d ${reg_dil} --nlevels 1
       
   # Transform the images to mid-point. 
