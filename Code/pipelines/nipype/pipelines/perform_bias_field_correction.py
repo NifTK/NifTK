@@ -10,21 +10,34 @@ import sys
 import os
 import textwrap
 import argparse
-import nipype.interfaces.niftyreg as niftyreg
+import nipype.interfaces.fsl as fsl
 import nipype.interfaces.niftyseg as niftyseg
+import nipype.interfaces.niftyreg as niftyreg
 import niftk
 
 mni_template = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm.nii.gz')
 mni_template_mask = os.path.join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain_mask_dil.nii.gz')
 
-
+def check_images(images):
+    import nibabel as nib
+    import numpy as np
+    import sys
+    for image in images:
+        data=nib.load(image).get_data()
+        positives = float(np.count_nonzero(data > 0))
+        negatives = float(np.count_nonzero(data < 0))
+        if negatives / (positives + negatives) > 0.05:
+            return False
+    return True
+        
+        
 def gen_substitutions(in_files, prefix, suffix):    
     from nipype.utils.filemanip import split_filename
     subs = []
     for i in range(0,len(in_files)):
         in_file=in_files[i]
         _, in_bn, _ = split_filename(in_file)
-        subs.append((in_bn+'_corrected', \
+        subs.append((in_bn+'thres_corrected', \
             prefix+in_bn+suffix))
     return subs
 
@@ -105,10 +118,22 @@ def main():
             fields=['out_img_files',
                     'out_bias_files']),
             name='output_node')
+
+    images_valid = check_images([os.path.abspath(f) for f in args.input_img])
+    if images_valid == False:
+        print('ERROR: One or more input images contain significant amount of negative values,')
+        print('please check the provenance of the inputs.')
+        sys.exit(1)
+
     input_node.inputs.in_files   = [os.path.abspath(f) for f in args.input_img]
     if not args.input_mask == None:
         input_node.inputs.mask_files = [os.path.abspath(f) for f in args.input_mask]
-    
+
+    thresholder = pe.MapNode(interface = fsl.maths.Threshold(),
+                             name = 'thresholder',
+                             iterfield=['in_file'])
+    thresholder.inputs.thresh = 0
+
     # Fnding masks to use for bias correction:
     bias_correction=pe.MapNode(interface = niftk.N4BiasCorrection(),
                                name='bias_correction', 
@@ -141,8 +166,9 @@ def main():
     else:
         workflow.connect(input_node, 'mask_files', bias_correction, 'mask_file')
     
-    workflow.connect(input_node, 'in_files', bias_correction, 'in_file')
-    	
+    workflow.connect(input_node, 'in_files', thresholder, 'in_file')
+    workflow.connect(thresholder, 'out_file', bias_correction, 'in_file')
+    
     # Gather the processed images
     workflow.connect(bias_correction, 'out_file', output_node, 'out_img_files')
     workflow.connect(bias_correction, 'out_biasfield_file', output_node, 'out_bias_files')
