@@ -55,6 +55,13 @@ parser.add_argument('-o','--output',
                     help='output directory to which the gif outputs are stored',
                     required=True)
 
+parser.add_argument('-n','--n_procs',
+                    dest='n_procs',
+                    metavar='n_procs',
+                    help='maximum number of CPUs to be used when using the MultiProc plugin',
+                    required=False,
+                    default = 10)
+
 parser.add_argument('-u','--username',
                     dest='username',
                     metavar='username',
@@ -167,6 +174,6 @@ if not qsub_exec == None and run_qsub:
     else:
         r.run(plugin='SGE',plugin_args={'qsub_args': qsubargs})
 else:
-    r.run(plugin='MultiProc')
+    r.run(plugin='MultiProc', plugin_args={'n_procs' : args.n_procs})
     
     
