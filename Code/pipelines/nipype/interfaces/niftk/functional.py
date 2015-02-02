@@ -17,6 +17,7 @@ import nipype.interfaces.niftyreg       as niftyreg     # NiftyReg
 from .stats import ExtractRoiStatistics
 from .utils import WriteArrayToCsv
 
+from nipype.utils.filemanip import split_filename
 
 class ExtractSideInputSpec(BaseInterfaceInputSpec):
     

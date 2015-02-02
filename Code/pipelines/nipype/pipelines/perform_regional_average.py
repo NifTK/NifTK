@@ -4,7 +4,7 @@ import nipype.interfaces.utility        as niu          # utility
 import nipype.interfaces.io             as nio          # Input Output
 import nipype.pipeline.engine           as pe           # pypeline engine
 from nipype                             import config, logging
-from distutils.spawn                    import find_executable
+from distutils                          import spawn
 
 import sys
 import glob

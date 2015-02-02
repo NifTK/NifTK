@@ -5,7 +5,6 @@
 from niftk.base import NIFTKCommand, NIFTKCommandInputSpec, getNiftkPath
 from nipype.interfaces.base import (TraitedSpec, File, Directory, traits, InputMultiPath, BaseInterface, BaseInterfaceInputSpec)
 
-from nipype.utils.filemanip import split_filename
 import os
 import glob
 import subprocess
