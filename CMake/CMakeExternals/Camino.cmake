@@ -28,17 +28,17 @@ if(BUILD_CAMINO AND NOT WIN32)
 
   if(NOT "${Java_VERSION}" STREQUAL "")
 
-    niftkMacroDefineExternalProjectVariables(camino ${NIFTK_VERSION_CAMINO})
+    niftkMacroDefineExternalProjectVariables(Camino ${NIFTK_VERSION_Camino})
 
     if(NOT DEFINED camino_DIR)
 
-      niftkMacroGetChecksum(NIFTK_CHECKSUM_CAMINO ${NIFTK_LOCATION_CAMINO})
+      niftkMacroGetChecksum(NIFTK_CHECKSUM_Camino ${NIFTK_LOCATION_Camino})
 
       ExternalProject_Add(${proj}
         SOURCE_DIR ${proj_SOURCE}
         PREFIX ${proj_CONFIG}
-        URL ${NIFTK_LOCATION_CAMINO}
-        URL_MD5 ${NIFTK_CHECKSUM_CAMINO}
+        URL ${NIFTK_LOCATION_Camino}
+        URL_MD5 ${NIFTK_CHECKSUM_Camino}
         CONFIGURE_COMMAND ""
         INSTALL_COMMAND ""
         UPDATE_COMMAND ""

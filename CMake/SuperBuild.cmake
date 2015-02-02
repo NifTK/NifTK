@@ -123,7 +123,7 @@ include(niftkExternalProjectHelperMacros)
 ######################################################################
 
 set(EXTERNAL_PROJECTS
-  camino
+  Camino
   Boost
   VTK
   DCMTK
@@ -164,7 +164,7 @@ endforeach()
 if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
 
   set(proj NifTK)
-  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${camino_DEPENDS})
+  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${Camino_DEPENDS})
 
   if(BUILD_TESTING)
     list(APPEND proj_DEPENDENCIES ${NifTKData_DEPENDS})
