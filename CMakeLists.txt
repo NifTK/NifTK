@@ -73,14 +73,18 @@ set(project_policies
   CMP0012 # NEW: if() recognizes numbers and boolean constants.
   CMP0013 # NEW: Duplicate binary directories are not allowed.
   CMP0014 # NEW: Input directories must have CMakeLists.txt
-  CMP0048 # OLD: Leave VERSION variables untouched.
-  CMP0053 # OLD: Leave references and variable expansion as pre version 3.1.
   )
 foreach(policy ${project_policies})
   if(POLICY ${policy})
     cmake_policy(SET ${policy} NEW)
   endif()
 endforeach()
+
+# CMP0048 # OLD: Leave VERSION variables untouched.
+cmake_policy(SET CMP0048 OLD)
+
+# CMP0053 # OLD: Leave references and variable expansion as pre version 3.1.
+cmake_policy(SET CMP0053 OLD)
 
 ######################################################################
 # We have a super-build option. (Terminology comes from MITK/CTK).
