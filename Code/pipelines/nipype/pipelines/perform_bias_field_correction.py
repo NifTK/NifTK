@@ -37,7 +37,7 @@ def gen_substitutions(in_files, prefix, suffix):
     for i in range(0,len(in_files)):
         in_file=in_files[i]
         _, in_bn, _ = split_filename(in_file)
-        subs.append((in_bn+'thres_corrected', \
+        subs.append((in_bn+'_thresh_corrected', \
             prefix+in_bn+suffix))
     return subs
 
