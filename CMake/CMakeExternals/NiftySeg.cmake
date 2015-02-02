@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_NIFTYSEG)
 
+  set(NIFTK_VERSION_NiftySeg "b2decf5160" CACHE STRING "Version of NiftySeg" FORCE)
+  set(NIFTK_LOCATION_NiftySeg "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${NIFTK_VERSION_NiftySeg}.tar.gz" CACHE STRING  "Location of NiftySeg" FORCE)
+
   niftkMacroDefineExternalProjectVariables(NiftySeg ${NIFTK_VERSION_NiftySeg})
   set(proj_DEPENDENCIES Eigen)
 

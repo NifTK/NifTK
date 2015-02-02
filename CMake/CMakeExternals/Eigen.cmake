@@ -22,6 +22,9 @@ if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
   message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
+set(NIFTK_VERSION_Eigen "3.2.2.1" CACHE STRING "Version of Eigen" FORCE)
+set(NIFTK_LOCATION_Eigen "${NIFTK_EP_TARBALL_LOCATION}/eigen-eigen-${NIFTK_VERSION_Eigen}.tar.bz2" CACHE STRING "Location of Eigen" FORCE)
+
 niftkMacroDefineExternalProjectVariables(Eigen ${NIFTK_VERSION_Eigen})
 
 if(NOT DEFINED Eigen_DIR)

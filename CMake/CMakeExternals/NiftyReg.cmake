@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_NIFTYREG)
 
+  set(NIFTK_VERSION_NiftyReg "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
+  set(NIFTK_LOCATION_NiftyReg "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${NIFTK_VERSION_NiftyReg}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
+
   niftkMacroDefineExternalProjectVariables(NiftyReg ${NIFTK_VERSION_NiftyReg})
 
   if(NOT DEFINED NIFTYREG_ROOT)

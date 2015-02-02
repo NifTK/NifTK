@@ -28,6 +28,9 @@ if(BUILD_CAMINO AND NOT WIN32)
 
   if(NOT "${Java_VERSION}" STREQUAL "")
 
+    set(NIFTK_VERSION_Camino "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
+    set(NIFTK_LOCATION_Camino "${NIFTK_EP_TARBALL_LOCATION}/camino-${NIFTK_VERSION_Camino}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
+
     niftkMacroDefineExternalProjectVariables(Camino ${NIFTK_VERSION_Camino})
 
     if(NOT DEFINED camino_DIR)

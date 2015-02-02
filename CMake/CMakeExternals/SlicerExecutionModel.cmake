@@ -22,6 +22,9 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
 endif()
 
+set(NIFTK_VERSION_SlicerExecutionModel "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
+set(NIFTK_LOCATION_SlicerExecutionModel "${NIFTK_EP_TARBALL_LOCATION}/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SlicerExecutionModel}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
+
 niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${NIFTK_VERSION_SlicerExecutionModel})
 set(proj_DEPENDENCIES ITK)
 

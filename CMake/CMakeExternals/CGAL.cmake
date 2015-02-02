@@ -18,6 +18,9 @@
 
 if(BUILD_MESHING)
 
+  set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
+  set(NIFTK_LOCATION_CGAL "${NIFTK_EP_TARBALL_LOCATION}/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
+
   niftkMacroDefineExternalProjectVariables(CGAL ${NIFTK_VERSION_CGAL})
   set(proj_DEPENDENCIES Boost)
 

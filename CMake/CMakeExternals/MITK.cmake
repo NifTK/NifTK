@@ -22,6 +22,9 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
+set(NIFTK_VERSION_MITK "619aecd45a" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_LOCATION_MITK "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
+
 niftkMacroDefineExternalProjectVariables(MITK ${NIFTK_VERSION_MITK})
 set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)

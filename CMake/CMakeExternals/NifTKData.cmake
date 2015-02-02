@@ -24,7 +24,10 @@ endif ()
 
 if (BUILD_TESTING)
 
-  niftkMacroDefineExternalProjectVariables(NifTKData ${NIFTK_VERSION_NifTKData})
+  set(NIFTK_VERSION_NifTKData "cefeb2364e" CACHE STRING "Version of NifTKData" FORCE)
+  set(NIFTK_LOCATION_NifTKData "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git" CACHE STRING "Version of NifTKData" FORCE)
+
+  niftkMacroDefineExternalProjectVariables(NifTKData cefeb2364e)
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 

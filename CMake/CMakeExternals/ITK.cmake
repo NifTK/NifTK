@@ -22,6 +22,9 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
+set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
+set(NIFTK_LOCATION_ITK "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
+
 niftkMacroDefineExternalProjectVariables(ITK ${NIFTK_VERSION_ITK})
 set(proj_DEPENDENCIES GDCM)
 

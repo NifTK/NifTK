@@ -62,6 +62,9 @@ macro(niftkMacroDefineExternalProjectVariables project version)
   set(proj_DEPENDENCIES "")
   set(${project}_DEPENDS ${project})
 
+  mark_as_advanced(NIFTK_VERSION_${project})
+  mark_as_advanced(NIFTK_LOCATION_${project})
+
 endmacro()
 
 

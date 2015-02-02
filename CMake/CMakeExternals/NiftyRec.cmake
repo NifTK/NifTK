@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_NIFTYREC)
 
+  set(NIFTK_VERSION_NiftyRec "14" CACHE STRING "Version of NiftyRec" FORCE)
+  set(NIFTK_LOCATION_NiftyRec "${NIFTK_EP_TARBALL_LOCATION}/NiftyRec-${NIFTK_VERSION_NiftyRec}.tar.gz" CACHE STRING  "Location of NiftyRec" FORCE)
+
   niftkMacroDefineExternalProjectVariables(NiftyRec ${NIFTK_VERSION_NiftyRec})
   set(proj_DEPENDENCIES NiftyReg)
 

@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_IGI)
 
+  set(NIFTK_VERSION_OpenCV "2.4.8.2" CACHE STRING "Version of OpenCV" FORCE)
+  set(NIFTK_LOCATION_OpenCV "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${NIFTK_VERSION_OpenCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
+
   niftkMacroDefineExternalProjectVariables(OpenCV ${NIFTK_VERSION_OpenCV})
 
   if(NOT DEFINED OpenCV_DIR)

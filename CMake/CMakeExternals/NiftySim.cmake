@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_NIFTYSIM)
 
+  set(NIFTK_VERSION_NiftySim "29132ae860" CACHE STRING "Version of NiftySim" FORCE)
+  set(NIFTK_LOCATION_NiftySim "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${NIFTK_VERSION_NiftySim}.tar.gz" CACHE STRING  "Location of NiftySim" FORCE)
+
   niftkMacroDefineExternalProjectVariables(NiftySim ${NIFTK_VERSION_NiftySim})
 
   if(NOT DEFINED NIFTYSIM_ROOT)

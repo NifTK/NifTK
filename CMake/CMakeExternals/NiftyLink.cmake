@@ -37,9 +37,17 @@ if(BUILD_IGI)
       message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${NIFTK_LOCATION_NiftyLink} development\" failed with output:\n${GIT_error}")
     endif()
 
-    string(SUBSTRING ${NiftyLinkVersion} 0 10 NIFTK_VERSION_NiftyLink)
+    string(SUBSTRING ${NiftyLinkVersion} 0 10 NiftyLinkVersion)
+
+    set(NIFTK_VERSION_NiftyLink ${NiftyLinkVersion} CACHE STRING "Version of NiftyLink" FORCE)
+
+  else ()
+
+    set(NIFTK_VERSION_NiftyLink "b9f2782f73" CACHE STRING "Version of NiftyLink" FORCE)
 
   endif ()
+
+  set(NIFTK_LOCATION_NiftyLink "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git" CACHE STRING "Location of NiftyLink repository" FORCE)
 
   niftkMacroDefineExternalProjectVariables(NiftyLink ${NIFTK_VERSION_NiftyLink})
 

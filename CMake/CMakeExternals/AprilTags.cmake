@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_IGI)
 
+  set(NIFTK_VERSION_AprilTags "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
+  set(NIFTK_LOCATION_AprilTags "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${NIFTK_VERSION_AprilTags}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
+
   niftkMacroDefineExternalProjectVariables(AprilTags ${NIFTK_VERSION_AprilTags})
   set(proj_DEPENDENCIES OpenCV Eigen)
 

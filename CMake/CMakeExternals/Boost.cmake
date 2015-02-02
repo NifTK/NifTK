@@ -22,6 +22,9 @@ if(MITK_USE_Boost)
     message(FATAL_ERROR "BOOST_ROOT variable is defined but corresponds to non-existing directory")
   endif()
 
+  set(NIFTK_VERSION_Boost "1_56_0" CACHE STRING "Version of Boost" FORCE)
+  set(NIFTK_LOCATION_Boost "${NIFTK_EP_TARBALL_LOCATION}/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
+
   niftkMacroDefineExternalProjectVariables(Boost ${NIFTK_VERSION_Boost})
 
   string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")

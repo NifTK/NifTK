@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_RTK)
 
+  set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
+  set(NIFTK_LOCATION_RTK "${NIFTK_EP_TARBALL_LOCATION}/NifTK-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
+
   niftkMacroDefineExternalProjectVariables(RTK ${NIFTK_VERSION_RTK})
   set(proj_DEPENDENCIES GDCM ITK)
 

@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
+  set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
+  set(NIFTK_LOCATION_PCL "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
+
   niftkMacroDefineExternalProjectVariables(PCL ${NIFTK_VERSION_PCL})
   set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
 

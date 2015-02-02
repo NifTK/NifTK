@@ -26,6 +26,14 @@ endif()
 
 if(QT_FOUND)
 
+  # Note: If the CTK version changes, then you either clear the plugin cache
+  # or change the deploy path by changing the patch level.
+  set(NIFTK_VERSION_CTK "9331130fe3" CACHE STRING "Version of CTK" FORCE)
+  set(NIFTK_LOCATION_CTK "${NIFTK_EP_TARBALL_LOCATION}/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
+
+  set(NIFTK_VERSION_qRestAPI "5f3a03b15d" CACHE STRING "Version of qRestAPI" FORCE)
+  set(NIFTK_LOCATION_qRestAPI "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
+
   niftkMacroDefineExternalProjectVariables(CTK ${NIFTK_VERSION_CTK})
   set(proj_DEPENDENCIES VTK ITK DCMTK)
 
@@ -73,7 +81,7 @@ if(QT_FOUND)
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
-        -DDCMTK_URL:STRING=http://cmic.cs.ucl.ac.uk/platform/dependencies/CTK_DCMTK_085525e6.tar.gz
+        -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
         -DqRestAPI_URL:STRING=${NIFTK_LOCATION_qRestAPI}
       DEPENDS ${proj_DEPENDENCIES}
     )

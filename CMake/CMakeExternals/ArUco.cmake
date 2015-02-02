@@ -24,6 +24,9 @@ endif()
 
 if(BUILD_IGI)
 
+  set(NIFTK_VERSION_ArUco "1.2.4" CACHE STRING "Version of ArUco" FORCE)
+  set(NIFTK_LOCATION_ArUco "${NIFTK_EP_TARBALL_LOCATION}/aruco-${NIFTK_VERSION_ArUco}.tar.gz" CACHE STRING  "Location of ArUco package" FORCE)
+
   niftkMacroDefineExternalProjectVariables(ArUco ${NIFTK_VERSION_ArUco})
   set(proj_DEPENDENCIES OpenCV)
 

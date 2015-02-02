@@ -35,6 +35,9 @@ if(ITK_DIR)
   endif()
 endif()
 
+set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
+set(NIFTK_LOCATION_GDCM "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
+
 niftkMacroDefineExternalProjectVariables(GDCM ${NIFTK_VERSION_GDCM})
 
 if(NOT DEFINED GDCM_DIR)

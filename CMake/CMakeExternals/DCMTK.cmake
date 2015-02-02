@@ -26,6 +26,9 @@ if(MITK_USE_DCMTK)
     message(FATAL_ERROR "DCMTK_DIR variable is defined but corresponds to non-existing directory")
   endif()
 
+  set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
+  set(NIFTK_LOCATION_DCMTK "${NIFTK_EP_TARBALL_LOCATION}/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
+
   niftkMacroDefineExternalProjectVariables(DCMTK ${NIFTK_VERSION_DCMTK})
 
   if(CMAKE_GENERATOR MATCHES Xcode)
