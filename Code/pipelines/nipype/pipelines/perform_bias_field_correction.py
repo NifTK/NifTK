@@ -51,7 +51,7 @@ def main():
                         help='Mask image or list of mask images (optional)', 
                         required=False)
     """ Output argument """
-    parser.add_argument('--output_dir',dest='output_dir', 
+    parser.add_argument('-o', '--output_dir',dest='output_dir', 
                         type=str, \
                         metavar='directory', 
                         help='Output directory containing the registration result\n' + \
@@ -76,7 +76,7 @@ def main():
     # Parse the arguments
     args=parser.parse_args()
 
-    	# Check the parsed arguments
+    # Check the parsed arguments
     if not args.input_mask==None:
         if not len(args.input_img)==len(args.input_mask):
             print('The number of input and mask images are expected to be the same.')
@@ -105,8 +105,9 @@ def main():
             fields=['out_img_files',
                     'out_bias_files']),
             name='output_node')
-    input_node.inputs.in_files=args.input_img
-    input_node.inputs.mask_files=args.input_mask
+    input_node.inputs.in_files   = [os.path.abspath(f) for f in args.input_img]
+    if not args.input_mask == None:
+        input_node.inputs.mask_files = [os.path.abspath(f) for f in args.input_mask]
     
     # Fnding masks to use for bias correction:
     bias_correction=pe.MapNode(interface = niftk.N4BiasCorrection(),
