@@ -22,18 +22,9 @@ if(MITK_USE_Boost)
     message(FATAL_ERROR "BOOST_ROOT variable is defined but corresponds to non-existing directory")
   endif()
 
+  niftkMacroDefineExternalProjectVariables(Boost ${NIFTK_VERSION_Boost})
+
   string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")
-
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj Boost)
-  set(proj_DEPENDENCIES )
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(Boost_DEPENDS ${proj})
 
   if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
 

@@ -24,16 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj NiftyLink)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYLINK})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES)
-  set(NIFTYLINK_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${NIFTK_VERSION_NIFTYLINK})
 
   if(NOT DEFINED NiftyLink_DIR)
 

@@ -24,16 +24,8 @@ endif()
 
 if(BUILD_RTK)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj RTK)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(RTK ${NIFTK_VERSION_RTK})
   set(proj_DEPENDENCIES GDCM ITK)
-  set(RTK_DEPENDS ${proj})
 
   if(NOT DEFINED RTK_DIR)
 

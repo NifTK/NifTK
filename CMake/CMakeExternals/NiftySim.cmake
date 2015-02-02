@@ -24,15 +24,7 @@ endif()
 
 if(BUILD_NIFTYSIM)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj NiftySim)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYSIM})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(NIFTYSIM_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NiftySim ${NIFTK_VERSION_NIFTYSIM})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
     if(DEFINED VTK_DIR)
@@ -42,8 +34,6 @@ if(BUILD_NIFTYSIM)
     endif(DEFINED VTK_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
-
-    set(proj_DEPENDENCIES "")
 
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)

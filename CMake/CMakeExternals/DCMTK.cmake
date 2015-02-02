@@ -26,16 +26,7 @@ if(MITK_USE_DCMTK)
     message(FATAL_ERROR "DCMTK_DIR variable is defined but corresponds to non-existing directory")
   endif()
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj DCMTK)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES )
-  set(DCMTK_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(DCMTK ${NIFTK_VERSION_DCMTK})
 
   if(CMAKE_GENERATOR MATCHES Xcode)
     set(DCMTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchDCMTK-20121102.cmake)

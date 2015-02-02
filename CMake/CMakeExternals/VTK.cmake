@@ -22,16 +22,7 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-set(proj VTK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-set(proj_DEPENDENCIES )
-set(VTK_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(VTK ${NIFTK_VERSION_VTK})
 
 set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
 

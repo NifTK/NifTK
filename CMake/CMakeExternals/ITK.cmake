@@ -22,14 +22,7 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-set(proj ITK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+niftkMacroDefineExternalProjectVariables(ITK ${NIFTK_VERSION_ITK})
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -38,8 +31,6 @@ endif()
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
-
-set(ITK_DEPENDS ${proj})
 
 if(NOT DEFINED ITK_DIR)
 

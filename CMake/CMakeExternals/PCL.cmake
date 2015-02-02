@@ -24,16 +24,8 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj PCL)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(PCL ${NIFTK_VERSION_PCL})
   set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
-  set(PCL_DEPENDS ${proj})
 
   if(NOT DEFINED PCL_DIR)
 

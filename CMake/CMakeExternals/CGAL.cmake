@@ -18,16 +18,8 @@
 
 if(BUILD_MESHING)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj CGAL)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(CGAL ${NIFTK_VERSION_CGAL})
   set(proj_DEPENDENCIES Boost)
-  set(CGAL_DEPENDS ${proj})
 
   if(NOT DEFINED CGAL_DIR)
     ######################################################################

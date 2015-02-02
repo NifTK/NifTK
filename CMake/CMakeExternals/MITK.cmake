@@ -22,14 +22,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-set(proj MITK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+niftkMacroDefineExternalProjectVariables(MITK ${NIFTK_VERSION_MITK})
 set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
@@ -40,8 +33,6 @@ if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
 endif(BUILD_IGI)
-
-set(MITK_DEPENDS ${proj})
 
 # explicitly try to tame windows headers.
 if(WIN32)

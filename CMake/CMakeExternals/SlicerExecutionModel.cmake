@@ -22,16 +22,8 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-set(proj SlicerExecutionModel)
-set(proj_VERSION ${NIFTK_VERSION_SEM})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${NIFTK_VERSION_SEM})
 set(proj_DEPENDENCIES ITK)
-set(SlicerExecutionModel_DEPENDS ${proj})
 
 if(NOT DEFINED SlicerExecutionModel_DIR)
 

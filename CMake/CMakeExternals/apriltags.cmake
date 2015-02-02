@@ -24,16 +24,8 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj apriltags)
-  set(proj_VERSION ${NIFTK_VERSION_APRILTAGS})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(apriltags ${NIFTK_VERSION_APRILTAGS})
   set(proj_DEPENDENCIES OpenCV Eigen)
-  set(apriltags_DEPENDS ${proj})
 
   if(NOT DEFINED apriltags_DIR)
 

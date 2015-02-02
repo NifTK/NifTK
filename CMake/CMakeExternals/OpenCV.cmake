@@ -24,16 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj OpenCV)
-  set(proj_VERSION ${NIFTK_VERSION_OPENCV})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES)
-  set(OpenCV_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(OpenCV ${NIFTK_VERSION_OPENCV})
 
   if(NOT DEFINED OpenCV_DIR)
 

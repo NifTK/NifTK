@@ -24,16 +24,7 @@ endif ()
 
 if (BUILD_TESTING)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj NifTKData)
-  set(proj_VERSION ${NIFTK_VERSION_DATA})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES )
-  set(NifTKData_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NifTKData ${NIFTK_VERSION_DATA})
 
   # Supported values: git, tar
   if (NOT DEFINED ${proj}_archtype)

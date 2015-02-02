@@ -24,16 +24,8 @@ endif()
 
 if(BUILD_NIFTYREC)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-  set(proj NiftyRec)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYREC})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES NiftyReg )
-  set(NIFTYREC_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NiftyRec ${NIFTK_VERSION_NIFTYREC})
+  set(proj_DEPENDENCIES NiftyReg)
 
   if(NOT DEFINED NIFTYREC_ROOT)
 

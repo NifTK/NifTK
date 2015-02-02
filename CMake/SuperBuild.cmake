@@ -116,8 +116,7 @@ endif()
 # Include NifTK helper macros
 ######################################################################
 
-include(niftkMacroGetChecksum)
-include(niftkMacroGetCommitHashOfCurrentFile)
+include(niftkExternalProjectHelperMacros)
 
 ######################################################################
 # Loop round for each external project, compiling it

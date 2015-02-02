@@ -28,14 +28,7 @@ if(BUILD_CAMINO AND NOT WIN32)
 
   if(NOT "${Java_VERSION}" STREQUAL "")
 
-    niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-    set(proj camino)
-    set(proj_VERSION ${NIFTK_VERSION_CAMINO})
-    set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-    set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-    set(proj_DEPENDENCIES)
-    set(camino_DEPENDS ${proj})
+    niftkMacroDefineExternalProjectVariables(camino ${NIFTK_VERSION_CAMINO})
 
     if(NOT DEFINED camino_DIR)
 

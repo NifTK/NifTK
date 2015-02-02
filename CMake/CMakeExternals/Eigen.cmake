@@ -22,16 +22,7 @@ if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
   message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
-
-set(proj Eigen)
-set(proj_VERSION ${NIFTK_VERSION_EIGEN})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-set(proj_DEPENDENCIES )
-set(Eigen_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(Eigen ${NIFTK_VERSION_EIGEN})
 
 if(NOT DEFINED Eigen_DIR)
 
