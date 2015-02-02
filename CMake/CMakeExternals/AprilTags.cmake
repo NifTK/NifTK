@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# apriltags - external project for tracking AR markers.
+# AprilTags - external project for tracking AR markers.
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroDefineExternalProjectVariables(apriltags ${NIFTK_VERSION_APRILTAGS})
+  niftkMacroDefineExternalProjectVariables(AprilTags ${NIFTK_VERSION_AprilTags})
   set(proj_DEPENDENCIES OpenCV Eigen)
 
   if(NOT DEFINED apriltags_DIR)
@@ -34,15 +34,15 @@ if(BUILD_IGI)
       set(APRILTAGS_C_FLAGS "-fPIC")
     endif()
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_AprilTags ${NIFTK_LOCATION_AprilTags})
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_APRILTAGS}
-      URL_MD5 ${NIFTK_CHECKSUM_APRILTAGS}
+      URL ${NIFTK_LOCATION_AprilTags}
+      URL_MD5 ${NIFTK_CHECKSUM_AprilTags}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
