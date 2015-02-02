@@ -26,10 +26,10 @@ if(MITK_USE_DCMTK)
     message(FATAL_ERROR "DCMTK_DIR variable is defined but corresponds to non-existing directory")
   endif()
 
-  set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
-  set(NIFTK_LOCATION_DCMTK "${NIFTK_EP_TARBALL_LOCATION}/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
+  set(version "3.6.1_20121102")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/dcmtk-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(DCMTK ${NIFTK_VERSION_DCMTK})
+  niftkMacroDefineExternalProjectVariables(DCMTK ${version} ${location})
 
   if(CMAKE_GENERATOR MATCHES Xcode)
     set(DCMTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchDCMTK-20121102.cmake)
@@ -41,15 +41,15 @@ if(MITK_USE_DCMTK)
       set(DCMTK_C_FLAGS "${DCMTK_CXX_FLAGS} -DSITE_UID_ROOT=\\\"${DCMTK_DICOM_ROOT_ID}\\\"")
     endif()
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_DCMTK ${NIFTK_LOCATION_DCMTK})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_DCMTK}
-      URL_MD5 ${NIFTK_CHECKSUM_DCMTK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       PATCH_COMMAND ${DCMTK_PATCH_COMMAND}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS

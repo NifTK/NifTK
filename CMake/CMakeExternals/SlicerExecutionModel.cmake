@@ -22,23 +22,23 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
 endif()
 
-set(NIFTK_VERSION_SlicerExecutionModel "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
-set(NIFTK_LOCATION_SlicerExecutionModel "${NIFTK_EP_TARBALL_LOCATION}/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SlicerExecutionModel}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
+set(version "11ea15b81e")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/Slicer-SlicerExecutionModel-${version}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${NIFTK_VERSION_SlicerExecutionModel})
+niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${version} ${location})
 set(proj_DEPENDENCIES ITK)
 
 if(NOT DEFINED SlicerExecutionModel_DIR)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_SlicerExecutionModel ${NIFTK_LOCATION_SlicerExecutionModel})
+  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_SlicerExecutionModel}
-    URL_MD5 ${NIFTK_CHECKSUM_SlicerExecutionModel}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}

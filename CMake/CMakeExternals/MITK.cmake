@@ -22,10 +22,10 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(NIFTK_VERSION_MITK "619aecd45a" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_LOCATION_MITK "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
+set(version "619aecd45a")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(MITK ${NIFTK_VERSION_MITK})
+niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
 set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
@@ -85,7 +85,7 @@ if(NOT DEFINED MITK_DIR)
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"Path to DCMTK installation directory\")
     ")
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     set(mitk_additional_library_search_paths)
     if(BUILD_IGI)
@@ -93,13 +93,13 @@ if(NOT DEFINED MITK_DIR)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_MITK}
-      URL_MD5 ${NIFTK_CHECKSUM_MITK}
-      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS

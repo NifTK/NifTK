@@ -18,10 +18,10 @@
 
 if(BUILD_MESHING)
 
-  set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
-  set(NIFTK_LOCATION_CGAL "${NIFTK_EP_TARBALL_LOCATION}/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
+  set(version "4.4-patched")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/CGAL-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(CGAL ${NIFTK_VERSION_CGAL})
+  niftkMacroDefineExternalProjectVariables(CGAL ${version} ${location})
   set(proj_DEPENDENCIES Boost)
 
   if(NOT DEFINED CGAL_DIR)
@@ -29,7 +29,7 @@ if(BUILD_MESHING)
     # Configure the CGAL Superbuild, to decide which plugins we want.
     ######################################################################
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_CGAL ${NIFTK_LOCATION_CGAL})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     if(UNIX)
       set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS} -fPIC")
@@ -38,12 +38,12 @@ if(BUILD_MESHING)
     endif(UNIX)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_CGAL}
-      URL_MD5 ${NIFTK_CHECKSUM_CGAL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

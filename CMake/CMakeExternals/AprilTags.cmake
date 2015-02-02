@@ -24,10 +24,10 @@ endif()
 
 if(BUILD_IGI)
 
-  set(NIFTK_VERSION_AprilTags "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
-  set(NIFTK_LOCATION_AprilTags "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${NIFTK_VERSION_AprilTags}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
+  set(version "3c6af59723")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(AprilTags ${NIFTK_VERSION_AprilTags})
+  niftkMacroDefineExternalProjectVariables(AprilTags ${version} ${location})
   set(proj_DEPENDENCIES OpenCV Eigen)
 
   if(NOT DEFINED apriltags_DIR)
@@ -37,15 +37,15 @@ if(BUILD_IGI)
       set(APRILTAGS_C_FLAGS "-fPIC")
     endif()
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_AprilTags ${NIFTK_LOCATION_AprilTags})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_AprilTags}
-      URL_MD5 ${NIFTK_CHECKSUM_AprilTags}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

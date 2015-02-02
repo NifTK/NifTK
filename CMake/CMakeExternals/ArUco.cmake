@@ -24,23 +24,23 @@ endif()
 
 if(BUILD_IGI)
 
-  set(NIFTK_VERSION_ArUco "1.2.4" CACHE STRING "Version of ArUco" FORCE)
-  set(NIFTK_LOCATION_ArUco "${NIFTK_EP_TARBALL_LOCATION}/aruco-${NIFTK_VERSION_ArUco}.tar.gz" CACHE STRING  "Location of ArUco package" FORCE)
+  set(version "1.2.4")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/aruco-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(ArUco ${NIFTK_VERSION_ArUco})
+  niftkMacroDefineExternalProjectVariables(ArUco ${version} ${location})
   set(proj_DEPENDENCIES OpenCV)
 
   if(NOT DEFINED aruco_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_ArUco ${NIFTK_LOCATION_ArUco})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_ArUco}
-      URL_MD5 ${NIFTK_CHECKSUM_ArUco}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

@@ -24,10 +24,10 @@ endif()
 
 if(BUILD_NIFTYSIM)
 
-  set(NIFTK_VERSION_NiftySim "29132ae860" CACHE STRING "Version of NiftySim" FORCE)
-  set(NIFTK_LOCATION_NiftySim "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${NIFTK_VERSION_NiftySim}.tar.gz" CACHE STRING  "Location of NiftySim" FORCE)
+  set(version "29132ae860")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(NiftySim ${NIFTK_VERSION_NiftySim})
+  niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
     if(DEFINED VTK_DIR)
@@ -36,7 +36,7 @@ if(BUILD_NIFTYSIM)
       set(USE_VTK OFF)
     endif(DEFINED VTK_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NiftySim ${NIFTK_LOCATION_NiftySim})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)
@@ -71,12 +71,12 @@ if(BUILD_NIFTYSIM)
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NiftySim}
-      URL_MD5 ${NIFTK_CHECKSUM_NiftySim}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

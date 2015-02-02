@@ -35,24 +35,24 @@ if(ITK_DIR)
   endif()
 endif()
 
-set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
-set(NIFTK_LOCATION_GDCM "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
+set(version "2.4.1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${version}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(GDCM ${NIFTK_VERSION_GDCM})
+niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location})
 
 if(NOT DEFINED GDCM_DIR)
 
   set(GDCM_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-20130814.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
+  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_GDCM}
-    URL_MD5 ${NIFTK_CHECKSUM_GDCM}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${GDCM_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS

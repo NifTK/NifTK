@@ -22,10 +22,10 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
-set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_LOCATION_ITK "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
+set(version "4.5.1-3e550bf8")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(ITK ${NIFTK_VERSION_ITK})
+niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -104,15 +104,15 @@ if(NOT DEFINED ITK_DIR)
 
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
+  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_ITK}
-    URL_MD5 ${NIFTK_CHECKSUM_ITK}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${ITK_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS

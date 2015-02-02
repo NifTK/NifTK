@@ -24,22 +24,22 @@ endif()
 
 if(BUILD_NIFTYREG)
 
-  set(NIFTK_VERSION_NiftyReg "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
-  set(NIFTK_LOCATION_NiftyReg "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${NIFTK_VERSION_NiftyReg}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
+  set(version "97383b06b9")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(NiftyReg ${NIFTK_VERSION_NiftyReg})
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
 
   if(NOT DEFINED NIFTYREG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NiftyReg ${NIFTK_LOCATION_NiftyReg})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NiftyReg}
-      URL_MD5 ${NIFTK_CHECKSUM_NiftyReg}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

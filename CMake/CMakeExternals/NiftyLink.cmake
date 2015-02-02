@@ -24,32 +24,28 @@ endif()
 
 if(BUILD_IGI)
 
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git")
+
   if (NIFTK_NIFTYLINK_DEV)
 
     # This retrieves the latest commit hash on the development branch.
 
-    execute_process(COMMAND ${GIT_EXECUTABLE} ls-remote --heads ${NIFTK_LOCATION_NiftyLink} development
+    execute_process(COMMAND ${GIT_EXECUTABLE} ls-remote --heads ${location} development
        ERROR_VARIABLE GIT_error
        OUTPUT_VARIABLE NiftyLinkVersion
        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     if(NOT ${GIT_error} EQUAL 0)
-      message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${NIFTK_LOCATION_NiftyLink} development\" failed with output:\n${GIT_error}")
+      message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${location} development\" failed with output:\n${GIT_error}")
     endif()
 
-    string(SUBSTRING ${NiftyLinkVersion} 0 10 NiftyLinkVersion)
-
-    set(NIFTK_VERSION_NiftyLink ${NiftyLinkVersion} CACHE STRING "Version of NiftyLink" FORCE)
+    string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
 
   else ()
-
-    set(NIFTK_VERSION_NiftyLink "b9f2782f73" CACHE STRING "Version of NiftyLink" FORCE)
-
+    set(version "b9f2782f73")
   endif ()
 
-  set(NIFTK_LOCATION_NiftyLink "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git" CACHE STRING "Location of NiftyLink repository" FORCE)
-
-  niftkMacroDefineExternalProjectVariables(NiftyLink ${NIFTK_VERSION_NiftyLink})
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})
 
   if(NOT DEFINED NiftyLink_DIR)
 
@@ -77,11 +73,11 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      GIT_REPOSITORY ${NIFTK_LOCATION_NiftyLink}
+      GIT_REPOSITORY ${proj_LOCATION}
       GIT_TAG ${proj_VERSION}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""

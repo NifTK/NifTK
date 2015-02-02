@@ -24,21 +24,17 @@ endif ()
 
 if (BUILD_TESTING)
 
-  set(NIFTK_VERSION_NifTKData "cefeb2364e" CACHE STRING "Version of NifTKData" FORCE)
-  set(NIFTK_LOCATION_NifTKData "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git" CACHE STRING "Version of NifTKData" FORCE)
+  set(version "cefeb2364e")
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 
-  niftkMacroDefineExternalProjectVariables(NifTKData cefeb2364e)
+  niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 
-    set(${proj}_location ${NIFTK_LOCATION_DATA_GIT})
-    set(${proj}_location_options
-    )
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
-      GIT_REPOSITORY ${NIFTK_LOCATION_${proj}}
+      SOURCE_DIR ${proj_SOURCE}
+      GIT_REPOSITORY ${proj_LOCATION}
       GIT_TAG ${proj_VERSION}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CONFIGURE_COMMAND ""

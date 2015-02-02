@@ -24,24 +24,25 @@ endif()
 
 if(BUILD_RTK)
 
-  set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
-  set(NIFTK_LOCATION_RTK "${NIFTK_EP_TARBALL_LOCATION}/NifTK-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
+  set(version "196aec7d3b")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-RTK-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(RTK ${NIFTK_VERSION_RTK})
+  niftkMacroDefineExternalProjectVariables(RTK ${version} ${location})
   set(proj_DEPENDENCIES GDCM ITK)
 
   if(NOT DEFINED RTK_DIR)
 
     set(additional_cmake_args )
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_RTK ${NIFTK_LOCATION_RTK})
+
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_RTK}
-      URL_MD5 ${NIFTK_CHECKSUM_RTK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}

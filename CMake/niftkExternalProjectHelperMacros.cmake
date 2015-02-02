@@ -49,21 +49,24 @@ endmacro()
 #
 #########################################################################################
 
-macro(niftkMacroDefineExternalProjectVariables project version)
+macro(niftkMacroDefineExternalProjectVariables project version location)
+
+  set(NIFTK_VERSION_${project} "${version}" CACHE STRING "Version of ${project}" FORCE)
+  set(NIFTK_LOCATION_${project} "${location}" CACHE STRING "Location of ${project}" FORCE)
+  mark_as_advanced(NIFTK_VERSION_${project})
+  mark_as_advanced(NIFTK_LOCATION_${project})
 
   niftkMacroGetCommitHashOfCurrentFile(config_version)
 
   set(proj ${project})
   set(proj_VERSION ${version})
+  set(proj_LOCATION ${location})
   set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
   set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
   set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
   set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES "")
   set(${project}_DEPENDS ${project})
-
-  mark_as_advanced(NIFTK_VERSION_${project})
-  mark_as_advanced(NIFTK_LOCATION_${project})
 
 endmacro()
 

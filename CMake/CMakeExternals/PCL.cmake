@@ -24,23 +24,23 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
-  set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
-  set(NIFTK_LOCATION_PCL "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
+  set(version "c2203fa60a")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(PCL ${NIFTK_VERSION_PCL})
+  niftkMacroDefineExternalProjectVariables(PCL ${version} ${location})
   set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
 
   if(NOT DEFINED PCL_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_PCL ${NIFTK_LOCATION_PCL})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_PCL}
-      URL_MD5 ${NIFTK_CHECKSUM_PCL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

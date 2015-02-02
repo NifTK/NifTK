@@ -22,10 +22,10 @@ if(MITK_USE_Boost)
     message(FATAL_ERROR "BOOST_ROOT variable is defined but corresponds to non-existing directory")
   endif()
 
-  set(NIFTK_VERSION_Boost "1_56_0" CACHE STRING "Version of Boost" FORCE)
-  set(NIFTK_LOCATION_Boost "${NIFTK_EP_TARBALL_LOCATION}/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
+  set(version "1_56_0")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/boost_${version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(Boost ${NIFTK_VERSION_Boost})
+  niftkMacroDefineExternalProjectVariables(Boost ${version} ${location})
 
   string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")
 
@@ -101,16 +101,16 @@ if(MITK_USE_Boost)
       set(_boost_build_cmd )
     endif()
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_Boost ${NIFTK_LOCATION_Boost})
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
 
     ExternalProject_Add(${proj}
+      PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       # Boost needs in-source builds
       BINARY_DIR ${proj_SOURCE}
-      PREFIX ${proj_CONFIG}
-      URL ${NIFTK_LOCATION_Boost}
-      URL_MD5 ${NIFTK_CHECKSUM_Boost}
       INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CONFIGURE_COMMAND "${_boost_cfg_cmd}"
       BUILD_COMMAND "${_boost_build_cmd}"
       INSTALL_COMMAND "${INSTALL_COMMAND}"
