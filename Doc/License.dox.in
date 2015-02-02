@@ -15,7 +15,7 @@
 \li \ref LicenseOpenCV
 \li \ref LicenseQt
 \li \ref LicenseArUco
-\li \ref LicenseEIGEN
+\li \ref LicenseEigen
 \li \ref LicenseAprilTags
 \li \ref LicenseFLANN
 \li \ref LicensePCL
@@ -79,9 +79,9 @@
 
 \include LICENSE_ArUco.txt
 
-\section LicenseEIGEN The EIGEN License
+\section LicenseEIGEN The Eigen License
 
-\include LICENSE_EIGEN.txt
+\include LICENSE_Eigen.txt
 
 \section LicenseAprilTags The April Tags License
 
