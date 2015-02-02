@@ -29,8 +29,6 @@ if(BUILD_MESHING)
     # Configure the CGAL Superbuild, to decide which plugins we want.
     ######################################################################
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     if(UNIX)
       set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS} -fPIC")
     else()

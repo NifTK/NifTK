@@ -31,8 +31,6 @@ if(BUILD_IGI AND BUILD_PCL)
 
   if(NOT DEFINED FLANN_DIR)
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     ExternalProject_Add(${proj}
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}

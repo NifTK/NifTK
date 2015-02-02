@@ -35,8 +35,6 @@ if(BUILD_CAMINO AND NOT WIN32)
 
     if(NOT DEFINED camino_DIR)
 
-      niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
       ExternalProject_Add(${proj}
         PREFIX ${proj_CONFIG}
         SOURCE_DIR ${proj_SOURCE}

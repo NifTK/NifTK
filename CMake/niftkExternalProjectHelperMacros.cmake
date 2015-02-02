@@ -61,12 +61,16 @@ macro(niftkMacroDefineExternalProjectVariables project version location)
   set(proj ${project})
   set(proj_VERSION ${version})
   set(proj_LOCATION ${location})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
   set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
+  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
   set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
   set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
   set(proj_DEPENDENCIES "")
   set(${project}_DEPENDS ${project})
+
+  if (${location} MATCHES "^.*(\\.tar\\.gz|\\.tar\\.bz2)$")
+    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
+  endif()
 
 endmacro()
 

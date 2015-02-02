@@ -41,8 +41,6 @@ if(MITK_USE_DCMTK)
       set(DCMTK_C_FLAGS "${DCMTK_CXX_FLAGS} -DSITE_UID_ROOT=\\\"${DCMTK_DICOM_ROOT_ID}\\\"")
     endif()
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     ExternalProject_Add(${proj}
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}

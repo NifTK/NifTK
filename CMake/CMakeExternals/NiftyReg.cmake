@@ -31,8 +31,6 @@ if(BUILD_NIFTYREG)
 
   if(NOT DEFINED NIFTYREG_ROOT)
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     ExternalProject_Add(${proj}
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}

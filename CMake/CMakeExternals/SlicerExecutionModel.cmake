@@ -30,8 +30,6 @@ set(proj_DEPENDENCIES ITK)
 
 if(NOT DEFINED SlicerExecutionModel_DIR)
 
-  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
   ExternalProject_Add(${proj}
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}

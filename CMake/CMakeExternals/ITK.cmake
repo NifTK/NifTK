@@ -104,8 +104,6 @@ if(NOT DEFINED ITK_DIR)
 
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
-  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
   ExternalProject_Add(${proj}
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}

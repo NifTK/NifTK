@@ -39,8 +39,6 @@ if(QT_FOUND)
 
   if(NOT DEFINED CTK_DIR)
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     set (ctk_qt_args -DCTK_QT_VERSION:STRING=${DESIRED_QT_VERSION})
 
     if (DESIRED_QT_VERSION MATCHES "5")

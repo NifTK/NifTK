@@ -44,8 +44,6 @@ if(NOT DEFINED GDCM_DIR)
 
   set(GDCM_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-20130814.cmake)
 
-  niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
   ExternalProject_Add(${proj}
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}

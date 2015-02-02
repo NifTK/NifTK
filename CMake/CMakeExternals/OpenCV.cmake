@@ -37,8 +37,6 @@ if(BUILD_IGI)
 
     set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     ExternalProject_Add(${proj}
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}

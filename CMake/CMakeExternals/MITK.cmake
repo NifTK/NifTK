@@ -85,8 +85,6 @@ if(NOT DEFINED MITK_DIR)
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"Path to DCMTK installation directory\")
     ")
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     set(mitk_additional_library_search_paths)
     if(BUILD_IGI)
       list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib ${apriltags_LIBRARY_DIRS} ${FLANN_DIR}/lib ${PCL_DIR}/lib)

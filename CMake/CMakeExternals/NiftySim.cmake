@@ -36,8 +36,6 @@ if(BUILD_NIFTYSIM)
       set(USE_VTK OFF)
     endif(DEFINED VTK_DIR)
 
-    niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
-
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)
     endif (USE_VTK)
