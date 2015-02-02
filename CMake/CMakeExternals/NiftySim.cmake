@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NIFTYSIM)
 
-  niftkMacroDefineExternalProjectVariables(NiftySim ${NIFTK_VERSION_NIFTYSIM})
+  niftkMacroDefineExternalProjectVariables(NiftySim ${NIFTK_VERSION_NiftySim})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
     if(DEFINED VTK_DIR)
@@ -33,7 +33,7 @@ if(BUILD_NIFTYSIM)
       set(USE_VTK OFF)
     endif(DEFINED VTK_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_NiftySim ${NIFTK_LOCATION_NiftySim})
 
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)
@@ -72,8 +72,8 @@ if(BUILD_NIFTYSIM)
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYSIM}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYSIM}
+      URL ${NIFTK_LOCATION_NiftySim}
+      URL_MD5 ${NIFTK_CHECKSUM_NiftySim}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

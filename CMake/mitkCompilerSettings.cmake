@@ -23,7 +23,7 @@ if(BUILD_GUI)
   message("CTK version=${NIFTK_VERSION_CTK}")
 endif()
 if(BUILD_IGI)
-  message("NiftyLink version=${NIFTK_VERSION_NIFTYLINK}")
+  message("NiftyLink version=${NIFTK_VERSION_NiftyLink}")
 endif(BUILD_IGI)
 
 # Print out other versions.

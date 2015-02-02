@@ -24,20 +24,20 @@ endif()
 
 if(BUILD_NIFTYSEG)
 
-  niftkMacroDefineExternalProjectVariables(NiftySeg ${NIFTK_VERSION_NIFTYSEG})
+  niftkMacroDefineExternalProjectVariables(NiftySeg ${NIFTK_VERSION_NiftySeg})
   set(proj_DEPENDENCIES Eigen)
 
   if(NOT DEFINED NIFTYSEG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_NiftySeg ${NIFTK_LOCATION_NiftySeg})
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYSEG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYSEG}
+      URL ${NIFTK_LOCATION_NiftySeg}
+      URL_MD5 ${NIFTK_CHECKSUM_NiftySeg}
       CMAKE_GENERATOR ${GEN}
       #CONFIGURE_COMMAND ""
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}

@@ -24,19 +24,19 @@ endif()
 
 if(BUILD_NIFTYREG)
 
-  niftkMacroDefineExternalProjectVariables(NiftyReg ${NIFTK_VERSION_NIFTYREG})
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${NIFTK_VERSION_NiftyReg})
 
   if(NOT DEFINED NIFTYREG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_NiftyReg ${NIFTK_LOCATION_NiftyReg})
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYREG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYREG}
+      URL ${NIFTK_LOCATION_NiftyReg}
+      URL_MD5 ${NIFTK_CHECKSUM_NiftyReg}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

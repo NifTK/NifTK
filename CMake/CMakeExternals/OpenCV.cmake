@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroDefineExternalProjectVariables(OpenCV ${NIFTK_VERSION_OPENCV})
+  niftkMacroDefineExternalProjectVariables(OpenCV ${NIFTK_VERSION_OpenCV})
 
   if(NOT DEFINED OpenCV_DIR)
 
@@ -34,15 +34,15 @@ if(BUILD_IGI)
 
     set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_OpenCV ${NIFTK_LOCATION_OpenCV})
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_OPENCV}
-      URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
+      URL ${NIFTK_LOCATION_OpenCV}
+      URL_MD5 ${NIFTK_CHECKSUM_OpenCV}
       UPDATE_COMMAND  ""
       INSTALL_COMMAND ""
       PATCH_COMMAND ${OpenCV_PATCH_COMMAND}

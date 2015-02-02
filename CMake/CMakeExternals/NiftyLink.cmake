@@ -24,31 +24,26 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroDefineExternalProjectVariables(NiftyLink ${NIFTK_VERSION_NIFTYLINK})
+  if (NIFTK_NIFTYLINK_DEV)
+
+    # This retrieves the latest commit hash on the development branch.
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} ls-remote --heads ${NIFTK_LOCATION_NiftyLink} development
+       ERROR_VARIABLE GIT_error
+       OUTPUT_VARIABLE NiftyLinkVersion
+       OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    if(NOT ${GIT_error} EQUAL 0)
+      message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${NIFTK_LOCATION_NiftyLink} development\" failed with output:\n${GIT_error}")
+    endif()
+
+    string(SUBSTRING ${NiftyLinkVersion} 0 10 NIFTK_VERSION_NiftyLink)
+
+  endif ()
+
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${NIFTK_VERSION_NiftyLink})
 
   if(NOT DEFINED NiftyLink_DIR)
-
-    set(revision_tag development)
-
-    if (NIFTK_NIFTYLINK_DEV)
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${revision_tag}
-      )
-    else ()
-      # Must Not Leave Tarballs on Web Server
-      # niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
-      # set(NiftyLink_location_options
-      #   URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
-      #   URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
-      # )
-      #
-      # But we still want a specific version
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${proj_VERSION}
-      )
-    endif ()
 
     if(DEFINED NIFTYLINK_OIGTLINK_DEV)
       set(NiftyLink_options
@@ -78,7 +73,8 @@ if(BUILD_IGI)
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      ${NiftyLink_location_options}
+      GIT_REPOSITORY ${NIFTK_LOCATION_NiftyLink}
+      GIT_TAG ${proj_VERSION}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
