@@ -24,42 +24,20 @@ endif ()
 
 if (BUILD_TESTING)
 
-  niftkMacroDefineExternalProjectVariables(NifTKData ${NIFTK_VERSION_DATA})
-
-  # Supported values: git, tar
-  if (NOT DEFINED ${proj}_archtype)
-    if (DEFINED ${NIFTK_ARCHTYPE_DATA})
-      set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
-    else()
-      set(${proj}_archtype "git")
-    endif()
-  endif()
+  niftkMacroDefineExternalProjectVariables(NifTKData ${NIFTK_VERSION_NifTKData})
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 
-    if (${proj}_archtype STREQUAL "git")
-      set(${proj}_location ${NIFTK_LOCATION_DATA_GIT})
-      set(${proj}_location_options
-        GIT_REPOSITORY ${${proj}_location}
-        GIT_TAG ${proj_VERSION}
-        UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-      )
-    elseif (${proj}_archtype STREQUAL "tar")
-      set(${proj}_location ${NIFTK_LOCATION_DATA_TAR})
-      niftkMacroGetChecksum(${proj}_checksum ${${proj}_location})
-      set(${proj}_location_options
-        URL ${${proj}_location}
-        URL_MD5 ${${proj}_checksum}
-        UPDATE_COMMAND ""
-      )
-    else ()
-      message("Unknown archive type. Valid values are git, svn and tar. Cannot download ${proj}.")
-    endif ()
+    set(${proj}_location ${NIFTK_LOCATION_DATA_GIT})
+    set(${proj}_location_options
+    )
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
-      ${${proj}_location_options}
+      GIT_REPOSITORY ${NIFTK_LOCATION_${proj}}
+      GIT_TAG ${proj_VERSION}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""
