@@ -24,20 +24,20 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroDefineExternalProjectVariables(aruco ${NIFTK_VERSION_ARUCO})
+  niftkMacroDefineExternalProjectVariables(ArUco ${NIFTK_VERSION_ArUco})
   set(proj_DEPENDENCIES OpenCV)
 
   if(NOT DEFINED aruco_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_ArUco ${NIFTK_LOCATION_ArUco})
 
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_ARUCO}
-      URL_MD5 ${NIFTK_CHECKSUM_ARUCO}
+      URL ${NIFTK_LOCATION_ArUco}
+      URL_MD5 ${NIFTK_CHECKSUM_ArUco}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -48,7 +48,7 @@ if(BUILD_IGI)
     )
 
     set(aruco_DIR ${proj_INSTALL})
-    message("SuperBuild loading ARUCO from ${aruco_DIR}")
+    message("SuperBuild loading ArUco from ${aruco_DIR}")
 
   else(NOT DEFINED aruco_DIR)
 

@@ -287,7 +287,7 @@ EXCLUDE_PATTERNS      =
 # the \include command). 
 
 EXAMPLE_PATH     = @CMAKE_BINARY_DIR@/LICENSE.txt \
-                   @CMAKE_BINARY_DIR@/LICENSE_Aruco.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_ArUco.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_AprilTags.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_EIGEN.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_FLANN.txt \

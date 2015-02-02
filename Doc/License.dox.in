@@ -14,7 +14,7 @@
 \li \ref LicenseDCMTK
 \li \ref LicenseOpenCV
 \li \ref LicenseQt
-\li \ref LicenseAruco
+\li \ref LicenseArUco
 \li \ref LicenseEIGEN
 \li \ref LicenseAprilTags
 \li \ref LicenseFLANN
@@ -75,9 +75,9 @@
 
 \include LICENSE_Qt.txt
 
-\section LicenseAruco The Aruco License
+\section LicenseArUco The ArUco License
 
-\include LICENSE_Aruco.txt
+\include LICENSE_ArUco.txt
 
 \section LicenseEIGEN The EIGEN License
 
