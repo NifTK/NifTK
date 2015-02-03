@@ -12,5 +12,11 @@
 #
 #============================================================================*/
 
-add_subdirectory(nipype)
 
+set(NIFTYPIPE_FOUND 0)
+
+if(NOT NIFTYPIPE_DIR)
+  set(NIFTYPIPE_DIR ${NIFTK_LINK_PREFIX}/nifty_pipe CACHE PATH "Directory containing NiftyPipe installation")
+else(NOT NIFTYPIPE_DIR)
+  set(NIFTYPIPE_DIR @NIFTYPIPE_DIR@ CACHE PATH "Directory containing NiftyPipe installation")
+endif(NOT NIFTYPIPE_DIR)

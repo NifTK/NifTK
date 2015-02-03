@@ -142,6 +142,7 @@ set(EXTERNAL_PROJECTS
   NiftySeg
   NifTKData  
   SlicerExecutionModel 
+  NiftyPipe
 )
 
 if(BUILD_IGI)

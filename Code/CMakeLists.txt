@@ -12,8 +12,6 @@
 #
 #============================================================================*/
 
-add_subdirectory(pipelines)
-
 add_subdirectory(Libs)
 
 if(BUILD_COMMAND_LINE_PROGRAMS)
