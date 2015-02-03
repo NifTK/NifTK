@@ -1374,16 +1374,16 @@ endif()
 
 # NiftyPipe
 if(BUILD_NIFTYPIPE AND NIFTYPIPE_FOUND)
+  
+  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.sh)
+  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.m)
+  file(GLOB niftypipe_python_programs ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/perform_*.py)
+  
+  install(FILES    ${niftypipe_matlab_files}    DESTINATION bin)
+  install(PROGRAMS ${niftypipe_bash_files}      DESTINATION bin)
+  install(PROGRAMS ${niftypipe_python_programs} DESTINATION python)
 
-  file(GLOB niftypipe__bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.sh)
-  file(GLOB niftypipe__matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.m)
-  file(GLOB niftypipe__python_programs ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/perform_*.py)
-
-  MITK_INSTALL(FILES    ${niftypipe__matlab_files}    DESTINATION bin)
-  MITK_INSTALL(PROGRAMS ${niftypipe__bash_files}      DESTINATION bin)
-  MITK_INSTALL(PROGRAMS ${niftypipe__python_programs} DESTINATION python)
-
-  MITK_INSTALL(
+  install(
     DIRECTORY ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/niftk 
     DESTINATION python 
     USE_SOURCE_PERMISSIONS
