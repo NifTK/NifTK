@@ -80,11 +80,15 @@ foreach(policy ${project_policies})
   endif()
 endforeach()
 
-# CMP0048 # OLD: Leave VERSION variables untouched.
-cmake_policy(SET CMP0048 OLD)
+if (NOT ${CMAKE_VERSION} VERSION_LESS "3.0")
+  # CMP0048 # OLD: Leave VERSION variables untouched.
+  cmake_policy(SET CMP0048 OLD)
+endif ()
 
-# CMP0053 # OLD: Leave references and variable expansion as pre version 3.1.
-cmake_policy(SET CMP0053 OLD)
+if (NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
+  # CMP0053 # OLD: Leave references and variable expansion as pre version 3.1.
+  cmake_policy(SET CMP0053 OLD)
+endif ()
 
 ######################################################################
 # We have a super-build option. (Terminology comes from MITK/CTK).
