@@ -80,13 +80,15 @@ foreach(policy ${project_policies})
   endif()
 endforeach()
 
-if (NOT ${CMAKE_VERSION} VERSION_LESS "3.0")
-  # CMP0048 # OLD: Leave VERSION variables untouched.
+if (POLICY CMP0048)
+  # Introduced in CMake 3.0.
+  # OLD: Leave VERSION variables untouched.
   cmake_policy(SET CMP0048 OLD)
 endif ()
 
-if (NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
-  # CMP0053 # OLD: Leave references and variable expansion as pre version 3.1.
+if (POLICY CMP0053)
+  # Introduced in CMake 3.1.
+  # OLD: Leave references and variable expansion as pre version 3.1.
   cmake_policy(SET CMP0053 OLD)
 endif ()
 
