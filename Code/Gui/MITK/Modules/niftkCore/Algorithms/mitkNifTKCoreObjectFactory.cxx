@@ -18,7 +18,7 @@
 
 #include <mitkAbstractFileIO.h>
 #include <mitkItkImageFileIOFactory.h>
-#include <mitkItkImageIO_p.h>
+#include <mitkItkImageIO.h>
 #include <mitkProperties.h>
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
