@@ -1360,8 +1360,8 @@ endif()
 
 # NiftyPipe
 if(BUILD_NIFTYPIPE AND NOT WIN32)
-  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.sh)
-  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.m)
+  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.sh)
+  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.m)
   file(GLOB niftypipe_python_programs ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/perform_*.py)
   
   install(FILES    ${niftypipe_matlab_files}    DESTINATION bin)
