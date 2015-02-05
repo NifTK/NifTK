@@ -12,11 +12,9 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
 
-#include <itkCommandLineHelper.h>
 #include <mitkPointUtils.h>
 #include <niftkConversionUtils.h>
 #include <niftkMakeChessBoardPointSetCLP.h>
