@@ -40,8 +40,6 @@ set(CPP_FILES
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO3160.cxx
-  IO/mitkNifTKItkImageFileReader.cxx
-  IO/mitkNifTKItkImageFileIOFactory.cxx
   IO/itkPNMImageIOFactory.cxx
   IO/itkPNMImageIO.cxx
   IO/mitkFileIOUtils.cxx

@@ -67,7 +67,6 @@ protected:
 private:
 
   itk::ObjectFactoryBase::Pointer m_ItkImageFileIOFactory;
-  itk::ObjectFactoryBase::Pointer m_NifTKItkImageFileIOFactory;
   itk::ObjectFactoryBase::Pointer m_PNMImageIOFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataReaderFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataWriterFactory;

@@ -33,7 +33,6 @@
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
 #include <itkPNMImageIOFactory.h>
-#include <mitkNifTKItkImageFileIOFactory.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
 
@@ -45,7 +44,6 @@
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
 , m_ItkImageFileIOFactory(NULL) // deliberately NULL
-, m_NifTKItkImageFileIOFactory(mitk::NifTKItkImageFileIOFactory::New().GetPointer())
 , m_PNMImageIOFactory(itk::PNMImageIOFactory::New().GetPointer())
 , m_CoordinateAxesDataReaderFactory(mitk::CoordinateAxesDataReaderFactory::New().GetPointer())
 , m_CoordinateAxesDataWriterFactory(mitk::CoordinateAxesDataWriterFactory::New().GetPointer())
@@ -71,7 +69,6 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
       }
     }
 
-    itk::ObjectFactoryBase::RegisterFactory(m_NifTKItkImageFileIOFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataWriterFactory);
@@ -107,7 +104,6 @@ mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataReaderFactory);
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataWriterFactory);
 
-  itk::ObjectFactoryBase::UnRegisterFactory(m_NifTKItkImageFileIOFactory);
   if (m_ItkImageFileIOFactory.IsNotNull())
   {
     itk::ObjectFactoryBase::RegisterFactory(m_ItkImageFileIOFactory);
