@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "itkNIFTKTransformIO.h"
+#include "itkNifTKTransformIO.h"
 #include <itksys/SystemTools.hxx>
 #include <vnl/vnl_matlab_read.h>
 #include <vnl/vnl_matlab_write.h>
@@ -20,32 +20,32 @@
 
 namespace itk
 {
-NIFTKTransformIO::
-NIFTKTransformIO()
+NifTKTransformIO::
+NifTKTransformIO()
 {
 }
 
-NIFTKTransformIO::
-~NIFTKTransformIO()
+NifTKTransformIO::
+~NifTKTransformIO()
 {
 }
 
 bool
-NIFTKTransformIO::
+NifTKTransformIO::
 CanReadFile(const char*  /* fileName*/)
 {
   return true;
 }
 
 bool
-NIFTKTransformIO::
+NifTKTransformIO::
 CanWriteFile(const char*  /* fileName*/)
 {
   return true;
 }
 
 std::string 
-NIFTKTransformIO::
+NifTKTransformIO::
 trim(std::string const& source, char const* delims)
 {
   std::string result(source);
@@ -68,7 +68,7 @@ trim(std::string const& source, char const* delims)
 }
 
 void 
-NIFTKTransformIO::
+NifTKTransformIO::
 Read()
 {  
   TransformPointer transform;
@@ -219,7 +219,7 @@ Read()
 }
 
 void 
-NIFTKTransformIO::
+NifTKTransformIO::
 Write()
 {
   ConstTransformListType::iterator it = this->GetWriteTransformList().begin();

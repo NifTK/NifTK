@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef itkNIFTKTransformIOFactory_h
-#define itkNIFTKTransformIOFactory_h
+#ifndef itkNifTKTransformIOFactory_h
+#define itkNifTKTransformIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -25,14 +25,14 @@
 
 namespace itk
 {
-/** \class NIFTKTransformIOFactory
+/** \class NifTKTransformIOFactory
    * \brief Create instances of UCLTransformIO objects using an object factory.
    */
-class NIFTKITK_WINEXPORT ITK_EXPORT NIFTKTransformIOFactory : public ObjectFactoryBase
+class NIFTKITK_WINEXPORT ITK_EXPORT NifTKTransformIOFactory : public ObjectFactoryBase
 {
 public:
   /** Standard class typedefs. */
-  typedef NIFTKTransformIOFactory    Self;
+  typedef NifTKTransformIOFactory    Self;
   typedef ObjectFactoryBase        Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
@@ -45,15 +45,15 @@ public:
   itkFactorylessNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(NIFTKTransformIOFactory, ObjectFactoryBase);
+  itkTypeMacro(NifTKTransformIOFactory, ObjectFactoryBase);
 
 protected:
-  NIFTKTransformIOFactory();
-  ~NIFTKTransformIOFactory();
+  NifTKTransformIOFactory();
+  ~NifTKTransformIOFactory();
   virtual void PrintSelf(std::ostream& os, Indent indent) const;
 
 private:
-  NIFTKTransformIOFactory(const Self&); //purposely not implemented
+  NifTKTransformIOFactory(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
 };

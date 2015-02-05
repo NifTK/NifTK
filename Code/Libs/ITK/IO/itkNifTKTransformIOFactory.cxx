@@ -12,41 +12,41 @@
 
 =============================================================================*/
 
-#include "itkNIFTKTransformIOFactory.h"
+#include "itkNifTKTransformIOFactory.h"
 #include <itkCreateObjectFunction.h>
-#include "itkNIFTKTransformIO.h"
+#include "itkNifTKTransformIO.h"
 #include <itkVersion.h>
 
 
 namespace itk
 {
-void NIFTKTransformIOFactory::PrintSelf(std::ostream&, Indent) const
+void NifTKTransformIOFactory::PrintSelf(std::ostream&, Indent) const
 {
 
 }
 
 
-NIFTKTransformIOFactory::NIFTKTransformIOFactory()
+NifTKTransformIOFactory::NifTKTransformIOFactory()
 {
   this->RegisterOverride("itkTransformIOBase",
-                         "itkNIFTKTransformIO",
+                         "itkNifTKTransformIO",
                          "Txt Transform IO",
                          1,
-                         CreateObjectFunction<NIFTKTransformIO>::New());
+                         CreateObjectFunction<NifTKTransformIO>::New());
 }
 
-NIFTKTransformIOFactory::~NIFTKTransformIOFactory()
+NifTKTransformIOFactory::~NifTKTransformIOFactory()
 {
 }
 
 const char*
-NIFTKTransformIOFactory::GetITKSourceVersion(void) const
+NifTKTransformIOFactory::GetITKSourceVersion(void) const
 {
   return ITK_SOURCE_VERSION;
 }
 
 const char*
-NIFTKTransformIOFactory::GetDescription() const
+NifTKTransformIOFactory::GetDescription() const
 {
   return "Txt TransformIO Factory, allows the"
     " loading of Nifti images into insight";
