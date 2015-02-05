@@ -12,11 +12,7 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIO_CXX
-#define ITKDRCANALYZEIMAGEIO_CXX
-
 #include "itkDRCAnalyzeImageIOFactory.h"
-#include <itkCreateObjectFunction.h>
 #include "itkDRCAnalyzeImageIO.h"
 #include <itkVersion.h>
 
@@ -36,6 +32,16 @@ DRCAnalyzeImageIOFactory::~DRCAnalyzeImageIOFactory()
 {
 }
 
-} // end namespace itk
+const char *
+DRCAnalyzeImageIOFactory::GetITKSourceVersion(void) const
+{
+  return ITK_SOURCE_VERSION;
+}
 
-#endif
+const char *
+DRCAnalyzeImageIOFactory::GetDescription() const
+{
+  return "DRC Analyze ImageIO Factory, allows the loading of DRC Analyze images into insight";
+}
+
+} // end namespace itk

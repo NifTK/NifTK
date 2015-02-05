@@ -18,34 +18,39 @@
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>
 
-#include <itkAnalyzeImageIOFactory.h>
+#include <itkObjectFactoryBase.h>
+#include <itkImageIOBase.h>
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
 #include <itkObjectFactoryBase.h>
-#include <itkAnalyzeImageIO.h>
 
 namespace itk
 {
 /** \class DRCAnalyzeImageIOFactory
    * \brief Create instances of DRCAnalyzeImageIO objects using an object factory.
    */
-class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIOFactory : public AnalyzeImageIOFactory
+class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIOFactory : public ObjectFactoryBase
 {
 public:
   /** Standard class typedefs. */
   typedef DRCAnalyzeImageIOFactory    Self;
-  typedef AnalyzeImageIOFactory       Superclass;
+  typedef ObjectFactoryBase           Superclass;
   typedef SmartPointer<Self>          Pointer;
   typedef SmartPointer<const Self>    ConstPointer;
+
+  /** Class methods used to interface with the registered factories. */
+  virtual const char * GetITKSourceVersion(void) const;
+
+  virtual const char * GetDescription(void) const;
 
   /** Method for class instantiation. */
   itkFactorylessNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(DRCAnalyzeImageIOFactory, AnalyzeImageIOFactory);
+  itkTypeMacro(DRCAnalyzeImageIOFactory, ObjectFactoryBase);
 
 protected:
   DRCAnalyzeImageIOFactory();

@@ -27,6 +27,7 @@ set(niftkITK_SRCS
   IO/itkINRImageIOFactory.cxx
   IO/itkAnalyzeImageIO.cxx
   IO/itkAnalyzeImageIOFactory.cxx
+  IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO.cxx
   IO/itkDRCAnalyzeImageIOFactory.cxx
   IO/itkNIFTKTransformIOFactory.cxx

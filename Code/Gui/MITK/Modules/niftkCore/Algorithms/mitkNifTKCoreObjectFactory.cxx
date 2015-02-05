@@ -38,7 +38,7 @@
 
 #include <niftkEnvironmentHelper.h>
 #include <itkNiftiImageIO3201.h>
-#include <itkDRCAnalyzeImageIO3160.h>
+#include <itkDRCAnalyzeImageIO.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
@@ -79,7 +79,7 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 
     if (useDRCAnalyze)
     {
-      itk::DRCAnalyzeImageIO3160::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
+      itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
       mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
       m_FileIOs.push_back(drcAnalyzeIO);
     }
