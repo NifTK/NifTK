@@ -51,11 +51,6 @@ endmacro()
 
 macro(niftkMacroDefineExternalProjectVariables project version location)
 
-  set(NIFTK_VERSION_${project} "${version}" CACHE STRING "Version of ${project}" FORCE)
-  set(NIFTK_LOCATION_${project} "${location}" CACHE STRING "Location of ${project}" FORCE)
-  mark_as_advanced(NIFTK_VERSION_${project})
-  mark_as_advanced(NIFTK_LOCATION_${project})
-
   niftkMacroGetCommitHashOfCurrentFile(config_version)
 
   string(SUBSTRING ${config_version} 0 5 config_version)
@@ -73,6 +68,9 @@ macro(niftkMacroDefineExternalProjectVariables project version location)
   if (${location} MATCHES "^.*(\\.tar\\.gz|\\.tar\\.bz2)$")
     niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})
   endif()
+
+  set(${project}_VERSION ${version})
+  set(${project}_LOCATION ${location})
 
 endmacro()
 

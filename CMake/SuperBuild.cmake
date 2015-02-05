@@ -156,6 +156,9 @@ endif(BUILD_IGI)
 
 foreach(p ${EXTERNAL_PROJECTS})
   include("CMake/CMakeExternals/${p}.cmake")
+
+  list(APPEND NIFTK_APP_OPTIONS -DNIFTK_VERSION_${p}:STRING=${${p}_VERSION})
+  list(APPEND NIFTK_APP_OPTIONS -DNIFTK_LOCATION_${p}:STRING=${${p}_LOCATION})
 endforeach()
 
 ######################################################################
