@@ -17,7 +17,6 @@
 #include <itkObjectFactory.h>
 
 #include <mitkAbstractFileIO.h>
-#include <mitkItkImageFileIOFactory.h>
 #include <mitkItkImageIO.h>
 #include <mitkProperties.h>
 #include <mitkBaseRenderer.h>
@@ -43,7 +42,6 @@
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
-, m_ItkImageFileIOFactory(NULL) // deliberately NULL
 , m_PNMImageIOFactory(itk::PNMImageIOFactory::New().GetPointer())
 , m_CoordinateAxesDataReaderFactory(mitk::CoordinateAxesDataReaderFactory::New().GetPointer())
 , m_CoordinateAxesDataWriterFactory(mitk::CoordinateAxesDataWriterFactory::New().GetPointer())
@@ -52,22 +50,6 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
   if (!alreadyDone)
   {
     MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
-
-    // At this point in this constructor, the main MITK CoreObjectFactory has been created,
-    // so MITKs file reader for ITK images will already be available. So, now we remove it.
-    std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();
-    std::list<itk::ObjectFactoryBase*>::iterator iter;
-    mitk::ItkImageFileIOFactory::Pointer itkIOFactory = NULL;
-    for (iter = listOfObjectFactories.begin(); iter != listOfObjectFactories.end(); iter++)
-    {
-      itkIOFactory = dynamic_cast<mitk::ItkImageFileIOFactory*>(*iter);
-      if (itkIOFactory.IsNotNull())
-      {
-        itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
-        m_ItkImageFileIOFactory = itkIOFactory;
-        break;
-      }
-    }
 
     itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
@@ -103,11 +85,6 @@ mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
   itk::ObjectFactoryBase::UnRegisterFactory(m_PNMImageIOFactory);
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataReaderFactory);
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataWriterFactory);
-
-  if (m_ItkImageFileIOFactory.IsNotNull())
-  {
-    itk::ObjectFactoryBase::RegisterFactory(m_ItkImageFileIOFactory);
-  }
 
   for(std::vector<mitk::AbstractFileIO*>::iterator iter = m_FileIOs.begin(),
       endIter = m_FileIOs.end(); iter != endIter; ++iter)
