@@ -45,34 +45,6 @@ const char *const AnalyzeImageIO3160::ANALYZE_GLMIN = "ANALYZE_GLMIN";
 const char *const AnalyzeImageIO3160::ANALYZE_AUX_FILE_NAME = "ANALYZE_AUX_FILE_NAME";
 const char *const AnalyzeImageIO3160::ANALYZE_CALIBRATIONUNITS = "ANALYZE_CALIBRATIONUNITS";
 
-//An array of the Analyze v7.5 known DataTypes
-const char DataTypes3160[12][10] =
-  {
-  "UNKNOWN", "BINARY", "CHAR", "SHORT", "INT", "FLOAT",
-  "COMPLEX", "DOUBLE", "RGB", "ALL", "USHORT", "UINT"
-  };
-
-//An array with the corresponding number of bits for each image type.
-//NOTE: the following two line should be equivalent.
-const short int DataTypeSizes3160[12] = { 0, 1, 8, 16, 32, 32, 64, 64, 24, 0, 16, 32 };
-
-//An array with Data type key sizes
-const short int DataTypeKey3160[12] =
-  {
-  ANALYZE_DT_UNKNOWN,
-  ANALYZE_DT_BINARY,
-  ANALYZE_DT_UNSIGNED_CHAR,
-  ANALYZE_DT_SIGNED_SHORT,
-  ANALYZE_DT_SIGNED_INT,
-  ANALYZE_DT_FLOAT,
-  ANALYZE_DT_COMPLEX,
-  ANALYZE_DT_DOUBLE,
-  ANALYZE_DT_RGB,
-  ANALYZE_DT_ALL,
-  SPMANALYZE_DT_UNSIGNED_SHORT,
-  SPMANALYZE_DT_UNSIGNED_INT
-  };
-
 static std::string
 GetExtension( const std::string& filename )
 {
@@ -640,9 +612,9 @@ void  AnalyzeImageIO3160::DefineHeaderObjectDataType()
       eNewType=ANALYZE_DT_INDEX_UNKNOWN;
       itkExceptionMacro(<< "Pixel Type Unknown");
     }
-  m_Hdr.dime.datatype=DataTypeKey3160[eNewType];
-  m_Hdr.dime.bitpix=DataTypeSizes3160[eNewType];
-  strcpy(m_Hdr.hk.data_type,DataTypes3160[eNewType]);
+  m_Hdr.dime.datatype=DataTypeKey[eNewType];
+  m_Hdr.dime.bitpix=DataTypeSizes[eNewType];
+  strcpy(m_Hdr.hk.data_type,DataTypes[eNewType]);
   switch(m_Hdr.dime.datatype)
     {
     case ANALYZE_DT_BINARY:
