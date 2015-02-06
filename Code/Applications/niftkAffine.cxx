@@ -20,7 +20,6 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
-#include <itkImageRegistrationFactory.h>
 #include <itkGradientDescentOptimizer.h>
 #include <itkUCLSimplexOptimizer.h>
 #include <itkUCLRegularStepGradientDescentOptimizer.h>
