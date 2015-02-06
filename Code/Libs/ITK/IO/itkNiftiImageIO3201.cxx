@@ -1634,6 +1634,15 @@ NiftiImageIO3201
   return;
 }
 
+
+bool  
+NiftiImageIO3201::
+SupportsDimension(unsigned long dim)
+{
+  return dim > 1 && dim < 5;
+}
+
+
 namespace
 {
 void Normalize(std::vector<double> &x)
