@@ -45,16 +45,16 @@ public:
   virtual void SetDefaultProperties(mitk::DataNode* node);
 
   /// \see CoreObjectFactoryBase::GetFileExtensions
-  virtual const char* GetFileExtensions();
+  DEPRECATED(virtual const char* GetFileExtensions());
 
   /// \see CoreObjectFactoryBase::GetFileExtensionsMap
-  virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
+  DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap());
 
   /// \see CoreObjectFactoryBase::GetSaveFileExtensions
-  virtual const char* GetSaveFileExtensions();
+  DEPRECATED(virtual const char* GetSaveFileExtensions());
 
   /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
-  virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
+  DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
 
 protected:
   NifTKCoreObjectFactory();
