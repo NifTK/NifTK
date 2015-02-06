@@ -24,13 +24,10 @@ set(niftkITK_SRCS
   RegistrationToolbox/Commands/itkIterationUpdateCommand.cxx
   RegistrationToolbox/Commands/itkVnlIterationUpdateCommand.cxx
   IO/itkINRImageIO.cxx
-  IO/itkINRImageIOFactory.cxx
   IO/itkAnalyzeImageIO.cxx
-  IO/itkAnalyzeImageIOFactory.cxx
   IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO.cxx
-  IO/itkDRCAnalyzeImageIOFactory.cxx
-  IO/itkNifTKTransformIOFactory.cxx
+  IO/itkNifTKImageIOFactory.cxx
   IO/itkNifTKTransformIO.cxx
   IO/itkNiftiImageIO3201.cxx
   2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
