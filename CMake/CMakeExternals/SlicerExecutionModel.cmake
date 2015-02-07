@@ -47,7 +47,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DSlicerExecutionModel_USE_JSONCPP:BOOL=OFF
-      -DITK_DIR:PATH=${ITK_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}/../../../../build
     DEPENDS ${proj_DEPENDENCIES}
   )
 
