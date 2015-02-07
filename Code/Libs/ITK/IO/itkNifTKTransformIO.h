@@ -12,24 +12,24 @@
 
 =============================================================================*/
 
-#ifndef itkNIFTKTransformIO_h
-#define itkNIFTKTransformIO_h
+#ifndef itkNifTKTransformIO_h
+#define itkNifTKTransformIO_h
 #include <niftkITKWin32ExportHeader.h>
 #include <itkTransformIOBase.h>
 
 namespace itk
 {
-class  NIFTKITK_WINEXPORT ITK_EXPORT NIFTKTransformIO : public TransformIOBase
+class  NIFTKITK_WINEXPORT ITK_EXPORT NifTKTransformIO : public TransformIOBase
 {
 public:
-  typedef NIFTKTransformIO                Self;
+  typedef NifTKTransformIO                Self;
   typedef TransformIOBase               Superclass;
   typedef SmartPointer<Self>            Pointer;
   typedef TransformBase                 TransformType;
   typedef Superclass::TransformPointer  TransformPointer;
   typedef Superclass::TransformListType TransformListType;
   /** Run-time type information (and related methods). */
-  itkTypeMacro(NIFTKTransformIO,TransformIOBase);
+  itkTypeMacro(NifTKTransformIO,TransformIOBase);
   itkNewMacro(Self);
 
   /** Determine the file type. Returns true if this ImageIO can read the
@@ -46,12 +46,12 @@ public:
   virtual void Write();
 
 protected:
-  NIFTKTransformIO();
-  virtual ~NIFTKTransformIO();
+  NifTKTransformIO();
+  virtual ~NifTKTransformIO();
 private:
   /** trim spaces and newlines from start and end of a string */
   std::string trim(std::string const& source, char const* delims = " \t\r\n");
 };
 
 }
-#endif // __itkNIFTKTransformIO_h
+#endif // __itkNifTKTransformIO_h

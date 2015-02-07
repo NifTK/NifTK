@@ -27,7 +27,6 @@
 
 #include <itkTransformFileWriter.h>
 #include <itkTransformFactory.h>
-#include <itkNIFTKTransformIOFactory.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
@@ -493,8 +492,6 @@ int main(int argc, char** argv)
   
   // Output the projection and affine transformations
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  itk::ObjectFactoryBase::RegisterFactory(itk::NIFTKTransformIOFactory::New());
 
   ProjectionGeometryType::EulerAffineTransformPointerType pAffineTransform;
   ProjectionGeometryType::PerspectiveProjectionTransformPointerType pPerspectiveTransform;

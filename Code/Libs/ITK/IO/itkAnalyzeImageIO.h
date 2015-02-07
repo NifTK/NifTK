@@ -31,10 +31,11 @@
 #define __itkAnalyzeImageIO_h
 #if !defined( ITK_LEGACY_REMOVE )
 
+#include <niftkITKWin32ExportHeader.h>
 
 #include <fstream>
 #include "itkImageIOBase.h"
-#include "itkAnalyzeDbh.h"
+#include "itkAnalyzeDbh_p.h"
 
 namespace itk
 {
@@ -91,7 +92,7 @@ namespace itk
    * \ingroup ITKDeprecated
    * \ingroup IOFilters
    */
-class ITK_EXPORT AnalyzeImageIO:public ImageIOBase
+class NIFTKITK_WINEXPORT ITK_EXPORT AnalyzeImageIO:public ImageIOBase
 {
 public:
   /** Standard class typedefs. */

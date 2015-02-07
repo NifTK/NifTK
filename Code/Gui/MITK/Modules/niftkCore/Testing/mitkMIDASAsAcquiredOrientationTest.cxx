@@ -53,8 +53,7 @@ public:
     std::vector<std::string> files;
     files.push_back(fileName);
     mitk::StandaloneDataStorage::Pointer localStorage = mitk::StandaloneDataStorage::New();
-    mitk::IOUtil::LoadFiles(files, *(localStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = localStorage->GetAll();
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(localStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
 
     // Get the "As Acquired" orientation.

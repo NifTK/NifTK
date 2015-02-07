@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef itkINRImageIOFactory_h
-#define itkINRImageIOFactory_h
+#ifndef itkNifTKImageIOFactory_h
+#define itkNifTKImageIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -28,14 +28,14 @@
 namespace itk
 {
 /**
- * \class INRImageIOFactory
- * \brief Create instances of INRImageIO objects using an object factory.
+ * \class NifTKImageIOFactory
+ * \brief Creates instances of NifTK specific image IO objects.
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT INRImageIOFactory : public ObjectFactoryBase
+class NIFTKITK_WINEXPORT ITK_EXPORT NifTKImageIOFactory : public ObjectFactoryBase
 {
 public:  
   /** Standard class typedefs. */
-  typedef INRImageIOFactory   Self;
+  typedef NifTKImageIOFactory   Self;
   typedef ObjectFactoryBase  Superclass;
   typedef SmartPointer<Self>  Pointer;
   typedef SmartPointer<const Self>  ConstPointer;
@@ -45,17 +45,17 @@ public:
   virtual const char* GetDescription(void) const;
     
   /** Method for class instantiation. */
-  itkFactorylessNewMacro(Self);
+  itkFactorylessNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(INRImageIOFactory, ObjectFactoryBase);
+  itkTypeMacro(NifTKImageIOFactory, ObjectFactoryBase)
 
 protected:
-  INRImageIOFactory();
-  ~INRImageIOFactory();
+  NifTKImageIOFactory();
+  virtual ~NifTKImageIOFactory();
 
 private:
-  INRImageIOFactory(const Self&); //purposely not implemented
+  NifTKImageIOFactory(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
 };

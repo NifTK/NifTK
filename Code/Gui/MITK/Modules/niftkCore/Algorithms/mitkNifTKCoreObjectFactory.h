@@ -18,7 +18,11 @@
 #include <mitkCoreObjectFactory.h>
 #include "niftkCoreExports.h"
 
+#include <mitkCustomMimeType.h>
+
 namespace mitk {
+
+class AbstractFileIO;
 
 /**
  * \class NifTKCoreObjectFactory
@@ -43,16 +47,20 @@ public:
   virtual void SetDefaultProperties(mitk::DataNode* node);
 
   /// \see CoreObjectFactoryBase::GetFileExtensions
-  virtual const char* GetFileExtensions();
+  DEPRECATED(virtual const char* GetFileExtensions());
 
   /// \see CoreObjectFactoryBase::GetFileExtensionsMap
-  virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
+  DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap());
 
   /// \see CoreObjectFactoryBase::GetSaveFileExtensions
-  virtual const char* GetSaveFileExtensions();
+  DEPRECATED(virtual const char* GetSaveFileExtensions());
 
   /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
-  virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
+  DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
+
+  static mitk::CustomMimeType INRIA_MIMETYPE();
+
+  static std::string INRIA_MIMETYPE_NAME();
 
 protected:
   NifTKCoreObjectFactory();
@@ -64,11 +72,11 @@ protected:
 
 private:
 
-  itk::ObjectFactoryBase::Pointer m_ItkImageFileIOFactory;
-  itk::ObjectFactoryBase::Pointer m_NifTKItkImageFileIOFactory;
   itk::ObjectFactoryBase::Pointer m_PNMImageIOFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataReaderFactory;
   itk::ObjectFactoryBase::Pointer m_CoordinateAxesDataWriterFactory;
+
+  std::vector<mitk::AbstractFileIO*> m_FileIOs;
 
 };
 

@@ -38,10 +38,7 @@ set(CPP_FILES
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
-  IO/itkAnalyzeImageIO3160.cxx
-  IO/itkDRCAnalyzeImageIO3160.cxx
-  IO/mitkNifTKItkImageFileReader.cxx
-  IO/mitkNifTKItkImageFileIOFactory.cxx
+  IO/mitkItkImageIO.cxx
   IO/itkPNMImageIOFactory.cxx
   IO/itkPNMImageIO.cxx
   IO/mitkFileIOUtils.cxx

@@ -12,11 +12,6 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
-
-#include <itkCommandLineHelper.h>
 #include <mitkMakeGridOf2DImages.h>
 #include <niftkMakeGridOf2DImagesCLP.h>
 
