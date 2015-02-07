@@ -18,6 +18,8 @@
 #include <mitkCoreObjectFactory.h>
 #include "niftkCoreExports.h"
 
+#include <mitkCustomMimeType.h>
+
 namespace mitk {
 
 class AbstractFileIO;
@@ -55,6 +57,10 @@ public:
 
   /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
   DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
+
+  static mitk::CustomMimeType INRIA_MIMETYPE();
+
+  static std::string INRIA_MIMETYPE_NAME();
 
 protected:
   NifTKCoreObjectFactory();

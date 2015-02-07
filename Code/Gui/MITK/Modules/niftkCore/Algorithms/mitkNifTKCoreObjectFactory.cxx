@@ -36,8 +36,10 @@
 #include <mitkPointSetVtkMapper3D.h>
 
 #include <niftkEnvironmentHelper.h>
-#include <itkNiftiImageIO3201.h>
+#include <itkAnalyzeImageIO.h>
 #include <itkDRCAnalyzeImageIO.h>
+#include <itkINRImageIO.h>
+#include <itkNiftiImageIO3201.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
@@ -51,10 +53,20 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
   {
     MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
 
+    /// Important note:
+    ///
+    /// Registering ITK image IOs to mitk::FileReaderRegistry here must follow the same
+    /// logic as registering them to the ITK object factories in itk::NifTKImageIOFactory
+    /// in the niftkITK library.
+
+    /// TODO
+    /// ITK readers and writers should be registered from itk::NifTKImageIOFactory.
     itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataWriterFactory);
 
+    /// TODO
+    /// Do not access m_FileWriters. Use mitk::WriterRegistry instead.
     m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
 
     bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
@@ -65,10 +77,20 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
       mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
       m_FileIOs.push_back(drcAnalyzeIO);
     }
+    else
+    {
+      itk::AnalyzeImageIO::Pointer itkAnalyzeIO = itk::AnalyzeImageIO::New();
+      mitk::ItkImageIO* analyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkAnalyzeIO.GetPointer(), 2);
+      m_FileIOs.push_back(analyzeIO);
+    }
 
     itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
     mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 1);
     m_FileIOs.push_back(niftiIO);
+
+    itk::INRImageIO::Pointer itkINRImageIO = itk::INRImageIO::New();
+    mitk::ItkImageIO* inrImageIO = new mitk::ItkImageIO(Self::INRIA_MIMETYPE(), itkINRImageIO.GetPointer(), 0);
+    m_FileIOs.push_back(inrImageIO);
 
     CreateFileExtensionsMap();
     alreadyDone = true;
@@ -82,6 +104,8 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
 {
+  /// TODO
+  /// ITK readers and writers should be unregistered from itk::NifTKImageIOFactory.
   itk::ObjectFactoryBase::UnRegisterFactory(m_PNMImageIOFactory);
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataReaderFactory);
   itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataWriterFactory);
@@ -189,6 +213,26 @@ const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
   std::string fileExtension;
   this->CreateFileExtensions(m_SaveFileExtensionsMap, fileExtension);
   return fileExtension.c_str();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::CustomMimeType mitk::NifTKCoreObjectFactory::INRIA_MIMETYPE()
+{
+  CustomMimeType mimeType(Self::INRIA_MIMETYPE_NAME());
+  mimeType.AddExtension("inr");
+  mimeType.AddExtension("inr.gz");
+  mimeType.SetCategory("Images");
+  mimeType.SetComment("INRIA image");
+  return mimeType;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string mitk::NifTKCoreObjectFactory::INRIA_MIMETYPE_NAME()
+{
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.inria";
+  return name;
 }
 
 

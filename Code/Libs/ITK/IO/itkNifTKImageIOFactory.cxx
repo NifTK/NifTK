@@ -21,36 +21,40 @@
 #include "itkNifTKTransformIO.h"
 #include <itkVersion.h>
 
+#include <niftkEnvironmentHelper.h>
+
 namespace itk
 {
 
 NifTKImageIOFactory::NifTKImageIOFactory()
 {
-  this->RegisterOverride( "itkImageIOBase",
-                          "itkAnalyzeImageIO",
-                          "Analyze Image IO",
-                          1,
-                          CreateObjectFunction<AnalyzeImageIO>::New() );
-  this->RegisterOverride("itkImageIOBase",
-                         "itkDRCAnalyzeImageIO",
-                         "DRC Analyze Image IO",
-                         1,
-                         CreateObjectFunction<DRCAnalyzeImageIO>::New());
-  this->RegisterOverride("itkImageIOBase",
-                         "itkNiftiImageIO3201",
-                         "Nifti Image IO 3201",
-                         1,
-                         CreateObjectFunction<NiftiImageIO3201>::New());
-  this->RegisterOverride("itkImageIOBase",
-                         "itkINRImageIO",
-                         "INR Image IO",
-                         1,
-                         CreateObjectFunction<INRImageIO>::New());
-  this->RegisterOverride("itkTransformIOBase",
-                         "itkNifTKTransformIO",
-                         "Txt Transform IO",
-                         1,
-                         CreateObjectFunction<NifTKTransformIO>::New());
+  /// Important note:
+  ///
+  /// Registering ITK image IOs to the ITK object factories here must follow the same
+  /// logic as registering them to mitk::FileReaderRegistry in mitk::NifTKCoreObjectFactory
+  /// in the niftkCore module.
+
+  bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
+
+  if (useDRCAnalyze)
+  {
+    this->RegisterOverride("itkImageIOBase", "itkDRCAnalyzeImageIO", "DRC Analyze Image IO", 1,
+       itk::CreateObjectFunction<DRCAnalyzeImageIO>::New());
+  }
+  else
+  {
+    this->RegisterOverride("itkImageIOBase", "itkAnalyzeImageIO", "Analyze Image IO", 1,
+      itk::CreateObjectFunction<AnalyzeImageIO>::New());
+  }
+
+  this->RegisterOverride("itkImageIOBase", "itkNiftiImageIO3201", "Nifti Image IO 3201", 1,
+    itk::CreateObjectFunction<NiftiImageIO3201>::New());
+
+  this->RegisterOverride("itkImageIOBase", "itkINRImageIO", "INR Image IO", 1,
+    itk::CreateObjectFunction<INRImageIO>::New());
+
+  this->RegisterOverride("itkTransformIOBase", "itkNifTKTransformIO", "Txt Transform IO", 1,
+    itk::CreateObjectFunction<NifTKTransformIO>::New());
 }
 
 NifTKImageIOFactory::~NifTKImageIOFactory()
