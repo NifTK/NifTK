@@ -198,8 +198,6 @@ std::vector<BaseData::Pointer> ItkImageIO::Read()
 
   const std::string path = this->GetLocalFileName();
 
-  MITK_INFO << "loading2 " << path << " via itk::ImageIOFactory... " << std::endl;
-
   // Check to see if we can read the file given the name or prefix
   if (path.empty())
   {
