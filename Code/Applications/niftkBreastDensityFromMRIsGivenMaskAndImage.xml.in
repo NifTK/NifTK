@@ -120,6 +120,13 @@
     </boolean>
 
     <boolean>
+      <name>flgFatIsBright</name>
+      <longflag>fatIsBright</longflag>
+      <description>Select this checkbox if the input image displays fat as brighter than fibroglandular tissue.</description>
+      <label>Fat is bright?</label>
+    </boolean>
+
+    <boolean>
       <name>flgDebug</name>
       <longflag>dbg</longflag>
       <description>Generate debug output (i.e. print the DICOM header).</description>
