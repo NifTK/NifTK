@@ -560,5 +560,34 @@ std::string ModifyImageFileSuffix( const std::string fileName,
 }
 
 
+//  -------------------------------------------------------------------------
+std::string GetFilenameStem( const std::string fileName )
+{
+  fs::path filePath( fileName );
+  return filePath.stem().string();  
+}
+
+
+//  -------------------------------------------------------------------------
+std::string ModifyFileSuffix( const std::string fileName,
+                              std::string newSuffix )
+{
+  fs::path filePath( fileName );
+
+  std::string stem = filePath.stem().string();
+
+  if ( filePath.has_parent_path() )
+  {
+    std::string parentPath;
+    parentPath = filePath.parent_path().string();
+
+    return ConcatenatePath( parentPath, stem + newSuffix );
+  }
+  else
+  {
+    return stem + newSuffix;
+  }
+}
+
 
 } // end namespace

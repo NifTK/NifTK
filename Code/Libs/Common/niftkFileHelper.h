@@ -224,6 +224,17 @@ namespace niftk
   NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix( const std::string fileName,
                                                            std::string newSuffix );
 
+  /**
+   * Modify the suffix of a file name, or append if no suffix
+   * present. It is up to the user to ensure that 'newSuffix' contains
+   * a '.' if required.
+   * \param fileName The input file name.
+   * \param newSuffix The text to replace the suffix with.
+   * \return The file name with the modified or appended suffix.
+   */
+  NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix( const std::string fileName,
+                                                      std::string newSuffix );
+
 } // end namespace
 
 
