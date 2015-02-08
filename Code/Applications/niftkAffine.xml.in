@@ -35,7 +35,7 @@
       <longflag>ot</longflag>
       <description>The output transformation.</description>      
       <label>Output affine transformation</label>
-      <default>AffineTransformation.txt</default>
+      <default></default>
       <channel>output</channel>
     </file>
 
@@ -44,7 +44,7 @@
       <longflag>oi</longflag>
       <description>The output moving image transformed into the space of the fixed image.</description>      
       <label>Output registered image</label>
-      <default>RegisteredImage.nii.gz</default>
+      <default></default>
       <channel>output</channel>
     </image>
 
