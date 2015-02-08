@@ -71,13 +71,8 @@
 #include <itkTransformFileReader.h>
 #include <itkTransformFactoryBase.h>
 #include <itkAffineTransform.h>
-
-
-//#define LINK_TO_SEG_EM
-
-#ifdef LINK_TO_SEG_EM
-#include <_seg_EM.h>
-#endif
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkMaskImageFilter.h>
 
 #include <niftkBreastDensityFromMRIsCLP.h>
 
@@ -269,6 +264,8 @@ public:
 
   std::string fileLog;
   std::string fileOutputCSV;
+  std::string fileT1wOutputCSV;
+  std::string fileT2wOutputCSV;
 
   std::string dirSubMRI;  
   std::string dirSubData;  
@@ -290,7 +287,9 @@ public:
   QStringList argsRegResample;
 
   std::ofstream *foutLog;
-  std::ofstream *foutOutputCSV;
+  std::ofstream *foutOutputT1wCSV;
+  std::ofstream *foutOutputT2wCSV;
+
   std::ostream *newCout;
 
   typedef tee_device<ostream, ofstream> TeeDevice;
@@ -375,16 +374,26 @@ public:
 
     if ( fileOutputCSV.length() > 0 )
     {
-      foutOutputCSV = new std::ofstream( fileOutputCSV.c_str() );
+      fileT1wOutputCSV = niftk::ModifyFileSuffix( fileOutputCSV,  "_T1w.csv" );
+      foutOutputT1wCSV = new std::ofstream( fileT1wOutputCSV.c_str() );
 
-      if ((! *foutOutputCSV) || foutOutputCSV->bad()) {
-        message << "Could not open file: " << fileOutputCSV << std::endl;
+      if ((! *foutOutputT1wCSV) || foutOutputT1wCSV->bad()) {
+        message << "Could not open file: " << fileT1wOutputCSV << std::endl;
+        PrintErrorAndExit( message );
+      }
+
+      fileT2wOutputCSV = niftk::ModifyFileSuffix( fileOutputCSV,  "_T2w.csv" );
+      foutOutputT2wCSV = new std::ofstream( fileT2wOutputCSV.c_str() );
+
+      if ((! *foutOutputT2wCSV) || foutOutputT2wCSV->bad()) {
+        message << "Could not open file: " << fileT2wOutputCSV << std::endl;
         PrintErrorAndExit( message );
       }
     }
     else
     {
-      foutOutputCSV = 0;
+      foutOutputT1wCSV = 0;
+      foutOutputT2wCSV = 0;
     }
 
     
@@ -417,10 +426,16 @@ public:
       delete foutLog;
     }
 
-    if ( foutOutputCSV )
+    if ( foutOutputT1wCSV )
     {
-      foutOutputCSV->close();
-      delete foutOutputCSV;
+      foutOutputT1wCSV->close();
+      delete foutOutputT1wCSV;
+    }   
+
+    if ( foutOutputT2wCSV )
+    {
+      foutOutputT2wCSV->close();
+      delete foutOutputT2wCSV;
     }    
 
     if ( newCout )
@@ -1005,12 +1020,422 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
 
 
 // -------------------------------------------------------------------------
+// SegmentParenchyma()
+// -------------------------------------------------------------------------
+
+bool SegmentParenchyma( std::string label,
+
+                        InputParameters &args, 
+                        std::ofstream *foutOutputCSV,
+                        std::string fileOutputCSV,
+                        bool &flgVeryFirstRow,
+                        bool flgFatIsBright,
+
+                        std::string dirBaseName,
+                        std::string fileInputImage,
+                        std::string fileOutputBreastMask,
+                        std::string fileOutputParenchyma,
+                        std::string fileDensityMeasurements,
+
+                        ImageType::Pointer &imSegmentedBreastMask,
+                        ImageType::Pointer &image )
+{
+  std::stringstream message;
+
+  ImageType::Pointer imParenchyma = 0;
+    
+
+  if ( args.flgOverwrite || 
+       ( ! args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
+                                   "breast parenchyma", imParenchyma ) ) )
+  {
+          
+    // QProcess call to seg_EM
+
+    QStringList argumentsNiftySeg = args.argsSegEM; 
+
+    argumentsNiftySeg 
+      << "-in"   << niftk::ConcatenatePath( args.dirOutput, fileInputImage ).c_str()
+      << "-mask" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ).c_str()
+      << "-out"  << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ).c_str();
+
+    message << std::endl << "Executing parenchyma segmentation (QProcess): "
+            << std::endl << "   " << args.progSegEM;
+    for(int i=0;i<argumentsNiftySeg.size();i++)
+    {
+      message << " " << argumentsNiftySeg[i].toStdString();
+    }
+    message << std::endl << std::endl;
+    args.PrintMessage( message );
+
+    QProcess callSegEM;
+    QString outSegEM;
+
+    callSegEM.setProcessChannelMode( QProcess::MergedChannels );
+    callSegEM.start( args.progSegEM.c_str(), argumentsNiftySeg );
+
+    bool flgFinished = callSegEM.waitForFinished( 3600000 ); // Wait one hour
+
+    outSegEM = callSegEM.readAllStandardOutput();
+
+    message << outSegEM.toStdString();
+
+    if ( ! flgFinished )
+    {
+      message << "ERROR: Could not execute: " << args.progSegEM << " ( " 
+              << callSegEM.errorString().toStdString() << " )" << std::endl;
+      args.PrintMessage( message );
+
+      return false;
+    }
+
+    args.PrintMessage( message );
+
+    callSegEM.close();
+
+    args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
+                            "breast parenchyma", imParenchyma );
+  }
+
+
+  // Compute the breast density
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( imParenchyma && imSegmentedBreastMask )
+  {
+    float nLeftVoxels = 0;
+    float nRightVoxels = 0;
+
+    float totalDensity = 0.;
+    float leftDensity = 0.;
+    float rightDensity = 0.;
+
+    float meanOfHighProbIntensities = 0.;
+    float meanOfLowProbIntensities = 0.;
+
+    float nHighProbIntensities = 0.;
+    float nLowProbIntensities = 0.;
+
+    itk::ImageRegionIteratorWithIndex< ImageType > 
+      maskIterator( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
+
+    itk::ImageRegionConstIterator< ImageType > 
+      segmIterator( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
+
+    itk::ImageRegionConstIterator< ImageType > 
+      imIterator( image, image->GetLargestPossibleRegion() );
+
+    ImageType::SpacingType spacing = imParenchyma->GetSpacing();
+
+    float voxelVolume = spacing[0]*spacing[1]*spacing[2];
+
+    ImageType::RegionType region;
+    region = imSegmentedBreastMask->GetLargestPossibleRegion();
+
+    ImageType::SizeType lateralSize;
+    lateralSize = region.GetSize();
+    lateralSize[0] = lateralSize[0]/2;
+
+    ImageType::IndexType idx;
+   
+    for ( maskIterator.GoToBegin(), segmIterator.GoToBegin(), imIterator.GoToBegin();
+          ! maskIterator.IsAtEnd();
+          ++maskIterator, ++segmIterator, ++imIterator )
+    {
+      if ( maskIterator.Get() )
+      {
+        idx = maskIterator.GetIndex();
+
+        // Left breast
+
+        if ( idx[0] < (int) lateralSize[0] )
+        {
+          nLeftVoxels++;
+          leftDensity += segmIterator.Get();
+        }
+
+        // Right breast
+
+        else 
+        {
+          nRightVoxels++;
+          rightDensity += segmIterator.Get();
+        }
+
+        // Both breasts
+
+        totalDensity += segmIterator.Get();
+
+        // Ensure we have the polarity correct by calculating the
+        // mean intensities of each class
+
+        if ( segmIterator.Get() > 0.5 )
+        {
+          meanOfHighProbIntensities += imIterator.Get();
+          nHighProbIntensities++;
+        }
+        else
+        {
+          meanOfLowProbIntensities += imIterator.Get();
+          nLowProbIntensities++;
+        }              
+      }
+    }
+
+    leftDensity /= nLeftVoxels;
+    rightDensity /= nRightVoxels;
+    totalDensity /= ( nLeftVoxels + nRightVoxels);
+
+    // Calculate the mean intensities of each class
+
+    if ( nHighProbIntensities > 0. )
+    {
+      meanOfHighProbIntensities /= nHighProbIntensities;
+    }
+
+    if ( nLowProbIntensities > 0. )
+    {
+      meanOfLowProbIntensities /= nLowProbIntensities;
+    }
+
+    message  << std::endl
+             << "Mean intensity of high probability class = " << meanOfHighProbIntensities
+             << " ( " << nHighProbIntensities << " voxels )" << std::endl
+             << "Mean intensity of low probability class = " << meanOfLowProbIntensities
+             << " ( " << nLowProbIntensities << " voxels )" << std::endl;
+    args.PrintMessage( message );
+
+    // Fat should be high intensity in the T2 image so if the dense
+    // region (high prob) has a high intensity then it is probably fat
+    // and we need to invert the density, whereas the opposite is true
+    // for the fat-saturated T1w VIBE image.
+
+    if ( (     flgFatIsBright   && ( meanOfHighProbIntensities > meanOfLowProbIntensities ) ) ||
+         ( ( ! flgFatIsBright ) && ( meanOfHighProbIntensities < meanOfLowProbIntensities ) ) )
+    {
+      message << "Inverting the density estimation" << std::endl;
+      args.PrintWarning( message );
+        
+      leftDensity  = 1. - leftDensity;
+      rightDensity = 1. - rightDensity;
+      totalDensity = 1. - totalDensity;
+
+      typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< ImageType > InvertFilterType;
+      InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+      invertFilter->SetInput( imParenchyma );
+
+      typedef itk::MaskImageFilter< ImageType, ImageType > MaskFilterType;
+      MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+
+      maskFilter->SetInput( invertFilter->GetOutput() );
+      maskFilter->SetMaskImage( imSegmentedBreastMask );
+      maskFilter->Update();
+
+      ImageType::Pointer imInverted = maskFilter->GetOutput();
+      imInverted->DisconnectPipeline();
+      imParenchyma = imInverted;
+
+      args.WriteImageToFile( fileOutputParenchyma, 
+                             std::string( "inverted '" ) + label +
+                             "' parenchyma image", imParenchyma );
+    }
+        
+  
+    float leftBreastVolume = nLeftVoxels*voxelVolume;
+    float rightBreastVolume = nRightVoxels*voxelVolume;
+
+    message << label << " Number of left breast voxels: " << nLeftVoxels << std::endl
+            << label << " Volume of left breast: " << leftBreastVolume << " mm^3" << std::endl
+            << label << " Density of left breast (fraction of glandular tissue): " << leftDensity 
+            << std::endl << std::endl
+        
+            << label << " Number of right breast voxels: " << nRightVoxels << std::endl
+            << label << " Volume of right breast: " << rightBreastVolume << " mm^3" << std::endl
+            << label << " Density of right breast (fraction of glandular tissue): " << rightDensity 
+            << std::endl << std::endl
+        
+            << label << " Total number of breast voxels: " 
+            << nLeftVoxels + nRightVoxels << std::endl
+            << label << " Total volume of both breasts: " 
+            << leftBreastVolume + rightBreastVolume << " mm^3" << std::endl
+            << label << " Combined density of both breasts (fraction of glandular tissue): " 
+            << totalDensity << std::endl << std::endl;
+    args.PrintMessage( message );
+
+
+    if ( fileDensityMeasurements.length() != 0 ) 
+    {
+      std::string fileOutputDensityMeasurements 
+        = niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
+
+      std::ofstream fout( fileOutputDensityMeasurements.c_str() );
+
+      fout.precision(16);
+
+      if ((! fout) || fout.bad()) 
+      {
+        message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
+        args.PrintError( message );
+        return false;
+      }
+
+      fout << "Study ID, "
+           << label << " Number of left breast voxels, "
+           << label << " Volume of left breast (mm^3), "
+           << label << " Density of left breast (fraction of glandular tissue), "
+      
+           << label << " Number of right breast voxels, "
+           << label << " Volume of right breast (mm^3), "
+           << label << " Density of right breast (fraction of glandular tissue), "
+      
+           << label << " Total number of breast voxels, "
+           << label << " Total volume of both breasts (mm^3), "
+           << label << " Combined density of both breasts (fraction of glandular tissue)" 
+           << std::endl;
+
+      fout << dirBaseName << ", "
+           << nLeftVoxels << ", "
+           << leftBreastVolume << ", "
+           << leftDensity << ", "
+      
+           << nRightVoxels << ", "
+           << rightBreastVolume << ", "
+           << rightDensity << ", "
+      
+           << nLeftVoxels + nRightVoxels << ", "
+           << leftBreastVolume + rightBreastVolume << ", "
+           << totalDensity << std::endl;
+    
+      fout.close();
+
+      message  << label << " Density measurements written to file: " 
+               << fileOutputDensityMeasurements  << std::endl << std::endl;
+      args.PrintMessage( message );
+    }
+
+    // Write the data to the main collated csv file
+
+    if ( foutOutputCSV )
+    {
+      if ( flgVeryFirstRow )    // Include the title row?
+      {
+        *foutOutputCSV << "Study ID, "
+                            << label << " Number of left breast voxels, "
+                            << label << " Volume of left breast (mm^3), "
+                            << label << " Density of left breast (fraction of glandular tissue), "
+              
+                            << label << " Number of right breast voxels, "
+                            << label << " Volume of right breast (mm^3), "
+                            << label << " Density of right breast (fraction of glandular tissue), "
+              
+                            << label << " Total number of breast voxels, "
+                            << label << " Total volume of both breasts (mm^3), "
+                            << label << " Combined density of both breasts (fraction of glandular tissue)" 
+                            << std::endl;
+        flgVeryFirstRow = false;
+      }
+
+      *foutOutputCSV << dirBaseName << ", "
+                          << nLeftVoxels << ", "
+                          << leftBreastVolume << ", "
+                          << leftDensity << ", "
+            
+                          << nRightVoxels << ", "
+                          << rightBreastVolume << ", "
+                          << rightDensity << ", "
+      
+                          << nLeftVoxels + nRightVoxels << ", "
+                          << leftBreastVolume + rightBreastVolume << ", "
+                          << totalDensity << std::endl;
+    }
+    else
+    {
+      message << "Collated csv data file: " << fileOutputCSV 
+              << " is not open, data will not be written." << std::endl;
+      args.PrintWarning( message );
+    }
+  }
+
+  return true;
+};
+
+
+// -------------------------------------------------------------------------
+// ReadFileCSV
+// -------------------------------------------------------------------------
+
+bool ReadFileCSV( InputParameters &args, 
+                  std::string fileDensityMeasurements,
+                  std::ofstream *foutOutputCSV,
+                  bool &flgVeryFirstRow )
+{
+  std::stringstream message;
+
+  std::string fileInputDensityMeasurements  
+    = niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
+
+  if ( ! args.flgOverwrite) 
+  {
+    if ( niftk::FileExists( fileInputDensityMeasurements ) )
+    {
+      std::ifstream fin( fileInputDensityMeasurements.c_str() );
+
+      if ((! fin) || fin.bad()) 
+      {
+        message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
+        args.PrintError( message );
+        return false;
+      }
+
+      message << std::endl << "Reading CSV file: " << fileInputDensityMeasurements << std::endl;
+      args.PrintMessage( message );
+
+      niftk::CSVRow csvRow;
+
+      bool flgFirstRowOfThisFile = true;
+
+      while( fin >> csvRow )
+      {
+        message << csvRow << std::endl;
+        args.PrintMessage( message );
+
+        if ( flgFirstRowOfThisFile )
+        {
+          if ( flgVeryFirstRow )    // Include the title row?
+          {
+            *foutOutputCSV << csvRow << std::endl;
+            flgVeryFirstRow = false;
+          }
+          flgFirstRowOfThisFile = false;
+        }
+        else
+        {
+          *foutOutputCSV << csvRow << std::endl;
+        }
+      }
+        
+      return true;
+    }
+    else
+    {
+      message << "Density measurements: " << fileInputDensityMeasurements 
+              << " not found" << std::endl;
+      args.PrintMessage( message );
+    }     
+  }
+
+  return false;
+};
+
+
+// -------------------------------------------------------------------------
 // main()
 // -------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
 {
-  bool flgVeryFirstRow = true;
+  bool flgVeryFirstRowT1w = true;
+  bool flgVeryFirstRowT2w = true;
 
   float progress = 0.;
   float iDirectory = 0.;
@@ -1169,9 +1594,11 @@ int main( int argc, char *argv[] )
 
   std::string fileOutputDixonMask( "I14_DixonMaskSegmentation.nii" );
 
-  std::string fileOutputParenchyma( "I15_BreastParenchyma.nii" );
+  std::string fileOutputT1wParenchyma( "I15_T1wBreastParenchyma.nii" );
+  std::string fileOutputT2wParenchyma( "I15_T2wBreastParenchyma.nii" );
 
-  std::string fileDensityMeasurements( "I16_DensityMeasurements.csv" );
+  std::string fileT1wDensityMeasurements( "I16_T1wDensityMeasurements.csv" );
+  std::string fileT2wDensityMeasurements( "I16_T2wDensityMeasurements.csv" );
 
 
 
@@ -1215,7 +1642,8 @@ int main( int argc, char *argv[] )
     if ( fileOutputPectoralSurfaceVoxels.length() > 0 ) fileOutputPectoralSurfaceVoxels.append( ".gz" );
     if ( fileOutputFittedBreastMask.length() > 0 )      fileOutputFittedBreastMask.append( ".gz" );
 
-    if ( fileOutputParenchyma.length() > 0 )            fileOutputParenchyma.append( ".gz" );
+    if ( fileOutputT1wParenchyma.length() > 0 )         fileOutputT1wParenchyma.append( ".gz" );
+    if ( fileOutputT2wParenchyma.length() > 0 )         fileOutputT2wParenchyma.append( ".gz" );
   }
 
   std::cout  << std::endl << "<filter-progress>" << std::endl
@@ -1251,8 +1679,6 @@ int main( int argc, char *argv[] )
 
     ImageType::Pointer imSegmentedBreastMask = 0;
     ImageType::Pointer imDixonBreastMask = 0;
-    
-    ImageType::Pointer imParenchyma = 0;
     
     dirFullPath = *iterDirectoryNames;
     dirBaseName = niftk::Basename( dirFullPath );
@@ -1299,56 +1725,17 @@ int main( int argc, char *argv[] )
       // If the CSV file has already been generated then read it
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      std::string fileInputDensityMeasurements  
-        = niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
-
-      if ( ! flgOverwrite) 
+      if ( ReadFileCSV( args, 
+                        fileT1wDensityMeasurements, 
+                        args.foutOutputT1wCSV, 
+                        flgVeryFirstRowT1w ) 
+           && 
+           ReadFileCSV( args, 
+                        fileT2wDensityMeasurements, 
+                        args.foutOutputT2wCSV, 
+                        flgVeryFirstRowT2w ) )
       {
-        if ( niftk::FileExists( fileInputDensityMeasurements ) )
-        {
-          std::ifstream fin( fileInputDensityMeasurements.c_str() );
-
-          if ((! fin) || fin.bad()) 
-          {
-            message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-            args.PrintError( message );
-            continue;
-          }
-
-          message << std::endl << "Reading CSV file: " << fileInputDensityMeasurements << std::endl;
-          args.PrintMessage( message );
-
-          niftk::CSVRow csvRow;
-
-          bool flgFirstRowOfThisFile = true;
-
-          while( fin >> csvRow )
-          {
-            message << csvRow << std::endl;
-            args.PrintMessage( message );
-
-            if ( flgFirstRowOfThisFile )
-            {
-              if ( flgVeryFirstRow )    // Include the title row?
-              {
-                *args.foutOutputCSV << csvRow << std::endl;
-                flgVeryFirstRow = false;
-              }
-              flgFirstRowOfThisFile = false;
-            }
-            else
-            {
-              *args.foutOutputCSV << csvRow << std::endl;
-            }
-          }
-        
-          continue;
-        }
-        else
-        {
-          message << "Density measurements: " << fileInputDensityMeasurements << " not found" << std::endl;
-          args.PrintMessage( message );
-        }     
+        continue;
       }
       
       progress = ( iDirectory + 0.1 )/nDirectories;
@@ -1912,371 +2299,45 @@ int main( int argc, char *argv[] )
       // Segment the parenchyma
       // ~~~~~~~~~~~~~~~~~~~~~~
 
-#ifdef LINK_TO_SEG_EM
+      SegmentParenchyma( "T1w",
 
-      nifti_image *niftiParenchyma;
+                         args,
+                         args.foutOutputT1wCSV,
+                         args.fileT1wOutputCSV,
+                         flgVeryFirstRowT1w,
+                         false,
 
-      if ( flgOverwrite || 
-           ( ! args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
-                                       "breast parenchyma", niftiParenchyma ) ) )
-      {
+                         dirBaseName,
+                         fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
+                         fileOutputBreastMask, 
+                         fileOutputT1wParenchyma,
+                         fileT1wDensityMeasurements,
 
-        nifti_image *niftiStructuralT2 = 
-          ConvertITKImageToNiftiImage< PixelType, PixelType, Dimension >( imStructuralT2 );
-        
-        nifti_image *niftiMask = 
-          ConvertITKImageToNiftiImage< PixelType, PixelType, Dimension >( imSegmentedBreastMask );
-        
+                         imSegmentedBreastMask,
+                         imFatSatT1 );
 
 
-        int nPriors = 2;
-        int NumbMultiSpec = 1;
-        int NumbTimePoints = 1;
-        int verboseLevel = 2;
-        
-        seg_EM SEG( nPriors, NumbMultiSpec, NumbTimePoints);
-        
-        SEG.SetInputImage( niftiStructuralT2 );
-        SEG.SetMaskImage( niftiMask );
+      SegmentParenchyma( "T2w",
 
-        SEG.SetVerbose( verboseLevel );
+                         args,
+                         args.foutOutputT2wCSV,
+                         args.fileT2wOutputCSV,
+                         flgVeryFirstRowT2w,
+                         true,
 
-        SEG.SetFilenameOut( niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ) );
+                         dirBaseName,
+                         fileI02_t2_tse_tra_Resampled, 
+                         fileOutputBreastMask, 
+                         fileOutputT2wParenchyma,
+                         fileT2wDensityMeasurements,
 
-        SEG.Turn_MRF_ON( 0.4 );
-
-        SEG.Run_EM();
-
-        niftiParenchyma = SEG.GetResult();
-
-        args.WriteImageToFile( fileOutputParenchyma, 
-                               "breast mask segmentation image", niftiParenchyma );
-
-      }
-
-#else
-
-      if ( flgOverwrite || 
-           ( ! args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
-                                       "breast parenchyma", imParenchyma ) ) )
-      {
-          
-#if 0
-
-        // system() call to seg_EM
-
-        std::stringstream commandNiftySeg;
-
-        commandNiftySeg 
-          << "\"" << args.progSegEM << "\""
-          << " -v 2 -bc_order 4 -nopriors 2" 
-          << " -in \"" << niftk::ConcatenatePath( args.dirOutput, fileI02_t2_tse_tra_Resampled ) << "\" "
-          << " -mask \"" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ) << "\" "
-          << " -out \"" << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ) << "\" ";
-
-        message << std::endl << "Executing parenchyma segmentation: "
-                << std::endl << "   " << commandNiftySeg.str() << std::endl << std::endl;
-        args.PrintMessage( message );
-
-        int ret = system( commandNiftySeg.str().c_str() );
-        message << std::endl << "Returned: " << ret << std::endl;
-        args.PrintMessage( message );
-
-#else
-
-        // QProcess call to seg_EM
-
-        QStringList argumentsNiftySeg = args.argsSegEM; 
-
-        argumentsNiftySeg 
-          << "-in"   << niftk::ConcatenatePath( args.dirOutput, fileI02_t2_tse_tra_Resampled ).c_str()
-          << "-mask" << niftk::ConcatenatePath( args.dirOutput, fileOutputBreastMask ).c_str()
-          << "-out"  << niftk::ConcatenatePath( args.dirOutput, fileOutputParenchyma ).c_str();
-
-        message << std::endl << "Executing parenchyma segmentation (QProcess): "
-                << std::endl << "   " << args.progSegEM;
-        for(int i=0;i<argumentsNiftySeg.size();i++)
-        {
-          message << " " << argumentsNiftySeg[i].toStdString();
-        }
-        message << std::endl << std::endl;
-        args.PrintMessage( message );
-
-        QProcess callSegEM;
-        QString outSegEM;
-
-        callSegEM.setProcessChannelMode( QProcess::MergedChannels );
-        callSegEM.start( args.progSegEM.c_str(), argumentsNiftySeg );
-
-        bool flgFinished = callSegEM.waitForFinished( 3600000 ); // Wait one hour
-
-        outSegEM = callSegEM.readAllStandardOutput();
-
-        message << outSegEM.toStdString();
-
-        if ( ! flgFinished )
-        {
-          message << "ERROR: Could not execute: " << args.progSegEM << " ( " 
-                  << callSegEM.errorString().toStdString() << " )" << std::endl;
-          args.PrintMessage( message );
-
-          continue;
-        }
-
-        args.PrintMessage( message );
-
-        callSegEM.close();
-
-#endif
-
-        args.ReadImageFromFile( args.dirOutput, fileOutputParenchyma, 
-                                "breast parenchyma", imParenchyma );
-      }
-
-#endif
+                         imSegmentedBreastMask,
+                         imStructuralT2 );
 
       progress = ( iDirectory + 0.8 )/nDirectories;
       std::cout  << std::endl << "<filter-progress>" << std::endl
                  << progress << std::endl
                  << "</filter-progress>" << std::endl << std::endl;
-
-
-      // Compute the breast density
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      if ( imParenchyma && imSegmentedBreastMask )
-      {
-        float nLeftVoxels = 0;
-        float nRightVoxels = 0;
-
-        float totalDensity = 0.;
-        float leftDensity = 0.;
-        float rightDensity = 0.;
-
-        float meanOfHighProbIntensities = 0.;
-        float meanOfLowProbIntensities = 0.;
-
-        float nHighProbIntensities = 0.;
-        float nLowProbIntensities = 0.;
-
-        itk::ImageRegionIteratorWithIndex< ImageType > 
-          maskIterator( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
-
-        itk::ImageRegionConstIterator< ImageType > 
-          segmIterator( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
-
-        itk::ImageRegionConstIterator< ImageType > 
-          imIterator( imStructuralT2, imStructuralT2->GetLargestPossibleRegion() );
-
-        ImageType::SpacingType spacing = imParenchyma->GetSpacing();
-
-        float voxelVolume = spacing[0]*spacing[1]*spacing[2];
-
-        ImageType::RegionType region;
-        region = imSegmentedBreastMask->GetLargestPossibleRegion();
-
-        ImageType::SizeType lateralSize;
-        lateralSize = region.GetSize();
-        lateralSize[0] = lateralSize[0]/2;
-
-        ImageType::IndexType idx;
-   
-        for ( maskIterator.GoToBegin(), segmIterator.GoToBegin(), imIterator.GoToBegin();
-              ! maskIterator.IsAtEnd();
-              ++maskIterator, ++segmIterator, ++imIterator )
-        {
-          if ( maskIterator.Get() )
-          {
-            idx = maskIterator.GetIndex();
-
-            // Left breast
-
-            if ( idx[0] < (int) lateralSize[0] )
-            {
-              nLeftVoxels++;
-              leftDensity += segmIterator.Get();
-            }
-
-            // Right breast
-
-            else 
-            {
-              nRightVoxels++;
-              rightDensity += segmIterator.Get();
-            }
-
-            // Both breasts
-
-            totalDensity += segmIterator.Get();
-
-            // Ensure we have the polarity correct by calculating the
-            // mean intensities of each class
-
-            if ( segmIterator.Get() > 0.5 )
-            {
-              meanOfHighProbIntensities += imIterator.Get();
-              nHighProbIntensities++;
-            }
-            else
-            {
-              meanOfLowProbIntensities += imIterator.Get();
-              nLowProbIntensities++;
-            }              
-          }
-        }
-
-        // Calculate the mean intensities of each class
-
-        if ( nHighProbIntensities > 0. )
-        {
-          meanOfHighProbIntensities /= nHighProbIntensities;
-        }
-
-        if ( nLowProbIntensities > 0. )
-        {
-          meanOfLowProbIntensities /= nLowProbIntensities;
-        }
-
-        message  << std::endl
-                 << "Mean intensity of high probability class = " << meanOfHighProbIntensities
-                << " ( " << nHighProbIntensities << " voxels )" << std::endl
-                << "Mean intensity of low probability class = " << meanOfLowProbIntensities
-                << " ( " << nLowProbIntensities << " voxels )" << std::endl;
-        args.PrintMessage( message );
-
-        // Fat should be high intensity in the T2 image so if the
-        // dense region (high prob) has a high intensity then it is
-        // probably fat and we need to invert the density
-
-        if ( meanOfHighProbIntensities > meanOfLowProbIntensities )
-        {
-          message << std::endl << "Inverting the density estimation" << std::endl;
-          args.PrintWarning( message );
-        
-          leftDensity = 1. - leftDensity;
-          rightDensity = 1. - rightDensity;
-          totalDensity = 1. - totalDensity;
-        }
-        
-  
-        float leftBreastVolume = nLeftVoxels*voxelVolume;
-        float rightBreastVolume = nRightVoxels*voxelVolume;
-
-        leftDensity /= nLeftVoxels;
-        rightDensity /= nRightVoxels;
-        totalDensity /= ( nLeftVoxels + nRightVoxels);
-
-        message << "Number of left breast voxels: " << nLeftVoxels << std::endl
-                << "Volume of left breast: " << leftBreastVolume << " mm^3" << std::endl
-                << "Density of left breast (fraction of glandular tissue): " << leftDensity 
-                << std::endl << std::endl
-        
-                << "Number of right breast voxels: " << nRightVoxels << std::endl
-                << "Volume of right breast: " << rightBreastVolume << " mm^3" << std::endl
-                << "Density of right breast (fraction of glandular tissue): " << rightDensity 
-                << std::endl << std::endl
-        
-                << "Total number of breast voxels: " 
-                << nLeftVoxels + nRightVoxels << std::endl
-                << "Total volume of both breasts: " 
-                << leftBreastVolume + rightBreastVolume << " mm^3" << std::endl
-                << "Combined density of both breasts (fraction of glandular tissue): " 
-                << totalDensity << std::endl << std::endl;
-        args.PrintMessage( message );
-
-
-        if ( fileDensityMeasurements.length() != 0 ) 
-        {
-          std::string fileOutputDensityMeasurements 
-            = niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
-
-          std::ofstream fout( fileOutputDensityMeasurements.c_str() );
-
-          fout.precision(16);
-
-          if ((! fout) || fout.bad()) 
-          {
-            message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
-            args.PrintError( message );
-            continue;
-          }
-
-          fout << "Study ID, "
-               << "Number of left breast voxels, "
-               << "Volume of left breast (mm^3), "
-               << "Density of left breast (fraction of glandular tissue), "
-      
-               << "Number of right breast voxels, "
-               << "Volume of right breast (mm^3), "
-               << "Density of right breast (fraction of glandular tissue), "
-      
-               << "Total number of breast voxels, "
-               << "Total volume of both breasts (mm^3), "
-               << "Combined density of both breasts (fraction of glandular tissue)" 
-               << std::endl;
-
-          fout << dirBaseName << ", "
-               << nLeftVoxels << ", "
-               << leftBreastVolume << ", "
-               << leftDensity << ", "
-      
-               << nRightVoxels << ", "
-               << rightBreastVolume << ", "
-               << rightDensity << ", "
-      
-               << nLeftVoxels + nRightVoxels << ", "
-               << leftBreastVolume + rightBreastVolume << ", "
-               << totalDensity << std::endl;
-    
-          fout.close();
-
-          message  << "Density measurements written to file: " 
-                   << fileOutputDensityMeasurements  << std::endl << std::endl;
-          args.PrintMessage( message );
-        }
-
-        // Write the data to the main collated csv file
-
-        if ( args.foutOutputCSV )
-        {
-          if ( flgVeryFirstRow )    // Include the title row?
-          {
-            *args.foutOutputCSV << "Study ID, "
-                                << "Number of left breast voxels, "
-                                << "Volume of left breast (mm^3), "
-                                << "Density of left breast (fraction of glandular tissue), "
-              
-                                << "Number of right breast voxels, "
-                                << "Volume of right breast (mm^3), "
-                                << "Density of right breast (fraction of glandular tissue), "
-              
-                                << "Total number of breast voxels, "
-                                << "Total volume of both breasts (mm^3), "
-                                << "Combined density of both breasts (fraction of glandular tissue)" 
-                                << std::endl;
-            flgVeryFirstRow = false;
-          }
-
-          *args.foutOutputCSV << dirBaseName << ", "
-                              << nLeftVoxels << ", "
-                              << leftBreastVolume << ", "
-                              << leftDensity << ", "
-            
-                              << nRightVoxels << ", "
-                              << rightBreastVolume << ", "
-                              << rightDensity << ", "
-      
-                              << nLeftVoxels + nRightVoxels << ", "
-                              << leftBreastVolume + rightBreastVolume << ", "
-                              << totalDensity << std::endl;
-        }
-        else
-        {
-          message << "Collated csv data file: " << fileOutputCSV 
-                  << " is not open, data will not be written." << std::endl;
-          args.PrintWarning( message );
-        }
-      }
 
 
       // Resample the breast mask to match the Dixon images
