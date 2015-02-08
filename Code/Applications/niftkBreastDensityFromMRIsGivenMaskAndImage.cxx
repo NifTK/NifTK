@@ -118,6 +118,7 @@ public:
   bool flgDebug;
   bool flgCompression;
   bool flgOverwrite;
+  bool flgFatIsBright;
 
   std::string dirInput;
   std::string dirOutput;
@@ -154,6 +155,7 @@ public:
                    bool compression, 
                    bool debug, 
                    bool overwrite,
+                   bool fatIsBright,
 
                    std::string subDirMask, 
                    std::string fileMask,
@@ -176,6 +178,7 @@ public:
     flgDebug = debug;
     flgCompression = compression;
     flgOverwrite = overwrite;
+    flgFatIsBright = fatIsBright;
 
     dirMask  = subDirMask;
     fileMaskPattern = fileMask;
@@ -286,6 +289,7 @@ public:
             << "Compress images?: "            << flgCompression    << std::endl
             << "Debugging output?: "           << flgDebug          << std::endl
             << "Overwrite previous results?: " << flgOverwrite      << std::endl       
+            << "Fat is bright?: "              << flgFatIsBright    << std::endl       
             << std::noboolalpha
             << std::endl
             << "Input mask sub-directory: " << dirMask << std::endl
@@ -471,7 +475,8 @@ int main( int argc, char *argv[] )
                         flgCompression, 
                         flgDebug, 
                         flgOverwrite,
-                          
+                        flgFatIsBright,
+
                         dirMask,
                         fileMaskPattern,
                         dirImage,
@@ -695,7 +700,7 @@ int main( int argc, char *argv[] )
           std::string fileInputDensityMeasurements  
             =  niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
 
-          if ( ! flgOverwrite) 
+          if ( ! args.flgOverwrite ) 
           {
             if ( niftk::FileExists( fileInputDensityMeasurements ) )
             {
@@ -905,6 +910,10 @@ int main( int argc, char *argv[] )
               }
             }
 
+            leftDensity /= nLeftVoxels;
+            rightDensity /= nRightVoxels;
+            totalDensity /= ( nLeftVoxels + nRightVoxels);
+
             // Calculate the mean intensities of each class
 
             if ( nHighProbIntensities > 0. )
@@ -928,7 +937,8 @@ int main( int argc, char *argv[] )
             // dense region (high prob) has a high intensity then it is
             // probably fat and we need to invert the density
 
-            if ( meanOfHighProbIntensities > meanOfLowProbIntensities )
+            if ( (     args.flgFatIsBright   && ( meanOfHighProbIntensities > meanOfLowProbIntensities ) ) ||
+                 ( ( ! args.flgFatIsBright ) && ( meanOfHighProbIntensities < meanOfLowProbIntensities ) ) )
             {
               message << std::endl << "Inverting the density estimation" << std::endl;
               args.PrintWarning( message );
@@ -941,10 +951,6 @@ int main( int argc, char *argv[] )
   
             float leftBreastVolume = nLeftVoxels*voxelVolume;
             float rightBreastVolume = nRightVoxels*voxelVolume;
-
-            leftDensity /= nLeftVoxels;
-            rightDensity /= nRightVoxels;
-            totalDensity /= ( nLeftVoxels + nRightVoxels);
 
             message << "Number of left breast voxels: " << nLeftVoxels << std::endl
                     << "Volume of left breast: " << leftBreastVolume << " mm^3" << std::endl
