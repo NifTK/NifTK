@@ -235,7 +235,7 @@ set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FOR
 set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
 set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
 set(NIFTK_VERSION_qRestAPI "5f3a03b15d" CACHE STRING "Version of qRestAPI" FORCE) 
-set(NIFTK_VERSION_NIFTYPIPE "98e5faebe9" CACHE STRING "Version of NiftyPipe" FORCE)
+set(NIFTK_VERSION_NiftyPipe "c3cefb5d58" CACHE STRING "Version of NiftyPipe" FORCE)
 set(NIFTK_LOCATION_DATA_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
@@ -263,7 +263,7 @@ set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nif
 set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
 set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
 set(NIFTK_LOCATION_qRestAPI "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
-set(NIFTK_LOCATION_NIFTYPIPE_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe" CACHE STRING "Location of NiftyPipe" FORCE)
+set(NIFTK_LOCATION_NiftyPipe_GIT "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe" CACHE STRING "Location of NiftyPipe" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -303,7 +303,7 @@ mark_as_advanced(NIFTK_VERSION_CGAL)
 mark_as_advanced(NIFTK_VERSION_SEM)
 mark_as_advanced(NIFTK_VERSION_ARUCO)
 mark_as_advanced(NIFTK_VERSION_qRestAPI)
-mark_as_advanced(NIFTK_VERSION_NIFTYPIPE)
+mark_as_advanced(NIFTK_VERSION_NiftyPipe)
 mark_as_advanced(NIFTK_LOCATION_DATA_GIT)
 mark_as_advanced(NIFTK_LOCATION_DATA_SVN)
 mark_as_advanced(NIFTK_LOCATION_DATA_TAR)
@@ -326,7 +326,7 @@ mark_as_advanced(NIFTK_LOCATION_CGAL)
 mark_as_advanced(NIFTK_LOCATION_SEM)
 mark_as_advanced(NIFTK_LOCATION_ARUCO)
 mark_as_advanced(NIFTK_LOCATION_qRestAPI)
-mark_as_advanced(NIFTK_LOCATION_NIFTYPIPE)
+mark_as_advanced(NIFTK_LOCATION_NiftyPipe_GIT)
 mark_as_advanced(NIFTK_USE_FFTW)
 mark_as_advanced(NIFTK_USE_CUDA)
 mark_as_advanced(NIFTK_DELAYLOAD_CUDA)
@@ -759,7 +759,6 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMA
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyPipe.cmake ${CMAKE_BINARY_DIR}/FindNiftyPipe.cmake @ONLY)
 file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
 foreach(file_to_copy ${package_depends_files})
   file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
@@ -1096,18 +1095,6 @@ if (BUILD_PROTOTYPE)
   endif()
 endif()
 
-######################################################################
-# Find NIFTYPIPE - 
-######################################################################
-if(BUILD_NIFTYPIPE)
-  find_package(NiftyPipe)
-  if(NIFTYPIPE_FOUND)
-    message("Found NiftyPipe")
-  else()
-    message("Didn't find NiftyPipe")
-  endif()
-endif()
-
 
 ######################################################################
 # Output directories, for when compiling, not installing.
@@ -1371,12 +1358,10 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
 
-
 # NiftyPipe
-if(BUILD_NIFTYPIPE AND NIFTYPIPE_FOUND)
-  
-  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.sh)
-  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/*.m)
+if(BUILD_NIFTYPIPE AND NOT WIN32)
+  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.sh)
+  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.m)
   file(GLOB niftypipe_python_programs ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/perform_*.py)
   
   install(FILES    ${niftypipe_matlab_files}    DESTINATION bin)
@@ -1388,7 +1373,6 @@ if(BUILD_NIFTYPIPE AND NIFTYPIPE_FOUND)
     DESTINATION python 
     USE_SOURCE_PERMISSIONS
   )
-
 endif()
 
 
