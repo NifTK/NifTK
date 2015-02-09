@@ -47,4 +47,8 @@ set(CPP_FILES
   IO/mitkCoordinateAxesDataWriter.cxx
   IO/mitkCoordinateAxesDataWriterFactory.cxx
   Interactions/mitkPointSetUpdate.cxx
+  Internal/niftkCoreIOMimeTypes.cxx
+  Internal/niftkCoordinateAxesDataReaderService.cxx
+  Internal/niftkCoordinateAxesDataWriterService.cxx
+  Internal/niftkCoreActivator.cxx
 )
