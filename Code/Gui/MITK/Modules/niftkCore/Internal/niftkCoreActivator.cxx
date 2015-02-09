@@ -29,11 +29,14 @@ CoreActivator::CoreActivator()
 //-----------------------------------------------------------------------------
 void CoreActivator::Load(us::ModuleContext* context)
 {
+  us::ServiceProperties props;
+  props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
+
   std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreIOMimeTypes::Get();
   for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
     iterEnd = mimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
   {
-    context->RegisterService(*mimeTypeIter);
+    context->RegisterService(*mimeTypeIter, props);
   }
 
   m_CoordinateAxesDataReaderService.reset(new niftk::CoordinateAxesDataReaderService());

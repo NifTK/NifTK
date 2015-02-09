@@ -46,14 +46,16 @@ mitk::CustomMimeType CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE()
 //-----------------------------------------------------------------------------
 std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()
 {
-  return mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".4x4";
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".4x4";
+  return name;
 }
 
 
 //-----------------------------------------------------------------------------
 std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_DESCRIPTION()
 {
-  return "4x4 Transforms";
+  static std::string description = "4x4 Transforms";
+  return description;
 }
 
 } // end namespace
