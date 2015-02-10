@@ -28,7 +28,6 @@ set(_exclude_plugins
   org_mitk_gui_qt_stdmultiwidgeteditor
   org_mitk_gui_qt_common_legacy
   org_mitk_gui_qt_segmentation
-  org_mitk_gui_qt_measurementtoolbox
   org_mitk_gui_qt_moviemaker
 )
 
