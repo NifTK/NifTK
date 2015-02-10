@@ -1183,12 +1183,12 @@ endif()
 # NiftyReg
 if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
   file(GLOB NIFTY_REG_LIB_FILES
-       ${NIFTYREG_ROOT}/lib/*.so
-       ${NIFTYREG_ROOT}/lib/*.dylib
+       ${NIFTYREG_DIR}/lib/*.so
+       ${NIFTYREG_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_ROOT}/bin/*)
+  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
 
   foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
@@ -1200,12 +1200,12 @@ endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 # NiftySeg
 if(BUILD_NIFTYSEG)
   file(GLOB NIFTY_SEG_LIB_FILES
-       ${NIFTYSEG_ROOT}/lib/*.so
-       ${NIFTYSEG_ROOT}/lib/*.dylib
+       ${NIFTYSEG_DIR}/lib/*.so
+       ${NIFTYSEG_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_ROOT}/bin/*)
+  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
 
   foreach(prog seg_EM seg_LabFusion)
@@ -1213,31 +1213,31 @@ if(BUILD_NIFTYSEG)
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
 
-  file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
+  file(GLOB NIFTY_SEG_PRIORS_FILES ${NIFTYSEG_DIR}/priors/*)
   install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
 endif(BUILD_NIFTYSEG)
 
 # NiftyRec
 if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
   file(GLOB NIFTY_REC_LIB_FILES
-       ${NIFTYREC_ROOT}/lib/*.so
-       ${NIFTYREC_ROOT}/lib/*.dylib
+       ${NIFTYREC_DIR}/lib/*.so
+       ${NIFTYREC_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_ROOT}/include/*)
+  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_DIR}/include/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
 endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
 if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   file(GLOB NIFTY_SIM_LIB_FILES
-       ${NIFTYSIM_ROOT}/lib/*.so
-       ${NIFTYSIM_ROOT}/lib/*.dylib
+       ${NIFTYSIM_DIR}/lib/*.so
+       ${NIFTYSIM_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_ROOT}/bin/*)
+  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
