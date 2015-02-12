@@ -116,23 +116,22 @@ endif()
 # Include NifTK helper macros
 ######################################################################
 
-include(niftkMacroGetChecksum)
-include(niftkMacroGetCommitHashOfCurrentFile)
+include(niftkExternalProjectHelperMacros)
 
 ######################################################################
 # Loop round for each external project, compiling it
 ######################################################################
 
 set(EXTERNAL_PROJECTS
-  camino
+  Camino
   Boost
   VTK
   DCMTK
   GDCM
   OpenCV
-  aruco
+  ArUco
   Eigen
-  apriltags
+  AprilTags
   FLANN
   PCL
   ITK
@@ -157,6 +156,9 @@ endif(BUILD_IGI)
 
 foreach(p ${EXTERNAL_PROJECTS})
   include("CMake/CMakeExternals/${p}.cmake")
+
+  list(APPEND NIFTK_APP_OPTIONS -DNIFTK_VERSION_${p}:STRING=${${p}_VERSION})
+  list(APPEND NIFTK_APP_OPTIONS -DNIFTK_LOCATION_${p}:STRING=${${p}_LOCATION})
 endforeach()
 
 ######################################################################
@@ -165,14 +167,14 @@ endforeach()
 if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
 
   set(proj NifTK)
-  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${camino_DEPENDS})
+  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${Camino_DEPENDS})
 
   if(BUILD_TESTING)
     list(APPEND proj_DEPENDENCIES ${NifTKData_DEPENDS})
   endif(BUILD_TESTING)
 
   if(BUILD_IGI)
-    list(APPEND proj_DEPENDENCIES ${NIFTYLINK_DEPENDS} ${OpenCV_DEPENDS} ${aruco_DEPENDS} ${Eigen_DEPENDS} ${apriltags_DEPENDS})
+    list(APPEND proj_DEPENDENCIES ${NIFTYLINK_DEPENDS} ${OpenCV_DEPENDS} ${ArUco_DEPENDS} ${Eigen_DEPENDS} ${AprilTags_DEPENDS})
   endif(BUILD_IGI)
 
   if(BUILD_IGI AND BUILD_PCL)

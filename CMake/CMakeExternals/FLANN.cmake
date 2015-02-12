@@ -24,28 +24,20 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "1.8.4.1")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/flann-${version}-src.tar.gz")
 
-  set(proj FLANN)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES)
-  set(FLANN_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(FLANN ${version} ${location})
 
   if(NOT DEFINED FLANN_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_FLANN ${NIFTK_LOCATION_FLANN})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_FLANN}
-      URL_MD5 ${NIFTK_CHECKSUM_FLANN}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

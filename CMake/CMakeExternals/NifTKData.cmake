@@ -24,51 +24,19 @@ endif ()
 
 if (BUILD_TESTING)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "cefeb2364e")
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 
-  set(proj NifTKData)
-  set(proj_VERSION ${NIFTK_VERSION_DATA})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES )
-  set(NifTKData_DEPENDS ${proj})
-
-  # Supported values: git, tar
-  if (NOT DEFINED ${proj}_archtype)
-    if (DEFINED ${NIFTK_ARCHTYPE_DATA})
-      set(${proj}_archtype ${NIFTK_ARCHTYPE_DATA})
-    else()
-      set(${proj}_archtype "git")
-    endif()
-  endif()
+  niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 
-    if (${proj}_archtype STREQUAL "git")
-      set(${proj}_location ${NIFTK_LOCATION_DATA_GIT})
-      set(${proj}_location_options
-        GIT_REPOSITORY ${${proj}_location}
-        GIT_TAG ${proj_VERSION}
-        UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-      )
-    elseif (${proj}_archtype STREQUAL "tar")
-      set(${proj}_location ${NIFTK_LOCATION_DATA_TAR})
-      niftkMacroGetChecksum(${proj}_checksum ${${proj}_location})
-      set(${proj}_location_options
-        URL ${${proj}_location}
-        URL_MD5 ${${proj}_checksum}
-        UPDATE_COMMAND ""
-      )
-    else ()
-      message("Unknown archive type. Valid values are git, svn and tar. Cannot download ${proj}.")
-    endif ()
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
-      ${${proj}_location_options}
+      SOURCE_DIR ${proj_SOURCE}
+      GIT_REPOSITORY ${proj_LOCATION}
+      GIT_TAG ${proj_VERSION}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""

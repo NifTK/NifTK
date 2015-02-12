@@ -35,42 +35,34 @@ if(ITK_DIR)
   endif()
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
+set(version "2.4.1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${version}.tar.gz")
 
-set(proj GDCM)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-set(proj_DEPENDENCIES )
-set(GDCM_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location})
 
 if(NOT DEFINED GDCM_DIR)
 
   set(GDCM_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-20130814.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_GDCM}
-    URL_MD5 ${NIFTK_CHECKSUM_GDCM}
-    INSTALL_COMMAND ""
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${GDCM_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
     DEPENDS ${proj_DEPENDENCIES}
   )
-  set(GDCM_DIR ${proj_BUILD})
+  set(GDCM_DIR ${proj_INSTALL}/lib/gdcm-2.4)
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
 else()

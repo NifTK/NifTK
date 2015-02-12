@@ -22,14 +22,10 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
+set(version "4.5.1-3e550bf8")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
 
-set(proj ITK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
@@ -38,8 +34,6 @@ endif()
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
-
-set(ITK_DEPENDS ${proj})
 
 if(NOT DEFINED ITK_DIR)
 
@@ -110,21 +104,19 @@ if(NOT DEFINED ITK_DIR)
 
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_ITK}
-    URL_MD5 ${NIFTK_CHECKSUM_ITK}
-    INSTALL_COMMAND ""
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${ITK_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       ${additional_cmake_args}
+      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
@@ -133,7 +125,7 @@ if(NOT DEFINED ITK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${proj_BUILD})
+  set(ITK_DIR ${proj_INSTALL}/lib/cmake/ITK-4.5)
   message("SuperBuild loading ITK from ${ITK_DIR}")
 
 else()

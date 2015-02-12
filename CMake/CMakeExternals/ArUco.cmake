@@ -24,28 +24,21 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "1.2.4")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/aruco-${version}.tar.gz")
 
-  set(proj aruco)
-  set(proj_VERSION ${NIFTK_VERSION_ARUCO})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(ArUco ${version} ${location})
   set(proj_DEPENDENCIES OpenCV)
-  set(aruco_DEPENDS ${proj})
 
   if(NOT DEFINED aruco_DIR)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_ARUCO}
-      URL_MD5 ${NIFTK_CHECKSUM_ARUCO}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -56,7 +49,7 @@ if(BUILD_IGI)
     )
 
     set(aruco_DIR ${proj_INSTALL})
-    message("SuperBuild loading ARUCO from ${aruco_DIR}")
+    message("SuperBuild loading ArUco from ${aruco_DIR}")
 
   else(NOT DEFINED aruco_DIR)
 

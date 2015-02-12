@@ -24,16 +24,10 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "2.4.8.2")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${version}.tar.gz")
 
-  set(proj OpenCV)
-  set(proj_VERSION ${NIFTK_VERSION_OPENCV})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES)
-  set(OpenCV_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(OpenCV ${version} ${location})
 
   if(NOT DEFINED OpenCV_DIR)
 
@@ -43,15 +37,13 @@ if(BUILD_IGI)
 
     set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_OPENCV}
-      URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ""
       INSTALL_COMMAND ""
       PATCH_COMMAND ${OpenCV_PATCH_COMMAND}

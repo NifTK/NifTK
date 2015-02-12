@@ -22,26 +22,20 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
+set(version "619aecd45a")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
-set(proj MITK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
 set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES aruco OpenCV Eigen apriltags)
+  list(APPEND proj_DEPENDENCIES ArUco OpenCV Eigen AprilTags)
   if(BUILD_PCL)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
 endif(BUILD_IGI)
-
-set(MITK_DEPENDS ${proj})
 
 # explicitly try to tame windows headers.
 if(WIN32)
@@ -91,21 +85,19 @@ if(NOT DEFINED MITK_DIR)
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"Path to DCMTK installation directory\")
     ")
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
-
     set(mitk_additional_library_search_paths)
     if(BUILD_IGI)
       list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib ${apriltags_LIBRARY_DIRS} ${FLANN_DIR}/lib ${PCL_DIR}/lib)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_MITK}
-      URL_MD5 ${NIFTK_CHECKSUM_MITK}
-      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS

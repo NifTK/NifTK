@@ -338,17 +338,9 @@ fi
 
 NIFTK_SUPERBUILD_DIR="${build_root}/${build_dir}"
 NIFTK_DIR=$NIFTK_SUPERBUILD_DIR/NifTK-build
-ITK_DIR=$NIFTK_SUPERBUILD_DIR/ITK-build
-VTK_DIR=$NIFTK_SUPERBUILD_DIR/VTK-build
-GDCM_DIR=$NIFTK_SUPERBUILD_DIR/GDCM-build
-CTK_DIR=$NIFTK_SUPERBUILD_DIR/CTK-build/CTK-build
-MITK_DIR=$NIFTK_SUPERBUILD_DIR/MITK-build/MITK-build
 
 export NIFTK_DRC_ANALYZE=ON
 export GIT_SSL_NO_VERIFY=1
-
-export LD_LIBRARY_PATH="$BOOST_DIR:$ITK_DIR/bin:$VTK_DIR/bin:$GDCM_DIR/bin:$CTK_DIR/bin:$MITK_DIR/bin:$MITK_DIR/bin/plugins:$NIFTK_DIR/bin:$NIFTK_DIR/bin/plugins"
-export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
 # -----------------------------------------------------------------------------
 # Clean old directories

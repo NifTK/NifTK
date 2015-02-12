@@ -24,15 +24,10 @@ endif()
 
 if(BUILD_NIFTYSIM)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "29132ae860")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
 
-  set(proj NiftySim)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYSIM})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(NIFTYSIM_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
     if(DEFINED VTK_DIR)
@@ -40,10 +35,6 @@ if(BUILD_NIFTYSIM)
     else(DEFINED VTK_DIR)
       set(USE_VTK OFF)
     endif(DEFINED VTK_DIR)
-
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
-
-    set(proj_DEPENDENCIES "")
 
     if (USE_VTK)
       list(APPEND proj_DEPENDENCIES VTK)
@@ -78,12 +69,12 @@ if(BUILD_NIFTYSIM)
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYSIM}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYSIM}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

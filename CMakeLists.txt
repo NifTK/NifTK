@@ -157,7 +157,7 @@ endforeach()
 ######################################################################
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
-option(BUILD_CAMINO "Build camino." OFF)
+option(BUILD_CAMINO "Build Camino." OFF)
 option(BUILD_NIFTYREG "Build NiftyReg." ON)
 option(BUILD_NIFTYREC "Build NiftyRec." OFF)
 option(BUILD_NIFTYSIM "Build NiftySim." ON)
@@ -219,60 +219,13 @@ else(WIN32)
 endif(WIN32)
 set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
-set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
-set(NIFTK_VERSION_DATA "cefeb2364e" CACHE STRING "Version of NifTKData" FORCE)
-set(NIFTK_VERSION_Boost "1_56_0" CACHE STRING "Version of Boost" FORCE)
-set(NIFTK_VERSION_GDCM "2.4.1" CACHE STRING "Version of GDCM" FORCE)
-set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
-set(NIFTK_VERSION_ITK "4.5.1-3e550bf8" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_VERSION_RTK "196aec7d3b" CACHE STRING "Version of RTK" FORCE)
-set(NIFTK_VERSION_VTK "6.1.0+74f4888" CACHE STRING "Version of VTK" FORCE)
-# Note: If the CTK version changes, then you either clear the plugin cache
-# or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "9331130fe3" CACHE STRING "Version of CTK" FORCE)
-set(NIFTK_VERSION_OPENCV "2.4.8.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "619aecd45a" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_NIFTYLINK "b9f2782f73" CACHE STRING "Version of NiftyLink" FORCE)
-set(NIFTK_VERSION_NIFTYREG "97383b06b9" CACHE STRING "Version of NiftyReg" FORCE)
-set(NIFTK_VERSION_NIFTYSEG "b2decf5160" CACHE STRING "Version of NiftySeg" FORCE)
-set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
-set(NIFTK_VERSION_NIFTYSIM "29132ae860" CACHE STRING "Version of NiftySim" FORCE)
-set(NIFTK_VERSION_CGAL "4.4-patched" CACHE STRING "Version of CGAL" FORCE)
-set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
-set(NIFTK_VERSION_SEM "11ea15b81e" CACHE STRING "Version of Slicer Execution Module package" FORCE)
-set(NIFTK_VERSION_CAMINO "4612bee5fa" CACHE STRING "Version of Camino" FORCE)
-set(NIFTK_VERSION_EIGEN "3.2.2.1" CACHE STRING "Version of EIGEN" FORCE)
-set(NIFTK_VERSION_APRILTAGS "3c6af59723" CACHE STRING "Version of AprilTags" FORCE)
-set(NIFTK_VERSION_FLANN "1.8.4.1" CACHE STRING "Version of FLANN" FORCE)
-set(NIFTK_VERSION_PCL "c2203fa60a" CACHE STRING "Version of PCL" FORCE)
-set(NIFTK_VERSION_qRestAPI "5f3a03b15d" CACHE STRING "Version of qRestAPI" FORCE) 
-set(NIFTK_LOCATION_DATA_GIT "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git" CACHE STRING "Version of NifTKData in git" FORCE)
-set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
-set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.gz" CACHE STRING "Location of Boost" FORCE)
-set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
-set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
-set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
-set(NIFTK_LOCATION_RTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-RTK-${NIFTK_VERSION_RTK}.tar.gz" CACHE STRING "Location of RTK" FORCE)
-set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/VTK-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
-set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
-set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
-set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
-set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
-set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git" CACHE STRING "Location of NiftyLink repository" FORCE)
+
+# Further variables for the external project names and locations are defined
+# in the external project CMake files under CMake/CMakeExternals.
+
+set(NIFTK_EP_TARBALL_LOCATION "http://cmic.cs.ucl.ac.uk/platform/dependencies")
+
 set(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
-set(NIFTK_LOCATION_NIFTYREG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyReg-${NIFTK_VERSION_NIFTYREG}.tar.gz" CACHE STRING  "Location of NiftyReg" FORCE)
-set(NIFTK_LOCATION_NIFTYSEG "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySeg-${NIFTK_VERSION_NIFTYSEG}.tar.gz" CACHE STRING  "Location of NiftySeg" FORCE)
-set(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyRec-${NIFTK_VERSION_NIFTYREC}.tar.gz" CACHE STRING  "Location of NiftyRec" FORCE)
-set(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftySim" FORCE)
-set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
-set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
-set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
-set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
-set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${NIFTK_VERSION_EIGEN}.tar.bz2" CACHE STRING "Location of Eigen" FORCE)
-set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-apriltags-${NIFTK_VERSION_APRILTAGS}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
-set(NIFTK_LOCATION_FLANN "http://cmic.cs.ucl.ac.uk/platform/dependencies/flann-${NIFTK_VERSION_FLANN}-src.tar.gz" CACHE STRING "Location of FLANN" FORCE)
-set(NIFTK_LOCATION_PCL "http://cmic.cs.ucl.ac.uk/platform/dependencies/PointCloudLibrary-pcl-${NIFTK_VERSION_PCL}.tar.gz" CACHE STRING "Location of PCL" FORCE)
-set(NIFTK_LOCATION_qRestAPI "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-qRestAPI-${NIFTK_VERSION_qRestAPI}.tar.gz" CACHE STRING "Location of qRestAPI" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -293,47 +246,7 @@ mark_as_advanced(NIFTK_BUILD_ALL_PLUGINS)
 mark_as_advanced(NIFTK_CHECK_COVERAGE)
 mark_as_advanced(NIFTK_VERBOSE_COMPILER_WARNINGS)
 mark_as_advanced(NIFTK_GENERATE_DOXYGEN_HELP)
-mark_as_advanced(NIFTK_ARCHTYPE_DATA)
-mark_as_advanced(NIFTK_VERSION_DATA)
-mark_as_advanced(NIFTK_VERSION_Boost)
-mark_as_advanced(NIFTK_VERSION_GDCM)
-mark_as_advanced(NIFTK_VERSION_DCMTK)
-mark_as_advanced(NIFTK_VERSION_ITK)
-mark_as_advanced(NIFTK_VERSION_VTK)
-mark_as_advanced(NIFTK_VERSION_CTK)
-mark_as_advanced(NIFTK_VERSION_OPENCV)
-mark_as_advanced(NIFTK_VERSION_MITK)
-mark_as_advanced(NIFTK_VERSION_NIFTYLINK)
-mark_as_advanced(NIFTK_VERSION_NIFTYREG)
-mark_as_advanced(NIFTK_VERSION_NIFTYSEG)
-mark_as_advanced(NIFTK_VERSION_NIFTYREC)
-mark_as_advanced(NIFTK_VERSION_NIFTYSIM)
-mark_as_advanced(NIFTK_VERSION_CGAL)
-mark_as_advanced(NIFTK_VERSION_SEM)
-mark_as_advanced(NIFTK_VERSION_ARUCO)
-mark_as_advanced(NIFTK_VERSION_qRestAPI)
-mark_as_advanced(NIFTK_LOCATION_DATA_GIT)
-mark_as_advanced(NIFTK_LOCATION_DATA_SVN)
-mark_as_advanced(NIFTK_LOCATION_DATA_TAR)
-mark_as_advanced(NIFTK_LOCATION_Boost)
-mark_as_advanced(NIFTK_LOCATION_GDCM)
-mark_as_advanced(NIFTK_LOCATION_DCMTK)
-mark_as_advanced(NIFTK_LOCATION_ITK)
-mark_as_advanced(NIFTK_LOCATION_VTK)
-mark_as_advanced(NIFTK_LOCATION_CTK)
-mark_as_advanced(NIFTK_LOCATION_OPENCV)
-mark_as_advanced(NIFTK_LOCATION_MITK)
-mark_as_advanced(NIFTK_LOCATION_NIFTYLINK_TARBALL)
-mark_as_advanced(NIFTK_LOCATION_NIFTYLINK_REPOSITORY)
 mark_as_advanced(NIFTK_LOCATION_PROTOTYPE)
-mark_as_advanced(NIFTK_LOCATION_NIFTYREG)
-mark_as_advanced(NIFTK_LOCATION_NIFTYSEG)
-mark_as_advanced(NIFTK_LOCATION_NIFTYREC)
-mark_as_advanced(NIFTK_LOCATION_NIFTYSIM)
-mark_as_advanced(NIFTK_LOCATION_CGAL)
-mark_as_advanced(NIFTK_LOCATION_SEM)
-mark_as_advanced(NIFTK_LOCATION_ARUCO)
-mark_as_advanced(NIFTK_LOCATION_qRestAPI)
 mark_as_advanced(NIFTK_USE_FFTW)
 mark_as_advanced(NIFTK_USE_CUDA)
 mark_as_advanced(NIFTK_DELAYLOAD_CUDA)
@@ -342,20 +255,8 @@ mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
 mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 mark_as_advanced(BUILD_CAMINO)
-mark_as_advanced(NIFTK_LOCATION_CAMINO)
-mark_as_advanced(NIFTK_VERSION_CAMINO)
-mark_as_advanced(NIFTK_LOCATION_EIGEN)
-mark_as_advanced(NIFTK_VERSION_EIGEN)
-mark_as_advanced(NIFTK_LOCATION_APRILTAGS)
-mark_as_advanced(NIFTK_VERSION_APRILTAGS)
-mark_as_advanced(NIFTK_VERSION_FLANN)
-mark_as_advanced(NIFTK_LOCATION_FLANN)
 mark_as_advanced(BUILD_PCL)
-mark_as_advanced(NIFTK_VERSION_PCL)
-mark_as_advanced(NIFTK_LOCATION_PCL)
 mark_as_advanced(BUILD_RTK)
-mark_as_advanced(NIFTK_VERSION_RTK)
-mark_as_advanced(NIFTK_LOCATION_RTK)
 mark_as_advanced(BUILD_ITKFFTW)
 
 # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
@@ -1048,6 +949,12 @@ endif(BUILD_RTK)
 # Find SlicerExecutionModel
 ######################################################################
 if(BUILD_COMMAND_LINE_PROGRAMS)
+
+  set(_itk_dir ${ITK_DIR})
+
+  ######################################################################
+  # Warning: This process corrupts ITK_DIR
+  ######################################################################
   find_package(SlicerExecutionModel REQUIRED)
   if(SlicerExecutionModel_FOUND)
     message("Found SlicerExecutionModel")
@@ -1055,6 +962,12 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
   else()
     message("Didn't find SlicerExecutionModel")
   endif()
+
+  ######################################################################
+  # So, here we set ITK_DIR back
+  ######################################################################
+  set(ITK_DIR ${_itk_dir})
+
 endif()
 
 ######################################################################
@@ -1210,7 +1123,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Aruco.txt ${CMAKE_BINARY_DIR}/LICENSE_Aruco.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ArUco.txt ${CMAKE_BINARY_DIR}/LICENSE_ArUco.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt ${CMAKE_BINARY_DIR}/LICENSE_AprilTags.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt ${CMAKE_BINARY_DIR}/LICENSE_Boost.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK.txt ${CMAKE_BINARY_DIR}/LICENSE_CTK.txt)
@@ -1225,7 +1138,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt ${CMAKE_BINARY_DIR}
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySim.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt ${CMAKE_BINARY_DIR}/LICENSE_OpenCV.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICENSE_Qt.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt ${CMAKE_BINARY_DIR}/LICENSE_EIGEN.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt ${CMAKE_BINARY_DIR}/LICENSE_Eigen.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt ${CMAKE_BINARY_DIR}/LICENSE_FLANN.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
 if(BUILD_IGI)
@@ -1259,9 +1172,9 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIF
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Aruco.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ArUco.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 if(BUILD_IGI)
@@ -1287,12 +1200,12 @@ endif()
 # NiftyReg
 if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
   file(GLOB NIFTY_REG_LIB_FILES
-       ${NIFTYREG_ROOT}/lib/*.so
-       ${NIFTYREG_ROOT}/lib/*.dylib
+       ${NIFTYREG_DIR}/lib/*.so
+       ${NIFTYREG_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_ROOT}/bin/*)
+  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
 
   foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
@@ -1304,12 +1217,12 @@ endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 # NiftySeg
 if(BUILD_NIFTYSEG)
   file(GLOB NIFTY_SEG_LIB_FILES
-       ${NIFTYSEG_ROOT}/lib/*.so
-       ${NIFTYSEG_ROOT}/lib/*.dylib
+       ${NIFTYSEG_DIR}/lib/*.so
+       ${NIFTYSEG_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_ROOT}/bin/*)
+  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
 
   foreach(prog seg_EM seg_LabFusion)
@@ -1317,31 +1230,31 @@ if(BUILD_NIFTYSEG)
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
 
-  file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
+  file(GLOB NIFTY_SEG_PRIORS_FILES ${NIFTYSEG_DIR}/priors/*)
   install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
 endif(BUILD_NIFTYSEG)
 
 # NiftyRec
 if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
   file(GLOB NIFTY_REC_LIB_FILES
-       ${NIFTYREC_ROOT}/lib/*.so
-       ${NIFTYREC_ROOT}/lib/*.dylib
+       ${NIFTYREC_DIR}/lib/*.so
+       ${NIFTYREC_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_ROOT}/include/*)
+  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_DIR}/include/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
 endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
 if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   file(GLOB NIFTY_SIM_LIB_FILES
-       ${NIFTYSIM_ROOT}/lib/*.so
-       ${NIFTYSIM_ROOT}/lib/*.dylib
+       ${NIFTYSIM_DIR}/lib/*.so
+       ${NIFTYSIM_DIR}/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_ROOT}/bin/*)
+  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_DIR}/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 

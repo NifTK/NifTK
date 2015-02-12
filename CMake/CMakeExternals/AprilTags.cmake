@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# apriltags - external project for tracking AR markers.
+# AprilTags - external project for tracking AR markers.
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -24,16 +24,11 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "3c6af59723")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${version}.tar.gz")
 
-  set(proj apriltags)
-  set(proj_VERSION ${NIFTK_VERSION_APRILTAGS})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(AprilTags ${version} ${location})
   set(proj_DEPENDENCIES OpenCV Eigen)
-  set(apriltags_DEPENDS ${proj})
 
   if(NOT DEFINED apriltags_DIR)
 
@@ -42,15 +37,13 @@ if(BUILD_IGI)
       set(APRILTAGS_C_FLAGS "-fPIC")
     endif()
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_APRILTAGS}
-      URL_MD5 ${NIFTK_CHECKSUM_APRILTAGS}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

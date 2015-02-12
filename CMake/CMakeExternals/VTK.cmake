@@ -22,16 +22,10 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
+set(version "6.1.0+74f4888")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/VTK-${version}.tar.gz")
 
-set(proj VTK)
-set(proj_VERSION ${NIFTK_VERSION_${proj}})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-set(proj_DEPENDENCIES )
-set(VTK_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(VTK ${version} ${location})
 
 set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
 
@@ -86,20 +80,18 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(APPLE)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_VTK}
-    URL_MD5 ${NIFTK_CHECKSUM_VTK}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
-    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
@@ -113,9 +105,10 @@ if(NOT DEFINED VTK_DIR)
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
-    )
+  )
 
-  set(VTK_DIR ${proj_BUILD})
+  #set(VTK_DIR ${proj_INSTALL})
+  set(VTK_DIR ${proj_INSTALL}/lib/cmake/vtk-6.1)
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

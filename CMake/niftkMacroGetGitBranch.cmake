@@ -19,6 +19,6 @@ macro(niftkMacroGetGitBranch dir prefix)
        OUTPUT_VARIABLE ${prefix}_BRANCH_NAME
        OUTPUT_STRIP_TRAILING_WHITESPACE)
   if(NOT ${GIT_error} EQUAL 0)
-    message(SEND_ERROR "Command \"${GIT_EXECUTBALE} rev-parse --abbrev-ref HEAD in directory ${dir} failed with output:\n${GIT_error}")
+    message(SEND_ERROR "Command \"${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD in directory ${dir} failed with output:\n${GIT_error}")
   endif()
 endmacro()

@@ -24,28 +24,20 @@ endif()
 
 if(BUILD_NIFTYREG)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "97383b06b9")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
 
-  set(proj NiftyReg)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYREG})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES )
-  set(NIFTYREG_DEPENDS ${proj})
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
 
   if(NOT DEFINED NIFTYREG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYREG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYREG}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

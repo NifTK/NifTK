@@ -26,20 +26,18 @@ endif()
 
 if(QT_FOUND)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  # Note: If the CTK version changes, then you either clear the plugin cache
+  # or change the deploy path by changing the patch level.
+  set(version "9331130fe3")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/commontk-CTK-${version}.tar.gz")
 
-  set(proj CTK)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  set(qRestAPI_version "5f3a03b15d")
+  set(qRestAPI_location "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${qRestAPI_version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(CTK ${version} ${location})
   set(proj_DEPENDENCIES VTK ITK DCMTK)
-  set(CTK_DEPENDS ${proj})
 
   if(NOT DEFINED CTK_DIR)
-
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_CTK ${NIFTK_LOCATION_CTK})
 
     set (ctk_qt_args -DCTK_QT_VERSION:STRING=${DESIRED_QT_VERSION})
 
@@ -50,12 +48,12 @@ if(QT_FOUND)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_CTK}
-      URL_MD5 ${NIFTK_CHECKSUM_CTK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
@@ -81,8 +79,8 @@ if(QT_FOUND)
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
-        -DDCMTK_URL:STRING=http://cmic.cs.ucl.ac.uk/platform/dependencies/CTK_DCMTK_085525e6.tar.gz
-        -DqRestAPI_URL:STRING=${NIFTK_LOCATION_qRestAPI}
+        -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
+        -DqRestAPI_URL:STRING=${qRestAPI_location}
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(CTK_DIR ${proj_BUILD})

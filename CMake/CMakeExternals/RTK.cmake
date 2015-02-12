@@ -24,29 +24,23 @@ endif()
 
 if(BUILD_RTK)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "196aec7d3b")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-RTK-${version}.tar.gz")
 
-  set(proj RTK)
-  set(proj_VERSION ${NIFTK_VERSION_${proj}})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(RTK ${version} ${location})
   set(proj_DEPENDENCIES GDCM ITK)
-  set(RTK_DEPENDS ${proj})
 
   if(NOT DEFINED RTK_DIR)
 
     set(additional_cmake_args )
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_RTK ${NIFTK_LOCATION_RTK})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_RTK}
-      URL_MD5 ${NIFTK_CHECKSUM_RTK}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}

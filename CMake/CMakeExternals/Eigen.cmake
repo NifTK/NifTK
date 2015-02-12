@@ -22,28 +22,20 @@ if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
   message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
-niftkMacroGetCommitHashOfCurrentFile(config_version)
+set(version "3.2.2.1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/eigen-eigen-${version}.tar.bz2")
 
-set(proj Eigen)
-set(proj_VERSION ${NIFTK_VERSION_EIGEN})
-set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-set(proj_DEPENDENCIES )
-set(Eigen_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(Eigen ${version} ${location})
 
 if(NOT DEFINED Eigen_DIR)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_EIGEN ${NIFTK_LOCATION_EIGEN})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj_SOURCE}
     PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
     INSTALL_DIR ${proj_INSTALL}
-    URL ${NIFTK_LOCATION_EIGEN}
-    URL_MD5 ${NIFTK_CHECKSUM_EIGEN}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     #CONFIGURE_COMMAND ""
     UPDATE_COMMAND ""
     BUILD_COMMAND ""

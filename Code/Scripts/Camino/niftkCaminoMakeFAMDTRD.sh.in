@@ -85,7 +85,7 @@ cat <<EOF
       <label>Tr(D) image</label>
       <default>outputTRD.nii.gz</default>
       <channel>output</channel>
-    </image>                                                                    
+    </image>
   </parameters>
 </executable>
 EOF
@@ -157,7 +157,7 @@ do
     --trdImage)
         OUTPUT_TRD_IMAGE=$2
         shift 1
-        ;;                        
+        ;;
   esac
   shift 1
 done

@@ -28,24 +28,18 @@ if(BUILD_CAMINO AND NOT WIN32)
 
   if(NOT "${Java_VERSION}" STREQUAL "")
 
-    niftkMacroGetCommitHashOfCurrentFile(config_version)
+    set(version "4612bee5fa")
+    set(location "${NIFTK_EP_TARBALL_LOCATION}/camino-${version}.tar.gz")
 
-    set(proj camino)
-    set(proj_VERSION ${NIFTK_VERSION_CAMINO})
-    set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-    set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-    set(proj_DEPENDENCIES)
-    set(camino_DEPENDS ${proj})
+    niftkMacroDefineExternalProjectVariables(Camino ${version} ${location})
 
     if(NOT DEFINED camino_DIR)
 
-      niftkMacroGetChecksum(NIFTK_CHECKSUM_CAMINO ${NIFTK_LOCATION_CAMINO})
-
       ExternalProject_Add(${proj}
-        SOURCE_DIR ${proj_SOURCE}
         PREFIX ${proj_CONFIG}
-        URL ${NIFTK_LOCATION_CAMINO}
-        URL_MD5 ${NIFTK_CHECKSUM_CAMINO}
+        SOURCE_DIR ${proj_SOURCE}
+        URL ${proj_LOCATION}
+        URL_MD5 ${proj_CHECKSUM}
         CONFIGURE_COMMAND ""
         INSTALL_COMMAND ""
         UPDATE_COMMAND ""

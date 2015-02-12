@@ -24,40 +24,30 @@ endif()
 
 if(BUILD_IGI)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git")
 
-  set(proj NiftyLink)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYLINK})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
-  set(proj_DEPENDENCIES)
-  set(NIFTYLINK_DEPENDS ${proj})
+  if (NIFTK_NIFTYLINK_DEV)
+
+    # This retrieves the latest commit hash on the development branch.
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} ls-remote --heads ${location} development
+       ERROR_VARIABLE GIT_error
+       OUTPUT_VARIABLE NiftyLinkVersion
+       OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    if(NOT ${GIT_error} EQUAL 0)
+      message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${location} development\" failed with output:\n${GIT_error}")
+    endif()
+
+    string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
+
+  else ()
+    set(version "b9f2782f73")
+  endif ()
+
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})
 
   if(NOT DEFINED NiftyLink_DIR)
-
-    set(revision_tag development)
-
-    if (NIFTK_NIFTYLINK_DEV)
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${revision_tag}
-      )
-    else ()
-      # Must Not Leave Tarballs on Web Server
-      # niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
-      # set(NiftyLink_location_options
-      #   URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
-      #   URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
-      # )
-      #
-      # But we still want a specific version
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${proj_VERSION}
-      )
-    endif ()
 
     if(DEFINED NIFTYLINK_OIGTLINK_DEV)
       set(NiftyLink_options
@@ -83,11 +73,12 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      ${NiftyLink_location_options}
+      GIT_REPOSITORY ${proj_LOCATION}
+      GIT_TAG ${proj_VERSION}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}

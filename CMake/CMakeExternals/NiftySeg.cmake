@@ -24,28 +24,21 @@ endif()
 
 if(BUILD_NIFTYSEG)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  set(version "b2decf5160")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
 
-  set(proj NiftySeg)
-  set(proj_VERSION ${NIFTK_VERSION_NIFTYSEG})
-  set(proj_SOURCE ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-src)
-  set(proj_CONFIG ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-cmake)
-  set(proj_BUILD ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-build)
-  set(proj_INSTALL ${EP_BASE}/${proj}-${proj_VERSION}-${config_version}-install)
+  niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location})
   set(proj_DEPENDENCIES Eigen)
-  set(NIFTYSEG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSEG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj_SOURCE}
       PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      URL ${NIFTK_LOCATION_NIFTYSEG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYSEG}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${GEN}
       #CONFIGURE_COMMAND ""
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
