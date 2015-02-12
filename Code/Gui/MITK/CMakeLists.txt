@@ -113,5 +113,27 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
   add_subdirectory(HelperApps)
 endif()
 
+
+####################################################################################
+# Temporary Work Around. See issue 4082.
+# In MITK 2014.10, the macro mitkFunctionGetLibrarySearchPaths assumes you
+# are loading GDCM and ITK from the build folder. As of 4082 we need to load
+# these from the installation folder. This may be fixed by MITK around 9th Feb.
+# So this can be removed if our version of MITK is post 9th Feb 2015 and the
+# packaging still appears to work without this code being present.
+#################################################################################### 
+
+if(NOT ITK_DIR OR NOT VTK_DIR OR NOT GDCM_DIR)
+  message("Fatal: ITK_DIR, VTK_DIR and GDCM_DIR must be defined")
+else()
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+  list(APPEND _additional_search_paths ${ITK_DIR}/../.. ${VTK_DIR}/../.. ${GDCM_DIR}/..)
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths}) 
+endif()
+
+####################################################################################
+# End of aforementioned Temporary Work Around.
+####################################################################################
+
 add_subdirectory(Apps)
 

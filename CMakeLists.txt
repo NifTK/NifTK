@@ -944,6 +944,12 @@ endif(BUILD_RTK)
 # Find SlicerExecutionModel
 ######################################################################
 if(BUILD_COMMAND_LINE_PROGRAMS)
+
+  set(_itk_dir ${ITK_DIR})
+
+  ######################################################################
+  # Warning: This process corrupts ITK_DIR
+  ######################################################################
   find_package(SlicerExecutionModel REQUIRED)
   if(SlicerExecutionModel_FOUND)
     message("Found SlicerExecutionModel")
@@ -951,6 +957,12 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
   else()
     message("Didn't find SlicerExecutionModel")
   endif()
+
+  ######################################################################
+  # So, here we set ITK_DIR back
+  ######################################################################
+  set(ITK_DIR ${_itk_dir})
+
 endif()
 
 ######################################################################
