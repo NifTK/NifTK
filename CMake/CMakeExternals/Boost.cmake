@@ -112,9 +112,9 @@ if(MITK_USE_Boost)
       CONFIGURE_COMMAND "${_boost_cfg_cmd}"
       BUILD_COMMAND "${_boost_build_cmd}"
       INSTALL_COMMAND "${INSTALL_COMMAND}"
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        ${BOOST_ARGS}
         -DWITH_BZIP2:BOOL=OFF
         -DWITH_DOXYGEN:BOOL=OFF
         -DWITH_EXPAT:BOOL=OFF
@@ -123,7 +123,6 @@ if(MITK_USE_Boost)
         -DWITH_XSLTPROC:BOOL=OFF
         -DWITH_VALGRIND:BOOL=OFF
         -DWITH_ZLIB:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
     )
 

@@ -30,9 +30,9 @@ if(BUILD_MESHING)
     ######################################################################
 
     if(UNIX)
-      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS} -fPIC")
+      set(CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     else()
-      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS}")
+      set(CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     endif(UNIX)
 
     ExternalProject_Add(${proj}
@@ -42,11 +42,9 @@ if(BUILD_MESHING)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}
         -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}

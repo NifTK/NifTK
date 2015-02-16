@@ -39,11 +39,9 @@ if(BUILD_IGI)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
       DEPENDS ${proj_DEPENDENCIES}
     )

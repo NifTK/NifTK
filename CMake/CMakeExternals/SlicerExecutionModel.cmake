@@ -39,13 +39,10 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     URL_MD5 ${proj_CHECKSUM}
     UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
     INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       ${additional_cmake_args}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DSlicerExecutionModel_USE_JSONCPP:BOOL=OFF
       -DITK_DIR:PATH=${ITK_DIR}/../../../../build
     DEPENDS ${proj_DEPENDENCIES}

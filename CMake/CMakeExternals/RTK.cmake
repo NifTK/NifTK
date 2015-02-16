@@ -43,7 +43,7 @@ if(BUILD_RTK)
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         ${additional_cmake_args}

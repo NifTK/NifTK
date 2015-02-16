@@ -56,7 +56,7 @@ if(QT_FOUND)
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
          ${ctk_qt_args}
