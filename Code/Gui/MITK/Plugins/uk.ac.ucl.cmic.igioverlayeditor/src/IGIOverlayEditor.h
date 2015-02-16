@@ -128,6 +128,10 @@ protected:
 
   void WriteCurrentConfig(const QString& directory) const;
 
+protected slots:
+
+  void OnPreferencesChanged();
+
 private slots:
 
   /**
