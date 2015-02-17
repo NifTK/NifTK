@@ -56,6 +56,11 @@
 #include <itkConversionUtils.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionIteratorWithIndex.h>
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkMaskImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkConstantPadImageFilter.h>
+#include <itkOrientImageFilter.h>
 
 //#define LINK_TO_SEG_EM
 
@@ -81,6 +86,7 @@ typedef float PixelType;
 const unsigned int   Dimension = 3;
 
 typedef itk::Image< PixelType, Dimension > ImageType;
+typedef itk::Image< PixelType, 4 > ImageType4D;
 
 
 
@@ -441,6 +447,78 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
 
 
 // -------------------------------------------------------------------------
+// PrintOrientationInfo()
+// -------------------------------------------------------------------------
+
+void PrintOrientationInfo( ImageType::Pointer image )
+{
+  itk::SpatialOrientationAdapter adaptor;
+  ImageType::DirectionType direction;
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      direction[i][j] = image->GetDirection()[i][j];
+    }
+  }
+
+  std::cout << "Image direction: " << std::endl
+	    << direction;
+
+  std::cout << "ITK orientation: " 
+	    << itk::ConvertSpatialOrientationToString(adaptor.FromDirectionCosines(direction)) 
+	    << std::endl;
+}
+
+
+// -------------------------------------------------------------------------
+// ReorientateImage()
+// -------------------------------------------------------------------------
+
+void ReorientateImage( ImageType::Pointer &image, ImageType::Pointer &reference )
+{
+  itk::SpatialOrientationAdapter adaptor;
+  ImageType::DirectionType direction;
+
+  std::cout << std::endl << "Input image:" << std::endl;
+  image->Print( std::cout );
+  PrintOrientationInfo( image );
+
+  std::cout << std::endl << "Reference image:" << std::endl;
+  reference->Print( std::cout );
+  PrintOrientationInfo( reference );
+
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      direction[i][j] = reference->GetDirection()[i][j];
+    }
+  }
+
+  typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
+  OrientImageFilterType::Pointer orienter = OrientImageFilterType::New();
+
+  orienter->UseImageDirectionOn();
+  orienter->SetDesiredCoordinateOrientation( adaptor.FromDirectionCosines(direction) );
+  orienter->SetInput( image );
+
+  orienter->Update();
+
+  ImageType::Pointer reorientatedImage = orienter->GetOutput();
+  reorientatedImage->DisconnectPipeline();
+
+  image = reorientatedImage;
+
+  std::cout << std::endl << "Output image:" << std::endl;
+  image->Print( std::cout );
+  PrintOrientationInfo( image );
+};
+
+
+// -------------------------------------------------------------------------
 // main()
 // -------------------------------------------------------------------------
 
@@ -766,9 +844,10 @@ int main( int argc, char *argv[] )
                                                              std::string( "WithMask" ),
                                                              std::string( "_Parenchyma.nii" ) );
 
-          if ( ! args.ReadImageFromFile( args.dirOutput, 
-                                         fileOutputParenchyma, 
-                                         "breast parenchyma", imParenchyma ) )
+          if ( args.flgOverwrite || 
+               ( ! args.ReadImageFromFile( args.dirOutput, 
+                                           fileOutputParenchyma, 
+                                           "breast parenchyma", imParenchyma ) ) )
           {
 
             // QProcess call to seg_EM
@@ -946,6 +1025,27 @@ int main( int argc, char *argv[] )
               leftDensity = 1. - leftDensity;
               rightDensity = 1. - rightDensity;
               totalDensity = 1. - totalDensity;
+
+              typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< ImageType > InvertFilterType;
+              InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+              invertFilter->SetInput( imParenchyma );
+
+              typedef itk::MaskImageFilter< ImageType, ImageType > MaskFilterType;
+              MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+
+              //ReorientateImage( imMask, imParenchyma );
+
+              maskFilter->SetInput( invertFilter->GetOutput() );
+              maskFilter->SetMaskImage( imMask );
+              maskFilter->Update();
+
+              ImageType::Pointer imInverted = maskFilter->GetOutput();
+              imInverted->DisconnectPipeline();
+              imParenchyma = imInverted;
+              
+              args.WriteImageToFile( fileOutputParenchyma, 
+                                     std::string( "inverted parenchyma image" ), 
+                                     imParenchyma );
             }
         
   
