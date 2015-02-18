@@ -69,6 +69,7 @@ if(BUILD_NIFTYSIM)
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -79,6 +80,7 @@ if(BUILD_NIFTYSIM)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTYSIM_USE_CUDA}
         -DCUDA_CUT_INCLUDE_DIR:STRING=${CUDA_CUT_INCLUDE_DIR}
@@ -97,6 +99,8 @@ if(BUILD_NIFTYSIM)
     set(NIFTYSIM_ROOT ${proj_INSTALL})
     set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
     set(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftySim from ${NIFTYSIM_ROOT}")
 

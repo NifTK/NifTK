@@ -30,6 +30,7 @@ niftkMacroDefineExternalProjectVariables(Eigen ${version} ${location})
 if(NOT DEFINED Eigen_DIR)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -43,6 +44,7 @@ if(NOT DEFINED Eigen_DIR)
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DEIGEN_LEAVE_TEST_IN_ALL_TARGET=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
@@ -50,6 +52,8 @@ if(NOT DEFINED Eigen_DIR)
   set(Eigen_DIR ${proj_SOURCE})
   set(Eigen_ROOT ${Eigen_DIR})
   set(Eigen_INCLUDE_DIR ${Eigen_DIR})
+
+#  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
   message("SuperBuild loading Eigen from ${Eigen_DIR}")
 

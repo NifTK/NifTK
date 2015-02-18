@@ -66,6 +66,10 @@ macro(NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS)
       list(APPEND _library_dirs ${SOFA_DIR}/bin/${intermediate_dir})
     endif()
 
+    foreach(_install_dir ${CMAKE_PREFIX_PATH})
+      list(APPEND _library_dirs ${_install_dir}/lib)
+    endforeach()
+
     list(REMOVE_DUPLICATES _library_dirs)
 
 

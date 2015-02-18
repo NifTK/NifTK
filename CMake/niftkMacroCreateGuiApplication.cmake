@@ -73,6 +73,10 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     list(APPEND _library_dirs ${NiftyLink_LIBRARY_DIRS})
   endif()
 
+  foreach(_install_dir ${CMAKE_PREFIX_PATH})
+    list(APPEND _library_dirs ${_install_dir}/lib)
+  endforeach()
+
   #############################################################################
   # Watch out for this:
   # In the top level CMakeLists, MACOSX_BUNDLE_NAMES will contain all the apps

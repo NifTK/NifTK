@@ -33,6 +33,7 @@ if(BUILD_IGI)
   if(NOT DEFINED aruco_DIR)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -42,11 +43,15 @@ if(BUILD_IGI)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(aruco_DIR ${proj_INSTALL})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading ArUco from ${aruco_DIR}")
 
   else(NOT DEFINED aruco_DIR)

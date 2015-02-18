@@ -35,6 +35,7 @@ if(BUILD_RTK)
     set(additional_cmake_args )
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -47,6 +48,7 @@ if(BUILD_RTK)
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         ${additional_cmake_args}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DITK_DIR:PATH=${ITK_DIR}
         -DGDCM_DIR:PATH=${GDCM_DIR}
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-L${GDCM_DIR}/bin
@@ -56,6 +58,9 @@ if(BUILD_RTK)
     )
 
     set(RTK_DIR ${proj_BUILD})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading RTK from ${RTK_DIR}")
 
   else()

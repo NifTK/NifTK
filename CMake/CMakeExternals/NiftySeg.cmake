@@ -33,6 +33,7 @@ if(BUILD_NIFTYSEG)
   if(NOT DEFINED NIFTYSEG_ROOT)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -46,6 +47,7 @@ if(BUILD_NIFTYSEG)
       #INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DUSE_OPENMP:BOOL=OFF
@@ -59,6 +61,8 @@ if(BUILD_NIFTYSEG)
     set(NIFTYSEG_ROOT ${proj_INSTALL})
     set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
     set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
 

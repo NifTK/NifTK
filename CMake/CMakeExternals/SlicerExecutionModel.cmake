@@ -12,7 +12,6 @@
 #
 #============================================================================*/
 
-
 #-----------------------------------------------------------------------------
 # SlicerExecutionModel
 #-----------------------------------------------------------------------------
@@ -31,6 +30,7 @@ set(proj_DEPENDENCIES ITK)
 if(NOT DEFINED SlicerExecutionModel_DIR)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -43,12 +43,16 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       ${additional_cmake_args}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DSlicerExecutionModel_USE_JSONCPP:BOOL=OFF
-      -DITK_DIR:PATH=${ITK_DIR}/../../../../build
+      -DITK_DIR:PATH=${ITK_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
   set(SlicerExecutionModel_DIR ${proj_BUILD})
+
+#  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 
 else(NOT DEFINED SlicerExecutionModel_DIR)

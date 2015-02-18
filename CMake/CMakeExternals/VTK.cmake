@@ -81,6 +81,7 @@ if(NOT DEFINED VTK_DIR)
   endif(APPLE)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -91,6 +92,7 @@ if(NOT DEFINED VTK_DIR)
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
@@ -105,8 +107,10 @@ if(NOT DEFINED VTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  #set(VTK_DIR ${proj_INSTALL})
-  set(VTK_DIR ${proj_INSTALL}/lib/cmake/vtk-6.1)
+  set(VTK_DIR ${proj_INSTALL})
+
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

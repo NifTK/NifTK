@@ -105,6 +105,7 @@ if(NOT DEFINED ITK_DIR)
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -115,13 +116,17 @@ if(NOT DEFINED ITK_DIR)
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       ${additional_cmake_args}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${proj_INSTALL}/lib/cmake/ITK-4.5)
+  set(ITK_DIR ${proj_INSTALL})
+
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
   message("SuperBuild loading ITK from ${ITK_DIR}")
 
 else()

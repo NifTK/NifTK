@@ -73,6 +73,7 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -84,6 +85,7 @@ if(BUILD_IGI)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         ${NiftyLink_options}
       DEPENDS ${proj_DEPENDENCIES}
     )
@@ -91,6 +93,8 @@ if(BUILD_IGI)
     set(NiftyLink_DIR ${proj_BUILD}/NiftyLink-build)
     set(NiftyLink_SOURCE_DIR ${proj_SOURCE})
     set(OpenIGTLink_DIR ${proj_BUILD}/OPENIGTLINK-build)
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")

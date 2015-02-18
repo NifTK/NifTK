@@ -42,6 +42,7 @@ if(MITK_USE_DCMTK)
     endif()
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -52,6 +53,7 @@ if(MITK_USE_DCMTK)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         #-DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
         "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${DCMTK_CXX_FLAGS}"
         "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${DCMTK_C_FLAGS}"
@@ -67,7 +69,11 @@ if(MITK_USE_DCMTK)
         -DCMAKE_INSTALL_NAME_DIR:STRING=<INSTALL_DIR>/lib
       DEPENDS ${proj_DEPENDENCIES}
     )
+
     set(DCMTK_DIR ${proj_INSTALL})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading DCMTK from ${DCMTK_DIR}")
 
   else()

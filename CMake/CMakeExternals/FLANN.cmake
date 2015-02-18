@@ -32,6 +32,7 @@ if(BUILD_IGI AND BUILD_PCL)
   if(NOT DEFINED FLANN_DIR)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -41,6 +42,7 @@ if(BUILD_IGI AND BUILD_PCL)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_MATLAB_BINDINGS:BOOL=OFF
         -DBUILD_PYTHON_BINDINGS:BOOL=OFF
       DEPENDS ${proj_DEPENDENCIES}
@@ -48,6 +50,8 @@ if(BUILD_IGI AND BUILD_PCL)
 
     set(FLANN_DIR ${proj_INSTALL})
     set(FLANN_ROOT ${FLANN_DIR})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading FLANN from ${FLANN_DIR}")
 

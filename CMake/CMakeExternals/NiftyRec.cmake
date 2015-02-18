@@ -33,6 +33,7 @@ if(BUILD_NIFTYREC)
   if(NOT DEFINED NIFTYREC_ROOT)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -42,6 +43,7 @@ if(BUILD_NIFTYREC)
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DCUDA_SDK_ROOT_DIR=${CUDA_SDK_ROOT_DIR}
       DEPENDS ${proj_DEPENDENCIES}
@@ -50,6 +52,8 @@ if(BUILD_NIFTYREC)
     set(NIFTYREC_ROOT ${proj_INSTALL})
     set(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
     set(NIFTYREC_LIBRARY_DIR "${NIFTYREC_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyRec from ${NIFTYREC_ROOT}")
 

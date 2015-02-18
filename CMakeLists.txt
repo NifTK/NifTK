@@ -1363,7 +1363,7 @@ if(WIN32)
 
     # if we didnt build pcl then substitute some benign empty path instead of potential garbage.
     if(BUILD_PCL)
-      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/../bin")
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/bin")
     else()
       set(PCL_BIN_PATH_FOR_BATCH_FILE "")
     endif()
