@@ -40,7 +40,7 @@ void QmitkCommonAppsIGIPerspective::CreateInitialLayout(berry::IPageLayout::Poin
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);
 
-  layout->AddView("org.mitk.views.propertylistview",
+  layout->AddView("org.mitk.views.properties",
     berry::IPageLayout::BOTTOM, 0.3f, "org.mitk.views.datamanager");
 
   layout->AddView("uk.ac.ucl.cmic.igidatasources",
