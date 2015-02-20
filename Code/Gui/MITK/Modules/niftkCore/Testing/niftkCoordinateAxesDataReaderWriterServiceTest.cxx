@@ -22,6 +22,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <usModuleInitialization.h>
 
 /**
  *  @brief Tests for reading/writing .4x4 files via Services.
@@ -94,10 +95,8 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // Check for 1 reader
   mitk::FileReaderRegistry readerRegistry;
   std::vector<mitk::IFileReader*> readers = readerRegistry.GetReaders(mitk::FileReaderRegistry::GetMimeTypeForFile("4x4"));
-
   MITK_TEST_CONDITION_REQUIRED(readers.size() == 1, "Testing for 1 registered readers")
 
-      return EXIT_SUCCESS;
   try
   {
     mitk::IFileReader* reader = readers[0];
@@ -133,4 +132,5 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // always end with this!
   MITK_TEST_END();
 }
+US_INITIALIZE_MODULE
 
