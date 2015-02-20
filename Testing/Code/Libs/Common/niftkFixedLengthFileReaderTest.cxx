@@ -12,15 +12,21 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
-
+#include <niftkFixedLengthFileReader.h>
+#include <cstdlib>
 #include <iostream>
-#include <itkTestMain.h>
 
-void RegisterTests()
+/**
+ * \brief Basic test harness for FileHelper.h
+ */
+int niftkFixedLengthFileReaderTest(int argc, char * argv[])
 {
-  REGISTER_TEST(niftkFileHelperTest);
-  REGISTER_TEST(niftkFixedLengthFileReaderTest);
+  if (argc < 2)
+  {
+    std::cerr << "Usage   :niftkFixedLengthFileReaderTest file" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
 }
+
