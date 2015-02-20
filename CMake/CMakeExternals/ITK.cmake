@@ -26,7 +26,7 @@ set(version "4.5.1-3e550bf8")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
-set(proj_DEPENDENCIES GDCM)
+set(proj_DEPENDENCIES GDCM VTK)
 
 if(MITK_USE_Python)
   list(APPEND proj_DEPENDENCIES CableSwig)
@@ -120,6 +120,7 @@ if(NOT DEFINED ITK_DIR)
       ${additional_cmake_args}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
       -DModule_ITKVtkGlue:BOOL=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
