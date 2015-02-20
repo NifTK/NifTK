@@ -423,15 +423,15 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     nPixelsTotal += nPixelsInPatch;
 
     if ( m_FlgDebug )
-      std::cout << setw(6) << itPatches->first << ": " << setprecision( 9 )
-                << setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
-                << setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
-                << setw(12) << preDiagDensity << " (N = "
-                << setw(12) << nPixelsTotal << ")"
+      std::cout << std::setw(6) << itPatches->first << ": " << std::setprecision( 9 )
+                << std::setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
+                << std::setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
+                << std::setw(12) << preDiagDensity << " (N = "
+                << std::setw(12) << nPixelsTotal << ")"
                 << std::endl;
 
     *foutOutputDensityCSV 
-      << setprecision( 9 )
+      << std::setprecision( 9 )
       << std::right << std::setw(10) << m_Id << ", "
                                    
       << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -471,7 +471,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   *foutOutputDensityCSV 
-    << setprecision( 9 )
+    << std::setprecision( 9 )
     << std::right << std::setw(10) << m_Id << ", "
                                    
     << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -524,15 +524,15 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     nPixelsTotal += nPixelsInPatch;
 
     if ( m_FlgDebug )
-      std::cout << setw(6) << itPatches->first << ": " << setprecision( 9 )
-                << setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
-                << setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
-                << setw(12) << controlDensity << " (N = "
-                << setw(12) << nPixelsTotal << ")"
+      std::cout << std::setw(6) << itPatches->first << ": " << std::setprecision( 9 )
+                << std::setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
+                << std::setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
+                << std::setw(12) << controlDensity << " (N = "
+                << std::setw(12) << nPixelsTotal << ")"
                 << std::endl;
 
     *foutOutputDensityCSV 
-      << setprecision( 9 )
+      << std::setprecision( 9 )
       << std::right << std::setw(10) << m_Id << ", "
                                    
       << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -572,7 +572,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   *foutOutputDensityCSV 
-    << setprecision( 9 )
+    << std::setprecision( 9 )
     << std::right << std::setw(10) << m_Id << ", "
                                    
     << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
