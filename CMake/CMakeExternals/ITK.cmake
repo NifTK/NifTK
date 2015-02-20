@@ -120,6 +120,7 @@ if(NOT DEFINED ITK_DIR)
       ${additional_cmake_args}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
+      -DModule_ITKVtkGlue:BOOL=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
 
