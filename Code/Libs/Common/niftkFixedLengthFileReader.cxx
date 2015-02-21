@@ -57,6 +57,8 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
     throw niftk::IOException(oss.str());
   }
 
+  m_FileName = fileName;
+
   T value;
   m_Data.reserve(S);
 
@@ -80,7 +82,7 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
     m_Data.push_back(value);
   }
 
-  if (strict)
+  if (!m_InputStream.eof() && strict)
   {
     m_InputStream >> value;
     if (!m_InputStream.eof())
@@ -89,7 +91,9 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
       oss << "Reading " << S << " elements from file '" << fileName << "', and too many values are in the file!";
       throw niftk::IOException(oss.str());
     }
+    m_InputStream.clear();
   }
+  this->CloseFile();
 }
 
 
@@ -101,9 +105,9 @@ FixedLengthFileReader<T,S>::~FixedLengthFileReader()
   {
     this->CloseFile();
   }
-  catch (const std::runtime_error& e)
+  catch (const std::runtime_error& )
   {
-    std::cerr << "Failed to close file" << std::endl;
+    std::cerr << "Failed to close file '" << m_FileName << "', during ~FixedLengthFileReader()." << std::endl;
   }
 }
 
@@ -120,7 +124,16 @@ typename std::vector<T> FixedLengthFileReader<T,S>::GetData() const
 template<typename T, size_t S>
 void FixedLengthFileReader<T,S>::CloseFile()
 {
-  m_InputStream.close();
+  if (m_InputStream.is_open())
+  {
+    m_InputStream.close();
+    if (m_InputStream.fail())
+    {
+      std::ostringstream oss;
+      oss << "Failed to close file '" << m_FileName << "'!";
+      throw niftk::IOException(oss.str());
+    }
+  }
 }
 
 } // end namespace

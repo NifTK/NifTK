@@ -49,15 +49,15 @@ public:
    */
   std::vector<T> GetData() const;
 
-  /**
-   * @brief Closes the file, as does the destructor.
-   */
-  void CloseFile();
-
 private:
 
   FixedLengthFileReader(const FixedLengthFileReader&); // purposely not implemented
   void operator=(const FixedLengthFileReader&); // purposely not implemented
+
+  /**
+   * @brief Closes the file, as does the destructor, by calling this.
+   */
+  void CloseFile();
 
   std::ifstream  m_InputStream;
   std::vector<T> m_Data;
