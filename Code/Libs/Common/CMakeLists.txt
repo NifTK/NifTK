@@ -14,10 +14,6 @@
 
 add_subdirectory(Exceptions)
 
-if (BUILD_MESHING)
-  add_subdirectory(Meshing)
-endif (BUILD_MESHING)
-
 set(niftkcommon_SRCS
   niftkFileHelper.cxx
   niftkConversionUtils.cxx
