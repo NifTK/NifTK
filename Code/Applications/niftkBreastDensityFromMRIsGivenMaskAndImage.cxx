@@ -1192,8 +1192,6 @@ int main( int argc, char *argv[] )
                      << " ( " << nLowProbIntensities << " voxels )" << std::endl;
             args.PrintMessage( message );
 
-            exit(0);
-
             // Fat should be high intensity in the T2 image so if the
             // dense region (high prob) has a high intensity then it is
             // probably fat and we need to invert the density
