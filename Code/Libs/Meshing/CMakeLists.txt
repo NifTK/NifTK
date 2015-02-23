@@ -32,16 +32,9 @@ endif(BUILD_SHARED_LIBS)
 
 
 #### Build CGAL meshing module
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  # NOTE: NIFTK_CGAL_CXX_FLAGS only applies to non-windows
-  set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG};-frounding-math;-fPIC")
-else ()
-  if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE};-frounding-math;-fPIC")
-  else ()
-    set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS};-frounding-math;-fPIC")
-  endif ()
-endif ()
+if(NOT WIN32 AND NOT APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math -fPIC")
+endif(NOT WIN32 AND NOT APPLE)
 
 add_library(niftkMeshingLib
   niftkCGALMesherBackEnd.cxx
