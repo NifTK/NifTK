@@ -27,13 +27,10 @@ namespace itk
 
 template < typename TImage >
 bool
-IsImageBinary( typename TImage::Pointer image )
+  IsImageBinary( typename TImage::Pointer image,
+                 typename TImage::PixelType &intensity1, 
+                 typename TImage::PixelType &intensity2 )
 {
-  typedef typename TImage::PixelType InputPixelType;
-  
-  InputPixelType intensity1;
-  InputPixelType intensity2;
-
   itk::ImageRegionIterator< TImage > 
     itImage( image, image->GetLargestPossibleRegion() );
 
@@ -81,6 +78,15 @@ IsImageBinary( typename TImage::Pointer image )
     {
       return false;
     }
+  }
+
+  if ( intensity1 > intensity2 )
+  {
+    typename TImage::PixelType tmpIntensity;
+
+    tmpIntensity = intensity2;
+    intensity2 = intensity1;
+    intensity1 = tmpIntensity;
   }
 
   return true;
