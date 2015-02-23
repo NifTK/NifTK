@@ -14,7 +14,6 @@
 
 #include "itkNifTKImageIOFactory.h"
 #include <itkCreateObjectFunction.h>
-#include "itkAnalyzeImageIO.h"
 #include "itkDRCAnalyzeImageIO.h"
 #include "itkNiftiImageIO3201.h"
 #include "itkINRImageIO.h"
@@ -40,11 +39,6 @@ NifTKImageIOFactory::NifTKImageIOFactory()
   {
     this->RegisterOverride("itkImageIOBase", "itkDRCAnalyzeImageIO", "DRC Analyze Image IO", 1,
        itk::CreateObjectFunction<DRCAnalyzeImageIO>::New());
-  }
-  else
-  {
-    this->RegisterOverride("itkImageIOBase", "itkAnalyzeImageIO", "Analyze Image IO", 1,
-      itk::CreateObjectFunction<AnalyzeImageIO>::New());
   }
 
   this->RegisterOverride("itkImageIOBase", "itkNiftiImageIO3201", "Nifti Image IO 3201", 1,

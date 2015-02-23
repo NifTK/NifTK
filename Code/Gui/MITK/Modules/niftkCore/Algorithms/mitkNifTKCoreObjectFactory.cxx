@@ -36,7 +36,6 @@
 #include <mitkPointSetVtkMapper3D.h>
 
 #include <niftkEnvironmentHelper.h>
-#include <itkAnalyzeImageIO.h>
 #include <itkDRCAnalyzeImageIO.h>
 #include <itkINRImageIO.h>
 #include <itkNiftiImageIO3201.h>
@@ -76,12 +75,6 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
       itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
       mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
       m_FileIOs.push_back(drcAnalyzeIO);
-    }
-    else
-    {
-      itk::AnalyzeImageIO::Pointer itkAnalyzeIO = itk::AnalyzeImageIO::New();
-      mitk::ItkImageIO* analyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkAnalyzeIO.GetPointer(), 2);
-      m_FileIOs.push_back(analyzeIO);
     }
 
     itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
