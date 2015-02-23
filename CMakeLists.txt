@@ -186,21 +186,46 @@ option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 option(NIFTK_DELAYLOAD_CUDA "(Windows only) If enabled the CUDA DLLs will be a soft delay-load dependency and NifTK can run without them." OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
+option(BUILD_MESHING "Build meshing? Experimental, may nor may not work. Prepare for pain." OFF)
 
 ######################################################################
 # Meshing module-related checks and options
 ######################################################################
 include (CheckIncludeFiles)
 
-# superbuild for cgal is only supported on non-windows.
-# so for windows, this check here does not apply (and in fact prevents us
-# from passing in an existing cgal installation).
-if(NOT MSVC)
-  CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
-  if (NIFTK_MESHING_CAN_BUILD)
-    option(BUILD_MESHING "Build meshing?" OFF)
+# Meshing components require CGAL, which is a bit fiddly to get right.
+if(BUILD_MESHING)
+  if(NOT MSVC)
+    # On certain Linux variants, the Superbuild can build CGAL for you.
+    # This depends on MPFR/GMP, so this header check here will issue a warning
+    # if a required file is missing.
+    # The Superbuild will then download a patched version of CGAL 4.4. It's
+    # been modified only wrt to VTK 6 compatibility.
+    CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
+    if (NOT NIFTK_MESHING_CAN_BUILD)
+      message(WARNING "Meshing depends on CGAL depends on MPFR but cannot find mpfr.h. Build will likely fail.")
+    endif()
+  else()
+    # On Windows, the situation is significantly more complicated.
+    # GMP will not compile in Visual Studio due to lack of C99 support and/or gcc-isms.
+    # Therefore you need to:
+    # 1. Build a Superbuild with BUILD_MESHING=OFF
+    # 2. Download the Windows version of CGAL 4.4 (or newer?) that includes precompiled GMP/MPFR.
+    # 3. Apply the VTK 6 patch from Utilities/cgal-vtk6.diff
+    # 4. CMake-configure CGAL, enabling WITH_VTK=ON, explicitly pointing VTK_DIR to the correct Superbuild
+    #    VTK from step 1, explicitly set BOOST_ROOT to the correct Superbuild Boost from step 1.
+    #    BOOST_ROOT may not show up in the cmake gui, set it anyway.
+    # 5. Explicitly define CMAKE_INSTALL_PREFIX to a local path of your choice, e.g. .../CGAL-4.4-install,
+    #    making sure you only have slashes in the path, no back-slashes.
+    # 6. Compile CGAL, and install it via the install target.
+    # 7. Reconfigure NifTK, setting BUILD_MESHING=ON and defining CGAL_DIR to .../CGAL-4.4-install/lib/CGAL.
+    # 8. Compile, etc. Should now work fine.
+    # x. You will need to rebuild CGAL every time VTK or Boost changes.
+    if(NOT CGAL_DIR)
+      message(WARNING "Meshing depends on CGAL for which you need to explicitly define CGAL_DIR! Configure will probably fail.")
+    endif()
   endif()
-endif()
+endif(BUILD_MESHING)
 
 ######################################################################
 # Variables that get compiled into C++ code.
@@ -258,6 +283,7 @@ mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_ITKFFTW)
+mark_as_advanced(BUILD_MESHING)
 
 # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
 if(BUILD_PCL)
