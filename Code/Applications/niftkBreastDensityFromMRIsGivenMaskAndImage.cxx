@@ -64,7 +64,6 @@
 #include <itkBinaryShapeBasedSuperSamplingFilter.h>
 #include <itkIsImageBinary.h>
 
-
 //#define LINK_TO_SEG_EM
 
 #ifdef LINK_TO_SEG_EM
@@ -1208,7 +1207,6 @@ int main( int argc, char *argv[] )
               rightDensity = 1. - rightDensity;
               totalDensity = 1. - totalDensity;
 
-#if 1
               itk::ImageRegionIterator< ImageType > 
               imIterator( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
               
@@ -1225,24 +1223,6 @@ int main( int argc, char *argv[] )
                 }
               }
 
-#else
-              typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< ImageType > InvertFilterType;
-              InvertFilterType::Pointer invertFilter = InvertFilterType::New();
-              invertFilter->SetInput( imParenchyma );
-
-              typedef itk::MaskImageFilter< ImageType, ImageType > MaskFilterType;
-              MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-
-              //ReorientateImage( imMask, imParenchyma );
-
-              maskFilter->SetInput( invertFilter->GetOutput() );
-              maskFilter->SetMaskImage( imMask );
-              maskFilter->Update();
-
-              ImageType::Pointer imInverted = maskFilter->GetOutput();
-              imInverted->DisconnectPipeline();
-              imParenchyma = imInverted;
-#endif              
               args.WriteImageToFile( fileOutputParenchyma, 
                                      std::string( "inverted parenchyma image" ), 
                                      imParenchyma );
