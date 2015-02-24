@@ -20,6 +20,7 @@
 #include "itkNifTKTransformIO.h"
 #include <itkVersion.h>
 
+#include <itkObjectFactory.h>
 #include <niftkEnvironmentHelper.h>
 
 namespace itk
@@ -68,4 +69,25 @@ NifTKImageIOFactory::GetDescription(void) const
 }
 
 } // end namespace itk
+
+
+//-----------------------------------------------------------------------------
+struct RegisterNifTKImageIOFactory{
+  RegisterNifTKImageIOFactory()
+    : m_Factory( itk::NifTKImageIOFactory::New() )
+  {
+    itk::ObjectFactoryBase::RegisterFactory(m_Factory, itk::ObjectFactoryBase::INSERT_AT_FRONT);
+  }
+
+  ~RegisterNifTKImageIOFactory()
+  {
+    itk::ObjectFactoryBase::UnRegisterFactory(m_Factory);
+  }
+
+  itk::NifTKImageIOFactory::Pointer m_Factory;
+};
+
+
+//-----------------------------------------------------------------------------
+static RegisterNifTKImageIOFactory registerNifTKImageIOFactory;
 
