@@ -32,7 +32,7 @@ set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #################################################################################
 
 add_test(Common-CheckDims-2D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/cte_20_x_20.png 2 )
-add_test(Common-CheckDims-3D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-03300.img 3 )
+add_test(Common-CheckDims-3D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.nii 3 )
 add_test(Common-ReceptorMember ${ITK_COMMON_UNIT_TESTS} ReceptorMemberCommandTest )
 
 #################################################################################
