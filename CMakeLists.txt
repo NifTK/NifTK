@@ -186,7 +186,7 @@ option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 option(NIFTK_DELAYLOAD_CUDA "(Windows only) If enabled the CUDA DLLs will be a soft delay-load dependency and NifTK can run without them." OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
-option(BUILD_MESHING "Build meshing? Experimental, may nor may not work. Prepare for pain." OFF)
+option(BUILD_MESHING "Build meshing? Experimental, may nor may not work." OFF)
 
 ######################################################################
 # Meshing module-related checks and options
