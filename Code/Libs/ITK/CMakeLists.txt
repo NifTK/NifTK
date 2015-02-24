@@ -25,7 +25,6 @@ set(niftkITK_SRCS
   RegistrationToolbox/Commands/itkVnlIterationUpdateCommand.cxx
   IO/itkINRImageIO.cxx
   IO/itkAnalyzeDbh.cxx
-  IO/itkAnalyzeImageIO.cxx
   IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO.cxx
   IO/itkNifTKImageIOFactory.cxx
