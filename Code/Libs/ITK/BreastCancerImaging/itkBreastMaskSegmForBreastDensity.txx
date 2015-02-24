@@ -15,6 +15,7 @@
 
 #include "itkBreastMaskSegmForBreastDensity.h"
 
+#include <itkSignedMaurerDistanceMapImageFilter.h>
 
 namespace itk
 {
@@ -77,7 +78,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 
   // Compute a 2D map of the height of the patient's anterior skin
   // surface and use it to remove the arms
-  this->ComputeElevationOfAnteriorSurface();
+  this->ComputeElevationOfAnteriorSurface( true );
 
   // Segment the Pectoral Muscle
 
@@ -128,8 +129,46 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 						   pecPointSet,
 						   iPointPec );
 
+  // Discard anything not within the skin elevation mask  
+  if ( this->imSkinElevationMap )
+  {
+    SliceIteratorType itSegSlices( this->imSegmented, 
+                                   this->imSegmented->GetLargestPossibleRegion() );
+    
+    typedef itk::ImageRegionIterator< AxialImageType > AxialIteratorType;  
+    
+    AxialIteratorType itElevationMask( this->imSkinElevationMap, 
+                                       this->imSkinElevationMap->GetLargestPossibleRegion() );
+
+    itSegSlices.SetFirstDirection( 0 );
+    itSegSlices.SetSecondDirection( 2 );
+
+    itSegSlices.GoToBegin();
+
+    while ( ! itSegSlices.IsAtEnd() )
+    {
+      itElevationMask.GoToBegin();
+      
+      while ( ! itSegSlices.IsAtEndOfSlice() )
+      {
+        while ( ! itSegSlices.IsAtEndOfLine() ) 
+        {
+          if ( ! itElevationMask.Get() )
+          {
+            itSegSlices.Set( 0 );
+          }
+          
+          ++itSegSlices; 
+          ++itElevationMask;
+        }
+        itSegSlices.NextLine();
+      }
+      itSegSlices.NextSlice(); 
+    }
+  }
+    
   // Discard anything not within a fitted surface (switch -cropfit)
-  if ( this->flgCropWithFittedSurface )
+  else if ( this->flgCropWithFittedSurface )
     this->MaskWithBSplineBreastSurface( rYHeightOffset );
 
   // OR Discard anything not within a certain radius of the breast center
@@ -138,6 +177,34 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   
   // Smooth the mask and threshold to round corners etc.
   this->SmoothMask();
+
+  // Shrink the mask by a few millimeters to eliminiate the skin
+
+  typedef SignedMaurerDistanceMapImageFilter<InternalImageType, InternalImageType> InputDistanceMapFilterType;
+
+  typename InputDistanceMapFilterType::Pointer inputDistFilter = InputDistanceMapFilterType::New();
+
+  inputDistFilter->SetInput( this->imSegmented );
+  inputDistFilter->SetUseImageSpacing(true);
+  inputDistFilter->InsideIsPositiveOn();
+
+  std::cout << "Computing distance transform for skin estimation" << std::endl;
+  inputDistFilter->Update();
+
+
+  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+  
+  thresholder->SetLowerThreshold( 2. ); // Remove 2mm
+  thresholder->SetUpperThreshold( 100000 );
+
+  thresholder->SetOutsideValue(  0  );
+  thresholder->SetInsideValue( 1000 );
+
+  thresholder->SetInput( inputDistFilter->GetOutput() );
+
+  thresholder->Update();
+  
+  this->imSegmented = thresholder->GetOutput();
 
   // Extract the largest object
   this->ExtractLargestObject( this->LEFT_BREAST );

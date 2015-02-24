@@ -20,6 +20,10 @@
 #include <itkImageMaskSpatialObject.h>
 #include <itkForegroundFromBackgroundImageThresholdCalculator.h>
 #include <itkWriteImage.h>
+#include <itkGradientMagnitudeImageFilter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkAddImageFilter.h>
+
 
 namespace itk
 {
@@ -1562,7 +1566,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::ComputeElevationOfAnteriorSurface( void )
+::ComputeElevationOfAnteriorSurface( bool flgCropBreast )
 {
   typename InternalImageType::RegionType region3D;
   typename InternalImageType::SizeType   size3D;
@@ -1647,7 +1651,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     
     if ( flgFoundSurface ) 
     {
-      elevation = size3D[1] - 1 - idx[1];
+      elevation = static_cast<RealType>(size3D[1] - 1 - idx[1])*spacing3D[1];
       itElevation.Set( elevation );
 
       if ( elevation > maxElevation )
@@ -1664,7 +1668,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   // Subtract 30mm to ensure we avoid local minimum near the nipple ('y' axis = AP)
 
-  maxElevation -= 30./spacing3D[1];
+  maxElevation -= 30.;
 
   if ( flgVerbose )
   {
@@ -1704,237 +1708,406 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
 
-  // Scan from nipple x coordinates and eliminate arms - Left side
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Crop the breast image region by thresholding an edge enhanced version of the elevation map
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  RealType posElevationTolerance = 5./spacing3D[1]; // 5mm
-  RealType negElevationTolerance = 3./spacing3D[1]; // 3mm
+  if ( flgCropBreast )
+  {
+    // Determine the elevation of the nipples and mid-sternum points
 
-  typedef itk::ImageLinearIteratorWithIndex< AxialImageType > AxialLineIteratorType;
+    typename AxialImageType::IndexType nippleLeftIndex;
+    typename AxialImageType::IndexType nippleRightIndex;
+    typename AxialImageType::IndexType midSternumIndex;
 
-  typename AxialImageType::RegionType leftAxialRegion2D;
-  typename AxialImageType::SizeType   leftAxialSize2D   = size2D;
-  typename AxialImageType::IndexType  leftAxialStart2D  = start2D;
+    nippleLeftIndex[0] = idxNippleLeft[0];
+    nippleLeftIndex[1] = idxNippleLeft[2];
 
-  typename AxialImageType::IndexType  leftAxialCutoff  = start2D;
+    nippleRightIndex[0] = idxNippleRight[0];
+    nippleRightIndex[1] = idxNippleRight[2];
 
-  leftAxialStart2D[1] = idxNippleLeft[2]; // should this be idxNippleLeft[2] ?
+    midSternumIndex[0] = idxMidSternum[0];
+    midSternumIndex[1] = idxMidSternum[2];
 
-  leftAxialSize2D[0] = idxNippleLeft[0] - start2D[0];
-  leftAxialSize2D[1] = 1;
+    RealType nippleLeftElevation  = imSkinElevationMap->GetPixel( nippleLeftIndex );
+    RealType nippleRightElevation = imSkinElevationMap->GetPixel( nippleRightIndex );
+    RealType midSternumElevation  = imSkinElevationMap->GetPixel( midSternumIndex );
 
-  leftAxialRegion2D.SetIndex( leftAxialStart2D );
-  leftAxialRegion2D.SetSize(  leftAxialSize2D );
+    std::cout << "Left nipple elevation:  " << nippleLeftElevation  << std::endl
+              << "Right nipple elevation: " << nippleRightElevation << std::endl
+              << "Mid-sternum elevation:  " << midSternumElevation  << std::endl;
+
+
+    // Compute the gradient magnitude of the elevation map (map has already been smoothed)
+
+    typedef itk::GradientMagnitudeImageFilter<AxialImageType, AxialImageType>  GradMagFilterType;
+ 
+    typename GradMagFilterType::Pointer gradientFilter = GradMagFilterType::New();
+
+    gradientFilter->SetInput( imSkinElevationMap );
+    gradientFilter->Update();
+
+    typename AxialImageType::Pointer imSkinElevationMapGradMag = gradientFilter->GetOutput();
+
+    // Write the image to a file
+
+    if ( fileOutputSkinElevationMap.length() )
+    {
+      std::string fileOutputSkinElevationMapGradMag;
+
+      typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+      typename FileWriterType::Pointer writer = FileWriterType::New();
+
+      fileOutputSkinElevationMapGradMag = ModifySuffix( fileOutputSkinElevationMap,
+                                                        std::string( "_GradMag" ) );
+
+      writer->SetFileName( fileOutputSkinElevationMapGradMag );
+      writer->SetInput( imSkinElevationMapGradMag );
+
+      std::cout << "Writing gradient magnitude of elevation map to file: "
+                << fileOutputSkinElevationMapGradMag << std::endl;
+
+      writer->Update();
+    }
+
+    // Rescale the range of the magnitude to the nipple to mid-sternum
+    // distance and add to the elevation map
+
+    typedef typename itk::RescaleIntensityImageFilter< AxialImageType, AxialImageType > RescaleFilterType;
+    typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+
+    rescaleFilter->SetInput( imSkinElevationMapGradMag );
+
+    rescaleFilter->SetOutputMinimum( 0 );
+    rescaleFilter->SetOutputMaximum( ( nippleLeftElevation + nippleRightElevation )/2. 
+                                     - midSternumElevation );
+
+    rescaleFilter->Update();
+
+    typedef typename itk::AddImageFilter < AxialImageType > AddImageFilterType;
+ 
+    typename AddImageFilterType::Pointer addFilter = AddImageFilterType::New ();
+
+    addFilter->SetInput1( imSkinElevationMap );
+    addFilter->SetInput2( rescaleFilter->GetOutput() );
+
+    addFilter->Update();
+
+    imSkinElevationMap = addFilter->GetOutput();
+
+    // Write the image to a file
+
+    if ( fileOutputSkinElevationMap.length() )
+    {
+      std::string fileOutput;
+
+      typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+      typename FileWriterType::Pointer writer = FileWriterType::New();
+
+      fileOutput = ModifySuffix( fileOutputSkinElevationMap,
+                                 std::string( "_Enhanced" ) );
+
+      writer->SetFileName( fileOutput );
+      writer->SetInput( imSkinElevationMap );
+
+      std::cout << "Writing enhanced elevation map to file: "
+                << fileOutput << std::endl;
+
+      writer->Update();
+    }
+
+    // Region grow from the nipples to generate the mask
+
+    typedef itk::ConnectedThresholdImageFilter< AxialImageType, AxialImageType > AxialConnectedFilterType;
+    typename AxialConnectedFilterType::Pointer connectedThreshold = AxialConnectedFilterType::New();
+
+      connectedThreshold->SetInput( imSkinElevationMap );
+
+      RealType lowThreshold;
+      RealType highThreshold;
+
+      lowThreshold =  midSternumElevation + 
+        ( ( nippleLeftElevation + nippleRightElevation )/2. - midSternumElevation )/3.;
+
+      highThreshold = nippleLeftElevation + nippleRightElevation;
+
+      connectedThreshold->SetLower( lowThreshold  );
+      connectedThreshold->SetUpper( highThreshold );
+
+      connectedThreshold->SetReplaceValue( 1000 );
+      connectedThreshold->ClearSeeds();
+
+      connectedThreshold->AddSeed( nippleLeftIndex );
+      connectedThreshold->AddSeed( nippleRightIndex );
+
+      std::cout << "Region-growing the skin elevation between: " 
+                << lowThreshold << " and " << highThreshold << std::endl;
+
+      connectedThreshold->Update();
+
+      imSkinElevationMap = connectedThreshold->GetOutput();
+
+      // Write the image to a file
+
+      if ( fileOutputSkinElevationMap.length() )
+      {
+        std::string fileOutput;
+
+        typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+        typename FileWriterType::Pointer writer = FileWriterType::New();
+
+        fileOutput = ModifySuffix( fileOutputSkinElevationMap,
+                                   std::string( "_Mask" ) );
+
+        writer->SetFileName( fileOutput );
+        writer->SetInput( imSkinElevationMap );
+
+        std::cout << "Writing elevation map mask to file: "
+                  << fileOutput << std::endl;
+
+        writer->Update();
+      }
+  }
+
+
+  // Default behaviour is simply to crop the left and right sides to remove the arms
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  else
+  {
+
+    // Scan from nipple x coordinates and eliminate arms - Left side
+
+    RealType posElevationTolerance = 5./spacing3D[1]; // 5mm
+    RealType negElevationTolerance = 3./spacing3D[1]; // 3mm
+
+    typedef itk::ImageLinearIteratorWithIndex< AxialImageType > AxialLineIteratorType;
+
+    typename AxialImageType::RegionType leftAxialRegion2D;
+    typename AxialImageType::SizeType   leftAxialSize2D   = size2D;
+    typename AxialImageType::IndexType  leftAxialStart2D  = start2D;
+
+    typename AxialImageType::IndexType  leftAxialCutoff  = start2D;
+
+    leftAxialStart2D[1] = idxNippleLeft[2]; // should this be idxNippleLeft[2] ?
+
+    leftAxialSize2D[0] = idxNippleLeft[0] - start2D[0];
+    leftAxialSize2D[1] = 1;
+
+    leftAxialRegion2D.SetIndex( leftAxialStart2D );
+    leftAxialRegion2D.SetSize(  leftAxialSize2D );
   
 
-  AxialLineIteratorType itLeftNippleElevation( imSkinElevationMap, leftAxialRegion2D );
+    AxialLineIteratorType itLeftNippleElevation( imSkinElevationMap, leftAxialRegion2D );
 
-  itLeftNippleElevation.SetDirection( 0 );
+    itLeftNippleElevation.SetDirection( 0 );
 
-  InputPixelType minElevation;
-  InputPixelType startElevation;
+    InputPixelType minElevation;
+    InputPixelType startElevation;
    
-  for ( itLeftNippleElevation.GoToBegin(); 
-	! itLeftNippleElevation.IsAtEnd(); 
-	itLeftNippleElevation.NextLine() )
-  {
-    // Calculate the minimum elevation of the left side
-
-    itLeftNippleElevation.GoToReverseBeginOfLine();
-
-    startElevation = itLeftNippleElevation.Get();
-    minElevation = startElevation;
-
-    while ( ( ! itLeftNippleElevation.IsAtReverseEndOfLine() )
-            && ( ( minElevation > startElevation - posElevationTolerance )
-                 || ( itLeftNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
+    for ( itLeftNippleElevation.GoToBegin(); 
+          ! itLeftNippleElevation.IsAtEnd(); 
+          itLeftNippleElevation.NextLine() )
     {
-      if ( ( itLeftNippleElevation.Get() < minElevation ) &&
-           ( itLeftNippleElevation.Get() < maxElevation ) )
+      // Calculate the minimum elevation of the left side
+
+      itLeftNippleElevation.GoToReverseBeginOfLine();
+
+      startElevation = itLeftNippleElevation.Get();
+      minElevation = startElevation;
+
+      while ( ( ! itLeftNippleElevation.IsAtReverseEndOfLine() )
+              && ( ( minElevation > startElevation - posElevationTolerance )
+                   || ( itLeftNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
       {
-        minElevation = itLeftNippleElevation.Get();
-        leftAxialCutoff = itLeftNippleElevation.GetIndex();
-      }
+        if ( ( itLeftNippleElevation.Get() < minElevation ) &&
+             ( itLeftNippleElevation.Get() < maxElevation ) )
+        {
+          minElevation = itLeftNippleElevation.Get();
+          leftAxialCutoff = itLeftNippleElevation.GetIndex();
+        }
       
-      --itLeftNippleElevation;
+        --itLeftNippleElevation;
+      }
     }
-  }
 
 
-  // Set this whole region in the elevation map to zero
+    // Set this whole region in the elevation map to zero
 
-  leftAxialStart2D  = start2D;
+    leftAxialStart2D  = start2D;
 
-  leftAxialSize2D[0] = leftAxialCutoff[0] - start2D[0];
-  leftAxialSize2D[1] = size2D[1];
+    leftAxialSize2D[0] = leftAxialCutoff[0] - start2D[0];
+    leftAxialSize2D[1] = size2D[1];
 
-  leftAxialRegion2D.SetIndex( leftAxialStart2D );
-  leftAxialRegion2D.SetSize(  leftAxialSize2D );
+    leftAxialRegion2D.SetIndex( leftAxialStart2D );
+    leftAxialRegion2D.SetSize(  leftAxialSize2D );
   
 
-  AxialLineIteratorType itLeftLinearElevation( imSkinElevationMap, leftAxialRegion2D );
+    AxialLineIteratorType itLeftLinearElevation( imSkinElevationMap, leftAxialRegion2D );
 
-  itLeftLinearElevation.SetDirection( 0 );
+    itLeftLinearElevation.SetDirection( 0 );
 
-  for ( itLeftLinearElevation.GoToBegin(); 
-	! itLeftLinearElevation.IsAtEnd(); 
-	itLeftLinearElevation.NextLine() )
-  {
-    itLeftLinearElevation.GoToReverseBeginOfLine();
-
-    while ( ! itLeftLinearElevation.IsAtReverseEndOfLine() )
+    for ( itLeftLinearElevation.GoToBegin(); 
+          ! itLeftLinearElevation.IsAtEnd(); 
+          itLeftLinearElevation.NextLine() )
     {
-      itLeftLinearElevation.Set( 0 );
-      --itLeftLinearElevation;
-    }
-  }
+      itLeftLinearElevation.GoToReverseBeginOfLine();
 
-
-  // Scan from nipple x coordinates and eliminate arms - Right side
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typename AxialImageType::RegionType rightAxialRegion2D;
-  typename AxialImageType::SizeType   rightAxialSize2D   = size2D;
-  typename AxialImageType::IndexType  rightAxialStart2D  = start2D;
-  
-  typename AxialImageType::IndexType  rightAxialCutoff  = start2D;
-
-  rightAxialStart2D[0] = idxNippleRight[0];
-  rightAxialStart2D[1] = idxNippleRight[2]; // should this be idxNippleRight[2] ?
-
-  rightAxialSize2D[0] = size2D[0] - idxNippleRight[0];
-  rightAxialSize2D[1] = 1;
-
-  rightAxialRegion2D.SetIndex( rightAxialStart2D );
-  rightAxialRegion2D.SetSize(  rightAxialSize2D );
-  
-
-  AxialLineIteratorType itRightNippleElevation( imSkinElevationMap, rightAxialRegion2D );
-
-  itRightNippleElevation.SetDirection( 0 );
-
-  for ( itRightNippleElevation.GoToBegin(); 
-	! itRightNippleElevation.IsAtEnd(); 
-	itRightNippleElevation.NextLine() )
-  {
-    // Calculate the minimum elevation of the right side
-
-    itRightNippleElevation.GoToBeginOfLine();
-
-    startElevation = itRightNippleElevation.Get();
-    minElevation = startElevation;
-
-    while ( ( ! itRightNippleElevation.IsAtEndOfLine() )
-            && ( ( minElevation > startElevation - posElevationTolerance )
-                 || ( itRightNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
-    {
-      if ( ( itRightNippleElevation.Get() < minElevation ) &&
-           ( itRightNippleElevation.Get() < maxElevation ) )
+      while ( ! itLeftLinearElevation.IsAtReverseEndOfLine() )
       {
-        minElevation = itRightNippleElevation.Get();
-        rightAxialCutoff = itRightNippleElevation.GetIndex();
+        itLeftLinearElevation.Set( 0 );
+        --itLeftLinearElevation;
       }
-      
-      ++itRightNippleElevation;
     }
-  }
 
-  // Set this whole region in the elevation map to zero
 
-  rightAxialStart2D[0] = rightAxialCutoff[0];
-  rightAxialStart2D[1] = start2D[1];
+    // Scan from nipple x coordinates and eliminate arms - Right side
 
-  rightAxialSize2D[0] = size2D[0] - rightAxialCutoff[0];
-  rightAxialSize2D[1] = size2D[1];
+    typename AxialImageType::RegionType rightAxialRegion2D;
+    typename AxialImageType::SizeType   rightAxialSize2D   = size2D;
+    typename AxialImageType::IndexType  rightAxialStart2D  = start2D;
+  
+    typename AxialImageType::IndexType  rightAxialCutoff  = start2D;
 
-  rightAxialRegion2D.SetIndex( rightAxialStart2D );
-  rightAxialRegion2D.SetSize(  rightAxialSize2D );
+    rightAxialStart2D[0] = idxNippleRight[0];
+    rightAxialStart2D[1] = idxNippleRight[2]; // should this be idxNippleRight[2] ?
+
+    rightAxialSize2D[0] = size2D[0] - idxNippleRight[0];
+    rightAxialSize2D[1] = 1;
+
+    rightAxialRegion2D.SetIndex( rightAxialStart2D );
+    rightAxialRegion2D.SetSize(  rightAxialSize2D );
   
 
-  AxialLineIteratorType itRightLinearElevation( imSkinElevationMap, rightAxialRegion2D );
+    AxialLineIteratorType itRightNippleElevation( imSkinElevationMap, rightAxialRegion2D );
 
-  itRightLinearElevation.SetDirection( 0 );
+    itRightNippleElevation.SetDirection( 0 );
 
-  for ( itRightLinearElevation.GoToBegin(); 
-	! itRightLinearElevation.IsAtEnd(); 
-	itRightLinearElevation.NextLine() )
-  {
-    itRightLinearElevation.GoToBeginOfLine();
-
-    while ( ! itRightLinearElevation.IsAtEndOfLine() )
+    for ( itRightNippleElevation.GoToBegin(); 
+          ! itRightNippleElevation.IsAtEnd(); 
+          itRightNippleElevation.NextLine() )
     {
-      itRightLinearElevation.Set( 0 );
-      ++itRightLinearElevation;
+      // Calculate the minimum elevation of the right side
+
+      itRightNippleElevation.GoToBeginOfLine();
+
+      startElevation = itRightNippleElevation.Get();
+      minElevation = startElevation;
+
+      while ( ( ! itRightNippleElevation.IsAtEndOfLine() )
+              && ( ( minElevation > startElevation - posElevationTolerance )
+                   || ( itRightNippleElevation.Get() < minElevation + negElevationTolerance ) ) )
+      {
+        if ( ( itRightNippleElevation.Get() < minElevation ) &&
+             ( itRightNippleElevation.Get() < maxElevation ) )
+        {
+          minElevation = itRightNippleElevation.Get();
+          rightAxialCutoff = itRightNippleElevation.GetIndex();
+        }
+      
+        ++itRightNippleElevation;
+      }
     }
 
-  }
+    // Set this whole region in the elevation map to zero
 
-  // Write the image to a file
+    rightAxialStart2D[0] = rightAxialCutoff[0];
+    rightAxialStart2D[1] = start2D[1];
 
-  if ( fileOutputSkinElevationMap.length() )
-  {
-    std::string fileOutputSkinElevationMapCropped;
+    rightAxialSize2D[0] = size2D[0] - rightAxialCutoff[0];
+    rightAxialSize2D[1] = size2D[1];
 
-    typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+    rightAxialRegion2D.SetIndex( rightAxialStart2D );
+    rightAxialRegion2D.SetSize(  rightAxialSize2D );
+  
 
-    typename FileWriterType::Pointer writer = FileWriterType::New();
+    AxialLineIteratorType itRightLinearElevation( imSkinElevationMap, rightAxialRegion2D );
 
-    fileOutputSkinElevationMapCropped = ModifySuffix( fileOutputSkinElevationMap,
-                                                      std::string( "_Cropped" ) );
+    itRightLinearElevation.SetDirection( 0 );
 
-    writer->SetFileName( fileOutputSkinElevationMapCropped );
-    writer->SetInput( imSkinElevationMap );
+    for ( itRightLinearElevation.GoToBegin(); 
+          ! itRightLinearElevation.IsAtEnd(); 
+          itRightLinearElevation.NextLine() )
+    {
+      itRightLinearElevation.GoToBeginOfLine();
 
-    std::cout << "Writing elevation map to file: "
-              << fileOutputSkinElevationMapCropped << std::endl;
+      while ( ! itRightLinearElevation.IsAtEndOfLine() )
+      {
+        itRightLinearElevation.Set( 0 );
+        ++itRightLinearElevation;
+      }
 
-    writer->Update();
-  }
+    }
 
-  imSkinElevationMap = 0;
+    // Write the image to a file
+
+    if ( fileOutputSkinElevationMap.length() )
+    {
+      std::string fileOutputSkinElevationMapCropped;
+
+      typedef itk::ImageFileWriter< AxialImageType > FileWriterType;
+
+      typename FileWriterType::Pointer writer = FileWriterType::New();
+
+      fileOutputSkinElevationMapCropped = ModifySuffix( fileOutputSkinElevationMap,
+                                                        std::string( "_Cropped" ) );
+
+      writer->SetFileName( fileOutputSkinElevationMapCropped );
+      writer->SetInput( imSkinElevationMap );
+
+      std::cout << "Writing elevation map to file: "
+                << fileOutputSkinElevationMapCropped << std::endl;
+
+      writer->Update();
+    }
+
+    imSkinElevationMap = 0;
 
 
-  // Hence crop the patient mask
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Hence crop the patient mask
 
-  // Left side
+    // Left side
 
-  typename InternalImageType::SizeType leftSize3D = size3D;
+    typename InternalImageType::SizeType leftSize3D = size3D;
 
-  leftSize3D[0] = leftAxialCutoff[0] - start3D[0];
+    leftSize3D[0] = leftAxialCutoff[0] - start3D[0];
 
-  region3D.SetIndex( start3D );
-  region3D.SetSize(  leftSize3D );
+    region3D.SetIndex( start3D );
+    region3D.SetSize(  leftSize3D );
 
-  IteratorType segIteratorLeft( imSegmented, region3D );
+    IteratorType segIteratorLeft( imSegmented, region3D );
         
-  for ( segIteratorLeft.GoToBegin(); 
-        ! segIteratorLeft.IsAtEnd(); 
-        ++segIteratorLeft )
-  {
-    segIteratorLeft.Set( 0 );
-  }
+    for ( segIteratorLeft.GoToBegin(); 
+          ! segIteratorLeft.IsAtEnd(); 
+          ++segIteratorLeft )
+    {
+      segIteratorLeft.Set( 0 );
+    }
 
 
-  // Right side
+    // Right side
 
-  typename InternalImageType::IndexType rightStart3D = start3D;
-  typename InternalImageType::SizeType  rightSize3D = size3D;
+    typename InternalImageType::IndexType rightStart3D = start3D;
+    typename InternalImageType::SizeType  rightSize3D = size3D;
 
-  rightStart3D[0] = rightAxialCutoff[0];
+    rightStart3D[0] = rightAxialCutoff[0];
 
-  rightSize3D[0] = size3D[0] - rightStart3D[0];
+    rightSize3D[0] = size3D[0] - rightStart3D[0];
 
-  region3D.SetIndex( rightStart3D );
-  region3D.SetSize(  rightSize3D );
+    region3D.SetIndex( rightStart3D );
+    region3D.SetSize(  rightSize3D );
 
-  IteratorType segIteratorRight( imSegmented, region3D );
+    IteratorType segIteratorRight( imSegmented, region3D );
         
-  for ( segIteratorRight.GoToBegin(); 
-        ! segIteratorRight.IsAtEnd(); 
-        ++segIteratorRight )
-  {
-    segIteratorRight.Set( 0 );
+    for ( segIteratorRight.GoToBegin(); 
+          ! segIteratorRight.IsAtEnd(); 
+          ++segIteratorRight )
+    {
+      segIteratorRight.Set( 0 );
+    }
+
   }
 
 
