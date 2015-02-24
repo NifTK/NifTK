@@ -102,7 +102,7 @@ public:
   typedef float RealType;
     
   typedef itk::Image<InputPixelType, ImageDimension> InternalImageType;
-  typedef itk::Image<InputPixelType, SliceDimension> AxialImageType;
+  typedef itk::Image<RealType, SliceDimension> AxialImageType;
 
   typedef itk::Vector<RealType,     DataDimension>        VectorType;
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
@@ -437,7 +437,7 @@ protected:
   void SegmentBackground( void );
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
-  void ComputeElevationOfAnteriorSurface( void );
+  void ComputeElevationOfAnteriorSurface( bool flgCropBreast=false );
 
   /// Find a point in the surface offset from the nipple
   typename InternalImageType::IndexType 

@@ -1575,12 +1575,12 @@ int main( int argc, char *argv[] )
   std::string fileOutputRayleigh( "I05_FatSat_and_T2_RayleighFit.txt" );
   std::string fileOutputFreqLessBgndCDF( "I05_FatSat_and_T2_FreqLessBgndCDF.txt" );
   std::string fileOutputBackground( "I05_BackgroundMask.nii" );
-  std::string fileOutputSkinElevationMap;
   std::string fileOutputGradientMagImage( "I06_GradientMagImage.nii" );
   std::string fileOutputSpeedImage( "I07_SpeedImage.nii" );
   std::string fileOutputFastMarchingImage( "I08_FastMarchingImage.nii" );
   std::string fileOutputPectoral( "I09_PectoralMask.nii" );
   std::string fileOutputChestPoints( "I10_ChestPoints.nii" );
+  std::string fileOutputSkinElevationMap( "I10_SkinElevationMap.nii" );
   std::string fileOutputPectoralSurfaceMask( "I11_PectoralSurfaceMask.nii" );
 
   std::string fileOutputPectoralSurfaceVoxels;

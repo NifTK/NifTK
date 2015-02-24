@@ -56,6 +56,14 @@
 #include <itkConversionUtils.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionIteratorWithIndex.h>
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkMaskImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkOrientImageFilter.h>
+#include <itkSampleImageFilter.h>
+#include <itkBinaryShapeBasedSuperSamplingFilter.h>
+#include <itkIsImageBinary.h>
+
 
 //#define LINK_TO_SEG_EM
 
@@ -81,6 +89,7 @@ typedef float PixelType;
 const unsigned int   Dimension = 3;
 
 typedef itk::Image< PixelType, Dimension > ImageType;
+typedef itk::Image< PixelType, 4 > ImageType4D;
 
 
 
@@ -103,6 +112,114 @@ std::string CreateFilename( std::string fileOne,
   return fileOneWithoutSuffix + "_" + description + "_" + fileTwoWithoutSuffix + suffix;
 };
 
+
+// -------------------------------------------------------------------------
+// PrintOrientationInfo()
+// -------------------------------------------------------------------------
+
+void PrintOrientationInfo( ImageType::Pointer image )
+{
+  itk::SpatialOrientationAdapter adaptor;
+  ImageType::DirectionType direction;
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      direction[i][j] = image->GetDirection()[i][j];
+    }
+  }
+
+  std::cout << "Image direction: " << std::endl
+	    << direction;
+
+  std::cout << "ITK orientation: " 
+	    << itk::ConvertSpatialOrientationToString(adaptor.FromDirectionCosines(direction)) 
+	    << std::endl;
+}
+
+
+// -------------------------------------------------------------------------
+// GetOrientation()
+// -------------------------------------------------------------------------
+
+itk::SpatialOrientation::ValidCoordinateOrientationFlags GetOrientation( ImageType::Pointer image )
+{
+  ImageType::DirectionType direction;
+  itk::SpatialOrientationAdapter adaptor;
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      direction[i][j] = image->GetDirection()[i][j];
+    }
+  }
+
+  return adaptor.FromDirectionCosines(direction);
+}
+
+
+// -------------------------------------------------------------------------
+// ReorientateImage()
+// -------------------------------------------------------------------------
+
+ImageType::Pointer ReorientateImage( ImageType::Pointer image, 
+                                     itk::SpatialOrientation::ValidCoordinateOrientationFlags desiredOrientation )
+{
+  std::cout << std::endl << "Input image:" << std::endl;
+  //image->Print( std::cout );
+  PrintOrientationInfo( image );
+
+  std::cout << "Desired orientation: " << itk::ConvertSpatialOrientationToString( desiredOrientation )
+            << std::endl;
+
+  typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
+  OrientImageFilterType::Pointer orienter = OrientImageFilterType::New();
+
+  orienter->UseImageDirectionOn();
+  orienter->SetDesiredCoordinateOrientation( desiredOrientation );
+  orienter->SetInput( image );
+
+  orienter->Update();
+
+  typedef OrientImageFilterType::FlipAxesArrayType FlipAxesArrayType;
+  typedef OrientImageFilterType::PermuteOrderArrayType PermuteOrderArrayType;
+
+  FlipAxesArrayType flipAxes = orienter->GetFlipAxes();
+  PermuteOrderArrayType permuteAxes = orienter->GetPermuteOrder();
+
+  std::cout << std::endl
+            << "Permute Axes: " << permuteAxes << std::endl
+            << "Flip Axes: "    << flipAxes << std::endl;
+
+  ImageType::Pointer reorientatedImage = orienter->GetOutput();
+  //reorientatedImage->DisconnectPipeline();
+
+  std::cout << std::endl << "Output image:" << std::endl;
+  //reorientatedImage->Print( std::cout );
+  PrintOrientationInfo( reorientatedImage );
+
+  return reorientatedImage;
+};
+
+
+// -------------------------------------------------------------------------
+// ReorientateImage()
+// -------------------------------------------------------------------------
+
+ImageType::Pointer ReorientateImage( ImageType::Pointer image, ImageType::Pointer reference )
+{
+  itk::SpatialOrientation::ValidCoordinateOrientationFlags desiredOrientation;
+
+  std::cout << std::endl << "Reference image:" << std::endl;
+  //reference->Print( std::cout );
+  PrintOrientationInfo( reference );
+
+  desiredOrientation = GetOrientation( reference );
+
+  return ReorientateImage( image, desiredOrientation );
+}
 
 
 // -------------------------------------------------------------------------
@@ -351,20 +468,27 @@ public:
     {   
       message << std::endl << "Read " << description << " from file: " << fileInput << std::endl;
       PrintMessage( message );
-
-      return true;
     }
     else if ( itk::ReadImageFromFile< ImageType >( fileInput + ".gz", image ) )
     {   
       message << std::endl << "Read " << description << " from file: " << fileInput << std::endl;
       PrintMessage( message );
-
-      return true;
     }
     else
     {
       return false;
     }
+
+    itk::SpatialOrientation::ValidCoordinateOrientationFlags orientation;
+
+    orientation = GetOrientation( image );
+
+    if ( orientation !=  itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI )
+    {
+      image = ReorientateImage( image, itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI );
+    }
+
+    return true;
   }
 
   bool ReadImageFromFile( std::string dirInput, std::string filename, 
@@ -376,10 +500,20 @@ public:
   }
 
   void WriteImageToFile( std::string filename, 
-                         std::string description, ImageType::Pointer image ) {
+                         std::string description, ImageType::Pointer image,
+                         bool flgConcatenatePath=true ) {
   
     std::stringstream message;
-    std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
+    std::string fileOutput;
+
+    if ( flgConcatenatePath )
+    {
+      fileOutput = niftk::ConcatenatePath( dirOutput, filename );
+    }
+    else
+    {
+      fileOutput = filename;
+    }
               
     message << std::endl << "Writing " << description << " to file: "
             << fileOutput << std::endl;
@@ -437,6 +571,99 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
   }
 
   return command;
+};
+
+
+// -------------------------------------------------------------------------
+// ResampleImageToIsotropicVoxels()
+// -------------------------------------------------------------------------
+
+bool ResampleImageToIsotropicVoxels( ImageType::Pointer &image, InputParameters &args )
+{
+  std::stringstream message;
+
+  double factor[Dimension];
+
+  ImageType::SpacingType spacing = image->GetSpacing();
+
+  // Calculate the minimum spacing
+
+  double minSpacing = std::numeric_limits<double>::max();
+
+  for (unsigned int j = 0; j < ImageType::ImageDimension; j++)
+  {
+    if ( spacing[j] < minSpacing )
+    {
+      minSpacing = spacing[j];
+    }
+  }
+
+  // Calculate the subsampling factors
+
+  bool flgSamplingRequired = false;
+
+  for (unsigned int j = 0; j < ImageType::ImageDimension; j++)
+  {
+    factor[j] = minSpacing/spacing[j];
+
+    if ( factor[j] < 0.8 )
+    {
+      flgSamplingRequired = true;
+    }
+  }
+
+  // Run the sampling filter
+
+  ImageType::PixelType intensity1;
+  ImageType::PixelType intensity2;
+
+  if ( itk::IsImageBinary< ImageType >( image, intensity1, intensity2 ) )
+  {
+    typedef itk::BinaryShapeBasedSuperSamplingFilter< ImageType, ImageType > SampleImageFilterType;
+
+    SampleImageFilterType::Pointer sampler = SampleImageFilterType::New();
+
+    sampler->SetIsotropicVoxels( true );
+
+    sampler->SetInput( image );
+
+    sampler->VerboseOn();
+
+    message << "Computing sampled binary image" << std::endl;
+    args.PrintMessage( message );
+
+    sampler->Update();
+
+    ImageType::Pointer sampledImage = sampler->GetOutput();
+    sampledImage->DisconnectPipeline();
+
+    image = sampledImage;
+  }
+  else
+  {
+    typedef itk::SampleImageFilter< ImageType, ImageType > SampleImageFilterType;
+
+    SampleImageFilterType::Pointer sampler = SampleImageFilterType::New();
+
+    sampler->SetIsotropicVoxels( true );
+    sampler->SetInterpolationType( itk::NEAREST );
+
+    sampler->SetInput( image );
+
+    sampler->VerboseOn();
+
+    message << "Computing sampled image" << std::endl;
+    args.PrintMessage( message );
+
+    sampler->Update();
+
+    ImageType::Pointer sampledImage = sampler->GetOutput();
+    sampledImage->DisconnectPipeline();
+
+    image = sampledImage;
+  }
+
+  return true;
 };
 
 
@@ -641,6 +868,23 @@ int main( int argc, char *argv[] )
         continue;
       }
 
+      if ( ResampleImageToIsotropicVoxels( imMask, args ) )
+      {
+        fileMaskBasename = niftk::ModifyImageFileSuffix( fileMaskBasename, 
+                                                         std::string( "_Isotropic.nii" ) );
+
+        fileMaskFullPath = niftk::ConcatenatePath( args.dirOutput, fileMaskBasename );
+
+        if ( flgCompression )
+        {
+          fileMaskFullPath.append( ".gz" );          
+        }
+
+        args.WriteImageToFile( fileMaskFullPath, 
+                               std::string( "isotropic mask image" ), 
+                               imMask, false );
+      }
+
 
       // For each image
       // ~~~~~~~~~~~~~~
@@ -684,6 +928,23 @@ int main( int argc, char *argv[] )
             args.PrintMessage( message );
           }
           continue;
+        }
+
+        if ( ResampleImageToIsotropicVoxels( imInput, args ) )
+        {
+          fileImageBasename = niftk::ModifyImageFileSuffix( fileImageBasename, 
+                                                            std::string( "_Isotropic.nii" ) );
+
+          fileImageFullPath = niftk::ConcatenatePath( args.dirOutput, fileImageBasename );
+
+          if ( flgCompression )
+          {
+            fileImageFullPath.append( ".gz" );          
+          }
+          
+          args.WriteImageToFile( fileImageFullPath, 
+                                 std::string( "isotropic image" ), 
+                                 imInput, false );
         }
 
         try
@@ -766,9 +1027,10 @@ int main( int argc, char *argv[] )
                                                              std::string( "WithMask" ),
                                                              std::string( "_Parenchyma.nii" ) );
 
-          if ( ! args.ReadImageFromFile( args.dirOutput, 
-                                         fileOutputParenchyma, 
-                                         "breast parenchyma", imParenchyma ) )
+          if ( args.flgOverwrite || 
+               ( ! args.ReadImageFromFile( args.dirOutput, 
+                                           fileOutputParenchyma, 
+                                           "breast parenchyma", imParenchyma ) ) )
           {
 
             // QProcess call to seg_EM
@@ -943,9 +1205,29 @@ int main( int argc, char *argv[] )
               message << std::endl << "Inverting the density estimation" << std::endl;
               args.PrintWarning( message );
         
-              leftDensity = 1. - leftDensity;
+              leftDensity  = 1. - leftDensity;
               rightDensity = 1. - rightDensity;
               totalDensity = 1. - totalDensity;
+
+              itk::ImageRegionIterator< ImageType > 
+              imIterator( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
+              
+              itk::ImageRegionConstIterator< ImageType > 
+              maskIterator( imMask, imMask->GetLargestPossibleRegion() );
+   
+              for ( maskIterator.GoToBegin(), imIterator.GoToBegin();
+                    ! maskIterator.IsAtEnd();
+                    ++maskIterator, ++imIterator )
+              {
+                if ( maskIterator.Get() )
+                {
+                  imIterator.Set( 1. - imIterator.Get() );
+                }
+              }
+
+              args.WriteImageToFile( fileOutputParenchyma, 
+                                     std::string( "inverted parenchyma image" ), 
+                                     imParenchyma );
             }
         
   

@@ -200,6 +200,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkBasicImageFeatures
   niftkBasicImageFeatures3D
   niftkBilateralImageFilter
+  niftkBinaryShapeBasedSuperSamplingFilter
   niftkBlockMatching
   niftkBreastDicomSeriesReadImageWrite
   niftkBSI
@@ -267,6 +268,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkRescale
   niftkResetDirectionField
   niftkResetVoxelDimensionsField
+  niftkSampleImage
   niftkSegmentationStatistics
   niftkSeriesReadVolumeWrite
   niftkSetBorderPixel

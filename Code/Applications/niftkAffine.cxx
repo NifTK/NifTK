@@ -505,13 +505,17 @@ int DoMain(arguments args)
     transform = dynamic_cast<typename FactoryType::EulerAffineTransformType*>(singleResMethod->GetTransform());
     transform->SetFullAffine(); 
     
-    // Save the transform (as 12 parameter UCLEulerAffine transform).
     typedef typename itk::TransformFileWriter TransformFileWriterType;
     typename TransformFileWriterType::Pointer transformFileWriter = TransformFileWriterType::New();
-    transformFileWriter->SetInput(transform);
-    transformFileWriter->SetFileName(args.outputUCLTransformFile);
-    transformFileWriter->Update();         
-    
+
+    // Save the transform (as 12 parameter UCLEulerAffine transform).
+    if (args.outputUCLTransformFile.length() > 0)
+    {
+      transformFileWriter->SetInput(transform);
+      transformFileWriter->SetFileName(args.outputUCLTransformFile);
+      transformFileWriter->Update();         
+    }
+
     // Save the transform (as 16 parameter matrix transform).
     if (args.outputMatrixTransformFile.length() > 0)
       {
@@ -972,12 +976,23 @@ int main(int argc, char** argv)
 
 
   // Validation
-  if (args.fixedImage.length() <= 0 || args.movingImage.length() <= 0 || args.outputUCLTransformFile.length() <= 0)
-    {
-      commandLine.getOutput()->usage(commandLine);
-      std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
-      return -1;
-    }
+  if (args.fixedImage.length() <= 0 || args.movingImage.length() <= 0){
+    std::cerr << argv[0] << "\tThe fixed and moving image file names must be set." 
+              << std::endl << std::endl;
+    commandLine.getOutput()->usage(commandLine);
+    std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
+    return -1;
+  }
+
+  if (args.outputUCLTransformFile.length() <= 0 && 
+      args.outputImage.length() <= 0 && 
+      args.outputMatrixTransformFile.length() <= 0){
+    std::cerr << argv[0] << "\tDid you forget to set the output image or transformation?" 
+              << std::endl << std::endl;
+    commandLine.getOutput()->usage(commandLine);
+    std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
+    return -1;
+  }
 
   if(args.finalInterpolator < 1 || args.finalInterpolator > 4){
     std::cerr << argv[0] << "\tThe finalInterpolator must be >= 1 and <= 4" << std::endl;
