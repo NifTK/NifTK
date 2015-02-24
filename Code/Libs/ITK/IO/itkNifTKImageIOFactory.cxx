@@ -17,7 +17,6 @@
 #include "itkDRCAnalyzeImageIO.h"
 #include "itkNiftiImageIO3201.h"
 #include "itkINRImageIO.h"
-#include "itkNifTKTransformIO.h"
 #include <itkVersion.h>
 
 #include <itkObjectFactory.h>
@@ -47,9 +46,6 @@ NifTKImageIOFactory::NifTKImageIOFactory()
 
   this->RegisterOverride("itkImageIOBase", "itkINRImageIO", "INR Image IO", 1,
     itk::CreateObjectFunction<INRImageIO>::New());
-
-  this->RegisterOverride("itkTransformIOBase", "itkNifTKTransformIO", "Txt Transform IO", 1,
-    itk::CreateObjectFunction<NifTKTransformIO>::New());
 }
 
 NifTKImageIOFactory::~NifTKImageIOFactory()
@@ -65,7 +61,7 @@ NifTKImageIOFactory::GetITKSourceVersion(void) const
 const char*
 NifTKImageIOFactory::GetDescription(void) const
 {
-  return "NifTK ImageIO Factory. Supports Analyze, DRC Analyze, NIfTI, INR and txt transform formats.";
+  return "NifTK ImageIO Factory. Supports DRC Analyze, NIfTI (reads Analyze) and INR image formats.";
 }
 
 } // end namespace itk
