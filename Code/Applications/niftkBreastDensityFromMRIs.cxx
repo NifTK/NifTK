@@ -73,6 +73,8 @@
 #include <itkAffineTransform.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkMaskImageFilter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkIsImageBinary.h>
 
 #include <niftkBreastDensityFromMRIsCLP.h>
 
@@ -575,7 +577,28 @@ public:
             << fileOutput << std::endl;
     PrintMessage( message );
 
-    itk::WriteImageToFile< ImageType >( fileOutput, image );
+    if ( itk::IsImageBinary< ImageType >( image ) )
+    {
+      typedef unsigned char OutputPixelType;
+      typedef itk::Image< OutputPixelType, ImageType::ImageDimension> OutputImageType;
+
+      typedef itk::RescaleIntensityImageFilter< ImageType, OutputImageType > CastFilterType;
+
+      CastFilterType::Pointer caster = CastFilterType::New();
+
+      caster->SetInput( image );
+      caster->SetOutputMinimum(   0 );
+      caster->SetOutputMaximum( 255 );
+      caster->Update();
+
+      OutputImageType::Pointer imOut = caster->GetOutput();
+
+      itk::WriteImageToFile< OutputImageType >( fileOutput, imOut );      
+    }
+    else
+    {
+      itk::WriteImageToFile< ImageType >( fileOutput, image );
+    }
   }
 
   void WriteImageToFile( std::string filename, 

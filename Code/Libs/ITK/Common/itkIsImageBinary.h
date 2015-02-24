@@ -27,9 +27,24 @@ namespace itk
 
 template < typename TImage >
 bool
-  IsImageBinary( typename TImage::Pointer image,
-                 typename TImage::PixelType &intensity1, 
-                 typename TImage::PixelType &intensity2 )
+IsImageBinary( typename TImage::Pointer image )
+{
+  typename TImage::PixelType intensity1;
+  typename TImage::PixelType intensity2;
+
+  return IsImageBinary< TImage >( image, intensity1, intensity2 );
+}
+
+
+//  --------------------------------------------------------------------------
+/// Return whether an image is binary or not
+//  --------------------------------------------------------------------------
+
+template < typename TImage >
+bool
+IsImageBinary( typename TImage::Pointer image,
+               typename TImage::PixelType &intensity1, 
+               typename TImage::PixelType &intensity2 )
 {
   itk::ImageRegionIterator< TImage > 
     itImage( image, image->GetLargestPossibleRegion() );
