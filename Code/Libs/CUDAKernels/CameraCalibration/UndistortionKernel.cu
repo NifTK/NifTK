@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include <common_functions.h>
 
 
