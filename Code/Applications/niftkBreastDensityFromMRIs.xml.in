@@ -157,7 +157,7 @@
       <longflag>segEM</longflag>
       <description>The NiftySeg seg_EM path and command line to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
-      <default>seg_EM -v 2 -nopriors 2</default>
+      <default>seg_EM -v 2 -nopriors 2 -bc_order 0</default>
       <channel>input</channel>
     </file>
 
