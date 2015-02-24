@@ -28,7 +28,6 @@ set(niftkITK_SRCS
   IO/itkAnalyzeImageIO3160.cxx
   IO/itkDRCAnalyzeImageIO.cxx
   IO/itkNifTKImageIOFactory.cxx
-  IO/itkNifTKTransformIO.cxx
   IO/itkNiftiImageIO3201.cxx
   2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
   2D3DToolbox/Commands/itkReconstructionAndRegistrationUpdateCommand.cxx
