@@ -23,6 +23,7 @@
 #include <itkGradientMagnitudeImageFilter.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkAddImageFilter.h>
+#include <itkSignedMaurerDistanceMapImageFilter.h>
 
 
 namespace itk
@@ -68,6 +69,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   
   sigmaBIF = 3.0;
 
+  coilCropDistance = 10.0;
   cropDistPosteriorToMidSternum = 40.0;
 
   imStructural = 0;
@@ -1566,7 +1568,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 template <const unsigned int ImageDimension, class InputPixelType>
 void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
-::ComputeElevationOfAnteriorSurface( bool flgCropBreast )
+::ComputeElevationOfAnteriorSurface( bool flgCoilCrop )
 {
   typename InternalImageType::RegionType region3D;
   typename InternalImageType::SizeType   size3D;
@@ -1711,7 +1713,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // Crop the breast image region by thresholding an edge enhanced version of the elevation map
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( flgCropBreast )
+  if ( flgCoilCrop )
   {
     // Determine the elevation of the nipples and mid-sternum points
 
@@ -1847,6 +1849,41 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
       connectedThreshold->Update();
 
       imSkinElevationMap = connectedThreshold->GetOutput();
+
+      // Expand the mask by a certain radius?
+
+      if ( coilCropDistance )
+      {
+        typedef SignedMaurerDistanceMapImageFilter<AxialImageType, AxialImageType> 
+          DistanceMapFilterType;
+
+        typename DistanceMapFilterType::Pointer distFilter = DistanceMapFilterType::New();
+
+        distFilter->SetInput( imSkinElevationMap );
+        distFilter->SetUseImageSpacing(true);
+
+        std::cout << "Computing distance transform for skin elevation mask" << std::endl;
+        distFilter->Update();
+
+
+        typedef itk::BinaryThresholdImageFilter< AxialImageType, AxialImageType > 
+          ElevationThresholdFilterType;
+
+        typename ElevationThresholdFilterType::Pointer 
+          thresholder = ElevationThresholdFilterType::New();
+  
+        thresholder->SetLowerThreshold( -100000 ); // Include everytging inside the current mask
+        thresholder->SetUpperThreshold( coilCropDistance );
+
+        thresholder->SetOutsideValue(  0  );
+        thresholder->SetInsideValue( 1000 );
+
+        thresholder->SetInput( distFilter->GetOutput() );
+
+        thresholder->Update();
+  
+        imSkinElevationMap = thresholder->GetOutput();
+      }
 
       // Write the image to a file
 
@@ -2566,6 +2603,61 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   return pecPointSet;
 }
 
+
+// --------------------------------------------------------------------------
+// Discard anything not within the skin elevation mask  
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::CropTheMaskAccordingToEstimateOfCoilExtentInCoronalPlane( void )
+{
+  if ( imSkinElevationMap )
+  {
+
+    SliceIteratorType itSegSlices( imSegmented, 
+                                   imSegmented->GetLargestPossibleRegion() );
+    
+    typedef itk::ImageRegionIterator< AxialImageType > AxialIteratorType;  
+  
+    AxialIteratorType itElevationMask( imSkinElevationMap, 
+                                       imSkinElevationMap->GetLargestPossibleRegion() );
+  
+    itSegSlices.SetFirstDirection( 0 );
+    itSegSlices.SetSecondDirection( 2 );
+  
+    itSegSlices.GoToBegin();
+  
+    while ( ! itSegSlices.IsAtEnd() )
+    {
+      itElevationMask.GoToBegin();
+    
+      while ( ! itSegSlices.IsAtEndOfSlice() )
+      {
+        while ( ! itSegSlices.IsAtEndOfLine() ) 
+        {
+          if ( ! itElevationMask.Get() )
+          {
+            itSegSlices.Set( 0 );
+          }
+        
+          ++itSegSlices; 
+          ++itElevationMask;
+        }
+        itSegSlices.NextLine();
+      }
+      itSegSlices.NextSlice(); 
+    }
+
+  }
+
+  else
+  {
+    std::cerr << "WARNING: No skin elevation map available for coil crop, so ignored" << std::endl;
+  }
+}
+  
 
 // --------------------------------------------------------------------------
 // Discard anything not within a B-Spline fitted to the breast skin surface

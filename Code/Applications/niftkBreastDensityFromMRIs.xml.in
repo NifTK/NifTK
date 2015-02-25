@@ -110,6 +110,29 @@
 
   <parameters advanced="true">
 
+    <label>Breast Mask Parameters</label>
+    <description><![CDATA[Parameters to modify the breast mask segmentation.]]></description>
+
+    <boolean>
+      <name>flgCropFit</name>
+      <longflag>cropfit</longflag>
+      <description>A anterior breast skin surface is extrapolated and used to clip the breast mask segmentation [default: no].</description>
+      <label>Clip breast mask by extrapolating the skin surface</label>
+      <default>false</default>
+    </boolean>
+
+   <float>
+      <name>coilCropDistance</name>
+      <longflag>coilCrop</longflag>
+      <description>The distance from the MR breast coil in the coronal plane at which to crop the breast mask segmentation. A value of zero implies a tight crop, whilst a large value (e.g. 1000.) means no cropping [default: 10mm]</description>
+      <label>MR coil coronal crop distance</label>
+      <default>10</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
     <label>DICOM Series Descriptions</label>
     <description><![CDATA[DICOM Series Descriptions]]></description>
 

@@ -183,7 +183,8 @@ public:
   void SetMarchingK2( float k2 ) { fMarchingK2 = k2; }
   void SetMarchingTime( float t ) { fMarchingTime = t; }
 
-  void SetCropDistancePosteriorToMidSternum( float fDistIn ) { this->cropDistPosteriorToMidSternum = fDistIn; }
+  void SetCoilCropDistance( float cropDist ) { coilCropDistance = cropDist; }
+  void SetCropDistancePosteriorToMidSternum( float fDistIn ) { cropDistPosteriorToMidSternum = fDistIn; }
   
   void SetOutputBIFS( std::string fn ) { fileOutputBIFs = fn; }
   void SetSigmaBIF( float sig ){ sigmaBIF = sig; }
@@ -318,6 +319,7 @@ protected:
 
   float sigmaBIF;
 
+  float coilCropDistance;
   float cropDistPosteriorToMidSternum;
 
   std::string fileOutputBIFs;
@@ -437,7 +439,7 @@ protected:
   void SegmentBackground( void );
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
-  void ComputeElevationOfAnteriorSurface( bool flgCropBreast=false );
+  void ComputeElevationOfAnteriorSurface( bool flgCoilCrop=false );
 
   /// Find a point in the surface offset from the nipple
   typename InternalImageType::IndexType 
@@ -452,6 +454,8 @@ protected:
 							   unsigned long &iPointPec,
                                                            bool flgIncludeNippleSeeds=false );
 
+  /// Discard anything not within the skin elevation mask  
+  void CropTheMaskAccordingToEstimateOfCoilExtentInCoronalPlane( void );
   /// Discard anything not within a B-Spline fitted to the breast skin surface
   void MaskWithBSplineBreastSurface( RealType rYHeightOffset );
   /// Mask with a sphere centered on each breast

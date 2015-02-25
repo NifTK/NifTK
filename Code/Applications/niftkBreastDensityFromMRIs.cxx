@@ -261,6 +261,9 @@ public:
   bool flgCompression;
   bool flgOverwrite;
 
+  bool flgCropFit;
+  float coilCropDistance;
+
   std::string dirInput;
   std::string dirOutput;
 
@@ -303,6 +306,7 @@ public:
   InputParameters( TCLAP::CmdLine &commandLine, 
                    bool verbose, bool flgRegister, bool flgSave, 
                    bool compression, bool debug, bool overwrite,
+                   bool cropFit, float coilCropDist,
                    std::string subdirMRI, std::string subdirData, 
                    std::string prefix, 
                    std::string dInput,
@@ -325,6 +329,9 @@ public:
     flgDebug = debug;
     flgCompression = compression;
     flgOverwrite = overwrite;
+
+    flgCropFit = cropFit;
+    coilCropDistance = coilCropDist;
 
     dirSubMRI  = subdirMRI;
     dirSubData = subdirData;
@@ -455,12 +462,12 @@ public:
             << "Examining directory: " << dirInput << std::endl 
             << std::endl
             << std::boolalpha
-            << "Verbose output?: "             << flgVerbose        << std::endl
-            << "Register the images?: "        << flgRegisterImages << std::endl
-            << "Save images?: "                << flgSaveImages     << std::endl
-            << "Compress images?: "            << flgCompression    << std::endl
-            << "Debugging output?: "           << flgDebug          << std::endl
-            << "Overwrite previous results?: " << flgOverwrite      << std::endl       
+            << "Verbose output?: "                        << flgVerbose        << std::endl
+            << "Register the images?: "                   << flgRegisterImages << std::endl
+            << "Save images?: "                           << flgSaveImages     << std::endl
+            << "Compress images?: "                       << flgCompression    << std::endl
+            << "Debugging output?: "                      << flgDebug          << std::endl
+            << "Overwrite previous results?: "            << flgOverwrite      << std::endl       
             << std::noboolalpha
             << std::endl
             << "Input MRI sub-directory: " << dirSubMRI << std::endl
@@ -469,6 +476,11 @@ public:
             << std::endl
             << "Output log file: " << fileLog << std::endl
             << "Output csv file: " << fileOutputCSV << std::endl
+            << std::endl
+            << std::boolalpha
+            << "Clip segmentation with fitted surface?: " << flgCropFit << std::endl       
+            << std::noboolalpha
+            << "MR coil coronal crop distance: " << coilCropDistance << std::endl       
             << std::endl
             << "Structural series description: " << strSeriesDescStructuralT2 << std::endl
             << "Complementary image series description" << strSeriesDescFatSatT1 << std::endl
@@ -927,12 +939,14 @@ bool ResampleImages( std::string fileTarget,
                      std::string fileResampleInput, 
                      std::string fileResampleOutput,
                      std::string fileNonRigidTransform,
+                     std::string resamplingInterpolation,
                      InputParameters &args ) 
 {
   std::stringstream message;
   
   QStringList argsRegResample; 
   argsRegResample 
+    << resamplingInterpolation.c_str()
     << "-ref" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-flo" << niftk::ConcatenatePath( args.dirOutput, fileResampleInput.c_str() ).c_str()
     << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileResampleOutput.c_str() ).c_str()
@@ -983,6 +997,7 @@ bool RegisterAndResample( std::string fileTarget,
                           std::string fileSource, 
                           std::string fileResampleInput,
                           std::string fileResampleOutput,
+                          std::string resamplingInterpolation,
                           InputParameters &args ) 
 {
   std::string fileAffineTransform;
@@ -1012,6 +1027,7 @@ bool RegisterAndResample( std::string fileTarget,
                            fileResampleInput,
                            fileResampleOutput,
                            fileNonRigidTransform,
+                           resamplingInterpolation,
                            args ) );
 };
 
@@ -1500,6 +1516,7 @@ int main( int argc, char *argv[] )
   InputParameters args( commandLine, 
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
+                        flgCropFit, coilCropDistance,
                         dirSubMRI, dirSubData, dirPrefix, dirInput,
                         fileLog, fileOutputCSV,
                         strSeriesDescStructuralT2,
@@ -2131,37 +2148,17 @@ int main( int argc, char *argv[] )
 
         float sigmaBIF = 3.0;
 
-        bool flgProneSupineBoundary = false;
-        float cropProneSupineDistPostMidSternum  = 40.0;
-
-        bool flgCropWithFittedSurface = true;
-
-
         ImageType::Pointer imBIFs;
 
 
         // Create the Breast Segmentation Object
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        typedef itk::BreastMaskSegmentationFromMRI< Dimension, PixelType > 
-          BreastMaskSegmentationFromMRIType;
-  
-        typedef itk::BreastMaskSegmForModelling< Dimension, PixelType > 
-          BreastMaskSegmForModellingType;
-  
         typedef itk::BreastMaskSegmForBreastDensity< Dimension, PixelType > 
           BreastMaskSegmForBreastDensityType;
   
-        BreastMaskSegmentationFromMRIType::Pointer breastMaskSegmentor;
-
-        if ( flgProneSupineBoundary )
-        {
-          breastMaskSegmentor = BreastMaskSegmForModellingType::New();
-        } 
-        else
-        {
+        BreastMaskSegmForBreastDensityType::Pointer 
           breastMaskSegmentor = BreastMaskSegmForBreastDensityType::New();
-        } 
 
 
         // Pass Command Line Parameters to Segmentor
@@ -2189,8 +2186,8 @@ int main( int argc, char *argv[] )
 
         breastMaskSegmentor->SetSigmaBIF( sigmaBIF );
 
-        breastMaskSegmentor->SetCropFit( flgCropWithFittedSurface );
-        breastMaskSegmentor->SetCropDistancePosteriorToMidSternum( cropProneSupineDistPostMidSternum );
+        breastMaskSegmentor->SetCropFit( flgCropFit );
+        breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
           
 
         if ( args.flgDebug )
@@ -2404,6 +2401,7 @@ int main( int argc, char *argv[] )
                                fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient,
                                fileOutputBreastMaskReorient,
                                fileOutputDixonMask,
+                               std::string( "-NN" ),
                                args );
         }
         
