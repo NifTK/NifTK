@@ -69,7 +69,11 @@ if(NOT WIN32 AND BUILD_COMMAND_LINE_PROGRAMS)
          ${TEMPORARY_OUTPUT}/kn-bsi-test-output.txt)
 
   add_test(BSI-itkKN-BSITest2 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/kn-bsi-test-output.txt ${TEMPORARY_OUTPUT}/kn-bsi-test-output.txt)
+  set_property(TEST BSI-itkKN-BSITest2 APPEND PROPERTY DEPENDS BSI-itkKN-BSITest1 )
+
   add_test(BSI-itkKN-BSITest3 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.img ${TEMPORARY_OUTPUT}/repeat-normalised.img)
+  set_property(TEST BSI-itkKN-BSITest3 APPEND PROPERTY DEPENDS BSI-itkKN-BSITest1 )
+
   #add_test(itkKN-BSITest4 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.hdr ${TEMPORARY_OUTPUT}/repeat-normalised.hdr)
 endif()
 
