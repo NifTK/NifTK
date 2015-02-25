@@ -129,52 +129,14 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 						   pecPointSet,
 						   iPointPec );
 
-  // Discard anything not within the skin elevation mask  
-  if ( this->imSkinElevationMap )
-  {
-    SliceIteratorType itSegSlices( this->imSegmented, 
-                                   this->imSegmented->GetLargestPossibleRegion() );
-    
-    typedef itk::ImageRegionIterator< AxialImageType > AxialIteratorType;  
-    
-    AxialIteratorType itElevationMask( this->imSkinElevationMap, 
-                                       this->imSkinElevationMap->GetLargestPossibleRegion() );
-
-    itSegSlices.SetFirstDirection( 0 );
-    itSegSlices.SetSecondDirection( 2 );
-
-    itSegSlices.GoToBegin();
-
-    while ( ! itSegSlices.IsAtEnd() )
-    {
-      itElevationMask.GoToBegin();
-      
-      while ( ! itSegSlices.IsAtEndOfSlice() )
-      {
-        while ( ! itSegSlices.IsAtEndOfLine() ) 
-        {
-          if ( ! itElevationMask.Get() )
-          {
-            itSegSlices.Set( 0 );
-          }
-          
-          ++itSegSlices; 
-          ++itElevationMask;
-        }
-        itSegSlices.NextLine();
-      }
-      itSegSlices.NextSlice(); 
-    }
-  }
-    
   // Discard anything not within a fitted surface (switch -cropfit)
-  else if ( this->flgCropWithFittedSurface )
+  if ( this->flgCropWithFittedSurface )
     this->MaskWithBSplineBreastSurface( rYHeightOffset );
 
-  // OR Discard anything not within a certain radius of the breast center
-  else 
-    this->MaskBreastWithSphere();
-  
+  // Discard anything not within the skin elevation mask  
+  if ( this->imSkinElevationMap )
+    this->CropTheMaskAccordingToEstimateOfCoilExtentInCoronalPlane();
+    
   // Smooth the mask and threshold to round corners etc.
   this->SmoothMask();
 
