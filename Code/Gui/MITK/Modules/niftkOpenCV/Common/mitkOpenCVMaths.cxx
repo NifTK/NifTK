@@ -351,7 +351,7 @@ void CopyToOpenCVMatrix(const cv::Matx44d& input, cv::Mat& output)
 
 
 //-----------------------------------------------------------------------------
-std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::WorldPoint > & p)
+std::vector < mitk::WorldPoint > operator*(const cv::Mat& M, const std::vector< mitk::WorldPoint > & p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
@@ -375,7 +375,7 @@ std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::W
 }
 
 //-----------------------------------------------------------------------------
-mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
+mitk::WorldPoint  operator*(const cv::Mat& M, const  mitk::WorldPoint & p)
 {
   cv::Mat src ( 4, 1 , CV_64F );
   src.at<double>(0,0) = p.m_Point.x;
@@ -396,7 +396,7 @@ mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
 }
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
+std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Point3d>& p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
@@ -420,7 +420,7 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
 }
 
 //-----------------------------------------------------------------------------
-cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
+cv::Point3d operator*(const cv::Mat& M, const cv::Point3d& p)
 {
   cv::Mat src ( 4, 1, CV_64F );
   src.at<double>(0,0) = p.x;
