@@ -24,7 +24,7 @@ endif ()
 
 if (BUILD_TESTING)
 
-  set(version "cefeb2364e")
+  set(version "b7c346650c")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 
   niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
