@@ -374,6 +374,14 @@ std::vector < mitk::WorldPoint > operator*(const cv::Mat& M, const std::vector< 
   return returnPoints;
 }
 
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::WorldPoint> operator*(const cv::Matx44d& M, const std::vector<mitk::WorldPoint>& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
+
 //-----------------------------------------------------------------------------
 mitk::WorldPoint  operator*(const cv::Mat& M, const  mitk::WorldPoint & p)
 {
@@ -394,6 +402,14 @@ mitk::WorldPoint  operator*(const cv::Mat& M, const  mitk::WorldPoint & p)
   
   return returnPoint;
 }
+
+
+//-----------------------------------------------------------------------------
+mitk::WorldPoint  operator*(const cv::Matx44d& M, const mitk::WorldPoint& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
 
 //-----------------------------------------------------------------------------
 std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Point3d>& p)
@@ -419,6 +435,14 @@ std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Poin
   return returnPoints;
 }
 
+
+//-----------------------------------------------------------------------------
+std::vector <cv::Point3d> operator*(const cv::Matx44d& M, const std::vector<cv::Point3d>& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d operator*(const cv::Mat& M, const cv::Point3d& p)
 {
@@ -437,6 +461,14 @@ cv::Point3d operator*(const cv::Mat& M, const cv::Point3d& p)
 
   return returnPoint;
 }
+
+
+//-----------------------------------------------------------------------------
+cv::Point3d operator*(const cv::Matx44d& M, const cv::Point3d& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
 
 //-----------------------------------------------------------------------------
 bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance )
