@@ -366,9 +366,9 @@ std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::W
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
     cv::Point3d point;
-    point.x = dst.at<double>(0,i);
-    point.y = dst.at<double>(1,i);
-    point.z = dst.at<double>(2,i);
+    point.x = dst.at<double>(0,i) / dst.at<double>(3,i);
+    point.y = dst.at<double>(1,i) / dst.at<double>(3,i);
+    point.z = dst.at<double>(2,i) / dst.at<double>(3,i);
     returnPoints.push_back(mitk::WorldPoint (point, p[i].m_Scalar));
   }
   return returnPoints;
@@ -387,9 +387,9 @@ mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
   mitk::WorldPoint  returnPoint;
    
   cv::Point3d point;
-  point.x = dst.at<double>(0,0);
-  point.y = dst.at<double>(1,0);
-  point.z = dst.at<double>(2,0);
+  point.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
+  point.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
+  point.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
   returnPoint = mitk::WorldPoint (point, p.m_Scalar);
   
   return returnPoint;
@@ -411,9 +411,9 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
     cv::Point3d point;
-    point.x = dst.at<double>(0,i);
-    point.y = dst.at<double>(1,i);
-    point.z = dst.at<double>(2,i);
+    point.x = dst.at<double>(0,i) / dst.at<double>(3, i);
+    point.y = dst.at<double>(1,i) / dst.at<double>(3, i);
+    point.z = dst.at<double>(2,i) / dst.at<double>(3, i);
     returnPoints.push_back(point);
   }
   return returnPoints;
@@ -431,9 +431,9 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
   cv::Mat dst = M*src;
   cv::Point3d returnPoint;
   
-  returnPoint.x = dst.at<double>(0,0);
-  returnPoint.y = dst.at<double>(1,0);
-  returnPoint.z = dst.at<double>(2,0);
+  returnPoint.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
+  returnPoint.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
+  returnPoint.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
 
   return returnPoint;
 }
