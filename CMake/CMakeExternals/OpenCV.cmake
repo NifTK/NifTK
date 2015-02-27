@@ -73,9 +73,13 @@ if(BUILD_IGI)
         ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(OpenCV_DIR ${proj_BUILD})
 
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    if(EP_ALWAYS_USE_INSTALL_DIR)
+      set(OpenCV_DIR ${proj_INSTALL)
+      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    else()
+      set(OpenCV_DIR ${proj_BUILD})
+    endif()
 
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 

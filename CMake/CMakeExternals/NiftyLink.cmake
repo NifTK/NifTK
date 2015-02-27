@@ -94,7 +94,7 @@ if(BUILD_IGI)
     set(NiftyLink_SOURCE_DIR ${proj_SOURCE})
     set(OpenIGTLink_DIR ${proj_BUILD}/OPENIGTLINK-build)
 
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")

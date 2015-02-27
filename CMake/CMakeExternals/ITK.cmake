@@ -124,9 +124,12 @@ if(NOT DEFINED ITK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${proj_INSTALL})
-
-  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(ITK_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(ITK_DIR ${proj_BUILD})
+  endif()
 
   message("SuperBuild loading ITK from ${ITK_DIR}")
 

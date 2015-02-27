@@ -57,9 +57,12 @@ if(BUILD_RTK)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(RTK_DIR ${proj_BUILD})
-
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    if(EP_ALWAYS_USE_INSTALL_DIR)
+      set(RTK_DIR ${proj_INSTALL})
+      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    else()
+      set(RTK_DIR ${proj_BUILD})
+    endif()
 
     message("SuperBuild loading RTK from ${RTK_DIR}")
 

@@ -124,7 +124,7 @@ if(NOT DEFINED MITK_DIR)
     )
     set(MITK_DIR ${proj_BUILD}/${proj}-build)
 
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading MITK from ${MITK_DIR}")
 

@@ -51,17 +51,26 @@ endmacro()
 
 macro(niftkMacroDefineExternalProjectVariables project version location)
 
-  niftkMacroGetCommitHashOfCurrentFile(config_version)
+  if (EP_DIRECTORY_PER_VERSION)
 
-  string(SUBSTRING ${config_version} 0 5 config_version)
+    niftkMacroGetCommitHashOfCurrentFile(config_version)
+    string(SUBSTRING ${config_version} 0 5 config_version)
+
+    set(version_subdir "/${config_version}")
+
+  else()
+
+    set(version_subdir "")
+
+  endif()
 
   set(proj ${project})
   set(proj_VERSION ${version})
   set(proj_LOCATION ${location})
-  set(proj_CONFIG ${EP_BASE}/${proj}/${config_version}/cmake)
-  set(proj_SOURCE ${EP_BASE}/${proj}/${config_version}/src)
-  set(proj_BUILD ${EP_BASE}/${proj}/${config_version}/build)
-  set(proj_INSTALL ${EP_BASE}/${proj}/${config_version}/install)
+  set(proj_CONFIG ${EP_BASE}/${proj}${version_subdir}/cmake)
+  set(proj_SOURCE ${EP_BASE}/${proj}${version_subdir}/src)
+  set(proj_BUILD ${EP_BASE}/${proj}${version_subdir}/build)
+  set(proj_INSTALL ${EP_BASE}/${proj}${version_subdir}/install)
   set(proj_DEPENDENCIES "")
   set(${project}_DEPENDS ${project})
 
