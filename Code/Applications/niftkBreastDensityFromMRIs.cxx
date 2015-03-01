@@ -261,6 +261,7 @@ public:
   bool flgCompression;
   bool flgOverwrite;
 
+  bool flgExcludeAxilla;
   bool flgCropFit;
   float coilCropDistance;
 
@@ -268,7 +269,6 @@ public:
   std::string dirOutput;
 
   std::string fileLog;
-  std::string fileOutputCSV;
   std::string fileT1wOutputCSV;
   std::string fileT2wOutputCSV;
 
@@ -306,12 +306,13 @@ public:
   InputParameters( TCLAP::CmdLine &commandLine, 
                    bool verbose, bool flgRegister, bool flgSave, 
                    bool compression, bool debug, bool overwrite,
-                   bool cropFit, float coilCropDist,
+                   bool excludeAxilla, bool cropFit, float coilCropDist,
                    std::string subdirMRI, std::string subdirData, 
                    std::string prefix, 
                    std::string dInput,
                    std::string logfile, 
-                   std::string csvfile,
+                   std::string csvfileT1w,
+                   std::string csvfileT2w,
                    std::string strStructuralT2,
                    std::string strFatSatT1,
                    std::string strDixonWater,
@@ -330,6 +331,7 @@ public:
     flgCompression = compression;
     flgOverwrite = overwrite;
 
+    flgExcludeAxilla = excludeAxilla;
     flgCropFit = cropFit;
     coilCropDistance = coilCropDist;
 
@@ -339,7 +341,8 @@ public:
     dirInput   = dInput;
 
     fileLog = logfile;
-    fileOutputCSV = csvfile;
+    fileT1wOutputCSV = csvfileT1w;
+    fileT2wOutputCSV = csvfileT2w;
 
     strSeriesDescStructuralT2 = strStructuralT2;
     strSeriesDescFatSatT1 = strFatSatT1;
@@ -381,17 +384,22 @@ public:
       teeStream = 0;
     }
 
-    if ( fileOutputCSV.length() > 0 )
+    if ( fileT1wOutputCSV.length() > 0 )
     {
-      fileT1wOutputCSV = niftk::ModifyFileSuffix( fileOutputCSV,  "_T1w.csv" );
       foutOutputT1wCSV = new std::ofstream( fileT1wOutputCSV.c_str() );
 
       if ((! *foutOutputT1wCSV) || foutOutputT1wCSV->bad()) {
         message << "Could not open file: " << fileT1wOutputCSV << std::endl;
         PrintErrorAndExit( message );
       }
+    }
+    else
+    {
+      foutOutputT1wCSV = 0;
+    }
 
-      fileT2wOutputCSV = niftk::ModifyFileSuffix( fileOutputCSV,  "_T2w.csv" );
+    if ( fileT2wOutputCSV.length() > 0 )
+    {
       foutOutputT2wCSV = new std::ofstream( fileT2wOutputCSV.c_str() );
 
       if ((! *foutOutputT2wCSV) || foutOutputT2wCSV->bad()) {
@@ -401,7 +409,6 @@ public:
     }
     else
     {
-      foutOutputT1wCSV = 0;
       foutOutputT2wCSV = 0;
     }
 
@@ -475,9 +482,11 @@ public:
             << "Study directory prefix: " << dirPrefix << std::endl
             << std::endl
             << "Output log file: " << fileLog << std::endl
-            << "Output csv file: " << fileOutputCSV << std::endl
+            << "Output T1w csv file: " << fileT1wOutputCSV << std::endl
+            << "Output T2w csv file: " << fileT2wOutputCSV << std::endl
             << std::endl
             << std::boolalpha
+            << "Exclude the axilla?: " << flgExcludeAxilla << std::endl       
             << "Clip segmentation with fitted surface?: " << flgCropFit << std::endl       
             << std::noboolalpha
             << "MR coil coronal crop distance: " << coilCropDistance << std::endl       
@@ -504,14 +513,20 @@ public:
 
     std::cout << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintError( std::stringstream &message ) {
 
     std::cerr << "ERROR: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintErrorAndExit( std::stringstream &message ) {
@@ -525,7 +540,10 @@ public:
 
     std::cerr << "WARNING: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
 
   void PrintTag( const DictionaryType &dictionary, 
@@ -675,7 +693,7 @@ bool ConvertAffineTransformationMatrixToRegF3D( std::string fileAffineTransformF
   }
   catch ( itk::ExceptionObject &e )
   {
-    message << "ERROR: Failed to read " << fileAffineTransformFullPath << std::endl;
+    message << "Failed to read " << fileAffineTransformFullPath << std::endl;
     args.PrintError( message );
     return false;
   }
@@ -692,7 +710,7 @@ bool ConvertAffineTransformationMatrixToRegF3D( std::string fileAffineTransformF
  
   if( doubleAffine == NULL )
   {
-    message << "ERROR: Could not cast: " << fileAffineTransformFullPath << std::endl;
+    message << "Could not cast: " << fileAffineTransformFullPath << std::endl;
     args.PrintError( message );
     return false;
   }
@@ -1313,7 +1331,7 @@ bool SegmentParenchyma( std::string label,
 
       if ((! fout) || fout.bad()) 
       {
-        message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
+        message << "Could not open file: " << fileDensityMeasurements << std::endl;
         args.PrintError( message );
         return false;
       }
@@ -1410,6 +1428,13 @@ bool ReadFileCSV( InputParameters &args,
 {
   std::stringstream message;
 
+  if ( ! foutOutputCSV )
+  {
+    message << "Output csv stream is not open." << std::endl;
+    args.PrintError( message );
+    return false;
+  }
+
   std::string fileInputDensityMeasurements  
     = niftk::ConcatenatePath( args.dirOutput, fileDensityMeasurements );
 
@@ -1421,7 +1446,7 @@ bool ReadFileCSV( InputParameters &args,
 
       if ((! fin) || fin.bad()) 
       {
-        message << "ERROR: Could not open file: " << fileDensityMeasurements << std::endl;
+        message << "Could not open file: " << fileDensityMeasurements << std::endl;
         args.PrintError( message );
         return false;
       }
@@ -1516,9 +1541,9 @@ int main( int argc, char *argv[] )
   InputParameters args( commandLine, 
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
-                        flgCropFit, coilCropDistance,
+                        flgExcludeAxilla, flgCropFit, coilCropDistance,
                         dirSubMRI, dirSubData, dirPrefix, dirInput,
-                        fileLog, fileOutputCSV,
+                        fileLog, fileT1wOutputCSV, fileT2wOutputCSV,
                         strSeriesDescStructuralT2,
                         strSeriesDescFatSatT1,
                         strSeriesDescDixonWater,
@@ -2186,6 +2211,7 @@ int main( int argc, char *argv[] )
 
         breastMaskSegmentor->SetSigmaBIF( sigmaBIF );
 
+        breastMaskSegmentor->SetCropFit( flgExcludeAxilla );
         breastMaskSegmentor->SetCropFit( flgCropFit );
         breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
           

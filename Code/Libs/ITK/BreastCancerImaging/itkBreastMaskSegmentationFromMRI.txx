@@ -49,6 +49,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   flgRegGrowZcoord = false;
 
   flgCropWithFittedSurface = false;
+  flgExcludeAxilla = false;
 
   regGrowXcoord = 0;
   regGrowYcoord = 0;
@@ -1883,7 +1884,192 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
         thresholder->Update();
   
         imSkinElevationMap = thresholder->GetOutput();
+        imSkinElevationMap->DisconnectPipeline();  
+
       }
+
+      // Include the axilla?
+
+      if ( ! flgExcludeAxilla )
+      {        
+        typename AxialImageType::RegionType lateralRegion;
+        typename AxialImageType::IndexType  lateralStart;
+        typename AxialImageType::SizeType   lateralSize;
+
+        typedef itk::ImageRegionIteratorWithIndex< AxialImageType > AxialLateralIteratorType;  
+
+        typename AxialImageType::IndexType idx;
+
+        typename AxialImageType::IndexType idxMostLeftLateralAndSuperior;
+        typename AxialImageType::IndexType idxMostLeftMedialAndInferior;
+
+        // Start iterating over the left-hand side
+
+        lateralRegion = region2D;
+
+        lateralStart = start2D;  
+        lateralSize = size2D;
+
+        std::cout << "Size: " << lateralSize << std::endl;
+
+        lateralSize[0] = lateralSize[0]/2;
+        lateralRegion.SetSize(  lateralSize );
+
+        std::cout << "Size: " << lateralSize << std::endl;
+
+        idxMostLeftLateralAndSuperior = nippleLeftIndex;
+        idxMostLeftMedialAndInferior  = nippleLeftIndex;
+
+        if ( flgVerbose )
+          std::cout << "Iterating over left region: " << lateralRegion << std::endl;
+
+        AxialLateralIteratorType itLeftRegion( imSkinElevationMap, lateralRegion );
+
+        for ( itLeftRegion.GoToBegin(); 
+              ! itLeftRegion.IsAtEnd();
+              ++itLeftRegion )
+        {
+          if ( itLeftRegion.Get() )
+          {
+            idx = itLeftRegion.GetIndex();
+
+            if ( idx[0] < idxMostLeftLateralAndSuperior[0] )
+            {
+              idxMostLeftLateralAndSuperior[0] = idx[0];
+            }
+
+            if ( idx[1] > idxMostLeftLateralAndSuperior[1] )
+            {
+              idxMostLeftLateralAndSuperior[1] = idx[1];
+            }
+
+            if ( idx[0] > idxMostLeftMedialAndInferior[0] )
+            {
+              idxMostLeftMedialAndInferior[0] = idx[0];
+            }
+
+            if ( idx[1] < idxMostLeftMedialAndInferior[1] )
+            {
+             idxMostLeftMedialAndInferior[1] = idx[1];
+            }
+          }
+        }
+        
+        lateralSize[0] = nippleLeftIndex[0] - idxMostLeftLateralAndSuperior[0];
+        lateralSize[1] = idxMostLeftLateralAndSuperior[1] - nippleLeftIndex[1];
+        
+        lateralRegion.SetSize( lateralSize );
+
+        idx[0] = idxMostLeftLateralAndSuperior[0];
+        idx[1] = nippleLeftIndex[1];
+
+        lateralRegion.SetIndex( idx );
+        
+        if ( flgVerbose )
+          std::cout << "Iterating over left axilla region: " << lateralRegion << std::endl;
+        
+        AxialLateralIteratorType itLeftAxilla( imSkinElevationMap, lateralRegion );
+
+        for ( itLeftAxilla.GoToBegin(); 
+              ! itLeftAxilla.IsAtEnd();
+              ++ itLeftAxilla )
+        {
+          itLeftAxilla.Set( 1000 );
+        }
+
+        // Iterate over the right-hand side
+
+        typename AxialImageType::IndexType idxMostRightLateralAndSuperior;
+        typename AxialImageType::IndexType idxMostRightMedialAndInferior;
+
+        lateralRegion = region2D;
+
+        lateralStart = start2D;  
+        lateralSize = size2D;
+
+        std::cout << "Size: " << lateralSize << std::endl;
+
+        lateralSize[0] = lateralSize[0]/2;
+        lateralRegion.SetSize(  lateralSize );
+
+        std::cout << "Size: " << lateralSize << std::endl;
+
+        lateralStart[0] = lateralSize[0];  
+        lateralRegion.SetIndex( lateralStart );
+
+        idxMostRightLateralAndSuperior = nippleRightIndex;
+        idxMostRightMedialAndInferior  = nippleRightIndex;
+
+        if ( flgVerbose )
+          std::cout << "Iterating over right region: " << lateralRegion << std::endl;
+
+        AxialLateralIteratorType itRightRegion( imSkinElevationMap, lateralRegion );
+
+        for ( itRightRegion.GoToBegin(); 
+              ! itRightRegion.IsAtEnd();
+              ++itRightRegion )
+        {
+          if ( itRightRegion.Get() )
+          {
+            idx = itRightRegion.GetIndex();
+
+            if ( idx[0] > idxMostRightLateralAndSuperior[0] )
+            {
+              idxMostRightLateralAndSuperior[0] = idx[0];
+            }
+
+            if ( idx[1] > idxMostRightLateralAndSuperior[1] )
+            {
+              idxMostRightLateralAndSuperior[1] = idx[1];
+            }
+
+            if ( idx[0] < idxMostRightMedialAndInferior[0] )
+            {
+              idxMostRightMedialAndInferior[0] = idx[0];
+            }
+
+            if ( idx[1] < idxMostRightMedialAndInferior[1] )
+            {
+             idxMostRightMedialAndInferior[1] = idx[1];
+            }
+          }
+        }
+        
+        lateralSize[0] = idxMostRightLateralAndSuperior[0] - nippleRightIndex[0];
+        lateralSize[1] = idxMostRightLateralAndSuperior[1] - nippleRightIndex[1];
+        
+        lateralRegion.SetSize( lateralSize );
+
+        idx[0] = nippleRightIndex[0];
+        idx[1] = nippleRightIndex[1];
+
+        lateralRegion.SetIndex( idx );
+        
+        if ( flgVerbose )
+          std::cout << "Iterating over right axilla region: " << lateralRegion << std::endl;
+        
+        AxialLateralIteratorType itRightAxilla( imSkinElevationMap, lateralRegion );
+
+        for ( itRightAxilla.GoToBegin(); 
+              ! itRightAxilla.IsAtEnd();
+              ++itRightAxilla )
+        {
+          itRightAxilla.Set( 1000 );
+        }
+
+        if ( flgVerbose )
+          std::cout << "Left bounding box from: " 
+                    << idxMostLeftLateralAndSuperior 
+                    << " to: "
+                    << idxMostLeftMedialAndInferior
+                    << std::endl
+                    << "Right bounding box from: " 
+                    << idxMostRightLateralAndSuperior 
+                    << " to: "
+                    << idxMostRightMedialAndInferior
+                    << std::endl;
+      }
+
 
       // Write the image to a file
 

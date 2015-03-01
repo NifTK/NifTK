@@ -208,6 +208,7 @@ public:
   
   void SetOutputPectoralSurf( std::string fn ) { fileOutputPectoralSurfaceVoxels = fn; }
   
+  void SetExcludeAxilla( bool flag ) { flgExcludeAxilla = flag; }
   void SetCropFit( bool flag ) { flgCropWithFittedSurface = flag; }
   void SetOutputBreastFittedSurfMask( std::string fn ) { fileOutputFittedBreastMask = fn; }
 
@@ -297,6 +298,7 @@ protected:
   bool flgRegGrowZcoord;
 
   bool flgCropWithFittedSurface;
+  bool flgExcludeAxilla;
 
   unsigned int i;
 

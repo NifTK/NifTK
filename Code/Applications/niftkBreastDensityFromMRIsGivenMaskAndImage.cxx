@@ -431,14 +431,20 @@ public:
 
     std::cout << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintError( std::stringstream &message ) {
 
     std::cerr << "ERROR: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintErrorAndExit( std::stringstream &message ) {
@@ -452,7 +458,10 @@ public:
 
     std::cerr << "WARNING: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
 
   bool ReadImageFromFile( std::string fileInput, 
