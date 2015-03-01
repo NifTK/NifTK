@@ -30,14 +30,25 @@
       <longflag>log</longflag>
       <description>Output file to store progress logging info.</description>
       <label>Log file</label>
+      <default>Log.txt</default>
       <channel>output</channel>
     </file>
 
     <file>
-      <name>fileOutputCSV</name>
-      <flag>o</flag>
-      <description>Output csv file containing density measurements.</description>
-      <label>Output csv file</label>
+      <name>fileT1wOutputCSV</name>
+      <longflag>oT1w</longflag>
+      <description>Output csv file containing density measurements for T1w.</description>
+      <label>Output T1w csv file</label>
+      <default>BreastDensityFromT1w.csv</default>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>fileT2wOutputCSV</name>
+      <longflag>oT2w</longflag>
+      <description>Output csv file containing density measurements for T2w.</description>
+      <label>Output T2w csv file</label>
+      <default>BreastDensityFromT2w.csv</default>
       <channel>output</channel>
     </file>
 
@@ -114,10 +125,18 @@
     <description><![CDATA[Parameters to modify the breast mask segmentation.]]></description>
 
     <boolean>
+      <name>flgExcludeAxilla</name>
+      <longflag>excludeAxilla</longflag>
+      <description>Exclude the axilla region from the segmentation [default: no].</description>
+      <label>Exclude the axilla?</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
       <name>flgCropFit</name>
       <longflag>cropfit</longflag>
-      <description>A anterior breast skin surface is extrapolated and used to clip the breast mask segmentation [default: no].</description>
-      <label>Clip breast mask by extrapolating the skin surface</label>
+      <description>The anterior breast skin surface is extrapolated and used to clip the breast mask segmentation [default: no].</description>
+      <label>Clip breast mask by extrapolating the skin surface?</label>
       <default>false</default>
     </boolean>
 
@@ -137,19 +156,19 @@
     <description><![CDATA[DICOM Series Descriptions]]></description>
 
     <string>
-      <name>strSeriesDescStructuralT2</name>
-      <longflag>seriesStructural</longflag>
-      <description>The value of the DICOM series description tag (0008|103e) which identifies the structural image in which fat has a high intensity.</description>
-      <label>Structural image series description</label>
-      <default>t2_tse_tra</default>
-    </string>
-
-    <string>
       <name>strSeriesDescFatSatT1</name>
       <longflag>seriesAdditional</longflag>
       <description>The value of the DICOM series description tag (0008|103e) which identifies a complementary second image with a different intensity distribution to the structural image above.</description>
-      <label>Complementary image series description</label>
+      <label>T1w MR image series description</label>
       <default>t1_fl3d_tra_VIBE</default>
+    </string>
+
+    <string>
+      <name>strSeriesDescStructuralT2</name>
+      <longflag>seriesStructural</longflag>
+      <description>The value of the DICOM series description tag (0008|103e) which identifies the structural image in which fat has a high intensity.</description>
+      <label>T2w MR image series description</label>
+      <default>t2_tse_tra</default>
     </string>
 
     <string>
