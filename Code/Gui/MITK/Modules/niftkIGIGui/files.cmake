@@ -20,6 +20,7 @@ set(CPP_FILES
   Common/QmitkUltrasoundPinCalibrationWidget.cxx
   Common/QmitkImageAndTransformSenderWidget.cxx
   Common/QmitkMatrixWidget.cxx
+  Common/QmitkCalibratedModelRenderingPipeline.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
   DataSources/QmitkIGITimerBasedThread.cxx
@@ -50,6 +51,7 @@ set(MOC_H_FILES
   Common/QmitkUltrasoundPinCalibrationWidget.h
   Common/QmitkImageAndTransformSenderWidget.h
   Common/QmitkMatrixWidget.h
+  Common/QmitkCalibratedModelRenderingPipeline.h
   DataSources/TrackerControlsWidget.h
   DataSources/QmitkIGITimerBasedThread.h
 #  DataSources/QmitkFiducialRegistrationWidgetDialog.h

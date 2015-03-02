@@ -19,32 +19,32 @@
       <label>Output Tracking Model</label>
       <channel>output</channel>
     </file>
+  </parameters>
+  
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Various optional parameters]]></description>
+    <file fileExtensions=".mps">
+      <name>outputTrackingPointSet</name>
+      <longflag>outputTrackingPointSet</longflag>
+      <description>Output MITK PointSet equivalent to outputTrackingModel.</description>
+      <label>Output PointSet</label>
+      <channel>output</channel>
+    </file>
     <file fileExtensions=".vtk">
       <name>outputVisualisationModel</name>
       <longflag>outputVisualisationModel</longflag>
-      <description>Output VTK file (vtkPolyData) for visualisation.</description>
+      <description>Output VTK file (vtkPolyData) for visualisation with texture.</description>
       <label>Output Visualisation Model</label>
       <channel>output</channel>
     </file>
     <file fileExtensions=".vtk">
       <name>outputPhotoConsistencyModel</name>
       <longflag>outputPhotoConsistencyModel</longflag>
-      <description>Output VTK file (vtkPolyData) for photo-consistency.</description>
-      <label>Output Photoconsistency Model</label>
+      <description>Output VTK file (vtkPolyData) with very densely sampled points, suitable for Photo-Consistency type work.</description>
+      <label>Output Photo-Consistency Model</label>
       <channel>output</channel>
     </file>
-    <file fileExtensions=".png,.jpg">
-      <name>textureMap</name>
-      <longflag>textureMap</longflag>
-      <description>Optional texture map image.</description>
-      <label>Texture Map</label>
-      <channel>input</channel>
-    </file>
-  </parameters>
-  
-  <parameters>
-    <label>Probe Parameters</label>
-    <description><![CDATA[Parameters for probe geometry]]></description>  
     <float>
       <name>diameter</name>
       <longflag>diameter</longflag>
@@ -129,5 +129,12 @@
         <step>1</step>
       </constraints>
     </integer>
+    <boolean>
+      <name>fullTrackingModel</name>
+      <longflag>fullTrackingModel</longflag>
+      <description>Output tracking points for each square as well as corners (default).</description>
+      <label>Full Tracking Model</label>
+      <default>false</default>
+    </boolean>
   </parameters>
 </executable>

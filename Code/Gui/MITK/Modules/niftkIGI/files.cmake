@@ -30,6 +30,7 @@ set(CPP_FILES
   # this one does not depend on pcl!
   PointClouds/mitkMergePointClouds.cxx
   CentreLines/mitkBifurcationToPointSet.cxx
+  Rendering/vtkCalibratedModelRenderingPipeline.cxx
 )
 
 if(BUILD_PCL)
