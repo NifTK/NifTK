@@ -49,7 +49,7 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
     throw niftk::IOException(oss.str());
   }
 
-  m_InputStream.open(fileName);
+  m_InputStream.open(fileName.c_str());
   if (!m_InputStream.is_open())
   {
     std::ostringstream oss;
