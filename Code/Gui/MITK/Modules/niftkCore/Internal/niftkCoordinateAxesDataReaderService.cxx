@@ -54,7 +54,7 @@ std::vector< itk::SmartPointer<mitk::BaseData> > CoordinateAxesDataReaderService
   std::vector< itk::SmartPointer<mitk::BaseData> > result;
 
   std::string fileName = this->GetInputLocation();
-  MITK_INFO << "Reading .4x4 transform from:" << fileName << std::endl;
+  MITK_DEBUG << "Reading .4x4 transform from:" << fileName << std::endl;
 
   vtkSmartPointer<vtkMatrix4x4> matrix = mitk::LoadVtkMatrix4x4FromFile(fileName);
   mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
