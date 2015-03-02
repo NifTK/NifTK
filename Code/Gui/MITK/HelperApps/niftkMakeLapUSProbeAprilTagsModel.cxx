@@ -31,6 +31,8 @@
 #include <vtkTriangleFilter.h>
 #include <vtkDecimatePro.h>
 #include <vtkCleanPolyData.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
 
 void ConvertGridPointToCyclinderPoint(int pointId,
                                       int lengthCounter, int widthCounter,
@@ -41,6 +43,7 @@ void ConvertGridPointToCyclinderPoint(int pointId,
                                       double offsetXInMillimetres,
                                       double offsetYInMillimetres,
                                       double radius,
+                                      mitk::PointSet::Pointer pointSet,
                                       vtkPoints *points,
                                       vtkDoubleArray *normals,
                                       vtkIntArray *pointIds,
@@ -79,6 +82,13 @@ void ConvertGridPointToCyclinderPoint(int pointId,
   pointIds->InsertNextTuple1(pointId);
   vertices->InsertNextCell(1);
   vertices->InsertCellPoint(points->GetNumberOfPoints() - 1);
+
+  mitk::Point3D point;
+  point[0] = cylinderPoint[0];
+  point[1] = cylinderPoint[1];
+  point[2] = cylinderPoint[2];
+
+  pointSet->InsertPoint(pointId, point);
 }
 
 
@@ -90,11 +100,7 @@ int main(int argc, char** argv)
   // To parse command line args.
   PARSE_ARGS;
 
-  if (    outputTrackingModel.length() == 0
-       || outputVisualisationModel.length() == 0
-       || outputPhotoConsistencyModel.length() == 0
-       || textureMap.length() == 0
-       )
+  if (outputTrackingModel.length() == 0)
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
@@ -145,12 +151,16 @@ int main(int argc, char** argv)
   std::cout << "Cylinder circumference         = " << circumference << std::endl;
   std::cout << "Cylinder radius                = " << radius << std::endl;
 
-  // Aim is:
-  // 1. to make wrap the coordinates of the corner of each tag, and the centre of each tag around a cylinder.
+  // For a tracking model, aim is:
+  // 1. To take the coordinates of the corner of each tag, and the centre of each tag, and wrap around a cylinder.
   // 2. We also want surface normals.
-  // 3. Z axis = along the probe.
-  // 4. Right hand coordinate system.
-  // 5. Origin is the centre of the probe, aligned with the face .... i.e. NOT including the white border.
+  // 3. Right hand coordinate system.
+  // 4. Z axis = along the probe. Far end, to nearest end.
+  // 5. Origin is on the central longitudinal axis of the probe,
+  //    aligned with the face .... i.e. NOT including the white border.
+  // 6. Y axis = vertically up, away from the ultrasound transducer, X axis follows from points 3,4 and 6.
+
+  mitk::PointSet::Pointer mitkPoints = mitk::PointSet::New();
 
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
@@ -177,11 +187,29 @@ int main(int argc, char** argv)
     {
       int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
 
-      ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, centreOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         0,                         radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, 0,                         radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, cornerOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         cornerOffsetInMillimetres, radius, points, normals, pointIDArray, vertices);
+      // This does the centre point.
+      if (fullTrackingModel)
+      {
+        ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, centreOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+      }
+
+      // This does the 4 corners.
+      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, 0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+
+      // Its a 7x7 grid. We also want the centre of each square.
+      if (fullTrackingModel)
+      {
+        for (int j = 0; j < 7; j++)
+        {
+          for (int i = 0; i < 7; i++)
+          {
+            ConvertGridPointToCyclinderPoint((pointID+(50 + ((j*7)+i))* 1000), lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, (i+0.5)*borderSizeInMillimetres, (j+0.5)*borderSizeInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+          }
+        }
+      }
     }
   }
 
@@ -198,10 +226,15 @@ int main(int argc, char** argv)
 
   std::cout << "written tracking model to      = " << outputTrackingModel << std::endl;
 
-  // So, if outputVisualisationModel is supplied we also output a VTK surface model just
-  // for overlay purposes onto a video overlay. Here we just create an open ended cyclinder.
+  if (outputTrackingPointSet.size() > 0)
+  {
+    mitk::IOUtil::SavePointSet(mitkPoints, outputTrackingPointSet);
+    std::cout << "written tracking point set to = " << outputTrackingPointSet << std::endl;
+  }
 
-  if (outputVisualisationModel.size() > 0)
+  // So, if outputVisualisationModel is supplied we also output a VTK surface model just for visualisation.
+
+  if (outputVisualisationModel.size() > 0 || outputPhotoConsistencyModel.size() > 0)
   {
     // Generate an open ended cylinder, along +z axis.
     // Note each quad is completely independant.
@@ -264,7 +297,7 @@ int main(int argc, char** argv)
 
         quads->InsertNextCell(4, pointsFor1Quad);
       }
-    }
+    } // end for
 
     // Now generate texture coords for each point on visualisation model.
 
@@ -333,26 +366,36 @@ int main(int argc, char** argv)
     // Photo-consistency model.
     vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkSmartPointer<vtkCleanPolyData>::New();
     cleanFilter->SetInputData(polyData2);
+    cleanFilter->Update();
 
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
     writer->SetInputData(cleanFilter->GetOutput());
-    writer->SetFileName(outputPhotoConsistencyModel.c_str());
-    writer->Update();
+    if (outputPhotoConsistencyModel.size() > 0)
+    {
+      writer->SetFileName(outputPhotoConsistencyModel.c_str());
+      writer->Update();
 
-    std::cout << "written photo consistency model to = " << outputPhotoConsistencyModel << std::endl;
+      std::cout << "written photo-consistency model to = " << outputPhotoConsistencyModel << std::endl;
+    }
 
     vtkSmartPointer<vtkPolyDataNormals> normalsFilter = vtkSmartPointer<vtkPolyDataNormals>::New();
     normalsFilter->SetInputData(polyData2);
     normalsFilter->FlipNormalsOn();
+    normalsFilter->Update();
 
     vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
     triangleFilter->SetInputData(normalsFilter->GetOutput());
+    triangleFilter->Update();
 
     writer->SetInputData(triangleFilter->GetOutput());
-    writer->SetFileName(outputVisualisationModel.c_str());
-    writer->Update();
 
-    std::cout << "written visualisation model to = " << outputVisualisationModel << std::endl;
+    if (outputVisualisationModel.size() > 0)
+    {
+      writer->SetFileName(outputVisualisationModel.c_str());
+      writer->Update();
+
+      std::cout << "written visualisation model to = " << outputVisualisationModel << std::endl;
+    }
   }
 
   return EXIT_SUCCESS;
