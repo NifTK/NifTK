@@ -81,6 +81,7 @@ if(NOT DEFINED VTK_DIR)
   endif(APPLE)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -88,14 +89,13 @@ if(NOT DEFINED VTK_DIR)
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DVTK_USE_RPATH:BOOL=ON
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=${VTK_USE_SYSTEM_FREETYPE}
         -DVTK_USE_GUISUPPORT:BOOL=ON
@@ -107,8 +107,13 @@ if(NOT DEFINED VTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  #set(VTK_DIR ${proj_INSTALL})
-  set(VTK_DIR ${proj_INSTALL}/lib/cmake/vtk-6.1)
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(VTK_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(VTK_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

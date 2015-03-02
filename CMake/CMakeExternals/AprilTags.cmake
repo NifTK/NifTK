@@ -38,6 +38,7 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -45,19 +46,22 @@ if(BUILD_IGI)
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
-        "-DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS} ${APRILTAGS_CXX_FLAGS}"
-        "-DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS} ${APRILTAGS_C_FLAGS}"
+        "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${APRILTAGS_CXX_FLAGS}"
+        "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${APRILTAGS_C_FLAGS}"
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(apriltags_DIR ${proj_INSTALL})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading AprilTags from ${apriltags_DIR}")
 
   else(NOT DEFINED apriltags_DIR)

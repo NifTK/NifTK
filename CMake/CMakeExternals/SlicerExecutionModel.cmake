@@ -12,7 +12,6 @@
 #
 #============================================================================*/
 
-
 #-----------------------------------------------------------------------------
 # SlicerExecutionModel
 #-----------------------------------------------------------------------------
@@ -31,6 +30,7 @@ set(proj_DEPENDENCIES ITK)
 if(NOT DEFINED SlicerExecutionModel_DIR)
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
     SOURCE_DIR ${proj_SOURCE}
     BINARY_DIR ${proj_BUILD}
@@ -39,19 +39,23 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     URL_MD5 ${proj_CHECKSUM}
     UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
     INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       ${additional_cmake_args}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DSlicerExecutionModel_USE_JSONCPP:BOOL=OFF
-      -DITK_DIR:PATH=${ITK_DIR}/../../../../build
+      -DITK_DIR:PATH=${ITK_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(SlicerExecutionModel_DIR ${proj_BUILD})
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(SlicerExecutionModel_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(SlicerExecutionModel_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 
 else(NOT DEFINED SlicerExecutionModel_DIR)

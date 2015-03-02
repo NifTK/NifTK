@@ -33,6 +33,7 @@ if(BUILD_IGI AND BUILD_PCL)
   if(NOT DEFINED PCL_DIR)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -40,10 +41,10 @@ if(BUILD_IGI AND BUILD_PCL)
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}
         -DBOOST_INCLUDEDIR:PATH=${BOOST_ROOT}/include
         -DBOOST_LIBRARYDIR:PATH=${BOOST_ROOT}/lib
@@ -57,11 +58,11 @@ if(BUILD_IGI AND BUILD_PCL)
         -DBUILD_tools:BOOL=OFF
       DEPENDS ${proj_DEPENDENCIES}
     )
-    if(WIN32)
-      set(PCL_DIR ${proj_INSTALL}/cmake)
-    else()
-      set(PCL_DIR ${proj_INSTALL}/share/pcl-1.8)
-    endif()
+
+    set(PCL_DIR ${proj_INSTALL})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading PCL from ${PCL_DIR}")
 
   else(NOT DEFINED PCL_DIR)

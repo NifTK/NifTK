@@ -15,51 +15,108 @@
 include(ExternalProject)
 
 set(EP_BASE "${CMAKE_BINARY_DIR}" CACHE PATH "Directory where the external projects are configured and built")
-mark_as_advanced(EP_BASE)
 set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 
-# For external projects like ITK, VTK we always want to turn their testing targets off.
-set(EP_BUILD_TESTING OFF)
-set(EP_BUILD_EXAMPLES OFF)
-set(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+
+# This option makes different versions of the same external project build in separate directories.
+# This allows switching branches in the NifTK source code and build NifTK quickly, even if the
+# branches use different versions of the same library. A given version of an EP will be built only
+# once. A drawback is that the EP_BASE directory can become big easily.
+# Note:
+# If you switch branches that need different versions of EPs, you might need to delete the
+# NifTK-configure timestamp manually before doing a superbuild. Without that the CMake cache is
+# not regenerated and it may still store the paths to the EP versions that belong to the original
+# branch (from which you switch). You have been warned.
+
+set(EP_DIRECTORY_PER_VERSION TRUE CACHE BOOL "Use separate directories for different versions of the same external project.")
+
+# Ideally every EP should be built and installed, and the dependent projects (another EP or NifTK)
+# should use them from their install directory. This would be particularly important for ITK
+# because the include directories in the build directory are too many and too long what makes
+# cl.exe (Visual Studio compiler) crash with buffer overflow.
+# However, enabling this option breaks the packaging.
+
+set(EP_ALWAYS_USE_INSTALL_DIR FALSE CACHE BOOL "Use GDCM, ITK and VTK from their install directory. It breaks the packaging.")
+
+# Compute -G arg for configuring external projects with the same CMake generator:
+if(CMAKE_EXTRA_GENERATOR)
+  set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
+else()
+  set(gen "${CMAKE_GENERATOR}")
+endif()
 
 if(MSVC)
-  set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
-  set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
   # we want symbols, even for release builds!
-  set(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /debug")
-  set(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /debug")
-  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /debug")
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /debug")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
   set(CMAKE_CXX_WARNING_LEVEL 0)
 else()
   if(${BUILD_SHARED_LIBS})
-    set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -DLINUX_EXTRA")
-    set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX_EXTRA")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLINUX_EXTRA")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX_EXTRA")
   else()
-    set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DLINUX_EXTRA")
-    set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DLINUX_EXTRA")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DLINUX_EXTRA")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DLINUX_EXTRA")
   endif()
-  # These are not relevant for linux but we set them anyway to keep
-  # the variable bits below symmetric.
-  set(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-  set(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
-  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 endif()
 
+
+# Experimental code to install external project libraries with RPATH.
+# It is used when EP_ALWAYS_USE_INSTALL_DIR is enabled.
+# It is known to break the packaging on Mac and Linux.
+set(INSTALL_WITH_RPATH ${EP_ALWAYS_USE_INSTALL_DIR})
+
+if (INSTALL_WITH_RPATH)
+
+  # This is a workaround for passing linker flags
+  # actually down to the linker invocation
+  set(_cmake_required_flags_orig ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS "-Wl,-rpath")
+  mitkFunctionCheckCompilerFlags(${CMAKE_REQUIRED_FLAGS} _has_rpath_flag)
+  set(CMAKE_REQUIRED_FLAGS ${_cmake_required_flags_orig})
+
+  set(_install_rpath_linkflag )
+  if(_has_rpath_flag)
+    if(APPLE)
+      set(_install_rpath_linkflag "-Wl,-rpath,@loader_path/../lib")
+    else()
+      set(_install_rpath_linkflag "-Wl,-rpath='$ORIGIN/../lib'")
+    endif()
+  endif()
+
+  set(_install_rpath)
+  if(APPLE)
+    set(_install_rpath "@loader_path/../lib")
+  elseif(UNIX)
+    # this work for libraries as well as executables
+    set(_install_rpath "\$ORIGIN/../lib")
+  endif()
+
+endif (INSTALL_WITH_RPATH)
+
 set(EP_COMMON_ARGS
-  -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-  -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+  -DCMAKE_CXX_EXTENSIONS:STRING=${CMAKE_CXX_EXTENSIONS}
+  -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+  -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
+  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+  -DCMAKE_INCLUDE_PATH:PATH=${CMAKE_INCLUDE_PATH}
+  -DCMAKE_LIBRARY_PATH:PATH=${CMAKE_LIBRARY_PATH}
+
+  -DBUILD_SHARED_LIBS:BOOL=ON
+  -DBUILD_TESTING:BOOL=OFF
+  -DBUILD_EXAMPLES:BOOL=OFF
   -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
   -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
   -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
   -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
   -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-  -DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS}
-  -DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS}
-  -DCMAKE_EXE_LINKER_FLAGS:STRING=${EP_COMMON_EXE_LINKER_FLAGS}
-  -DCMAKE_MODULE_LINKER_FLAGS:STRING=${EP_COMMON_MODULE_LINKER_FLAGS}
-  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${EP_COMMON_SHARED_LINKER_FLAGS}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
   #debug flags
   -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG}
   -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
@@ -69,7 +126,19 @@ set(EP_COMMON_ARGS
   #relwithdebinfo
   -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
+  #link flags
+  -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
+  -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
 )
+
+if(INSTALL_WITH_RPATH)
+  set(EP_COMMON_ARGS
+       -DCMAKE_MACOSX_RPATH:BOOL=TRUE
+       "-DCMAKE_INSTALL_RPATH:STRING=${_install_rpath}"
+       ${EP_COMMON_ARGS}
+      )
+endif()
 
 if(APPLE)
   set(EP_COMMON_ARGS
@@ -104,13 +173,6 @@ foreach(NIFTK_APP ${NIFTK_APPS})
 
   # Add to list.
 endforeach()
-
-# Compute -G arg for configuring external projects with the same CMake generator:
-if(CMAKE_EXTRA_GENERATOR)
-  set(GEN "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
-else()
-  set(GEN "${CMAKE_GENERATOR}")
-endif()
 
 ######################################################################
 # Include NifTK helper macros
@@ -226,14 +288,16 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   endif()
 
   ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     BINARY_DIR ${proj}-build
     PREFIX ${proj}-cmake
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       ${NIFTK_APP_OPTIONS}
       -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}

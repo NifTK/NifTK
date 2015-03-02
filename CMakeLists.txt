@@ -36,7 +36,7 @@ mark_as_advanced(NIFTK_VERSION_PATCH)
 if(WIN32)
   cmake_minimum_required(VERSION 3.1)
 else()
-  cmake_minimum_required(VERSION 2.8.9)
+  cmake_minimum_required(VERSION 2.8.12)
 endif()
 
 ######################################################################
@@ -315,6 +315,7 @@ set(CMAKE_MODULE_PATH
 include(mitkMacroEmptyExternalProject)
 include(mitkFunctionGetVersion)
 include(mitkFunctionGetGccVersion)
+include(mitkFunctionCheckCompilerFlags)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroGetGitBranch)
 include(niftkMacroBuildCLI)
@@ -1388,7 +1389,7 @@ if(WIN32)
 
     # if we didnt build pcl then substitute some benign empty path instead of potential garbage.
     if(BUILD_PCL)
-      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/../bin")
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/bin")
     else()
       set(PCL_BIN_PATH_FOR_BATCH_FILE "")
     endif()
@@ -1474,8 +1475,6 @@ foreach(target_to_export ${targets_to_export})
     set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
   endif()
 endforeach()
-
-get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
 
 set(VISIBILITY_AVAILABLE 0)
 set(visibility_test_flag "")

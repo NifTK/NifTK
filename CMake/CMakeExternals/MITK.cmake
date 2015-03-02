@@ -22,7 +22,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "97c899f2a7")
+set(version "f28147e10f")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -80,17 +80,10 @@ if(NOT DEFINED MITK_DIR)
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
-      set(BOOST_INCLUDEDIR ${BOOST_INCLUDEDIR} CACHE PATH \"Path to Boost include directory\")
-      set(BOOST_LIBRARYDIR ${BOOST_LIBRARYDIR} CACHE PATH \"Path to Boost library directory\")
-      set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"Path to DCMTK installation directory\")
     ")
 
-    set(mitk_additional_library_search_paths)
-    if(BUILD_IGI)
-      list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib ${apriltags_LIBRARY_DIRS} ${FLANN_DIR}/lib ${PCL_DIR}/lib)
-    endif()
-
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -99,11 +92,10 @@ if(NOT DEFINED MITK_DIR)
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
-      CMAKE_CACHE_ARGS
+      CMAKE_GENERATOR ${gen}
+      CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DMITK_BUILD_TUTORIAL:BOOL=OFF
         -DMITK_BUILD_ALL_PLUGINS:BOOL=OFF
         -DMITK_USE_QT:BOOL=${QT_FOUND}
@@ -112,12 +104,11 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
         -DMITK_USE_Boost:BOOL=ON
-        -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
+        -DMITK_USE_Boost_LIBRARIES:STRING=filesystem^^system^^date_time
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
-        -DMITK_ADDITIONAL_LIBRARY_SEARCH_PATHS:STRING=${mitk_additional_library_search_paths}
         -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
@@ -132,6 +123,9 @@ if(NOT DEFINED MITK_DIR)
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(MITK_DIR ${proj_BUILD}/${proj}-build)
+
+#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading MITK from ${MITK_DIR}")
 
 else()

@@ -38,6 +38,7 @@ if(BUILD_IGI)
     set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -47,9 +48,10 @@ if(BUILD_IGI)
       UPDATE_COMMAND  ""
       INSTALL_COMMAND ""
       PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
-      CMAKE_GENERATOR ${GEN}
-      CMAKE_CACHE_ARGS
+      CMAKE_GENERATOR ${gen}
+      CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_opencv_core:BOOL=ON
         -DBUILD_opencv_calib3d:BOOL=ON
         -DBUILD_opencv_features2d:BOOL=ON
@@ -60,8 +62,6 @@ if(BUILD_IGI)
         -DBUILD_opencv_java:BOOL=OFF
         -DBUILD_opencv_nonfree:BOOL=${OPENCV_WITH_NONFREE}
         -DBUILD_DOCS:BOOL=OFF
-        -DBUILD_TESTS:BOOL=OFF
-        -DBUILD_EXAMPLES:BOOL=OFF
         -DBUILD_DOXYGEN_DOCS:BOOL=OFF
         -DBUILD_PERF_TESTS:BOOL=OFF
         -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
@@ -73,7 +73,14 @@ if(BUILD_IGI)
         ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(OpenCV_DIR ${proj_BUILD})
+
+    if(EP_ALWAYS_USE_INSTALL_DIR)
+      set(OpenCV_DIR ${proj_INSTALL)
+      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    else()
+      set(OpenCV_DIR ${proj_BUILD})
+    endif()
+
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 
   else()

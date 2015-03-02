@@ -33,26 +33,26 @@ if(BUILD_NIFTYSEG)
   if(NOT DEFINED NIFTYSEG_ROOT)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       #CONFIGURE_COMMAND ""
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       #BUILD_COMMAND ""
       #INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DUSE_OPENMP:BOOL=OFF
         -DINSTALL_PRIORS:BOOL=ON
         -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DUSE_SYSTEM_EIGEN=ON
         -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
       DEPENDS ${proj_DEPENDENCIES}
@@ -61,6 +61,8 @@ if(BUILD_NIFTYSEG)
     set(NIFTYSEG_ROOT ${proj_INSTALL})
     set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
     set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
 

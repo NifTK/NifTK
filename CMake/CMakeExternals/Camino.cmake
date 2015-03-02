@@ -36,6 +36,7 @@ if(BUILD_CAMINO AND NOT WIN32)
     if(NOT DEFINED camino_DIR)
 
       ExternalProject_Add(${proj}
+        LIST_SEPARATOR ^^
         PREFIX ${proj_CONFIG}
         SOURCE_DIR ${proj_SOURCE}
         URL ${proj_LOCATION}
@@ -47,10 +48,14 @@ if(BUILD_CAMINO AND NOT WIN32)
         LOG_BUILD ON
         CMAKE_ARGS
           ${EP_COMMON_ARGS}
+          -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         DEPENDS ${proj_DEPENDENCIES}
       )
 
       set(camino_DIR ${proj_SOURCE})
+
+#      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
       message("SuperBuild loading Camino from ${camino_DIR}")
 
     else(NOT DEFINED camino_DIR)

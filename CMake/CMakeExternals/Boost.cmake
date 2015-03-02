@@ -102,6 +102,7 @@ if(MITK_USE_Boost)
     endif()
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       # Boost needs in-source builds
@@ -112,9 +113,10 @@ if(MITK_USE_Boost)
       CONFIGURE_COMMAND "${_boost_cfg_cmd}"
       BUILD_COMMAND "${_boost_build_cmd}"
       INSTALL_COMMAND "${INSTALL_COMMAND}"
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        ${BOOST_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DWITH_BZIP2:BOOL=OFF
         -DWITH_DOXYGEN:BOOL=OFF
         -DWITH_EXPAT:BOOL=OFF
@@ -123,13 +125,14 @@ if(MITK_USE_Boost)
         -DWITH_XSLTPROC:BOOL=OFF
         -DWITH_VALGRIND:BOOL=OFF
         -DWITH_ZLIB:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(BOOST_ROOT ${proj_INSTALL})
     set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
     set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading Boost from ${BOOST_ROOT}")
     message("SuperBuild loading Boost using BOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}")

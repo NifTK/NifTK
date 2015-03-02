@@ -48,6 +48,7 @@ if(QT_FOUND)
     endif()
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
@@ -56,9 +57,10 @@ if(QT_FOUND)
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
          ${ctk_qt_args}
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
@@ -85,6 +87,8 @@ if(QT_FOUND)
     )
     set(CTK_DIR ${proj_BUILD})
     set(CTK_SOURCE_DIR ${proj_SOURCE})
+
+#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading CTK from ${CTK_DIR}")
 

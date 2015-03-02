@@ -30,37 +30,40 @@ if(BUILD_MESHING)
     ######################################################################
 
     if(UNIX)
-      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS} -fPIC")
+      set(CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     else()
-      set(CGAL_CXX_FLAGS "${EP_COMMON_CXX_FLAGS}")
+      set(CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     endif(UNIX)
 
     ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}
         -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
         -DCGAL_CFG_NO_STL:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DWITH_OpenGL:BOOL=ON
         -DWITH_VTK:BOOL=ON
         -DVTK_DIR:PATH=${VTK_DIR}
         -DCMAKE_CXX_FLAGS:STRING=${CGAL_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(CGAL_DIR "${proj_INSTALL}/lib/CGAL")
-    link_directories("${proj_INSTALL}/lib/")
+
+    set(CGAL_DIR "${proj_INSTALL}")
+    link_directories("${proj_INSTALL}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
   else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
