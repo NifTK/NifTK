@@ -67,6 +67,6 @@ private:
 
 } // end namespace
 
-#include "niftkFixedLengthFileReader.cxx"
+#include "niftkFixedLengthFileReader.txx"
 
 #endif

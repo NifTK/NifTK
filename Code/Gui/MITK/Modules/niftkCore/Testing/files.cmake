@@ -16,7 +16,6 @@
 set(MODULE_TESTS
   mitkITKRegionParametersDataNodePropertyTest.cxx
   mitkPointUtilsTest.cxx
-  mitkCoordinateAxesDataTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
