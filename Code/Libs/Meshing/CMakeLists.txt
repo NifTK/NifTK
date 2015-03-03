@@ -36,14 +36,14 @@ if(NOT WIN32 AND NOT APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math -fPIC")
 endif(NOT WIN32 AND NOT APPLE)
 
-add_library(niftkMeshingLib
+add_library(niftkMeshing
   niftkCGALMesherBackEnd.cxx
   niftkMeditMeshParser.cxx
   niftkMeshGenerator.cxx
   niftkMeshMerger.cxx
   )
 
-target_link_libraries(niftkMeshingLib
+target_link_libraries(niftkMeshing
   niftkITK
   niftkVTK
   niftkcommon
@@ -53,7 +53,7 @@ target_link_libraries(niftkMeshingLib
   ${VTK_LIBRARIES}
   )
 
-install(TARGETS niftkMeshingLib
+install(TARGETS niftkMeshing
   LIBRARY DESTINATION ${NIFTK_INSTALL_LIB_DIR}
   ARCHIVE DESTINATION ${NIFTK_INSTALL_LIB_DIR}
   COMPONENT libraries
