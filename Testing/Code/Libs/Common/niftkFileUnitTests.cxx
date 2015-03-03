@@ -22,4 +22,5 @@
 void RegisterTests()
 {
   REGISTER_TEST(niftkFileHelperTest);
+  REGISTER_TEST(niftkFixedLengthFileReaderTest);
 }

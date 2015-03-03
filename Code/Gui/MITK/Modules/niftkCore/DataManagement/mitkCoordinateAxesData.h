@@ -59,7 +59,7 @@ public:
   void GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const;
   void SetVtkMatrix(const vtkMatrix4x4& matrix);
 
-  bool SaveToFile(const std::string& fileName);
+  bool SaveToFile(const std::string& fileName) const;
 
   /**
    * \brief Warning: slow method to transform point by current matrix.
