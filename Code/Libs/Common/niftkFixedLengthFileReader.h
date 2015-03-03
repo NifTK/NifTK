@@ -15,7 +15,6 @@
 #ifndef niftkFixedLengthFileReader_h
 #define niftkFixedLengthFileReader_h
 
-#include "niftkCommonWin32ExportHeader.h"
 #include <vector>
 #include <fstream>
 
@@ -31,7 +30,7 @@ namespace niftk
  * niftk::IOException
  */
 template<typename T, size_t S>
-class NIFTKCOMMON_WINEXPORT FixedLengthFileReader
+class FixedLengthFileReader
 {
 public:
 
