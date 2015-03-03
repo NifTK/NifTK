@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(NIFTK_MESHING_TEST_LINK_LIBRARIES
-  niftkMeshingLib
+  niftkMeshing
   niftkITK
   niftkVTK
   niftkcommon

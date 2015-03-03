@@ -51,7 +51,7 @@ set(NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
 
 if (BUILD_MESHING)
   set(NIFTK_MESHING_APPLICATION_LIBRARIES
-    niftkMeshingLib
+    niftkMeshing
     niftkITK
     niftkVTK
     niftkcommon
