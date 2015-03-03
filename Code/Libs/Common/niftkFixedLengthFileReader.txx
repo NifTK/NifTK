@@ -72,7 +72,7 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
       oss << "Failed to read element " << i << " from file '" << fileName << "'!";
       throw niftk::IOException(oss.str());
     }
-    if (m_InputStream.eof())
+    if (i < S-1 && m_InputStream.eof())
     {
       std::ostringstream oss;
       oss << "Failed to read element " << i << " from file '" << fileName << "', due to end of file!";

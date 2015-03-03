@@ -50,7 +50,7 @@ int niftkFixedLengthFileReaderTest(int argc, char * argv[])
   FILE_READER_EXCEPTION_TEST(3, double, 1, "nonsense", false, "Should have thrown due to filename not existing", niftk::IOException);
   FILE_READER_EXCEPTION_TEST(4, double, 15, "/Users/mattclarkson/Data/id.4x4", true, "Should have thrown due to strict mode not wanting files that are too long", niftk::IOException);
 
-  niftk::FixedLengthFileReader<double, 16> readerFor4x4Matrix("/Users/mattclarkson/Data/id.4x4");
+  niftk::FixedLengthFileReader<double, 16> readerFor4x4Matrix(argv[1]);
   std::vector<double> result = readerFor4x4Matrix.GetData();
   if (result.size() != 16)
   {
