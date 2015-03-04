@@ -19,6 +19,8 @@
 #include "niftkCoordinateAxesDataWriterService.h"
 #include <mitkIFileReader.h>
 #include <mitkIFileWriter.h>
+#include <mitkPNMReader.h>
+#include <mitkPNMWriter.h>
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
@@ -40,6 +42,9 @@ private:
 
   std::auto_ptr<CoordinateAxesDataReaderService> m_CoordinateAxesDataReaderService;
   std::auto_ptr<CoordinateAxesDataWriterService> m_CoordinateAxesDataWriterService;
+  
+  std::auto_ptr<mitk::PNMReader> m_PNMReaderService;
+  std::auto_ptr<mitk::PNMWriter> m_PNMWriterService;
 };
 
 } // end namespace

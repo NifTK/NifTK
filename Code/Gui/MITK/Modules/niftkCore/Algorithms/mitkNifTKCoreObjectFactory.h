@@ -72,7 +72,6 @@ protected:
 
 private:
 
-  itk::ObjectFactoryBase::Pointer m_PNMImageIOFactory;
   std::vector<mitk::AbstractFileIO*> m_FileIOs;
 
 };
