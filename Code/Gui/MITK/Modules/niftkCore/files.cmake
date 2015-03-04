@@ -41,6 +41,9 @@ set(CPP_FILES
   IO/itkPNMImageIOFactory.cxx
   IO/itkPNMImageIO.cxx
   IO/mitkFileIOUtils.cxx
+  IO/mitkPNMReader.cpp
+  IO/mitkPNMWriter.cpp
+  IO/mitkPNMIOMimeTypes.cpp
   Interactions/mitkPointSetUpdate.cxx
   Internal/niftkCoreIOMimeTypes.cxx
   Internal/niftkCoordinateAxesDataReaderService.cxx
