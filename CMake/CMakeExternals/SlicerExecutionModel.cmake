@@ -38,7 +38,6 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
     UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}

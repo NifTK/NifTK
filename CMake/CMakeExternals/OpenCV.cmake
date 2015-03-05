@@ -45,8 +45,6 @@ if(BUILD_IGI)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      UPDATE_COMMAND  ""
-      INSTALL_COMMAND ""
       PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
