@@ -56,12 +56,10 @@ if(BUILD_RTK)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    if(EP_ALWAYS_USE_INSTALL_DIR)
-      set(RTK_DIR ${proj_INSTALL})
-      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-    else()
-      set(RTK_DIR ${proj_BUILD})
-    endif()
+    # Note:
+    # We use the build folder even if EP_ALWAYS_USE_INSTALL_DIR is TRUE.
+    # Using the install folder might work but it has not been tested.
+    set(RTK_DIR ${proj_BUILD})
 
     message("SuperBuild loading RTK from ${RTK_DIR}")
 

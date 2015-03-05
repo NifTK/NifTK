@@ -48,12 +48,11 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  if(EP_ALWAYS_USE_INSTALL_DIR)
-    set(SlicerExecutionModel_DIR ${proj_INSTALL})
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-  else()
-    set(SlicerExecutionModel_DIR ${proj_BUILD})
-  endif()
+  # Note:
+  # We need to use the build folder even if EP_ALWAYS_USE_INSTALL_DIR is TRUE.
+  # The install command does not install the project properly, e.g. it does not
+  # install the GenerateCLP command that is needed for the command line applications.
+  set(SlicerExecutionModel_DIR ${proj_BUILD})
 
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 
