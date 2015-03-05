@@ -28,7 +28,7 @@ set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 # not regenerated and it may still store the paths to the EP versions that belong to the original
 # branch (from which you switch). You have been warned.
 
-set(EP_DIRECTORY_PER_VERSION TRUE CACHE BOOL "Use separate directories for different versions of the same external project.")
+set(EP_DIRECTORY_PER_VERSION FALSE CACHE BOOL "Use separate directories for different versions of the same external project.")
 
 # Ideally every EP should be built and installed, and the dependent projects (another EP or NifTK)
 # should use them from their install directory. This would be particularly important for ITK

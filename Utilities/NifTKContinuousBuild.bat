@@ -1,4 +1,4 @@
-@echo ***** NifTK Continuous Build Script - v.22 *****
+@echo ***** NifTK Continuous Build Script - v.25 *****
 @echo. 
 
 @REM ************************************************************************************
@@ -131,10 +131,8 @@
 @REM *****  Create new local build folder  *****
 @if not exist "%BUILD_BIN%" md "%BUILD_BIN%"
 
-
 @setlocal enableDelayedExpansion
 
-@REM *****  Configure error codes  *****
 @SET /A errno=0
 @SET /A ERROR_CMAKE_CONFIG=1
 @SET /A ERROR_DEVENV=2
@@ -146,11 +144,12 @@
 @echo ---------------------------------------------------------------------
 @echo Running CMake....
 @cd /d %BUILD_BIN%
-call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DEP_BASE:PATH=%EXT_PROJ_ROOT% -DOPENCV_WITH_FFMPEG=ON -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_CUDA=OFF -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -DNIFTYLINK_CHECK_COVERAGE=ON -G "%CMAKE_GENERATOR%" "%BUILD_SRC%"
+call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DEP_BASE:PATH=%EXT_PROJ_ROOT% -DEP_DIRECTORY_PER_VERSION:BOOL=TRUE -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=TRUE -DOPENCV_WITH_FFMPEG=ON -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_CUDA=OFF -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -DNIFTYLINK_CHECK_COVERAGE=ON -G "%CMAKE_GENERATOR%" "%BUILD_SRC%"
 
 @echo. 
 @IF %ERRORLEVEL% NEQ 0 SET /A errno^|=%ERROR_CMAKE_CONFIG%
 @echo Error number after CMake config: %errno%
+@IF %errno% NEQ 0 EXIT /B 1
 @echo. 
 @REM pause
 
@@ -164,14 +163,15 @@ call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DEP_BASE:PATH=%EXT
 @set "search=^.*Build FAILED.$"
 @echo(findstr /r /c:"!search!" /F:"c:\CB\_log_file.txt" >nul && (
   @echo Build error FOUND!
-  SET /A errno^|=%ERROR_DEVENV%
+  @SET /A errno^|=%ERROR_DEVENV%
 ) || (
-  @echo NOT FOUND
+  @echo No build error found.
   @rem any commands can go here
 )
 
-@echo. 
 @echo Error number after VS build: %errno%
+@IF %errno% NEQ 0 EXIT /B 2
+
 @echo. 
 @echo ---------------------------------------------------------------------
 
@@ -216,10 +216,9 @@ call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DEP_BASE:PATH=%EXT
 
 @IF %ERRORLEVEL% NEQ 0 SET /A errno^|=%ERROR_DEVENV%
 @echo Error number after CTest: %errno%
+@IF %errno% NEQ 0 EXIT /B 4
 
 @echo.
-@echo ***** NifTK Continuous Build Script FINISHED *****
+@echo ***** NifTK Continuous Build Script Successfully FINISHED *****
 @endlocal
 @endlocal
-
-EXIT /B %errno%
