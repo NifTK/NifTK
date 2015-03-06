@@ -34,7 +34,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 
 mitk::PNMWriter::PNMWriter()
-  : mitk::AbstractFileWriter("PNMWriter", CustomMimeType( mitk::PNMIOMimeTypes::PNM_MIMETYPE_NAME() ), mitk::PNMIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
+  : mitk::AbstractFileWriter(mitk::Image::GetStaticNameOfClass(), CustomMimeType( mitk::PNMIOMimeTypes::PNM_MIMETYPE_NAME() ), mitk::PNMIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
@@ -71,6 +71,8 @@ void mitk::PNMWriter::Write()
   {
     MITK_ERROR << "Stream not good.";
   }
+  
+  std::string outputLocation;
 
   try
   {
@@ -83,44 +85,20 @@ void mitk::PNMWriter::Write()
     std::locale I("C");
     out->imbue(I);
 
-    std::string filename = this->GetOutputLocation().c_str();
-
     mitk::Image::ConstPointer input = dynamic_cast<const mitk::Image*>(this->GetInput());
-    std::string ext = itksys::SystemTools::GetFilenameLastExtension(this->GetOutputLocation().c_str());
 
-    // default extension is .fib
-    if(ext == "")
-    {
-      ext = ".ppm";
-      this->SetOutputLocation(this->GetOutputLocation() + ext);
-    }
-
-    if (ext==".pbm" || ext==".PBM")
-    {
-      itksys::SystemTools::ReplaceString(filename,".ppm",".pbm");
-      MITK_INFO << "Writing image as Portable BitMap (PBM)";
-    }
-    else if (ext==".pgm" || ext==".PGM")
-    {
-      itksys::SystemTools::ReplaceString(filename,".ppm",".pbm");
-      MITK_INFO << "Writing image as Portable GreyMap (PGM)";
-    }
-    else if (ext==".ppm" || ext==".PPM")
-    {
-      MITK_INFO << "Writing image as Portable PixelMap (PPM)";
-    }
-
+    std::string outputLocation = this->GetOutputLocation().c_str();
     vtkSmartPointer<vtkPNMWriter> pnmWriter = vtkPNMWriter::New();
-    pnmWriter->SetFileName((this->GetOutputLocation().c_str()));
+    pnmWriter->SetFileName(outputLocation.c_str());
     vtkImageData * nonConstImg = const_cast<vtkImageData *>(input->GetVtkImageData());
     pnmWriter->SetInputData(nonConstImg);
     pnmWriter->Write();
 
     setlocale(LC_ALL, currLocale.c_str());
-    MITK_INFO << "PNM image written";
   }
-  catch(...)
+  catch(const std::exception& e)
   {
-    throw;
+    MITK_ERROR <<"Exception caught while writing file " <<outputLocation <<": " <<e.what();
+    mitkThrow() << e.what();
   }
 }
