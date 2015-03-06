@@ -21,6 +21,7 @@
 
 #include <mitkLogMacros.h>
 #include <mitkIDataStorageReference.h>
+#include <QmitkMimeTypes.h>
 
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -636,22 +637,29 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 void QmitkNiftyMIDASAppWorkbenchAdvisor::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
 {
   QMimeData* mimeData = new QMimeData;
+  QMimeData* mimeData2 = new QMimeData;
   QString dataNodeAddresses("");
+  QByteArray byteArray;
+  byteArray.resize(sizeof(quintptr) * nodes.size());
+
+  QDataStream ds(&byteArray, QIODevice::WriteOnly);
+  QTextStream ts(&dataNodeAddresses);
   for (int i = 0; i < nodes.size(); ++i)
   {
-    long dataNodeAddress = reinterpret_cast<long>(nodes[i]);
-    QTextStream(&dataNodeAddresses) << dataNodeAddress;
-
+    quintptr dataNodeAddress = reinterpret_cast<quintptr>(nodes[i]);
+    ds << dataNodeAddress;
+    ts << dataNodeAddress;
     if (i != nodes.size() - 1)
     {
-      QTextStream(&dataNodeAddresses) << ",";
+      ts << ",";
     }
   }
   mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
+  mimeData2->setData(QmitkMimeTypes::DataNodePtrs, byteArray);
 //  QStringList types;
 //  types << "application/x-mitk-datanodes";
   QDragEnterEvent dragEnterEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
-  QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData2, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
   if (!qApp->notify(renderWindow, &dragEnterEvent))
   {
