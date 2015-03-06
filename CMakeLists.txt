@@ -1037,6 +1037,13 @@ if (BUILD_PROTOTYPE)
   endif()
 endif()
 
+
+######################################################################
+# NifTK uses KWStyle for checking the coding style
+######################################################################
+INCLUDE(${CMAKE_SOURCE_DIR}/Utilities/KWStyle/NifTKKWStyle.cmake)
+
+
 ######################################################################
 # Output directories, for when compiling, not installing.
 ######################################################################
