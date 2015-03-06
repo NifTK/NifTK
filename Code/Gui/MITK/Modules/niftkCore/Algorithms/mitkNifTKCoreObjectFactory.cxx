@@ -27,7 +27,6 @@
 #include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include <itkPNMImageIOFactory.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
 
@@ -39,7 +38,6 @@
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
-, m_PNMImageIOFactory(itk::PNMImageIOFactory::New().GetPointer())
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
@@ -54,7 +52,6 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 
     /// TODO
     /// ITK readers and writers should be registered from itk::NifTKImageIOFactory.
-    itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
 
     bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
 
@@ -87,7 +84,6 @@ mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
 {
   /// TODO
   /// ITK readers and writers should be unregistered from itk::NifTKImageIOFactory.
-  itk::ObjectFactoryBase::UnRegisterFactory(m_PNMImageIOFactory);
 
   for(std::vector<mitk::AbstractFileIO*>::iterator iter = m_FileIOs.begin(),
       endIter = m_FileIOs.end(); iter != endIter; ++iter)
@@ -148,16 +144,7 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
   MITK_DEBUG << "Registering additional file extensions." << std::endl;
-
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
-
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+  MITK_DEBUG << "Registering additional file extensions." << std::endl;
 }
 
 
