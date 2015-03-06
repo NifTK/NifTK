@@ -21,9 +21,6 @@
 #include <vtkPNMWriter.h>
 #include <vtkImageData.h>
 
-#include <itksys/SystemTools.hxx>
-#include <itkSize.h>
-
 #include <mitkAbstractFileWriter.h>
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
