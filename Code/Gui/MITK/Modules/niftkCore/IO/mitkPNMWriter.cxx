@@ -1,21 +1,19 @@
-/*===================================================================
+/*=============================================================================
 
-The Medical Imaging Interaction Toolkit (MITK)
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) German Cancer Research Center,
-Division of Medical and Biological Informatics.
-All rights reserved.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-See LICENSE.txt or http://www.mitk.org for details.
+  See LICENSE.txt in the top level directory for details.
 
-===================================================================*/
+=============================================================================*/
 
 #include "mitkPNMWriter.h"
-#include "mitkPNMIOMimeTypes.h"
+#include "../Internal/niftkCoreIOMimeTypes.h"
 
 #include <vtkSmartPointer.h>
 #include <vtkCleanPolyData.h>
@@ -34,7 +32,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 
 mitk::PNMWriter::PNMWriter()
-  : mitk::AbstractFileWriter(mitk::Image::GetStaticNameOfClass(), CustomMimeType( mitk::PNMIOMimeTypes::PNM_MIMETYPE_NAME() ), mitk::PNMIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
+  : mitk::AbstractFileWriter(mitk::Image::GetStaticNameOfClass(), CustomMimeType(niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME() ), niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
