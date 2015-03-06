@@ -41,12 +41,10 @@ CustomMimeType PNMIOMimeTypes::PNM_MIMETYPE()
   std::string category = "PNM Image File";
   mimeType.SetComment("Netpbm format image");
   mimeType.SetCategory(category);
-  mimeType.AddExtension("PBM");
-  mimeType.AddExtension("pbm");
-  mimeType.AddExtension("PGM");
-  mimeType.AddExtension("pgm");
-  mimeType.AddExtension("PPM");
   mimeType.AddExtension("ppm");
+  mimeType.AddExtension("pbm");
+  mimeType.AddExtension("pgm");
+  
   return mimeType;
 }
 
