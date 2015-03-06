@@ -1,2 +1,6 @@
-@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftk*.h
-@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Libs/Exception/*.h
+@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkConversionUtils*
+@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkCSVRow*
+@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkEnvironment*
+@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFileHelper*
+@CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFixedLengthFile*

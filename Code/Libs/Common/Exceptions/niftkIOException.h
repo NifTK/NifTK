@@ -19,14 +19,15 @@
 
 namespace niftk
 {
-  /**
-   * \brief Exceptions for Filesystem, Network, ... I/O
-   */
-  class IOException : public ExceptionObject
-  {
-  public:
-    IOException(const std::string &what) : ExceptionObject(what) {}
-  };
+
+/**
+* \brief Exceptions for Filesystem, Network, ... I/O
+*/
+class IOException : public ExceptionObject
+{
+public:
+  IOException(const std::string &what) : ExceptionObject(what) {}
+};
 
 } // end namespace
 
