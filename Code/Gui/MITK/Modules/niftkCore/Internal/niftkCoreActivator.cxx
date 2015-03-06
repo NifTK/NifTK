@@ -14,7 +14,6 @@
 
 #include "niftkCoreActivator.h"
 #include "niftkCoreIOMimeTypes.h"
-#include "mitkPNMIOMimeTypes.h"
 
 #include <usModuleContext.h>
 
@@ -39,13 +38,6 @@ void CoreActivator::Load(us::ModuleContext* context)
   std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreIOMimeTypes::Get();
   for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
     iterEnd = mimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
-  {
-    context->RegisterService(*mimeTypeIter, props);
-  }
-
-  std::vector<mitk::CustomMimeType*> pnmMimeTypes = mitk::PNMIOMimeTypes::Get();
-  for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = pnmMimeTypes.begin(),
-    iterEnd = pnmMimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
   {
     context->RegisterService(*mimeTypeIter, props);
   }
