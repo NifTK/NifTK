@@ -19,7 +19,6 @@
 #include <mitkLogMacros.h>
 #include <mitkImage.h>
 
-#include <itkMetaDataObject.h>
 #include <itksys/SystemTools.hxx>
 
 #include <vtkSmartPointer.h>
@@ -71,7 +70,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::PNMReader::Read()
     result.push_back(mitkInput.GetPointer());
 
     setlocale(LC_ALL, currLocale.c_str());
-    MITK_INFO << "PNM image read";
+    MITK_DEBUG << "PNM image read";
   }
   catch(...)
   {
