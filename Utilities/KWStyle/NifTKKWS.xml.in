@@ -1,40 +1,63 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <Description>
-<Header>@CMAKE_SOURCE_DIR@/Utilities/KWStyle/NifTKHeader.h,false,true</Header>
-<LineLength>120</LineLength>
-<SemicolonSpace>true</SemicolonSpace>
-<DeclarationOrder>0,1,2</DeclarationOrder>
-<EndOfFileNewLine>true</EndOfFileNewLine>
-<Tabs>true</Tabs>
-<Spaces>0</Spaces>
-<Indent>SPACE,2,true,true</Indent>
-<IfNDefDefine>[NameOfClass]_[Extension]</IfNDefDefine>
-<!--
-<NameOfClass>
-  <name>[NameOfClass]</name>
-  <prefix>NiftyLink</prefix>
-</NameOfClass>
--->
-<Comments>
-  <begin>/**</begin>
-  <middle> *</middle>
-  <end> */<end>
-  <emptyLineBeforeClass>true</emptyLineBeforeClass>
-  <checkWrongComment>false</checkWrongComment>
-  <checkMissingComment>false</checkMissingComment>
-</Comments>
-<EmptyLines>2</EmptyLines>
-<Template>[TNV]</Template>
-<Operator>
-  <spaceBefore>1</spaceBefore>
-  <spaceAfter>1</spaceAfter>
-</Operator>
-<StatementPerLine>1,true</StatementPerLine>
-<VariablePerLine>1</VariablePerLine>
-<BadCharacters>true</BadCharacters>
-<Typedefs>[A-Z],false</Typedefs>
-<Struct>[a-z]</Struct>
-<InternalVariables>m_[A-Z],true</InternalVariables>
-<MemberFunctions>[A-Z],100</MemberFunctions>
-<Functions>[A-Z],100</Functions>
+  <LineLength>120</LineLength>
+  <InternalVariables>
+    <regex>m_[A-Z]</regex>
+    <alignment>true</alignment>
+    <private>true</private>
+  </InternalVariables>
+  <SemicolonSpace>true</SemicolonSpace>
+  <DeclarationOrder>
+    <public>0</public>
+    <protected>1</protected>
+    <private>2</private>
+  </DeclarationOrder>
+  <EndOfFileNewLine>true</EndOfFileNewLine>
+  <Tabs>true</Tabs>
+  <Spaces>0</Spaces>
+  <Indent>SPACE,2,true,true</Indent>
+  <Header>
+    <location>@CMAKE_SOURCE_DIR@/Utilities/KWStyle/NifTKHeader.h</location>
+    <checkSpacesEndOfLine>true</checkSpacesEndOfLine>
+  </Header>
+  <Typedefs>[A-Z],false</Typedefs>
+  <IfNDefDefine>[NameOfClass]_[Extension]</IfNDefDefine>
+  <Namespace>niftk</Namespace>
+  <NameOfClass>
+    <name>[NameOfClass]</name>
+    <prefix>niftk</prefix>
+  </NameOfClass>
+  <Comments>
+    <begin>/**</begin>
+    <middle> *</middle>
+    <end> */<end>
+    <emptyLineBeforeClass>true</emptyLineBeforeClass>
+    <checkWrongComment>false</checkWrongComment>
+    <checkMissingComment>false</checkMissingComment>
+  </Comments>
+  <EmptyLines>2</EmptyLines>
+  <Template>[TNV]</Template>
+  <Operator>
+    <spaceBefore>1</spaceBefore>
+    <spaceAfter>1</spaceAfter>
+  </Operator>
+  <Struct>
+  <regex>[a-z]<regex>
+  </Struct>
+  <StatementPerLine>
+    <maxNumber>1</maxNumber>
+    <checkInline>true</checkInline>
+  </StatementPerLine>
+  <VariablePerLine>
+    <maxNumber>1</maxNumber>
+  </VariablePerLine>
+  <BadCharacters>true</BadCharacters>
+  <MemberFunctions>
+    <regex>[A-Z]</regex>
+    <length>100</length>
+  </MemberFunctions>
+  <Functions>
+    <regex>[A-Z]</regex>
+    <length>100</length>
+  </Functions>
 </Description>
