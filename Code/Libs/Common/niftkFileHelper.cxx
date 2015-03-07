@@ -375,7 +375,6 @@ void GetRecursiveFilesInDirectory(
   if (!DirectoryExists(directoryName))
   {
     throw std::logic_error("Directory does not exist!");
-    return;
   }
 
   if ( fs::is_directory( full_path ) )
@@ -422,7 +421,7 @@ bool NumericStringCompare( const std::string &string1, const std::string &string
 
 
 //-----------------------------------------------------------------------------
-std::vector<std::string> FindVideoData( std::string directory)
+std::vector<std::string> FindVideoData(const std::string& directory)
 {
   boost::filesystem::recursive_directory_iterator end_itr;
   std::vector<std::string> returnStrings;
@@ -471,7 +470,7 @@ std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDire
 
 
 //-----------------------------------------------------------------------------
-std::string ExtractImageFileSuffix( const std::string fileName )
+std::string ExtractImageFileSuffix(const std::string& fileName )
 {
   std::string suffix;
   std::string compSuffix;       // The .gz or .zip suffix if present
@@ -488,7 +487,7 @@ std::string ExtractImageFileSuffix( const std::string fileName )
 
   else if ( ( fileName.length() >= 4 ) &&
             ( ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ||
-              ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ) )
+              ( fileName.substr( fileName.length() - 4 ) == std::string( ".ZIP" ) ) ) )
   {
     compSuffix = fileName.substr( fileName.length() - 4 );
   }
@@ -537,8 +536,8 @@ std::string ExtractImageFileSuffix( const std::string fileName )
 
 
 //-----------------------------------------------------------------------------
-std::string ExtractImageFileSuffix( const std::string fileName,
-                                    std::string &fileNameWithoutSuffix )
+std::string ExtractImageFileSuffix(const std::string& fileName,
+                                   std::string &fileNameWithoutSuffix )
 {
   std::string suffix = niftk::ExtractImageFileSuffix( fileName );
   fileNameWithoutSuffix = fileName.substr( 0, fileName.length() - suffix.length() );
@@ -548,8 +547,8 @@ std::string ExtractImageFileSuffix( const std::string fileName,
 
 
 //-----------------------------------------------------------------------------
-std::string AddStringToImageFileSuffix( const std::string fileName,
-                                        std::string stringToAdd )
+std::string AddStringToImageFileSuffix(const std::string& fileName,
+                                       std::string stringToAdd )
 {
   std::string fileNameWithoutSuffix;
   std::string suffix = ExtractImageFileSuffix( fileName,
@@ -559,8 +558,8 @@ std::string AddStringToImageFileSuffix( const std::string fileName,
 
 
 //-----------------------------------------------------------------------------
-std::string ModifyImageFileSuffix( const std::string fileName,
-                                   std::string newSuffix )
+std::string ModifyImageFileSuffix(const std::string& fileName,
+                                  std::string newSuffix )
 {
   std::string fileNameWithoutSuffix;
   niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
@@ -569,7 +568,7 @@ std::string ModifyImageFileSuffix( const std::string fileName,
 
 
 //-----------------------------------------------------------------------------
-std::string GetFilenameStem( const std::string fileName )
+std::string GetFilenameStem(const std::string& fileName )
 {
   fs::path filePath( fileName );
   return filePath.stem().string();
@@ -577,8 +576,8 @@ std::string GetFilenameStem( const std::string fileName )
 
 
 //-----------------------------------------------------------------------------
-std::string ModifyFileSuffix( const std::string fileName,
-                              std::string newSuffix )
+std::string ModifyFileSuffix(const std::string& fileName,
+                             std::string newSuffix )
 {
   fs::path filePath( fileName );
 

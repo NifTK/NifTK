@@ -200,7 +200,7 @@ NIFTKCOMMON_WINEXPORT bool NumericStringCompare(const std::string& string1, cons
 * @param fullDirectoryName
 * @return vector of matching files
 */
-NIFTKCOMMON_WINEXPORT std::vector<std::string> FindVideoData(std::string directory);
+NIFTKCOMMON_WINEXPORT std::vector<std::string> FindVideoData(const std::string& directory);
 
 
 /**
@@ -217,7 +217,7 @@ NIFTKCOMMON_WINEXPORT std::vector<std::string> FindFilesWithGivenExtension(
 * @param fileName The input image file name.
 * @return The image file extension, including the dot and .gz or .zip extension.
 */
-NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string fileName );
+NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix(const std::string& fileName);
 
 
 /**
@@ -226,8 +226,8 @@ NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string file
 * @param fileNameWithoutSuffix Output image file name without the suffix.
 * @return The image file extension, including the dot and .gz or .zip extension.
 */
-NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string fileName,
-                                                          std::string &fileNameWithoutSuffix );
+NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix(const std::string& fileName,
+                                                         std::string &fileNameWithoutSuffix );
 
 
 /**
@@ -236,8 +236,8 @@ NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string file
 * @param stringToAdd The string to add just before the image suffix.
 * @return The image file name with the text added just before the image suffix.
 */
-NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix( const std::string fileName,
-                                                              std::string stringToAdd );
+NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix(const std::string& fileName,
+                                                             std::string stringToAdd);
 
 
 /**
@@ -246,8 +246,8 @@ NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix( const std::string 
 * @param newSuffix The text to replace the image suffix with.
 * @return The image file name with the modified, or appended, image suffix.
 */
-NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix( const std::string fileName,
-                                                         std::string newSuffix );
+NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileName,
+                                                        std::string newSuffix );
 
 
 /**
@@ -258,8 +258,8 @@ NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix( const std::string fileN
 * @param newSuffix The text to replace the suffix with.
 * @return The file name with the modified or appended suffix.
 */
-NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix( const std::string fileName,
-                                                    std::string newSuffix );
+NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
+                                                   std::string newSuffix );
 
 } // end namespace
 

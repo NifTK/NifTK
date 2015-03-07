@@ -79,21 +79,21 @@ std::string ConvertToString(float x)
 
 
 //-----------------------------------------------------------------------------
-int ConvertToInt(std::string x)
+int ConvertToInt(const std::string& x)
 {
   return boost::lexical_cast<int>(x);
 }
 
 
 //-----------------------------------------------------------------------------
-double ConvertToDouble(std::string x)
+double ConvertToDouble(const std::string& x)
 {
   return boost::lexical_cast<double>(x);
 }
 
 
 //-----------------------------------------------------------------------------
-bool ConvertToBool(const std::string x)
+bool ConvertToBool(const std::string& x)
 {
   if ("true" == x || "True" == x)
   {

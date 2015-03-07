@@ -41,11 +41,11 @@ NIFTKCOMMON_WINEXPORT std::string ConvertToString(bool x);
 
 NIFTKCOMMON_WINEXPORT std::string ConvertToString(float x);
 
-NIFTKCOMMON_WINEXPORT bool ConvertToBool(std::string x);
+NIFTKCOMMON_WINEXPORT bool ConvertToBool(const std::string& x);
 
-NIFTKCOMMON_WINEXPORT int ConvertToInt(std::string x);
+NIFTKCOMMON_WINEXPORT int ConvertToInt(const std::string& x);
 
-NIFTKCOMMON_WINEXPORT double ConvertToDouble(std::string x);
+NIFTKCOMMON_WINEXPORT double ConvertToDouble(const std::string& x);
 
 NIFTKCOMMON_WINEXPORT int Round(double d);
 
