@@ -15,6 +15,8 @@
 #ifndef niftkCSVRow_h
 #define niftkCSVRow_h
 
+#include <NifTKConfigure.h>
+#include "niftkCommonWin32ExportHeader.h"
 
 #include <iterator>
 #include <iostream>
@@ -23,32 +25,28 @@
 #include <vector>
 #include <string>
 
-
-#include <NifTKConfigure.h>
-#include "niftkCommonWin32ExportHeader.h"
-
-
 namespace niftk
 {
 
-/** \class CSVRow
- \brief Comma separated value (CSV) row class used to parse rows from an input stream and split them into a vector of strin elements. 
- 
- Example usage:
- \code{.cpp}
- int main()
- {
-     std::ifstream fin("fileDataInput.csv");
- 
-     niftk::CSVRow row;
-     while( fin >> row )
-     {
-         std::cout << row << std::endl;
-     }
- }
- \endcode
- */
- 
+/**
+* \class CSVRow
+* \brief Comma separated value (CSV) row class used to parse rows from
+* an input stream and split them into a vector of strin elements.
+*
+* Example usage:
+\code{.cpp}
+int main()
+{
+  std::ifstream fin("fileDataInput.csv");
+
+  niftk::CSVRow row;
+  while( fin >> row )
+  {
+    std::cout << row << std::endl;
+  }
+}
+\endcode
+*/
 class NIFTKCOMMON_WINEXPORT CSVRow
 {
 public:
@@ -60,15 +58,15 @@ public:
   ~CSVRow();
 
   /** Get an element of the row. */
-  std::string const &operator[]( std::size_t index ) const
+  std::string const& operator[]( std::size_t index ) const
   {
-    return (*m_data)[index];
+    return (*m_Data)[index];
   }
 
   /** Return the size of the row (number of elements). */
-  std::size_t size() const
+  std::size_t Size() const
   {
-    return m_data->size();
+    return m_Data->size();
   }
 
   /** Read the next row in the input stream */
@@ -76,27 +74,25 @@ public:
 
 private:
 
-  std::vector<std::string> *m_data;
+  std::vector<std::string> *m_Data;
 };
 
 
 /** Specialisation of 'operator>>' for the niftk::CSVRow class */
-
-std::istream &operator>>( std::istream& str, CSVRow &data )
+std::istream& operator>>( std::istream& str, CSVRow &data )
 {
   data.ReadNextRow( str );
   return str;
-}   
+}
 
 /** Specialisation of 'operator<<' for the niftk::CSVRow class */
-
-std::ostream &operator<<( std::ostream &os, const CSVRow &data )
+std::ostream& operator<<( std::ostream &os, const CSVRow &data )
 {
-  for (unsigned int i=0; i < data.size(); i++)
+  for (unsigned int i=0; i < data.Size(); i++)
   {
     os << data[i];
-    
-    if ( i < data.size() - 1 )
+
+    if ( i < data.Size() - 1 )
     {
       os << ",";
     }
@@ -105,8 +101,6 @@ std::ostream &operator<<( std::ostream &os, const CSVRow &data )
   return os;
 }
 
-
 } // end namespace
-
 
 #endif // niftkCSVRow_h

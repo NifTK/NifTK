@@ -19,16 +19,16 @@
 
 namespace niftk
 {
-  /**
-   * \brief Exceptions for signalling invalid input.
-   */
-  class InvalidArgumentException : public ExceptionObject
-  {
-  public:
-    InvalidArgumentException(const std::string &what) : ExceptionObject(what) {}
-  };
+
+/**
+* \brief Exceptions for signalling invalid input.
+*/
+class InvalidArgumentException : public ExceptionObject
+{
+public:
+  InvalidArgumentException(const std::string &what) : ExceptionObject(what) {}
+};
 
 } // end namespace
 
-
-#endif /* INVALIDARGUMENTEXCEPTION_H_ */
+#endif

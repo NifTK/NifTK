@@ -12,7 +12,9 @@
 
 =============================================================================*/
 
-#include "niftkFixedLengthFileReader.h"
+#ifndef niftkFixedLengthFileReader_txx
+#define niftkFixedLengthFileReader_txx
+
 #include <niftkIOException.h>
 #include <niftkFileHelper.h>
 #include <sstream>
@@ -137,3 +139,5 @@ void FixedLengthFileReader<T,S>::CloseFile()
 }
 
 } // end namespace
+
+#endif // niftkFixedLengthFileReader_txx

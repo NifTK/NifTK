@@ -11,24 +11,3 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-
-#ifndef niftkIOException_h
-#define niftkIOException_h
-
-#include "niftkExceptionObject.h"
-
-namespace niftk
-{
-
-/**
-* \brief Exceptions for Filesystem, Network, ... I/O
-*/
-class IOException : public ExceptionObject
-{
-public:
-  IOException(const std::string &what) : ExceptionObject(what) {}
-};
-
-} // end namespace
-
-#endif

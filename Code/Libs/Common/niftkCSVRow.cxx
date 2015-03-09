@@ -16,29 +16,35 @@
 
 namespace niftk
 {
-  CSVRow::CSVRow()
+
+//-----------------------------------------------------------------------------
+CSVRow::CSVRow()
+{
+  m_Data = new std::vector<std::string>();
+}
+
+
+//-----------------------------------------------------------------------------
+CSVRow::~CSVRow()
+{
+  delete m_Data;
+}
+
+
+//-----------------------------------------------------------------------------
+void CSVRow::ReadNextRow( std::istream& inStream )
+{
+  std::string strRowRead;
+  std::getline( inStream, strRowRead );
+
+  std::stringstream ssRow( strRowRead );
+  std::string strElement;
+
+  m_Data->clear();
+  while( std::getline( ssRow, strElement, ',' ) )
   {
-    m_data = new std::vector<std::string>();
+    m_Data->push_back( strElement );
   }
-
-  CSVRow::~CSVRow()
-  {
-    delete m_data;
-  }
-
-  void CSVRow::ReadNextRow( std::istream& inStream )
-  {
-    std::string strRowRead;
-    std::getline( inStream, strRowRead );
-
-    std::stringstream ssRow( strRowRead );
-    std::string strElement;
-
-    m_data->clear();
-    while( std::getline( ssRow, strElement, ',' ) )
-    {
-      m_data->push_back( strElement );
-    }
-  }
+}
 
 } // end namespace

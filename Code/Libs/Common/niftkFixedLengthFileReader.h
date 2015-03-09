@@ -22,30 +22,30 @@ namespace niftk
 {
 
 /**
- * @class FixedLengthFileReader
- * @brief Reads a fixed number S of type T from a file.
- *
- * This class provided to provide consistent file access for
- * reading files of a common type. All errors are reported as
- * niftk::IOException
- */
+* @class FixedLengthFileReader
+* @brief Reads a fixed number S of type T from a file.
+*
+* This class provided to provide consistent file access for
+* reading files of a common type. All errors are reported as
+* niftk::IOException
+*/
 template<typename T, size_t S>
 class FixedLengthFileReader
 {
 public:
 
   /**
-   * @brief Constructor reads the data.
-   * @param fileName path to file
-   * @param strict if true the file must contain the exact number of values,
-   * if false, will read the first S values out of a potentially larger file.
-   */
+  * @brief Constructor reads the data.
+  * @param fileName path to file
+  * @param strict if true the file must contain the exact number of values,
+  * if false, will read the first S values out of a potentially larger file.
+  */
   FixedLengthFileReader(const std::string& fileName, const bool& strict=true);
   virtual ~FixedLengthFileReader();
 
   /**
-   * @brief retrieves a copy of the data.
-   */
+  * @brief retrieves a copy of the data.
+  */
   std::vector<T> GetData() const;
 
 private:
@@ -54,8 +54,8 @@ private:
   void operator=(const FixedLengthFileReader&); // purposely not implemented
 
   /**
-   * @brief Closes the file, as does the destructor, by calling this.
-   */
+  * @brief Closes the file, as does the destructor, by calling this.
+  */
   void CloseFile();
 
   std::ifstream  m_InputStream;

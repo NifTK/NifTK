@@ -1037,6 +1037,19 @@ if (BUILD_PROTOTYPE)
   endif()
 endif()
 
+
+######################################################################
+# NifTK uses KWStyle for checking the coding style
+######################################################################
+include(${CMAKE_SOURCE_DIR}/Utilities/KWStyle/NifTKKWStyle.cmake)
+
+
+######################################################################
+# NifTK uses CppCheck for static analysis
+######################################################################
+include(${CMAKE_SOURCE_DIR}/Utilities/CppCheck/NifTKCppCheck.cmake)
+
+
 ######################################################################
 # Output directories, for when compiling, not installing.
 ######################################################################
