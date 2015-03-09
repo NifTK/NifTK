@@ -16,11 +16,11 @@ set(H_FILES
 )
 
 set(CPP_FILES
-  Internal/niftkCoreIOMimeTypes.cxx
   Internal/niftkCoordinateAxesDataReaderService.cxx
   Internal/niftkCoordinateAxesDataWriterService.cxx
-  Internal/mitkPNMReader.cxx
-  Internal/mitkPNMWriter.cxx
-  Internal/niftkCoreActivator.cxx
+  Internal/niftkPNMReaderService.cxx
+  Internal/niftkPNMWriterService.cxx
+  Internal/niftkCoreIOMimeTypes.cxx
+  Internal/niftkCoreIOActivator.cxx
   Internal/niftkCoreIOObjectFactory.cxx
 )

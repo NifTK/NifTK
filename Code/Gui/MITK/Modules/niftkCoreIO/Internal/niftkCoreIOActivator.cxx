@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkCoreActivator.h"
+#include "niftkCoreIOActivator.h"
 #include "niftkCoreIOMimeTypes.h"
 
 #include <usModuleContext.h>
@@ -20,17 +20,17 @@
 namespace niftk {
 
 //-----------------------------------------------------------------------------
-CoreActivator::CoreActivator()
-  : m_CoordinateAxesDataReaderService(NULL)
-  , m_CoordinateAxesDataWriterService(NULL)
-  , m_PNMReaderService(NULL)
-  , m_PNMWriterService(NULL)
+CoreIOActivator::CoreIOActivator()
+: m_CoordinateAxesDataReaderService(NULL)
+, m_CoordinateAxesDataWriterService(NULL)
+, m_PNMReaderService(NULL)
+, m_PNMWriterService(NULL)
 {
-
 }
 
+
 //-----------------------------------------------------------------------------
-void CoreActivator::Load(us::ModuleContext* context)
+void CoreIOActivator::Load(us::ModuleContext* context)
 {
   us::ServiceProperties props;
   props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
@@ -44,13 +44,13 @@ void CoreActivator::Load(us::ModuleContext* context)
 
   m_CoordinateAxesDataReaderService.reset(new niftk::CoordinateAxesDataReaderService());
   m_CoordinateAxesDataWriterService.reset(new niftk::CoordinateAxesDataWriterService());
-  m_PNMReaderService.reset(new mitk::PNMReader());
-  m_PNMWriterService.reset(new mitk::PNMWriter());
+  m_PNMReaderService.reset(new niftk::PNMReaderService());
+  m_PNMWriterService.reset(new niftk::PNMWriterService());
 }
 
 
 //-----------------------------------------------------------------------------
-void CoreActivator::Unload(us::ModuleContext* )
+void CoreIOActivator::Unload(us::ModuleContext* )
 {
   m_CoordinateAxesDataReaderService.reset(NULL);
   m_CoordinateAxesDataWriterService.reset(NULL);
@@ -60,4 +60,4 @@ void CoreActivator::Unload(us::ModuleContext* )
 
 } // end namespace
 
-US_EXPORT_MODULE_ACTIVATOR(niftk::CoreActivator)
+US_EXPORT_MODULE_ACTIVATOR(niftk::CoreIOActivator)

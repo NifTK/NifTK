@@ -12,8 +12,12 @@
 
 =============================================================================*/
 
-#include "mitkPNMWriter.h"
-#include "../Internal/niftkCoreIOMimeTypes.h"
+#include "niftkPNMWriterService.h"
+#include "niftkCoreIOMimeTypes.h"
+
+#include <mitkCustomMimeType.h>
+#include <mitkLogMacros.h>
+#include <mitkImage.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkCleanPolyData.h>
@@ -21,32 +25,41 @@
 #include <vtkPNMWriter.h>
 #include <vtkImageData.h>
 
-#include <mitkAbstractFileWriter.h>
-#include <mitkCustomMimeType.h>
-#include <mitkLogMacros.h>
-#include <mitkImage.h>
+namespace niftk
+{
 
-
-
-mitk::PNMWriter::PNMWriter()
-  : mitk::AbstractFileWriter(mitk::Image::GetStaticNameOfClass(), CustomMimeType(niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME() ), niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
+//-----------------------------------------------------------------------------
+PNMWriterService::PNMWriterService()
+: mitk::AbstractFileWriter(mitk::Image::GetStaticNameOfClass(),
+                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME() ),
+                           niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
 
-mitk::PNMWriter::PNMWriter(const mitk::PNMWriter & other)
-  :mitk::AbstractFileWriter(other)
-{}
 
-mitk::PNMWriter::~PNMWriter()
-{}
-
-mitk::PNMWriter * mitk::PNMWriter::Clone() const
+//-----------------------------------------------------------------------------
+PNMWriterService::PNMWriterService(const PNMWriterService& other)
+:mitk::AbstractFileWriter(other)
 {
-  return new mitk::PNMWriter(*this);
 }
 
-void mitk::PNMWriter::Write()
+
+//-----------------------------------------------------------------------------
+PNMWriterService::~PNMWriterService()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+PNMWriterService* PNMWriterService::Clone() const
+{
+  return new PNMWriterService(*this);
+}
+
+
+//-----------------------------------------------------------------------------
+void PNMWriterService::Write()
 {
 
   std::ostream* out;
@@ -66,7 +79,7 @@ void mitk::PNMWriter::Write()
   {
     MITK_ERROR << "Stream not good.";
   }
-  
+
   std::string outputLocation;
 
   try
@@ -97,3 +110,6 @@ void mitk::PNMWriter::Write()
     mitkThrow() << e.what();
   }
 }
+
+} // end namespace
+

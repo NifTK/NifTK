@@ -18,21 +18,11 @@
 #include <mitkCoreObjectFactory.h>
 #include "niftkCoreExports.h"
 
-#include <mitkCustomMimeType.h>
-
 namespace mitk {
-
-class AbstractFileIO;
 
 /**
  * \class NifTKCoreObjectFactory
- * \brief Object factory class to create and register our factory classes.
- *
- * Specifically, this class contains the logic to register a DRC specific
- * Analyze image reader, and NifTK specific Nifti reader and additionally,
- * this class contains the logic to instantiate the normal MITK object factory,
- * hunt down and kill the "normal" MITK based image file reader that is based on ITK,
- * and installs our ITK based file reader.
+ * \brief Object factory class to instantiate or set properties on our non-IO related classes.
  */
 class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
 {
@@ -58,10 +48,6 @@ public:
   /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
   DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
 
-  static mitk::CustomMimeType INRIA_MIMETYPE();
-
-  static std::string INRIA_MIMETYPE_NAME();
-
 protected:
   NifTKCoreObjectFactory();
   virtual ~NifTKCoreObjectFactory();
@@ -71,8 +57,6 @@ protected:
   MultimapType m_SaveFileExtensionsMap;
 
 private:
-
-  std::vector<mitk::AbstractFileIO*> m_FileIOs;
 
 };
 

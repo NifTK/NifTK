@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#ifndef mitkCoordinateAxesDataReaderService_h
-#define mitkCoordinateAxesDataReaderService_h
+#ifndef niftkCoordinateAxesDataReaderService_h
+#define niftkCoordinateAxesDataReaderService_h
 
 #include <mitkAbstractFileReader.h>
-#include <mitkCoordinateAxesData.h>
 
 namespace niftk
 {
 
 /**
- * @internal
+ * @class CoordinateAxesDataReaderService
  * @brief Loads a 4x4 Matrix into a mitk::CoordinateAxesData.
+ * @internal
  */
 class CoordinateAxesDataReaderService: public mitk::AbstractFileReader
 {

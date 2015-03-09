@@ -20,13 +20,18 @@
 
 namespace niftk {
 
+/**
+ * @class CoreIOMimeTypes
+ * @brief The CoreIOMimeTypes class
+ */
 class CoreIOMimeTypes
 {
 public:
 
   static std::vector<mitk::CustomMimeType*> Get();
 
-  static mitk::CustomMimeType TRANSFORM4X4_MIMETYPE(); // 4x4
+  // .4x4
+  static mitk::CustomMimeType TRANSFORM4X4_MIMETYPE();
   static std::string TRANSFORM4X4_MIMETYPE_NAME();
   static std::string TRANSFORM4X4_MIMETYPE_DESCRIPTION();
 
@@ -48,6 +53,11 @@ public:
   static mitk::CustomMimeType PPM_MIMETYPE();
   static std::string PPM_MIMETYPE_NAME();
   static std::string PPM_MIMETYPE_DESCRIPTION();
+
+  // Inria
+  static mitk::CustomMimeType INRIA_MIMETYPE();
+  static std::string INRIA_MIMETYPE_NAME();
+  static std::string INRIA_MIMETYPE_DESCRIPTION();
 
 private:
 

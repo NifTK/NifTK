@@ -20,25 +20,32 @@ namespace niftk {
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataWriterService::CoordinateAxesDataWriterService()
-  : mitk::AbstractFileWriter(mitk::CoordinateAxesData::GetStaticNameOfClass(),
-                             mitk::CustomMimeType(niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()),
-                             "NifTK Coordinate Axes Writer")
+: mitk::AbstractFileWriter(mitk::CoordinateAxesData::GetStaticNameOfClass(),
+                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()),
+                           "NifTK Coordinate Axes Writer")
 {
   RegisterService();
 }
 
 
 //-----------------------------------------------------------------------------
-CoordinateAxesDataWriterService::CoordinateAxesDataWriterService(
-    const CoordinateAxesDataWriterService& other)
-  : AbstractFileWriter(other)
+CoordinateAxesDataWriterService::CoordinateAxesDataWriterService(const CoordinateAxesDataWriterService& other)
+: AbstractFileWriter(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataWriterService::~CoordinateAxesDataWriterService()
-{}
+{
+}
+
+
+//-----------------------------------------------------------------------------
+CoordinateAxesDataWriterService* CoordinateAxesDataWriterService::Clone() const
+{
+  return new CoordinateAxesDataWriterService(*this);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -48,13 +55,6 @@ void CoordinateAxesDataWriterService::Write()
 
   mitk::CoordinateAxesData::ConstPointer transform = dynamic_cast<const mitk::CoordinateAxesData*>(this->GetInput());
   transform->SaveToFile(fileName);
-}
-
-
-//-----------------------------------------------------------------------------
-CoordinateAxesDataWriterService* CoordinateAxesDataWriterService::Clone() const
-{
-  return new CoordinateAxesDataWriterService(*this);
 }
 
 } // end namespace

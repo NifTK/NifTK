@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#ifndef mitkCoordinateAxesDataWriterService_h
-#define mitkCoordinateAxesDataWriterService_h
+#ifndef niftkCoordinateAxesDataWriterService_h
+#define niftkCoordinateAxesDataWriterService_h
 
 #include <mitkAbstractFileWriter.h>
-#include <mitkCoordinateAxesData.h>
 
 namespace niftk
 {
 
 /**
- * @internal
+ * @class CoordinateAxesDataWriterService
  * @brief Saves a mitk::CoordinateAxesData into a 4x4 Matrix text file.
+ * @internal
  */
 class CoordinateAxesDataWriterService : public mitk::AbstractFileWriter
 {

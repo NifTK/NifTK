@@ -12,36 +12,32 @@
 
 =============================================================================*/
 
-#ifndef mitkNifTKCoreObjectFactory_h
-#define mitkNifTKCoreObjectFactory_h
+#ifndef niftkCoreIOObjectFactory_h
+#define niftkCoreIOObjectFactory_h
 
 #include <mitkCoreObjectFactory.h>
-#include "niftkCoreExports.h"
-
-#include <mitkCustomMimeType.h>
 
 namespace mitk {
-
 class AbstractFileIO;
+}
+
+namespace niftk {
 
 /**
- * \class NifTKCoreObjectFactory
- * \brief Object factory class to create and register our factory classes.
+ * \class CoreIOObjectFactory
+ * \brief Object factory class to create and register our IO classes.
  *
  * Specifically, this class contains the logic to register a DRC specific
- * Analyze image reader, and NifTK specific Nifti reader and additionally,
- * this class contains the logic to instantiate the normal MITK object factory,
- * hunt down and kill the "normal" MITK based image file reader that is based on ITK,
- * and installs our ITK based file reader.
+ * Analyze image reader, and NifTK specific Nifti reader.
  */
-class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
+class CoreIOObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
-  mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
-  itkNewMacro(NifTKCoreObjectFactory);
+  mitkClassMacro(CoreIOObjectFactory, mitk::CoreObjectFactoryBase);
+  itkNewMacro(CoreIOObjectFactory);
 
   /// \see CoreObjectFactoryBase::CreateMapper
-  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+  virtual mitk::Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
 
   /// \see CoreObjectFactoryBase::SetDefaultProperties
   virtual void SetDefaultProperties(mitk::DataNode* node);
@@ -58,13 +54,10 @@ public:
   /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
   DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
 
-  static mitk::CustomMimeType INRIA_MIMETYPE();
-
-  static std::string INRIA_MIMETYPE_NAME();
-
 protected:
-  NifTKCoreObjectFactory();
-  virtual ~NifTKCoreObjectFactory();
+
+  CoreIOObjectFactory();
+  virtual ~CoreIOObjectFactory();
 
   void CreateFileExtensionsMap();
   MultimapType m_FileExtensionsMap;

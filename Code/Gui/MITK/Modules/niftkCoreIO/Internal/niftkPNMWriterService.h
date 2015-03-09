@@ -12,32 +12,34 @@
 
 =============================================================================*/
 
-#ifndef __mitkPNMWriter_h
-#define __mitkPNMWriter_h
+#ifndef niftkPNMWriterService_h
+#define niftkPNMWriterService_h
 
 #include <mitkAbstractFileWriter.h>
-#include <vtkPolyDataWriter.h>
 
-namespace mitk
+namespace niftk
 {
 
 /**
  * Writes PNM format images to disk
  * @ingroup Process
  */
-class PNMWriter : public mitk::AbstractFileWriter
+class PNMWriterService : public mitk::AbstractFileWriter
 {
 public:
-  PNMWriter();
-  PNMWriter(const PNMWriter & other);
-  virtual PNMWriter * Clone() const;
-  virtual ~PNMWriter();
+
+  PNMWriterService();
+  virtual ~PNMWriterService();
 
   using mitk::AbstractFileWriter::Write;
   virtual void Write();
-};
 
+private:
+
+  PNMWriterService(const PNMWriterService & other);
+  virtual PNMWriterService * Clone() const;
+};
 
 } // end of namespace mitk
 
-#endif //__mitkPNMWriter_h
+#endif
