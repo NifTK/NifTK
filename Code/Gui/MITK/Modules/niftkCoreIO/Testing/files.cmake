@@ -14,14 +14,8 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cxx
-  mitkPointUtilsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
-  mitkMIDASOrientationUtilsTest.cxx
-  mitkMIDASAsAcquiredOrientationTest.cxx
-  mitkMIDASImageUtilsTest.cxx
-  mitkMIDASCompareImagesForEqualityTest.cxx
-  mitkCoordinateAxesDataRenderingTest.cxx
+  niftkCoordinateAxesDataReaderWriterServiceTest.cxx
 )

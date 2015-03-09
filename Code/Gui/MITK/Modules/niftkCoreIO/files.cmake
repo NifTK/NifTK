@@ -12,16 +12,15 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cxx
-  mitkPointUtilsTest.cxx
+set(H_FILES
 )
 
-set(MODULE_CUSTOM_TESTS
-  mitkMIDASOrientationUtilsTest.cxx
-  mitkMIDASAsAcquiredOrientationTest.cxx
-  mitkMIDASImageUtilsTest.cxx
-  mitkMIDASCompareImagesForEqualityTest.cxx
-  mitkCoordinateAxesDataRenderingTest.cxx
+set(CPP_FILES
+  Internal/niftkCoreIOMimeTypes.cxx
+  Internal/niftkCoordinateAxesDataReaderService.cxx
+  Internal/niftkCoordinateAxesDataWriterService.cxx
+  Internal/mitkPNMReader.cxx
+  Internal/mitkPNMWriter.cxx
+  Internal/niftkCoreActivator.cxx
+  Internal/niftkCoreIOObjectFactory.cxx
 )

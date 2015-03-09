@@ -17,10 +17,10 @@
 
 #include "niftkCoordinateAxesDataReaderService.h"
 #include "niftkCoordinateAxesDataWriterService.h"
+#include "mitkPNMReader.h"
+#include "mitkPNMWriter.h"
 #include <mitkIFileReader.h>
 #include <mitkIFileWriter.h>
-#include <mitkPNMReader.h>
-#include <mitkPNMWriter.h>
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
