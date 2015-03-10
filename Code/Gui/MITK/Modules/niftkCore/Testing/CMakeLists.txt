@@ -21,10 +21,10 @@ mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_01719-s mitkMIDASAsA
 mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_01719-c mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img 2 2)
 
 # Test "As Acquired", changing default to make sure we are not needing it, output should always be sagittal.
-mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_matt-0  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 0 1)
-mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_matt-1  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 1 1)
-mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_matt-2  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 2 1)
-mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_matt-14 mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii 14 1)
+mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_30257-0  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii 0 1)
+mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_30257-1  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii 1 1)
+mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_30257-2  mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii 2 1)
+mitkAddCustomModuleTest(MIDAS-mitkAsAcquiredOrientationTest_30257-14 mitkMIDASAsAcquiredOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii 14 1)
 
 # Test that analyze images load the same as Nifti images. Here we test intensity values, assuming same size.
 mitkAddCustomModuleTest(MIDAS-mitkDRCAnalyzeSameIntensitiesAsNiftiTest_01719-a mitkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
@@ -39,7 +39,7 @@ mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-a mitkMIDASOri
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-s mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-s.img ASL -1  1 -1 1 2 0)
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-01719-c mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img RSP -1 -1  1 1 0 2)
 mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-16856   mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img RSP -1 -1  1 1 0 2)
-mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-matt    mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/matt/mdeft_nifti/mdeft.1.nii AIL 1 1 -1 1 2 0)
+mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-30257    mitkMIDASOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii AIL 1 1 -1 1 2 0)
 
 # Trac 1706 - Dilations break through connection breaker image.
 mitkAddCustomModuleTest(MIDAS-mitkMIDASImageUtilsTest-16856 mitkMIDASImageUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
@@ -50,4 +50,4 @@ if(BUILD_SLS_TESTING)
                           -V ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png
   )
 endif()
-mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataReaderWriterTest mitkCoordinateAxesDataReaderWriterTest ${TEMP}/mitkCoordinateAxesDataRenderingTest.4x4)
+mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataReaderWriterServiceTest niftkCoordinateAxesDataReaderWriterServiceTest ${TEMP}/mitkCoordinateAxesDataReaderWriterServiceTest.4x4)

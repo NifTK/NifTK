@@ -134,8 +134,7 @@ public:
     std::string fileName = argv[1];
     std::vector<std::string> files;
     files.push_back(fileName);
-    mitk::IOUtil::LoadFiles(files, *(dataStorage.GetPointer()));
-    mitk::DataStorage::SetOfObjects::ConstPointer allImages = dataStorage->GetAll();
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(dataStorage.GetPointer()));
     dataNode = (*allImages)[0];
 
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");

@@ -24,36 +24,36 @@ endif()
 
 if(BUILD_NIFTYREC)
 
-  set(proj NiftyRec)
-  set(proj_DEPENDENCIES NiftyReg )
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
-  set(NIFTYREC_DEPENDS ${proj})
+  set(version "14")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyRec-${version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(NiftyRec ${version} ${location})
+  set(proj_DEPENDENCIES NiftyReg)
 
   if(NOT DEFINED NIFTYREC_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREC ${NIFTK_LOCATION_NIFTYREC})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_NIFTYREC}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYREC}
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DCUDA_SDK_ROOT_DIR=${CUDA_SDK_ROOT_DIR}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYREC_ROOT ${proj_INSTALL})
     set(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
     set(NIFTYREC_LIBRARY_DIR "${NIFTYREC_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyRec from ${NIFTYREC_ROOT}")
 

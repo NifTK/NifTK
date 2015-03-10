@@ -16,6 +16,8 @@ Useful Links
  - [NifTK home page][niftk].
  - [Dashboard][dashboard].
  - [Nightly code documentation][doxygen].
+ - [Build instructions][build].
+ - [Installation instructions for when you download binaries][install].
 
 License
 -----------
@@ -56,4 +58,5 @@ NiftyLink is a cross-platform C++ library and officially supports:
 [citation]: http://link.springer.com/article/10.1007%2Fs11548-014-1124-7
 [niftk]: http://www.niftk.org
 [seb]: http://cmic.cs.ucl.ac.uk/staff/sebastien_ourselin
-
+[build]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html
+[install]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html

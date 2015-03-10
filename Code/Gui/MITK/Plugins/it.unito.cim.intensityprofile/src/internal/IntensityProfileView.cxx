@@ -84,7 +84,7 @@ public:
 
   IntensityProfileView::RangeBounds rangeBounds;
 
-  mitk::Index3D crosshairIndex;
+  itk::Index<3> crosshairIndex;
   QMap<mitk::DataNode*, QwtPlotCurve*> crosshairProfiles;
   QMap<QString, QwtPlotCurve*> keptCrosshairProfiles;
 
@@ -522,18 +522,18 @@ IntensityProfileView::ComputeTimeBounds()
 
   ScalarType stmin, stmax, cur;
 
-  stmin= ScalarTypeNumericTraits::NonpositiveMin();
-  stmax= ScalarTypeNumericTraits::max();
+  stmin= itk::NumericTraits<mitk::ScalarType>::NonpositiveMin();
+  stmax= itk::NumericTraits<mitk::ScalarType>::max();
 
   timeBounds[0]=stmax; timeBounds[1]=stmin;
 
 
   foreach (mitk::DataNode* node, d->referenceNodes)
   {
-    const Geometry3D* geometry = node->GetData()->GetUpdatedGeometry();
-    if (geometry != NULL )
+    const TimeGeometry* timeGeometry = node->GetData()->GetUpdatedTimeGeometry();
+    if (timeGeometry != NULL )
     {
-      const TimeBounds & curTimeBounds = geometry->GetTimeBounds();
+      const TimeBounds & curTimeBounds = timeGeometry->GetTimeBounds();
       cur=curTimeBounds[0];
       //is it after -infinity, but before everything else that we found until now?
       if((cur > stmin) && (cur < timeBounds[0]))
@@ -560,8 +560,8 @@ IntensityProfileView::ComputeRangeBounds()
 
   RangeBounds rangeBounds;
 
-  mitk::ScalarType minRangeMin = mitk::ScalarTypeNumericTraits::max();
-  mitk::ScalarType maxRangeMax = mitk::ScalarTypeNumericTraits::min();
+  mitk::ScalarType minRangeMin = itk::NumericTraits<mitk::ScalarType>::max();
+  mitk::ScalarType maxRangeMax = itk::NumericTraits<mitk::ScalarType>::min();
 
   foreach (mitk::DataNode* node, d->referenceNodes) {
     mitk::LevelWindow levelWindow;
@@ -579,7 +579,7 @@ IntensityProfileView::ComputeRangeBounds()
   }
 
   // If we have not found any level window:
-  if (minRangeMin == mitk::ScalarTypeNumericTraits::max()) {
+  if (minRangeMin == itk::NumericTraits<mitk::ScalarType>::max()) {
     rangeBounds[0] = 0.0;
     rangeBounds[1] = 100.0;
   }
@@ -797,7 +797,7 @@ IntensityProfileView::calculateCrosshairProfiles(mitk::Point3D crosshairPos)
 //    ui->plotter->setAxisScale(QwtPlot::yLeft, levelWindow.GetRangeMin(), levelWindow.GetRangeMax());
     //    ui->plotter->setAxisScale(QwtPlot::xBottom, 0.0, vfaTimeSteps - 1.0, 5.0);
 
-    mitk::Index3D p;
+    itk::Index<3> p;
     image4D->GetGeometry()->WorldToIndex(crosshairPos, p);
     d->crosshairIndex = p;
 
@@ -943,7 +943,7 @@ void IntensityProfileView::plotRoiProfile(mitk::DataNode* node, mitk::DataNode* 
     for (unsigned t = 0; t < timeSteps; ++t) {
       xValuesOrdered[t] = xValues[xValueOrder[t]];
       Statistics& stat = stats[xValueOrder[t]];
-      yValues[t] = stat.Mean;
+      yValues[t] = stat.GetMean();
     }
     QString title = QString("%1 [%2]").
         arg(QString::fromStdString(node->GetName())).
@@ -1236,12 +1236,12 @@ IntensityProfileView::on_copyStatisticsButton_clicked()
           // Copy statistics to clipboard ("%Ln" will use the default locale for
           // number formatting)
           row = row.append(" \t %L1 \t %L2 \t %L3 \t %L4 \t %L5 \t %L6")
-            .arg(roiStatisticsAtTimeStep.Mean, 0, 'f', 10)
-            .arg(roiStatisticsAtTimeStep.Sigma, 0, 'f', 10)
-            .arg(roiStatisticsAtTimeStep.RMS, 0, 'f', 10)
-            .arg(roiStatisticsAtTimeStep.Min, 0, 'f', 10)
-            .arg(roiStatisticsAtTimeStep.Max, 0, 'f', 10)
-            .arg(roiStatisticsAtTimeStep.N);
+            .arg(roiStatisticsAtTimeStep.GetMean(), 0, 'f', 10)
+            .arg(roiStatisticsAtTimeStep.GetSigma(), 0, 'f', 10)
+            .arg(roiStatisticsAtTimeStep.GetRMS(), 0, 'f', 10)
+            .arg(roiStatisticsAtTimeStep.GetMin(), 0, 'f', 10)
+            .arg(roiStatisticsAtTimeStep.GetMax(), 0, 'f', 10)
+            .arg(roiStatisticsAtTimeStep.GetN());
           ++it;
         }
         clipboard = clipboard.append(row).append("\n");

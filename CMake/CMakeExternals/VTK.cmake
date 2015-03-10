@@ -22,9 +22,12 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
 endif()
 
-set(proj VTK)
-set(proj_DEPENDENCIES )
-set(VTK_DEPENDS ${proj})
+set(version "6.1.0+74f4888")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/VTK-${version}.tar.gz")
+
+niftkMacroDefineExternalProjectVariables(VTK ${version} ${location})
+
+set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
 
 if(NOT DEFINED VTK_DIR)
 
@@ -43,16 +46,32 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(MINGW)
 
-  if(DESIRED_QT_VERSION MATCHES 4) # current VTK package has a HARD Qt 4 dependency
+  if(WIN32)
+    # see http://bugs.mitk.org/show_bug.cgi?id=17858
     list(APPEND additional_cmake_args
-        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-        -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-        -DVTK_USE_QT:BOOL=ON
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DVTK_Group_Qt:BOOL=ON
-    )
+         -DVTK_DO_NOT_DEFINE_OSTREAM_SLL:BOOL=ON
+         -DVTK_DO_NOT_DEFINE_OSTREAM_ULL:BOOL=ON
+        )
   endif()
+
+  # Optionally enable memory leak checks for any objects derived from vtkObject. This
+  # will force unit tests to fail if they have any of these memory leaks.
+  option(MITK_VTK_DEBUG_LEAKS OFF)
+  mark_as_advanced(MITK_VTK_DEBUG_LEAKS)
+  list(APPEND additional_cmake_args
+       -DVTK_DEBUG_LEAKS:BOOL=${MITK_VTK_DEBUG_LEAKS}
+      )
+
+
+  list(APPEND additional_cmake_args
+      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
+      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+      -DModule_vtkGUISupportQt:BOOL=ON
+      -DModule_vtkGUISupportQtWebkit:BOOL=ON
+      -DModule_vtkGUISupportQtSQL:BOOL=ON
+      -DModule_vtkRenderingQt:BOOL=ON
+      -DVTK_Group_Qt:BOOL=ON
+  )
 
   if(APPLE)
     set(additional_cmake_args
@@ -61,39 +80,40 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(APPLE)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
-    URL ${NIFTK_LOCATION_VTK}
-    URL_MD5 ${NIFTK_CHECKSUM_VTK}
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
+    LIST_SEPARATOR ^^
+    PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
+    PATCH_COMMAND ${VTK_PATCH_COMMAND}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DVTK_USE_RPATH:BOOL=ON
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=${VTK_USE_SYSTEM_FREETYPE}
         -DVTK_USE_GUISUPPORT:BOOL=ON
         -DVTK_LEGACY_REMOVE:BOOL=ON
         -DModule_vtkTestingRendering:BOOL=ON
-        -DModule_vtkGUISupportQt:BOOL=ON
-        -DModule_vtkGUISupportQtWebkit:BOOL=ON
-        -DModule_vtkGUISupportQtSQL:BOOL=ON
-        -DModule_vtkRenderingQt:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
-    )
+  )
 
-  set(VTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(VTK_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(VTK_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

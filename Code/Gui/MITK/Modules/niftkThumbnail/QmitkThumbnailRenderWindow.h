@@ -225,6 +225,9 @@ private:
   /// \brief This is set to the currently tracked renderer. We don't construct or own it, so don't delete it.
   mitk::BaseRenderer::ConstPointer m_TrackedRenderer;
 
+  // This is set to the current world geometry.
+  mitk::BaseGeometry::Pointer m_TrackedWorldGeometry;
+
   /// \brief The rendering manager of the tracked renderer.
   /// The renderer of the thumbnail window should be added to the rendering manager
   /// of the render window that is being tracked. This is not instead but in addition
@@ -232,9 +235,6 @@ private:
   /// This is needed so that the thumbnail window is immediately updated any time
   /// when the contents of the tracked window changes.
   mitk::RenderingManager* m_TrackedRenderingManager;
-
-  /// \brief This is set to the current world geometry.
-  mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
 
   /// \brief Keep track of this to register and unregister event listeners.
   mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;

@@ -23,4 +23,5 @@ void RegisterTests()
 {
   REGISTER_TEST(CheckImageDimensionalityTest);
   REGISTER_TEST(ReceptorMemberCommandTest);
+  REGISTER_TEST(MIDASOrientationTest);
 }

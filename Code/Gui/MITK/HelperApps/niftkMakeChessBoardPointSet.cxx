@@ -12,13 +12,12 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
-#include <niftkConversionUtils.h>
-#include <itkCommandLineHelper.h>
-#include <niftkMakeChessBoardPointSetCLP.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
+
 #include <mitkPointUtils.h>
+#include <niftkConversionUtils.h>
+#include <niftkMakeChessBoardPointSetCLP.h>
 
 /**
  * \brief Generates a 2D image with a calibration pattern.

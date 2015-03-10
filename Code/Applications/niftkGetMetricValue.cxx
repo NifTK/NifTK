@@ -21,7 +21,6 @@
 #include <itkImageIOBase.h>
 #include <itkGiplImageIO.h>
 #include <itkVTKImageIO.h>
-#include <itkINRImageIOFactory.h>
 /* ********************************************************************** */
 
 typedef itk::Image<float,2> ImageType;

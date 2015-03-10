@@ -7,16 +7,6 @@ Version @NIFTK_VERSION_STRING@.
 For all questions and queries, please join the users mailing list:
 @NIFTK_USER_CONTACT@.
 
-Documentation
--------------
-
-The documentation is provided via
-
-  an online @NIFTK_WIKI_TEXT@: @NIFTK_WIKI_URL@
-  nightly generated documentation: @NIFTK_NIGHTLY_DOCS@
-
-and each graphical user interface contains its own help files.
-
 Notices
 -------
 
@@ -74,12 +64,12 @@ Website : http://opencv.willowgarage.com/wiki
 Purpose : Computer Vision.
 License : Doc/Licences/OpenCV.txt (BSD 3 clause license)
 
-Library : Aruco
+Library : ArUco
 Website : http://www.uco.es/investiga/grupos/ava/node/26
 Purpose : AR marker tracking.
-License : Doc/Licenses/Aruco.txt (BSD 2 clause license)
+License : Doc/Licenses/ArUco.txt (BSD 2 clause license)
 
-Library : EIGEN
+Library : Eigen
 Website : http://eigen.tuxfamily.org
 Purpose : Matrix library used by AprilTags, PCL etc.
 License : http://www.mozilla.org/MPL/2.0/ (Mozilla Public License v2.0)

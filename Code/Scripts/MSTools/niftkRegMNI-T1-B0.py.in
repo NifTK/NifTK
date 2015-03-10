@@ -625,7 +625,7 @@ if SPACE=='MNI' or SPACE=='ATLAS' or SPACE=='ALL' :
 	# We move from PSEUDO_T1 to ATLAS space
 	reg_resample(ATLAS,PSEUDOT1_INPUT_IMAGE,'-def','T2ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'PSEUDO_T1.nii.gz'))
 	# We move from B0 to ATLAS space
-	reg_resample_2_space(ATLAS,T2_INPUT_IMAGE,B0_INPUT_IMAGE,'B0ToT2_transformation.nii.gz','T2ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'b0.nii.gz'))
+	reg_resample_2_space(ATLAS,T1_INPUT_IMAGE,B0_INPUT_IMAGE,'B0ToT1_transformation.nii.gz','T1ToAtlas_transformation.nii.gz',os.path.join(output_image_dir,'b0.nii.gz'))
 
 if SPACE=='B0' or SPACE=='DTI' or SPACE=='DWI' or SPACE=='NODDI' or SPACE=='ALL' :
 	output_image_dir=os.path.join(current_dir,"B0_Space")
@@ -642,7 +642,7 @@ if SPACE=='B0' or SPACE=='DTI' or SPACE=='DWI' or SPACE=='NODDI' or SPACE=='ALL'
 	# We move from PSEUDO_T1 to B0 space
 	reg_resample(B0_INPUT_IMAGE,PSEUDOT1_INPUT_IMAGE,'-def','T2ToB0_transformation.nii.gz',os.path.join(output_image_dir,'PSEUDO_T1.nii.gz'))
 	# We move from ATLAS to B0 space
-	reg_resample_2_space(B0_INPUT_IMAGE,T2_INPUT_IMAGE,ATLAS,'AtlasToT2_transformation.nii.gz','T2ToB0_transformation.nii.gz',os.path.join(output_image_dir,'ATLAS.nii.gz'))
+	reg_resample_2_space(B0_INPUT_IMAGE,T1_INPUT_IMAGE,ATLAS,'AtlasToT1_transformation.nii.gz','T1ToB0_transformation.nii.gz',os.path.join(output_image_dir,'ATLAS.nii.gz'))
 
 if SPACE=='T1' or SPACE=='ALL' :
 	output_image_dir=os.path.join(current_dir,"T1_Space")

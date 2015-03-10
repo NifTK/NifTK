@@ -15,6 +15,7 @@
 
 #include "itkBreastMaskSegmForBreastDensity.h"
 
+#include <itkSignedMaurerDistanceMapImageFilter.h>
 
 namespace itk
 {
@@ -63,14 +64,21 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   this->CalculateTheMaximumImage();
 
   // Segment the backgound using itkForegroundFromBackgroundImageThresholdCalculator
-  this->SegmentForegroundFromBackground();
+  if ( this->bgndThresholdProb )
+  {
+    this->SegmentBackground();
+  }
+  else
+  {
+    this->SegmentForegroundFromBackground();
+  }
 
   // Find the nipple and mid-sternum landmarks
   this->FindBreastLandmarks();
 
   // Compute a 2D map of the height of the patient's anterior skin
   // surface and use it to remove the arms
-  this->ComputeElevationOfAnteriorSurface();
+  this->ComputeElevationOfAnteriorSurface( true );
 
   // Segment the Pectoral Muscle
 
@@ -125,12 +133,40 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   if ( this->flgCropWithFittedSurface )
     this->MaskWithBSplineBreastSurface( rYHeightOffset );
 
-  // OR Discard anything not within a certain radius of the breast center
-  else 
-    this->MaskBreastWithSphere();
-  
+  // Discard anything not within the skin elevation mask  
+  if ( this->imSkinElevationMap )
+    this->CropTheMaskAccordingToEstimateOfCoilExtentInCoronalPlane();
+    
   // Smooth the mask and threshold to round corners etc.
   this->SmoothMask();
+
+  // Shrink the mask by a few millimeters to eliminiate the skin
+
+  typedef SignedMaurerDistanceMapImageFilter<InternalImageType, InternalImageType> InputDistanceMapFilterType;
+
+  typename InputDistanceMapFilterType::Pointer inputDistFilter = InputDistanceMapFilterType::New();
+
+  inputDistFilter->SetInput( this->imSegmented );
+  inputDistFilter->SetUseImageSpacing(true);
+  inputDistFilter->InsideIsPositiveOn();
+
+  std::cout << "Computing distance transform for skin estimation" << std::endl;
+  inputDistFilter->Update();
+
+
+  typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
+  
+  thresholder->SetLowerThreshold( 2. ); // Remove 2mm
+  thresholder->SetUpperThreshold( 100000 );
+
+  thresholder->SetOutsideValue(  0  );
+  thresholder->SetInsideValue( 1000 );
+
+  thresholder->SetInput( inputDistFilter->GetOutput() );
+
+  thresholder->Update();
+  
+  this->imSegmented = thresholder->GetOutput();
 
   // Extract the largest object
   this->ExtractLargestObject( this->LEFT_BREAST );

@@ -51,11 +51,13 @@ set(NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
 
 if (BUILD_MESHING)
   set(NIFTK_MESHING_APPLICATION_LIBRARIES
-    niftkMeshingLib
+    niftkMeshing
     niftkITK
     niftkVTK
     niftkcommon
     ${ITK_LIBRARIES}
+    ${CGAL_LIBRARIES}
+    ${CGAL_3RD_PARTY_LIBRARIES}
     )
 endif (BUILD_MESHING)
 
@@ -109,7 +111,9 @@ if(SlicerExecutionModel_FOUND)
     niftkSegmentForegroundFromBackground
     niftkSubsampleImage
     niftkSubtract
+    niftkThinPlateSplineScatteredDataPointSetToImage
     niftkUnaryImageOperatorsOnDirectoryTree
+    niftkVesselExtractor
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
@@ -131,10 +135,8 @@ if(SlicerExecutionModel_FOUND)
     # Add new programs to this list.
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
-      niftkBreastDensityFromMRIs
       #niftkMakeLapUSProbeBasicModel
       niftkMakeLapUSProbeARUCOModel
-      niftkMakeLapUSProbeAprilTagsModel
       niftkMakeLapUSProbeAprilTagsVisualisation
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
@@ -151,6 +153,29 @@ if(SlicerExecutionModel_FOUND)
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
     endforeach()
+
+    if(QT_FOUND)
+
+      #-------------------------------------------------------------
+      # Add new programs to this list.
+      #-------------------------------------------------------------
+      set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT
+        niftkBreastDCEandADC
+        niftkBreastDensityFromMRIs
+        niftkBreastDensityFromMRIsGivenMaskAndImage
+        )
+      list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
+
+      foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
+        NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+          NAME ${APP}
+          BUILD_SLICER
+          INSTALL_SCRIPT
+          TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES}
+          )
+      endforeach()
+
+    endif(QT_FOUND)
 
   endif(VTK_FOUND)
 
@@ -174,6 +199,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkBasicImageFeatures
   niftkBasicImageFeatures3D
   niftkBilateralImageFilter
+  niftkBinaryShapeBasedSuperSamplingFilter
   niftkBlockMatching
   niftkBreastDicomSeriesReadImageWrite
   niftkBSI
@@ -241,6 +267,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkRescale
   niftkResetDirectionField
   niftkResetVoxelDimensionsField
+  niftkSampleImage
   niftkSegmentationStatistics
   niftkSeriesReadVolumeWrite
   niftkSetBorderPixel
@@ -253,11 +280,10 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
-  niftkThinPlateSplineScatteredDataPointSetToImage
   niftkThreshold
   niftkTransformation
   niftkTransformPoint3Dto2D
-  niftkVesselExtractor
+  #niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
   niftkKmeansClassifier

@@ -946,7 +946,7 @@ void AffineTransformView::OnAxisChanged(bool on)
 
 void AffineTransformView::OnTransformReady()
 {
-  //mitk::Geometry3D::Pointer geom = msp_DataOwnerNode->GetData()->GetGeometry();
+  //mitk::BaseGeometry* geom = msp_DataOwnerNode->GetData()->GetGeometry();
   //vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
 
   //for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)

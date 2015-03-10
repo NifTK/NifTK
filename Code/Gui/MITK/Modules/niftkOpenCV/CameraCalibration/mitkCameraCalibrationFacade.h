@@ -17,6 +17,8 @@
 
 #include "niftkOpenCVExports.h"
 #include <mitkOpenCVPointTypes.h>
+#include <mitkPoint.h>
+
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>

@@ -24,44 +24,45 @@ endif()
 
 if(BUILD_NIFTYSEG)
 
-  set(proj NiftySeg)
+  set(version "b2decf5160")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location})
   set(proj_DEPENDENCIES Eigen)
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
-  set(NIFTYSEG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSEG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_NIFTYSEG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYSEG}
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      CMAKE_GENERATOR ${gen}
       #CONFIGURE_COMMAND ""
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYSEG}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       #BUILD_COMMAND ""
       #INSTALL_COMMAND ""
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DUSE_OPENMP:BOOL=OFF
         -DINSTALL_PRIORS:BOOL=ON
         -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DUSE_SYSTEM_EIGEN=ON
         -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYSEG_ROOT ${proj_INSTALL})
     set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
     set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
 

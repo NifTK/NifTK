@@ -24,43 +24,41 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
-  set(proj FLANN)
-  set(proj_DEPENDENCIES)
-  set(FLANN_DEPENDS ${proj})
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
-  
+  set(version "1.8.4.1")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/flann-${version}-src.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(FLANN ${version} ${location})
+
   if(NOT DEFINED FLANN_DIR)
-  
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_FLANN ${NIFTK_LOCATION_FLANN})
-  
+
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_FLANN}
-      URL_MD5 ${NIFTK_CHECKSUM_FLANN}
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
-          ${EP_COMMON_ARGS}
-          -DBUILD_MATLAB_BINDINGS:BOOL=OFF
-          -DBUILD_PYTHON_BINDINGS:BOOL=OFF
-          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-          -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-       DEPENDS ${proj_DEPENDENCIES}
-      )
-  
+        ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+        -DBUILD_MATLAB_BINDINGS:BOOL=OFF
+        -DBUILD_PYTHON_BINDINGS:BOOL=OFF
+      DEPENDS ${proj_DEPENDENCIES}
+    )
+
     set(FLANN_DIR ${proj_INSTALL})
     set(FLANN_ROOT ${FLANN_DIR})
-    
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+
     message("SuperBuild loading FLANN from ${FLANN_DIR}")
-  
+
   else(NOT DEFINED FLANN_DIR)
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif(NOT DEFINED FLANN_DIR)
 
 endif()
-
-

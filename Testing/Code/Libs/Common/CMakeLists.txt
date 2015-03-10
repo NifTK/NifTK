@@ -57,9 +57,12 @@ add_test(File-Helper-7 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHel
 add_test(File-Helper-8 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 8)
 add_test(File-Helper-9 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 9)
 add_test(File-Helper-10 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 10)
+add_test(File-Helper-11 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 11)
+add_test(FixedLengthFileReader ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFixedLengthFileReaderTest ${INPUT_DATA}/AprilTagUnitTest/idmat.4x4)
 
 set(FileUnitTests_SRCS
   niftkFileHelperTest.cxx
+  niftkFixedLengthFileReaderTest.cxx
 )
 
 add_executable(niftkFileUnitTests niftkFileUnitTests.cxx ${FileUnitTests_SRCS})

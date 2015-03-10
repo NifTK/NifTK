@@ -13,9 +13,10 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <niftkCorrectVideoDistortionCLP.h>
+
 #include <mitkCorrectVideoFileDistortion.h>
 #include <mitkCorrectImageDistortion.h>
+#include <niftkCorrectVideoDistortionCLP.h>
 
 int main(int argc, char** argv)
 {

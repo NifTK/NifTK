@@ -24,33 +24,30 @@ endif()
 
 if(BUILD_IGI)
 
-  set(proj NiftyLink)
-  set(proj_DEPENDENCIES)
-  set(NIFTYLINK_DEPENDS ${proj})
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git")
+
+  if (NIFTK_NIFTYLINK_DEV)
+
+    # This retrieves the latest commit hash on the development branch.
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} ls-remote --heads ${location} development
+       ERROR_VARIABLE GIT_error
+       OUTPUT_VARIABLE NiftyLinkVersion
+       OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    if(NOT ${GIT_error} EQUAL 0)
+      message(SEND_ERROR "Command \"${GIT_EXECUTABLE} ls-remote --heads ${location} development\" failed with output:\n${GIT_error}")
+    endif()
+
+    string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
+
+  else ()
+    set(version "b9f2782f73")
+  endif ()
+
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})
 
   if(NOT DEFINED NiftyLink_DIR)
-
-    set(revision_tag development)
-
-    if (NIFTK_NIFTYLINK_DEV)
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${revision_tag}
-      )
-    else ()
-      # Must Not Leave Tarballs on Web Server
-      # niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
-      # set(NiftyLink_location_options
-      #   URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
-      #   URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
-      # )
-      #
-      # But we still want a specific version
-      set(NiftyLink_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
-        GIT_TAG ${NIFTK_VERSION_NIFTYLINK}
-      )
-    endif ()
 
     if(DEFINED NIFTYLINK_OIGTLINK_DEV)
       set(NiftyLink_options
@@ -76,26 +73,28 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      ${NiftyLink_location_options}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYLINK}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      GIT_REPOSITORY ${proj_LOCATION}
+      GIT_TAG ${proj_VERSION}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         ${NiftyLink_options}
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-        -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NiftyLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/NiftyLink-build)
-    set(NiftyLink_SOURCE_DIR ${CMAKE_BINARY_DIR}/NiftyLink-src)
-    set(OpenIGTLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
+    set(NiftyLink_DIR ${proj_BUILD}/NiftyLink-build)
+    set(NiftyLink_SOURCE_DIR ${proj_SOURCE})
+    set(OpenIGTLink_DIR ${proj_BUILD}/OPENIGTLINK-build)
+
+#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")

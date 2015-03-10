@@ -17,7 +17,7 @@
 
 #include <NifTKConfigure.h>
 
-#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
+#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC)
   #ifdef NIFTKCOMMON_WINDOWS_EXPORT
     #define NIFTKCOMMON_WINEXPORT __declspec(dllexport)
   #else
@@ -25,8 +25,7 @@
   #endif  /* NIFTKCOMMON_WINEXPORT */
 #else
 /* linux/mac needs nothing */
-  #define NIFTKCOMMON_WINEXPORT 
+  #define NIFTKCOMMON_WINEXPORT
 #endif
-
 
 #endif  //__NIFTKCOMMONWIN32EXPORTHEADER_H

@@ -45,7 +45,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_INT, "yrg", "yCoord", "The 'y' voxel coordinate to regio-grow the bgnd from [ny/4]."},
   {OPT_INT, "zrg", "zCoord", "The 'z' voxel coordinate to regio-grow the bgnd from [nz/2]."},
   
-  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0.25]."},
+  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0]. "
+   "If zero then estimate automatically."},
 
   {OPT_FLOAT, "tsg", "threshold", "The value at which to threshold the final segmentation (0<tsg<1). Changing this value influences the final size of the breast mask with tsg<0.5 expanding the mask and tsg>0.5 contracting it [0.45]"},
 
@@ -82,6 +83,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "opecsurfvox", "filename", "Output the surface voxels of the pectoralis (used for region growing)."},
   
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
+  {OPT_FLOAT,  "coilCrop", NULL,       "MR coil coronal crop distance in mm [10]."},
   {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
   {OPT_SWITCH, "cropPS",  NULL,        "Crop for prone-supine simulations."},
   {OPT_FLOAT,  "cropPSMidSternumDist",  NULL,  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [80]."},
@@ -154,6 +156,7 @@ enum {
   O_OUTPUT_PECTORAL_SURF,
   
   O_CROP_FIT,
+  O_COIL_CROP,
   O_OUTPUT_BREAST_FITTED_SURF_MASK,
   O_CROP_PRONE_SUPINE_SCHEME,
   O_CROP_PRONE_SUPINE_DIST_POST_MIDSTERNUM,
@@ -189,7 +192,7 @@ int main( int argc, char *argv[] )
   int regGrowYcoord = 0;
   int regGrowZcoord = 0;
 
-  float bgndThresholdProb = 0.25;
+  float bgndThresholdProb = 0.;
 
   float finalSegmThreshold = 0.45;
 
@@ -201,6 +204,7 @@ int main( int argc, char *argv[] )
 
   float sigmaBIF = 3.0;
 
+  float coilCropDistance = 10.0;
   float cropProneSupineDistPostMidSternum  = 80.0;
 
   std::string fileBIFs;
@@ -318,7 +322,8 @@ int main( int argc, char *argv[] )
   
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_SURF,           fileOutputPectoralSurfaceVoxels );
   
-  CommandLineOptions.GetArgument( O_CROP_FIT,                       flgCropWithFittedSurface     );
+  CommandLineOptions.GetArgument( O_CROP_FIT,                       flgCropWithFittedSurface );
+  CommandLineOptions.GetArgument( O_COIL_CROP,                      coilCropDistance );
   CommandLineOptions.GetArgument( O_OUTPUT_BREAST_FITTED_SURF_MASK, fileOutputFittedBreastMask );
   
   CommandLineOptions.GetArgument( O_CROP_PRONE_SUPINE_SCHEME,       flgProneSupineBoundary     );
@@ -409,6 +414,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetCropDistancePosteriorToMidSternum( cropProneSupineDistPostMidSternum );
 
   breastMaskSegmentor->SetCropFit( flgCropWithFittedSurface );
+  breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
   breastMaskSegmentor->SetOutputBreastFittedSurfMask( fileOutputFittedBreastMask );
 
   breastMaskSegmentor->SetOutputVTKSurface( fileOutputVTKSurface );

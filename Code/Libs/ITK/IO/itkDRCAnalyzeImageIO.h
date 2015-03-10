@@ -18,23 +18,23 @@
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>
 
-#include <itkAnalyzeImageIO.h>
+#include "itkAnalyzeImageIO3160_p.h"
 
 namespace itk {
 
 /**
  * \class DRCAnalyzeImageIO
- * \brief Subclass of AnalyzeImageIO, to read Dementia Research Centre (DRC) Analyze format,
- * which is incorrectly flipped. If you call this->SetDRCMode(true), is will do DRC specific
+ * \brief Subclass of AnalyzeImageIO3160, to read Dementia Research Centre (DRC) Analyze format,
+ * which is incorrectly flipped. If you call this->SetDRCMode(true) (also default), it will do DRC specific
  * functionality, and if you call SetDRCMode(false), it will revert to standard ITK functionality.
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO {
+class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO3160 {
 
 public:
 
   /** Standard class typedefs. */
   typedef DRCAnalyzeImageIO Self;
-  typedef AnalyzeImageIO Superclass;
+  typedef AnalyzeImageIO3160 Superclass;
   typedef SmartPointer<Self> Pointer;
 
   /** Method for creation through the object factory. */
@@ -87,4 +87,4 @@ private:
 
 } // end namespace itk
 
-#endif // ITKDRCANALYZEIMAGEIO_H
+#endif

@@ -14,10 +14,11 @@
 
 #include <cstdlib>
 #include <limits>
+#include <mitkPointSetReader.h>
+
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
-#include <mitkPointSetReader.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 
 #include <fstream>

@@ -20,7 +20,6 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
-#include <itkImageRegistrationFactory.h>
 #include <itkGradientDescentOptimizer.h>
 #include <itkUCLSimplexOptimizer.h>
 #include <itkUCLRegularStepGradientDescentOptimizer.h>
@@ -506,13 +505,17 @@ int DoMain(arguments args)
     transform = dynamic_cast<typename FactoryType::EulerAffineTransformType*>(singleResMethod->GetTransform());
     transform->SetFullAffine(); 
     
-    // Save the transform (as 12 parameter UCLEulerAffine transform).
     typedef typename itk::TransformFileWriter TransformFileWriterType;
     typename TransformFileWriterType::Pointer transformFileWriter = TransformFileWriterType::New();
-    transformFileWriter->SetInput(transform);
-    transformFileWriter->SetFileName(args.outputUCLTransformFile);
-    transformFileWriter->Update();         
-    
+
+    // Save the transform (as 12 parameter UCLEulerAffine transform).
+    if (args.outputUCLTransformFile.length() > 0)
+    {
+      transformFileWriter->SetInput(transform);
+      transformFileWriter->SetFileName(args.outputUCLTransformFile);
+      transformFileWriter->Update();         
+    }
+
     // Save the transform (as 16 parameter matrix transform).
     if (args.outputMatrixTransformFile.length() > 0)
       {
@@ -636,39 +639,39 @@ int main(int argc, char** argv)
 
   // The similarity measure
 
-  if     ( strSimilarityMeasure == std::string( "Sum Squared Difference" ) )
+  if     ( strSimilarityMeasure == std::string( "Sum_Squared_Difference" ) )
   {
     args.similarityMeasure = 1;
   }
-  else if( strSimilarityMeasure == std::string( "Mean Squared Difference" ) )
+  else if( strSimilarityMeasure == std::string( "Mean_Squared_Difference" ) )
   {
     args.similarityMeasure = 2;
   }
-  else if( strSimilarityMeasure == std::string( "Sum Absolute Difference" ) )
+  else if( strSimilarityMeasure == std::string( "Sum_Absolute_Difference" ) )
   {
     args.similarityMeasure = 3;
   }
-  else if( strSimilarityMeasure == std::string( "Normalized Cross Correlation" ) )
+  else if( strSimilarityMeasure == std::string( "Normalized_Cross_Correlation" ) )
   {
     args.similarityMeasure = 4;
   }
-  else if( strSimilarityMeasure == std::string( "Ratio Image Uniformity" ) )
+  else if( strSimilarityMeasure == std::string( "Ratio_Image_Uniformity" ) )
   {
     args.similarityMeasure = 5;
   }
-  else if( strSimilarityMeasure == std::string( "Partitioned Image Uniformity" ) )
+  else if( strSimilarityMeasure == std::string( "Partitioned_Image_Uniformity" ) )
   {
     args.similarityMeasure = 6;
   }
-  else if( strSimilarityMeasure == std::string( "Joint Entropy" ) )
+  else if( strSimilarityMeasure == std::string( "Joint_Entropy" ) )
   {
     args.similarityMeasure = 7;
   }
-  else if( strSimilarityMeasure == std::string( "Mutual Information" ) )
+  else if( strSimilarityMeasure == std::string( "Mutual_Information" ) )
   {
     args.similarityMeasure = 8;
   }
-  else if( strSimilarityMeasure == std::string( "Normalized Mutual Information" ) )
+  else if( strSimilarityMeasure == std::string( "Normalized_Mutual_Information" ) )
   {
     args.similarityMeasure = 9;
   }
@@ -679,11 +682,11 @@ int main(int argc, char** argv)
   {
     args.transformation = 2;
   }
-  else if( strTransformation == std::string( "Rigid and Scale" ) )
+  else if( strTransformation == std::string( "Rigid_and_Scale" ) )
   {
     args.transformation = 3;
   }
-  else if( strTransformation == std::string( "Full Affine" ) )
+  else if( strTransformation == std::string( "Full_Affine" ) )
   {
     args.transformation = 4;
   }
@@ -694,15 +697,15 @@ int main(int argc, char** argv)
   {
     args.registrationStrategy = 1;
   }
-  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate" ) )
+  else if( strRegnStrategy == std::string( "Switching_Trans_Rotate" ) )
   {
     args.registrationStrategy = 2;
   }
-  else if( strRegnStrategy == std::string( "Switching:Trans, Rotate, Scale" ) )
+  else if( strRegnStrategy == std::string( "Switching_Trans_Rotate_Scale" ) )
   {
     args.registrationStrategy = 3;
   }
-  else if( strRegnStrategy == std::string( "Switching:Rigid, Scale" ) )
+  else if( strRegnStrategy == std::string( "Switching_Rigid_Scale" ) )
   {
     args.registrationStrategy = 4;
   }
@@ -714,23 +717,23 @@ int main(int argc, char** argv)
   {
     args.optimizer = 1;
   }
-  else if( strOptimizer == std::string( "Gradient Descent" ) )
+  else if( strOptimizer == std::string( "Gradient_Descent" ) )
   {
     args.optimizer = 2;
   }
-  else if( strOptimizer == std::string( "Regular Step Size Gradient Descent" ) )
+  else if( strOptimizer == std::string( "Regular_Step_Size_Gradient_Descent" ) )
   {
     args.optimizer = 3;
   }
-  else if( strOptimizer == std::string( "Powell optimisation" ) )
+  else if( strOptimizer == std::string( "Powell_optimisation" ) )
   {
     args.optimizer = 5;
   }
-  else if( strOptimizer == std::string( "Regular Step Size" ) )
+  else if( strOptimizer == std::string( "Regular_Step_Size" ) )
   {
     args.optimizer = 6;
   }
-  else if( strOptimizer == std::string( "UCL Powell optimisation" ) )
+  else if( strOptimizer == std::string( "UCL_Powell_optimisation" ) )
   {
     args.optimizer = 7;
   }
@@ -973,12 +976,23 @@ int main(int argc, char** argv)
 
 
   // Validation
-  if (args.fixedImage.length() <= 0 || args.movingImage.length() <= 0 || args.outputUCLTransformFile.length() <= 0)
-    {
-      commandLine.getOutput()->usage(commandLine);
-      std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
-      return -1;
-    }
+  if (args.fixedImage.length() <= 0 || args.movingImage.length() <= 0){
+    std::cerr << argv[0] << "\tThe fixed and moving image file names must be set." 
+              << std::endl << std::endl;
+    commandLine.getOutput()->usage(commandLine);
+    std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
+    return -1;
+  }
+
+  if (args.outputUCLTransformFile.length() <= 0 && 
+      args.outputImage.length() <= 0 && 
+      args.outputMatrixTransformFile.length() <= 0){
+    std::cerr << argv[0] << "\tDid you forget to set the output image or transformation?" 
+              << std::endl << std::endl;
+    commandLine.getOutput()->usage(commandLine);
+    std::cout << std::endl << "  -help for more options" << std::endl << std::endl;
+    return -1;
+  }
 
   if(args.finalInterpolator < 1 || args.finalInterpolator > 4){
     std::cerr << argv[0] << "\tThe finalInterpolator must be >= 1 and <= 4" << std::endl;

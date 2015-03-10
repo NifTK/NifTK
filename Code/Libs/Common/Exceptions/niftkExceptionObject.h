@@ -14,19 +14,21 @@
 
 #ifndef niftkExceptionObject_h
 #define niftkExceptionObject_h
+
 #include <stdexcept>
 #include <string>
 
 namespace niftk
 {
-  /**
-   * \brief Basic NIFTK exception class
-   */
-  class ExceptionObject : public std::runtime_error
-  {
-  public:
-    ExceptionObject(const std::string &what) : std::runtime_error(what) {}
-  };
+
+/**
+* \brief Basic NIFTK exception class
+*/
+class ExceptionObject : public std::runtime_error
+{
+public:
+  ExceptionObject(const std::string &what) : std::runtime_error(what) {}
+};
 
 } // end namespace
 

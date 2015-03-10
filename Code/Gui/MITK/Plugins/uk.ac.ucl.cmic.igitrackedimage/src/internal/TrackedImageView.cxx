@@ -188,12 +188,10 @@ void TrackedImageView::RetrievePreferenceValues()
     m_Controls->m_RenderWindow->setVisible(m_Show2DWindow);
     if (m_Show2DWindow)
     {
-      m_Controls->m_VerticalLayout->removeItem(m_Controls->m_VerticalSpacer);
       mitk::RenderingManager::GetInstance()->AddRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
     else
     {
-      m_Controls->m_VerticalLayout->addItem(m_Controls->m_VerticalSpacer);
       mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
   }
@@ -331,8 +329,8 @@ void TrackedImageView::OnClonePushButtonClicked()
 
       // clone the origin ultrasound image (changing orientation) to disk.
       mitk::Image::Pointer untouchedImage = savedMitkImage->Clone();
-      mitk::Geometry3D::Pointer geometry = untouchedImage->GetGeometry();
-      if (geometry.IsNotNull())
+      mitk::BaseGeometry* geometry = untouchedImage->GetGeometry();
+      if (geometry)
       {
         vtkSmartPointer<vtkMatrix4x4> identityMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
         identityMatrix->Identity();

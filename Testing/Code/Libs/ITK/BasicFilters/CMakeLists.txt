@@ -36,7 +36,6 @@ add_test(BF-CPosition ${BASIC_FILTERS_INTEGRATION_TESTS} SetOutputVectorToCurren
 add_test(BF-VecMag ${BASIC_FILTERS_INTEGRATION_TESTS} VectorMagnitudeImageFilterTest )
 add_test(BF-VPlusLambdaU ${BASIC_FILTERS_INTEGRATION_TESTS} VectorVPlusLambdaUImageFilterTest )
 add_test(BF-SBATest ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/sba.png ${TEMPORARY_OUTPUT}/sba.png ShapeBasedAveragingImageFilterTest ${INPUT_DATA}/sba_seg1.png ${INPUT_DATA}/sba_seg2.png  ${TEMPORARY_OUTPUT}/sba.png)
-add_test(BF-ExtractEdgeImage ${BASIC_FILTERS_INTEGRATION_TESTS} ExtractEdgeImageTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img ${TEMPORARY_OUTPUT}/extract_edge.nii)
 #add_test(BF-MeanCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MeanCurvature_out.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii MeanCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii 5 10 10 0.5)
 #add_test(BF-GaussianCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} GaussianCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-GaussianCurvature_out.nii)
 add_test(BF-Seg-ExcludeImageFilter ${BASIC_FILTERS_INTEGRATION_TESTS} itkExcludeImageFilterTest)
@@ -51,7 +50,6 @@ set(BasicFiltersUnitTests_SRCS
   VectorMagnitudeImageFilterTest.cxx
   VectorVPlusLambdaUImageFilterTest.cxx
   ShapeBasedAveragingImageFilterTest.cxx
-  ExtractEdgeImageTest.cxx
   MeanCurvatureImageFilterTest.cxx
   GaussianCurvatureImageFilterTest.cxx
   itkExcludeImageFilterTest.cxx

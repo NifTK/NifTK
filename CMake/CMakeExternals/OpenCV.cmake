@@ -24,33 +24,32 @@ endif()
 
 if(BUILD_IGI)
 
-  set(proj OpenCV)
-  set(proj_DEPENDENCIES)
-  set(OpenCV_DEPENDS ${proj})
-  
+  set(version "2.4.8.2")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(OpenCV ${version} ${location})
+
   if(NOT DEFINED OpenCV_DIR)
-  
+
     set(additional_cmake_args
       -DBUILD_opencv_java:BOOL=OFF
     )
 
-    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.6.1.cmake)
+    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
-    
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_OPENCV}
-      URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
-      UPDATE_COMMAND  ""
-      INSTALL_COMMAND ""
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
-      CMAKE_GENERATOR ${GEN}
-      CMAKE_CACHE_ARGS
+      CMAKE_GENERATOR ${gen}
+      CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_opencv_core:BOOL=ON
         -DBUILD_opencv_calib3d:BOOL=ON
         -DBUILD_opencv_features2d:BOOL=ON
@@ -59,27 +58,33 @@ if(BUILD_IGI)
         -DBUILD_opencv_python:BOOL=OFF
         -DBUILD_opencv_ts:BOOL=OFF
         -DBUILD_opencv_java:BOOL=OFF
+        -DBUILD_opencv_nonfree:BOOL=${OPENCV_WITH_NONFREE}
         -DBUILD_DOCS:BOOL=OFF
-        -DBUILD_TESTS:BOOL=OFF
-        -DBUILD_EXAMPLES:BOOL=OFF
         -DBUILD_DOXYGEN_DOCS:BOOL=OFF
         -DBUILD_PERF_TESTS:BOOL=OFF
         -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
         -DWITH_QT:BOOL=OFF
-        -DWITH_EIGEN:BOOL=OFF      
+        -DWITH_EIGEN:BOOL=OFF
         -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
         -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
         ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
-    set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+    if(EP_ALWAYS_USE_INSTALL_DIR)
+      set(OpenCV_DIR ${proj_INSTALL})
+      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    else()
+      set(OpenCV_DIR ${proj_BUILD})
+    endif()
+
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
-  
+
   else()
-  
+
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  
+
   endif()
 
 endif()

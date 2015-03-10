@@ -14,16 +14,12 @@
 
 add_subdirectory(Exceptions)
 
-if (BUILD_MESHING)
-  add_subdirectory(Meshing)
-endif (BUILD_MESHING)
-
 set(niftkcommon_SRCS
-niftkFileHelper.cxx
-niftkConversionUtils.cxx
-niftkEnvironmentHelper.cxx
-niftkCommandLineParser.cxx
-niftkCSVRow.cxx
+  niftkFileHelper.cxx
+  niftkConversionUtils.cxx
+  niftkEnvironmentHelper.cxx
+  niftkCommandLineParser.cxx
+  niftkCSVRow.cxx
 )
 
 add_library(niftkcommon ${niftkcommon_SRCS})
@@ -36,8 +32,6 @@ endif(BUILD_SHARED_LIBS)
 
 target_link_libraries(niftkcommon
   ${ITK_LIBRARIES}
-  vtkCommonCore
-  vtkIOCore
   ${Boost_LIBRARIES}
 )
 

@@ -19,7 +19,6 @@
 #include "itkImageRegistrationFactory.h"
 #include <itkTransformFactory.h>
 #include <itkTransformFileReader.h>
-#include <itkNIFTKTransformIOFactory.h>
 
 #include <itkLogHelper.h>
 
@@ -30,8 +29,6 @@ ImageRegistrationFactory<TInputImageType, Dimension, TScalarType>
 ::ImageRegistrationFactory()
 {
   niftkitkDebugMacro(<<"ImageRegistrationFactory(): Constructed");
-
-  itk::ObjectFactoryBase::RegisterFactory(itk::NIFTKTransformIOFactory::New());
 }
 
 template<typename TInputImageType, unsigned int Dimension, class TScalarType>

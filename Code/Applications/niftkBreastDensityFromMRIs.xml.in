@@ -30,16 +30,48 @@
       <longflag>log</longflag>
       <description>Output file to store progress logging info.</description>
       <label>Log file</label>
+      <default>Log.txt</default>
       <channel>output</channel>
     </file>
 
     <file>
-      <name>fileOutputCSV</name>
-      <flag>o</flag>
-      <description>Output csv file containing density measurements.</description>
-      <label>Output csv file</label>
+      <name>fileT1wOutputCSV</name>
+      <longflag>oT1w</longflag>
+      <description>Output csv file containing density measurements for T1w.</description>
+      <label>Output T1w csv file</label>
+      <default>BreastDensityFromT1w.csv</default>
       <channel>output</channel>
     </file>
+
+    <file>
+      <name>fileT2wOutputCSV</name>
+      <longflag>oT2w</longflag>
+      <description>Output csv file containing density measurements for T2w.</description>
+      <label>Output T2w csv file</label>
+      <default>BreastDensityFromT2w.csv</default>
+      <channel>output</channel>
+    </file>
+
+    <string>
+      <name>dirSubMRI</name>
+      <longflag>dirSubMRI</longflag>
+      <description>The sub-directory of each study containing the input MRI DICOM data.</description>
+      <label>Input MRI DICOM data sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirSubData</name>
+      <longflag>dirSubData</longflag>
+      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
+      <label>Output data sub-directory name</label>
+    </string>
+
+    <string>
+      <name>dirPrefix</name>
+      <longflag>dirPrefix</longflag>
+      <description>Only study directories with this prefix will be included in the processing.</description>
+      <label>Study directory prefix</label>
+    </string>
 
   </parameters>
 
@@ -63,27 +95,6 @@
       <description>Save all the intermediate images used in the processing pipeline.</description>
       <label>Save images?</label>
     </boolean>
-
-    <string>
-      <name>dirSubMRI</name>
-      <longflag>dirSubMRI</longflag>
-      <description>The sub-directory of each study containing the input MRI DICOM data.</description>
-      <label>Input MRI DICOM data sub-directory name</label>
-    </string>
-
-    <string>
-      <name>dirSubData</name>
-      <longflag>dirSubData</longflag>
-      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
-      <label>Output data sub-directory name</label>
-    </string>
-
-    <string>
-      <name>dirPrefix</name>
-      <longflag>dirPrefix</longflag>
-      <description>Only study directories with this prefix will be included in the processing.</description>
-      <label>Study directory prefix</label>
-    </string>
  
     <boolean>
       <name>flgOverwrite</name>
@@ -92,13 +103,6 @@
       <label>Regenerate output files?</label>
     </boolean>
 
-  </parameters>
-
-  <parameters advanced="true">
-
-    <label>Options</label>
-    <description><![CDATA[Optional parameters]]></description>
-
     <boolean>
       <name>flgCompression</name>
       <longflag>compress</longflag>
@@ -106,20 +110,65 @@
       <label>Compress images?</label>
     </boolean>
 
-    <string>
-      <name>strSeriesDescStructuralT2</name>
-      <longflag>seriesStructural</longflag>
-      <description>The value of the DICOM series description tag (0008|103e) which identifies the structural image in which fat has a high intensity.</description>
-      <label>Structural image series description</label>
-      <default>t2_tse_tra</default>
-    </string>
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output (i.e. print the DICOM header).</description>
+      <label>Print debugging output?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Breast Mask Parameters</label>
+    <description><![CDATA[Parameters to modify the breast mask segmentation.]]></description>
+
+    <boolean>
+      <name>flgExcludeAxilla</name>
+      <longflag>excludeAxilla</longflag>
+      <description>Exclude the axilla region from the segmentation [default: no].</description>
+      <label>Exclude the axilla?</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
+      <name>flgCropFit</name>
+      <longflag>cropfit</longflag>
+      <description>The anterior breast skin surface is extrapolated and used to clip the breast mask segmentation [default: no].</description>
+      <label>Clip breast mask by extrapolating the skin surface?</label>
+      <default>false</default>
+    </boolean>
+
+   <float>
+      <name>coilCropDistance</name>
+      <longflag>coilCrop</longflag>
+      <description>The distance from the MR breast coil in the coronal plane at which to crop the breast mask segmentation. A value of zero implies a tight crop, whilst a large value (e.g. 1000.) means no cropping [default: 10mm]</description>
+      <label>MR coil coronal crop distance</label>
+      <default>10</default>
+    </float>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>DICOM Series Descriptions</label>
+    <description><![CDATA[DICOM Series Descriptions]]></description>
 
     <string>
       <name>strSeriesDescFatSatT1</name>
       <longflag>seriesAdditional</longflag>
       <description>The value of the DICOM series description tag (0008|103e) which identifies a complementary second image with a different intensity distribution to the structural image above.</description>
-      <label>Complementary image series description</label>
+      <label>T1w MR image series description</label>
       <default>t1_fl3d_tra_VIBE</default>
+    </string>
+
+    <string>
+      <name>strSeriesDescStructuralT2</name>
+      <longflag>seriesStructural</longflag>
+      <description>The value of the DICOM series description tag (0008|103e) which identifies the structural image in which fat has a high intensity.</description>
+      <label>T2w MR image series description</label>
+      <default>t2_tse_tra</default>
     </string>
 
     <string>
@@ -138,19 +187,61 @@
       <default>sag_dixon_bilateral_F</default>
     </string>
 
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Segmentation</label>
+    <description><![CDATA[Segmentation]]></description>
+
+    <file>
+      <name>comSegEM</name>
+      <longflag>segEM</longflag>
+      <description>The NiftySeg seg_EM path and command line to segment the internal breast region into fat and glandular tissue classes.</description>
+      <label>Seg_EM executable</label>
+      <default>seg_EM -v 2 -nopriors 2 -bc_order 0</default>
+      <channel>input</channel>
+    </file>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Registration</label>
+    <description><![CDATA[Registration]]></description>
+
     <boolean>
-      <name>flgDebug</name>
-      <longflag>dbg</longflag>
-      <description>Generate debug output (i.e. print the DICOM header).</description>
-      <label>Print debugging output?</label>
+      <name>flgRegister</name>
+      <flag>r</flag>
+      <longflag>register</longflag>
+      <description>Register the images prior to segmenting them.</description>
+      <label>Register the images?</label>
     </boolean>
 
     <file>
-      <name>fileSegEM</name>
-      <longflag>segEM</longflag>
-      <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
-      <label>Seg_EM executable</label>
-      <default>seg_EM</default>
+      <name>comRegAffine</name>
+      <longflag>regAffine</longflag>
+      <description>The NiftyReg reg_aladin or niftkAffine path and command line to perform an affine registration of two images.</description>
+      <label>Affine registration executable</label>
+      <default>niftkAffine --tr Rigid --levels2use 2  --rmin 0.1 -s Normalized_Mutual_Information</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>comRegNonRigid</name>
+      <longflag>regNonRigid</longflag>
+      <description>The NiftyReg reg_f3d path and command line to perform a non-rigid B-Spline registration of two images.</description>
+      <label>Non-rigid registration executable</label>
+      <default>reg_f3d -jl 0.1</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>comRegResample</name>
+      <longflag>regResample</longflag>
+      <description>The NiftyReg reg_resample program to resample an image using the results of a previous registration.</description>
+      <label>Reg_Resample executable</label>
+      <default>reg_resample</default>
       <channel>input</channel>
     </file>
 

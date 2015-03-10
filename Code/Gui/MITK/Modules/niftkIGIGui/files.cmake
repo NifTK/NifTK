@@ -20,10 +20,11 @@ set(CPP_FILES
   Common/QmitkUltrasoundPinCalibrationWidget.cxx
   Common/QmitkImageAndTransformSenderWidget.cxx
   Common/QmitkMatrixWidget.cxx
+  Common/QmitkCalibratedModelRenderingPipeline.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
   DataSources/QmitkIGITimerBasedThread.cxx
-  DataSources/QmitkFiducialRegistrationWidgetDialog.cxx
+#  DataSources/QmitkFiducialRegistrationWidgetDialog.cxx
   DataSources/QmitkIGINiftyLinkDataType.cxx
   DataSources/QmitkIGINiftyLinkDataSource.cxx
   DataSources/QmitkIGINiftyLinkDataSourceGui.cxx
@@ -50,9 +51,10 @@ set(MOC_H_FILES
   Common/QmitkUltrasoundPinCalibrationWidget.h
   Common/QmitkImageAndTransformSenderWidget.h
   Common/QmitkMatrixWidget.h
+  Common/QmitkCalibratedModelRenderingPipeline.h
   DataSources/TrackerControlsWidget.h
   DataSources/QmitkIGITimerBasedThread.h
-  DataSources/QmitkFiducialRegistrationWidgetDialog.h
+#  DataSources/QmitkFiducialRegistrationWidgetDialog.h
   DataSources/QmitkIGINiftyLinkDataSource.h
   DataSources/QmitkIGINiftyLinkDataSourceGui.h
   DataSources/QmitkIGIDataSource.h
@@ -75,7 +77,7 @@ set(UI_FILES
   Common/QmitkImageAndTransformSenderWidget.ui
   Common/QmitkMatrixWidget.ui
   DataSources/TrackerControlsWidget.ui
-  DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
+#  DataSources/QmitkFiducialRegistrationWidgetDialog.ui
   DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
   OverlayEditor/QmitkIGIOverlayEditor.ui

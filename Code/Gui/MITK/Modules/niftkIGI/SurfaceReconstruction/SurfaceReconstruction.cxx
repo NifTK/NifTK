@@ -178,16 +178,16 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
 
     // after locking the images, grab the position of the camera.
     // this should keep them in sync better, if we are reconstructing a point cloud while the camera is moving.
-    mitk::Geometry3D::Pointer   camgeom;
+    mitk::BaseGeometry::Pointer   camgeom;
     if (camnode.IsNotNull())
     {
       mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
       if (camnodebasedata.IsNotNull())
       {
-        camgeom = static_cast<mitk::Geometry3D*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
+        camgeom = dynamic_cast<mitk::BaseGeometry*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
       }
     }
-    mitk::Geometry3D::Pointer   imggeom = static_cast<mitk::Geometry3D*>(image1->GetGeometry()->Clone().GetPointer());
+    mitk::BaseGeometry::Pointer   imggeom = dynamic_cast<mitk::BaseGeometry*>(image1->GetGeometry()->Clone().GetPointer());
 
     const void* leftPtr = leftReadAccess.GetData();
     const void* rightPtr = rightReadAccess.GetData();

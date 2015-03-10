@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make April Tags Simulation Data</title>
+  <description><![CDATA[Generates Test Data for simulating probe tracking]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/Output file parameters]]></description>
+
+    <file fileExtensions=".vtk">
+      <name>modelForVisualisation</name>
+      <longflag>modelForVisualisation</longflag>
+      <description>Input VTK file (vtkPolyData) for visualisation.</description>
+      <label>Input Visualisation Model</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".vtk">
+      <name>modelForTracking</name>
+      <longflag>modelForTracking</longflag>
+      <description>Input VTK file (vtkPolyData) for matching/tracking.</description>
+      <label>Input Tracking Model</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".png">
+      <name>texture</name>
+      <longflag>texture</longflag>
+      <description>Input image file (.png) containing textures.</description>
+      <label>Texture</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".txt">
+      <name>leftIntrinsics</name>
+      <longflag>leftIntrinsics</longflag>
+      <description>Left camera intrinsic parameters.</description>
+      <label>Left Intrinsics</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".txt">
+      <name>rightIntrinsics</name>
+      <longflag>rightIntrinsics</longflag>
+      <description>Right camera intrinsic parameters.</description>
+      <label>Right Intrinsics</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".txt">
+      <name>rightToLeft</name>
+      <longflag>rightToLeft</longflag>
+      <description>Right to left transformation.</description>
+      <label>Right to Left</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".txt">
+      <name>outputData</name>
+      <longflag>outputData</longflag>
+      <description>Output data containing [id x3D y3D z3D x2DL y2DL x2DR y2DR]</description>
+      <label>Output Data for Simulation</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+  
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Various optional parameters]]></description>
+
+    <integer-vector>
+      <name>windowSize</name>
+      <longflag>windowSize</longflag>
+      <description>Actual window size</description>
+      <label>Window Size</label>
+      <default>1920,1080</default>
+    </integer-vector>
+
+    <integer-vector>
+      <name>calibratedWindowSize</name>
+      <longflag>calibratedWindowSize</longflag>
+      <description>Calibrated window size</description>
+      <label>Calibrated Window Size</label>
+      <default>1920,540</default>
+    </integer-vector>
+
+    <float>
+      <name>radius</name>
+      <longflag>radius</longflag>
+      <description>Radius of glyph in mm</description>
+      <label>Radius</label>
+      <default>0.25</default>
+    </float>
+
+    <boolean>
+      <name>visualiseTrackingGlyph</name>
+      <longflag>visualiseTrackingGlyph</longflag>
+      <description>Render's a sphere at each tracking point</description>
+      <label>Visualise Tracking</label>
+      <default>false</default>
+    </boolean>
+
+    <float-vector>
+      <name>modelToWorldTransformation</name>
+      <longflag>modelToWorldTransformation</longflag>
+      <description>Model To World [rx, ry, rz, tx, ty, tz] in mm/degrees.</description>
+      <label>Model To World</label>
+      <default>0.0,0.0,0.0,0.0,0.0,0.0</default>
+    </float-vector>
+
+    <float-vector>
+      <name>worldToCameraTransformation</name>
+      <longflag>worldToCameraTransformation</longflag>
+      <description>Camera To World [rx, ry, rz, tx, ty, tz] in mm/degrees.</description>
+      <label>World To Camera</label>
+      <default>0.0,0.0,0.0,0.0,0.0,0.0</default>
+    </float-vector>
+
+  </parameters>
+</executable>

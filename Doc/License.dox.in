@@ -14,8 +14,8 @@
 \li \ref LicenseDCMTK
 \li \ref LicenseOpenCV
 \li \ref LicenseQt
-\li \ref LicenseAruco
-\li \ref LicenseEIGEN
+\li \ref LicenseArUco
+\li \ref LicenseEigen
 \li \ref LicenseAprilTags
 \li \ref LicenseFLANN
 \li \ref LicensePCL
@@ -29,7 +29,7 @@
 
 \section LicenseNiftyLink The NiftyLink License
 
-\include LICENSE_NiftyLink.txt
+\include ExternalLicenses/NiftyLink.txt
 
 \section LicenseNiftyReg The NiftyReg License
 
@@ -75,15 +75,15 @@
 
 \include LICENSE_Qt.txt
 
-\section LicenseAruco The Aruco License
+\section LicenseArUco The ArUco License
 
-\include LICENSE_Aruco.txt
+\include LICENSE_ArUco.txt
 
-\section LicenseEIGEN The EIGEN License
+\section LicenseEIGEN The Eigen License
 
-\include LICENSE_EIGEN.txt
+\include LICENSE_Eigen.txt
 
-\section LicenseAprilTags The April Tags License
+\section LicenseAprilTags The AprilTags License
 
 \include LICENSE_AprilTags.txt
 
@@ -101,10 +101,10 @@
 
 \section LicenseOpenIGTLink The OpenIGTLink License
 
-\include LICENSE_OpenIGTLink.txt
+\include ExternalLicenses/OpenIGTLink.txt
 
 \section LicenseQsLog The QsLog License
 
-\include LICENSE_QsLog.txt
+\include ExternalLicenses/QsLog.txt
 
 */

@@ -17,7 +17,7 @@ set(scripts)
 if(NOT WIN32)
   set(scripts
     niftkCaminoMakeFAMDTRD.sh
-    ${scripts}    
+    ${scripts}
   )
 endif()
 

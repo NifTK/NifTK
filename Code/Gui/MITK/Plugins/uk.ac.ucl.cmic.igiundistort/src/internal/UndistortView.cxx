@@ -413,7 +413,7 @@ void UndistortView::OnGoButtonClick()
               }
               catch (...)
               {
-                std::cerr << "Failed loading calib data from file " << calibparamitem->text().toStdString() << std::endl;
+                MITK_ERROR << "Failed loading calib data from file " << calibparamitem->text().toStdString();
                 hascalib = false;
               }
             }
@@ -459,17 +459,28 @@ void UndistortView::OnGoButtonClick()
                 outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());
               }
 
-              // check that output image is correct size.
-              ci->second->PrepareOutput(outputImage);
+              try
+              {
+                // check that output image is correct size.
+                ci->second->PrepareOutput(outputImage);
 
-              WorkItem    wi;
-              wi.m_InputImage = inputImage;
-              wi.m_OutputImage = outputImage;
-              wi.m_OutputNodeName = outputitem->text().toStdString();
-              wi.m_InputNodeName = nodename;
-              wi.m_Proc = ci->second;
+                WorkItem    wi;
+                wi.m_InputImage = inputImage;
+                wi.m_OutputImage = outputImage;
+                wi.m_OutputNodeName = outputitem->text().toStdString();
+                wi.m_InputNodeName = nodename;
+                wi.m_Proc = ci->second;
 
-              m_BackgroundQueue.push_back(wi);
+                m_BackgroundQueue.push_back(wi);
+              }
+              catch (const std::exception& e)
+              {
+                MITK_ERROR << "Caught exception while preparing undistortion work item: " << e.what();
+
+                m_UndistortionMap.erase(ci);
+                // dont try again... user needs to fix first.
+                nameitem->setCheckState(Qt::Unchecked);
+              }
             }
           }
         }
@@ -505,11 +516,11 @@ void UndistortView::RunBackgroundProcessing()
     }
     catch (const std::exception& e)
     {
-      std::cerr << "Caught exception while undistorting: " << e.what() << std::endl;
+      MITK_ERROR << "Caught exception while undistorting: " << e.what();
     }
     catch (...)
     {
-      std::cerr << "Caught unknown exception while undistorting!" << std::endl;
+      MITK_ERROR << "Caught unknown exception while undistorting!";
     }
   }
 }
