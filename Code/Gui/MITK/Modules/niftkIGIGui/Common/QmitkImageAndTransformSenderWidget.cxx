@@ -252,7 +252,7 @@ void QmitkImageAndTransformSenderWidget::SendImageAndTransform(const mitk::Image
 
   igtl::TimeStamp::Pointer ts;
   ts = igtl::TimeStamp::New();
-  ts->GetTime(&sec, &nanosec);
+  ts->GetTimeStamp(&sec, &nanosec);
 
   if (this->IsConnected())
   {

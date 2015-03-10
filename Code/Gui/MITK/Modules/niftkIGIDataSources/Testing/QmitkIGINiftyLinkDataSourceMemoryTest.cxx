@@ -16,8 +16,8 @@
 #include <mitkTestingMacros.h>
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
+#include <NiftyLinkMessageContainer.h>
 #include <QmitkIGINiftyLinkDataType.h>
-#include <NiftyLinkTrackingDataMessage.h>
 #include <QmitkIGITrackerSource.h>
 
 /**
@@ -28,11 +28,11 @@ int QmitkIGINiftyLinkDataSourceMemoryTest(int /*argc*/, char* /*argv*/[])
 {
 
   // Message comes in. Here we create a local pointer, not a smart pointer.
-  NiftyLinkTrackingDataMessage* msg = new NiftyLinkTrackingDataMessage();
+  niftk::NiftyLinkMessageContainer::Pointer msg = (niftk::NiftyLinkMessageContainer::Pointer(new niftk::NiftyLinkMessageContainer()));
 
   // It gets wrapped in a data type. Here we create a local pointer, not a smart pointer.
   QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
-  dataType->SetMessage(msg);
+  dataType->SetMessageContainer(msg);
 
   // It gets added to the buffer of the data source.
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();

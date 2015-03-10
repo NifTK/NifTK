@@ -29,7 +29,7 @@
 #include <QString>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
-#include <NiftyLinkSocketObject.h>
+#include <NiftyLinkTcpServer.h>
 #include <QmitkIGIDataSource.h>
 #include <igtlTimeStamp.h>
 #include <map>
@@ -237,7 +237,7 @@ private slots:
    * \brief Adds a data source to the table.
    * \return the added tool's identifier
    */
-  int AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourcetype, int portnumber, NiftyLinkSocketObject* socket=NULL);
+  int AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourcetype, int portnumber, niftk::NiftyLinkTcpServer* server=NULL);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.

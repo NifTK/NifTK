@@ -35,7 +35,7 @@ class NIFTKIGIDATASOURCES_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLi
 public:
 
   mitkClassMacro(QmitkIGIUltrasonixTool, QmitkIGINiftyLinkDataSource);
-  mitkNewMacro2Param(QmitkIGIUltrasonixTool, mitk::DataStorage*, NiftyLinkSocketObject *);
+  mitkNewMacro2Param(QmitkIGIUltrasonixTool, mitk::DataStorage*, niftk::NiftyLinkTcpServer*);
 
   /**
    * \brief We store the node name here so other classes can refer to it.
@@ -93,11 +93,11 @@ public slots:
   /**
    * \brief Main message handler routine for this tool.
    */
-  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
+  virtual void InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg);
 
 protected:
 
-  QmitkIGIUltrasonixTool(mitk::DataStorage* storage, NiftyLinkSocketObject*); // Purposefully hidden.
+  QmitkIGIUltrasonixTool(mitk::DataStorage* storage, niftk::NiftyLinkTcpServer*); // Purposefully hidden.
   virtual ~QmitkIGIUltrasonixTool(); // Purposefully hidden.
 
   QmitkIGIUltrasonixTool(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.

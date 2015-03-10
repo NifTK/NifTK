@@ -24,6 +24,7 @@
 #include <cv.h>
 #include <itkNiftiImageIO.h>
 #include <NiftyLinkMessage.h>
+#include <NiftyLinkImageMessageHelpers.h>
 #include <boost/typeof/typeof.hpp>
 
 #include <mitkImageWriter.h>
@@ -32,8 +33,8 @@ const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("U
 const float QmitkIGIUltrasonixTool::RAD_TO_DEGREES = 180 / 3.14159265358979323846;
 
 //-----------------------------------------------------------------------------
-QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  NiftyLinkSocketObject * socket )
-: QmitkIGINiftyLinkDataSource(storage, socket)
+QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  niftk::NiftyLinkTcpServer* server)
+: QmitkIGINiftyLinkDataSource(storage, server)
 , m_FlipHorizontally(false)
 , m_FlipVertically(false)
 {
@@ -62,45 +63,65 @@ float QmitkIGIUltrasonixTool::GetMotorPos(const igtl::Matrix4x4& matrix) const
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
+void QmitkIGIUltrasonixTool::InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg)
 {
+  if (msg.data() == NULL)
+  {
+    MITK_WARN << "QmitkIGIUltrasonixTool::InterpretMessage received container with NULL message." << std::endl;
+    return;
+  }
+
+  igtl::MessageBase::Pointer msgBase = msg->GetMessage();
+  if (msgBase.IsNull())
+  {
+    MITK_WARN << "QmitkIGIUltrasonixTool::InterpretMessage received container with NULL OIGTL message" << std::endl;
+    return;
+  }
+
   if (msg->GetMessageType() == QString("STRING"))
   {
-    QString str = static_cast<NiftyLinkStringMessage::Pointer>(msg)->GetString();
-
-    if (str.isEmpty() || str.isNull())
+    igtl::StringMessage::Pointer strMsg = dynamic_cast<igtl::StringMessage*>(msgBase.GetPointer());
+    if(strMsg.IsNull())
     {
+      MITK_ERROR << "QmitkIGIUltrasonixTool::InterpretMessage received message claiming to be a STRING but it wasn't." << std::endl;
       return;
     }
 
-    QString type = XMLBuilderBase::ParseDescriptorType(str);
+    QString str = QString::fromStdString(strMsg->GetString());
+    if (str.isEmpty() || str.isNull())
+    {
+      MITK_WARN << "QmitkIGIUltrasonixTool::InterpretMessage OIGTL string message that was empty." << std::endl;
+      return;
+    }
+
+    QString type = niftk::NiftyLinkXMLBuilderBase::ParseDescriptorType(str);
     if (type == QString("ClientDescriptor"))
     {
-      ClientDescriptorXMLBuilder* clientInfo = new ClientDescriptorXMLBuilder();
+      niftk::NiftyLinkClientDescriptor* clientInfo = new niftk::NiftyLinkClientDescriptor();
       clientInfo->SetXMLString(str);
 
-      if (!clientInfo->IsMessageValid())
+      if (!clientInfo->SetXMLString(str))
       {
         delete clientInfo;
         return;
       }
 
       this->ProcessClientInfo(clientInfo);
+      delete clientInfo;
     }
     else
     {
-      // error?
+      return;
     }
   }
-  else if (msg.data() != NULL &&
-      (msg->GetMessageType() == QString("IMAGE"))
-     )
+  else if (msg->GetMessageType() == QString("IMAGE"))
   {
-    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-    wrapper->SetMessage(msg.data());
-    wrapper->SetTimeStampInNanoSeconds(msg->GetTimeCreated()->GetTimeInNanoSeconds());
-    wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+    msg->GetTimeCreated(m_TimeCreated);
 
+    QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+    wrapper->SetMessageContainer(msg);
+    wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds()); // time created
+    wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");
   }
@@ -118,10 +139,8 @@ bool QmitkIGIUltrasonixTool::CanHandleData(mitk::IGIDataType* data) const
     QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
     if (dataType.IsNotNull())
     {
-      NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
-      if (pointerToMessage != NULL
-          && pointerToMessage->GetMessageType() == QString("IMAGE")
-          )
+      niftk::NiftyLinkMessageContainer::Pointer msg = dataType->GetMessageContainer();
+      if (msg.data() != NULL && msg->GetMessageType() == QString("IMAGE"))
       {
         canHandle = true;
       }
@@ -138,131 +157,150 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
   bool result = false;
 
   QmitkIGINiftyLinkDataType::Pointer dataType = dynamic_cast<QmitkIGINiftyLinkDataType*>(data);
-  if (dataType.IsNotNull())
+  if (dataType.IsNull())
   {
-    // Get Data Node.
-    mitk::DataNode::Pointer node = this->GetDataNode(ULTRASONIX_IMAGE_NAME);
-    if (node.IsNull())
+    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages that are not QmitkIGINiftyLinkDataType." << std::endl;
+    return result;
+  }
+
+  niftk::NiftyLinkMessageContainer::Pointer msg = dataType->GetMessageContainer();
+  if (msg.data() == NULL)
+  {
+    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages with an empty NiftyLinkMessageContainer" << std::endl;
+    return result;
+  }
+
+  if (msg->GetMessageType()  != QString("IMAGE"))
+  {
+    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages that are not IMAGE" << std::endl;
+    return result;
+  }
+
+  igtl::MessageBase::Pointer msgBase = msg->GetMessage();
+  if (msgBase.IsNull())
+  {
+    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages with a null OIGTL message." << std::endl;
+    return result;
+  }
+
+  // Get Data Node.
+  mitk::DataNode::Pointer node = this->GetDataNode(ULTRASONIX_IMAGE_NAME);
+  if (node.IsNull())
+  {
+    MITK_ERROR << "Can't find mitk::DataNode with name " << ULTRASONIX_IMAGE_NAME << std::endl;
+    return result;
+  }
+
+  igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(msgBase.GetPointer());
+  if (imgMsg.IsNull())
+  {
+    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving IMAGE messages but with no OIGTL Image message inside" << std::endl;
+    return result;
+  }
+
+
+  QImage qImage;
+  niftk::GetQImage(imgMsg, qImage);
+
+  // Slow.
+  if (m_FlipHorizontally || m_FlipVertically)
+  {
+    qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
+  }
+
+  // wrap the qimage in an opencv image
+  IplImage  ocvimg;
+  int nchannels = 0;
+  switch (qImage.format())
+  {
+    // this corresponds to BGRA channel order.
+    // we are flipping to RGBA below.
+    case QImage::Format_ARGB32:
+      nchannels = 4;
+      break;
+    case QImage::Format_Indexed8:
+      // we totally ignore the (missing?) colour table here.
+      nchannels = 1;
+      break;
+
+    default:
+      MITK_ERROR << "QmitkIGIUltrasonixTool received an unsupported image format";
+  }
+  cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
+  cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+  // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+  // so should be fine to do this here...
+  if (ocvimg.nChannels == 4)
+  {
+    cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+    // mark layout as rgba instead of the opencv-default bgr
+    std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
+  }
+
+  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+
+  if (!imageInNode.IsNull())
+  {
+    // check size of image that is already attached to data node!
+    bool haswrongsize = false;
+    haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
+    haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
+    haswrongsize |= imageInNode->GetDimension(2) != 1;
+    // check image type as well.
+    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
+    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
+
+    if (haswrongsize)
     {
-      MITK_ERROR << "Can't find mitk::DataNode with name " << ULTRASONIX_IMAGE_NAME << std::endl;
-      return result;
+      imageInNode = mitk::Image::Pointer();
     }
+  }
 
-    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
-    if (pointerToMessage == NULL)
+  if (imageInNode.IsNull())
+  {
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
+    // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
+    m_DataStorage->Remove(node);
+    node->SetData(convertedImage);
+    m_DataStorage->Add(node);
+  }
+  else
+  {
+    try
     {
-      MITK_ERROR << "QmitkIGIUltrasonixTool received an mitk::IGIDataType with an empty NiftyLinkMessage?" << std::endl;
-      return result;
-    }
+      mitk::ImageWriteAccessor writeAccess(imageInNode);
+      void* vPointer = writeAccess.GetData();
 
-    NiftyLinkImageMessage::Pointer imageMsg;
-    imageMsg = dynamic_cast<NiftyLinkImageMessage*>(pointerToMessage);
-
-    if (imageMsg.data() != NULL)
-    {
-      imageMsg->PreserveMatrix();
-      QImage qImage = imageMsg->GetQImage();
-
-      // Slow.
-      if (m_FlipHorizontally || m_FlipVertically)
+      // the mitk image is tightly packed
+      // but the opencv image might not
+      const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
+      if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
       {
-        qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
-      }
-
-      // wrap the qimage in an opencv image
-      IplImage  ocvimg;
-      int nchannels = 0;
-      switch (qImage.format())
-      {
-        // this corresponds to BGRA channel order.
-        // we are flipping to RGBA below.
-        case QImage::Format_ARGB32:
-          nchannels = 4;
-          break;
-        case QImage::Format_Indexed8:
-          // we totally ignore the (missing?) colour table here.
-          nchannels = 1;
-          break;
-
-        default:
-          MITK_ERROR << "QmitkIGIUltrasonixTool received an unsupported image format";
-      }
-      cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
-      cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
-      // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
-      // so should be fine to do this here...
-      if (ocvimg.nChannels == 4)
-      {
-        cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
-        // mark layout as rgba instead of the opencv-default bgr
-        std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
-      }
-
-      mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-
-      if (!imageInNode.IsNull())
-      {
-        // check size of image that is already attached to data node!
-        bool haswrongsize = false;
-        haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
-        haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
-        haswrongsize |= imageInNode->GetDimension(2) != 1;
-        // check image type as well.
-        haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
-        haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
-
-        if (haswrongsize)
-        {
-          imageInNode = mitk::Image::Pointer();
-        }
-      }
-
-      if (imageInNode.IsNull())
-      {
-        mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
-        // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
-        m_DataStorage->Remove(node);
-        node->SetData(convertedImage);
-        m_DataStorage->Add(node);
+        std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
       }
       else
       {
-        try
-        {
-          mitk::ImageWriteAccessor writeAccess(imageInNode);
-          void* vPointer = writeAccess.GetData();
+        // if that is not true then something is seriously borked
+        assert(ocvimg.widthStep >= numberOfBytesPerLine);
 
-          // the mitk image is tightly packed
-          // but the opencv image might not
-          const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
-          if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
-          {
-            std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
-          }
-          else
-          {
-            // if that is not true then something is seriously borked
-            assert(ocvimg.widthStep >= numberOfBytesPerLine);
-
-            // "slow" path: copy line by line
-            for (int y = 0; y < ocvimg.height; ++y)
-            {
-              // widthStep is in bytes while width is in pixels
-              std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine); 
-            }
-          }
-        }
-        catch(mitk::Exception& e)
+        // "slow" path: copy line by line
+        for (int y = 0; y < ocvimg.height; ++y)
         {
-          MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+          // widthStep is in bytes while width is in pixels
+          std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine);
         }
       }
-
-      imageMsg->GetMatrix(m_CurrentMatrix);
-      node->Modified();
-      result = true;
+    }
+    catch(mitk::Exception& e)
+    {
+      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
     }
   }
+
+  imgMsg->GetMatrix(m_CurrentMatrix);
+  node->Modified();
+
+  result = true;
   return result;
 }
 
@@ -276,11 +314,11 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
   QmitkIGINiftyLinkDataType::Pointer dataType = static_cast<QmitkIGINiftyLinkDataType*>(data);
   if (dataType.IsNotNull())
   {
-    NiftyLinkMessage* pointerToMessage = dataType->GetMessage();
-    if (pointerToMessage != NULL)
+    niftk::NiftyLinkMessageContainer::Pointer msg = dataType->GetMessageContainer();
+    if (msg.data() != NULL)
     {
-      NiftyLinkImageMessage* imgMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
-      if (imgMsg != NULL)
+      igtl::ImageMessage* imMsg = dynamic_cast<igtl::ImageMessage*>(msg->GetMessage().GetPointer());
+      if (imMsg != NULL)
       {
         QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
         QDir directory(directoryPath);
@@ -289,7 +327,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           QString fileName = directoryPath + QDir::separator() + tr("%1.motor_position.txt").arg(data->GetTimeStampInNanoSeconds());
 
           igtl::Matrix4x4 matrix;
-          imgMsg->GetMatrix(matrix);
+          imMsg->GetMatrix(matrix);
 
           QFile matrixFile(fileName);
           matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -318,7 +356,9 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
           outputFileName = fileName.toStdString();
 
-          QImage qImage = imgMsg->GetQImage();
+          QImage qImage;
+          niftk::GetQImage(imMsg, qImage);
+
           // there shouldnt be any sharing, but make sure we own the buffer exclusively.
           qImage.detach();
 
@@ -522,13 +562,15 @@ void QmitkIGIUltrasonixTool::PlaybackData(igtlUint64 requestedTimeStamp)
       cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
     }
 
-    NiftyLinkImageMessage*   msg = new NiftyLinkImageMessage;
-    msg->ChangeMessageType("IMAGE");
-    msg->ChangeHostName("localhost");
-    msg->SetQImage(img);
+    niftk::NiftyLinkMessageContainer::Pointer msgContainer =
+        niftk::CreateImageMessage(  QString("Playback")
+                                  , QString("localhost")
+                                  , 1234
+                                  , img
+                                 );
 
     QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
-    dataType->SetMessage(msg);
+    dataType->SetMessageContainer(msgContainer);
     dataType->SetTimeStampInNanoSeconds(*i);
     dataType->SetDuration(m_TimeStampTolerance);
 

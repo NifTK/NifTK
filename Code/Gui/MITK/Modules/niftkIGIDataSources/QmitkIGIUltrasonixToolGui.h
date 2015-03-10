@@ -56,7 +56,7 @@ protected:
    * \brief Initializes this widget, calling Ui_QmitkIGIUltrasonixToolGui::setupUi(parent),
    * and any other stuff as necessary.
    */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
+  virtual void Initialize(QWidget *parent, niftk::NiftyLinkClientDescriptor* config);
 
   /**
    * \brief Sets up which image to follow.

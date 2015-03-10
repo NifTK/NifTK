@@ -17,14 +17,15 @@
 
 #include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGIDataSource.h"
-#include <NiftyLinkSocketObject.h>
-#include <Common/NiftyLinkXMLBuilder.h>
+#include <NiftyLinkTcpServer.h>
+#include <NiftyLinkMessageContainer.h>
+#include <NiftyLinkXMLBuilder.h>
+#include <igtlTimeStamp.h>
 
 /**
  * \class QmitkIGINiftyLinkDataSource
  * \brief Base class for IGI Data Sources that are receiving networked input
- * from NiftyLink. NiftyLink uses Qt, so this class is in the Qt library, and named
- * Qmitk.
+ * from NiftyLink. NiftyLink uses Qt, so this class is in the Qt library, and named Qmitk.
  */
 class NIFTKIGIDATASOURCES_EXPORT QmitkIGINiftyLinkDataSource : public QmitkIGIDataSource
 {
@@ -35,27 +36,27 @@ public:
   mitkClassMacro(QmitkIGINiftyLinkDataSource, QmitkIGIDataSource);
 
   /**
-   * \brief Sets the socket pointer.
+   * \brief Sets the server pointer.
    */
-  itkSetObjectMacro(Socket, NiftyLinkSocketObject);
+  itkSetObjectMacro(Server, niftk::NiftyLinkTcpServer);
 
   /**
-   * \brief Gets the socket pointer.
+   * \brief Gets the server pointer.
    */
-  itkGetConstMacro(Socket, NiftyLinkSocketObject*);
+  itkGetConstMacro(Server, niftk::NiftyLinkTcpServer*);
 
   /**
    * \brief Sets the Client Descriptor XML.
    */
-  itkSetObjectMacro(ClientDescriptor, ClientDescriptorXMLBuilder);
+  itkSetObjectMacro(ClientDescriptor, niftk::NiftyLinkClientDescriptor);
 
   /**
    * \brief Gets the Client Descriptor XML.
    */
-  itkGetConstMacro(ClientDescriptor, ClientDescriptorXMLBuilder*);
+  itkGetConstMacro(ClientDescriptor, niftk::NiftyLinkClientDescriptor*);
 
   /**
-   * \brief Returns the port number that this tool is using or -1 if no socket is available.
+   * \brief Returns the port number that this tool is using or -1 if no server is available.
    */
   int GetPort() const;
 
@@ -64,23 +65,13 @@ public:
    */
   bool ListenOnPort(int portNumber);
 
-  /**
-   * \brief If there is a socket associated with this tool, will send the message.
-   */
-  void SendMessage(NiftyLinkMessage::Pointer msg);
-
-  /**
-   * \brief Get the Associated Socket
-   */
-  NiftyLinkSocketObject* GetSocket();
-
 protected:
 
   /**
    * \brief Constructor where socket creation is optional.
    * \param socket if NULL a new socket will be created.
    */
-  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket); // Purposefully hidden.
+  QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, niftk::NiftyLinkTcpServer *server); // Purposefully hidden.
   virtual ~QmitkIGINiftyLinkDataSource(); // Purposefully hidden.
 
   QmitkIGINiftyLinkDataSource(const QmitkIGINiftyLinkDataSource&); // Purposefully not implemented.
@@ -89,30 +80,30 @@ protected:
   /**
    * \brief When client information is received we update the DataSource member variables, and dump info to console.
    */
-  void ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo);
+  void ProcessClientInfo(niftk::NiftyLinkClientDescriptor* clientInfo);
 
 protected slots:
 
   /**
-   * \brief Slot called when socket connects.
+   * \brief Slot called when client connects.
    */
   virtual void ClientConnected();
 
   /**
-   * \brief Slot called when socket disconnects.
+   * \brief Slot called when client disconnects.
    */
   virtual void ClientDisconnected();
 
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg) {}
+  virtual void InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg) {}
 
 private:
 
-  NiftyLinkSocketObject       *m_Socket;
-  ClientDescriptorXMLBuilder  *m_ClientDescriptor;
-  bool                         m_UsingSomeoneElsesSocket;
+  niftk::NiftyLinkTcpServer         *m_Server;
+  niftk::NiftyLinkClientDescriptor  *m_ClientDescriptor;
+  bool                               m_UsingSomeoneElsesServer;
 
 }; // end class
 

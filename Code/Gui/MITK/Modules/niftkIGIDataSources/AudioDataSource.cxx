@@ -275,11 +275,11 @@ void AudioDataSource::GrabData()
     std::size_t   bytesActuallyRead = m_InputStream->read(buffer, bytesToRead);
     if (bytesActuallyRead > 0)
     {
-      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+      m_TimeCreated->GetTime();
 
       AudioDataType::Pointer wrapper = AudioDataType::New();
       wrapper->SetBlob(buffer, bytesActuallyRead);
-      wrapper->SetTimeStampInNanoSeconds(timeCreated->GetTimeInNanoSeconds());
+      wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
       wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
       AddData(wrapper.GetPointer());

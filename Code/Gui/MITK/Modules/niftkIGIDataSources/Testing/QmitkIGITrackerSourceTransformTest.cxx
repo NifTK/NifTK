@@ -18,8 +18,9 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkCoordinateAxesData.h>
 #include <QmitkIGINiftyLinkDataType.h>
-#include <NiftyLinkTrackingDataMessage.h>
 #include <QmitkIGITrackerSource.h>
+#include <NiftyLinkMessageContainer.h>
+#include <NiftyLinkTrackingDataMessageHelpers.h>
 #include <igtlMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -59,16 +60,22 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
     }
   }
 
-  // The tracking matrix is stored on the message.
-  NiftyLinkTrackingDataMessage* msg = new NiftyLinkTrackingDataMessage();
-  msg->SetMatrix(initialMatrix);
-  msg->SetTrackerToolName("test");
-
   igtl::TimeStamp::Pointer ts = igtl::TimeStamp::New();
 
+  // The tracking matrix is stored on the message.
+  niftk::NiftyLinkMessageContainer::Pointer msg = niftk::CreateTrackingDataMessage(
+          QString("TestDevice")
+        , QString("TestTool")
+        , QString("TestHost")
+        , 1234
+        , initialMatrix
+        , ts
+        );
+
+
   QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
-  dataType->SetMessage(msg);
-  dataType->SetTimeStampInNanoSeconds(ts->GetTimeInNanoSeconds());
+  dataType->SetMessageContainer(msg);
+  dataType->SetTimeStampInNanoSeconds(ts->GetTimeStampInNanoseconds());
   dataType->SetDuration(10000000);
 
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
@@ -78,7 +85,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
 
   MITK_TEST_CONDITION_REQUIRED(tool->GetBufferSize()  == 1, ".. Testing if buffer size == 1");
 
-  tool->ProcessData(ts->GetTimeInNanoSeconds());
+  tool->ProcessData(ts->GetTimeStampInNanoseconds());
 
   // Check that dataStorage contains a node containing tracking info.
   mitk::DataNode::Pointer node = dataStorage->GetNamedNode("test tracker");
@@ -114,7 +121,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   tool->SetPreMultiplyMatrix(*preMatrix);
   tool->SetPostMultiplyMatrix(*postMatrix);
 
-  tool->ProcessData(ts->GetTimeInNanoSeconds());
+  tool->ProcessData(ts->GetTimeStampInNanoseconds());
   coord->GetVtkMatrix(*tmpMatrix);
 
   for (int i = 0; i < 4; i++)
@@ -132,7 +139,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   postMatrix->Identity();
   tool->SetPostMultiplyMatrix(*postMatrix);
 
-  tool->ProcessData(ts->GetTimeInNanoSeconds());
+  tool->ProcessData(ts->GetTimeStampInNanoseconds());
   coord->GetVtkMatrix(*tmpMatrix);
 
   for (int i = 0; i < 4; i++)

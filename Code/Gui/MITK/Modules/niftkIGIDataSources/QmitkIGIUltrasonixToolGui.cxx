@@ -17,7 +17,6 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QFileDialog>
-#include <Common/NiftyLinkXMLBuilder.h>
 #include "QmitkIGIUltrasonixTool.h"
 #include "QmitkIGIDataSourceMacro.h"
 #include <mitkRenderingManager.h>
@@ -72,7 +71,7 @@ void QmitkIGIUltrasonixToolGui::InitializeImage()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptorXMLBuilder* /*config*/)
+void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, niftk::NiftyLinkClientDescriptor* /*config*/)
 {
   setupUi(this);
 
