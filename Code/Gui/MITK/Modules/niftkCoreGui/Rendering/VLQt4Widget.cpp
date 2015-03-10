@@ -33,6 +33,7 @@
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
+#include <mitkImage.h>
 #include <QFile>
 #include <QTextStream>
 #include <stdexcept>
@@ -666,7 +667,7 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::Geometry3D* geom, const mitk::DataNode::ConstPointer node)
+void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1236,7 +1237,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
   mat = mat.rotateXYZ(90, 0, 0);
 
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitk::Geometry3D*     geom = cudaImg->GetGeometry();
+  mitk::BaseGeometry*     geom = cudaImg->GetGeometry();
   if (geom != 0)
   {
     vtkLinearTransform*   vtktxf = geom->GetVtkTransform();
@@ -1676,7 +1677,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
 
   // we do not own dims!
   unsigned int*   dims    = mitkImg->GetDimensions();
-  const float*    spacing = /*const_cast<float*>*/(mitkImg->GetGeometry()->GetFloatSpacing());
+  mitk::Vector3D  spacing = mitkImg->GetGeometry()->GetSpacing();
 
   float dimX = (float) dims[0] * spacing[0] / 2.0f;
   float dimY = (float) dims[1] * spacing[1] / 2.0f;

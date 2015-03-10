@@ -40,6 +40,7 @@
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
 #include <mitkDataStorage.h>
+#include <mitkImage.h>
 #include <mitkDataNodePropertyListener.h>
 #include <map>
 #include <set>
@@ -225,7 +226,7 @@ protected:
   /**
    * @throws an exception if CUDA support was not enabled at compile time.
    */
-  void PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::Geometry3D* geom, const mitk::DataNode::ConstPointer node);
+  void PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
   /** Will throw if CUDA-support was not enabled at compile time. */
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
