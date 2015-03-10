@@ -812,6 +812,7 @@ endif()
 # Find OpenCV.
 ######################################################################
 if(BUILD_IGI)
+  set(OpenCV_FIND_QUIETLY ON)
   find_package(OpenCV REQUIRED)
   if(OpenCV_FOUND)
     message("Found OpenCV")
