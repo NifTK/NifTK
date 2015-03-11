@@ -63,7 +63,7 @@ float QmitkIGIUltrasonixTool::GetMotorPos(const igtl::Matrix4x4& matrix) const
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixTool::InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg)
+void QmitkIGIUltrasonixTool::InterpretMessage(int /*portNumber*/, niftk::NiftyLinkMessageContainer::Pointer msg)
 {
   if (msg.data() == NULL)
   {
@@ -78,15 +78,9 @@ void QmitkIGIUltrasonixTool::InterpretMessage(niftk::NiftyLinkMessageContainer::
     return;
   }
 
-  if (msg->GetMessageType() == QString("STRING"))
+  igtl::StringMessage::Pointer strMsg = dynamic_cast<igtl::StringMessage*>(msgBase.GetPointer());
+  if(strMsg.IsNotNull())
   {
-    igtl::StringMessage::Pointer strMsg = dynamic_cast<igtl::StringMessage*>(msgBase.GetPointer());
-    if(strMsg.IsNull())
-    {
-      MITK_ERROR << "QmitkIGIUltrasonixTool::InterpretMessage received message claiming to be a STRING but it wasn't." << std::endl;
-      return;
-    }
-
     QString str = QString::fromStdString(strMsg->GetString());
     if (str.isEmpty() || str.isNull())
     {
@@ -114,7 +108,9 @@ void QmitkIGIUltrasonixTool::InterpretMessage(niftk::NiftyLinkMessageContainer::
       return;
     }
   }
-  else if (msg->GetMessageType() == QString("IMAGE"))
+
+  igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(msg->GetMessage().GetPointer());
+  if (imgMsg.IsNotNull())
   {
     msg->GetTimeCreated(m_TimeCreated);
 
@@ -122,6 +118,7 @@ void QmitkIGIUltrasonixTool::InterpretMessage(niftk::NiftyLinkMessageContainer::
     wrapper->SetMessageContainer(msg);
     wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds()); // time created
     wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");
   }
@@ -140,9 +137,13 @@ bool QmitkIGIUltrasonixTool::CanHandleData(mitk::IGIDataType* data) const
     if (dataType.IsNotNull())
     {
       niftk::NiftyLinkMessageContainer::Pointer msg = dataType->GetMessageContainer();
-      if (msg.data() != NULL && msg->GetMessageType() == QString("IMAGE"))
+      if (msg.data() != NULL)
       {
-        canHandle = true;
+        igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(msg->GetMessage().GetPointer());
+        if (imgMsg.IsNotNull())
+        {
+          canHandle = true;
+        }
       }
     }
   }
@@ -170,24 +171,10 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     return result;
   }
 
-  if (msg->GetMessageType()  != QString("IMAGE"))
-  {
-    MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages that are not IMAGE" << std::endl;
-    return result;
-  }
-
   igtl::MessageBase::Pointer msgBase = msg->GetMessage();
   if (msgBase.IsNull())
   {
     MITK_ERROR << "QmitkIGIUltrasonixTool::Update is receiving messages with a null OIGTL message." << std::endl;
-    return result;
-  }
-
-  // Get Data Node.
-  mitk::DataNode::Pointer node = this->GetDataNode(ULTRASONIX_IMAGE_NAME);
-  if (node.IsNull())
-  {
-    MITK_ERROR << "Can't find mitk::DataNode with name " << ULTRASONIX_IMAGE_NAME << std::endl;
     return result;
   }
 
@@ -198,6 +185,13 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     return result;
   }
 
+  // Get Data Node.
+  mitk::DataNode::Pointer node = this->GetDataNode(ULTRASONIX_IMAGE_NAME);
+  if (node.IsNull())
+  {
+    MITK_ERROR << "Can't find mitk::DataNode with name " << ULTRASONIX_IMAGE_NAME << std::endl;
+    return result;
+  }
 
   QImage qImage;
   niftk::GetQImage(imgMsg, qImage);

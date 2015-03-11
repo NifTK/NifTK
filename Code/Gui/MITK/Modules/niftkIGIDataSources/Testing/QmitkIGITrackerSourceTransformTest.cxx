@@ -66,7 +66,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   // The tracking matrix is stored on the message.
   niftk::NiftyLinkMessageContainer::Pointer msg = niftk::CreateTrackingDataMessage(
           QString("TestDevice")
-        , QString("TestTool")
+        , QString("test")
         , QString("TestHost")
         , 1234
         , initialMatrix
@@ -84,7 +84,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   tool->AddData(dataType);
   tool->SetPickLatestData(true);
 
-  MITK_TEST_CONDITION_REQUIRED(tool->GetBufferSize()  == 1, ".. Testing if buffer size == 1");
+  MITK_TEST_CONDITION_REQUIRED(tool->GetBufferSize()  == 1, ".. Testing if buffer size == 1, but actually equals " << tool->GetBufferSize());
 
   tool->ProcessData(ts->GetTimeStampInNanoseconds());
 

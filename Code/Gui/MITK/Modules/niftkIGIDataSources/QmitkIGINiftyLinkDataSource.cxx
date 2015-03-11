@@ -20,6 +20,8 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* stor
 , m_Server(server)
 , m_ClientDescriptor(NULL)
 {
+  qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
+
   if (m_Server == NULL)
   {
     m_Server = new niftk::NiftyLinkTcpServer();
@@ -31,7 +33,7 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* stor
   }
   connect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(ClientConnected()));
   connect(m_Server, SIGNAL(ClientDisconnected(int)), this, SLOT(ClientDisconnected()));
-  connect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer)));
+  connect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(InterpretMessage(int, niftk::NiftyLinkMessageContainer::Pointer)));
   if (m_Server != NULL)
   {
     this->ClientConnected();

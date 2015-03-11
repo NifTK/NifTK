@@ -93,7 +93,7 @@ public slots:
   /**
    * \brief Main message handler routine for this tool.
    */
-  virtual void InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg);
+  virtual void InterpretMessage(int portNumber, niftk::NiftyLinkMessageContainer::Pointer msg);
 
 protected:
 

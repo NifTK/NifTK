@@ -86,7 +86,7 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, called by the signal from the socket.
    */
-  virtual void InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg);
+  virtual void InterpretMessage(int portNumber, niftk::NiftyLinkMessageContainer::Pointer msg);
 
 private:
 

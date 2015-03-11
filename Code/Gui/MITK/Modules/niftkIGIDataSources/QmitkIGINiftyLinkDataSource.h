@@ -97,7 +97,7 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, that subclasses must implement.
    */
-  virtual void InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg) {}
+  virtual void InterpretMessage(int portNumber, niftk::NiftyLinkMessageContainer::Pointer msg) = 0;
 
 private:
 

@@ -22,7 +22,6 @@
 #include <igtlTimeStamp.h>
 #include <igtlStringMessage.h>
 #include <igtlTrackingDataMessage.h>
-#include <igtlTransformMessage.h>
 #include <NiftyLinkMessageContainer.h>
 #include <NiftyLinkXMLBuilder.h>
 #include <NiftyLinkTransformMessageHelpers.h>
@@ -107,7 +106,7 @@ vtkSmartPointer<vtkMatrix4x4> QmitkIGITrackerSource::CombineTransformationsWithP
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerSource::InterpretMessage(niftk::NiftyLinkMessageContainer::Pointer msg)
+void QmitkIGITrackerSource::InterpretMessage(int /*portNumber*/, niftk::NiftyLinkMessageContainer::Pointer msg)
 {
   if (msg.data() == NULL)
   {
@@ -122,15 +121,9 @@ void QmitkIGITrackerSource::InterpretMessage(niftk::NiftyLinkMessageContainer::P
     return;
   }
 
-  if (msg->GetMessageType() == QString("STRING"))
+  igtl::StringMessage::Pointer strMsg = dynamic_cast<igtl::StringMessage*>(msgBase.GetPointer());
+  if (strMsg.IsNotNull())
   {
-    igtl::StringMessage::Pointer strMsg = dynamic_cast<igtl::StringMessage*>(msgBase.GetPointer());
-    if(strMsg.IsNull())
-    {
-      MITK_ERROR << "QmitkIGITrackerSource::InterpretMessage received message claiming to be a STRING but it wasn't." << std::endl;
-      return;
-    }
-
     QString str = QString::fromStdString(strMsg->GetString());
     if (str.isEmpty() || str.isNull())
     {
@@ -173,32 +166,14 @@ void QmitkIGITrackerSource::InterpretMessage(niftk::NiftyLinkMessageContainer::P
       return;
     }
   }
-  else if (msg->GetMessageType() == QString("TRANSFORM")
-           || msg->GetMessageType() == QString("TDATA"))
-  {
-    if (msg->GetMessageType() == QString("TDATA"))
-    {
-      igtl::TrackingDataMessage::Pointer trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
-      if(trMsg.IsNull())
-      {
-        MITK_ERROR << "QmitkIGITrackerSource::InterpretMessage received message claiming to be a TDATA but it wasn't." << std::endl;
-        return;
-      }
-    }
-    else if (msg->GetMessageType() == QString("TRANSFORM"))
-    {
-      igtl::TransformMessage::Pointer trMsg = dynamic_cast<igtl::TransformMessage*>(msgBase.GetPointer());
-      if(trMsg.IsNull())
-      {
-        MITK_ERROR << "QmitkIGITrackerSource::InterpretMessage received message claiming to be a TRANSFORM but it wasn't." << std::endl;
-        return;
-      }
-    }
 
+  igtl::TrackingDataMessage::Pointer trackingMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
+  if (trackingMsg.IsNotNull())
+  {
     // Check the tool name
     std::string messageToolName = msgBase->GetDeviceName();
     std::string sourceToolName = this->GetDescription();
-    if ( messageToolName == sourceToolName ) 
+    if ( messageToolName == sourceToolName )
     {
       msg->GetTimeCreated(m_TimeCreated);
 
@@ -226,12 +201,13 @@ bool QmitkIGITrackerSource::CanHandleData(mitk::IGIDataType* data) const
     if (dataType.IsNotNull())
     {
       niftk::NiftyLinkMessageContainer::Pointer msg = dataType->GetMessageContainer();
-      if (msg.data() != NULL
-          && (msg->GetMessageType() == QString("TRANSFORM")
-              || msg->GetMessageType() == QString("TDATA"))
-          )
+      if (msg.data() != NULL)
       {
-        canHandle = true;
+        igtl::TrackingDataMessage::Pointer trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msg->GetMessage().GetPointer());
+        if (trMsg.IsNotNull())
+        {
+          canHandle = true;
+        }
       }
     }
   }
@@ -258,12 +234,6 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
     return result;
   }
 
-  if (msg->GetMessageType()  != QString("TRANSFORM") && msg->GetMessageType() != QString("TDATA"))
-  {
-    MITK_ERROR << "QmitkIGITrackerSource::Update is receiving messages that are neither TRANSFORM or TDATA" << std::endl;
-    return result;
-  }
-
   igtl::MessageBase::Pointer msgBase = msg->GetMessage();
   if (msgBase.IsNull())
   {
@@ -283,35 +253,22 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
   QString matrixAsString = "";
   igtl::Matrix4x4 matrix;
 
-  if (msg->GetMessageType() == QString("TRANSFORM"))
-  {
-    igtl::TransformMessage* trMsg = dynamic_cast<igtl::TransformMessage*>(msgBase.GetPointer());
-    assert(trMsg);
+  igtl::TrackingDataMessage::Pointer trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
 
-    trMsg->GetMatrix(matrix);
-    matrixAsString = niftk::GetMatrixAsString(trMsg);
-  }
-  else if (msg->GetMessageType() == QString("TDATA"))
-  {
-    igtl::TrackingDataMessage* trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
-    assert(trMsg);
+  assert(trMsg);
+  assert(trMsg->GetNumberOfTrackingDataElements() == 1);
 
-    // At the moment, we only support 1 tracking matrix per message
-    assert(trMsg->GetNumberOfTrackingDataElements() == 1);
+  igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
+  trMsg->GetTrackingDataElement(0, elem);
+  elem->GetMatrix(matrix);
 
-    igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
-    trMsg->GetTrackingDataElement(0, elem);
-    elem->GetMatrix(matrix);
+  matrixAsString = niftk::GetMatrixAsString(trMsg, 0);
 
-    matrixAsString = niftk::GetMatrixAsString(trMsg, 0);
+  header.append(", toolId=");
+  header.append(elem->GetName());
+  header.append("\n");
 
-    header.append(", toolId=");
-    header.append(elem->GetName());
-    header.append("\n");
-
-    nodeName = elem->GetName();
-  }
-
+  nodeName = elem->GetName();
   if (nodeName.length() == 0)
   {
     MITK_ERROR << "QmitkIGITrackerSource::Update: Can't work out a node name, aborting" << std::endl;
