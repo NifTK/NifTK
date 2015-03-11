@@ -66,6 +66,7 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
 
   QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
   QAudioFormat      defaultFormat = defaultDevice.preferredFormat();
+
   // try not to do 8 bit, sounds like trash.
   defaultFormat.setSampleSize(16);
   if (!defaultDevice.isFormatSupported(defaultFormat))
@@ -403,7 +404,7 @@ bool AudioDataSource::SaveData(mitk::IGIDataType* d, std::string& outputFileName
   assert(this->thread() == QThread::currentThread());
 
   // cannot record while playing back
-  assert(!GetIsPlayingBack());
+  assert(!m_IsPlayingBack);
 
   if (m_OutputFile == 0)
     return false;
