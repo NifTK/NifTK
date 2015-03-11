@@ -61,6 +61,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   }
 
   igtl::TimeStamp::Pointer ts = igtl::TimeStamp::New();
+  ts->GetTime();
 
   // The tracking matrix is stored on the message.
   niftk::NiftyLinkMessageContainer::Pointer msg = niftk::CreateTrackingDataMessage(

@@ -89,7 +89,9 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_PickLatestData = DEFAULT_PICK_LATEST_DATA;
 
   m_StatsTimerStart = igtl::TimeStamp::New();
+  m_StatsTimerStart->GetTime();
   m_StatsTimerEnd = igtl::TimeStamp::New();
+  m_StatsTimerEnd->GetTime();
 
   QmitkRenderingManager *renderingManager = dynamic_cast<QmitkRenderingManager*>(mitk::RenderingManager::GetInstance());
   if (renderingManager != NULL)
@@ -920,6 +922,7 @@ void QmitkIGIDataSourceManager::AdvancePlaybackTime()
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
 
   // whether we are currently grabbing live data or playing back canned bits
   // depends solely on the state of the play-button.
@@ -1140,6 +1143,7 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
+  timeStamp->GetTime();
 
   igtlUint32 seconds;
   igtlUint32 nanoseconds;

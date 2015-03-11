@@ -49,8 +49,11 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 {
   // These should be created once and re-used.
   m_RequestedTimeStamp = igtl::TimeStamp::New();
+  m_RequestedTimeStamp->GetTime();
   m_ActualTimeStamp = igtl::TimeStamp::New();
+  m_ActualTimeStamp->GetTime();
   m_TimeCreated = igtl::TimeStamp::New();
+  m_TimeCreated->GetTime();
 
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
