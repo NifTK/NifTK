@@ -822,6 +822,7 @@ endif()
 # Find OpenCV.
 ######################################################################
 if(BUILD_IGI)
+  set(OpenCV_FIND_QUIETLY ON)
   find_package(OpenCV REQUIRED)
   if(OpenCV_FOUND)
     message("Found OpenCV")
@@ -1427,7 +1428,7 @@ if(WIN32)
 
     # if we didnt build pcl then substitute some benign empty path instead of potential garbage.
     if(BUILD_PCL)
-      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/bin")
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/bin;${PCL_DIR}/../bin")
     else()
       set(PCL_BIN_PATH_FOR_BATCH_FILE "")
     endif()
