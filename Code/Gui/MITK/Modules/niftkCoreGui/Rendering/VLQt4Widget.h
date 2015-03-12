@@ -41,6 +41,7 @@
 #include <mitkSurface.h>
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
+#include <mitkPointSet.h>
 #include <mitkDataNodePropertyListener.h>
 #include <map>
 #include <set>
@@ -172,6 +173,7 @@ protected:
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCamera();
+  vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);

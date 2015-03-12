@@ -722,6 +722,7 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
 
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
@@ -824,6 +825,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   bool                    doMitkImageIfSuitable = true;
   mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
+  mitk::PointSet::Pointer mitkPS    = dynamic_cast<mitk::PointSet*>(node->GetData());
 #ifdef _USE_CUDA
   mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
   // this check will prefer a CUDAImageProperty attached to the node's data object.
@@ -854,6 +856,12 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   {
     newActor = AddSurfaceActor(mitkSurf);
     namePostFix = "_surface";
+  }
+  else
+  if (mitkPS.IsNotNull())
+  {
+    newActor = AddPointsetActor(mitkPS);
+    namePostFix = "_pointset";
   }
 #ifdef _USE_CUDA
   else
@@ -939,9 +947,57 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->enable(vl::EN_LIGHTING);
     fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
+
+    // see if we need to set vertex colour too.
+    // ideally, this would be a simple and lightweight state update, but vl has
+    // overridden this with an actual heavyweight colour array.
+    if (!fx->shader()->isEnabled(vl::EN_LIGHTING))
+    {
+      // this only applies for unshaded geometry.
+      vl::Geometry* g = vlActor->lod(0)->as<vl::Geometry>();
+      if (g != 0)
+      {
+        vl::ArrayFloat4* ca = g->colorArray()->as<vl::ArrayFloat4>();
+        if (ca != 0)
+        {
+          if (ca->size() > 0)
+          {
+            if (ca->at(0) != color)
+              ca = 0;      // reset colour below
+          }
+          else
+            ca = 0;     // reset colour below
+        }
+
+        // no colour defined yet (or we should reset it). set one.
+        if (ca == 0)
+          g->setColorArray(color);
+      }
+    }
+
+    float   pointsize = 1;
+    bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
+    if (haspointsize)
+    {
+      vl::PointSize* ps = fx->shader()->getPointSize();
+      if (ps != 0)
+      {
+        if (ps->pointSize() != pointsize)
+          ps = 0;
+      }
+
+      if (ps == 0)
+      {
+        fx->shader()->setRenderState(new vl::PointSize(pointsize));
+        if (pointsize > 1)
+          fx->shader()->enable(vl::EN_POINT_SMOOTH);
+        else
+          fx->shader()->disable(vl::EN_POINT_SMOOTH);
+      }
+    }
+
 
     bool  isVolume = false;
     // special case for volumes: they'll have a certain event-callback bound.
@@ -1123,7 +1179,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     vlActor->effect()->shader()->disable(vl::EN_DEPTH_TEST);
     vlActor->effect()->shader()->enable(vl::EN_BLEND);
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
   }
 }
 
@@ -1178,6 +1233,59 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  // FIXME: refactor this into helper-method.
+  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  mitkPS->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
+  vl::mat4  mat;
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      double val = geometryTransformMatrix->GetElement(i, j);
+      mat.e(i, j) = val;
+    }
+  }
+
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  tr->setLocalMatrix(mat);
+
+  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
+  vlVerts->resize(mitkPS->GetSize());
+  int   j = 0;
+  for (mitk::PointSet::PointsConstIterator i = mitkPS->Begin(); i != mitkPS->End(); ++i, ++j)
+  {
+    mitk::PointSet::PointType p = i->Value();
+    vlVerts->at(j).x() = p[0];
+    vlVerts->at(j).y() = p[1];
+    vlVerts->at(j).z() = p[2];
+  }
+
+  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
+  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
+  vlGeom->drawCalls()->push_back(vlPoints.get());
+  vlGeom->setVertexArray(vlVerts.get());
+
+  vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+
+  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[psActor] = vlGeom;
+
+  // FIXME: should go somewhere else
+  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+
+  return psActor;
+}
+
+
+//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -1211,6 +1319,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   tr->setLocalMatrix(mat);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
@@ -1261,6 +1370,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
   vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
