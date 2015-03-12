@@ -21,6 +21,10 @@
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraCalibrationFacade.h>
+#ifdef _USE_PCL
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#endif
 
 namespace niftk 
 {
@@ -135,7 +139,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
   niftk::MatrixProperty::Pointer            stereoRig;
 
   // check this before we start wasting cpu cycles
-  if (outputtype == POINT_CLOUD)
+  if ((outputtype == MITK_POINT_CLOUD) ||
+      (outputtype == PCL_POINT_CLOUD))
   {
     mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
     mitk::BaseProperty::Pointer       cam2bp = image2->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
@@ -248,7 +253,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
 
     switch (outputtype)
     {
-      case POINT_CLOUD:
+      case MITK_POINT_CLOUD:
+      case PCL_POINT_CLOUD:
       {
         cv::Point2d leftPixel;
         cv::Point2d rightPixel;
@@ -294,6 +300,9 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         cv::Point3d p;
         mitk::Point3D outputPoint;
         mitk::PointSet::Pointer points = mitk::PointSet::New();
+#ifdef _USE_PCL
+        pcl::PointCloud<pcl::PointXYZ>::Ptr  cloud(new pcl::PointCloud<pcl::PointXYZ>);
+#endif
 
         for (unsigned int i = 0; i < outputOpenCVPoints.size(); i++)
         {

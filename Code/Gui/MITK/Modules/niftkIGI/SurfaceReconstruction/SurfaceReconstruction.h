@@ -73,8 +73,9 @@ public:
 
   enum OutputType
   {
-    POINT_CLOUD,
-    DISPARITY_IMAGE
+    MITK_POINT_CLOUD  = 1,
+    PCL_POINT_CLOUD   = 2,
+    DISPARITY_IMAGE   = 3
   };
 
 public:
