@@ -184,6 +184,7 @@ if(SlicerExecutionModel_FOUND)
       niftkMakeLapUSProbeAprilTagsModel
       niftkMakeLapUSProbeSimulationData
       niftkImageFeatureMatching
+      niftkVideoTestClient
     )
 
     if(BUILD_PCL)
