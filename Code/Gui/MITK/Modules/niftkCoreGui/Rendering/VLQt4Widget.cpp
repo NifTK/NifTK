@@ -977,6 +977,27 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
       }
     }
 
+    float   pointsize = 1;
+    bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
+    if (haspointsize)
+    {
+      vl::PointSize* ps = fx->shader()->getPointSize();
+      if (ps != 0)
+      {
+        if (ps->pointSize() != pointsize)
+          ps = 0;
+      }
+
+      if (ps == 0)
+      {
+        fx->shader()->setRenderState(new vl::PointSize(pointsize));
+        if (pointsize > 1)
+          fx->shader()->enable(vl::EN_POINT_SMOOTH);
+        else
+          fx->shader()->disable(vl::EN_POINT_SMOOTH);
+      }
+    }
+
 
     bool  isVolume = false;
     // special case for volumes: they'll have a certain event-callback bound.
