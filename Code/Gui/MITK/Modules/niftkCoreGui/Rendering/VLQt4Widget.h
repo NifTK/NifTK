@@ -57,6 +57,7 @@ class LightweightCUDAImage;
 namespace mitk
 {
 class DataStorage;
+class PCLData;
 }
 
 #include "OclTriangleSorter.h"
@@ -174,6 +175,7 @@ protected:
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCamera();
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
+  vl::ref<vl::Actor> AddPointCloudActor(mitk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);

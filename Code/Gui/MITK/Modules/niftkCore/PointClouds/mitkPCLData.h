@@ -15,7 +15,7 @@
 #ifndef mitkPCLData_h
 #define mitkPCLData_h
 
-#include "niftkIGIExports.h"
+#include "niftkCoreExports.h"
 #include <mitkBaseData.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -25,7 +25,7 @@ namespace mitk
 {
 
 
-class NIFTKIGI_EXPORT PCLData : public mitk::BaseData
+class NIFTKCORE_EXPORT PCLData : public mitk::BaseData
 {
 public:
   mitkClassMacro(PCLData, mitk::BaseData);

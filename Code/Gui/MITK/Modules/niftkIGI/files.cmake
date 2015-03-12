@@ -37,6 +37,5 @@ if(BUILD_PCL)
   list(APPEND CPP_FILES
     PCLTest/mitkPCLTest.cxx
     PointClouds/FitPlaneToPointCloudWrapper.cxx
-    PointClouds/mitkPCLData.cxx
   )
 endif()

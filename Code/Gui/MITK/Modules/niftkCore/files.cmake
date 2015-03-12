@@ -47,3 +47,9 @@ set(CPP_FILES
   Internal/niftkCoordinateAxesDataWriterService.cxx
   Internal/niftkCoreActivator.cxx
 )
+
+if(BUILD_PCL)
+  list(APPEND CPP_FILES
+    PointClouds/mitkPCLData.cxx
+  )
+endif()

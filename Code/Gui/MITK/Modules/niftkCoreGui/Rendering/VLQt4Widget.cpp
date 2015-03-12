@@ -40,6 +40,10 @@
 #include <sstream>
 #include "ScopedOGLContext.h"
 
+#ifdef _USE_PCL
+#include <PointClouds/mitkPCLData.h>
+#endif
+
 #ifdef _USE_CUDA
 #include <Rendering/VLFramebufferToCUDA.h>
 #include <CUDAManager/CUDAManager.h>
@@ -1228,6 +1232,17 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
       m_NodeToTextureMap.erase(i);
     }
   }
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
+{
+#ifdef _USE_PCL
+  return 0;
+#else
+  throw std::runtime_error("No PCL-support enabled at compile time!");
 #endif
 }
 
