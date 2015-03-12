@@ -365,7 +365,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
       niftk::Undistortion::CopyImagePropsIfNecessary(leftNode,  leftImage);
       niftk::Undistortion::CopyImagePropsIfNecessary(rightNode, rightImage);
 
-      niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+      niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
       if (GenerateDisparityImageRadioBox->isChecked())
       {
         assert(!GeneratePointCloudRadioBox->isChecked());
@@ -374,7 +374,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
       if (GeneratePointCloudRadioBox->isChecked())
       {
         assert(!GenerateDisparityImageRadioBox->isChecked());
-        outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+        outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
       }
 
       // where to place the point cloud in 3d space
