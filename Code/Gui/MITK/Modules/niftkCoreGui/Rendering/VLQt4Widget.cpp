@@ -722,6 +722,7 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
 
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
@@ -946,9 +947,36 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->enable(vl::EN_LIGHTING);
     fx->shader()->setRenderState(m_Light.get(), 0 );
     fx->shader()->gocMaterial()->setDiffuse(color);
+
+    // see if we need to set vertex colour too.
+    // ideally, this would be a simple and lightweight state update, but vl has
+    // overridden this with an actual heavyweight colour array.
+    if (!fx->shader()->isEnabled(vl::EN_LIGHTING))
+    {
+      // this only applies for unshaded geometry.
+      vl::Geometry* g = vlActor->lod(0)->as<vl::Geometry>();
+      if (g != 0)
+      {
+        vl::ArrayFloat4* ca = g->colorArray()->as<vl::ArrayFloat4>();
+        if (ca != 0)
+        {
+          if (ca->size() > 0)
+          {
+            if (ca->at(0) != color)
+              ca = 0;      // reset colour below
+          }
+          else
+            ca = 0;     // reset colour below
+        }
+
+        // no colour defined yet (or we should reset it). set one.
+        if (ca == 0)
+          g->setColorArray(color);
+      }
+    }
+
 
     bool  isVolume = false;
     // special case for volumes: they'll have a certain event-callback bound.
@@ -1130,7 +1158,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     vlActor->effect()->shader()->disable(vl::EN_DEPTH_TEST);
     vlActor->effect()->shader()->enable(vl::EN_BLEND);
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    vlActor->effect()->shader()->disable(vl::EN_LIGHTING);
   }
 }
 
@@ -1225,6 +1252,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
   vlGeom->setVertexArray(vlVerts.get());
 
   vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
 
@@ -1269,6 +1298,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   tr->setLocalMatrix(mat);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
@@ -1319,6 +1349,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
   vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
