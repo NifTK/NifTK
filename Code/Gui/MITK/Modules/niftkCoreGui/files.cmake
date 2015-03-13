@@ -21,9 +21,6 @@ set(CPP_FILES
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
-  Rendering/SharedOGLContext.cxx
-  Rendering/ScopedOGLContext.cxx
-  Rendering/OclTriangleSorter.cxx
 )
 
 set(MOC_H_FILES
@@ -32,7 +29,6 @@ set(MOC_H_FILES
   Events/QmitkMouseEventEater.h
   QmitkDataStorageCheckableComboBox.h
   QmitkHelpAboutDialog.h
-  Rendering/SharedOGLContext.h
 )
 
 set(UI_FILES
@@ -47,10 +43,14 @@ if(BUILD_VL)
   set(CPP_FILES
     ${CPP_FILES}
     Rendering/VLQt4Widget.cpp
+    Rendering/SharedOGLContext.cxx
+    Rendering/ScopedOGLContext.cxx
+    Rendering/OclTriangleSorter.cxx
   )
   set(MOC_H_FILES
     ${MOC_H_FILES}
     Rendering/VLQt4Widget.h
+    Rendering/SharedOGLContext.h
   )
 endif()
 if(CUDA_FOUND AND NIFTK_USE_CUDA AND BUILD_VL)
