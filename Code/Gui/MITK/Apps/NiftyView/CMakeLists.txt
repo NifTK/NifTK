@@ -43,8 +43,15 @@ set(_include_plugins
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
   uk.ac.ucl.cmic.xnat
-  uk.ac.ucl.cmic.newvisualization
 )
+
+
+if(BUILD_VL)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.newvisualization
+  )
+endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyView
