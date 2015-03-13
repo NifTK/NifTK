@@ -363,6 +363,11 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           points->GetGeometry()->SetSpacing(camgeom->GetSpacing());
           points->GetGeometry()->SetOrigin(camgeom->GetOrigin());
           points->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
+#ifdef _USE_PCL
+          pcldata->GetGeometry()->SetSpacing(camgeom->GetSpacing());
+          pcldata->GetGeometry()->SetOrigin(camgeom->GetOrigin());
+          pcldata->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
+#endif
 
           if (bakeCameraTransform)
           {
@@ -391,7 +396,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
 
         if (outputtype == MITK_POINT_CLOUD)
           return points.GetPointer();
-#ifdef _USE_PCAL
+#ifdef _USE_PCL
         else
           return pcldata.GetPointer();
 #endif

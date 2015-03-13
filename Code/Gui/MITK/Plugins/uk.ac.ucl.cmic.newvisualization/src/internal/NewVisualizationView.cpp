@@ -341,7 +341,7 @@ void NewVisualizationView::ReinitDisplay(bool viewEnabled)
     currentDataNode->GetVisibility(isVisible, 0);
 
     if (!isVisible)
-      continue;
+      ;//continue;
     
     m_VLQtRenderWindow->AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
     //m_RenderApplet->rendering()->render();

@@ -47,6 +47,8 @@ public:
 
 
   void SetCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr GetCloud() const;
+
 
 protected:
   PCLData();

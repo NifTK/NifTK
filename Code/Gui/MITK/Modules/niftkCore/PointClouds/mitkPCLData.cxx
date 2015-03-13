@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkPCLData.h"
+#include <mitkGeometry3D.h>
 
 
 namespace mitk
@@ -22,6 +23,7 @@ namespace mitk
 //-----------------------------------------------------------------------------
 PCLData::PCLData()
 {
+  this->SetGeometry(mitk::Geometry3D::New());
 }
 
 
@@ -61,6 +63,13 @@ void PCLData::SetRequestedRegion(const itk::DataObject* data)
 void PCLData::SetCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud)
 {
   m_Cloud = cloud;
+}
+
+
+//-----------------------------------------------------------------------------
+pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr PCLData::GetCloud() const
+{
+  return m_Cloud;
 }
 
 
