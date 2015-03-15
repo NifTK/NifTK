@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
 
 #include <QProcess>
 #include <QString>
@@ -75,6 +76,8 @@
 #include <itkMaskImageFilter.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkIsImageBinary.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkImageDuplicator.h>
 
 #include <niftkBreastDensityFromMRIsCLP.h>
 
@@ -94,6 +97,7 @@ typedef float PixelType;
 const unsigned int   Dimension = 3;
 
 typedef itk::Image< PixelType, Dimension > ImageType;
+typedef itk::Image< unsigned char, Dimension > MaskImageType;
 
 
 // -------------------------------------------------------------------------
@@ -261,6 +265,9 @@ public:
   bool flgCompression;
   bool flgOverwrite;
 
+  bool flgDoNotBiasFieldCorrectT1w;
+  bool flgDoNotBiasFieldCorrectT2w;
+
   bool flgExcludeAxilla;
   bool flgCropFit;
   float coilCropDistance;
@@ -307,6 +314,7 @@ public:
                    bool verbose, bool flgRegister, bool flgSave, 
                    bool compression, bool debug, bool overwrite,
                    bool excludeAxilla, bool cropFit, float coilCropDist,
+                   bool doNotBiasFieldCorrectT1w, bool doNotBiasFieldCorrectT2w,
                    std::string subdirMRI, std::string subdirData, 
                    std::string prefix, 
                    std::string dInput,
@@ -330,6 +338,9 @@ public:
     flgDebug = debug;
     flgCompression = compression;
     flgOverwrite = overwrite;
+
+    flgDoNotBiasFieldCorrectT1w = doNotBiasFieldCorrectT1w;
+    flgDoNotBiasFieldCorrectT2w = doNotBiasFieldCorrectT2w;
 
     flgExcludeAxilla = excludeAxilla;
     flgCropFit = cropFit;
@@ -629,6 +640,19 @@ public:
     {
       itk::WriteImageToFile< ImageType >( fileOutput, image );
     }
+  }
+
+  void WriteImageToFile( std::string filename, 
+                         std::string description, MaskImageType::Pointer image ) {
+  
+    std::stringstream message;
+    std::string fileOutput = niftk::ConcatenatePath( dirOutput, filename );
+              
+    message << std::endl << "Writing " << description << " to file: "
+            << fileOutput << std::endl;
+    PrintMessage( message );
+
+    itk::WriteImageToFile< MaskImageType >( fileOutput, image );
   }
 
   void WriteImageToFile( std::string filename, 
@@ -1077,6 +1101,337 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
 
 
 // -------------------------------------------------------------------------
+// NaiveParenchymaSegmentation()
+// -------------------------------------------------------------------------
+
+bool NaiveParenchymaSegmentation( std::string label,
+                                  InputParameters &args, 
+                        
+                                  ImageType::Pointer &imSegmentedBreastMask,
+                                  ImageType::Pointer &image,
+                                  
+                                  bool flgFatIsBright,
+
+                                  float &nLeftVoxels,
+                                  float &nRightVoxels,                                  
+
+                                  float &totalDensity,
+                                  float &leftDensity,
+                                  float &rightDensity,
+
+                                  std::string fileOutputParenchyma )
+{
+  float minFraction = 0.02;
+
+  std::stringstream message;
+
+  ImageType::Pointer imParenchyma = 0;
+
+  typedef itk::ImageDuplicator< ImageType > DuplicatorType; 
+    
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage( image );
+  duplicator->Update();
+
+  imParenchyma = duplicator->GetOutput();
+  imParenchyma->DisconnectPipeline();
+
+  imParenchyma->FillBuffer( 0. );
+
+  nLeftVoxels = 0;
+  nRightVoxels = 0;
+
+  totalDensity = 0.;
+  leftDensity = 0.;
+  rightDensity = 0.;
+
+  float meanOfHighProbIntensities = 0.;
+  float meanOfLowProbIntensities = 0.;
+
+  float nHighProbIntensities = 0.;
+  float nLowProbIntensities = 0.;
+
+  itk::ImageRegionIteratorWithIndex< ImageType > 
+    itMask( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
+
+  itk::ImageRegionIterator< ImageType > 
+    itSegmentation( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
+
+  itk::ImageRegionConstIterator< ImageType > 
+    itImage( image, image->GetLargestPossibleRegion() );
+
+  
+  // Compute the range of intensities inside the mask
+  
+  float minIntensity = std::numeric_limits< float >::max();
+  float maxIntensity = -std::numeric_limits< float >::max();
+
+  for ( itMask.GoToBegin(), itImage.GoToBegin();
+        ! itMask.IsAtEnd();
+        ++itMask, ++itImage )
+  {
+    if ( itMask.Get() )
+    {
+      if ( itImage.Get() > maxIntensity )
+      {
+        maxIntensity = itImage.Get();
+      }
+
+      if ( itImage.Get() < minIntensity )
+      {
+        minIntensity = itImage.Get();
+      }
+    }
+  }
+
+  message  << std::endl
+           << "Range of " << label << " is from: " 
+           << minIntensity << " to: " << maxIntensity << std::endl;
+  args.PrintMessage( message );
+  
+
+  // Compute 1st and 99th percentiles of the image from the image histogram
+
+  unsigned int nBins = static_cast<unsigned int>( maxIntensity - minIntensity + 0.5 ) + 1;
+
+  itk::Array< float > histogram( nBins );
+    
+  histogram.Fill( 0 );
+
+  float nPixels = 0;
+  float flIntensity;
+
+  for ( itImage.GoToBegin(), itMask.GoToBegin();
+        ! itImage.IsAtEnd();
+        ++itImage, ++itMask )
+  {
+    if ( itMask.Get() )
+    {
+      flIntensity = itImage.Get() - minIntensity;
+      
+      if ( flIntensity < 0. )
+      {
+        flIntensity = 0.;
+      }
+      
+      if ( flIntensity > static_cast<float>( nBins - 1 ) )
+      {
+        flIntensity = static_cast<float>( nBins - 1 );
+      }
+      
+      nPixels++;
+      histogram[ static_cast<unsigned int>( flIntensity ) ] += 1.;
+    }
+  }
+    
+  float sumProbability = 0.;
+  unsigned int intensity;
+
+  float pLowerBound = 0.;
+  float pUpperBound = 0.;
+
+  bool flgLowerBoundFound = false;
+  bool flgUpperBoundFound = false;
+
+
+  for ( intensity=0; intensity<nBins; intensity++ )
+  {
+    histogram[ intensity ] /= nPixels;
+    sumProbability += histogram[ intensity ];
+
+    if ( ( ! flgLowerBoundFound ) && ( sumProbability >= minFraction ) )
+    {
+      pLowerBound = intensity;
+      flgLowerBoundFound = true;
+    }
+
+    if ( ( ! flgUpperBoundFound ) && ( sumProbability >= (1. - minFraction) ) )
+    {
+      pUpperBound = intensity;
+      flgUpperBoundFound = true;
+    }
+    
+    if ( args.flgDebug )
+    {
+      std::cout << std::setw( 18 ) << intensity << " " 
+                << std::setw( 18 ) << histogram[ intensity ]  << " " 
+                << std::setw( 18 ) << sumProbability << std::endl;
+    }
+  }
+  
+  message << std::endl
+          << label << " density lower bound: " << pLowerBound 
+          << " ( " << minFraction*100. << "% )" << std::endl
+          << " upper bound: " << pUpperBound 
+          << " ( " << (1. - minFraction)*100. << "% )" << std::endl;
+  args.PrintMessage( message );
+  
+
+  // Compute the density
+
+  ImageType::SpacingType spacing = imParenchyma->GetSpacing();
+
+  float voxelVolume = spacing[0]*spacing[1]*spacing[2];
+
+  ImageType::RegionType region;
+  region = imSegmentedBreastMask->GetLargestPossibleRegion();
+
+  ImageType::SizeType lateralSize;
+  lateralSize = region.GetSize();
+  lateralSize[0] = lateralSize[0]/2;
+
+  ImageType::IndexType idx;
+   
+  for ( itMask.GoToBegin(), itSegmentation.GoToBegin(), itImage.GoToBegin();
+        ! itMask.IsAtEnd();
+        ++itMask, ++itSegmentation, ++itImage )
+  {
+    if ( itMask.Get() )
+    {
+      idx = itMask.GetIndex();
+
+      flIntensity = ( itImage.Get() - pLowerBound )/( pUpperBound - pLowerBound );
+      
+      if ( flIntensity < 0. )
+      {
+        itSegmentation.Set( 0. );
+      }
+      else if ( flIntensity > 1. )
+      {
+        itSegmentation.Set( 1. );
+      }
+      else
+      {
+        itSegmentation.Set( flIntensity );
+      }
+
+      //std::cout << idx << " " << itImage.Get() << " -> " << flIntensity << std::endl;
+
+      // Left breast
+
+      if ( idx[0] < (int) lateralSize[0] )
+      {
+        nLeftVoxels++;
+        leftDensity += flIntensity;
+      }
+
+      // Right breast
+      
+      else 
+      {
+        nRightVoxels++;
+        rightDensity += flIntensity;
+      }
+
+      // Both breasts
+
+      totalDensity += flIntensity;
+
+      // Ensure we have the polarity correct by calculating the
+      // mean intensities of each class
+
+      if ( flIntensity > 0.5 )
+      {
+        meanOfHighProbIntensities += itImage.Get();
+        nHighProbIntensities++;
+      }
+      else
+      {
+        meanOfLowProbIntensities += itImage.Get();
+        nLowProbIntensities++;
+      }              
+    }
+  }
+
+  leftDensity /= nLeftVoxels;
+  rightDensity /= nRightVoxels;
+  totalDensity /= ( nLeftVoxels + nRightVoxels);
+
+  // Calculate the mean intensities of each class
+  
+  if ( nHighProbIntensities > 0. )
+  {
+    meanOfHighProbIntensities /= nHighProbIntensities;
+  }
+  
+  if ( nLowProbIntensities > 0. )
+  {
+    meanOfLowProbIntensities /= nLowProbIntensities;
+  }
+
+  message  << std::endl
+           << "Mean intensity of high probability class = " << meanOfHighProbIntensities
+           << " ( " << nHighProbIntensities << " voxels )" << std::endl
+           << "Mean intensity of low probability class = " << meanOfLowProbIntensities
+           << " ( " << nLowProbIntensities << " voxels )" << std::endl;
+  args.PrintMessage( message );
+
+  // Fat should be high intensity in the T2 image so if the dense
+  // region (high prob) has a high intensity then it is probably fat
+  // and we need to invert the density, whereas the opposite is true
+  // for the fat-saturated T1w VIBE image.
+  
+  if ( (     flgFatIsBright   && ( meanOfHighProbIntensities > meanOfLowProbIntensities ) ) ||
+       ( ( ! flgFatIsBright ) && ( meanOfHighProbIntensities < meanOfLowProbIntensities ) ) )
+  {
+    message << "Inverting the density estimation" << std::endl;
+    args.PrintWarning( message );
+    
+    leftDensity  = 1. - leftDensity;
+    rightDensity = 1. - rightDensity;
+    totalDensity = 1. - totalDensity;
+    
+    typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< ImageType > InvertFilterType;
+    InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+    invertFilter->SetInput( imParenchyma );
+
+    typedef itk::MaskImageFilter< ImageType, ImageType > MaskFilterType;
+    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+
+    maskFilter->SetInput( invertFilter->GetOutput() );
+    maskFilter->SetMaskImage( imSegmentedBreastMask );
+    maskFilter->Update();
+
+    ImageType::Pointer imInverted = maskFilter->GetOutput();
+    imInverted->DisconnectPipeline();
+    imParenchyma = imInverted;
+  }
+
+  std::string fileOut = niftk::ModifyImageFileSuffix( fileOutputParenchyma, 
+                                                      std::string( "_Naive.nii" ) );
+
+  if ( args.flgCompression ) fileOut.append( ".gz" );
+
+  args.WriteImageToFile( fileOut, 
+                         std::string( "naive '" ) + label +
+                         "' parenchyma image", imParenchyma );
+
+
+  float leftBreastVolume = nLeftVoxels*voxelVolume;
+  float rightBreastVolume = nRightVoxels*voxelVolume;
+
+  message << label << " Naive - Number of left breast voxels: " << nLeftVoxels << std::endl
+          << label << " Naive - Volume of left breast: " << leftBreastVolume << " mm^3" << std::endl
+          << label << " Naive - Density of left breast (fraction of glandular tissue): " << leftDensity 
+          << std::endl << std::endl
+    
+          << label << " Naive - Number of right breast voxels: " << nRightVoxels << std::endl
+          << label << " Naive - Volume of right breast: " << rightBreastVolume << " mm^3" << std::endl
+          << label << " Naive - Density of right breast (fraction of glandular tissue): " << rightDensity 
+          << std::endl << std::endl
+    
+          << label << " Naive - Total number of breast voxels: " 
+          << nLeftVoxels + nRightVoxels << std::endl
+          << label << " Naive - Total volume of both breasts: " 
+          << leftBreastVolume + rightBreastVolume << " mm^3" << std::endl
+          << label << " Naive - Combined density of both breasts (fraction of glandular tissue): " 
+          << totalDensity << std::endl << std::endl;
+  args.PrintMessage( message );
+};
+
+
+// -------------------------------------------------------------------------
 // SegmentParenchyma()
 // -------------------------------------------------------------------------
 
@@ -1174,13 +1529,13 @@ bool SegmentParenchyma( std::string label,
     float nLowProbIntensities = 0.;
 
     itk::ImageRegionIteratorWithIndex< ImageType > 
-      maskIterator( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
+      itMask( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
 
     itk::ImageRegionConstIterator< ImageType > 
-      segmIterator( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
+      itSegmentation( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
 
     itk::ImageRegionConstIterator< ImageType > 
-      imIterator( image, image->GetLargestPossibleRegion() );
+      itImage( image, image->GetLargestPossibleRegion() );
 
     ImageType::SpacingType spacing = imParenchyma->GetSpacing();
 
@@ -1195,20 +1550,20 @@ bool SegmentParenchyma( std::string label,
 
     ImageType::IndexType idx;
    
-    for ( maskIterator.GoToBegin(), segmIterator.GoToBegin(), imIterator.GoToBegin();
-          ! maskIterator.IsAtEnd();
-          ++maskIterator, ++segmIterator, ++imIterator )
+    for ( itMask.GoToBegin(), itSegmentation.GoToBegin(), itImage.GoToBegin();
+          ! itMask.IsAtEnd();
+          ++itMask, ++itSegmentation, ++itImage )
     {
-      if ( maskIterator.Get() )
+      if ( itMask.Get() )
       {
-        idx = maskIterator.GetIndex();
+        idx = itMask.GetIndex();
 
         // Left breast
 
         if ( idx[0] < (int) lateralSize[0] )
         {
           nLeftVoxels++;
-          leftDensity += segmIterator.Get();
+          leftDensity += itSegmentation.Get();
         }
 
         // Right breast
@@ -1216,24 +1571,24 @@ bool SegmentParenchyma( std::string label,
         else 
         {
           nRightVoxels++;
-          rightDensity += segmIterator.Get();
+          rightDensity += itSegmentation.Get();
         }
 
         // Both breasts
 
-        totalDensity += segmIterator.Get();
+        totalDensity += itSegmentation.Get();
 
         // Ensure we have the polarity correct by calculating the
         // mean intensities of each class
 
-        if ( segmIterator.Get() > 0.5 )
+        if ( itSegmentation.Get() > 0.5 )
         {
-          meanOfHighProbIntensities += imIterator.Get();
+          meanOfHighProbIntensities += itImage.Get();
           nHighProbIntensities++;
         }
         else
         {
-          meanOfLowProbIntensities += imIterator.Get();
+          meanOfLowProbIntensities += itImage.Get();
           nLowProbIntensities++;
         }              
       }
@@ -1320,6 +1675,24 @@ bool SegmentParenchyma( std::string label,
     args.PrintMessage( message );
 
 
+    // Compute a naive value of the breast density
+
+    float nLeftVoxelsNaive;
+    float nRightVoxelsNaive;                                  
+      
+    float totalDensityNaive;
+    float leftDensityNaive;
+    float rightDensityNaive;
+
+
+    NaiveParenchymaSegmentation( label, args, 
+                                 imSegmentedBreastMask, image,
+                                 flgFatIsBright,
+                                 nLeftVoxelsNaive, nRightVoxelsNaive,      
+                                 totalDensityNaive, leftDensityNaive, rightDensityNaive,
+                                 fileOutputParenchyma );
+
+
     if ( fileDensityMeasurements.length() != 0 ) 
     {
       std::string fileOutputDensityMeasurements 
@@ -1347,7 +1720,11 @@ bool SegmentParenchyma( std::string label,
       
            << label << " Total number of breast voxels, "
            << label << " Total volume of both breasts (mm^3), "
-           << label << " Combined density of both breasts (fraction of glandular tissue)" 
+           << label << " Combined density of both breasts (fraction of glandular tissue), " 
+
+           << label << " Naive density of left breast (fraction of glandular tissue), "
+           << label << " Naive density of right breast (fraction of glandular tissue), "
+           << label << " Naive combined density of both breasts (fraction of glandular tissue)" 
            << std::endl;
 
       fout << dirBaseName << ", "
@@ -1361,7 +1738,13 @@ bool SegmentParenchyma( std::string label,
       
            << nLeftVoxels + nRightVoxels << ", "
            << leftBreastVolume + rightBreastVolume << ", "
-           << totalDensity << std::endl;
+           << totalDensity << ", " 
+
+           << leftDensityNaive << ", "
+           << rightDensityNaive << ", "
+           << totalDensityNaive 
+
+           << std::endl;
     
       fout.close();
 
@@ -1377,33 +1760,45 @@ bool SegmentParenchyma( std::string label,
       if ( flgVeryFirstRow )    // Include the title row?
       {
         *foutOutputCSV << "Study ID, "
-                            << label << " Number of left breast voxels, "
-                            << label << " Volume of left breast (mm^3), "
-                            << label << " Density of left breast (fraction of glandular tissue), "
+                       << label << " Number of left breast voxels, "
+                       << label << " Volume of left breast (mm^3), "
+                       << label << " Density of left breast (fraction of glandular tissue), "
               
-                            << label << " Number of right breast voxels, "
-                            << label << " Volume of right breast (mm^3), "
-                            << label << " Density of right breast (fraction of glandular tissue), "
-              
-                            << label << " Total number of breast voxels, "
-                            << label << " Total volume of both breasts (mm^3), "
-                            << label << " Combined density of both breasts (fraction of glandular tissue)" 
-                            << std::endl;
+                       << label << " Number of right breast voxels, "
+                       << label << " Volume of right breast (mm^3), "
+                       << label << " Density of right breast (fraction of glandular tissue), "
+          
+                       << label << " Total number of breast voxels, "
+                       << label << " Total volume of both breasts (mm^3), "
+                       << label << " Combined density of both breasts (fraction of glandular tissue), " 
+          
+                       << label << " Naive density of left breast (fraction of glandular tissue), "
+                       << label << " Naive density of right breast (fraction of glandular tissue), "
+                       << label << " Naive combined density of both breasts (fraction of glandular tissue)" 
+
+                       << std::endl;
+
         flgVeryFirstRow = false;
       }
 
       *foutOutputCSV << dirBaseName << ", "
-                          << nLeftVoxels << ", "
-                          << leftBreastVolume << ", "
-                          << leftDensity << ", "
+                     << nLeftVoxels << ", "
+                     << leftBreastVolume << ", "
+                     << leftDensity << ", "
             
-                          << nRightVoxels << ", "
-                          << rightBreastVolume << ", "
-                          << rightDensity << ", "
+                     << nRightVoxels << ", "
+                     << rightBreastVolume << ", "
+                     << rightDensity << ", "
       
-                          << nLeftVoxels + nRightVoxels << ", "
-                          << leftBreastVolume + rightBreastVolume << ", "
-                          << totalDensity << std::endl;
+                     << nLeftVoxels + nRightVoxels << ", "
+                     << leftBreastVolume + rightBreastVolume << ", "
+                     << totalDensity << ", "
+
+                     << leftDensityNaive << ", "
+                     << rightDensityNaive << ", "
+                     << totalDensityNaive 
+
+                     << std::endl;
     }
     else
     {
@@ -1542,6 +1937,7 @@ int main( int argc, char *argv[] )
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
                         flgExcludeAxilla, flgCropFit, coilCropDistance,
+                        flgDoNotBiasFieldCorrectT1w, flgDoNotBiasFieldCorrectT2w,
                         dirSubMRI, dirSubData, dirPrefix, dirInput,
                         fileLog, fileT1wOutputCSV, fileT2wOutputCSV,
                         strSeriesDescStructuralT2,
@@ -1605,28 +2001,61 @@ int main( int argc, char *argv[] )
   // Initialise the output file names
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  std::string fileI00_t2_tse_tra( "I00_t2_tse_tra.nii" );
-  std::string fileI00_t1_fl3d_tra_VIBE( "I00_t1_fl3d_tra_VIBE.nii" );
+  std::string fileI00_T2w = std::string( "I00_" ) + strSeriesDescStructuralT2 + ".nii";
+  std::string fileI00_T1w = std::string( "I00_" ) + strSeriesDescFatSatT1 + ".nii";
 
-  std::string fileI00_sag_dixon_bilateral_W( "I00_sag_dixon_bilateral_W.nii" );
-  std::string fileI00_sag_dixon_bilateral_F( "I00_sag_dixon_bilateral_F.nii" );
+  std::string fileI00_sag_dixon_bilateral_W = std::string( "I00_") + strSeriesDescDixonWater + ".nii";
+  std::string fileI00_sag_dixon_bilateral_F = std::string( "I00_") + strSeriesDescDixonFat + ".nii";
 
-  std::string fileI01_t2_tse_tra_BiasFieldCorrection( "I01_t2_tse_tra_BiasFieldCorrection.nii" );
-  std::string fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection( "I01_t1_fl3d_tra_VIBE_BiasFieldCorrection.nii" );
-  std::string fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient( "I01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient.nii" );
+  std::string fileI01_T2w_BiasFieldCorrection;
+  std::string fileI01_T1w_BiasFieldCorrection;
 
-  std::string fileI02_t2_tse_tra_Resampled;
+  std::string fileI01_T2w_BiasFieldCorrectionMask;
+  std::string fileI01_T1w_BiasFieldCorrectionMask;
+
+  std::string fileI01_T2w_BiasField;
+  std::string fileI01_T1w_BiasField;
+
+  std::string fileI01_T1w_BiasFieldCorrectionReorient;
+
+  if ( flgDoNotBiasFieldCorrectT1w )
+  {
+    fileI01_T1w_BiasFieldCorrection = fileI00_T1w;
+    fileI01_T1w_BiasFieldCorrectionReorient = std::string( "I01_" ) + strSeriesDescFatSatT1 + "_Reorient.nii";
+  }
+  else
+  {
+    fileI01_T1w_BiasFieldCorrection = std::string( "I01_" ) + strSeriesDescFatSatT1 + "_BiasFieldCorrection.nii";
+    fileI01_T1w_BiasFieldCorrectionMask = std::string( "I01_" ) + strSeriesDescFatSatT1 + "_BiasFieldCorrectionMask.nii";
+    fileI01_T1w_BiasField = std::string( "I01_" ) + strSeriesDescFatSatT1 + "_BiasField.nii";
+    fileI01_T1w_BiasFieldCorrectionReorient = std::string( "I01_" ) + strSeriesDescFatSatT1 + "_BiasFieldCorrectionReorient.nii";
+  }
+
+  if ( flgDoNotBiasFieldCorrectT2w )
+  {
+    fileI01_T2w_BiasFieldCorrection = std::string( "I01_" ) + strSeriesDescStructuralT2 + ".nii" ;
+  }
+  else
+  {
+    fileI01_T2w_BiasFieldCorrection = std::string( "I01_" ) + strSeriesDescStructuralT2 + "_BiasFieldCorrection.nii" ;
+    fileI01_T2w_BiasFieldCorrectionMask = std::string( "I01_" ) + strSeriesDescStructuralT2 + "_BiasFieldCorrectionMask.nii" ;
+    fileI01_T2w_BiasField = std::string( "I01_" ) + strSeriesDescStructuralT2 + "_BiasField.nii" ;
+  }
+  
+
+
+  std::string fileI02_T2w_Resampled;
   
   if ( args.flgRegisterImages )
   {
-    fileI02_t2_tse_tra_Resampled = 
-      CreateRegisteredFilename( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection,
-                                fileI01_t2_tse_tra_BiasFieldCorrection,
+    fileI02_T2w_Resampled = 
+      CreateRegisteredFilename( fileI01_T1w_BiasFieldCorrection,
+                                fileI01_T2w_BiasFieldCorrection,
                                 std::string( "NonRigidTo" ) );
   }
   else
   {
-    fileI02_t2_tse_tra_Resampled = "I02_t2_tse_tra_Resampled.nii";
+    fileI02_T2w_Resampled = std::string( "I02_" ) + strSeriesDescStructuralT2 + "_Resampled.nii";
   }
 
   std::string fileBIFs( "I03_OrientedBIFsSig3_Axial.nii" );
@@ -1670,17 +2099,24 @@ int main( int argc, char *argv[] )
   if ( flgCompression )
   {
 
-    fileI00_t2_tse_tra.append( ".gz" );
-    fileI00_t1_fl3d_tra_VIBE.append( ".gz" );
+    fileI00_T2w.append( ".gz" );
+    fileI00_T1w.append( ".gz" );
 
     fileI00_sag_dixon_bilateral_W.append( ".gz" );
     fileI00_sag_dixon_bilateral_F.append( ".gz" );
 
-    fileI01_t2_tse_tra_BiasFieldCorrection.append( ".gz" );
-    fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection.append( ".gz" );
-    fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient.append( ".gz" );
+    fileI01_T2w_BiasFieldCorrection.append( ".gz" );
+    fileI01_T1w_BiasFieldCorrection.append( ".gz" );
 
-    fileI02_t2_tse_tra_Resampled.append( ".gz" );
+    fileI01_T2w_BiasFieldCorrectionMask.append( ".gz" );
+    fileI01_T1w_BiasFieldCorrectionMask.append( ".gz" );
+
+    fileI01_T2w_BiasField.append( ".gz" );
+    fileI01_T1w_BiasField.append( ".gz" );
+
+    fileI01_T1w_BiasFieldCorrectionReorient.append( ".gz" );
+
+    fileI02_T2w_Resampled.append( ".gz" );
 
     fileOutputBreastMask.append( ".gz" );
     fileOutputBreastMaskReorient.append( ".gz" );
@@ -1928,17 +2364,17 @@ int main( int argc, char *argv[] )
                  << "</filter-progress>" << std::endl << std::endl;
 
 
-      // Load the fat sat image
-      // ~~~~~~~~~~~~~~~~~~~~~~
+      // Load the T1w image
+      // ~~~~~~~~~~~~~~~~~~
         
       if ( flgOverwrite || 
-           ( ! args.ReadImageFromFile( args.dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
+           ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T1w_BiasFieldCorrection, 
                                        std::string( "bias field corrected '") +
                                        args.strSeriesDescFatSatT1 + "' image", 
                                        imFatSatT1 ) ) )
       {
         if ( flgOverwrite || 
-             ( ! args.ReadImageFromFile( args.dirOutput, fileI00_t1_fl3d_tra_VIBE, 
+             ( ! args.ReadImageFromFile( args.dirOutput, fileI00_T1w, 
                                          std::string( "complementary '" ) +
                                          args.strSeriesDescFatSatT1 + "' image", imFatSatT1 ) ) )
         {
@@ -1956,15 +2392,15 @@ int main( int argc, char *argv[] )
             imFatSatT1 = seriesReader->GetOutput();
             imFatSatT1->DisconnectPipeline();
             
-            args.WriteImageToFile( fileI00_t1_fl3d_tra_VIBE, 
+            args.WriteImageToFile( fileI00_T1w, 
                                    std::string( "complementary '" ) + args.strSeriesDescFatSatT1 +
                                    "' image", imFatSatT1 );
           }
         }
 
-        // Bias field correct it
+        // Bias field correct it?
 
-        if ( imFatSatT1 ) 
+        if ( ( ! flgDoNotBiasFieldCorrectT1w ) && imFatSatT1 )
         {
           
           message << std::endl << "Bias field correcting '" << args.strSeriesDescFatSatT1 << "' image"
@@ -1979,9 +2415,23 @@ int main( int argc, char *argv[] )
           imFatSatT1 = biasFieldCorrector->GetOutput();
           imFatSatT1->DisconnectPipeline();
           
-          args.WriteImageToFile( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
+          args.WriteImageToFile( fileI01_T1w_BiasFieldCorrection, 
                                  std::string( "bias field corrected '" ) + 
                                  args.strSeriesDescFatSatT1 + "' image", imFatSatT1 );
+
+          if ( args.flgDebug )
+          {
+            args.WriteImageToFile( fileI01_T1w_BiasFieldCorrectionMask, 
+                                   std::string( "mask used for bias field corrected '" ) + 
+                                   args.strSeriesDescFatSatT1 + "' image", 
+                                   biasFieldCorrector->GetMask() );
+
+            args.WriteImageToFile( fileI01_T1w_BiasField, 
+                                   std::string( "bias field '" ) + 
+                                   args.strSeriesDescFatSatT1 + "' image", 
+                                   biasFieldCorrector->GetBiasField() );
+
+          }
         }
       }
 
@@ -1995,19 +2445,19 @@ int main( int argc, char *argv[] )
       // ~~~~~~~~~~~~~~~~~~~~~~~~~
 
       if ( flgOverwrite || 
-           ( ! args.ReadImageFromFile( args.dirOutput, fileI02_t2_tse_tra_Resampled, 
+           ( ! args.ReadImageFromFile( args.dirOutput, fileI02_T2w_Resampled, 
                                        std::string( "resampled '" ) 
                                        + args.strSeriesDescStructuralT2 + "' image", 
                                        imStructuralT2 ) ) )
       {
         if  ( flgOverwrite || 
-              ( ! args.ReadImageFromFile( args.dirOutput, fileI01_t2_tse_tra_BiasFieldCorrection, 
+              ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T2w_BiasFieldCorrection, 
                                           std::string( "bias field corrected '" ) + 
                                           args.strSeriesDescStructuralT2 + "' image", 
                                           imStructuralT2 ) ) )
         {
           if ( flgOverwrite || 
-               ( ! args.ReadImageFromFile( args.dirOutput, fileI00_t2_tse_tra,
+               ( ! args.ReadImageFromFile( args.dirOutput, fileI00_T2w,
                                            std::string( "structural '" ) + 
                                            args.strSeriesDescStructuralT2 + "' image", 
                                            imStructuralT2 ) ) )
@@ -2026,26 +2476,43 @@ int main( int argc, char *argv[] )
               imStructuralT2 = seriesReader->GetOutput();
               imStructuralT2->DisconnectPipeline();
 
-              args.WriteImageToFile( fileI00_t2_tse_tra,
+              args.WriteImageToFile( fileI00_T2w,
                                      std::string( "structural '" ) + args.strSeriesDescStructuralT2 +
                                      "' image", imStructuralT2 );
             }
           }
 
-          // Bias field correct it
-          
           if ( imStructuralT2 )
           {
-            message << std::endl << "Bias field correcting '" << args.strSeriesDescStructuralT2 << "' image" << std::endl;  
-            args.PrintMessage( message );
+          
+            // Bias field correct it?
+          
+            if ( ! flgDoNotBiasFieldCorrectT2w )
+            {
+              message << std::endl << "Bias field correcting '" << args.strSeriesDescStructuralT2 << "' image" << std::endl;  
+              args.PrintMessage( message );
+              
+              BiasFieldCorrectionType::Pointer biasFieldCorrector = BiasFieldCorrectionType::New();
+              
+              biasFieldCorrector->SetInput( imStructuralT2 );
+              biasFieldCorrector->Update();
+              
+              imStructuralT2 = biasFieldCorrector->GetOutput();
+              imStructuralT2->DisconnectPipeline();
 
-            BiasFieldCorrectionType::Pointer biasFieldCorrector = BiasFieldCorrectionType::New();
+              if ( args.flgDebug )
+              {
+                args.WriteImageToFile( fileI01_T2w_BiasFieldCorrectionMask, 
+                                       std::string( "mask used for bias field corrected '" ) +
+                                       args.strSeriesDescStructuralT2 + "' image",
+                                       biasFieldCorrector->GetMask() );
 
-            biasFieldCorrector->SetInput( imStructuralT2 );
-            biasFieldCorrector->Update();
-
-            imStructuralT2 = biasFieldCorrector->GetOutput();
-            imStructuralT2->DisconnectPipeline();
+                args.WriteImageToFile( fileI01_T2w_BiasField, 
+                                       std::string( "bias field '" ) +
+                                       args.strSeriesDescStructuralT2 + "' image",
+                                       biasFieldCorrector->GetBiasField() );
+              }            
+            }
 
             // Rescale the 98th percentile to 100
           
@@ -2068,7 +2535,7 @@ int main( int argc, char *argv[] )
             imStructuralT2 = rescaleFilter->GetOutput();
             imStructuralT2->DisconnectPipeline();          
             
-            args.WriteImageToFile( fileI01_t2_tse_tra_BiasFieldCorrection, 
+            args.WriteImageToFile( fileI01_T2w_BiasFieldCorrection, 
                                    std::string( "bias field corrected '" ) +
                                    args.strSeriesDescStructuralT2 + "' image", imStructuralT2 );
           }
@@ -2082,12 +2549,12 @@ int main( int argc, char *argv[] )
           // Also register 
           if ( args.flgRegisterImages )
           {
-            if ( ! ( RegisterImages( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection,
-                                     fileI01_t2_tse_tra_BiasFieldCorrection,
-                                     fileI02_t2_tse_tra_Resampled,
+            if ( ! ( RegisterImages( fileI01_T1w_BiasFieldCorrection,
+                                     fileI01_T2w_BiasFieldCorrection,
+                                     fileI02_T2w_Resampled,
                                      args ) 
                      &&
-                     args.ReadImageFromFile( args.dirOutput, fileI02_t2_tse_tra_Resampled, 
+                     args.ReadImageFromFile( args.dirOutput, fileI02_T2w_Resampled, 
                                              std::string( "registered '") +
                                              args.strSeriesDescStructuralT2 + "' image", 
                                              imStructuralT2 ) ) )
@@ -2105,10 +2572,14 @@ int main( int argc, char *argv[] )
             typedef itk::ResampleImageFilter<ImageType, ImageType > ResampleFilterType;
             ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
 
+            typedef itk::NearestNeighborInterpolateImageFunction< ImageType, double >  InterpolatorType;
+            InterpolatorType::Pointer interpolator = InterpolatorType::New();
+
             resampleFilter->SetUseReferenceImage( true ); 
             resampleFilter->SetReferenceImage( imFatSatT1 ); 
 
             resampleFilter->SetTransform( identityTransform );
+            resampleFilter->SetInterpolator( interpolator );
 
             resampleFilter->SetInput( imStructuralT2 );
 
@@ -2117,7 +2588,7 @@ int main( int argc, char *argv[] )
             imStructuralT2 = resampleFilter->GetOutput();
             imStructuralT2->DisconnectPipeline();
 
-            args.WriteImageToFile( fileI02_t2_tse_tra_Resampled, 
+            args.WriteImageToFile( fileI02_T2w_Resampled, 
                                    std::string( "resampled '" ) + args.strSeriesDescStructuralT2 +
                                    "' image", imStructuralT2 );
           }
@@ -2354,7 +2825,7 @@ int main( int argc, char *argv[] )
                          false,
 
                          dirBaseName,
-                         fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection, 
+                         fileI01_T1w_BiasFieldCorrection, 
                          fileOutputBreastMask, 
                          fileOutputT1wParenchyma,
                          fileT1wDensityMeasurements,
@@ -2372,7 +2843,7 @@ int main( int argc, char *argv[] )
                          true,
 
                          dirBaseName,
-                         fileI02_t2_tse_tra_Resampled, 
+                         fileI02_T2w_Resampled, 
                          fileOutputBreastMask, 
                          fileOutputT2wParenchyma,
                          fileT2wDensityMeasurements,
@@ -2398,7 +2869,7 @@ int main( int argc, char *argv[] )
         if ( args.flgRegisterImages )
         {
           if ( flgOverwrite || 
-               ( ! args.ReadImageFromFile( args.dirOutput, fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient, 
+               ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T1w_BiasFieldCorrectionReorient, 
                                            std::string( "bias field corrected '") +
                                            args.strSeriesDescFatSatT1 + "' reorient image", 
                                            imFatSatT1 ) ) )
@@ -2406,7 +2877,7 @@ int main( int argc, char *argv[] )
             imFatSatT1 = ReorientateImage( imFatSatT1, 
                                            GetOrientationInfo( imDixonWater ) );
 
-            args.WriteImageToFile( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient, 
+            args.WriteImageToFile( fileI01_T1w_BiasFieldCorrectionReorient, 
                                    std::string( "bias field corrected '" ) + 
                                    args.strSeriesDescFatSatT1 + "' reorient image", imFatSatT1 );
           }
@@ -2424,7 +2895,7 @@ int main( int argc, char *argv[] )
           }
 
           RegisterAndResample( fileI00_sag_dixon_bilateral_W,
-                               fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrectionReorient,
+                               fileI01_T1w_BiasFieldCorrectionReorient,
                                fileOutputBreastMaskReorient,
                                fileOutputDixonMask,
                                std::string( "-NN" ),
@@ -2440,11 +2911,11 @@ int main( int argc, char *argv[] )
             typedef itk::IdentityTransform<double, Dimension> TransformType;
             TransformType::Pointer identityTransform = TransformType::New();
             
-            typedef itk::NearestNeighborInterpolateImageFunction<ImageType, double> InterpolatorType;
-            InterpolatorType::Pointer interpolator = InterpolatorType::New();
-            
             typedef itk::ResampleImageFilter<ImageType, ImageType > ResampleFilterType;
             ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
+            
+            typedef itk::NearestNeighborInterpolateImageFunction<ImageType, double> InterpolatorType;
+            InterpolatorType::Pointer interpolator = InterpolatorType::New();
             
             resampleFilter->SetUseReferenceImage( true ); 
             resampleFilter->SetReferenceImage( imDixonWater ); 
@@ -2476,9 +2947,16 @@ int main( int argc, char *argv[] )
 
       if ( ! ( flgDebug || flgSaveImages ) )
       {
-        args.DeleteFile( fileI01_t2_tse_tra_BiasFieldCorrection );
-        args.DeleteFile( fileI01_t1_fl3d_tra_VIBE_BiasFieldCorrection );
-        args.DeleteFile( fileI02_t2_tse_tra_Resampled );
+        args.DeleteFile( fileI01_T2w_BiasFieldCorrection );
+        args.DeleteFile( fileI01_T1w_BiasFieldCorrection );
+
+        args.DeleteFile( fileI01_T2w_BiasFieldCorrectionMask );
+        args.DeleteFile( fileI01_T1w_BiasFieldCorrectionMask );
+
+        args.DeleteFile( fileI01_T2w_BiasField );
+        args.DeleteFile( fileI01_T1w_BiasField );
+
+        args.DeleteFile( fileI02_T2w_Resampled );
 
         args.DeleteFile( fileBIFs );
 

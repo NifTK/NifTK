@@ -700,6 +700,336 @@ bool ResampleImageToIsotropicVoxels( ImageType::Pointer &image, InputParameters 
 
 
 // -------------------------------------------------------------------------
+// NaiveParenchymaSegmentation()
+// -------------------------------------------------------------------------
+
+bool NaiveParenchymaSegmentation( InputParameters &args, 
+                        
+                                  ImageType::Pointer &imSegmentedBreastMask,
+                                  ImageType::Pointer &image,
+                                  
+                                  bool flgFatIsBright,
+
+                                  float &nLeftVoxels,
+                                  float &nRightVoxels,                                  
+
+                                  float &totalDensity,
+                                  float &leftDensity,
+                                  float &rightDensity,
+
+                                  std::string fileOutputParenchyma )
+{
+  float minFraction = 0.02;
+
+  std::stringstream message;
+
+  ImageType::Pointer imParenchyma = 0;
+
+  typedef itk::ImageDuplicator< ImageType > DuplicatorType; 
+    
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage( image );
+  duplicator->Update();
+
+  imParenchyma = duplicator->GetOutput();
+  imParenchyma->DisconnectPipeline();
+
+  imParenchyma->FillBuffer( 0. );
+
+  nLeftVoxels = 0;
+  nRightVoxels = 0;
+
+  totalDensity = 0.;
+  leftDensity = 0.;
+  rightDensity = 0.;
+
+  float meanOfHighProbIntensities = 0.;
+  float meanOfLowProbIntensities = 0.;
+
+  float nHighProbIntensities = 0.;
+  float nLowProbIntensities = 0.;
+
+  itk::ImageRegionIteratorWithIndex< ImageType > 
+    itMask( imSegmentedBreastMask, imSegmentedBreastMask->GetLargestPossibleRegion() );
+
+  itk::ImageRegionIterator< ImageType > 
+    itSegmentation( imParenchyma, imParenchyma->GetLargestPossibleRegion() );
+
+  itk::ImageRegionConstIterator< ImageType > 
+    itImage( image, image->GetLargestPossibleRegion() );
+
+  
+  // Compute the range of intensities inside the mask
+  
+  float minIntensity = std::numeric_limits< float >::max();
+  float maxIntensity = -std::numeric_limits< float >::max();
+
+  for ( itMask.GoToBegin(), itImage.GoToBegin();
+        ! itMask.IsAtEnd();
+        ++itMask, ++itImage )
+  {
+    if ( itMask.Get() )
+    {
+      if ( itImage.Get() > maxIntensity )
+      {
+        maxIntensity = itImage.Get();
+      }
+
+      if ( itImage.Get() < minIntensity )
+      {
+        minIntensity = itImage.Get();
+      }
+    }
+  }
+
+  message  << std::endl
+           << "Range of " << " is from: " 
+           << minIntensity << " to: " << maxIntensity << std::endl;
+  args.PrintMessage( message );
+  
+
+  // Compute 1st and 99th percentiles of the image from the image histogram
+
+  unsigned int nBins = static_cast<unsigned int>( maxIntensity - minIntensity + 0.5 ) + 1;
+
+  itk::Array< float > histogram( nBins );
+    
+  histogram.Fill( 0 );
+
+  float nPixels = 0;
+  float flIntensity;
+
+  for ( itImage.GoToBegin(), itMask.GoToBegin();
+        ! itImage.IsAtEnd();
+        ++itImage, ++itMask )
+  {
+    if ( itMask.Get() )
+    {
+      flIntensity = itImage.Get() - minIntensity;
+      
+      if ( flIntensity < 0. )
+      {
+        flIntensity = 0.;
+      }
+      
+      if ( flIntensity > static_cast<float>( nBins - 1 ) )
+      {
+        flIntensity = static_cast<float>( nBins - 1 );
+      }
+      
+      nPixels++;
+      histogram[ static_cast<unsigned int>( flIntensity ) ] += 1.;
+    }
+  }
+    
+  float sumProbability = 0.;
+  unsigned int intensity;
+
+  float pLowerBound = 0.;
+  float pUpperBound = 0.;
+
+  bool flgLowerBoundFound = false;
+  bool flgUpperBoundFound = false;
+
+
+  for ( intensity=0; intensity<nBins; intensity++ )
+  {
+    histogram[ intensity ] /= nPixels;
+    sumProbability += histogram[ intensity ];
+
+    if ( ( ! flgLowerBoundFound ) && ( sumProbability >= minFraction ) )
+    {
+      pLowerBound = intensity;
+      flgLowerBoundFound = true;
+    }
+
+    if ( ( ! flgUpperBoundFound ) && ( sumProbability >= (1. - minFraction) ) )
+    {
+      pUpperBound = intensity;
+      flgUpperBoundFound = true;
+    }
+    
+    if ( args.flgDebug )
+    {
+      std::cout << std::setw( 18 ) << intensity << " " 
+                << std::setw( 18 ) << histogram[ intensity ]  << " " 
+                << std::setw( 18 ) << sumProbability << std::endl;
+    }
+  }
+  
+  message << std::endl
+          << "Density lower bound: " << pLowerBound 
+          << " ( " << minFraction*100. << "% )" << std::endl
+          << " upper bound: " << pUpperBound 
+          << " ( " << (1. - minFraction)*100. << "% )" << std::endl;
+  args.PrintMessage( message );
+  
+
+  // Compute the density
+
+  ImageType::SpacingType spacing = imParenchyma->GetSpacing();
+
+  float voxelVolume = spacing[0]*spacing[1]*spacing[2];
+
+  ImageType::RegionType region;
+  region = imSegmentedBreastMask->GetLargestPossibleRegion();
+
+  ImageType::SizeType lateralSize;
+  lateralSize = region.GetSize();
+  lateralSize[0] = lateralSize[0]/2;
+
+  ImageType::IndexType idx;
+   
+  for ( itMask.GoToBegin(), itSegmentation.GoToBegin(), itImage.GoToBegin();
+        ! itMask.IsAtEnd();
+        ++itMask, ++itSegmentation, ++itImage )
+  {
+    if ( itMask.Get() )
+    {
+      idx = itMask.GetIndex();
+
+      flIntensity = ( itImage.Get() - pLowerBound )/( pUpperBound - pLowerBound );
+      
+      if ( flIntensity < 0. )
+      {
+        itSegmentation.Set( 0. );
+      }
+      else if ( flIntensity > 1. )
+      {
+        itSegmentation.Set( 1. );
+      }
+      else
+      {
+        itSegmentation.Set( flIntensity );
+      }
+
+      //std::cout << idx << " " << itImage.Get() << " -> " << flIntensity << std::endl;
+
+      // Left breast
+
+      if ( idx[0] < (int) lateralSize[0] )
+      {
+        nLeftVoxels++;
+        leftDensity += flIntensity;
+      }
+
+      // Right breast
+      
+      else 
+      {
+        nRightVoxels++;
+        rightDensity += flIntensity;
+      }
+
+      // Both breasts
+
+      totalDensity += flIntensity;
+
+      // Ensure we have the polarity correct by calculating the
+      // mean intensities of each class
+
+      if ( flIntensity > 0.5 )
+      {
+        meanOfHighProbIntensities += itImage.Get();
+        nHighProbIntensities++;
+      }
+      else
+      {
+        meanOfLowProbIntensities += itImage.Get();
+        nLowProbIntensities++;
+      }              
+    }
+  }
+
+  leftDensity /= nLeftVoxels;
+  rightDensity /= nRightVoxels;
+  totalDensity /= ( nLeftVoxels + nRightVoxels);
+
+  // Calculate the mean intensities of each class
+  
+  if ( nHighProbIntensities > 0. )
+  {
+    meanOfHighProbIntensities /= nHighProbIntensities;
+  }
+  
+  if ( nLowProbIntensities > 0. )
+  {
+    meanOfLowProbIntensities /= nLowProbIntensities;
+  }
+
+  message  << std::endl
+           << "Mean intensity of high probability class = " << meanOfHighProbIntensities
+           << " ( " << nHighProbIntensities << " voxels )" << std::endl
+           << "Mean intensity of low probability class = " << meanOfLowProbIntensities
+           << " ( " << nLowProbIntensities << " voxels )" << std::endl;
+  args.PrintMessage( message );
+
+  // Fat should be high intensity in the T2 image so if the dense
+  // region (high prob) has a high intensity then it is probably fat
+  // and we need to invert the density, whereas the opposite is true
+  // for the fat-saturated T1w VIBE image.
+  
+  if ( (     flgFatIsBright   && ( meanOfHighProbIntensities > meanOfLowProbIntensities ) ) ||
+       ( ( ! flgFatIsBright ) && ( meanOfHighProbIntensities < meanOfLowProbIntensities ) ) )
+  {
+    message << "Inverting the density estimation" << std::endl;
+    args.PrintWarning( message );
+    
+    leftDensity  = 1. - leftDensity;
+    rightDensity = 1. - rightDensity;
+    totalDensity = 1. - totalDensity;
+    
+    typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< ImageType > InvertFilterType;
+    InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+    invertFilter->SetInput( imParenchyma );
+
+    typedef itk::MaskImageFilter< ImageType, ImageType > MaskFilterType;
+    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+
+    maskFilter->SetInput( invertFilter->GetOutput() );
+    maskFilter->SetMaskImage( imSegmentedBreastMask );
+    maskFilter->Update();
+
+    ImageType::Pointer imInverted = maskFilter->GetOutput();
+    imInverted->DisconnectPipeline();
+    imParenchyma = imInverted;
+  }
+
+  std::string fileOut = niftk::ModifyImageFileSuffix( fileOutputParenchyma, 
+                                                      std::string( "_Naive.nii" ) );
+
+  if ( args.flgCompression ) fileOut.append( ".gz" );
+
+  args.WriteImageToFile( fileOut, 
+                         std::string( "naive parenchyma image"), imParenchyma );
+
+
+  float leftBreastVolume = nLeftVoxels*voxelVolume;
+  float rightBreastVolume = nRightVoxels*voxelVolume;
+
+  message << "Naive - Number of left breast voxels: " << nLeftVoxels << std::endl
+          << "Naive - Volume of left breast: " << leftBreastVolume << " mm^3" << std::endl
+          << "Naive - Density of left breast (fraction of glandular tissue): " << leftDensity 
+          << std::endl << std::endl
+    
+          << "Naive - Number of right breast voxels: " << nRightVoxels << std::endl
+          << "Naive - Volume of right breast: " << rightBreastVolume << " mm^3" << std::endl
+          << "Naive - Density of right breast (fraction of glandular tissue): " << rightDensity 
+          << std::endl << std::endl
+    
+          << "Naive - Total number of breast voxels: " 
+          << nLeftVoxels + nRightVoxels << std::endl
+          << "Naive - Total volume of both breasts: " 
+          << leftBreastVolume + rightBreastVolume << " mm^3" << std::endl
+          << "Naive - Combined density of both breasts (fraction of glandular tissue): " 
+          << totalDensity << std::endl << std::endl;
+
+  args.PrintMessage( message );
+};
+
+
+// -------------------------------------------------------------------------
 // main()
 // -------------------------------------------------------------------------
 
@@ -1285,6 +1615,23 @@ int main( int argc, char *argv[] )
             args.PrintMessage( message );
 
 
+            // Compute a naive value of the breast density
+
+            float nLeftVoxelsNaive;
+            float nRightVoxelsNaive;                                  
+      
+            float totalDensityNaive;
+            float leftDensityNaive;
+            float rightDensityNaive;
+
+            NaiveParenchymaSegmentation( args, 
+                                         imMask, imInput,
+                                         flgFatIsBright,
+                                         nLeftVoxelsNaive, nRightVoxelsNaive,      
+                                         totalDensityNaive, leftDensityNaive, rightDensityNaive,
+                                         fileOutputParenchyma );
+
+
             if ( fileDensityMeasurements.length() != 0 ) 
             {
               std::string fileOutputDensityMeasurements 
@@ -1305,7 +1652,6 @@ int main( int argc, char *argv[] )
                    << "Image, "
                    << "Mask, "
 
-                                    
                    << "Number of left breast voxels, "
                    << "Volume of left breast (mm^3), "
                    << "Density of left breast (fraction of glandular tissue), "
@@ -1316,7 +1662,11 @@ int main( int argc, char *argv[] )
       
                    << "Total number of breast voxels, "
                    << "Total volume of both breasts (mm^3), "
-                   << "Combined density of both breasts (fraction of glandular tissue)" 
+                   << "Combined density of both breasts (fraction of glandular tissue), " 
+
+                   << "Naive density of left breast (fraction of glandular tissue), "
+                   << "Naive density of right breast (fraction of glandular tissue), "
+                   << "Naive combined density of both breasts (fraction of glandular tissue)" 
                    << std::endl;
 
               fout << dirBaseName << ", "
@@ -1334,7 +1684,13 @@ int main( int argc, char *argv[] )
       
                    << nLeftVoxels + nRightVoxels << ", "
                    << leftBreastVolume + rightBreastVolume << ", "
-                   << totalDensity << std::endl;
+                   << totalDensity << ", " 
+
+                   << leftDensityNaive << ", "
+                   << rightDensityNaive << ", "
+                   << totalDensityNaive 
+                
+                   << std::endl;
     
               fout.close();
 
@@ -1363,7 +1719,12 @@ int main( int argc, char *argv[] )
               
                                     << "Total number of breast voxels, "
                                     << "Total volume of both breasts (mm^3), "
-                                    << "Combined density of both breasts (fraction of glandular tissue)" 
+                                    << "Combined density of both breasts (fraction of glandular tissue), " 
+          
+                                    << "Naive density of left breast (fraction of glandular tissue), "
+                                    << "Naive density of right breast (fraction of glandular tissue), "
+                                    << "Naive combined density of both breasts (fraction of glandular tissue)" 
+
                                     << std::endl;
                 flgVeryFirstRow = false;
               }
@@ -1382,7 +1743,13 @@ int main( int argc, char *argv[] )
       
                                   << nLeftVoxels + nRightVoxels << ", "
                                   << leftBreastVolume + rightBreastVolume << ", "
-                                  << totalDensity << std::endl;
+                                  << totalDensity  << ", "
+
+                                  << leftDensityNaive << ", "
+                                  << rightDensityNaive << ", "
+                                  << totalDensityNaive 
+
+                                  << std::endl;
             }
             else
             {
