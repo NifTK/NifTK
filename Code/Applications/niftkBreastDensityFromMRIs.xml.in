@@ -111,6 +111,20 @@
     </boolean>
 
     <boolean>
+      <name>flgDoNotBiasFieldCorrectT1w</name>
+      <longflag>noBiasCorrectionT1</longflag>
+      <description>Select this checkbox to turn off the bias field correction of the T1w image.</description>
+      <label>Turn off bias field correction for T1w?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgDoNotBiasFieldCorrectT2w</name>
+      <longflag>noBiasCorrectionT2</longflag>
+      <description>Select this checkbox to turn off the bias field correction of the T2w image.</description>
+      <label>Turn off bias field correction for T2w?</label>
+    </boolean>
+
+    <boolean>
       <name>flgDebug</name>
       <longflag>dbg</longflag>
       <description>Generate debug output (i.e. print the DICOM header).</description>
@@ -199,7 +213,7 @@
       <longflag>segEM</longflag>
       <description>The NiftySeg seg_EM path and command line to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
-      <default>seg_EM -v 2 -nopriors 2 -bc_order 0</default>
+      <default>seg_EM -v 2 -nopriors 2</default>
       <channel>input</channel>
     </file>
 
