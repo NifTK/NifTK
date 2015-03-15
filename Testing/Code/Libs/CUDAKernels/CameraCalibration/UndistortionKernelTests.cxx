@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <string>
+#include <stdexcept>
 #include <CameraCalibration/UndistortionKernel.h>
 #include <boost/gil/gil_all.hpp>
 #include <cuda_runtime_api.h>
