@@ -119,7 +119,7 @@ private:
 
   enum DefaultValueType
   {
-    None, Bool, Int, Float, String
+    NoType, BoolType, IntType, FloatType, StringType
   };
 
   DefaultValueType m_DefaultValueType;
