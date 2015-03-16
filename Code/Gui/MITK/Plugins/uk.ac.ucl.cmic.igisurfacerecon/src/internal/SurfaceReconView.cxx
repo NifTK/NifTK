@@ -132,6 +132,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
   }
   // enable box only if there is any method.
   MethodComboBox->setEnabled(MethodComboBox->count() > 0);
+
+#ifndef _USE_PCL
+  m_GeneratePCLPointCloudRadioBox->setEnabled(false);
+#endif
 }
 
 
@@ -225,7 +229,8 @@ void SurfaceReconView::WriteCurrentConfig(const QString& directory) const
     info << "outputnodeisvisible=" << (OutputNodeIsVisibleCheckBox->isChecked() ? "yes" : "no") << "\n";
     info << "outputnode=" << OutputNodeNameLineEdit->text() << "\n";
     info << "autoincoutputnodename=" << (AutoIncNodeNameCheckBox->isChecked() ? "yes" : "no") << "\n";
-    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage" : "pointcloud") << "\n";
+    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage"
+                                : (m_GeneratePCLPointCloudRadioBox->isChecked() ? "pclpointcloud" : "mitkpointcloud")) << "\n";
 
     mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
     info << "cameranode=" << (camNode.IsNotNull() ? QString::fromStdString("\"" + camNode->GetName() + "\"") : "null") << "\n";
@@ -368,14 +373,24 @@ void SurfaceReconView::DoSurfaceReconstruction()
       niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
       if (GenerateDisparityImageRadioBox->isChecked())
       {
-        assert(!GeneratePointCloudRadioBox->isChecked());
+        assert(!m_GenerateMITKPointCloudRadioBox->isChecked());
+        assert(!m_GeneratePCLPointCloudRadioBox->isChecked());
         outputtype = niftk::SurfaceReconstruction::DISPARITY_IMAGE;
       }
-      if (GeneratePointCloudRadioBox->isChecked())
+      if (m_GenerateMITKPointCloudRadioBox->isChecked())
       {
         assert(!GenerateDisparityImageRadioBox->isChecked());
+        assert(!m_GeneratePCLPointCloudRadioBox->isChecked());
+        outputtype = niftk::SurfaceReconstruction::MITK_POINT_CLOUD;
+      }
+#ifdef _USE_PCL
+      if (m_GeneratePCLPointCloudRadioBox->isChecked())
+      {
+        assert(!GenerateDisparityImageRadioBox->isChecked());
+        assert(!m_GenerateMITKPointCloudRadioBox->isChecked());
         outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
       }
+#endif
 
       // where to place the point cloud in 3d space
       // is ok if node doesnt exist, SurfaceReconstruction will deal with that.

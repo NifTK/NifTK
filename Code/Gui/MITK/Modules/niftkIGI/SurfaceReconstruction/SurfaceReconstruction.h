@@ -74,7 +74,7 @@ public:
   enum OutputType
   {
     MITK_POINT_CLOUD  = 1,
-    PCL_POINT_CLOUD   = 2,
+    PCL_POINT_CLOUD   = 2,    // BEWARE: may not be compiled in!
     DISPARITY_IMAGE   = 3
   };
 

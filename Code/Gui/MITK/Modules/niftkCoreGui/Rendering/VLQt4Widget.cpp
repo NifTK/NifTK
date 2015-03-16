@@ -475,7 +475,7 @@ void VLQt4Widget::initializeGL()
 
   vl::OpenGLContext::dispatchInitEvent();
 
-
+#if 0
   // debugging
   mitk::DataNode::Pointer   n = mitk::DataNode::New();
   mitk::PCLData::Pointer    p = mitk::PCLData::New();
@@ -492,6 +492,7 @@ void VLQt4Widget::initializeGL()
   n->SetData(p);
 
   m_DataStorage->Add(n);
+#endif
 }
 
 
