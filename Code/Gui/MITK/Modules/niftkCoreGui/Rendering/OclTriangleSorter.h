@@ -21,6 +21,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkOclResourceService.h>
 #include <vlCore/VisualizationLibrary.hpp>
 
+#include <float.h>
+#include <list>
+
 namespace mitk
 {
 class OclFilter;
