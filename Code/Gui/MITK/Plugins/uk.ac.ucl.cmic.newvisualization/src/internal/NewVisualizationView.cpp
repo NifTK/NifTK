@@ -122,7 +122,15 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_BackgroundNode->SetPredicate(isImage);
 #endif
     ok = QObject::connect(m_Controls->m_BackgroundNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnBackgroundNodeSelected(const mitk::DataNode*)));
+    assert(ok);
 
+    m_Controls->m_CameraNode->SetDataStorage(GetDataStorage());
+    m_Controls->m_CameraNode->SetAutoSelectNewItems(false);
+    ok = QObject::connect(m_Controls->m_CameraNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnCameraNodeSelected(const mitk::DataNode*)));
+    assert(ok);
+
+    ok = QObject::connect(m_Controls->m_CameraNodeEnabled, SIGNAL(clicked(bool)), this, SLOT(OnCameraNodeEnabled(bool)));
+    assert(ok);
 
     // Init listener
     m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
@@ -194,6 +202,18 @@ void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
   m_VLQtRenderWindow->SetBackgroundNode(node);
   // can fail, but we just ignore that.
+}
+
+
+//-----------------------------------------------------------------------------
+void NewVisualizationView::OnCameraNodeSelected(const mitk::DataNode* node)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void NewVisualizationView::OnCameraNodeEnabled(bool enabled)
+{
 }
 
 

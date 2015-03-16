@@ -79,6 +79,8 @@ protected:
 
 private slots: 
   void OnBackgroundNodeSelected(const mitk::DataNode* node);
+  void OnCameraNodeSelected(const mitk::DataNode* node);
+  void OnCameraNodeEnabled(bool enabled);
 
 
 private: 
