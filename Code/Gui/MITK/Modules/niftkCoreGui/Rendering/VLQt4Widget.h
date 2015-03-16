@@ -177,6 +177,9 @@ protected:
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
   void UpdateCameraParameters();
+  void UpdateActorTransfromFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(mitk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);

@@ -624,9 +624,6 @@ void VLQt4Widget::RenderScene()
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
 
-  // looks like matrix updates do not trigger node-modification-events.
-  UpdateCameraParameters();
-
   // update vl-cache for nodes that have been modified since the last frame.
   for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
   {
@@ -703,41 +700,64 @@ bool VLQt4Widget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateCameraParameters()
+void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
 {
-  // FIXME: do intrinsic calibration later.
-
-  if (m_CameraNode.IsNotNull())
+  if (data.IsNotNull())
   {
-    mitk::BaseData::Pointer   camData = m_CameraNode->GetData();
-    if (camData.IsNotNull())
+    mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+    if (geom.IsNotNull())
     {
-      mitk::BaseGeometry::Pointer   camGeom = camData->GetGeometry();
-      if (camGeom.IsNotNull())
+      if (geom->GetVtkTransform() != 0)
       {
-        if (camGeom->GetVtkTransform() != 0)
+        vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
+        geom->GetVtkTransform()->GetMatrix(vtkmat);
+        if (vtkmat.GetPointer() != 0)
         {
-          vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
-          camGeom->GetVtkTransform()->GetMatrix(vtkmat);
-          if (vtkmat.GetPointer() != 0)
+          vl::mat4  mat;
+          for (int i = 0; i < 4; i++)
           {
-            vl::mat4  mat;
-            for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
             {
-              for (int j = 0; j < 4; j++)
-              {
-                double val = vtkmat->GetElement(i, j);
-                mat.e(i, j) = val;
-              }
+              double val = vtkmat->GetElement(i, j);
+              mat.e(i, j) = val;
             }
-
-            m_CameraTransform->setLocalMatrix(mat);
-            m_CameraTransform->computeWorldMatrix();
           }
+
+          txf->setLocalMatrix(mat);
+          txf->computeWorldMatrix();
         }
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateActorTransfromFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
+{
+  if (node.IsNotNull())
+  {
+    UpdateTransfromFromData(actor->transform(), node->GetData());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
+{
+  if (node.IsNotNull())
+  {
+    UpdateTransfromFromData(txf, node->GetData());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateCameraParameters()
+{
+  // FIXME: do intrinsic calibration later.
+
+  UpdateTransfromFromNode(m_CameraTransform, m_CameraNode);
 }
 
 
@@ -1129,6 +1149,10 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         fx->shader()->gocMaterial()->setTransparency(1);
       }
     }
+
+    // for now, i think it's safe to assume that an invisible actor does not need its transform updated.
+    // might change of course...
+    UpdateActorTransfromFromNode(vlActor, node);
   }
 
   // if we do have live-updating textures then we do need to refresh the vl-side of it!
@@ -1262,7 +1286,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-
   // background is always visible, even if its datanode is not.
   if (node == m_BackgroundNode)
   {
@@ -1340,34 +1363,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
 #ifdef _USE_PCL
   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
 
-
-  // FIXME: refactor this into helper-method.
-  vl::mat4  mat;
-  mat.setIdentity();
-
-  if (pcl->GetGeometry() != 0)
-  {
-    if (pcl->GetGeometry()->GetVtkTransform() != 0)
-    {
-      vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      pcl->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
-
-      if (geometryTransformMatrix.GetPointer() != 0)
-      {
-        for (int i = 0; i < 4; i++)
-        {
-          for (int j = 0; j < 4; j++)
-          {
-            double val = geometryTransformMatrix->GetElement(i, j);
-            mat.e(i, j) = val;
-          }
-        }
-      }
-    }
-  }
-
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, pcl);
 
   vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
@@ -1416,21 +1413,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
   // internal method, so sanity check.
   assert(QGLContext::currentContext() == QGLWidget::context());
 
-  // FIXME: refactor this into helper-method.
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitkPS->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
-  vl::mat4  mat;
-  for (int i = 0; i < 4; i++)
-  {
-    for (int j = 0; j < 4; j++)
-    {
-      double val = geometryTransformMatrix->GetElement(i, j);
-      mat.e(i, j) = val;
-    }
-  }
 
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, mitkPS.GetPointer());
 
   vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
   vlVerts->resize(mitkPS->GetSize());
@@ -1475,21 +1460,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
   if (!vlSurf->normalArray())
     vlSurf->computeNormals();
 
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitkSurf->GetGeometry()->GetVtkTransform()->GetMatrix(geometryTransformMatrix);
-
-  vl::mat4  mat;
-  for (int i = 0; i < 4; i++)
-  {
-    for (int j = 0; j < 4; j++)
-    {
-      double val = geometryTransformMatrix->GetElement(i, j);
-      mat.e(i, j) = val;
-    }
-  }
-
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, mitkSurf.GetPointer());
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
@@ -1511,31 +1483,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
-  vl::mat4  mat;
-  mat = mat.setIdentity();
-  mat = mat.rotateXYZ(90, 0, 0);
-
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitk::BaseGeometry*     geom = cudaImg->GetGeometry();
-  if (geom != 0)
-  {
-    vtkLinearTransform*   vtktxf = geom->GetVtkTransform();
-    if (vtktxf != 0)
-    {
-      vtktxf->GetMatrix(geometryTransformMatrix);
-      for (int i = 0; i < 4; i++)
-      {
-        for (int j = 0; j < 4; j++)
-        {
-          double val = geometryTransformMatrix->GetElement(i, j);
-          mat.e(i, j) = val;
-        }
-      }
-    }
-  }
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
-
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, cudaImg);
 
   vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
 
@@ -1942,6 +1891,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
   imageActor->setUniform(m_ThresholdVal.get());
 
   vl::ref<vl::Transform>    tr = new vl::Transform;
+  //UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
   imageActor->setTransform(tr.get());
   m_SceneManager->tree()->addActor(imageActor.get());
 
