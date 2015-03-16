@@ -105,6 +105,8 @@ public:
    */
   bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
 
+  bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
+
   /**
    * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
    * Beware: this can/will return a different object every time you call it!
@@ -173,7 +175,8 @@ protected:
 
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
-  void UpdateViewportAndCamera();
+  void UpdateViewportAndCameraAfterResize();
+  void UpdateCameraParameters();
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(mitk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
@@ -211,6 +214,7 @@ protected:
   vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
   vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
   vl::ref<vl::Camera>                   m_Camera;
+  vl::ref<vl::Transform>                m_CameraTransform;
   vl::ref<vl::Camera>                   m_BackgroundCamera;
   vl::ref<vl::Light>                    m_Light;
   vl::ref<vl::Transform>                m_LightTr;
@@ -222,6 +226,7 @@ protected:
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;
   std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
   mitk::DataNode::ConstPointer                                    m_BackgroundNode;
+  mitk::DataNode::ConstPointer                                    m_CameraNode;
 
 
   /** @name CUDA-interop related bits. */

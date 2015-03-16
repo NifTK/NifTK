@@ -208,12 +208,22 @@ void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void NewVisualizationView::OnCameraNodeSelected(const mitk::DataNode* node)
 {
+  OnCameraNodeEnabled(true);
 }
 
 
 //-----------------------------------------------------------------------------
 void NewVisualizationView::OnCameraNodeEnabled(bool enabled)
 {
+  if (!enabled)
+  {
+    m_VLQtRenderWindow->SetCameraTrackingNode(0);
+  }
+  else
+  {
+    mitk::DataNode::Pointer   n = m_Controls->m_CameraNode->GetSelectedNode();
+    m_VLQtRenderWindow->SetCameraTrackingNode(n.GetPointer());
+  }
 }
 
 
@@ -361,7 +371,7 @@ void NewVisualizationView::ReinitDisplay(bool viewEnabled)
     currentDataNode->GetVisibility(isVisible, 0);
 
     if (!isVisible)
-      ;//continue;
+      continue;
     
     m_VLQtRenderWindow->AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
     //m_RenderApplet->rendering()->render();

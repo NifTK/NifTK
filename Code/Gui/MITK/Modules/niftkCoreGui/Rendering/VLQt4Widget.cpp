@@ -379,6 +379,8 @@ void VLQt4Widget::initializeGL()
   m_Camera->setViewMatrix(view_mat);
   m_Camera->setObjectName("m_Camera");
   //m_Camera->viewport()->enableScissorSetup(true);
+  m_CameraTransform = new vl::Transform;
+  m_Camera->bindTransform(m_CameraTransform.get());
 
   vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
 
@@ -463,12 +465,12 @@ void VLQt4Widget::initializeGL()
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
 
 
-  m_Trackball = new vl::TrackballManipulator;
-  m_Trackball->setEnabled(true);
-  m_Trackball->setCamera(m_Camera.get());
-  m_Trackball->setTransform(NULL);
-  m_Trackball->setPivot(vl::vec3(0,0,0));
-  vl::OpenGLContext::addEventListener(m_Trackball.get());
+  //m_Trackball = new vl::TrackballManipulator;
+  //m_Trackball->setEnabled(true);
+  //m_Trackball->setCamera(m_Camera.get());
+  //m_Trackball->setTransform(m_CameraTransform.get());
+  //m_Trackball->setPivot(vl::vec3(0,0,0));
+  //vl::OpenGLContext::addEventListener(m_Trackball.get());
 
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
@@ -555,14 +557,14 @@ void VLQt4Widget::resizeGL(int width, int height)
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
 
-  UpdateViewportAndCamera();
+  UpdateViewportAndCameraAfterResize();
 
   vl::OpenGLContext::dispatchResizeEvent(width, height);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateViewportAndCamera()
+void VLQt4Widget::UpdateViewportAndCameraAfterResize()
 {
   // some sane defaults
   m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
@@ -622,6 +624,8 @@ void VLQt4Widget::RenderScene()
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
 
+  // looks like matrix updates do not trigger node-modification-events.
+  UpdateCameraParameters();
 
   // update vl-cache for nodes that have been modified since the last frame.
   for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
@@ -636,6 +640,7 @@ void VLQt4Widget::RenderScene()
 
   // update scene graph.
   vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
+  // FIXME: light is lagging behind one frame
   m_LightTr->setLocalMatrix(cameraMatrix);
 
 
@@ -651,7 +656,7 @@ void VLQt4Widget::RenderScene()
     {
       static vl::real prev = 0;
 
-      //std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
+      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
       prev = m_RenderingTree->frameClock();
     }
   }
@@ -686,6 +691,53 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
   val_threshold = vl::clamp(val_threshold, 0.0f, 1.0f);
 
   m_ThresholdVal->setUniformF(val_threshold);
+}
+
+
+//-----------------------------------------------------------------------------
+bool VLQt4Widget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+{
+  m_CameraNode = node;
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateCameraParameters()
+{
+  // FIXME: do intrinsic calibration later.
+
+  if (m_CameraNode.IsNotNull())
+  {
+    mitk::BaseData::Pointer   camData = m_CameraNode->GetData();
+    if (camData.IsNotNull())
+    {
+      mitk::BaseGeometry::Pointer   camGeom = camData->GetGeometry();
+      if (camGeom.IsNotNull())
+      {
+        if (camGeom->GetVtkTransform() != 0)
+        {
+          vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
+          camGeom->GetVtkTransform()->GetMatrix(vtkmat);
+          if (vtkmat.GetPointer() != 0)
+          {
+            vl::mat4  mat;
+            for (int i = 0; i < 4; i++)
+            {
+              for (int j = 0; j < 4; j++)
+              {
+                double val = vtkmat->GetElement(i, j);
+                mat.e(i, j) = val;
+              }
+            }
+
+            m_CameraTransform->setLocalMatrix(mat);
+            m_CameraTransform->computeWorldMatrix();
+          }
+        }
+      }
+    }
+  }
 }
 
 
@@ -828,7 +880,7 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     }
   }
 
-  UpdateViewportAndCamera();
+  UpdateViewportAndCameraAfterResize();
 
   return result;
 }
@@ -918,6 +970,12 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
     // update colour, etc.
     UpdateDataNode(node);
+  }
+
+  if (m_CameraNode.IsNull())
+  {
+    if (m_Trackball.get() != 0)
+      m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
   }
 }
 
@@ -1214,6 +1272,11 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     vlActor->effect()->shader()->enable(vl::EN_BLEND);
     vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
   }
+
+  if (node == m_CameraNode)
+  {
+    UpdateCameraParameters();
+  }
 }
 
 
@@ -1338,9 +1401,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
 
-  // FIXME: should go somewhere else
-  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
-
   return psActor;
 #else
   throw std::runtime_error("No PCL-support enabled at compile time!");
@@ -1394,9 +1454,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
 
-  // FIXME: should go somewhere else
-  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
-
   return psActor;
 }
 
@@ -1440,9 +1497,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[surfActor] = vlSurf;
-
-  // FIXME: should go somewhere else
-  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
 
   return surfActor;
 }
@@ -1491,9 +1545,6 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[actor] = vlquad;
-
-  // FIXME: should go somewhere else
-  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
 
   return actor;
 
