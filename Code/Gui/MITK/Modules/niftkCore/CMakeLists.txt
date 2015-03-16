@@ -12,11 +12,18 @@
 #
 #============================================================================*/
 
+set(_packages ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL)
+if(BUILD_PCL)
+  # pcl depends on eigen
+  list(APPEND _packages Eigen)
+  list(APPEND _packages PCL)
+endif()
+
 MITK_CREATE_MODULE(niftkCore
   EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   DEPENDS MitkCore
-  PACKAGE_DEPENDS ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL
+  PACKAGE_DEPENDS ${_packages}
 )
 
 target_link_libraries(niftkCore

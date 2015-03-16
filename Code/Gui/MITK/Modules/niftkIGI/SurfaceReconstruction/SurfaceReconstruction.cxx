@@ -21,6 +21,9 @@
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraCalibrationFacade.h>
+#ifdef _USE_PCL
+#include <PointClouds/mitkPCLData.h>
+#endif
 
 namespace niftk 
 {
@@ -134,8 +137,16 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
   mitk::CameraIntrinsicsProperty::Pointer   camIntr2;
   niftk::MatrixProperty::Pointer            stereoRig;
 
+#ifndef _USE_PCL
+  if (outputtype == PCL_POINT_CLOUD)
+  {
+    throw std::logic_error("Cannot output PCL pointcloud, no PCL support compiled in");
+  }
+#endif
+
   // check this before we start wasting cpu cycles
-  if (outputtype == POINT_CLOUD)
+  if ((outputtype == MITK_POINT_CLOUD) ||
+      (outputtype == PCL_POINT_CLOUD))
   {
     mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
     mitk::BaseProperty::Pointer       cam2bp = image2->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
@@ -248,7 +259,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
 
     switch (outputtype)
     {
-      case POINT_CLOUD:
+      case MITK_POINT_CLOUD:
+      case PCL_POINT_CLOUD:
       {
         cv::Point2d leftPixel;
         cv::Point2d rightPixel;
@@ -260,6 +272,9 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
 
         std::vector< cv::Point3d > outputOpenCVPoints;
         std::vector< std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
+#ifdef _USE_PCL
+        std::vector<cv::Point3f>    pointcolours;
+#endif
 
         // Get valid point pairs.
         for (unsigned int y = 0; y < height; ++y)
@@ -276,6 +291,13 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
               rightPixel.x = r.x;
               rightPixel.y = r.y;
               inputUndistortedPoints.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPixel, rightPixel));
+#ifdef _USE_PCL
+              if (outputtype == PCL_POINT_CLOUD)
+              {
+                CvScalar rgba = cvGet2D(&leftIpl, y, x);
+                pointcolours.push_back(cv::Point3f(rgba.val[0], rgba.val[1], rgba.val[2]));
+              }
+#endif
             }
           }
         }
@@ -287,26 +309,51 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
             camIntr2->GetValue()->GetCameraMatrix(),
             left2right_rotation,
             left2right_translation,
-            maxTriangulationError
+            maxTriangulationError,
+            true
             );
 
         // Filter by depth.
         cv::Point3d p;
         mitk::Point3D outputPoint;
         mitk::PointSet::Pointer points = mitk::PointSet::New();
+#ifdef _USE_PCL
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+        mitk::PCLData::Pointer                  pcldata = mitk::PCLData::New();
+        pcldata->SetCloud(cloud);
+#endif
 
+        assert(outputOpenCVPoints.size() == inputUndistortedPoints.size());
         for (unsigned int i = 0; i < outputOpenCVPoints.size(); i++)
         {
           p = outputOpenCVPoints[i];
           double depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
-          if (depth >= minDepth && p.z > minDepth)
+                                // FIXME: extra check temporarily disabled
+          if (depth >= minDepth)// && p.z > minDepth)
           {
             if (depth <= maxDepth)
             {
               outputPoint[0] = p.x;
               outputPoint[1] = p.y;
               outputPoint[2] = p.z;
-              points->InsertPoint(i,outputPoint);
+              if (outputtype == MITK_POINT_CLOUD)
+              {
+                points->InsertPoint(i,outputPoint);
+              }
+#ifdef _USE_PCL
+              else
+              if (outputtype == PCL_POINT_CLOUD)
+              {
+                pcl::PointXYZRGB  q(pointcolours[i].x, pointcolours[i].y, pointcolours[i].z);
+                q.x = p.x;
+                q.y = p.y;
+                q.z = p.z;
+                cloud->push_back(q);
+              }
+#endif
+              else
+                // should not happen!
+                assert(false);
             }
           }
         }
@@ -316,6 +363,11 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           points->GetGeometry()->SetSpacing(camgeom->GetSpacing());
           points->GetGeometry()->SetOrigin(camgeom->GetOrigin());
           points->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
+#ifdef _USE_PCL
+          pcldata->GetGeometry()->SetSpacing(camgeom->GetSpacing());
+          pcldata->GetGeometry()->SetOrigin(camgeom->GetOrigin());
+          pcldata->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
+#endif
 
           if (bakeCameraTransform)
           {
@@ -342,7 +394,12 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           }
         }
 
-        return points.GetPointer();
+        if (outputtype == MITK_POINT_CLOUD)
+          return points.GetPointer();
+#ifdef _USE_PCL
+        else
+          return pcldata.GetPointer();
+#endif
       }
 
       case DISPARITY_IMAGE:

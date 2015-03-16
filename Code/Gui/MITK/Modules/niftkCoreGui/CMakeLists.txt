@@ -13,6 +13,13 @@
 #============================================================================*/
 
 set(_modules MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore)
+set(_packages Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets)
+
+if(BUILD_PCL)
+  # pcl depends on eigen
+  list(APPEND _packages Eigen)
+  list(APPEND _packages PCL)
+endif()
 
 if(BUILD_VL)
   find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
@@ -25,6 +32,7 @@ if(BUILD_VL)
     MitkOpenCL
   )
 endif()
+
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   # if cuda is available then it can dump the renderer output into datastorage.
   set(_modules
@@ -37,7 +45,7 @@ MITK_CREATE_MODULE(niftkCoreGui
   EXPORT_DEFINE NIFTKCOREGUI_EXPORT
   INCLUDE_DIRS Events LookupTables Rendering
   DEPENDS ${_modules}
-  PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets
+  PACKAGE_DEPENDS ${_packages}
 )
 
 target_link_libraries(niftkCoreGui
