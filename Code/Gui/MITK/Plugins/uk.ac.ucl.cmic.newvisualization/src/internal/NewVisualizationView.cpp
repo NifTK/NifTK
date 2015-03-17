@@ -208,7 +208,7 @@ void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void NewVisualizationView::OnCameraNodeSelected(const mitk::DataNode* node)
 {
-  OnCameraNodeEnabled(true);
+  OnCameraNodeEnabled(m_Controls->m_CameraNodeEnabled->isChecked());
 }
 
 
