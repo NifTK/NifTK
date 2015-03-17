@@ -11,6 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
+#include <QTextStream>
+#include <QFile>
 
 #include "VLQt4Widget.h"
 #include <vlCore/Log.hpp>
@@ -34,8 +36,6 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
-#include <QFile>
-#include <QTextStream>
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
