@@ -68,7 +68,7 @@ private:
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName)
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName(propertyName)
-, m_DefaultValueType(None)
+, m_DefaultValueType(NoType)
 {
   assert(dataStorage.IsNotNull());
 
@@ -80,7 +80,7 @@ DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Poin
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, bool defaultValue)
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName(propertyName)
-, m_DefaultValueType(Bool)
+, m_DefaultValueType(BoolType)
 , m_BoolDefaultValue(defaultValue)
 {
   assert(dataStorage.IsNotNull());
@@ -93,7 +93,7 @@ DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Poin
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, int defaultValue)
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName(propertyName)
-, m_DefaultValueType(Int)
+, m_DefaultValueType(IntType)
 , m_IntDefaultValue(defaultValue)
 {
   assert(dataStorage.IsNotNull());
@@ -106,7 +106,7 @@ DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Poin
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, float defaultValue)
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName(propertyName)
-, m_DefaultValueType(Float)
+, m_DefaultValueType(FloatType)
 , m_FloatDefaultValue(defaultValue)
 {
   assert(dataStorage.IsNotNull());
@@ -119,7 +119,7 @@ DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Poin
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, const std::string& defaultValue)
 : mitk::DataStorageListener(dataStorage)
 , m_PropertyName(propertyName)
-, m_DefaultValueType(String)
+, m_DefaultValueType(StringType)
 , m_StringDefaultValue(defaultValue)
 {
   assert(dataStorage.IsNotNull());
@@ -155,19 +155,19 @@ void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
   mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str());
   if (!globalProperty)
   {
-    if (m_DefaultValueType == Bool)
+    if (m_DefaultValueType == BoolType)
     {
       node->SetBoolProperty(m_PropertyName.c_str(), m_BoolDefaultValue);
     }
-    else if (m_DefaultValueType == Int)
+    else if (m_DefaultValueType == IntType)
     {
       node->SetIntProperty(m_PropertyName.c_str(), m_IntDefaultValue);
     }
-    else if (m_DefaultValueType == Float)
+    else if (m_DefaultValueType == FloatType)
     {
       node->SetFloatProperty(m_PropertyName.c_str(), m_FloatDefaultValue);
     }
-    else if (m_DefaultValueType == String)
+    else if (m_DefaultValueType == StringType)
     {
       node->SetStringProperty(m_PropertyName.c_str(), m_StringDefaultValue.c_str());
     }
@@ -181,19 +181,19 @@ void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
     mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
     if (!rendererSpecificProperty)
     {
-      if (m_DefaultValueType == Bool)
+      if (m_DefaultValueType == BoolType)
       {
         node->SetBoolProperty(m_PropertyName.c_str(), m_BoolDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
       }
-      else if (m_DefaultValueType == Int)
+      else if (m_DefaultValueType == IntType)
       {
         node->SetIntProperty(m_PropertyName.c_str(), m_IntDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
       }
-      else if (m_DefaultValueType == Float)
+      else if (m_DefaultValueType == FloatType)
       {
         node->SetFloatProperty(m_PropertyName.c_str(), m_FloatDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
       }
-      else if (m_DefaultValueType == String)
+      else if (m_DefaultValueType == StringType)
       {
         node->SetStringProperty(m_PropertyName.c_str(), m_StringDefaultValue.c_str(), const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
       }

@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <cstring>
 
 enum Kernels {
   PARALLEL_BITONIC_B2_KERNEL,
@@ -760,7 +761,7 @@ void mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   if (m_bfDataB == 0)
   {
     cl_uint * zeros  = new cl_uint[datasetSize*4];
-    memset(zeros, 0, datasetSize*4);
+    std::memset(zeros, 0, datasetSize*4);
 
     m_bfDataB = clCreateBuffer(m_Context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint) * datasetSize*4, zeros, &clStatus);
     CHECK_OCL_ERR(clStatus);
