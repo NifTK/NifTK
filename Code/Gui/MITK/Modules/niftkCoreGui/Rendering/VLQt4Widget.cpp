@@ -379,8 +379,8 @@ void VLQt4Widget::initializeGL()
   m_Camera->setViewMatrix(view_mat);
   m_Camera->setObjectName("m_Camera");
   //m_Camera->viewport()->enableScissorSetup(true);
-  m_CameraTransform = new vl::Transform;
-  m_Camera->bindTransform(m_CameraTransform.get());
+  //m_CameraTransform = new vl::Transform;
+  //m_Camera->bindTransform(m_CameraTransform.get());
 
   vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
 
@@ -464,13 +464,8 @@ void VLQt4Widget::initializeGL()
   // FIXME: attaching this to the rendering looks wrong
   m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
 
-
-  //m_Trackball = new vl::TrackballManipulator;
-  //m_Trackball->setEnabled(true);
-  //m_Trackball->setCamera(m_Camera.get());
-  //m_Trackball->setTransform(m_CameraTransform.get());
-  //m_Trackball->setPivot(vl::vec3(0,0,0));
-  //vl::OpenGLContext::addEventListener(m_Trackball.get());
+  // trackball is active by default because we do not yet have any camera-tracking data.
+  EnableTrackballManipulator(true);
 
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
@@ -495,6 +490,34 @@ void VLQt4Widget::initializeGL()
 
   m_DataStorage->Add(n);
 #endif
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::EnableTrackballManipulator(bool enable)
+{
+  if (enable)
+  {
+    if (m_Trackball.get() == 0)
+    {
+      m_Trackball = new vl::TrackballManipulator;
+      m_Trackball->setEnabled(true);
+      m_Trackball->setCamera(m_Camera.get());
+      //m_Trackball->setTransform(m_CameraTransform.get());
+      m_Trackball->setPivot(vl::vec3(0,0,0));
+      vl::OpenGLContext::addEventListener(m_Trackball.get());
+    }
+  }
+  else
+  {
+    if (m_Trackball.get() != 0)
+    {
+      vl::OpenGLContext::removeEventListener(m_Trackball.get());
+      m_Trackball->setTransform(0);
+      m_Trackball->setCamera(0);
+      m_Trackball = 0;
+    }
+  }
 }
 
 
@@ -695,13 +718,26 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 bool VLQt4Widget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
   m_CameraNode = node;
+
+  if (m_CameraNode.IsNotNull())
+  {
+    EnableTrackballManipulator(false);
+    UpdateCameraParameters();
+  }
+  else
+    EnableTrackballManipulator(true);
+
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+vl::mat4 VLQt4Widget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
 {
+  vl::mat4  mat;
+  // intentionally not setIdentity()
+  mat.setNull();
+
   if (data.IsNotNull())
   {
     mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
@@ -713,7 +749,6 @@ void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk
         geom->GetVtkTransform()->GetMatrix(vtkmat);
         if (vtkmat.GetPointer() != 0)
         {
-          vl::mat4  mat;
           for (int i = 0; i < 4; i++)
           {
             for (int j = 0; j < 4; j++)
@@ -722,12 +757,24 @@ void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk
               mat.e(i, j) = val;
             }
           }
-
-          txf->setLocalMatrix(mat);
-          txf->computeWorldMatrix();
         }
       }
     }
+  }
+
+  return mat;
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+{
+  vl::mat4  mat = GetVLMatrixFromData(data);
+
+  if (!mat.isNull())
+  {
+    txf->setLocalMatrix(mat);
+    txf->computeWorldMatrix();
   }
 }
 
@@ -757,7 +804,12 @@ void VLQt4Widget::UpdateCameraParameters()
 {
   // FIXME: do intrinsic calibration later.
 
-  UpdateTransfromFromNode(m_CameraTransform, m_CameraNode);
+  if (m_CameraNode.IsNotNull())
+  {
+    vl::mat4  mat = GetVLMatrixFromData(m_CameraNode->GetData());
+    if (!mat.isNull())
+      m_Camera->setModelingMatrix(mat);
+  }
 }
 
 
