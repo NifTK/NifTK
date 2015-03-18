@@ -249,7 +249,7 @@ set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING 
 
 # FIXME: convert to new external projects layout
 set(NIFTK_LOCATION_VL_REPOSITORY "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git" CACHE STRING "Location of VisualizationLibrary repository")
-set(NIFTK_VERSION_VL "6b836d8ec6" CACHE STRING "Version of VL" FORCE)
+set(NIFTK_VERSION_VL "624a035fb7" CACHE STRING "Version of VL" FORCE)
 mark_as_advanced(NIFTK_LOCATION_VL_TARBALL)
 mark_as_advanced(NIFTK_LOCATION_VL_REPOSITORY)
 mark_as_advanced(NIFTK_VERSION_VL)

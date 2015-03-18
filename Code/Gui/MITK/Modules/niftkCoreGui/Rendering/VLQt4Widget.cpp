@@ -1190,7 +1190,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         fx->shader()->enable(vl::EN_BLEND);
         // no backface culling for translucent objects: you should be able to see the backside!
         fx->shader()->disable(vl::EN_CULL_FACE);
-        fx->shader()->gocMaterial()->setTransparency(opacity);
       }
       else
       {
@@ -1198,7 +1197,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         vlActor->setEnableMask(ENABLEMASK_OPAQUE);
         fx->shader()->disable(vl::EN_BLEND);
         fx->shader()->enable(vl::EN_CULL_FACE);
-        fx->shader()->gocMaterial()->setTransparency(1);
       }
     }
 
@@ -1812,6 +1810,124 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
   // internal method, so sanity check.
   assert(QGLContext::currentContext() == QGLWidget::context());
 
+  unsigned int* dims = 0;
+  dims = mitkImg->GetDimensions();
+  // we do not own dims!
+
+  if (dims[2] <= 1)
+  {
+    return Add2DImageActor(mitkImg);
+  }
+  else
+  {
+    return Add3DImageActor(mitkImg);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+vl::EImageType VLQt4Widget::MapITKPixelTypeToVL(int itkComponentType)
+{
+  static const vl::EImageType     typeMap[] =
+  {
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
+    vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
+    vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
+    vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
+    vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
+    vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
+    vl::IT_INT,             // itk::ImageIOBase::INT = 6
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
+    vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
+    vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
+  };
+
+  return typeMap[itkComponentType];
+}
+
+
+//-----------------------------------------------------------------------------
+vl::EImageFormat VLQt4Widget::MapComponentsToVLColourFormat(int components)
+{
+  // this assumes the image data is a normal colour image, not encoding pointers or
+  // indices, or similar stuff.
+
+  switch (components)
+  {
+    default:
+    case 1:
+      return vl::IF_LUMINANCE;
+    case 2:
+      return vl::IF_RG;
+    case 3:
+      return vl::IF_RGB;
+    case 4:
+      return vl::IF_RGBA;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  unsigned int*       dims    = mitkImg->GetDimensions();    // we do not own dims!
+  mitk::PixelType     pixType = mitkImg->GetPixelType();
+  vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
+  vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
+
+  vl::ref<vl::Image>    vlImg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
+
+
+  // sanity check
+  unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+  assert(vlImg->requiredMemory() == size);
+
+  try
+  {
+    mitk::ImageReadAccessor   readAccess(mitkImg, mitkImg->GetVolumeData(0));
+    const void*               cPointer = readAccess.GetData();
+    std::memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
+
+  }
+  catch (...)
+  {
+    // FIXME: error handling?
+    MITK_ERROR << "Did not get pixel read access to 2D image.";
+  }
+
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, mitkImg.GetPointer());
+
+  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), dims[0], dims[1], 2, 2, true, vl::fvec2(0,0), vl::fvec2(1,1), false);
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
+  // UpdateDataNode() takes care of assigning colour etc.
+  // FIXME: alpha-blending? independent of opacity prop!
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlquad;
+
+  return actor;
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
 
   mitk::PixelType pixType = mitkImg->GetPixelType();
   size_t numOfComponents = pixType.GetNumberOfComponents();
@@ -1833,22 +1949,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
     mitk::ImageReadAccessor   readAccess(mitkImg, mitkImg->GetVolumeData(0));
     const void*               cPointer = readAccess.GetData();
 
-    vl::EImageType     typeMap[] =
-    {
-      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
-      vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
-      vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
-      vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
-      vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
-      vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
-      vl::IT_INT,             // itk::ImageIOBase::INT = 6
-      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
-      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
-      vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
-      vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
-    };
 
-    vl::EImageType     type = typeMap[pixType.GetComponentType()];
+    vl::EImageType     type = MapITKPixelTypeToVL(pixType.GetComponentType());
     vl::EImageFormat   format;
 
     if (type != vl::IT_FLOAT)

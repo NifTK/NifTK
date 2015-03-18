@@ -76,6 +76,7 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
     if (geometry)
     {
       geometry->SetIndexToWorldTransformByVtkMatrix(image2world);
+      geometry->Modified();
     }
     image->GetVtkImageData()->Modified();
   }

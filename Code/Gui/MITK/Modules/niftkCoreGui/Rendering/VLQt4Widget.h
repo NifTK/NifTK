@@ -186,6 +186,10 @@ protected:
   vl::ref<vl::Actor> AddPointCloudActor(mitk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
+  vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
+  vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
+  vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
+  vl::EImageFormat MapComponentsToVLColourFormat(int components);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
 
