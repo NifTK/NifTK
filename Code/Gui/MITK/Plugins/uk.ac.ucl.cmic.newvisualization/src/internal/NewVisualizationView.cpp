@@ -184,7 +184,7 @@ void  NewVisualizationView::InitVLRendering()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef _USE_CUDA
-  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
+  //m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
 #endif
 }
 
