@@ -93,9 +93,6 @@ int mitkTimeStampsContainerTest(int argc, char * argv[])
   MITK_TEST_CONDITION (after == 8, "GetBoundingTimeStamps(): Exact match last in list, expecting after==8, and got:" << after);
   MITK_TEST_CONDITION (proportion == 0.0, "GetBoundingTimeStamps(): Exact match last in list, expecting proportion==0.0, and got:" << proportion);
 
-
-
-
   // Test GetNearestTimeStamp();
   timeStamps.Clear();
   delta = -1;
@@ -121,6 +118,15 @@ int mitkTimeStampsContainerTest(int argc, char * argv[])
   result = timeStamps.GetNearestTimeStamp(8, &delta);
   MITK_TEST_CONDITION (result == 9, "GetNearestTimeStamp(): Middle of list, expecting result==9, and got:" << result);
   MITK_TEST_CONDITION (delta == -1, "GetNearestTimeStamp(): Middle of list, expecting delta==-1, and got:" << delta);
+  // Test how it deals with typical big numbers
+  timeStamps.Clear();
+  timeStamps.Insert(1421408023440156000);
+  timeStamps.Insert(1421408024289241000);
+  timeStamps.Insert(1421408135916402600);
+  result = timeStamps.GetNearestTimeStamp(1421408026389451000 , &delta);
+  MITK_TEST_CONDITION (result == 1421408024289241000, "GetNearestTimeStamp() Middle of list, expecting result==1421408024289241000, and got:" << result);
+  result = timeStamps.GetNearestTimeStamp(1421408026430455200 , &delta);
+  MITK_TEST_CONDITION (result == 1421408024289241000, "GetNearestTimeStamp() Middle of list, expecting result==1421408024289241000, and got:" << result);
 
   MITK_TEST_END();
 }
