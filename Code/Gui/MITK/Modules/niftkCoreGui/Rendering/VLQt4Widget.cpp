@@ -1898,14 +1898,14 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
   catch (...)
   {
     // FIXME: error handling?
+    MITK_ERROR << "Did not get pixel read access to 2D image.";
   }
 
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransfromFromData(tr, mitkImg.GetPointer());
 
-  // FIXME: shape is bollocks!
-  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
+  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), dims[0], dims[1], 2, 2, true, vl::fvec2(0,0), vl::fvec2(1,1), false);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
