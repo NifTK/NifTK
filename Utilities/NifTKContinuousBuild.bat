@@ -1,4 +1,4 @@
-@echo ***** NifTK Continuous Build Script - v.25 *****
+@echo ***** NifTK Continuous Build Script - v.26 *****
 @echo. 
 
 @REM ************************************************************************************
@@ -157,23 +157,34 @@ call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DEP_BASE:PATH=%EXT
 @REM *****  Run Visual Studio to build the current build conf  *****
 @echo ---------------------------------------------------------------------
 @echo Running VS....
-"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project ALL_BUILD /projectconfig %VSCONFSTRING% %BUILD_BIN%\NIFTK-SUPERBUILD.sln | "%GIT_LOCATION%\tee.exe" c:\CB\_log_file.txt 2>&1
+"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project ALL_BUILD /projectconfig %VSCONFSTRING% %BUILD_BIN%\NIFTK-SUPERBUILD.sln | "%GIT_LOCATION%\tee.exe" c:\CB\NifTK_log.txt 2>&1
+
+@REM *****  Check ErrorLevel  *****
+@echo. 
+@echo Checking errorlevel...
+@IF %ERRORLEVEL% NEQ 0 SET /A errno^|=%ERROR_DEVENV%
+@echo Error level after VS build: %errno%
+@IF %errno% NEQ 0 EXIT /B 2
+@echo. 
 
 @REM *****  Searching for "Build Failed" string in the VS log  *****
-@set "search=^.*Build FAILED.$"
-@echo(findstr /r /c:"!search!" /F:"c:\CB\_log_file.txt" >nul && (
-  @echo Build error FOUND!
+@echo Searching for 'Build FAILED' string in the VS log...
+@set "search=^.*Build.FAILED.*$"
+@findstr /r /c:"!search!" "c:\CB\NifTK_log.txt" >nul
+
+@if %ERRORLEVEL% EQU 0 (
+  @echo "Build error FOUND!!!"
   @SET /A errno^|=%ERROR_DEVENV%
-) || (
+) else (
   @echo No build error found.
   @rem any commands can go here
 )
 
 @echo Error number after VS build: %errno%
 @IF %errno% NEQ 0 EXIT /B 2
-
-@echo. 
 @echo ---------------------------------------------------------------------
+@echo. 
+
 
 @REM  *****  Set PATH and Environment for NifTK  *****
 @cd /d "%BUILD_BIN%\NIFTK-build\"
