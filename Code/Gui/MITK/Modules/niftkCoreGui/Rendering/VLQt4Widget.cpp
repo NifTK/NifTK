@@ -1190,7 +1190,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         fx->shader()->enable(vl::EN_BLEND);
         // no backface culling for translucent objects: you should be able to see the backside!
         fx->shader()->disable(vl::EN_CULL_FACE);
-        fx->shader()->gocMaterial()->setTransparency(opacity);
       }
       else
       {
@@ -1198,7 +1197,6 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         vlActor->setEnableMask(ENABLEMASK_OPAQUE);
         fx->shader()->disable(vl::EN_BLEND);
         fx->shader()->enable(vl::EN_CULL_FACE);
-        fx->shader()->gocMaterial()->setTransparency(1);
       }
     }
 
