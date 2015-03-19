@@ -804,7 +804,6 @@ void VLQt4Widget::UpdateCameraParameters()
   // so no background, no camera parameters.
   if (m_BackgroundNode.IsNotNull())
   {
-    
     mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
     if (cambp.IsNotNull())
     {
@@ -841,6 +840,7 @@ void VLQt4Widget::UpdateCameraParameters()
   {
     vl::mat4  mat = GetVLMatrixFromData(m_CameraNode->GetData());
     if (!mat.isNull())
+      // beware: there is also a view-matrix! the inverse of modelling-matrix.
       m_Camera->setModelingMatrix(mat);
   }
 }
@@ -1055,7 +1055,14 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 
   UpdateViewportAndCameraAfterResize();
-  //UpdateCameraParameters();
+
+  // now that the camera may have changed, fit-view-to-scene again.
+  if (m_CameraNode.IsNull())
+  {
+    if (m_Trackball.get() != 0)
+      m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+  }
+
 
   return result;
 }
