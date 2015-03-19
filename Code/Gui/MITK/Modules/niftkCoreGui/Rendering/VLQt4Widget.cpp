@@ -622,6 +622,8 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
+
+  UpdateCameraParameters();
 }
 
 
@@ -829,7 +831,7 @@ void VLQt4Widget::UpdateCameraParameters()
           proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
           proj.e(3, 2) = -1;
 
-          m_Camera->setProjectionMatrix(proj, vl::PMT_UserProjection);
+          m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
         }
       }
     }
@@ -871,10 +873,10 @@ void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Bas
   //  0---3
   //  |   |
   //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 1;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 0;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 0;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 1;
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
 
 
   vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
@@ -1053,7 +1055,7 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 
   UpdateViewportAndCameraAfterResize();
-  UpdateCameraParameters();
+  //UpdateCameraParameters();
 
   return result;
 }
