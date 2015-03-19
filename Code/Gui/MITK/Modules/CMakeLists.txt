@@ -23,9 +23,21 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
   )
 endif()
 
+
 set(MODULE_DIRS
   ${MODULE_DIRS}
   niftkCore
+)
+
+
+# moved to the front because niftkCoreGui has an optional dependency on it.
+if(BUILD_IGI)
+  set(MODULE_DIRS ${MODULE_DIRS} niftkOpenCV)
+endif()
+
+
+set(MODULE_DIRS
+  ${MODULE_DIRS}
   niftkCoreGui
   niftkDnDDisplay
   niftkThumbnail
@@ -46,7 +58,6 @@ if(BUILD_IGI)
 
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkOpenCV
     niftkIGI
     niftkIGIGui
   )

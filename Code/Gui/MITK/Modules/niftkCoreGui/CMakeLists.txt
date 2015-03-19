@@ -31,6 +31,11 @@ if(BUILD_VL)
     ${_modules}
     MitkOpenCL
   )
+
+  # vl renderer can use calibrated cameras
+  if(BUILD_IGI)
+    set(_modules ${_modules} niftkOpenCV MitkCameraCalibration)
+  endif()
 endif()
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
