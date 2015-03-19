@@ -192,6 +192,7 @@ protected:
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
+  void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();

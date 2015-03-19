@@ -601,32 +601,24 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
     assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
     vl::ref<vl::Actor> backgroundactor = m_NodeToActorMap[m_BackgroundNode];
 
-    vl::ref<vl::TextureSampler> ts = backgroundactor->effect()->shader()->getTextureSampler(0);
-    if (ts.get() != 0)
-    {
-      vl::ref<vl::Texture> tex = ts->texture();
-      if (tex.get() != 0)
-      {
-        // this is based on my old araknes video-ar app.
-        // FIXME: aspect ratio?
-        float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
-        float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
-        int     vpw = QWidget::width();
-        int     vph = QWidget::height();
-        if (width_scale < height_scale)
-          vph = (int) ((float) m_BackgroundHeight * width_scale);
-        else
-          vpw = (int) ((float) m_BackgroundWidth * height_scale);
+    // this is based on my old araknes video-ar app.
+    // FIXME: aspect ratio?
+    float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+    float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
+    int     vpw = QWidget::width();
+    int     vph = QWidget::height();
+    if (width_scale < height_scale)
+      vph = (int) ((float) m_BackgroundHeight * width_scale);
+    else
+      vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
-        int   vpx = QWidget::width()  / 2 - vpw / 2;
-        int   vpy = QWidget::height() / 2 - vph / 2;
+    int   vpx = QWidget::width()  / 2 - vpw / 2;
+    int   vpy = QWidget::height() / 2 - vph / 2;
 
-        m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-        // the main-scene-camera should conform to this viewport too!
-        // otherwise geometry would never line up with the background (for overlays, etc).
-        m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-      }
-    }
+    m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+    // the main-scene-camera should conform to this viewport too!
+    // otherwise geometry would never line up with the background (for overlays, etc).
+    m_Camera->viewport()->set(vpx, vpy, vpw, vph);
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
@@ -853,6 +845,58 @@ void VLQt4Widget::UpdateCameraParameters()
 
 
 //-----------------------------------------------------------------------------
+void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  // nasty
+  mitk::Image::Pointer  imgp(const_cast<mitk::Image*>(img));
+  vl::ref<vl::Actor>  actor = Add2DImageActor(imgp);
+
+
+  // essentially copied from vl::makeGrid()
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+
+  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 1;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 0;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 0;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 1;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls()->push_back(polys.get());
+
+  // replace original quad with ours.
+  actor->setLod(0, vlquad.get());
+  actor->effect()->shader()->disable(vl::EN_LIGHTING);
+
+  std::string   objName = actor->objectName() + "_background";
+  actor->setObjectName(objName.c_str());
+
+  m_NodeToActorMap[node] = actor;
+}
+
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
@@ -978,7 +1022,8 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
       else
 #endif
       {
-        // FIXME: normal mitk image stuff
+        PrepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
+        result = true;
       }
 
       m_BackgroundWidth  = imgdata->GetDimension(0);
