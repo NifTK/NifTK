@@ -39,6 +39,9 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#include <CameraCalibration/Undistortion.h>
+#include <mitkCameraIntrinsicsProperty.h>
+#include <mitkCameraIntrinsics.h>
 
 #ifdef _USE_PCL
 #include <PointClouds/mitkPCLData.h>
@@ -605,14 +608,15 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
       if (tex.get() != 0)
       {
         // this is based on my old araknes video-ar app.
-        float   width_scale  = (float) QWidget::width()  / (float) tex->width();
-        float   height_scale = (float) QWidget::height() / (float) tex->height();
+        // FIXME: aspect ratio?
+        float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+        float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
         int     vpw = QWidget::width();
         int     vph = QWidget::height();
         if (width_scale < height_scale)
-          vph = (int) ((float) tex->height() * width_scale);
+          vph = (int) ((float) m_BackgroundHeight * width_scale);
         else
-          vpw = (int) ((float) tex->width() * height_scale);
+          vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
         int   vpx = QWidget::width()  / 2 - vpw / 2;
         int   vpy = QWidget::height() / 2 - vph / 2;
@@ -802,7 +806,42 @@ void VLQt4Widget::UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk
 //-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateCameraParameters()
 {
-  // FIXME: do intrinsic calibration later.
+  // calibration parameters come from the background node.
+  // so no background, no camera parameters.
+  if (m_BackgroundNode.IsNotNull())
+  {
+    
+    mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    if (cambp.IsNotNull())
+    {
+      mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
+      if (cam.IsNotNull())
+      {
+        mitk::CameraIntrinsics::Pointer   nodeIntrinsic = cam->GetValue();
+
+        if (nodeIntrinsic.IsNotNull())
+        {
+          // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
+          float   znear = 1;
+          float   zfar  = 1000;
+          float   pixelaspectratio = 1;   // FIXME: depends on background image
+
+          vl::mat4  proj;
+          proj.setNull();
+          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundWidth;
+          //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
+          proj.e(0, 2) = ((float) m_BackgroundWidth - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundWidth;
+          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(1, 2) = (-((float) m_BackgroundHeight / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
+          proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
+          proj.e(3, 2) = -1;
+
+          m_Camera->setProjectionMatrix(proj, vl::PMT_UserProjection);
+        }
+      }
+    }
+  }
 
   if (m_CameraNode.IsNotNull())
   {
@@ -882,11 +921,6 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
   m_NodeToActorMap[node] = actor;
   m_NodeToTextureMap[node] = TextureDataPOD();
 
-  // UpdateDataNode() depends on m_BackgroundNode.
-  m_BackgroundNode = node;
-
-  UpdateDataNode(node);
-
 #else
   throw std::runtime_error("No CUDA support enabled at compile time");
 #endif
@@ -910,6 +944,10 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     AddDataNode(oldbackgroundnode);
   }
 
+  // default "no background" value.
+  m_BackgroundWidth  = 0;
+  m_BackgroundHeight = 0;
+
   bool    result = false;
   mitk::BaseData::Pointer   basedata;
   if (node.IsNotNull())
@@ -928,6 +966,12 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
       if (cudaimgprop.IsNotNull())
       {
         LightweightCUDAImage    lwci = cudaimgprop->Get();
+
+        // does the size of cuda-image have to match the mitk-image where it's attached to?
+        // i think it does: it is supposed to be the same data living in cuda.
+        assert(lwci.GetWidth()  == imgdata->GetDimension(0));
+        assert(lwci.GetHeight() == imgdata->GetDimension(1));
+
         PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
         result = true;
       }
@@ -936,6 +980,9 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
       {
         // FIXME: normal mitk image stuff
       }
+
+      m_BackgroundWidth  = imgdata->GetDimension(0);
+      m_BackgroundHeight = imgdata->GetDimension(1);
     }
     else
     {
@@ -946,13 +993,22 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
         LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
         PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
         result = true;
+
+        m_BackgroundWidth  = lwci.GetWidth();
+        m_BackgroundHeight = lwci.GetHeight();
       }
       // no else here
 #endif
     }
+
+    // UpdateDataNode() depends on m_BackgroundNode.
+    m_BackgroundNode = node;
+    UpdateDataNode(node);
   }
 
+
   UpdateViewportAndCameraAfterResize();
+  UpdateCameraParameters();
 
   return result;
 }
