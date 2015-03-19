@@ -24,59 +24,39 @@ endif()
 
 if(BUILD_VL)
 
-  set(proj VL)
-  set(proj_DEPENDENCIES)
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
-  set(VL_DEPENDS ${proj})
-
+  set(version "624a035fb7")
+  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
+  
+  niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
 
   if(NOT DEFINED VL_DIR)
-
-    set(revision_tag dev)
-    
-	if (NIFTK_VL_DEV)
-      set(VL_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_VL_REPOSITORY}
-        GIT_TAG ${revision_tag}
-      )
-    else ()
-      # Must Not Leave Tarballs on Web Server
-      # niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_VL_TARBALL})
-      # set(VL_location_options
-      #   URL ${NIFTK_LOCATION_VL_TARBALL}
-      #   URL_MD5 ${NIFTK_CHECKSUM_VL}
-      # )
-      #
-      # But we still want a specific version
-      set(VL_location_options
-        GIT_REPOSITORY ${NIFTK_LOCATION_VL_REPOSITORY}
-        GIT_TAG ${NIFTK_VERSION_VL}
-      )
-    endif ()
 
     set(additional_cmake_args )
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      ${VL_location_options}
-      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_VL}
-      #INSTALL_COMMAND ""
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      GIT_REPOSITORY ${proj_LOCATION}
+      GIT_TAG ${proj_VERSION}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}      
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
-      ${EP_COMMON_ARGS}
-      ${additional_cmake_args}
-      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-      -DVL_GUI_QT4_SUPPORT:BOOL=${QT_FOUND}
+        ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DVL_GUI_QT4_SUPPORT:BOOL=${QT_FOUND}
+        ${additional_cmake_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
 	set(VL_ROOT ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading VL from ${VL_ROOT}")
 

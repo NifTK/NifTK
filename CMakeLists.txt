@@ -188,7 +188,6 @@ option(NIFTK_DELAYLOAD_CUDA "(Windows only) If enabled the CUDA DLLs will be a s
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
 option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
 option(BUILD_MESHING "Build meshing? Experimental, may nor may not work." OFF)
-option(NIFTK_VL_DEV "Build VisualizationLibrary development branch" OFF)
 
 ######################################################################
 # Meshing module-related checks and options
@@ -246,14 +245,6 @@ else(WIN32)
 endif(WIN32)
 set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
-
-# FIXME: convert to new external projects layout
-set(NIFTK_LOCATION_VL_REPOSITORY "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git" CACHE STRING "Location of VisualizationLibrary repository")
-set(NIFTK_VERSION_VL "624a035fb7" CACHE STRING "Version of VL" FORCE)
-mark_as_advanced(NIFTK_LOCATION_VL_TARBALL)
-mark_as_advanced(NIFTK_LOCATION_VL_REPOSITORY)
-mark_as_advanced(NIFTK_VERSION_VL)
-mark_as_advanced(NIFTK_VL_DEV)
 
 # Further variables for the external project names and locations are defined
 # in the external project CMake files under CMake/CMakeExternals.
