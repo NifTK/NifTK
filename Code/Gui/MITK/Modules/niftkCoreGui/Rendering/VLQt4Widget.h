@@ -192,6 +192,7 @@ protected:
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
+  void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();
@@ -223,7 +224,6 @@ protected:
   vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
   vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
   vl::ref<vl::Camera>                   m_Camera;
-  //vl::ref<vl::Transform>                m_CameraTransform;
   vl::ref<vl::Camera>                   m_BackgroundCamera;
   vl::ref<vl::Light>                    m_Light;
   vl::ref<vl::Transform>                m_LightTr;
@@ -232,10 +232,12 @@ protected:
   vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
-  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;
+  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;   // FIXME: should go away
   std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
   mitk::DataNode::ConstPointer                                    m_BackgroundNode;
   mitk::DataNode::ConstPointer                                    m_CameraNode;
+  int                                 m_BackgroundWidth;
+  int                                 m_BackgroundHeight;
 
 
   /** @name CUDA-interop related bits. */

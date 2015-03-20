@@ -39,6 +39,9 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#include <CameraCalibration/Undistortion.h>
+#include <mitkCameraIntrinsicsProperty.h>
+#include <mitkCameraIntrinsics.h>
 
 #ifdef _USE_PCL
 #include <PointClouds/mitkPCLData.h>
@@ -598,34 +601,29 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
     assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
     vl::ref<vl::Actor> backgroundactor = m_NodeToActorMap[m_BackgroundNode];
 
-    vl::ref<vl::TextureSampler> ts = backgroundactor->effect()->shader()->getTextureSampler(0);
-    if (ts.get() != 0)
-    {
-      vl::ref<vl::Texture> tex = ts->texture();
-      if (tex.get() != 0)
-      {
-        // this is based on my old araknes video-ar app.
-        float   width_scale  = (float) QWidget::width()  / (float) tex->width();
-        float   height_scale = (float) QWidget::height() / (float) tex->height();
-        int     vpw = QWidget::width();
-        int     vph = QWidget::height();
-        if (width_scale < height_scale)
-          vph = (int) ((float) tex->height() * width_scale);
-        else
-          vpw = (int) ((float) tex->width() * height_scale);
+    // this is based on my old araknes video-ar app.
+    // FIXME: aspect ratio?
+    float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+    float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
+    int     vpw = QWidget::width();
+    int     vph = QWidget::height();
+    if (width_scale < height_scale)
+      vph = (int) ((float) m_BackgroundHeight * width_scale);
+    else
+      vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
-        int   vpx = QWidget::width()  / 2 - vpw / 2;
-        int   vpy = QWidget::height() / 2 - vph / 2;
+    int   vpx = QWidget::width()  / 2 - vpw / 2;
+    int   vpy = QWidget::height() / 2 - vph / 2;
 
-        m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-        // the main-scene-camera should conform to this viewport too!
-        // otherwise geometry would never line up with the background (for overlays, etc).
-        m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-      }
-    }
+    m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+    // the main-scene-camera should conform to this viewport too!
+    // otherwise geometry would never line up with the background (for overlays, etc).
+    m_Camera->viewport()->set(vpx, vpy, vpw, vph);
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
+
+  UpdateCameraParameters();
 }
 
 
@@ -802,14 +800,101 @@ void VLQt4Widget::UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk
 //-----------------------------------------------------------------------------
 void VLQt4Widget::UpdateCameraParameters()
 {
-  // FIXME: do intrinsic calibration later.
+  // calibration parameters come from the background node.
+  // so no background, no camera parameters.
+  if (m_BackgroundNode.IsNotNull())
+  {
+    mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    if (cambp.IsNotNull())
+    {
+      mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
+      if (cam.IsNotNull())
+      {
+        mitk::CameraIntrinsics::Pointer   nodeIntrinsic = cam->GetValue();
+
+        if (nodeIntrinsic.IsNotNull())
+        {
+          // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
+          float   znear = 1;
+          float   zfar  = 1000;
+          float   pixelaspectratio = 1;   // FIXME: depends on background image
+
+          vl::mat4  proj;
+          proj.setNull();
+          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundWidth;
+          //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
+          proj.e(0, 2) = ((float) m_BackgroundWidth - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundWidth;
+          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(1, 2) = (-((float) m_BackgroundHeight / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
+          proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
+          proj.e(3, 2) = -1;
+
+          m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
+        }
+      }
+    }
+  }
 
   if (m_CameraNode.IsNotNull())
   {
     vl::mat4  mat = GetVLMatrixFromData(m_CameraNode->GetData());
     if (!mat.isNull())
+      // beware: there is also a view-matrix! the inverse of modelling-matrix.
       m_Camera->setModelingMatrix(mat);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  // nasty
+  mitk::Image::Pointer  imgp(const_cast<mitk::Image*>(img));
+  vl::ref<vl::Actor>  actor = Add2DImageActor(imgp);
+
+
+  // essentially copied from vl::makeGrid()
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+
+  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls()->push_back(polys.get());
+
+  // replace original quad with ours.
+  actor->setLod(0, vlquad.get());
+  actor->effect()->shader()->disable(vl::EN_LIGHTING);
+
+  std::string   objName = actor->objectName() + "_background";
+  actor->setObjectName(objName.c_str());
+
+  m_NodeToActorMap[node] = actor;
 }
 
 
@@ -882,11 +967,6 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
   m_NodeToActorMap[node] = actor;
   m_NodeToTextureMap[node] = TextureDataPOD();
 
-  // UpdateDataNode() depends on m_BackgroundNode.
-  m_BackgroundNode = node;
-
-  UpdateDataNode(node);
-
 #else
   throw std::runtime_error("No CUDA support enabled at compile time");
 #endif
@@ -910,6 +990,10 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     AddDataNode(oldbackgroundnode);
   }
 
+  // default "no background" value.
+  m_BackgroundWidth  = 0;
+  m_BackgroundHeight = 0;
+
   bool    result = false;
   mitk::BaseData::Pointer   basedata;
   if (node.IsNotNull())
@@ -928,14 +1012,24 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
       if (cudaimgprop.IsNotNull())
       {
         LightweightCUDAImage    lwci = cudaimgprop->Get();
+
+        // does the size of cuda-image have to match the mitk-image where it's attached to?
+        // i think it does: it is supposed to be the same data living in cuda.
+        assert(lwci.GetWidth()  == imgdata->GetDimension(0));
+        assert(lwci.GetHeight() == imgdata->GetDimension(1));
+
         PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
         result = true;
       }
       else
 #endif
       {
-        // FIXME: normal mitk image stuff
+        PrepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
+        result = true;
       }
+
+      m_BackgroundWidth  = imgdata->GetDimension(0);
+      m_BackgroundHeight = imgdata->GetDimension(1);
     }
     else
     {
@@ -946,13 +1040,29 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
         LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
         PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
         result = true;
+
+        m_BackgroundWidth  = lwci.GetWidth();
+        m_BackgroundHeight = lwci.GetHeight();
       }
       // no else here
 #endif
     }
+
+    // UpdateDataNode() depends on m_BackgroundNode.
+    m_BackgroundNode = node;
+    UpdateDataNode(node);
   }
 
+
   UpdateViewportAndCameraAfterResize();
+
+  // now that the camera may have changed, fit-view-to-scene again.
+  if (m_CameraNode.IsNull())
+  {
+    if (m_Trackball.get() != 0)
+      m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+  }
+
 
   return result;
 }
@@ -1273,9 +1383,10 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
           }
         }
 
-
         if (texpod.m_CUDARes)
         {
+          assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+
           CUDAManager*    cudamng   = CUDAManager::GetInstance();
           cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
           ReadAccessor    inputRA   = cudamng->RequestReadAccess(cudaImage);
@@ -1369,18 +1480,6 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   // recompute the big-fat-translucent-triangle-buffer.
   m_TranslucentStructuresMerged = false;
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    vl::ref<vl::Actor>    vlActor = it->second;
-    if (vlActor.get() != 0)
-    {
-      m_ActorToRenderableMap.erase(vlActor);
-      m_SceneManager->tree()->eraseActor(vlActor.get());
-      m_NodeToActorMap.erase(it);
-    }
-  }
-
 #ifdef _USE_CUDA
   {
     std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
@@ -1399,6 +1498,18 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
     }
   }
 #endif
+
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  if (it != m_NodeToActorMap.end())
+  {
+    vl::ref<vl::Actor>    vlActor = it->second;
+    if (vlActor.get() != 0)
+    {
+      m_ActorToRenderableMap.erase(vlActor);
+      m_SceneManager->tree()->eraseActor(vlActor.get());
+      m_NodeToActorMap.erase(it);
+    }
+  }
 }
 
 
@@ -1673,6 +1784,7 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   {
     // Get the number of normals we have to deal with
     int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
+    assert(m_NormalCount == numOfPoints);
 
     // Size of the buffer that is required to store all the normals
     unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
