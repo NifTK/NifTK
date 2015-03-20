@@ -1383,9 +1383,10 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
           }
         }
 
-
         if (texpod.m_CUDARes)
         {
+          assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+
           CUDAManager*    cudamng   = CUDAManager::GetInstance();
           cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
           ReadAccessor    inputRA   = cudamng->RequestReadAccess(cudaImage);
@@ -1479,18 +1480,6 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   // recompute the big-fat-translucent-triangle-buffer.
   m_TranslucentStructuresMerged = false;
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    vl::ref<vl::Actor>    vlActor = it->second;
-    if (vlActor.get() != 0)
-    {
-      m_ActorToRenderableMap.erase(vlActor);
-      m_SceneManager->tree()->eraseActor(vlActor.get());
-      m_NodeToActorMap.erase(it);
-    }
-  }
-
 #ifdef _USE_CUDA
   {
     std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
@@ -1509,6 +1498,18 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
     }
   }
 #endif
+
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  if (it != m_NodeToActorMap.end())
+  {
+    vl::ref<vl::Actor>    vlActor = it->second;
+    if (vlActor.get() != 0)
+    {
+      m_ActorToRenderableMap.erase(vlActor);
+      m_SceneManager->tree()->eraseActor(vlActor.get());
+      m_NodeToActorMap.erase(it);
+    }
+  }
 }
 
 
@@ -1783,6 +1784,7 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
   {
     // Get the number of normals we have to deal with
     int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
+    assert(m_NormalCount == numOfPoints);
 
     // Size of the buffer that is required to store all the normals
     unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
