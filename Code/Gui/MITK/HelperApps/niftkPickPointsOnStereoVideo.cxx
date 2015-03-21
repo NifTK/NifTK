@@ -67,6 +67,7 @@ int main(int argc, char** argv)
       return -1;
     }
     matcher->SetFlipMatrices(FlipTracking);
+    matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
     projector->SetMatcherCameraToTracker(matcher);

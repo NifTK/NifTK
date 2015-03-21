@@ -108,6 +108,7 @@ UCLN4BiasFieldCorrectionFilter<TInputImage, TOutputImage>
   m_NumberOfControlPoints = 0;     
 
   m_Mask = 0;
+  m_BiasField = 0;
 }
  
 
@@ -297,13 +298,13 @@ UCLN4BiasFieldCorrectionFilter<TInputImage, TOutputImage>
   // Correct the original input image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename InputImageType::Pointer imBiasField = expFilter->GetOutput();
+  m_BiasField = expFilter->GetOutput();
 
   typename itk::ImageRegionIterator< InputImageType > 
     iterOriginal( imOriginal, imOriginal->GetLargestPossibleRegion() );
 
   typename itk::ImageRegionConstIterator< InputImageType > 
-    iterBiasField( imBiasField, imBiasField->GetLargestPossibleRegion() );
+    iterBiasField( m_BiasField, m_BiasField->GetLargestPossibleRegion() );
         
   for ( iterBiasField.GoToBegin(), iterOriginal.GoToBegin();
         ! iterBiasField.IsAtEnd();
