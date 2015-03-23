@@ -42,6 +42,7 @@
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
 #include <mitkPointSet.h>
+#include <mitkCoordinateAxesData.h>
 #include <mitkDataNodePropertyListener.h>
 #include <map>
 #include <set>
@@ -188,6 +189,7 @@ protected:
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
+  vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);

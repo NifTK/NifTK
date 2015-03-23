@@ -236,8 +236,8 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
   bool isHelper = false;
   node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
 
-  if (isHelper)
-    return;
+  //if (isHelper)
+  //  return;
 
   m_VLQtRenderWindow->AddDataNode(node);
 
@@ -254,8 +254,8 @@ void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
   bool isHelper = false;
   node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
 
-  if (isHelper)
-    return;
+  //if (isHelper)
+  //  return;
 
   m_VLQtRenderWindow->RemoveDataNode(node);
 
@@ -364,8 +364,8 @@ void NewVisualizationView::ReinitDisplay(bool viewEnabled)
     bool isHelper = false;
     currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
 
-    if (isHelper)
-      continue;
+    //if (isHelper)
+    //  continue;
 
     m_VLQtRenderWindow->AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
     MITK_INFO <<"Node added";

@@ -42,6 +42,7 @@
 #include <CameraCalibration/Undistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraIntrinsics.h>
+#include <mitkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
 #include <PointClouds/mitkPCLData.h>
@@ -1097,6 +1098,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 #ifdef _USE_PCL
   mitk::PCLData::Pointer  pclPS     = dynamic_cast<mitk::PCLData*>(node->GetData());
 #endif
+  mitk::CoordinateAxesData::Pointer   coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 #ifdef _USE_CUDA
   mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
   // this check will prefer a CUDAImageProperty attached to the node's data object.
@@ -1133,6 +1135,12 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   {
     newActor = AddPointsetActor(mitkPS);
     namePostFix = "_pointset";
+  }
+  else
+  if (coords.IsNotNull())
+  {
+    newActor = AddCoordinateAxisActor(coords);
+    namePostFix = "_coordinateaxisdata";
   }
 #ifdef _USE_PCL
   else
@@ -1521,6 +1529,52 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
       m_NodeToActorMap.erase(it);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransfromFromData(tr, coord.GetPointer());
+
+  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
+  vlVerts->resize(4);
+  vlColors->resize(4);
+
+  // x y z r g b a
+  vlVerts->at(0).x() = 0;   vlVerts->at(0).y() = 0;   vlVerts->at(0).z() = 0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
+  vlVerts->at(1).x() = 1;   vlVerts->at(1).y() = 0;   vlVerts->at(1).z() = 0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
+  vlVerts->at(2).x() = 0;   vlVerts->at(2).y() = 1;   vlVerts->at(2).z() = 0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
+  vlVerts->at(3).x() = 0;   vlVerts->at(3).y() = 0;   vlVerts->at(3).z() = 1;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
+
+
+  vl::ref<vl::DrawElementsUInt>   lines = new vl::DrawElementsUInt(vl::PT_LINES);
+  lines->indexBuffer()->resize(3 * 2);
+  lines->indexBuffer()->at(0) = 0;  lines->indexBuffer()->at(1) = 1;      // x
+  lines->indexBuffer()->at(2) = 0;  lines->indexBuffer()->at(3) = 2;      // y
+  lines->indexBuffer()->at(4) = 0;  lines->indexBuffer()->at(5) = 3;      // z
+
+  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
+  vlGeom->drawCalls()->push_back(lines.get());
+  vlGeom->setVertexArray(vlVerts.get());
+  vlGeom->setColorArray(vlColors.get());
+
+  vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
+  fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlGeom;
+
+  return actor;
 }
 
 
