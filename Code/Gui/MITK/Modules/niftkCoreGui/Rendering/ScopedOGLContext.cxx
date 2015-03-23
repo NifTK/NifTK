@@ -23,8 +23,7 @@ ScopedOGLContext::ScopedOGLContext(QGLContext* newctx)
   : ourctx(newctx)
 {
   prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
-  if (prevctx != ourctx)
-    ourctx->makeCurrent();
+  ourctx->makeCurrent();
 }
 
 
@@ -34,11 +33,8 @@ ScopedOGLContext::~ScopedOGLContext()
   // did somebody mess up our context?
   assert(QGLContext::currentContext() == ourctx);
 
-  if (prevctx != ourctx)
-  {
-    if (prevctx)
-      prevctx->makeCurrent();
-    else
-      ourctx->doneCurrent();
-  }
+  if (prevctx)
+    prevctx->makeCurrent();
+  else
+    ourctx->doneCurrent();
 }
