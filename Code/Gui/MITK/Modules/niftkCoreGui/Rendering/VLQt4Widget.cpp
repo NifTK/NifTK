@@ -47,6 +47,12 @@
 #include <PointClouds/mitkPCLData.h>
 #endif
 
+#ifdef _MSC_VER
+#ifdef _USE_NVAPI
+#include <nvapi.h>
+#endif
+#endif
+
 #ifdef _USE_CUDA
 #include <Rendering/VLFramebufferToCUDA.h>
 #include <CUDAManager/CUDAManager.h>
@@ -372,6 +378,11 @@ void VLQt4Widget::initializeGL()
     // Calling this to make sure that the context is created right at startup
     cl_context clContext = m_OclService->GetContext();
   }
+
+
+#ifdef _MSC_VER
+  //NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
+#endif
 
 
   m_Camera = new vl::Camera;
