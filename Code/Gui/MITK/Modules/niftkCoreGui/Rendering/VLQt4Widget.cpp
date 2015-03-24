@@ -921,15 +921,6 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
 #ifdef _USE_CUDA
   assert(lwci != 0);
 
-  float     xscale = 1;
-  float     yscale = 1;
-
-  if (geom != 0)
-  {
-    xscale = geom->GetSpacing()[0];
-    yscale = geom->GetSpacing()[1];
-  }
-
   vl::mat4  mat;
   mat = mat.setIdentity();
   vl::ref<vl::Transform> tr     = new vl::Transform();
@@ -950,10 +941,10 @@ void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const
   //  0---3
   //  |   |
   //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 1;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 0;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 0;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 1;
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
 
 
   vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
@@ -1423,18 +1414,14 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
           err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
           if (err == cudaSuccess)
           {
-            // need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-            WriteAccessor   flippedWA   = cudamng->RequestOutputImage(cudaImage.GetWidth(), cudaImage.GetHeight(), 4);
+            // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+            // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
 
             cudaArray_t   arr = 0;
             err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
             if (err == cudaSuccess)
             {
-              // FIXME: sanity check: array should have same dimensions as our (cpu-side) texture object.
-
-              FlipImage(inputRA, flippedWA, mystream);
-
-              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, flippedWA.m_DevicePointer, flippedWA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+              err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, cudaImage.GetWidth() * 4, cudaImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
               if (err == cudaSuccess)
               {
                 texpod.m_LastUpdatedID = cudaImage.GetId();
@@ -1446,14 +1433,11 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
             {
               MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
             }
-
-            // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-            // otherwise the streamcallback will block subsequent work.
-            // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-            // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-            cudamng->Autorelease(flippedWA, mystream);
           }
-
+          // make sure Autorelease() and Finalise() are always the last things to do for a stream!
+          // otherwise the streamcallback will block subsequent work.
+          // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
+          // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
           cudamng->Autorelease(inputRA, mystream);
         }
 
@@ -1702,7 +1686,40 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
+vl::ref<vl::Geometry> VLQt4Widget::CreateGeometryFor2DImage(int width, int height)
+{
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+  vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = 0;     vert3->at(0).y() = 0;      vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = 0;     vert3->at(1).y() = height; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() = width; vert3->at(2).y() = height; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() = width; vert3->at(3).y() = 0;      vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls()->push_back(polys.get());
+
+  return vlquad;
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1710,13 +1727,29 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* cudaImg)
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
+  LightweightCUDAImage    lwci;
+  const CUDAImage*        cudaImg = dynamic_cast<const CUDAImage*>(_cudaImg);
+  if (cudaImg != 0)
+  {
+    lwci = cudaImg->GetLightweightCUDAImage();
+  }
+  else
+  {
+    CUDAImageProperty::Pointer prop = dynamic_cast<CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
+    if (prop.IsNotNull())
+    {
+      lwci = prop->Get();
+    }
+  }
+  assert(lwci.GetId() != 0);
+
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransfromFromData(tr, cudaImg);
 
-  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), 1000, 1000, 2, 2, true);
+  vl::ref<vl::Geometry>         vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->disable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
@@ -2083,32 +2116,7 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransfromFromData(tr, mitkImg.GetPointer());
 
-
-  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
-  vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  vl::ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = 0;       vert3->at(0).y() = 0;       vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = 0;       vert3->at(1).y() = dims[1]; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() = dims[0]; vert3->at(2).y() = dims[1]; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() = dims[0]; vert3->at(3).y() = 0;       vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls()->push_back(polys.get());
+  vl::ref<vl::Geometry>         vlquad = CreateGeometryFor2DImage(dims[0], dims[1]);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);

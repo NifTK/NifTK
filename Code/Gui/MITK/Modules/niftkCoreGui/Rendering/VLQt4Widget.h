@@ -195,6 +195,7 @@ protected:
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
   static vl::String LoadGLSLSourceFromResources(const char* filename);
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
+  vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
 
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();
