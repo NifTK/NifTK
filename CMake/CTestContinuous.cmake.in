@@ -112,6 +112,8 @@ message("Commit hash: ${commit_hash}")
 message("Build name: ${build_name}")
 message("Threads: ${cpu_cores}")
 
+set(CTEST_BUILD_NAME ${build_name})
+
 if ("${CTEST_CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
   set(CTEST_BUILD_FLAGS "-j ${cpu_cores}")
 endif()
