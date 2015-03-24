@@ -22,7 +22,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <usModuleInitialization.h>
 
 /**
  *  @brief Tests for reading/writing .4x4 files via Services.
@@ -132,5 +131,4 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // always end with this!
   MITK_TEST_END();
 }
-US_INITIALIZE_MODULE
 
