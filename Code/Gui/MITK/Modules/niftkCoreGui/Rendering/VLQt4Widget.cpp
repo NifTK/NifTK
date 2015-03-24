@@ -1325,7 +1325,8 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
         vlActor->setEnableMask(ENABLEMASK_OPAQUE);
         fx->shader()->disable(vl::EN_BLEND);
-        fx->shader()->enable(vl::EN_CULL_FACE);
+        //fx->shader()->enable(vl::EN_CULL_FACE);
+        fx->shader()->disable(vl::EN_CULL_FACE);
       }
     }
 
@@ -1549,10 +1550,10 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
   vlColors->resize(4);
 
   // x y z r g b a
-  vlVerts->at(0).x() = 0;   vlVerts->at(0).y() = 0;   vlVerts->at(0).z() = 0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
-  vlVerts->at(1).x() = 1;   vlVerts->at(1).y() = 0;   vlVerts->at(1).z() = 0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
-  vlVerts->at(2).x() = 0;   vlVerts->at(2).y() = 1;   vlVerts->at(2).z() = 0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
-  vlVerts->at(3).x() = 0;   vlVerts->at(3).y() = 0;   vlVerts->at(3).z() = 1;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
+  vlVerts->at(0).x() =  0;   vlVerts->at(0).y() =  0;   vlVerts->at(0).z() =  0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
+  vlVerts->at(1).x() = 10;   vlVerts->at(1).y() =  0;   vlVerts->at(1).z() =  0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
+  vlVerts->at(2).x() =  0;   vlVerts->at(2).y() = 10;   vlVerts->at(2).z() =  0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
+  vlVerts->at(3).x() =  0;   vlVerts->at(3).y() =  0;   vlVerts->at(3).z() = 10;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
 
 
   vl::ref<vl::DrawElementsUInt>   lines = new vl::DrawElementsUInt(vl::PT_LINES);
@@ -2082,10 +2083,35 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransfromFromData(tr, mitkImg.GetPointer());
 
-  vl::ref<vl::Geometry>         vlquad    = vl::makeGrid(vl::vec3(0, 0, 0), dims[0], dims[1], 2, 2, true, vl::fvec2(0,0), vl::fvec2(1,1), false);
+
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+  vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = 0;       vert3->at(0).y() = 0;       vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = 0;       vert3->at(1).y() = dims[1]; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() = dims[0]; vert3->at(2).y() = dims[1]; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() = dims[0]; vert3->at(3).y() = 0;       vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls()->push_back(polys.get());
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->disable(vl::EN_LIGHTING);
   fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
   // UpdateDataNode() takes care of assigning colour etc.
   // FIXME: alpha-blending? independent of opacity prop!
