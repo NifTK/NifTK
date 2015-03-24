@@ -51,7 +51,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // Get CoordinateAxesData writer(s), check for only 1.
   mitk::FileWriterSelector writerSelector(cad.GetPointer());
   std::vector<mitk::FileWriterSelector::Item> writers = writerSelector.Get();
-  MITK_TEST_CONDITION_REQUIRED(writers.size() == 1, "Testing for 1 registered writers")
+  MITK_TEST_CONDITION_REQUIRED(writers.size() >= 1, "Testing for >=1 registered writers")
 
   // Test for exception handling. If invalid (non-writable) file, exception must be thrown.
 /*
@@ -94,7 +94,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // Check for 1 reader
   mitk::FileReaderRegistry readerRegistry;
   std::vector<mitk::IFileReader*> readers = readerRegistry.GetReaders(mitk::FileReaderRegistry::GetMimeTypeForFile("4x4"));
-  MITK_TEST_CONDITION_REQUIRED(readers.size() == 1, "Testing for 1 registered readers")
+  MITK_TEST_CONDITION_REQUIRED(readers.size() >= 1, "Testing for 1 registered readers")
 
   try
   {
