@@ -1,0 +1,124 @@
+set(CTEST_SOURCE_DIRECTORY "@CMAKE_SOURCE_DIR@")
+set(CTEST_BINARY_DIRECTORY "@CMAKE_BINARY_DIR@")
+set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
+set(CTEST_GIT_COMMAND @GIT_EXECUTABLE@)
+
+set(CTEST_BUILD_NAME "@CTEST_BUILD_NAME@")
+
+find_program(HOSTNAME_CMD NAMES hostname)
+exec_program(${HOSTNAME_CMD} ARGS OUTPUT_VARIABLE HOSTNAME)
+set(CTEST_SITE  "${HOSTNAME}${CTEST_SITE_EXT}")
+
+
+#
+# This macro is to find the branch whose tip is the commit to test.
+#
+macro(GetBranchName branch_name_var)
+
+  execute_process(COMMAND ${CTEST_GIT_COMMAND} branch -r --contains HEAD --merged HEAD
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
+    ERROR_VARIABLE GIT_error
+    OUTPUT_VARIABLE remote_branch_name
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(NOT ${GIT_error} EQUAL 0)
+    message(SEND_ERROR "Command '${CTEST_GIT_COMMAND} branch -r --contains HEAD --merged' failed with output:\n${GIT_error}")
+  endif()
+
+  # message("remote branch(es): ${remote_branch_name}")
+
+  string(REGEX MATCH "origin/([^\n]*)" branch_name ${remote_branch_name})
+
+  set(${branch_name_var} ${CMAKE_MATCH_1})
+
+endmacro()
+
+
+#
+# This macro gets the first few digits of the current commit hash.
+#
+macro(GetCommitHash commit_hash_var)
+
+  execute_process(COMMAND ${CTEST_GIT_COMMAND} log -n 1 --pretty=format:%h HEAD
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
+    ERROR_VARIABLE GIT_error
+    OUTPUT_VARIABLE ${commit_hash_var}
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(NOT ${GIT_error} EQUAL 0)
+    message(SEND_ERROR "Command \"${CTEST_GIT_COMMAND} log -n 1 --pretty=format:\"%h\" HEAD in directory ${CTEST_SOURCE_DIRECTORY} failed with output:\n${GIT_error}")
+  endif()
+
+endmacro()
+
+
+#
+# This macro gets the first few digits of the current commit hash.
+#
+macro(GetNumberOfCpuCores cpu_cores_var)
+
+  if(DEFINED PARALLEL_LEVEL)
+    set(cpu_cores ${PARALLEL_LEVEL})
+  else()
+    set(cpu_cores 1)
+
+    set(cpuinfo_file "/proc/cpuinfo")
+    if(EXISTS "${cpuinfo_file}")
+      file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+      list(LENGTH procs cpu_cores)
+    endif()
+
+    if(APPLE)
+      find_program(cmd_sys_pro "system_profiler")
+      if(cmd_sys_pro)
+        execute_process(COMMAND ${cmd_sys_pro} OUTPUT_VARIABLE info)
+        string(REGEX REPLACE "^.*Total Number Of Cores: ([0-9]+).*$" "\\1" cpu_cores "${info}")
+      endif()
+    endif()
+
+    if(WIN32)
+      set(cpu_cores "$ENV{NUMBER_OF_PROCESSORS}")
+    endif()
+  endif()
+
+  set(${cpu_cores_var} ${cpu_cores})
+
+endmacro()
+
+
+#
+# This macro gets the build name that is the compiler version plus the commit hash.
+#
+macro(GetBuildName build_name_var)
+
+  if (CTEST_BUILD_NAME MATCHES "(.*)-${branch_name}-${commit_hash}.*")
+    string(REGEX REPLACE "(.*)-${branch_name}-${commit_hash}.*" "\\1" compiler_name ${CTEST_BUILD_NAME})
+    set(build_name "${compiler_name}-${commit_hash}")
+  else()
+    set(build_name "${commit_hash}")
+  endif()
+
+  set(${build_name_var} ${build_name})
+
+endmacro()
+
+GetBranchName(branch_name)
+GetCommitHash(commit_hash)
+GetBuildName(build_name)
+GetNumberOfCpuCores(cpu_cores)
+
+message("Branch: ${branch_name}")
+message("Commit hash: ${commit_hash}")
+message("Build name: ${build_name}")
+message("Threads: ${cpu_cores}")
+
+if ("${CTEST_CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
+  set(CTEST_BUILD_FLAGS "-j ${cpu_cores}")
+endif()
+
+set(PARALLEL_LEVEL ${cpu_cores})
+
+ctest_start(Model TRACK ${branch_name})
+ctest_build()
+ctest_test()
+ctest_submit()

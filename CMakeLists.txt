@@ -416,6 +416,10 @@ if(BUILD_TESTING)
 
   # Setup file for setting custom ctest vars
   configure_file(CMake/CTestCustom.cmake.in ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
+
+  # Setup continuous test script
+  CONFIGURE_FILE(CMake/CTestContinuous.cmake.in ${CMAKE_BINARY_DIR}/CTestContinuous.cmake @ONLY)
+
 endif(BUILD_TESTING)
 
 ######################################################################
