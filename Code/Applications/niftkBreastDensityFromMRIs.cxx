@@ -1104,7 +1104,7 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
 // NaiveParenchymaSegmentation()
 // -------------------------------------------------------------------------
 
-bool NaiveParenchymaSegmentation( std::string label,
+void NaiveParenchymaSegmentation( std::string label,
                                   InputParameters &args, 
                         
                                   ImageType::Pointer &imSegmentedBreastMask,
