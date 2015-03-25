@@ -31,13 +31,10 @@ QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* stor
   {
     m_UsingSomeoneElsesServer = true;
   }
+
   connect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(ClientConnected()));
   connect(m_Server, SIGNAL(ClientDisconnected(int)), this, SLOT(ClientDisconnected()));
   connect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(InterpretMessage(int, niftk::NiftyLinkMessageContainer::Pointer)));
-  if (m_Server != NULL)
-  {
-    this->ClientConnected();
-  }
 }
 
 
@@ -48,7 +45,7 @@ QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
   {
     m_Server = NULL;
   }
-  if (m_Server != NULL )
+  if (m_Server != NULL)
   {
     delete m_Server;
   }

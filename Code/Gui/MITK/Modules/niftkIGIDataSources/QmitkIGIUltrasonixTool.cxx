@@ -101,7 +101,6 @@ void QmitkIGIUltrasonixTool::InterpretMessage(int /*portNumber*/, niftk::NiftyLi
       }
 
       this->ProcessClientInfo(clientInfo);
-      delete clientInfo;
     }
     else
     {

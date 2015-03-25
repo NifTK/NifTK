@@ -134,7 +134,7 @@ void QmitkIGITrackerSource::InterpretMessage(int /*portNumber*/, niftk::NiftyLin
     QString type = niftk::NiftyLinkXMLBuilderBase::ParseDescriptorType(str);
     if (type == QString("TrackerClientDescriptor"))
     {
-      niftk::NiftyLinkClientDescriptor* clientInfo = new niftk::NiftyLinkClientDescriptor();
+      niftk::NiftyLinkTrackerClientDescriptor* clientInfo = new niftk::NiftyLinkTrackerClientDescriptor();
       clientInfo->SetXMLString(str);
 
       if (!clientInfo->SetXMLString(str))
@@ -158,8 +158,8 @@ void QmitkIGITrackerSource::InterpretMessage(int /*portNumber*/, niftk::NiftyLin
         this->SetRelatedSources(stringList);
       }
 
+      // clientInfo gets stored in base class.
       this->ProcessClientInfo(clientInfo);
-      delete clientInfo;
     }
     else
     {
@@ -170,21 +170,30 @@ void QmitkIGITrackerSource::InterpretMessage(int /*portNumber*/, niftk::NiftyLin
   igtl::TrackingDataMessage::Pointer trackingMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
   if (trackingMsg.IsNotNull())
   {
-    // Check the tool name
-    std::string messageToolName = msgBase->GetDeviceName();
-    std::string sourceToolName = this->GetDescription();
-    if ( messageToolName == sourceToolName )
+    for (int i = 0; i < trackingMsg->GetNumberOfTrackingDataElement(); i++)
     {
-      msg->GetTimeCreated(m_TimeCreated);
+      igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
+      trackingMsg->GetTrackingDataElement(i, elem);
 
-      QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
-      wrapper->SetMessageContainer(msg);
-      wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds()); // time created
-      wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+      // Check the tool name
+      std::string messageToolName = elem->GetName();
+      std::string sourceToolName = this->GetDescription();
 
-      this->AddData(wrapper.GetPointer());
-      this->SetStatus("Receiving");
+      if ( messageToolName == sourceToolName )
+      {
+        msg->GetTimeCreated(m_TimeCreated);
+
+        QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
+        wrapper->SetMessageContainer(msg);
+        wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds()); // time created
+        wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+
+        this->AddData(wrapper.GetPointer());
+        this->SetStatus("Receiving");
+      }
+
     }
+
   }
 }
 
