@@ -69,10 +69,9 @@ macro(GetNumberOfCpuCores cpu_cores_var)
     endif()
 
     if(APPLE)
-      find_program(cmd_sys_pro "system_profiler")
-      if(cmd_sys_pro)
-        execute_process(COMMAND ${cmd_sys_pro} OUTPUT_VARIABLE info)
-        string(REGEX REPLACE "^.*Total Number Of Cores: ([0-9]+).*$" "\\1" cpu_cores "${info}")
+      find_program(cmd_sysctl "sysctl")
+      if(cmd_sysctl)
+        execute_process(COMMAND ${cmd_sysctl} -n hw.ncpu OUTPUT_VARIABLE cpu_cores OUTPUT_STRIP_TRAILING_WHITESPACE)
       endif()
     endif()
 
