@@ -39,11 +39,19 @@ class PointSetConverterView : public QmitkAbstractView
 
   public:
 
+    PointSetConverterView();
+
+    virtual ~PointSetConverterView();
+
     static const std::string VIEW_ID;
 
   protected slots:
 
-    /// \brief Called when the user clicks the GUI button
+    /// \brief Create a new empty point set in the data manager
+    void OnCreateNewPointSetButtonClicked();
+
+    /// \brief Convert polygons in the datamanager to point sets with similar names
+    void OnConvertPolygonsToPointSetButtonClicked();
 
   protected:
 
@@ -52,10 +60,15 @@ class PointSetConverterView : public QmitkAbstractView
     virtual void SetFocus();
 
     /// \brief called by QmitkFunctionality when DataManager's selection has changed
+    /// If the selected node is a point set -- it will be changed to the active point set
     virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
                                      const QList<mitk::DataNode::Pointer>& nodes );
 
-    Ui::PointSetConverterViewControls m_Controls;
+    Ui::PointSetConverterViewControls* m_Controls;
+
+  private:
+
+    QWidget* m_Parent;
 
 };
 
