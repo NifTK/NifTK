@@ -178,6 +178,7 @@ protected:
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
   void UpdateCameraParameters();
+  void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
   void UpdateActorTransfromFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
   void UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
   void UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
@@ -196,6 +197,7 @@ protected:
   static vl::String LoadGLSLSourceFromResources(const char* filename);
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
+  vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
 
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();

@@ -1326,6 +1326,9 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     UpdateActorTransfromFromNode(vlActor, node);
   }
 
+  // does the right thing if node does not contain an mitk-image.
+  UpdateTextureFromImage(node);
+
   // if we do have live-updating textures then we do need to refresh the vl-side of it!
   // even if the node is not visible.
 #ifdef _USE_CUDA
@@ -1345,6 +1348,71 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if (node == m_CameraNode)
   {
     UpdateCameraParameters();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<vl::Actor> VLQt4Widget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
+{
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  if (it != m_NodeToActorMap.end())
+  {
+    return it->second;
+  }
+
+  return vl::ref<vl::Actor>();
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
+{
+  // beware: vl does not draw a clean boundary between what is client and what is server side state.
+  // so we always need our opengl context current.
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+  if (node.IsNotNull())
+  {
+    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
+    if (img.IsNotNull())
+    {
+      vl::ref<vl::Actor>  vlactor = FindActorForNode(node);
+      if (vlactor.get() != 0)
+      {
+        assert(vlactor->effect());
+        assert(vlactor->effect()->shader());
+
+        vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
+        if (tex.get() != 0)
+        {
+          unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
+          mitk::PixelType     pixType = img->GetPixelType();
+          vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
+          vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
+
+          vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
+          // sanity check
+          unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+          assert(vlimg->requiredMemory() == size);
+
+          try
+          {
+            mitk::ImageReadAccessor   readAccess(img, img->GetVolumeData(0));
+            const void*               cPointer = readAccess.GetData();
+            std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
+          }
+          catch (...)
+          {
+            // FIXME: error handling?
+            MITK_ERROR << "Did not get pixel read access to 2D image.";
+          }
+
+          tex->setMipLevel(0, vlimg.get(), false);
+        }
+      }
+    }
   }
 }
 
