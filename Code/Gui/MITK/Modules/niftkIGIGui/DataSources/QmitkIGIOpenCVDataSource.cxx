@@ -231,7 +231,7 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
     mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
 
-#ifdef _USE_CUDA
+#ifdef XXX_USE_CUDA
     // a compatibility stop-gap to interface with new renderer and cuda bits.
     {
       CUDAManager*    cm = CUDAManager::GetInstance();

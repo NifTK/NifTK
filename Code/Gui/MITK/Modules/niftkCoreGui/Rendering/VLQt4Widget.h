@@ -251,7 +251,10 @@ protected:
    */
   void PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
-  /** Will throw if CUDA-support was not enabled at compile time. */
+  /** @throws an exception if CUDA support was not enabled at compile time. */
+  void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
+
+    /** Will throw if CUDA-support was not enabled at compile time. */
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
 
   // will only be non-null if cuda support is enabled at compile time.
