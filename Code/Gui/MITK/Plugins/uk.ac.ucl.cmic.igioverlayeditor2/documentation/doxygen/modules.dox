@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igioverlayeditor2 uk.ac.ucl.cmic.igioverlayeditor2 Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin to provide a standard QmitkRenderWindow with a 3D Viewer and a QmitkOverlayViewer to provide an overlay.
+ 
+  Written by Johannes Totz (j.totz@ucl.ac.uk), based on code by Steve Thompson (s.thompson@ucl.ac.uk) and Matt Clarkson (m.clarkson@ucl.ac.uk).
+
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igioverlayeditor2_internal Internal
+  \ingroup uk_ac_ucl_cmic_igioverlayeditor2
+
+  \brief This subcategory includes the internal classes of the ucl.ac.ucl.cmic.igioverlayeditor2 plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

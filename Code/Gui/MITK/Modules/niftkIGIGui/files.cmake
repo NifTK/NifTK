@@ -104,3 +104,18 @@ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
     DataSources/AudioDataSourceGui.ui
   )
 endif()
+
+if(BUILD_VL)
+  set(CPP_FILES
+    ${CPP_FILES}
+    OverlayEditor2/QmitkIGIOverlayEditor2.cxx
+  )
+  set(MOC_H_FILES
+    ${MOC_H_FILES}
+    OverlayEditor2/QmitkIGIOverlayEditor2.h
+  )
+  set(UI_FILES
+    ${UI_FILES}
+    OverlayEditor2/QmitkIGIOverlayEditor2.ui
+  )
+endif()
