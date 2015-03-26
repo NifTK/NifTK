@@ -20,6 +20,8 @@
 
 #include <QmitkAbstractView.h>
 
+#include <mitkPlanarCircle.h>
+
 #include "ui_PointSetConverterViewControls.h"
 
 
@@ -68,6 +70,13 @@ class PointSetConverterView : public QmitkAbstractView
 
   private:
 
+    /// \brief Caclulate the centroid of a mitkPlanarCircle 
+    mitk::Point3D PlanarCircleToPoint( mitk::PlanarCircle* circle);
+    
+    /// \breif Find the Point set with the given name
+    mitk::PointSet::Pointer FindPointSetNode( std::string &name );
+
+    mitk::DataNode::Pointer m_ReferenceImage;
     QWidget* m_Parent;
 
 };
