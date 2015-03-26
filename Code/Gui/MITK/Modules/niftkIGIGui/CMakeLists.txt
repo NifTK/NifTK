@@ -22,6 +22,15 @@ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
   )
 endif()
 
+if(BUILD_VL)
+  # overlay editor 2 needs access to vl headers
+  # because vlqt4widget pulls in headers.
+  
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+  include_directories(${VL_INCLUDE_DIRS})
+  #link_directories(${VL_LIBRARIES})
+endif()
+
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
   INCLUDE_DIRS Common DataSources OverlayEditor

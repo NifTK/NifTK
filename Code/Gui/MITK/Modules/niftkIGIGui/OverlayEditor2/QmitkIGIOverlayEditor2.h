@@ -70,32 +70,32 @@ public:
   /**
    * \brief Set the full path for the department logo, currently delegating only to QmitkSingle3DView.
    */
-  void SetDepartmentLogoPath(const std::string path);
+  //void SetDepartmentLogoPath(const std::string path);
 
   /**
    * \brief Calls QmitkSingle3DView::EnableDepartmentLogo().
    */
-  void EnableDepartmentLogo();
+  //void EnableDepartmentLogo();
 
   /**
    * \brief Calls QmitkSingle3DView::DisableDepartmentLogo().
    */
-  void DisableDepartmentLogo();
+  //void DisableDepartmentLogo();
 
   /**
    * \brief Calls QmitkSingle3DView::SetGradientBackgroundColors().
    */
-  void SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2);
+  //void SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2);
 
   /**
    * \brief Calls QmitkSingle3DView::EnableGradientBackground().
    */
-  void EnableGradientBackground();
+  //void EnableGradientBackground();
 
   /**
    * \brief Calls QmitkSingle3DView::DisableGradientBackground().
    */
-  void DisableGradientBackground();
+  //void DisableGradientBackground();
 
   /**
    * \brief Sets the calibration file (e.g. hand-eye transform for a laparoscope).
@@ -107,12 +107,12 @@ public:
   /**
    * \brief Sets whether or not we are doing camera tracking mode.
    */
-  void SetCameraTrackingMode(const bool& isCameraTracking);
+  //void SetCameraTrackingMode(const bool& isCameraTracking);
 
   /**
    * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
    */  
-  void SetClipToImagePlane(const bool& clipToImagePlane);
+  //void SetClipToImagePlane(const bool& clipToImagePlane);
   
   /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.

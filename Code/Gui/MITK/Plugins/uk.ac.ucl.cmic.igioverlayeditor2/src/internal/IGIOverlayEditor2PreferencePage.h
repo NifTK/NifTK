@@ -58,62 +58,62 @@ public:
    */
   virtual void Update();
 
-  /**
-   * \brief Stores the name of the preference node that contains the stylesheet of the first background colour.
-   */
-  static const std::string FIRST_BACKGROUND_STYLE_SHEET;
+  ///**
+  // * \brief Stores the name of the preference node that contains the stylesheet of the first background colour.
+  // */
+  //static const std::string FIRST_BACKGROUND_STYLE_SHEET;
 
-  /**
-   * \brief Stores the name of the preference node that contains the stylesheet of the second background colour.
-   */
-  static const std::string SECOND_BACKGROUND_STYLE_SHEET;
+  ///**
+  // * \brief Stores the name of the preference node that contains the stylesheet of the second background colour.
+  // */
+  //static const std::string SECOND_BACKGROUND_STYLE_SHEET;
 
-  /**
-   * \brief Stores the name of the preference node that contains the first background colour.
-   */
-  static const std::string FIRST_BACKGROUND_COLOUR;
+  ///**
+  // * \brief Stores the name of the preference node that contains the first background colour.
+  // */
+  //static const std::string FIRST_BACKGROUND_COLOUR;
 
-  /**
-   * \brief Stores the name of the preference node that contains the second background colour.
-   */
-  static const std::string SECOND_BACKGROUND_COLOUR;
+  ///**
+  // * \brief Stores the name of the preference node that contains the second background colour.
+  // */
+  //static const std::string SECOND_BACKGROUND_COLOUR;
 
-  /**
-   * \brief Stores the name of the preference node containing the filename of the calibration (eg. hand-eye for a laparoscope).
-   */
-  static const std::string CALIBRATION_FILE_NAME;
+  ///**
+  // * \brief Stores the name of the preference node containing the filename of the calibration (eg. hand-eye for a laparoscope).
+  // */
+  //static const std::string CALIBRATION_FILE_NAME;
 
-  /**
-   * \brief Stores the name of the preference node containing whether we are doing a camera tracking mode (for video), or the alternative is image tracking (e.g. for ultrasound).
-   */
-  static const std::string CAMERA_TRACKING_MODE;
+  ///**
+  // * \brief Stores the name of the preference node containing whether we are doing a camera tracking mode (for video), or the alternative is image tracking (e.g. for ultrasound).
+  // */
+  //static const std::string CAMERA_TRACKING_MODE;
 
-  /**
-   * \brief Stores the name of the preference node containing whether we are using clipping planes in Image Tracking mode.
-   */  
-  static const std::string CLIP_TO_IMAGE_PLANE;
+  ///**
+  // * \brief Stores the name of the preference node containing whether we are using clipping planes in Image Tracking mode.
+  // */  
+  //static const std::string CLIP_TO_IMAGE_PLANE;
   
 public slots:
 
-  void FirstColorChanged();
-  void SecondColorChanged();
-  void ResetColors();
+  //void FirstColorChanged();
+  //void SecondColorChanged();
+  //void ResetColors();
 
 protected:
 
   QWidget         *m_MainControl;
-  QRadioButton    *m_CameraTrackingMode;
-  QRadioButton    *m_ImageTrackingMode;
-  QCheckBox       *m_ClipToImagePlane;
-  QPushButton     *m_ColorButton1;
-  QPushButton     *m_ColorButton2;
-  ctkPathLineEdit *m_CalibrationFileName;
-  std::string      m_FirstColor;
-  std::string      m_SecondColor;
-  QString          m_FirstColorStyleSheet;
-  QString          m_SecondColorStyleSheet;
+  //QRadioButton    *m_CameraTrackingMode;
+  //QRadioButton    *m_ImageTrackingMode;
+  //QCheckBox       *m_ClipToImagePlane;
+  //QPushButton     *m_ColorButton1;
+  //QPushButton     *m_ColorButton2;
+  //ctkPathLineEdit *m_CalibrationFileName;
+  //std::string      m_FirstColor;
+  //std::string      m_SecondColor;
+  //QString          m_FirstColorStyleSheet;
+  //QString          m_SecondColorStyleSheet;
 
   berry::IPreferences::Pointer m_IGIOverlayEditor2PreferencesNode;
 };
 
-#endif /* IGIOverlayEditorPreferencePage_h */
+#endif /* IGIOverlayEditor2PreferencePage_h */

@@ -32,9 +32,9 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
   m_OpacitySlider->setMaximum(100);
   m_OpacitySlider->setSingleStep(1);
   m_OpacitySlider->setPageStep(10);
-  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
+//  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
-  m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
+//  m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
 
   m_OverlayViewer->setVisible(true);
   m_3DViewer->setVisible(true);
@@ -81,14 +81,14 @@ void QmitkIGIOverlayEditor2::OnOverlayCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_3DViewerCheckBox->setEnabled(false);
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    //mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
     m_3DViewerCheckBox->setEnabled(true);
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
-  m_OverlayViewer->setVisible(checked);
+  //m_OverlayViewer->setVisible(checked);
 }
 
 
@@ -98,38 +98,38 @@ void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_OverlayCheckBox->setEnabled(false);
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
+    //mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
   }
   else
   {
     m_OverlayCheckBox->setEnabled(true);
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
+    //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
   }
-  m_3DViewer->setVisible(checked);
+  //m_3DViewer->setVisible(checked);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::OnOpacitySliderMoved(int value)
 {
-  m_OverlayViewer->SetOpacity(value / 100.0);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  //m_OverlayViewer->SetOpacity(value / 100.0);
+  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::OnImageSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->SetImageNode(node);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  //m_OverlayViewer->SetImageNode(node);
+  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::OnTransformSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->SetTransformNode(node);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  //m_OverlayViewer->SetTransformNode(node);
+  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -150,11 +150,11 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
       (this, &QmitkIGIOverlayEditor2::NodeChanged ) );
   }
   
-  mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
-  mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
+  //mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
+  //mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
-  m_3DViewer->GetRenderer()->SetDataStorage(storage);
-  m_OverlayViewer->SetDataStorage(storage);
+  //m_3DViewer->GetRenderer()->SetDataStorage(storage);
+  //m_OverlayViewer->SetDataStorage(storage);
   m_ImageCombo->SetDataStorage(storage);
   m_TransformCombo->SetDataStorage(storage);
 
@@ -171,14 +171,14 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::NodeChanged(const mitk::DataNode* node)
 {
-  bool propValue = false;
-  if (node != NULL
-    && !m_OverlayViewer->GetCameraTrackingMode()
-    && node->GetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue)
-    && propValue)
-  {
-    m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));
-  }
+  //bool propValue = false;
+  //if (node != NULL
+  //  && !m_OverlayViewer->GetCameraTrackingMode()
+  //  && node->GetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue)
+  //  && propValue)
+  //{
+  //  m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));
+  //}
 }
 
 
@@ -187,19 +187,19 @@ QmitkRenderWindow* QmitkIGIOverlayEditor2::GetActiveQmitkRenderWindow() const
 {
   QmitkRenderWindow *result = NULL;
 
-  mitk::FocusManager *focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    mitk::BaseRenderer *renderer = focusManager->GetFocused();
-    if (m_OverlayViewer->GetRenderWindow()->GetRenderer() == renderer)
-    {
-      result = m_OverlayViewer->GetRenderWindow();
-    }
-    else if (m_3DViewer->GetRenderer() == renderer)
-    {
-      result = m_3DViewer;
-    }
-  }
+  //mitk::FocusManager *focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  //if (focusManager != NULL)
+  //{
+  //  mitk::BaseRenderer *renderer = focusManager->GetFocused();
+  //  if (m_OverlayViewer->GetRenderWindow()->GetRenderer() == renderer)
+  //  {
+  //    result = m_OverlayViewer->GetRenderWindow();
+  //  }
+  //  else if (m_3DViewer->GetRenderer() == renderer)
+  //  {
+  //    result = m_3DViewer;
+  //  }
+  //}
   return result;
 }
 
@@ -208,8 +208,8 @@ QmitkRenderWindow* QmitkIGIOverlayEditor2::GetActiveQmitkRenderWindow() const
 QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor2::GetQmitkRenderWindows() const
 {
   QHash<QString, QmitkRenderWindow *> result;
-  result.insert("overlay", m_OverlayViewer->GetRenderWindow());
-  result.insert("3d", m_3DViewer);
+  //result.insert("overlay", m_OverlayViewer->GetRenderWindow());
+  //result.insert("3d", m_3DViewer);
   return result;
 }
 
@@ -218,14 +218,14 @@ QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor2::GetQmitkRenderWindow
 QmitkRenderWindow* QmitkIGIOverlayEditor2::GetQmitkRenderWindow(const QString &id) const
 {
   QmitkRenderWindow *result = NULL;
-  if (id == "3d")
-  {
-    result = m_3DViewer;
-  }
-  else if (id == "overlay")
-  {
-    result =  m_OverlayViewer->GetRenderWindow();
-  }
+  //if (id == "3d")
+  //{
+  //  result = m_3DViewer;
+  //}
+  //else if (id == "overlay")
+  //{
+  //  result =  m_OverlayViewer->GetRenderWindow();
+  //}
   return result;
 }
 
@@ -233,79 +233,79 @@ QmitkRenderWindow* QmitkIGIOverlayEditor2::GetQmitkRenderWindow(const QString &i
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::SetCalibrationFileName(const std::string& fileName)
 {
-  m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
+  //m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
 }
 
 
 //-----------------------------------------------------------------------------
 std::string QmitkIGIOverlayEditor2::GetCalibrationFileName() const
 {
-  return m_OverlayViewer->GetTrackingCalibrationFileName();
+  return "";//m_OverlayViewer->GetTrackingCalibrationFileName();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetCameraTrackingMode(const bool& isCameraTracking)
-{
-  m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
-  m_TransformCombo->setVisible(isCameraTracking);
-  m_TransformLabel->setVisible(isCameraTracking);
-  m_ImageCombo->setVisible(isCameraTracking);
-  m_ImageLabel->setVisible(isCameraTracking);
-}
+//void QmitkIGIOverlayEditor2::SetCameraTrackingMode(const bool& isCameraTracking)
+//{
+//  //m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
+//  m_TransformCombo->setVisible(isCameraTracking);
+//  m_TransformLabel->setVisible(isCameraTracking);
+//  m_ImageCombo->setVisible(isCameraTracking);
+//  m_ImageLabel->setVisible(isCameraTracking);
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetClipToImagePlane(const bool& clipToImagePlane)
-{
-  m_OverlayViewer->SetClipToImagePlane(clipToImagePlane);
-}
+//void QmitkIGIOverlayEditor2::SetClipToImagePlane(const bool& clipToImagePlane)
+//{
+//  m_OverlayViewer->SetClipToImagePlane(clipToImagePlane);
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetDepartmentLogoPath(const std::string path)
-{
-  m_OverlayViewer->SetDepartmentLogoPath(path.c_str());
-}
+//void QmitkIGIOverlayEditor2::SetDepartmentLogoPath(const std::string path)
+//{
+//  m_OverlayViewer->SetDepartmentLogoPath(path.c_str());
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::EnableDepartmentLogo()
-{
-  m_OverlayViewer->EnableDepartmentLogo();
-}
+//void QmitkIGIOverlayEditor2::EnableDepartmentLogo()
+//{
+//  m_OverlayViewer->EnableDepartmentLogo();
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::DisableDepartmentLogo()
-{
-  m_OverlayViewer->DisableDepartmentLogo();
-}
+//void QmitkIGIOverlayEditor2::DisableDepartmentLogo()
+//{
+//  m_OverlayViewer->DisableDepartmentLogo();
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
-{
-  m_OverlayViewer->SetGradientBackgroundColors(colour1, colour2);
-}
+//void QmitkIGIOverlayEditor2::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
+//{
+//  m_OverlayViewer->SetGradientBackgroundColors(colour1, colour2);
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::EnableGradientBackground()
-{
-  m_OverlayViewer->EnableGradientBackground();
-}
+//void QmitkIGIOverlayEditor2::EnableGradientBackground()
+//{
+//  m_OverlayViewer->EnableGradientBackground();
+//}
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::DisableGradientBackground()
-{
-  m_OverlayViewer->DisableGradientBackground();
-}
+//void QmitkIGIOverlayEditor2::DisableGradientBackground()
+//{
+//  m_OverlayViewer->DisableGradientBackground();
+//}
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::Update()
 {
-  m_OverlayViewer->Update();
+  //m_OverlayViewer->Update();
 }
