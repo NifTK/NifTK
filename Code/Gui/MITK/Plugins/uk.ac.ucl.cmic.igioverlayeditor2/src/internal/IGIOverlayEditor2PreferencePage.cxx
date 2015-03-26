@@ -184,7 +184,7 @@ void IGIOverlayEditor2PreferencePage::Update()
   }
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
-  m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditor2PreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
+  m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditor2PreferencesNode->Get(IGIOverlayEditor2PreferencePage::CALIBRATION_FILE_NAME, "")));
 
   m_ClipToImagePlane->setChecked(m_IGIOverlayEditor2PreferencesNode->GetBool(IGIOverlayEditor2PreferencePage::CLIP_TO_IMAGE_PLANE, true));
   bool isCameraTracking = m_IGIOverlayEditor2PreferencesNode->GetBool(IGIOverlayEditor2PreferencePage::CAMERA_TRACKING_MODE, true);

@@ -38,11 +38,11 @@
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
-#include <QmitkIGIOverlayEditor2.h>
+#include <OverlayEditor2/QmitkIGIOverlayEditor2.h>
 #include <internal/IGIOverlayEditor2PreferencePage.h>
 #include <internal/IGIOverlayEditor2Activator.h>
 
-const char* IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor2";
+const char* IGIOverlayEditor2::EDITOR_ID = "org.mitk.editors.igioverlayeditor2";
 
 
 /**
@@ -89,7 +89,7 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
     {
       IGIOverlayEditor2::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor2>();
-      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor())
+      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
       {
         // Call editor to turn things off as the widget is being closed.
       }
@@ -99,10 +99,10 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
+    if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
     {
-      IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor2())
+      IGIOverlayEditor2::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor2>();
+      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
       {
         // Call editor to turn things off as the widget is being hidden.
       }
@@ -272,10 +272,10 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
     layout->setContentsMargins(0,0,0,0);
 
     d->m_IGIOverlayEditor2 = new QmitkIGIOverlayEditor2(parent);
-    layout->addWidget(d->m_IGIOverlayEditor);
+    layout->addWidget(d->m_IGIOverlayEditor2);
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
-    d->m_IGIOverlayEditor->SetDataStorage(ds);
+    d->m_IGIOverlayEditor2->SetDataStorage(ds);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
 
@@ -284,10 +284,10 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
     this->RequestUpdate();
 
     // Finally: Listen to update pulse coming off of event bus. This pulse comes from the data manager updating.
-    ctkServiceReference ref = mitk::IGIOverlayEditorActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    ctkServiceReference ref = mitk::IGIOverlayEditor2Activator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
     {
-      ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditor2Activator::getContext()->getService<ctkEventAdmin>(ref);
       
       ctkDictionary propertiesIGI;
       propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
