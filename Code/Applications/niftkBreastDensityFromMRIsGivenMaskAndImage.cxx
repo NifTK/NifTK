@@ -703,7 +703,7 @@ bool ResampleImageToIsotropicVoxels( ImageType::Pointer &image, InputParameters 
 // NaiveParenchymaSegmentation()
 // -------------------------------------------------------------------------
 
-bool NaiveParenchymaSegmentation( InputParameters &args, 
+void NaiveParenchymaSegmentation( InputParameters &args, 
                         
                                   ImageType::Pointer &imSegmentedBreastMask,
                                   ImageType::Pointer &image,
