@@ -133,7 +133,7 @@ The current version of Qt (4.8.6 - from git repo) doesn't build with VS2012 due 
 \verbatim
 qt-src-folder\src\3rdparty\webkit\Source\JavaScriptCore\wtf\HashSet.h
 \endverbatim<br>
-with the HashSet.h file that is provided <a href="file://HashSet.h">here</a></br>
+with the HashSet.h file that is available within the zip file containing Qt sources (see link above).</br>
 
 The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
 
@@ -193,7 +193,7 @@ If you require an additional graphical interface please install <a href="http://
 <li> On Mac, available if you installed the XCode tools.</li>
 
 <br>
-Please do remember to configure your git and svn before attempting to build NifTK!!! For svn to work correctly all you need to do is to check out something from cmicdev, and accept the certificate permanently. For git, please follow the <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/Git%20at%20CMIC">Git Instructions</a>. 
+Please do remember to configure your git and svn before attempting to build NifTK!!! For svn to work correctly all you need to do is to check out something from cmicdev, and accept the certificate permanently. For git, please follow the <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/GitAtCMIC">Git Instructions</a>. 
 
 </ul>
 
@@ -246,9 +246,9 @@ know this anyway.
     <li>CMAKE_OSX_ARCHITECTURES: "x86_64"</li>
   </ul>
   You can pass these options to the cmake or ccmake commands in the command line like this:
-  <verbatim>
+  \verbatim
     ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
-  </verbatim>
+  \endverbatim
 </li>
 <li> Select which options you want building. These variables start with BUILD_
 
@@ -256,7 +256,6 @@ know this anyway.
 
 </li>
 <li> Press configure repeatedly, setting variables as appropriate until the generate option is available. 
-The most important variable is whether you want BUILD_GUI (for NiftyView) to be ON or OFF.
 </li>
 <li> Press the generate button to generate the make files. </li>
 
