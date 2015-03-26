@@ -142,7 +142,7 @@ private slots:
   /**
    * \brief We listen to "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" and call this method.
    */
-  void OnTrackedImageUpdate(const ctkEvent& event);
+  //void OnTrackedImageUpdate(const ctkEvent& event);
 
   /** Listens to "uk/ac/ucl/cmic/IGIRECORDINGSTARTED" on the CTK bus and handles it here. */
   void OnRecordingStarted(const ctkEvent& event);

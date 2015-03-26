@@ -14,6 +14,9 @@
 
 project(uk_ac_ucl_cmic_igioverlayeditor2)
 
+find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+include_directories(${VL_INCLUDE_DIRS})
+
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIOVERLAYEDITOR2
   EXPORTED_INCLUDE_SUFFIXES src
