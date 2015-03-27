@@ -2,19 +2,18 @@ set(CTEST_SOURCE_DIRECTORY "@CMAKE_SOURCE_DIR@")
 set(CTEST_BINARY_DIRECTORY "@CMAKE_BINARY_DIR@")
 set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
 set(CTEST_BUILD_NAME "@CTEST_BUILD_NAME@")
+set(CTEST_GIT_COMMAND "@GIT_EXECUTABLE@")
 
 find_program(HOSTNAME_CMD NAMES hostname)
-exec_program(${HOSTNAME_CMD} ARGS OUTPUT_VARIABLE HOSTNAME)
+exec_program("${HOSTNAME_CMD}" ARGS OUTPUT_VARIABLE HOSTNAME)
 set(CTEST_SITE  "${HOSTNAME}${CTEST_SITE_EXT}")
-
-find_program(CTEST_GIT_COMMAND NAMES git)
 
 #
 # This macro is to find the branch whose tip is the commit to test.
 #
 macro(GetBranchName branch_name_var)
 
-  execute_process(COMMAND ${CTEST_GIT_COMMAND} branch -r --contains HEAD --merged HEAD
+  execute_process(COMMAND "${CTEST_GIT_COMMAND}" branch -r --contains HEAD --merged HEAD
     WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
     ERROR_VARIABLE GIT_error
     OUTPUT_VARIABLE remote_ref_names
@@ -42,7 +41,7 @@ endmacro()
 #
 macro(GetCommitHash commit_hash_var)
 
-  execute_process(COMMAND ${CTEST_GIT_COMMAND} log -n 1 --pretty=format:%h HEAD
+  execute_process(COMMAND "${CTEST_GIT_COMMAND}" log -n 1 --pretty=format:%h HEAD
     WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
     ERROR_VARIABLE GIT_error
     OUTPUT_VARIABLE ${commit_hash_var}
@@ -74,7 +73,7 @@ macro(GetNumberOfCpuCores cpu_cores_var)
     if(APPLE)
       find_program(cmd_sysctl "sysctl")
       if(cmd_sysctl)
-        execute_process(COMMAND ${cmd_sysctl} -n hw.ncpu OUTPUT_VARIABLE cpu_cores OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(COMMAND "${cmd_sysctl}" -n hw.ncpu OUTPUT_VARIABLE cpu_cores OUTPUT_STRIP_TRAILING_WHITESPACE)
       endif()
     endif()
 
