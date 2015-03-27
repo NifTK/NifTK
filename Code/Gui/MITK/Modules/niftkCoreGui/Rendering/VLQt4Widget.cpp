@@ -655,7 +655,6 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
 
   if (m_BackgroundNode.IsNotNull())
   {
-    //assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
     std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
     if (ni == m_NodeToActorMap.end())
     {

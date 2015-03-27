@@ -34,10 +34,10 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
   m_OpacitySlider->setPageStep(10);
 //  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
-//  m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
-
   m_OverlayViewer->setVisible(true);
+  m_OverlayViewer->setObjectName("QmitkIGIOverlayEditor2::m_OverlayViewer");
   m_3DViewer->setVisible(true);
+  m_3DViewer->setObjectName("QmitkIGIOverlayEditor2::m_3DViewer");
 
   m_OverlayCheckBox->setChecked(true);
   m_3DViewerCheckBox->setChecked(true);
@@ -95,12 +95,10 @@ void QmitkIGIOverlayEditor2::OnOverlayCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_3DViewerCheckBox->setEnabled(false);
-    //mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
     m_3DViewerCheckBox->setEnabled(true);
-    //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_OverlayViewer->setVisible(checked);
 }
@@ -112,12 +110,10 @@ void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
   if (!checked)
   {
     m_OverlayCheckBox->setEnabled(false);
-    //mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
   }
   else
   {
     m_OverlayCheckBox->setEnabled(true);
-    //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
   }
   m_3DViewer->setVisible(checked);
 }
@@ -141,8 +137,7 @@ void QmitkIGIOverlayEditor2::OnImageSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::OnTransformSelected(const mitk::DataNode* node)
 {
-  //m_OverlayViewer->SetTransformNode(node);
-  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  m_OverlayViewer->SetCameraTrackingNode(node);
 }
 
 
