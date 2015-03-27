@@ -128,7 +128,7 @@ endif()
 
 set(PARALLEL_LEVEL ${cpu_cores})
 
-ctest_start(Model TRACK ${group_name})
+ctest_start(Continuous TRACK ${group_name})
 ctest_build()
 ctest_test()
 ctest_submit()
