@@ -173,26 +173,40 @@ VLQt4Widget::~VLQt4Widget()
 
 
 #ifdef _USE_CUDA
-  {
-    for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      i = m_NodeToTextureMap.erase(i);
-    }
-  }
+  FreeCUDAInteropTextures();
 #endif
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::FreeCUDAInteropTextures()
+{
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+#ifdef _USE_CUDA
+  for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+  {
+    if (i->second.m_CUDARes != 0)
+    {
+      cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+      if (err != cudaSuccess)
+      {
+        MITK_WARN << "Failed to unregister VL texture from CUDA";
+      }
+    }
+
+    i = m_NodeToTextureMap.erase(i);
+  }
 
   // if no cuda is available then this is most likely a nullptr.
   // and if not a nullptr then it's only a dummy. so unconditionally delete it.
   delete m_CUDAInteropPimpl;
+  m_CUDAInteropPimpl = 0;
+
+#else
+  throw std::runtime_error("CUDA support was not enabled");
+#endif
 }
 
 
@@ -320,9 +334,20 @@ void VLQt4Widget::RemoveDataStorageListeners()
 //-----------------------------------------------------------------------------
 void VLQt4Widget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
+  ScopedOGLContext  ctx(this->context());
+
   RemoveDataStorageListeners();
+
+  ClearScene();
+
+#ifdef _USE_CUDA
+  FreeCUDAInteropTextures();
+#endif
+
   m_DataStorage = dataStorage;
   AddDataStorageListeners();
+
+  QMetaObject::invokeMethod(this, "AddAllNodesFromDataStorage", Qt::QueuedConnection);
 }
 
 
@@ -726,7 +751,22 @@ void VLQt4Widget::ClearScene()
 {
   ScopedOGLContext  ctx(context());
 
-  m_SceneManager->tree()->actors()->clear();
+  if (m_SceneManager)
+  {
+    if (m_SceneManager->tree())
+      m_SceneManager->tree()->actors()->clear();
+  }
+
+  m_TranslucentActors.clear();
+  m_TranslucentSurface = 0;
+  m_TranslucentSurfaceActor = 0;
+
+  m_BackgroundNode = 0;
+  m_CameraNode = 0;
+
+  m_NodeToActorMap.clear();
+  m_ActorToRenderableMap.clear();
+  m_NodesQueuedForUpdate.clear();
 }
 
 
@@ -1093,9 +1133,33 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
+void VLQt4Widget::AddAllNodesFromDataStorage()
+{
+  if (m_DataStorage.IsNull())
+    return;
+
+  typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer>   NodesContainerType;
+  NodesContainerType::ConstPointer vc = m_DataStorage->GetAll();
+
+  for (unsigned int i = 0; i < vc->Size(); ++i)
+  {
+    mitk::DataNode::Pointer currentDataNode = vc->ElementAt(i);
+    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
+      continue;
+
+    AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  // only add node once.
+  if (m_NodeToActorMap.find(node) != m_NodeToActorMap.end())
     return;
 
   // Propagate color and opacity down to basedata
@@ -2561,6 +2625,9 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
   int numOfActors = actors->size();
+
+  if (m_OclService == 0)
+    return false;
 
   // Get context 
   cl_context clContext = m_OclService->GetContext();

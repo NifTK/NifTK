@@ -96,7 +96,7 @@ void QmitkIGIOverlayEditor2::OnOverlayCheckBoxChecked(bool checked)
     m_3DViewerCheckBox->setEnabled(true);
     //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
-  //m_OverlayViewer->setVisible(checked);
+  m_OverlayViewer->setVisible(checked);
 }
 
 
@@ -113,7 +113,7 @@ void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
     m_OverlayCheckBox->setEnabled(true);
     //mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
   }
-  //m_3DViewer->setVisible(checked);
+  m_3DViewer->setVisible(checked);
 }
 
 
@@ -161,8 +161,9 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
   //mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
   //mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
-  //m_3DViewer->GetRenderer()->SetDataStorage(storage);
-  //m_OverlayViewer->SetDataStorage(storage);
+  m_3DViewer->SetDataStorage(storage);
+  m_OverlayViewer->SetDataStorage(storage);
+
   m_ImageCombo->SetDataStorage(storage);
   m_TransformCombo->SetDataStorage(storage);
 

@@ -89,6 +89,7 @@ public:
   void AddDataNode(const mitk::DataNode::ConstPointer& node);
   void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
   void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
+  Q_SLOT void AddAllNodesFromDataStorage();
 
   void QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node);
 
@@ -255,6 +256,9 @@ protected:
 
   /** @throws an exception if CUDA support was not enabled at compile time. */
   void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
+
+  /** @throws an exception if CUDA support was not enabled at compile time. */
+  void FreeCUDAInteropTextures();
 
     /** Will throw if CUDA-support was not enabled at compile time. */
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
