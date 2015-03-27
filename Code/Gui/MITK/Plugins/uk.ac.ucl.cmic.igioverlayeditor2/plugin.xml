@@ -11,9 +11,9 @@
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.mitk.IGIOverlayEditorPreferencePage2" name="Overlay Display VL"
-      class="IGIOverlayEditorPreferencePage2" category="org.mitk.EditorsPreferencePage">
-      <keywordreference id="org.mitk.IGIOverlayEditorPreferencePageKeywords2"/>
+    <page id="org.mitk.IGIOverlayEditor2PreferencePage" name="Overlay Display VL"
+      class="IGIOverlayEditor2PreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.IGIOverlayEditor2PreferencePageKeywords"/>
     </page>
   </extension>
 </plugin>
