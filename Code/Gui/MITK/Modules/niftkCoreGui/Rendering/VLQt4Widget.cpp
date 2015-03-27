@@ -655,27 +655,38 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
 
   if (m_BackgroundNode.IsNotNull())
   {
-    assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
-    vl::ref<vl::Actor> backgroundactor = m_NodeToActorMap[m_BackgroundNode];
-
-    // this is based on my old araknes video-ar app.
-    // FIXME: aspect ratio?
-    float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
-    float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
-    int     vpw = QWidget::width();
-    int     vph = QWidget::height();
-    if (width_scale < height_scale)
-      vph = (int) ((float) m_BackgroundHeight * width_scale);
+    //assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
+    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
+    if (ni == m_NodeToActorMap.end())
+    {
+      // actor not ready yet, try again later.
+      // this is getting messy... but stuffing our widget here into an editor causes various methods
+      // to be called at the wrong time.
+      QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    }
     else
-      vpw = (int) ((float) m_BackgroundWidth * height_scale);
+    {
+      vl::ref<vl::Actor> backgroundactor = ni->second;
 
-    int   vpx = QWidget::width()  / 2 - vpw / 2;
-    int   vpy = QWidget::height() / 2 - vph / 2;
+      // this is based on my old araknes video-ar app.
+      // FIXME: aspect ratio?
+      float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+      float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
+      int     vpw = QWidget::width();
+      int     vph = QWidget::height();
+      if (width_scale < height_scale)
+        vph = (int) ((float) m_BackgroundHeight * width_scale);
+      else
+        vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
-    m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-    // the main-scene-camera should conform to this viewport too!
-    // otherwise geometry would never line up with the background (for overlays, etc).
-    m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+      int   vpx = QWidget::width()  / 2 - vpw / 2;
+      int   vpy = QWidget::height() / 2 - vph / 2;
+
+      m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+      // the main-scene-camera should conform to this viewport too!
+      // otherwise geometry would never line up with the background (for overlays, etc).
+      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+    }
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();

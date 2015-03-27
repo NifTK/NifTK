@@ -42,11 +42,17 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
   m_OverlayCheckBox->setChecked(true);
   m_3DViewerCheckBox->setChecked(true);
 
-  connect(m_OverlayCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnOverlayCheckBoxChecked(bool)));
-  connect(m_3DViewerCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
-  connect(m_ImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnImageSelected(const mitk::DataNode*)));
-  connect(m_TransformCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)));
-  connect(m_OpacitySlider, SIGNAL(sliderMoved(int)), this, SLOT(OnOpacitySliderMoved(int)));
+  bool ok = false;
+  ok = QObject::connect(m_OverlayCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnOverlayCheckBoxChecked(bool)), Qt::QueuedConnection);
+  assert(ok);
+  ok = QObject::connect(m_3DViewerCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)), Qt::QueuedConnection);
+  assert(ok);
+  ok = QObject::connect(m_ImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnImageSelected(const mitk::DataNode*)), Qt::QueuedConnection);
+  assert(ok);
+  ok = QObject::connect(m_TransformCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)), Qt::QueuedConnection);
+  assert(ok);
+  ok = QObject::connect(m_OpacitySlider, SIGNAL(sliderMoved(int)), this, SLOT(OnOpacitySliderMoved(int)), Qt::QueuedConnection);
+  assert(ok);
 
   int width = m_Splitter->width();
   QList<int> sizes;
@@ -128,8 +134,7 @@ void QmitkIGIOverlayEditor2::OnOpacitySliderMoved(int value)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::OnImageSelected(const mitk::DataNode* node)
 {
-  //m_OverlayViewer->SetImageNode(node);
-  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  m_OverlayViewer->SetBackgroundNode(node);
 }
 
 
