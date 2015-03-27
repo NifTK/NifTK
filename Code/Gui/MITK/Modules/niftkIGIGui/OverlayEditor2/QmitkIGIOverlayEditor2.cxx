@@ -64,6 +64,14 @@ QmitkIGIOverlayEditor2::~QmitkIGIOverlayEditor2()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor2::SetOclResourceService(OclResourceService* oclserv)
+{
+  m_OverlayViewer->SetOclResourceService(oclserv);
+  m_3DViewer->SetOclResourceService(oclserv);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())

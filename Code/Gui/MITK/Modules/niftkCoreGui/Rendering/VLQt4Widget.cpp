@@ -99,6 +99,27 @@ struct CUDAInterop { };
 
 
 //-----------------------------------------------------------------------------
+namespace
+{
+
+class VLInit
+{
+public:
+  VLInit()
+  {
+    vl::VisualizationLibrary::init();
+  }
+  ~VLInit()
+  {
+    vl::VisualizationLibrary::shutdown();
+  }
+};
+VLInit        s_ModuleInit;
+
+}
+
+
+//-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(33) // 30 fps

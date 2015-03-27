@@ -30,14 +30,12 @@ class IGIOverlayEditor2Activator : public QObject, public ctkPluginActivator
   Q_INTERFACES(ctkPluginActivator)
 
 public:
-
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
   static ctkPluginContext* getContext();
 
 private:
-  static ctkPluginContext* m_PluginContext;
-
+  static ctkPluginContext*                s_PluginContext;
 };
 
 } // end namespace

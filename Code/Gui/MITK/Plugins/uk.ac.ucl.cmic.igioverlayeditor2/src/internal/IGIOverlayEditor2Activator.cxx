@@ -17,16 +17,20 @@
 #include "../IGIOverlayEditor2.h"
 #include "IGIOverlayEditor2PreferencePage.h"
 
-namespace mitk {
+namespace mitk
+{
 
-ctkPluginContext* IGIOverlayEditor2Activator::m_PluginContext = 0;
+
+//-----------------------------------------------------------------------------
+ctkPluginContext*               IGIOverlayEditor2Activator::s_PluginContext = 0;
+
 
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor2Activator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor2, context)
   BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor2PreferencePage, context)
-  m_PluginContext = context;
+  s_PluginContext = context;
 }
 
 
@@ -34,15 +38,16 @@ void IGIOverlayEditor2Activator::start(ctkPluginContext* context)
 void IGIOverlayEditor2Activator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
-  m_PluginContext = NULL;
+  s_PluginContext = NULL;
 }
 
 
 //-----------------------------------------------------------------------------
 ctkPluginContext* IGIOverlayEditor2Activator::getContext()
 {
-  return m_PluginContext;
+  return s_PluginContext;
 }
+
 
 //-----------------------------------------------------------------------------
 } // end namespace

@@ -274,6 +274,17 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
     d->m_IGIOverlayEditor2 = new QmitkIGIOverlayEditor2(parent);
     layout->addWidget(d->m_IGIOverlayEditor2);
 
+
+    ctkPluginContext*     context     = mitk::IGIOverlayEditor2Activator::/*GetDefault()->*/getContext();
+    ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
+    OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
+    if (oclService == NULL)
+    {
+      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
+    }
+    d->m_IGIOverlayEditor2->SetOclResourceService(oclService);
+
+
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
     d->m_IGIOverlayEditor2->SetDataStorage(ds);
 

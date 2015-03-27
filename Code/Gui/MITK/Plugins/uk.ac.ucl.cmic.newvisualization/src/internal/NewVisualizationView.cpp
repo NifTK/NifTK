@@ -153,10 +153,6 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 //-----------------------------------------------------------------------------
 void  NewVisualizationView::InitVLRendering()
 {
-  /* init Visualization Library */
-  // FIXME: this needs to go somewhere else.
-  vl::VisualizationLibrary::init();
-
   assert(m_VLQtRenderWindow == 0);
   m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
   m_VLQtRenderWindow->SetDataStorage(GetDataStorage());

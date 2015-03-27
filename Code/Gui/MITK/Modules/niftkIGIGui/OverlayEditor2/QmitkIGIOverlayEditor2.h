@@ -43,6 +43,9 @@ public:
   QmitkIGIOverlayEditor2(QWidget *parent);
   virtual ~QmitkIGIOverlayEditor2();
 
+  void SetOclResourceService(OclResourceService* oclserv);
+
+
   //-------------- Start of methods required by IGIOverlayEditor --------------
 
   void SetDataStorage(mitk::DataStorage* storage);
