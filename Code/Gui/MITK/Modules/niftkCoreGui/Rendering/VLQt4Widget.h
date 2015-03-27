@@ -97,6 +97,9 @@ public:
 
   void UpdateThresholdVal(int isoVal);
 
+  // ignore alpha for now.
+  Q_SLOT void SetBackgroundColour(float r, float g, float b);
+
   /**
    * node can have as data object:
    * - mitk::Image

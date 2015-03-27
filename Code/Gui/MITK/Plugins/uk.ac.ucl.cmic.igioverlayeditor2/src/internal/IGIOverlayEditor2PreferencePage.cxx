@@ -27,6 +27,10 @@
 
 
 //-----------------------------------------------------------------------------
+const char* IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY = "background colour";
+
+
+//-----------------------------------------------------------------------------
 IGIOverlayEditor2PreferencePage::IGIOverlayEditor2PreferencePage()
   : m_MainControl(0)
 {

@@ -23,6 +23,7 @@
 #include <mitkFocusManager.h>
 #include <mitkTrackedImage.h>
 
+
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
 {
@@ -66,6 +67,17 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
 QmitkIGIOverlayEditor2::~QmitkIGIOverlayEditor2()
 {
   this->DeRegisterDataStorageListeners();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor2::SetBackgroundColour(unsigned int aabbggrr)
+{
+  float   r = (aabbggrr & 0xFF) / 255.0f;
+  float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
+  float   b = ((aabbggrr & 0xFF0000) >> 16) / 255.0f;
+  m_OverlayViewer->SetBackgroundColour(r, g, b);
+  m_3DViewer->SetBackgroundColour(r, g, b);
 }
 
 
@@ -156,9 +168,6 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
       (mitk::MessageDelegate1<QmitkIGIOverlayEditor2, const mitk::DataNode*>
       (this, &QmitkIGIOverlayEditor2::NodeChanged ) );
   }
-  
-  //mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
-  //mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
   m_3DViewer->SetDataStorage(storage);
   m_OverlayViewer->SetDataStorage(storage);
@@ -179,28 +188,6 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::NodeChanged(const mitk::DataNode* node)
 {
-  //bool propValue = false;
-  //if (node != NULL
-  //  && !m_OverlayViewer->GetCameraTrackingMode()
-  //  && node->GetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue)
-  //  && propValue)
-  //{
-  //  m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));
-  //}
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetCalibrationFileName(const std::string& fileName)
-{
-  //m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
-}
-
-
-//-----------------------------------------------------------------------------
-std::string QmitkIGIOverlayEditor2::GetCalibrationFileName() const
-{
-  return "";//m_OverlayViewer->GetTrackingCalibrationFileName();
 }
 
 

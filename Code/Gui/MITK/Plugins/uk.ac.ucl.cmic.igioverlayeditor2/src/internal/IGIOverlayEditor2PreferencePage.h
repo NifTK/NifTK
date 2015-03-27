@@ -58,6 +58,9 @@ public:
    */
   virtual void Update();
 
+
+  static const char* BACKGROUND_COLOR_PREFSKEY;
+
 public slots:
 
 protected:

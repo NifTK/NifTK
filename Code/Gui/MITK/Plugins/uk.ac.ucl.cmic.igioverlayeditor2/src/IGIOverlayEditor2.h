@@ -24,14 +24,13 @@ class QmitkIGIOverlayEditor2;
 class IGIOverlayEditor2Private;
 
 /**
- * \class IGIOverlayEditor
- * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor,
+ * \class IGIOverlayEditor2
+ * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor2,
  * and most methods are dummy or do-nothing implementations, as the widget is for
  * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor2
  */
-class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR2 IGIOverlayEditor2
-    : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
+class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR2 IGIOverlayEditor2 : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 

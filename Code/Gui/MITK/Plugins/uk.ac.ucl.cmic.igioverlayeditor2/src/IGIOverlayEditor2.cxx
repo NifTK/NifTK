@@ -317,14 +317,23 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor2::OnPreferencesChanged()
 {
-  this->OnPreferencesChanged(dynamic_cast<berry::IBerryPreferences*>(this->GetPreferences().GetPointer()));
+  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IBerryPreferences::Pointer   prefsNode   = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
+
+  this->OnPreferencesChanged(prefsNode.GetPointer());
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor2::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
-  std::vector<std::string> keys = prefs->Keys();
+  // 0xAABBGGRR
+  unsigned int   backgroundColour = prefs->GetInt(IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY, 0x00000000);
+
+  if (d->m_IGIOverlayEditor2 != 0)
+  {
+    d->m_IGIOverlayEditor2->SetBackgroundColour(0xFF00FFFF);
+  }
 }
 
 
@@ -355,7 +364,6 @@ void IGIOverlayEditor2::WriteCurrentConfig(const QString& directory) const
     QTextStream   info(&infoFile);
     info.setCodec("UTF-8");
     info << "START: " << QDateTime::currentDateTime().toString() << "\n";
-    info << "calibfile=" << QString::fromStdString(d->m_IGIOverlayEditor2->GetCalibrationFileName()) << "\n";
   }
 }
 

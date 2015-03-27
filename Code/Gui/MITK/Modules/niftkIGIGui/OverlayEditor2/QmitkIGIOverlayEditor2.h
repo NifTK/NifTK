@@ -40,24 +40,14 @@ public:
 
   void SetOclResourceService(OclResourceService* oclserv);
 
-
-  //-------------- Start of methods required by IGIOverlayEditor --------------
+  void SetBackgroundColour(unsigned int aabbggrr);
 
   void SetDataStorage(mitk::DataStorage* storage);
-
-  /**
-   * \brief Sets the calibration file (e.g. hand-eye transform for a laparoscope).
-   */
-  void SetCalibrationFileName(const std::string& fileName);
-
-  std::string GetCalibrationFileName() const;
 
   /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
    */
   void Update();
-
-  //-------------- End of methods required by IGIOverlayEditor --------------
 
 private slots:
 

@@ -554,6 +554,16 @@ void VLQt4Widget::initializeGL()
 
 
 //-----------------------------------------------------------------------------
+void VLQt4Widget::SetBackgroundColour(float r, float g, float b)
+{
+  if (m_BackgroundCamera)
+    m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
+  else
+    QMetaObject::invokeMethod(this, "SetBackgroundColour", Qt::QueuedConnection, Q_ARG(float, r), Q_ARG(float, g), Q_ARG(float, b));
+}
+
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::EnableTrackballManipulator(bool enable)
 {
   if (enable)
