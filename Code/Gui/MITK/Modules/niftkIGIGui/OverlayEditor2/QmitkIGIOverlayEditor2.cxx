@@ -123,7 +123,6 @@ void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
 void QmitkIGIOverlayEditor2::OnOpacitySliderMoved(int value)
 {
   //m_OverlayViewer->SetOpacity(value / 100.0);
-  //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -192,54 +191,6 @@ void QmitkIGIOverlayEditor2::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkIGIOverlayEditor2::GetActiveQmitkRenderWindow() const
-{
-  QmitkRenderWindow *result = NULL;
-
-  //mitk::FocusManager *focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  //if (focusManager != NULL)
-  //{
-  //  mitk::BaseRenderer *renderer = focusManager->GetFocused();
-  //  if (m_OverlayViewer->GetRenderWindow()->GetRenderer() == renderer)
-  //  {
-  //    result = m_OverlayViewer->GetRenderWindow();
-  //  }
-  //  else if (m_3DViewer->GetRenderer() == renderer)
-  //  {
-  //    result = m_3DViewer;
-  //  }
-  //}
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor2::GetQmitkRenderWindows() const
-{
-  QHash<QString, QmitkRenderWindow *> result;
-  //result.insert("overlay", m_OverlayViewer->GetRenderWindow());
-  //result.insert("3d", m_3DViewer);
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkIGIOverlayEditor2::GetQmitkRenderWindow(const QString &id) const
-{
-  QmitkRenderWindow *result = NULL;
-  //if (id == "3d")
-  //{
-  //  result = m_3DViewer;
-  //}
-  //else if (id == "overlay")
-  //{
-  //  result =  m_OverlayViewer->GetRenderWindow();
-  //}
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor2::SetCalibrationFileName(const std::string& fileName)
 {
   //m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
@@ -251,66 +202,6 @@ std::string QmitkIGIOverlayEditor2::GetCalibrationFileName() const
 {
   return "";//m_OverlayViewer->GetTrackingCalibrationFileName();
 }
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::SetCameraTrackingMode(const bool& isCameraTracking)
-//{
-//  //m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
-//  m_TransformCombo->setVisible(isCameraTracking);
-//  m_TransformLabel->setVisible(isCameraTracking);
-//  m_ImageCombo->setVisible(isCameraTracking);
-//  m_ImageLabel->setVisible(isCameraTracking);
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::SetClipToImagePlane(const bool& clipToImagePlane)
-//{
-//  m_OverlayViewer->SetClipToImagePlane(clipToImagePlane);
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::SetDepartmentLogoPath(const std::string path)
-//{
-//  m_OverlayViewer->SetDepartmentLogoPath(path.c_str());
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::EnableDepartmentLogo()
-//{
-//  m_OverlayViewer->EnableDepartmentLogo();
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::DisableDepartmentLogo()
-//{
-//  m_OverlayViewer->DisableDepartmentLogo();
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
-//{
-//  m_OverlayViewer->SetGradientBackgroundColors(colour1, colour2);
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::EnableGradientBackground()
-//{
-//  m_OverlayViewer->EnableGradientBackground();
-//}
-
-
-//-----------------------------------------------------------------------------
-//void QmitkIGIOverlayEditor2::DisableGradientBackground()
-//{
-//  m_OverlayViewer->DisableGradientBackground();
-//}
 
 
 //-----------------------------------------------------------------------------

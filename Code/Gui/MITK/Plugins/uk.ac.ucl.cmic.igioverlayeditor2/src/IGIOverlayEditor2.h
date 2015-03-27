@@ -139,18 +139,12 @@ private slots:
    */
   void OnIGIUpdate(const ctkEvent& event);
 
-  /**
-   * \brief We listen to "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" and call this method.
-   */
-  //void OnTrackedImageUpdate(const ctkEvent& event);
-
   /** Listens to "uk/ac/ucl/cmic/IGIRECORDINGSTARTED" on the CTK bus and handles it here. */
   void OnRecordingStarted(const ctkEvent& event);
 
 private:
 
   const QScopedPointer<IGIOverlayEditor2Private> d;
-
 };
 
-#endif /*IGIOverlayEditor_h */
+#endif /*IGIOverlayEditor2_h */

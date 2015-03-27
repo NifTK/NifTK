@@ -167,21 +167,21 @@ QmitkIGIOverlayEditor2* IGIOverlayEditor2::GetIGIOverlayEditor2()
 //-----------------------------------------------------------------------------
 QmitkRenderWindow *IGIOverlayEditor2::GetActiveQmitkRenderWindow() const
 {
-  return 0;//d->m_IGIOverlayEditor2->GetActiveQmitkRenderWindow();
+  return 0;
 }
 
 
 //-----------------------------------------------------------------------------
 QHash<QString, QmitkRenderWindow *> IGIOverlayEditor2::GetQmitkRenderWindows() const
 {
-  return QHash<QString, QmitkRenderWindow *>();//d->m_IGIOverlayEditor2->GetQmitkRenderWindows();
+  return QHash<QString, QmitkRenderWindow *>();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow *IGIOverlayEditor2::GetQmitkRenderWindow(const QString &id) const
 {
-  return 0;//d->m_IGIOverlayEditor2->GetQmitkRenderWindow(id);
+  return 0;
 }
 
 
@@ -305,10 +305,6 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
       ctkDictionary propertiesIGI;
       propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnIGIUpdate(ctkEvent)), propertiesIGI);
-      
-      //ctkDictionary propertiesTrackedImage;
-      //propertiesTrackedImage[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE";
-      //eventAdmin->subscribeSlot(this, SLOT(OnTrackedImageUpdate(ctkEvent)), propertiesTrackedImage, Qt::DirectConnection);
 
       ctkDictionary propertiesRecordingStarted;
       propertiesRecordingStarted[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
@@ -328,70 +324,7 @@ void IGIOverlayEditor2::OnPreferencesChanged()
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor2::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
-  // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
-  // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
-
   std::vector<std::string> keys = prefs->Keys();
-  
-  //for( unsigned int i = 0; i < keys.size(); ++i )
-  //{
-  //  if( keys[i] == "DepartmentLogo")
-  //  {
-  //    std::string departmentLogoLocation = prefs->Get("DepartmentLogo", "");
-
-  //    if (departmentLogoLocation.empty())
-  //    {
-  //      d->m_IGIOverlayEditor2->DisableDepartmentLogo();
-  //    }
-  //    else
-  //    {
-  //      d->m_IGIOverlayEditor2->SetDepartmentLogoPath(departmentLogoLocation);
-  //      d->m_IGIOverlayEditor2->EnableDepartmentLogo();
-  //    }
-  //    break;
-  //  }
-  //}
- 
-  // Preferences for gradient background
-  //float color = 255.0;
-  //QString firstColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditor2PreferencePage::FIRST_BACKGROUND_COLOUR, ""));
-  //QColor firstColor(firstColorName);
-  //mitk::Color upper;
-  //if (firstColorName=="") // default values
-  //{
-  //  upper[0] = 0;
-  //  upper[1] = 0;
-  //  upper[2] = 0;
-  //}
-  //else
-  //{
-  //  upper[0] = firstColor.red() / color;
-  //  upper[1] = firstColor.green() / color;
-  //  upper[2] = firstColor.blue() / color;
-  //}
-
-  //QString secondColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditor2PreferencePage::SECOND_BACKGROUND_COLOUR, ""));
-  //QColor secondColor(secondColorName);
-  //mitk::Color lower;
-  //if (secondColorName=="") // default values
-  //{
-  //  lower[0] = 0;
-  //  lower[1] = 0;
-  //  lower[2] = 0;
-  //}
-  //else
-  //{
-  //  lower[0] = secondColor.red() / color;
-  //  lower[1] = secondColor.green() / color;
-  //  lower[2] = secondColor.blue() / color;
-  //}
-  //d->m_IGIOverlayEditor2->SetGradientBackgroundColors(upper, lower);
-  //d->m_IGIOverlayEditor2->EnableGradientBackground();
-
-  //std::string calibrationFileName = prefs->Get(IGIOverlayEditor2PreferencePage::CALIBRATION_FILE_NAME, "");
-  //d->m_IGIOverlayEditor2->SetCalibrationFileName(calibrationFileName);
-  //d->m_IGIOverlayEditor2->SetCameraTrackingMode(prefs->GetBool(IGIOverlayEditor2PreferencePage::CAMERA_TRACKING_MODE, true));
-  //d->m_IGIOverlayEditor2->SetClipToImagePlane(prefs->GetBool(IGIOverlayEditor2PreferencePage::CLIP_TO_IMAGE_PLANE, true));
 }
 
 
@@ -410,13 +343,6 @@ void IGIOverlayEditor2::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIOverlayEditor2->Update();
 }
-
-
-//-----------------------------------------------------------------------------
-//void IGIOverlayEditor2::OnTrackedImageUpdate(const ctkEvent& event)
-//{
-//  d->m_IGIOverlayEditor2->Update();
-//}
 
 
 //-----------------------------------------------------------------------------
