@@ -147,10 +147,9 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 //-----------------------------------------------------------------------------
 VLQt4Widget::~VLQt4Widget()
 {
-  RemoveDataStorageListeners();
-
-
   ScopedOGLContext  ctx(this->context());
+
+  RemoveDataStorageListeners();
 
   if (m_OclTriangleSorter)
     delete m_OclTriangleSorter;

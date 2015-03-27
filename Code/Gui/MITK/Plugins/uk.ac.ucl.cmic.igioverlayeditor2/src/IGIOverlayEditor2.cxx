@@ -42,6 +42,8 @@
 #include <internal/IGIOverlayEditor2PreferencePage.h>
 #include <internal/IGIOverlayEditor2Activator.h>
 
+
+//-----------------------------------------------------------------------------
 const char* IGIOverlayEditor2::EDITOR_ID = "org.mitk.editors.igioverlayeditor2";
 
 
@@ -84,7 +86,7 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   }
 
   //---------------------------------------------------------------------------
-  void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
     {
@@ -97,7 +99,7 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   }
 
   //---------------------------------------------------------------------------
-  void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartHidden(berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
     {
@@ -110,7 +112,7 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   }
 
   //---------------------------------------------------------------------------
-  void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
   {
     if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
     {
@@ -125,7 +127,6 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
 private:
 
   IGIOverlayEditor2Private* const d;
-
 };
 
 
@@ -133,7 +134,8 @@ private:
 IGIOverlayEditor2Private::IGIOverlayEditor2Private()
   : m_IGIOverlayEditor2(0)
   , m_PartListener(new IGIOverlay2WidgetPartListener(this))
-{}
+{
+}
 
 
 //-----------------------------------------------------------------------------
