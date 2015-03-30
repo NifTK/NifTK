@@ -59,13 +59,17 @@ public:
   virtual void Update();
 
 
-  static const char* BACKGROUND_COLOR_PREFSKEY;
+  static const char*          BACKGROUND_COLOR_PREFSKEY;
+  static const unsigned int   DEFAULT_BACKGROUND_COLOR;
 
 public slots:
+  void OnBackgroundColourClicked();
 
 protected:
 
-  QWidget         *m_MainControl;
+  QWidget*        m_MainControl;
+  QPushButton*    m_BackgroundColourButton;
+  unsigned int    m_BackgroundColour;
 
   berry::IPreferences::Pointer    m_IGIOverlayEditor2PreferencesNode;
 };

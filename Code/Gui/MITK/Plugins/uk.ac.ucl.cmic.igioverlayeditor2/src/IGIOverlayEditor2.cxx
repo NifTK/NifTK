@@ -328,11 +328,11 @@ void IGIOverlayEditor2::OnPreferencesChanged()
 void IGIOverlayEditor2::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
   // 0xAABBGGRR
-  unsigned int   backgroundColour = prefs->GetInt(IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY, 0x00000000);
+  unsigned int   backgroundColour = prefs->GetInt(IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY, IGIOverlayEditor2PreferencePage::DEFAULT_BACKGROUND_COLOR);
 
   if (d->m_IGIOverlayEditor2 != 0)
   {
-    d->m_IGIOverlayEditor2->SetBackgroundColour(0xFF00FFFF);
+    d->m_IGIOverlayEditor2->SetBackgroundColour(backgroundColour);
   }
 }
 
