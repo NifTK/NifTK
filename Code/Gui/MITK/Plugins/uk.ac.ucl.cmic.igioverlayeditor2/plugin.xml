@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.igioverlayeditor2"
+      name="Overlay Display VL"
+      extensions="mitk"
+      class="IGIOverlayEditor2">
+    </editor>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.IGIOverlayEditor2PreferencePage" name="Overlay Display VL"
+      class="IGIOverlayEditor2PreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.IGIOverlayEditor2PreferencePageKeywords"/>
+    </page>
+  </extension>
+</plugin>

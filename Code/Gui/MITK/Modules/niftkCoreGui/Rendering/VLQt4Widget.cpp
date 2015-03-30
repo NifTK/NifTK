@@ -99,6 +99,27 @@ struct CUDAInterop { };
 
 
 //-----------------------------------------------------------------------------
+namespace
+{
+
+class VLInit
+{
+public:
+  VLInit()
+  {
+    vl::VisualizationLibrary::init();
+  }
+  ~VLInit()
+  {
+    vl::VisualizationLibrary::shutdown();
+  }
+};
+VLInit        s_ModuleInit;
+
+}
+
+
+//-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_Refresh(33) // 30 fps
@@ -126,10 +147,9 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 //-----------------------------------------------------------------------------
 VLQt4Widget::~VLQt4Widget()
 {
-  RemoveDataStorageListeners();
-
-
   ScopedOGLContext  ctx(this->context());
+
+  RemoveDataStorageListeners();
 
   if (m_OclTriangleSorter)
     delete m_OclTriangleSorter;
@@ -152,26 +172,40 @@ VLQt4Widget::~VLQt4Widget()
 
 
 #ifdef _USE_CUDA
-  {
-    for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      i = m_NodeToTextureMap.erase(i);
-    }
-  }
+  FreeCUDAInteropTextures();
 #endif
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQt4Widget::FreeCUDAInteropTextures()
+{
+  // internal method, so sanity check.
+  assert(QGLContext::currentContext() == QGLWidget::context());
+
+#ifdef _USE_CUDA
+  for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+  {
+    if (i->second.m_CUDARes != 0)
+    {
+      cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+      if (err != cudaSuccess)
+      {
+        MITK_WARN << "Failed to unregister VL texture from CUDA";
+      }
+    }
+
+    i = m_NodeToTextureMap.erase(i);
+  }
 
   // if no cuda is available then this is most likely a nullptr.
   // and if not a nullptr then it's only a dummy. so unconditionally delete it.
   delete m_CUDAInteropPimpl;
+  m_CUDAInteropPimpl = 0;
+
+#else
+  throw std::runtime_error("CUDA support was not enabled");
+#endif
 }
 
 
@@ -299,9 +333,20 @@ void VLQt4Widget::RemoveDataStorageListeners()
 //-----------------------------------------------------------------------------
 void VLQt4Widget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
+  ScopedOGLContext  ctx(this->context());
+
   RemoveDataStorageListeners();
+
+  ClearScene();
+
+#ifdef _USE_CUDA
+  FreeCUDAInteropTextures();
+#endif
+
   m_DataStorage = dataStorage;
   AddDataStorageListeners();
+
+  QMetaObject::invokeMethod(this, "AddAllNodesFromDataStorage", Qt::QueuedConnection);
 }
 
 
@@ -509,6 +554,16 @@ void VLQt4Widget::initializeGL()
 
 
 //-----------------------------------------------------------------------------
+void VLQt4Widget::SetBackgroundColour(float r, float g, float b)
+{
+  if (m_BackgroundCamera)
+    m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
+  else
+    QMetaObject::invokeMethod(this, "SetBackgroundColour", Qt::QueuedConnection, Q_ARG(float, r), Q_ARG(float, g), Q_ARG(float, b));
+}
+
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::EnableTrackballManipulator(bool enable)
 {
   if (enable)
@@ -610,27 +665,37 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
 
   if (m_BackgroundNode.IsNotNull())
   {
-    assert(m_NodeToActorMap.find(m_BackgroundNode) != m_NodeToActorMap.end());
-    vl::ref<vl::Actor> backgroundactor = m_NodeToActorMap[m_BackgroundNode];
-
-    // this is based on my old araknes video-ar app.
-    // FIXME: aspect ratio?
-    float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
-    float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
-    int     vpw = QWidget::width();
-    int     vph = QWidget::height();
-    if (width_scale < height_scale)
-      vph = (int) ((float) m_BackgroundHeight * width_scale);
+    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
+    if (ni == m_NodeToActorMap.end())
+    {
+      // actor not ready yet, try again later.
+      // this is getting messy... but stuffing our widget here into an editor causes various methods
+      // to be called at the wrong time.
+      QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    }
     else
-      vpw = (int) ((float) m_BackgroundWidth * height_scale);
+    {
+      vl::ref<vl::Actor> backgroundactor = ni->second;
 
-    int   vpx = QWidget::width()  / 2 - vpw / 2;
-    int   vpy = QWidget::height() / 2 - vph / 2;
+      // this is based on my old araknes video-ar app.
+      // FIXME: aspect ratio?
+      float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+      float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
+      int     vpw = QWidget::width();
+      int     vph = QWidget::height();
+      if (width_scale < height_scale)
+        vph = (int) ((float) m_BackgroundHeight * width_scale);
+      else
+        vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
-    m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-    // the main-scene-camera should conform to this viewport too!
-    // otherwise geometry would never line up with the background (for overlays, etc).
-    m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+      int   vpx = QWidget::width()  / 2 - vpw / 2;
+      int   vpy = QWidget::height() / 2 - vph / 2;
+
+      m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+      // the main-scene-camera should conform to this viewport too!
+      // otherwise geometry would never line up with the background (for overlays, etc).
+      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+    }
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
@@ -705,7 +770,22 @@ void VLQt4Widget::ClearScene()
 {
   ScopedOGLContext  ctx(context());
 
-  m_SceneManager->tree()->actors()->clear();
+  if (m_SceneManager)
+  {
+    if (m_SceneManager->tree())
+      m_SceneManager->tree()->actors()->clear();
+  }
+
+  m_TranslucentActors.clear();
+  m_TranslucentSurface = 0;
+  m_TranslucentSurfaceActor = 0;
+
+  m_BackgroundNode = 0;
+  m_CameraNode = 0;
+
+  m_NodeToActorMap.clear();
+  m_ActorToRenderableMap.clear();
+  m_NodesQueuedForUpdate.clear();
 }
 
 
@@ -1072,9 +1152,33 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
+void VLQt4Widget::AddAllNodesFromDataStorage()
+{
+  if (m_DataStorage.IsNull())
+    return;
+
+  typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer>   NodesContainerType;
+  NodesContainerType::ConstPointer vc = m_DataStorage->GetAll();
+
+  for (unsigned int i = 0; i < vc->Size(); ++i)
+  {
+    mitk::DataNode::Pointer currentDataNode = vc->ElementAt(i);
+    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
+      continue;
+
+    AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  // only add node once.
+  if (m_NodeToActorMap.find(node) != m_NodeToActorMap.end())
     return;
 
   // Propagate color and opacity down to basedata
@@ -2540,6 +2644,9 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
   int numOfActors = actors->size();
+
+  if (m_OclService == 0)
+    return false;
 
   // Get context 
   cl_context clContext = m_OclService->GetContext();

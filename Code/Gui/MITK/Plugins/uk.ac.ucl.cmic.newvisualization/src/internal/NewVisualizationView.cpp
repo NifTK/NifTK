@@ -153,10 +153,6 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 //-----------------------------------------------------------------------------
 void  NewVisualizationView::InitVLRendering()
 {
-  /* init Visualization Library */
-  // FIXME: this needs to go somewhere else.
-  vl::VisualizationLibrary::init();
-
   assert(m_VLQtRenderWindow == 0);
   m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
   m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
@@ -348,26 +344,5 @@ void NewVisualizationView::Visible()
 void NewVisualizationView::ReinitDisplay(bool viewEnabled)
 {
   m_VLQtRenderWindow->ClearScene();
-
-    // Set DataNode property accordingly
-  typedef mitk::DataNode::Pointer dataNodePointer;
-  typedef itk::VectorContainer<unsigned int, dataNodePointer> nodesContainerType;
-  nodesContainerType::ConstPointer vc = this->GetDataStorage()->GetAll();
-
-  // Iterate through the DataNodes
-  for (unsigned int i = 0; i < vc->Size(); i++)
-  {
-    dataNodePointer currentDataNode = vc->ElementAt(i);
-    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
-      continue;
-
-    bool isHelper = false;
-    currentDataNode->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-
-    //if (isHelper)
-    //  continue;
-
-    m_VLQtRenderWindow->AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
-    MITK_INFO <<"Node added";
-  }
+  m_VLQtRenderWindow->AddAllNodesFromDataStorage();
 }
