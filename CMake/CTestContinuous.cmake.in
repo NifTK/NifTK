@@ -3,6 +3,7 @@ set(CTEST_BINARY_DIRECTORY "@CMAKE_BINARY_DIR@")
 set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
 set(CTEST_BUILD_NAME "@CTEST_BUILD_NAME@")
 set(CTEST_GIT_COMMAND "@GIT_EXECUTABLE@")
+set(NIFTK_BRANCH_NAME "@NIFTK_BRANCH_NAME@")
 
 find_program(HOSTNAME_CMD NAMES hostname)
 exec_program("${HOSTNAME_CMD}" ARGS OUTPUT_VARIABLE HOSTNAME)
@@ -16,8 +17,7 @@ macro(GetBranchName branch_name_var)
   execute_process(COMMAND "${CTEST_GIT_COMMAND}" branch -r --contains HEAD --merged HEAD
     WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
     ERROR_VARIABLE GIT_error
-    OUTPUT_VARIABLE remote_ref_names
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_VARIABLE remote_ref_names)
 
   if(NOT ${GIT_error} EQUAL 0)
     message(SEND_ERROR "Command '${CTEST_GIT_COMMAND} branch -r --contains HEAD --merged' failed with output:\n${GIT_error}")
@@ -92,7 +92,7 @@ endmacro()
 #
 macro(GetBuildName build_name_var)
 
-  if (CTEST_BUILD_NAME MATCHES "(.*)-${branch_name}-${commit_hash}-(Rel|Dbg)")
+  if (CTEST_BUILD_NAME MATCHES "(.*)-${NIFTK_BRANCH_NAME}-${commit_hash}-(Rel|Dbg)")
     set(compiler_name ${CMAKE_MATCH_1})
     set(build_type ${CMAKE_MATCH_2})
     set(build_name "${compiler_name}-${commit_hash}-${build_type}")
