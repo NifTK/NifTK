@@ -130,5 +130,5 @@ set(PARALLEL_LEVEL ${cpu_cores})
 
 ctest_start(Continuous TRACK ${group_name})
 ctest_build()
-ctest_test()
+ctest_test(EXCLUDE "FFD-Reg-MR")
 ctest_submit()

@@ -276,6 +276,13 @@ add_test(SSD-Registration-Force-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SSDR
 add_test(CC-Registration-Force-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} CrossCorrelationDerivativeForceFilterTest ${INPUT_DATA}/ellipse-128-128-128-50-45-40.nii ${INPUT_DATA}/ellipse-128-128-128-50-50-50.nii 1e-10 76 64 28 2.757567e-06 0 -2.757567e-06)
 add_test(JacTest-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS}  ForwardDifferenceDisplacementFieldJacobianDeterminantFilterTest)
 
+set_tests_properties(FFD-Reg-MR-15 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-16 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-17 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-18 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-19 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-20 PROPERTIES TIMEOUT 600)
+
 #################################################################################
 # Build instructions.
 #################################################################################
