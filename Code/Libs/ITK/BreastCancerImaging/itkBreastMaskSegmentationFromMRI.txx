@@ -4134,7 +4134,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   RealType numOfControlPoints = (static_cast<RealType>( size[0] )*spacing[0])/controlPointSpacingInMM;
 
   if (flgVerbose) 
-    std::cout << "Number of control points: " << numOfControlPoints << std::endl;
+    std::cout << "Number of control points: " << numOfControlPoints 
+              << " ( spacing: " << controlPointSpacingInMM << " mm )" << std::endl;
 
   typename FilterType::ArrayType ncps;  
   ncps.Fill( static_cast<unsigned int>( numOfControlPoints ) );  
