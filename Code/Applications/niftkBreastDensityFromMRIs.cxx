@@ -62,8 +62,6 @@
 #include <itkUCLN4BiasFieldCorrectionFilter.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkIdentityTransform.h>
-#include <itkBreastMaskSegmentationFromMRI.h>
-#include <itkBreastMaskSegmForModelling.h>
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkITKImageToNiftiImage.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
@@ -2626,7 +2624,7 @@ int main( int argc, char *argv[] )
         bool flgLeft = false;
         bool flgRight = false;
 
-        bool flgExtInitialPect = false;
+        bool flgExtInitialPect = true;
 
         int regGrowXcoord = 0;
         int regGrowYcoord = 0;
