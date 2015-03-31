@@ -60,6 +60,7 @@ namespace mitk
 class DataStorage;
 class PCLData;
 }
+struct VLUserData;
 
 #include "OclTriangleSorter.h"
 
@@ -202,6 +203,7 @@ protected:
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
   vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
+  vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
   void UpdateTranslucentTriangles();
   void SortTranslucentTriangles();

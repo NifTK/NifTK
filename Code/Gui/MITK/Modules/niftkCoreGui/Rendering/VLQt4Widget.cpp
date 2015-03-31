@@ -124,11 +124,13 @@ struct VLUserData : public vl::Object
 {
   VLUserData()
     : m_TransformLastModified(0)
+    , m_ImageVtkDataLastModified(0)
   {
   }
 
 
   itk::ModifiedTimeType   m_TransformLastModified;
+  itk::ModifiedTimeType   m_ImageVtkDataLastModified;
 };
 
 
@@ -887,13 +889,8 @@ void VLQt4Widget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const m
 {
   if (node.IsNotNull())
   {
-    vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
-    if (userdata.get() == 0)
-    {
-      userdata = new VLUserData;
-      actor->setUserData(userdata.get());
-    }
-    mitk::BaseData::Pointer   data = node->GetData();
+    vl::ref<VLUserData>       userdata  = GetUserData(actor);
+    mitk::BaseData::Pointer   data      = node->GetData();
     if (data.IsNotNull())
     {
       mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
@@ -907,6 +904,20 @@ void VLQt4Widget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const m
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+vl::ref<VLUserData> VLQt4Widget::GetUserData(vl::ref<vl::Actor> actor)
+{
+  vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
+  if (userdata.get() == 0)
+  {
+    userdata = new VLUserData;
+    actor->setUserData(userdata.get());
+  }
+
+  return userdata;
 }
 
 
@@ -1517,32 +1528,38 @@ void VLQt4Widget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& nod
         assert(vlactor->effect());
         assert(vlactor->effect()->shader());
 
-        vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
-        if (tex.get() != 0)
+        vl::ref<VLUserData>   userdata = GetUserData(vlactor);
+        if (img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
         {
-          unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
-          mitk::PixelType     pixType = img->GetPixelType();
-          vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
-          vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
-
-          vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
-          // sanity check
-          unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-          assert(vlimg->requiredMemory() == size);
-
-          try
+          vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
+          if (tex.get() != 0)
           {
-            mitk::ImageReadAccessor   readAccess(img, img->GetVolumeData(0));
-            const void*               cPointer = readAccess.GetData();
-            std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
-          }
-          catch (...)
-          {
-            // FIXME: error handling?
-            MITK_ERROR << "Did not get pixel read access to 2D image.";
-          }
+            unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
+            mitk::PixelType     pixType = img->GetPixelType();
+            vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
+            vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
 
-          tex->setMipLevel(0, vlimg.get(), false);
+            vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
+            // sanity check
+            unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+            assert(vlimg->requiredMemory() == size);
+
+            try
+            {
+              mitk::ImageReadAccessor   readAccess(img);
+              const void*               cPointer = readAccess.GetData();
+              std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
+            }
+            catch (...)
+            {
+              // FIXME: error handling?
+              MITK_ERROR << "Did not get pixel read access to 2D image.";
+            }
+
+            tex->setMipLevel(0, vlimg.get(), false);
+
+            userdata->m_ImageVtkDataLastModified = img->GetVtkImageData()->GetMTime();
+          }
         }
       }
     }

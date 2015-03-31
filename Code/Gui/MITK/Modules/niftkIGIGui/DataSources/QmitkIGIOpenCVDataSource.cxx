@@ -262,6 +262,8 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
       m_DataStorage->Remove(node);
       node->SetData(convertedImage);
       m_DataStorage->Add(node);
+
+      imageInNode = convertedImage;
     }
     else
     {
@@ -286,6 +288,7 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
 
     // We tell the node that it is modified so the next rendering event
     // will redraw it. Triggering this does not in itself guarantee a re-rendering.
+    imageInNode->GetVtkImageData()->Modified();
     node->Modified();
 
     // So by this point, we are all done.
