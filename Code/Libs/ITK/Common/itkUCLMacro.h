@@ -26,41 +26,51 @@
 namespace niftk
 {
 
-#define niftkitkDebugMacro(x)     itkDebugMacro(x)	                         \
+#define niftkitkDebugMacro(x)     itkDebugMacro(x)
 
-#define niftkitkWarningMacro(x)   itkWarningMacro(x) 				    	 \
+#define niftkitkWarningMacro(x)   itkWarningMacro(x)
 
-#define niftkitkExceptionMacro(x) itkExceptionMacro(x)				         \
-
-
-  #define niftkitkInfoMacro(x) 										      \
-  {                               									      \
-    if ( ::itk::Object::GetGlobalWarningDisplay() )                       \
-    { 																      \
-      std::ostringstream itkmsg;										  \
-      itkmsg << "Info: In " __FILE__ ", line " << __LINE__ << "\n" 	      \
-         << this->GetNameOfClass() << " (" << this << "): " x       	  \
-         << "\n\n";												          \
-      ::itk::OutputWindowDisplayText( itkmsg.str().c_str() );             \
-    }        															  \
-  } 																	  \
+#define niftkitkExceptionMacro(x) itkExceptionMacro(x)
 
 
+#define niftkitkInfoMacro(x)                                          \
+{                                                                     \
+  if ( ::itk::Object::GetGlobalWarningDisplay() )                     \
+  {                                                                   \
+    std::ostringstream itkmsg;                                        \
+    itkmsg << "Info: In " __FILE__ ", line " << __LINE__ << "\n"      \
+       << this->GetNameOfClass() << " (" << this << "): " x           \
+       << "\n\n";                                                     \
+    ::itk::OutputWindowDisplayText( itkmsg.str().c_str() );           \
+  }                                        \
+}                                     \
 
-  #define niftkitkErrorMacro(x) 											  \
-  {                               									      \
-    if ( ::itk::Object::GetGlobalWarningDisplay() )                       \
-    { 																      \
-      std::ostringstream itkmsg;										  \
-      itkmsg << "Error: In " __FILE__ ", line " << __LINE__ << "\n" 	  \
-        << this->GetNameOfClass() << " (" << this << "): " x       	      \
-        << "\n\n";												          \
-      ::itk::OutputWindowDisplayText( itkmsg.str().c_str() );             \
-    }        															  \
-  } 																	  \
+
+#define niftkitkErrorMacro(x)                                        \
+{                                                                    \
+  if ( ::itk::Object::GetGlobalWarningDisplay() )                    \
+  {                                                                  \
+    std::ostringstream itkmsg;                                       \
+    itkmsg << "Error: In " __FILE__ ", line " << __LINE__ << "\n"    \
+      << this->GetNameOfClass() << " (" << this << "): " x           \
+      << "\n\n";                                                     \
+    ::itk::OutputWindowDisplayText( itkmsg.str().c_str() );          \
+  }                                                                  \
+}
 
 
-} //end of namespace niftk
+/// This class ensures that the text output is kept in the shell instead of redirecting it
+/// a text output window, what would happen on Windows by default. See #3497 for details.
+class KeepTextOutputInShell
+{
+
+  KeepTextOutputInShell();
+
+  static KeepTextOutputInShell s_KeepTextOutputInShell;
+
+};
+
+
+}
 
 #endif
-
