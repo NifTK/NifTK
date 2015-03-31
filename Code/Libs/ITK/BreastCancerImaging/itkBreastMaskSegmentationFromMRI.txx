@@ -73,6 +73,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   coilCropDistance = 10.0;
   cropDistPosteriorToMidSternum = 40.0;
 
+  pecControlPointSpacing = 30.;
+
   imStructural = 0;
   imFatSat = 0;
   imBIFs = 0;

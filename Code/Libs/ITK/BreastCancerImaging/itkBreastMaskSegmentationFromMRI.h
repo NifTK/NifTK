@@ -199,6 +199,8 @@ public:
   void SetOutputImageMaxClosed( std::string fn ) { fileOutputMaxClosedImage = fn; }
   void SetOutputBackground( std::string fn ) { fileOutputBackground = fn; }
   void SetOutputChestPoints( std::string fn ) { fileOutputChestPoints = fn; }
+
+  void SetPectoralControlPointSpacing( float d ) { pecControlPointSpacing = d; }
   void SetOutputPectoralMask( std::string fn ) { fileOutputPectoral = fn; }
   void SetOutputPecSurfaceMask( std::string fn ) { fileOutputPectoralSurfaceMask = fn; }
 
@@ -323,6 +325,8 @@ protected:
 
   float coilCropDistance;
   float cropDistPosteriorToMidSternum;
+
+  float pecControlPointSpacing;
 
   std::string fileOutputBIFs;
 
