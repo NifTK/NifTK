@@ -529,7 +529,7 @@ protected:
 				       const typename InternalImageType::DirectionType &direction,
 				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
-				       const int numOfControlPoints,
+				       const RealType controlPointSpacingInMM,
 				       const int numOfLevels,
 				       bool correctSurfaceOffest );
 

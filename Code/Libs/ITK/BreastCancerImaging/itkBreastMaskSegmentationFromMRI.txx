@@ -2927,7 +2927,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3, false );
+					 rYHeightOffset, 3, 75, 3, false );
 
   // and now extract surface points of right breast for surface fitting
   lateralRegion = imChestSurfaceVoxels->GetLargestPossibleRegion();
@@ -2979,7 +2979,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 					 imStructural->GetOrigin(), 
 					 imStructural->GetSpacing(), 
 					 imStructural->GetDirection(),
-					 rYHeightOffset, 3, 15, 3, false );
+					 rYHeightOffset, 3, 75, 3, false );
     
   // Combine the left and right mask into one
 
@@ -4114,7 +4114,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 				     const typename InternalImageType::DirectionType & direction,
 				     const RealType rYHeightOffset, 
 				     const int splineOrder, 
-				     const int numOfControlPoints,
+				     const RealType controlPointSpacingInMM,
 				     const int numOfLevels,
                                      bool correctSurfaceOffest )
 {
@@ -4128,15 +4128,20 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   filter->SetSplineOrder( splineOrder );  
 
+  typename InternalImageType::SizeType size = region.GetSize();
+  RealType numOfControlPoints = (static_cast<RealType>( size[0] )*spacing[0])/controlPointSpacingInMM;
+
+  if (flgVerbose) 
+    std::cout << "Number of control points: " << numOfControlPoints << std::endl;
+
   typename FilterType::ArrayType ncps;  
-  ncps.Fill( numOfControlPoints );  
+  ncps.Fill( static_cast<unsigned int>( numOfControlPoints ) );  
   filter->SetNumberOfControlPoints( ncps );
 
   filter->SetNumberOfLevels( numOfLevels );
 
   // Define the parametric domain.
 
-  typename InternalImageType::SizeType size = region.GetSize();
   typename FilterType::PointType   bsDomainOrigin;
   typename FilterType::SpacingType bsDomainSpacing;
   typename FilterType::SizeType    bsDomainSize;
