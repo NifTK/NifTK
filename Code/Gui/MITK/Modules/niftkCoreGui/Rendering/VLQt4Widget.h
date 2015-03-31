@@ -183,9 +183,9 @@ protected:
   Q_SLOT void UpdateViewportAndCameraAfterResize();
   void UpdateCameraParameters();
   void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
-  void UpdateActorTransfromFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
+  void UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
   vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
   void EnableTrackballManipulator(bool enable);
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);

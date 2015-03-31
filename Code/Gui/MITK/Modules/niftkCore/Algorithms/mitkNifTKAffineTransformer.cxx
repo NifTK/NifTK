@@ -700,6 +700,7 @@ void AffineTransformer::UpdateNodeProperties(const vtkSmartPointer<vtkMatrix4x4>
 
   // Compose the transform with the current geometry, and force modified flags to make sure we get a re-rendering.
   node->GetData()->GetGeometry()->Compose( incrementalTransformToBeComposed );
+  node->GetData()->GetGeometry()->Modified();
   node->GetData()->Modified();
   node->Modified();
 }

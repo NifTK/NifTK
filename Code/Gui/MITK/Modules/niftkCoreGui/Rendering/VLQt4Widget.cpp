@@ -11,6 +11,7 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
+
 #include <QTextStream>
 #include <QFile>
 
@@ -117,6 +118,18 @@ public:
 VLInit        s_ModuleInit;
 
 }
+
+
+struct VLUserData : public vl::Object
+{
+  VLUserData()
+    : m_TransformLastModified(0)
+  {
+  }
+
+
+  itk::ModifiedTimeType   m_TransformLastModified;
+};
 
 
 //-----------------------------------------------------------------------------
@@ -857,7 +870,7 @@ vl::mat4 VLQt4Widget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& da
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+void VLQt4Widget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
 {
   vl::mat4  mat = GetVLMatrixFromData(data);
 
@@ -870,21 +883,39 @@ void VLQt4Widget::UpdateTransfromFromData(vl::ref<vl::Transform> txf, const mitk
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateActorTransfromFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
+void VLQt4Widget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
-    UpdateTransfromFromData(actor->transform(), node->GetData());
+    vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
+    if (userdata.get() == 0)
+    {
+      userdata = new VLUserData;
+      actor->setUserData(userdata.get());
+    }
+    mitk::BaseData::Pointer   data = node->GetData();
+    if (data.IsNotNull())
+    {
+      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+      if (geom.IsNotNull())
+      {
+        if (geom->GetMTime() > userdata->m_TransformLastModified)
+        {
+          UpdateTransformFromData(actor->transform(), data.GetPointer());
+          userdata->m_TransformLastModified = geom->GetMTime();
+        }
+      }
+    }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTransfromFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
+void VLQt4Widget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
-    UpdateTransfromFromData(txf, node->GetData());
+    UpdateTransformFromData(txf, node->GetData());
   }
 }
 
@@ -908,7 +939,7 @@ void VLQt4Widget::UpdateCameraParameters()
         {
           // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
           float   znear = 1;
-          float   zfar  = 1000;
+          float   zfar  = 10000;
           float   pixelaspectratio = 1;   // FIXME: depends on background image
 
           vl::mat4  proj;
@@ -1424,11 +1455,9 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
         fx->shader()->disable(vl::EN_CULL_FACE);
       }
     }
-
-    // for now, i think it's safe to assume that an invisible actor does not need its transform updated.
-    // might change of course...
-    UpdateActorTransfromFromNode(vlActor, node);
   }
+
+  UpdateActorTransformFromNode(vlActor, node);
 
   // does the right thing if node does not contain an mitk-image.
   UpdateTextureFromImage(node);
@@ -1717,7 +1746,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
   assert(QGLContext::currentContext() == QGLWidget::context());
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, coord.GetPointer());
+  UpdateTransformFromData(tr, coord.GetPointer());
 
   vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
@@ -1766,7 +1795,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, pcl);
+  UpdateTransformFromData(tr, pcl);
 
   vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
@@ -1817,7 +1846,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
 
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, mitkPS.GetPointer());
+  UpdateTransformFromData(tr, mitkPS.GetPointer());
 
   vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
   vlVerts->resize(mitkPS->GetSize());
@@ -1863,7 +1892,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
     vlSurf->computeNormals();
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, mitkSurf.GetPointer());
+  UpdateTransformFromData(tr, mitkSurf.GetPointer());
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
@@ -1935,7 +1964,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg
   assert(lwci.GetId() != 0);
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, cudaImg);
+  UpdateTransformFromData(tr, cudaImg);
 
   vl::ref<vl::Geometry>         vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
 
@@ -2305,7 +2334,7 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
 
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransfromFromData(tr, mitkImg.GetPointer());
+  UpdateTransformFromData(tr, mitkImg.GetPointer());
 
   vl::ref<vl::Geometry>         vlquad = CreateGeometryFor2DImage(dims[0], dims[1]);
 
