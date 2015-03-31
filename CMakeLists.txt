@@ -1036,6 +1036,7 @@ if (BUILD_PROTOTYPE)
         ${PROTOTYPE_DIR}/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code
         ${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source
         ${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_845_FuzzyClusteringForImageSegmentation
     )
   endif()
 endif()
