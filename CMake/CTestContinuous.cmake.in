@@ -128,7 +128,17 @@ endif()
 
 set(PARALLEL_LEVEL ${cpu_cores})
 
+# Excluded from the continuous tests because of the long running time.
+# They are tested by the nightly builds.
+set(tests_to_exclude "FFD-Reg-MR")
+
+# Tests excluded on Windows because of concurrency bugs in ITK output window.
+# See #3497 for details.
+if (WIN32)
+  set(tests_to_exclude "${tests_to_exclude}|CTE-Stream-Int")
+endif()
+
 ctest_start(Continuous TRACK ${group_name})
 ctest_build()
-ctest_test(EXCLUDE "FFD-Reg-MR")
+ctest_test(EXCLUDE "${tests_to_exclude}")
 ctest_submit()
