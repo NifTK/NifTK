@@ -12,11 +12,14 @@
 #
 #============================================================================*/
 
-find_package(PCL 1.7 REQUIRED)
+# only try to find the pcl package if not done already on the top-level cmakelists.
+if(NOT PCL_FOUND)
+  find_package(PCL 1.7 REQUIRED)
+endif()
+
 if(PCL_FOUND)
   list(APPEND ALL_INCLUDE_DIRECTORIES ${PCL_INCLUDE_DIRS})
   list(APPEND ALL_LIBRARIES ${PCL_LIBRARIES})
   link_directories(${PCL_LIBRARY_DIRS})
 #  add_definitions(${PCL_DEFINITIONS})
 endif()
-
