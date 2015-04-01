@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
- <qresource prefix="/NewVisualization">
+ <qresource prefix="/VLRenderer">
      <file>volume_luminance.fs</file>
      <file>volume_luminance_light.fs</file>
      <file>volume_luminance_light.vs</file>

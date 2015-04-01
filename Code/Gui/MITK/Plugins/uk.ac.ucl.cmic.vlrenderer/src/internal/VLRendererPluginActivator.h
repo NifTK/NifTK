@@ -13,34 +13,34 @@
 =============================================================================*/
 
 
-#ifndef NewVisualizationPluginActivator_h
-#define NewVisualizationPluginActivator_h
+#ifndef VLRendererPluginActivator_h
+#define VLRendererPluginActivator_h
 
 #include <ctkPluginActivator.h>
 
 namespace mitk {
 
-class NewVisualizationPluginActivator :
+class VLRendererPluginActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
 
 public:
-    NewVisualizationPluginActivator();
-  ~NewVisualizationPluginActivator();
+  VLRendererPluginActivator();
+  ~VLRendererPluginActivator();
 
-  static NewVisualizationPluginActivator* GetDefault();  
+  static VLRendererPluginActivator* GetDefault();  
   ctkPluginContext* GetPluginContext() const;
 
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
 private:
-  static NewVisualizationPluginActivator* s_Inst;
+  static VLRendererPluginActivator* s_Inst;
   ctkPluginContext* m_Context;
 }; 
 
 }
 
-#endif // NewVisualizationPluginActivator_h
+#endif // VLRendererPluginActivator_h

@@ -18,8 +18,8 @@
 #include <berryIWorkbenchWindow.h>
 
 // Qmitk
-#include "NewVisualizationView.h"
-#include "NewVisualizationPluginActivator.h"
+#include "VLRendererView.h"
+#include "VLRendererPluginActivator.h"
 
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
@@ -55,48 +55,45 @@
 
 
 //-----------------------------------------------------------------------------
-const std::string NewVisualizationView::VIEW_ID = "uk.ac.ucl.cmic.newvisualization";
+const std::string VLRendererView::VIEW_ID = "uk.ac.ucl.cmic.vlrenderer";
 
 
 //-----------------------------------------------------------------------------
-NewVisualizationView::NewVisualizationView()
+VLRendererView::VLRendererView()
 : m_Controls(0)
 , m_Parent(0)
-//, m_RenderApplet(0)
 , m_VLQtRenderWindow(0)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-NewVisualizationView::~NewVisualizationView()
+VLRendererView::~VLRendererView()
 {
 
   if (m_SelectionListener)
   {
-    m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
+    m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
+    m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
+    m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
   }
 
   if (m_NamePropertyListener)
-    m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
+    m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
 
 
-  MITK_INFO <<"Destructing NewViz plugin";
-
-//  m_RenderApplet = 0;
+  MITK_INFO <<"Destructing VLRenderer plugin";
 }
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::SetFocus()
+void VLRendererView::SetFocus()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::CreateQtPartControl( QWidget *parent )
+void VLRendererView::CreateQtPartControl(QWidget* parent)
 {
   // setup the basic GUI of this view
   m_Parent = parent;
@@ -104,7 +101,7 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
   if (!m_Controls)
   {
     // Create UI.
-    m_Controls = new Ui::NewVisualizationViewControls();
+    m_Controls = new Ui::VLRendererViewControls();
     m_Controls->setupUi(parent);
 
     bool  ok = false;
@@ -136,12 +133,12 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
     m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
    // m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, const mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
 
-    m_SelectionListener-> NodeAdded  +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<NewVisualizationView, mitk::DataNode*>(this, &NewVisualizationView::OnNodeDeleted);
+    m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
+    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
+    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
 
     m_NamePropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "name");
-    m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnNamePropertyChanged);
+    m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
 
 
     // Init the VL visualization part
@@ -151,7 +148,7 @@ void NewVisualizationView::CreateQtPartControl( QWidget *parent )
 
 
 //-----------------------------------------------------------------------------
-void  NewVisualizationView::InitVLRendering()
+void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
   m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
@@ -159,7 +156,7 @@ void  NewVisualizationView::InitVLRendering()
 
 
   // renderer uses ocl kernels to sort triangles.
-  ctkPluginContext*     context     = mitk::NewVisualizationPluginActivator::GetDefault()->GetPluginContext();
+  ctkPluginContext*     context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
   ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
   OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
   if (oclService == NULL)
@@ -186,7 +183,7 @@ void  NewVisualizationView::InitVLRendering()
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::On_SliderMoved(int val)
+void VLRendererView::On_SliderMoved(int val)
 {
   m_VLQtRenderWindow->UpdateThresholdVal(val);
   m_VLQtRenderWindow->update();
@@ -194,7 +191,7 @@ void NewVisualizationView::On_SliderMoved(int val)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
+void VLRendererView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
   m_VLQtRenderWindow->SetBackgroundNode(node);
   // can fail, but we just ignore that.
@@ -202,14 +199,14 @@ void NewVisualizationView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnCameraNodeSelected(const mitk::DataNode* node)
+void VLRendererView::OnCameraNodeSelected(const mitk::DataNode* node)
 {
   OnCameraNodeEnabled(m_Controls->m_CameraNodeEnabled->isChecked());
 }
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnCameraNodeEnabled(bool enabled)
+void VLRendererView::OnCameraNodeEnabled(bool enabled)
 {
   if (!enabled)
   {
@@ -224,7 +221,7 @@ void NewVisualizationView::OnCameraNodeEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
+void VLRendererView::OnNodeAdded(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
     return;
@@ -242,7 +239,7 @@ void NewVisualizationView::OnNodeAdded(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
+void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
     return;
@@ -260,7 +257,7 @@ void NewVisualizationView::OnNodeRemoved(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
+void VLRendererView::OnNodeDeleted(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
     return;
@@ -272,7 +269,7 @@ void NewVisualizationView::OnNodeDeleted(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   // random hack to illustrate how to do cuda kernels in combination with vl rendering
 #if 0//def _USE_CUDA
@@ -331,7 +328,7 @@ void NewVisualizationView::OnNamePropertyChanged(mitk::DataNode* node, const mit
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::Visible()
+void VLRendererView::Visible()
 {
   QmitkBaseView::Visible();
 
@@ -341,7 +338,7 @@ void NewVisualizationView::Visible()
 
 
 //-----------------------------------------------------------------------------
-void NewVisualizationView::ReinitDisplay(bool viewEnabled)
+void VLRendererView::ReinitDisplay(bool viewEnabled)
 {
   m_VLQtRenderWindow->ClearScene();
   m_VLQtRenderWindow->AddAllNodesFromDataStorage();

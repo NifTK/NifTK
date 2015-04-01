@@ -13,45 +13,42 @@
 =============================================================================*/
 
 
-#ifndef NewVisualizationView_h
-#define NewVisualizationView_h
+#ifndef VLRendererView_h
+#define VLRendererView_h
 
-#include "ui_NewVisualizationViewControls.h"
+#include "ui_VLRendererViewControls.h"
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
-
 #include <QmitkBaseView.h>
 #include <QmitkRenderWindow.h>
-
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
 #include <mitkImage.h>
-
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 
 
 // VL includes
-#include <vlCore/VisualizationLibrary.hpp>
+#include <vlCore/VisualizationLibrary.hpp>      // FIXME: should go away!
 
 #include <Rendering/VLQt4Widget.h>
 
 
 /**
- * \class NewVisualizationView
+ * \class VLRendererView
  * \brief Provides a simple GUI to visualize stuff
- * \ingroup uk_ac_ucl_cmic_NewVisualization_internal
+ * \ingroup uk_ac_ucl_cmic_VLRenderer_internal
  */
-class NewVisualizationView : public QmitkBaseView
+class VLRendererView : public QmitkBaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
-  explicit NewVisualizationView();
-  virtual ~NewVisualizationView();
+  explicit VLRendererView();
+  virtual ~VLRendererView();
 
   static const std::string VIEW_ID;
 
@@ -90,13 +87,14 @@ private:
   void ReinitDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
-  Ui::NewVisualizationViewControls* m_Controls;
+  Ui::VLRendererViewControls* m_Controls;
 
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
 
 
   // VL rendering specific members
+  // FIXME: should just be a pointer, so we can drop the header dependency on vl.
   vl::ref<VLQt4Widget>       m_VLQtRenderWindow;
 
   // Listeners
@@ -105,4 +103,4 @@ private:
 
 };
 
-#endif // NewVisualizationView_h
+#endif // VLRendererView_h

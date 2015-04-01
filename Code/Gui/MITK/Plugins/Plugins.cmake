@@ -60,7 +60,7 @@ set(PROJECT_PLUGINS
 if(BUILD_VL)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.newvisualization:ON              # Prototype
+    Plugins/uk.ac.ucl.cmic.vlrenderer:ON              # Prototype
   )
 endif()
 
