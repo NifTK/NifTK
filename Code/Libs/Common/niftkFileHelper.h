@@ -17,6 +17,7 @@
 
 #include "niftkCommonWin32ExportHeader.h"
 
+#include <string>
 #include <vector>
 
 namespace niftk
