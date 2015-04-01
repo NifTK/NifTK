@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   try
   {
     mitk::MakeGridOf2DImages::Pointer gridMaker = mitk::MakeGridOf2DImages::New();
-    gridMaker->MakeGrid(directoryName, imageSize, gridDimensions, outputImage);
+    gridMaker->MakeGrid(directoryName, imageSize, gridDimensions, outputImage, fillLengthWise);
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)

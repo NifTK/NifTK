@@ -38,5 +38,12 @@
       <label>Output image</label>
       <channel>output</channel>
     </image>
+    <boolean>
+      <name>fillLengthWise</name>
+      <longflag>fillLengthWise</longflag>
+      <description>Fills along the probe rather than around it.</description>
+      <label>Lengthwise</label>
+      <default>0</default>
+    </boolean>
   </parameters>
 </executable>
