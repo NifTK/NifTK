@@ -279,7 +279,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                     std::string number = boost::lexical_cast<std::string>(i);
                     cv::putText(leftAnnotatedVideoImage,number,leftPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
                     cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
-
                   }
                 
                   IplImage image(leftAnnotatedVideoImage);
@@ -328,6 +327,12 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             leftPointOut.close();
             if ( m_WriteAnnotatedImages )
             {
+              for ( int i = 0 ; i < leftPickedPoints.size(); i ++ )
+              {
+                std::string number = boost::lexical_cast<std::string>(i);
+                cv::putText(leftAnnotatedVideoImage,number,leftPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
+                cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+              }
               cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
             }
           }
@@ -349,6 +354,12 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
              if ( m_WriteAnnotatedImages )
             {
+              for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ )
+              {
+                std::string number = boost::lexical_cast<std::string>(i);
+                cv::putText(rightAnnotatedVideoImage,number,rightPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
+                cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+              }
               cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
             }
              rightPointOut.close();
