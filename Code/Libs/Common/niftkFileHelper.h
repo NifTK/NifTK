@@ -15,31 +15,12 @@
 #ifndef niftkFileHelper_h
 #define niftkFileHelper_h
 
-#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-
-#if (defined(WIN32) || defined(_WIN32))
-#define FILE_SEPARATOR "\\"
-#else
-#define FILE_SEPARATOR "/"
-#endif
-
-#include "Exceptions/niftkIOException.h"
+#include <vector>
 
 namespace niftk
 {
-
-/**
-* Converts pathName to a boost::filesystem::path.
-* We throw std::logic_error if you pass an empty pathName.
-* @param pathName a string representing the path
-* @return boost path type
-*/
-NIFTKCOMMON_WINEXPORT boost::filesystem::path ConvertToFullPath(const std::string& pathName);
-
 
 /**
 * Converts pathName to a full string by calling the above method.
@@ -83,16 +64,6 @@ NIFTKCOMMON_WINEXPORT bool DirectoryExists(const std::string& directoryPath);
 * @return true if creation was successfull
 */
 NIFTKCOMMON_WINEXPORT bool CreateDirAndParents(const std::string& directoryPath);
-
-
-/**
-* Creates a unique file name for a file located in the O/S temporary directory.
-* @param prefix file basename prefix
-* @param suffix file basename suffix
-* @return a unique file name
-*/
-NIFTKCOMMON_WINEXPORT boost::filesystem::path CreateUniqueTempFileName(
-    const std::string &prefix, const std::string &suffix = "");
 
 
 /**

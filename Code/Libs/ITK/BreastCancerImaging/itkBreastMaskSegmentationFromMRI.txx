@@ -25,6 +25,7 @@
 #include <itkAddImageFilter.h>
 #include <itkSignedMaurerDistanceMapImageFilter.h>
 
+#include <boost/filesystem.hpp>
 
 namespace itk
 {

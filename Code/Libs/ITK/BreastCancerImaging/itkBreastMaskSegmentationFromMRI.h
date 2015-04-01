@@ -71,8 +71,6 @@
 #include <vnl/vnl_double_3.h>
 #include <vnl/algo/vnl_levenberg_marquardt.h>
 
-#include <boost/filesystem.hpp>
-
 namespace itk
 {
 
