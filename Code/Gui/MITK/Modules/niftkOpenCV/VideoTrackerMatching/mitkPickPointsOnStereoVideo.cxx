@@ -48,6 +48,7 @@ m_VideoIn("")
 , m_OrderedPoints(false)
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
+, m_WriteAnnotatedImages(false)
 , m_StartFrame(0)
 , m_EndFrame(0)
 , m_Frequency(50)
@@ -189,17 +190,17 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, n for next frame, q to quit";
           }
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints.txt";
+          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints.txt";
+          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
-          if ( boost::filesystem::exists (leftOutName) )
+          if ( boost::filesystem::exists (leftOutName + ".txt") )
           {
             if ( m_AskOverWrite )
             {
-              MITK_INFO << leftOutName << " exists, overwrite (y/n)";
+              MITK_INFO << leftOutName + ".txt" << " exists, overwrite (y/n)";
               key = 0;
               while ( ! ( key == 'n' || key == 'y' ) )
               {
@@ -216,17 +217,17 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else
             {
-              MITK_INFO << leftOutName << " exists, skipping.";
+              MITK_INFO << leftOutName + ".txt" << " exists, skipping.";
               overWriteLeft = false;
             }
           }
 
           key = 0;
-          if ( boost::filesystem::exists (rightOutName) )
+          if ( boost::filesystem::exists (rightOutName + ".txt") )
           {
             if ( m_AskOverWrite ) 
             {
-              MITK_INFO << rightOutName << " exists, overwrite (y/n)";
+              MITK_INFO << rightOutName  + ".txt" << " exists, overwrite (y/n)";
               while ( ! ( key == 'n' || key == 'y' ) )
               {
                 key = cvWaitKey(20);
@@ -242,11 +243,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else 
             {
-              MITK_INFO << rightOutName << " exists, skipping.";
+              MITK_INFO << rightOutName + ".txt" << " exists, skipping.";
               overWriteRight = false;
             }
           }
          
+          cv::Mat leftAnnotatedVideoImage;
+          cv::Mat rightAnnotatedVideoImage;
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
@@ -267,7 +270,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               }
               if ( overWriteLeft )
               {
-                cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+                leftAnnotatedVideoImage = leftVideoImage.clone();
                 cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, &leftPickedPoints);
                 if ( leftPickedPoints.size() != leftLastPointCount )
                 {
@@ -276,16 +279,18 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                     std::string number = boost::lexical_cast<std::string>(i);
                     cv::putText(leftAnnotatedVideoImage,number,leftPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
                     cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+
                   }
                 
                   IplImage image(leftAnnotatedVideoImage);
                   cvShowImage("Left Channel" , &image);
                   leftLastPointCount = leftPickedPoints.size();
                 }
+                
               }
               if ( overWriteRight )
               {
-                cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+                rightAnnotatedVideoImage = rightVideoImage.clone();
                 cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, &rightPickedPoints);
                 if ( rightPickedPoints.size() != rightLastPointCount )
                 {
@@ -305,7 +310,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           }
           if ( leftPickedPoints.size() != 0 ) 
           {
-            std::ofstream leftPointOut (leftOutName.c_str());
+            std::ofstream leftPointOut ((leftOutName+ ".txt").c_str());
             leftPointOut << "# " << framenumber << std::endl;
             if ( m_OrderedPoints ) 
             {
@@ -321,10 +326,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               leftPointOut << leftPickedPoints[i] << std::endl;
             }
             leftPointOut.close();
+            if ( m_WriteAnnotatedImages )
+            {
+              cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
+            }
           }
           if ( rightPickedPoints.size() != 0 ) 
           {
-            std::ofstream rightPointOut (rightOutName.c_str());
+            std::ofstream rightPointOut ((rightOutName + ".txt").c_str());
             rightPointOut << "# " << framenumber+1 << std::endl;
             if ( m_OrderedPoints ) 
             {
@@ -338,7 +347,11 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             {
               rightPointOut << rightPickedPoints[i] << std::endl;
             }
-            rightPointOut.close();
+             if ( m_WriteAnnotatedImages )
+            {
+              cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
+            }
+             rightPointOut.close();
           }
           cvShowImage("Left Channel" , &blankImage);
           cvShowImage("Right Channel" , &blankImage);
