@@ -91,6 +91,48 @@ void ConvertGridPointToCyclinderPoint(int pointId,
   pointSet->InsertPoint(pointId, point);
 }
 
+void DoPoint(bool fullTrackingModel,
+             int pointId,
+             int lengthCounter, int widthCounter,
+             double originX,
+             double originY,
+             double borderSizeInMillimetres,
+             double tagSizeInMillimetres,
+             double centreOffsetInMillimetres,
+             double cornerOffsetInMillimetres,
+             double radius,
+             mitk::PointSet::Pointer mitkPoints,
+             vtkPoints *points,
+             vtkDoubleArray *normals,
+             vtkIntArray *pointIDArray,
+             vtkCellArray *vertices
+             )
+{
+  // This does the centre point.
+  if (fullTrackingModel)
+  {
+    ConvertGridPointToCyclinderPoint(pointId+0,     lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, centreOffsetInMillimetres, centreOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+  }
+
+  // This does the 4 corners.
+  ConvertGridPointToCyclinderPoint(pointId+10000, lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, 0,                         0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
+  ConvertGridPointToCyclinderPoint(pointId+20000, lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, cornerOffsetInMillimetres, 0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
+  ConvertGridPointToCyclinderPoint(pointId+30000, lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, cornerOffsetInMillimetres, cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+  ConvertGridPointToCyclinderPoint(pointId+40000, lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, 0,                         cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+
+  // Its a 7x7 grid. We also want the centre of each square.
+  if (fullTrackingModel)
+  {
+    for (int j = 0; j < 7; j++)
+    {
+      for (int i = 0; i < 7; i++)
+      {
+        ConvertGridPointToCyclinderPoint((pointId+(50 + ((j*7)+i))* 1000), lengthCounter, widthCounter, originX, originY, borderSizeInMillimetres, tagSizeInMillimetres, (i+0.5)*borderSizeInMillimetres, (j+0.5)*borderSizeInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+      }
+    }
+  }
+}
+
 
 /**
  * \brief Generates a VTK model to match the April Tag board created by niftkMakeGridOf2DImages.
@@ -181,34 +223,25 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkCellArray> vertices = vtkSmartPointer<vtkCellArray>::New();
   vertices->Initialize();
 
-  for (int lengthCounter = 0; lengthCounter < numberOfTagsAlongLength; lengthCounter++)
+  if (lengthWise)
   {
     for (int widthCounter = 0; widthCounter < numberTagsAlongWidth; widthCounter++)
     {
-      int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
-
-      // This does the centre point.
-      if (fullTrackingModel)
+      for (int lengthCounter = 0; lengthCounter < numberOfTagsAlongLength; lengthCounter++)
       {
-        ConvertGridPointToCyclinderPoint(pointID+0,     lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, centreOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
+        int pointID = lengthCounter + widthCounter*numberOfTagsAlongLength;
+        DoPoint(fullTrackingModel, pointID, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
       }
-
-      // This does the 4 corners.
-      ConvertGridPointToCyclinderPoint(pointID+10000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+20000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, 0,                         radius, mitkPoints, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+30000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, cornerOffsetInMillimetres, cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
-      ConvertGridPointToCyclinderPoint(pointID+40000, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, 0,                         cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
-
-      // Its a 7x7 grid. We also want the centre of each square.
-      if (fullTrackingModel)
+    }
+  }
+  else
+  {
+    for (int lengthCounter = 0; lengthCounter < numberOfTagsAlongLength; lengthCounter++)
+    {
+      for (int widthCounter = 0; widthCounter < numberTagsAlongWidth; widthCounter++)
       {
-        for (int j = 0; j < 7; j++)
-        {
-          for (int i = 0; i < 7; i++)
-          {
-            ConvertGridPointToCyclinderPoint((pointID+(50 + ((j*7)+i))* 1000), lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, (i+0.5)*borderSizeInMillimetres, (j+0.5)*borderSizeInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
-          }
-        }
+        int pointID = widthCounter + lengthCounter*numberTagsAlongWidth;
+        DoPoint(fullTrackingModel, pointID, lengthCounter, widthCounter, minXInMillimetres, minYInMillimetres, borderSizeInMillimetres, actualTagSizeIncludingBorder, centreOffsetInMillimetres, cornerOffsetInMillimetres, radius, mitkPoints, points, normals, pointIDArray, vertices);
       }
     }
   }

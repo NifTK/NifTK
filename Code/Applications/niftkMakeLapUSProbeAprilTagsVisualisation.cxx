@@ -66,7 +66,7 @@ int main(int argc, char** argv)
   modelForTrackingReader->SetFileName(modelForTracking.c_str());
   modelForTrackingReader->Update();
 
-  std::cout << "Loaded " << modelForTracking << std::endl;
+  std::cout << "Loaded " << modelForTracking << ", with " << modelForTrackingReader->GetOutput()->GetNumberOfPoints() << " points" << std::endl;
 
   vtkSmartPointer<vtkTexture> text = vtkSmartPointer<vtkTexture>::New();
   text->SetInputConnection(imageReader->GetOutputPort());
@@ -83,16 +83,19 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkSphereSource> sphereForGlyph = vtkSmartPointer<vtkSphereSource>::New();
   sphereForGlyph->SetRadius(0.25);
+  sphereForGlyph->Update();
 
   vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
   glyph->SetSourceData(sphereForGlyph->GetOutput());
   glyph->SetInputData(modelForTrackingReader->GetOutput());
   glyph->SetScaleModeToDataScalingOff();
+  glyph->Update();
   //glyph->SetScaleFactor(0.01);
   //glyph->SetScaleModeToScaleByScalar();
 
   vtkSmartPointer<vtkPolyDataMapper> trackingModelMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   trackingModelMapper->SetInputConnection(glyph->GetOutputPort());
+  trackingModelMapper->Update();
 
   vtkSmartPointer<vtkActor> trackingModelActor = vtkSmartPointer<vtkActor>::New();
   trackingModelActor->SetMapper(trackingModelMapper);
@@ -102,6 +105,7 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkRenderWindow> renWin = vtkSmartPointer<vtkRenderWindow>::New();
   renWin->SetSize(512, 512);
   renWin->AddRenderer(renderer);
+  renWin->Render();
 
   renderer->AddActor(actor);
   renderer->AddActor(trackingModelActor);
