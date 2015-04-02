@@ -264,6 +264,20 @@ void vtkCalibratedModelRenderingPipeline::DumpScreen(const std::string fileName)
 
 
 //-----------------------------------------------------------------------------
+void vtkCalibratedModelRenderingPipeline::SaveModelToWorld(const std::string& fileName)
+{
+  niftk::SaveMatrix4x4ToFile(fileName, *m_ModelToWorldMatrix);
+}
+
+
+//-----------------------------------------------------------------------------
+void vtkCalibratedModelRenderingPipeline::SaveCameraToWorld(const std::string& fileName)
+{
+  niftk::SaveMatrix4x4ToFile(fileName, *m_CameraToWorldMatrix);
+}
+
+
+//-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> vtkCalibratedModelRenderingPipeline::GetTransform(const std::vector<float> &transform)
 {
   double degreesToRadians = CV_PI/180.0;
