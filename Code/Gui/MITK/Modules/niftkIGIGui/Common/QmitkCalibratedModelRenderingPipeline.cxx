@@ -134,6 +134,8 @@ void QmitkCalibratedModelRenderingPipeline::SaveData()
 {
   this->SaveLeftImage();
   this->SaveRightImage();
+  m_Pipeline.SaveModelToWorld(m_OutputData + std::string(".Model2World.4x4"));
+  m_Pipeline.SaveCameraToWorld(m_OutputData + std::string(".Camera2World.4x4"));
 
   // Now, iterate over all points in tracking model, and project to 2D.
   vtkPolyData* trackingModel = m_Pipeline.GetTrackingModel();

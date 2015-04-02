@@ -109,6 +109,18 @@ public:
   void DumpScreen(const std::string fileName);
 
   /**
+   * @brief Saves the Model to World transform to file.
+   * @param fileName
+   */
+  void SaveModelToWorld(const std::string& fileName);
+
+  /**
+   * @brief Saves the Camera to World transform to file.
+   * @param fileName
+   */
+  void SaveCameraToWorld(const std::string& fileName);
+
+  /**
    * @brief Multiplies model vtkPolyData points by modelToWorld to give a position in world coordinates,
    * having the effect of moving the model relative to the world coordinates.
    * @param modelToWorld rigid body transform

@@ -136,5 +136,12 @@
       <label>Full Tracking Model</label>
       <default>false</default>
     </boolean>
+    <boolean>
+      <name>lengthWise</name>
+      <longflag>lengthWise</longflag>
+      <description>Works along the probe rather than around it.</description>
+      <label>Lengthwise</label>
+      <default>0</default>
+    </boolean>
   </parameters>
 </executable>
