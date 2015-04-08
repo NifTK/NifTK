@@ -104,18 +104,3 @@ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
     DataSources/AudioDataSourceGui.ui
   )
 endif()
-
-if(BUILD_VL)
-  set(CPP_FILES
-    ${CPP_FILES}
-    VLEditor/QmitkIGIVLEditor.cxx
-  )
-  set(MOC_H_FILES
-    ${MOC_H_FILES}
-    VLEditor/QmitkIGIVLEditor.h
-  )
-  set(UI_FILES
-    ${UI_FILES}
-    VLEditor/QmitkIGIVLEditor.ui
-  )
-endif()

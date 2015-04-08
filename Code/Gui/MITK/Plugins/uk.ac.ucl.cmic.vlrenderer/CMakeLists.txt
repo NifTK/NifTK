@@ -14,7 +14,7 @@
 
 project(uk_ac_ucl_cmic_vlrenderer)
 
-set(_depends MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore niftkCoreGui)
+set(_depends MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore niftkCoreGui niftkVL)
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   list(APPEND _depends niftkCUDA)

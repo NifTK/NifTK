@@ -21,7 +21,6 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
-#include <mitkTrackedImage.h>
 
 
 //-----------------------------------------------------------------------------

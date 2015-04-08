@@ -12,18 +12,27 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_igivleditor)
+set(CPP_FILES
+  Rendering/VLQt4Widget.cpp
+  Rendering/OclTriangleSorter.cxx
+  VLEditor/QmitkIGIVLEditor.cxx
+)
 
-# FIXME: this should go away: vlwidget should hide all the vl stuff behind pimpl
-find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
-include_directories(${VL_INCLUDE_DIRS})
+set(MOC_H_FILES
+  Rendering/VLQt4Widget.h
+  VLEditor/QmitkIGIVLEditor.h
+)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVLEDITOR
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS MitkQtWidgets niftkVL
+set(UI_FILES
+  VLEditor/QmitkIGIVLEditor.ui
+)
+
+set(QRC_FILES
+)
+
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  set(CPP_FILES
+    ${CPP_FILES}
+    Rendering/VLFramebufferToCUDA.cxx
   )
-
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_igivleditor)
 endif()

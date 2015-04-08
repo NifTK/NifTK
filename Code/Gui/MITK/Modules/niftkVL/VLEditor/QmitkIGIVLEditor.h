@@ -16,7 +16,7 @@
 #define QmitkIGIVLEditor_h
 
 #include "ui_QmitkIGIVLEditor.h"
-#include "niftkIGIGuiExports.h"
+#include "niftkVLExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
@@ -28,7 +28,7 @@ class QmitkRenderWindow;
  * \class QmitkIGIVLEditor
  * \see IGIVLEditor
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIVLEditor : public QWidget, public Ui_QmitkIGIVLEditor
+class NIFTKVL_EXPORT QmitkIGIVLEditor : public QWidget, public Ui_QmitkIGIVLEditor
 {
 
   Q_OBJECT

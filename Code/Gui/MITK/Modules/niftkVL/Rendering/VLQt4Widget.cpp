@@ -33,6 +33,7 @@
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
 #include <vtkPolyDataNormals.h>
+#include <vtkImageData.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
