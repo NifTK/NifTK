@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkIGIOverlayEditor2.h"
+#include "QmitkIGIVLEditor.h"
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
 #include <mitkBaseRenderer.h>
@@ -25,7 +25,7 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
+QmitkIGIVLEditor::QmitkIGIVLEditor(QWidget * /*parent*/)
 {
   this->setupUi(this);
 
@@ -36,9 +36,9 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
 //  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
   m_OverlayViewer->setVisible(true);
-  m_OverlayViewer->setObjectName("QmitkIGIOverlayEditor2::m_OverlayViewer");
+  m_OverlayViewer->setObjectName("QmitkIGIVLEditor::m_OverlayViewer");
   m_3DViewer->setVisible(true);
-  m_3DViewer->setObjectName("QmitkIGIOverlayEditor2::m_3DViewer");
+  m_3DViewer->setObjectName("QmitkIGIVLEditor::m_3DViewer");
 
   m_OverlayCheckBox->setChecked(true);
   m_3DViewerCheckBox->setChecked(true);
@@ -64,14 +64,14 @@ QmitkIGIOverlayEditor2::QmitkIGIOverlayEditor2(QWidget * /*parent*/)
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor2::~QmitkIGIOverlayEditor2()
+QmitkIGIVLEditor::~QmitkIGIVLEditor()
 {
   this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetBackgroundColour(unsigned int aabbggrr)
+void QmitkIGIVLEditor::SetBackgroundColour(unsigned int aabbggrr)
 {
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
@@ -82,7 +82,7 @@ void QmitkIGIOverlayEditor2::SetBackgroundColour(unsigned int aabbggrr)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetOclResourceService(OclResourceService* oclserv)
+void QmitkIGIVLEditor::SetOclResourceService(OclResourceService* oclserv)
 {
   m_OverlayViewer->SetOclResourceService(oclserv);
   m_3DViewer->SetOclResourceService(oclserv);
@@ -90,19 +90,19 @@ void QmitkIGIOverlayEditor2::SetOclResourceService(OclResourceService* oclserv)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::DeRegisterDataStorageListeners()
+void QmitkIGIVLEditor::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkIGIOverlayEditor2, const mitk::DataNode*>
-      (this, &QmitkIGIOverlayEditor2::NodeChanged ) );
+      (mitk::MessageDelegate1<QmitkIGIVLEditor, const mitk::DataNode*>
+      (this, &QmitkIGIVLEditor::NodeChanged ) );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::OnOverlayCheckBoxChecked(bool checked)
+void QmitkIGIVLEditor::OnOverlayCheckBoxChecked(bool checked)
 {
   if (!checked)
   {
@@ -117,7 +117,7 @@ void QmitkIGIOverlayEditor2::OnOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
+void QmitkIGIVLEditor::On3DViewerCheckBoxChecked(bool checked)
 {
   if (!checked)
   {
@@ -132,28 +132,28 @@ void QmitkIGIOverlayEditor2::On3DViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::OnOpacitySliderMoved(int value)
+void QmitkIGIVLEditor::OnOpacitySliderMoved(int value)
 {
   //m_OverlayViewer->SetOpacity(value / 100.0);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::OnImageSelected(const mitk::DataNode* node)
+void QmitkIGIVLEditor::OnImageSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetBackgroundNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::OnTransformSelected(const mitk::DataNode* node)
+void QmitkIGIVLEditor::OnTransformSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetCameraTrackingNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
+void QmitkIGIVLEditor::SetDataStorage(mitk::DataStorage* storage)
 {
   if (m_DataStorage.IsNotNull() && m_DataStorage != storage)
   {
@@ -165,8 +165,8 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkIGIOverlayEditor2, const mitk::DataNode*>
-      (this, &QmitkIGIOverlayEditor2::NodeChanged ) );
+      (mitk::MessageDelegate1<QmitkIGIVLEditor, const mitk::DataNode*>
+      (this, &QmitkIGIVLEditor::NodeChanged ) );
   }
 
   m_3DViewer->SetDataStorage(storage);
@@ -186,13 +186,13 @@ void QmitkIGIOverlayEditor2::SetDataStorage(mitk::DataStorage* storage)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::NodeChanged(const mitk::DataNode* node)
+void QmitkIGIVLEditor::NodeChanged(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor2::Update()
+void QmitkIGIVLEditor::Update()
 {
   //m_OverlayViewer->Update();
 }

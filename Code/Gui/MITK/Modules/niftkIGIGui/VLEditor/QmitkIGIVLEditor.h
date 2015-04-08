@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef QmitkIGIOverlayEditor2_h
-#define QmitkIGIOverlayEditor2_h
+#ifndef QmitkIGIVLEditor_h
+#define QmitkIGIVLEditor_h
 
-#include "ui_QmitkIGIOverlayEditor2.h"
+#include "ui_QmitkIGIVLEditor.h"
 #include "niftkIGIGuiExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
@@ -25,18 +25,18 @@
 class QmitkRenderWindow;
 
 /**
- * \class QmitkIGIOverlayEditor2
- * \see IGIOverlayEditor2
+ * \class QmitkIGIVLEditor
+ * \see IGIVLEditor
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIOverlayEditor2 : public QWidget, public Ui_QmitkIGIOverlayEditor2
+class NIFTKIGIGUI_EXPORT QmitkIGIVLEditor : public QWidget, public Ui_QmitkIGIVLEditor
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkIGIOverlayEditor2(QWidget *parent);
-  virtual ~QmitkIGIOverlayEditor2();
+  QmitkIGIVLEditor(QWidget *parent);
+  virtual ~QmitkIGIVLEditor();
 
   void SetOclResourceService(OclResourceService* oclserv);
 
@@ -59,8 +59,8 @@ private slots:
 
 private:
 
-  QmitkIGIOverlayEditor2(const QmitkIGIOverlayEditor2&);  // Purposefully not implemented.
-  void operator=(const QmitkIGIOverlayEditor2&);  // Purposefully not implemented.
+  QmitkIGIVLEditor(const QmitkIGIVLEditor&);  // Purposefully not implemented.
+  void operator=(const QmitkIGIVLEditor&);  // Purposefully not implemented.
 
   /**
    * \brief Utility method to deregister data storage listeners.
@@ -75,4 +75,4 @@ private:
   mitk::DataStorage::Pointer m_DataStorage;
 };
 
-#endif // QmitkIGIOverlayEditor2_h
+#endif // QmitkIGIVLEditor_h

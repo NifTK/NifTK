@@ -20,12 +20,12 @@
 #include <service/event/ctkEvent.h>
 #include <uk_ac_ucl_cmic_igivleditor_Export.h>
 
-class QmitkIGIOverlayEditor2;
+class QmitkIGIVLEditor;
 class IGIVLEditorPrivate;
 
 /**
  * \class IGIVLEditor
- * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor2,
+ * \brief Simple editor that delegates all functionality to a QmitkIGIVLEditor,
  * and most methods are dummy or do-nothing implementations, as the widget is for
  * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
  * \ingroup uk_ac_ucl_cmic_igivleditor
@@ -43,7 +43,7 @@ public:
   IGIVLEditor();
   ~IGIVLEditor();
 
-  QmitkIGIOverlayEditor2* GetIGIOverlayEditor2();
+  QmitkIGIVLEditor* GetIGIVLEditor();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 

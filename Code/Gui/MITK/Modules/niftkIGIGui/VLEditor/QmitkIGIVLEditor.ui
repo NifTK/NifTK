@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QmitkIGIOverlayEditor2</class>
- <widget class="QWidget" name="QmitkIGIOverlayEditor2">
+ <class>QmitkIGIVLEditor</class>
+ <widget class="QWidget" name="QmitkIGIVLEditor">
   <property name="geometry">
    <rect>
     <x>0</x>

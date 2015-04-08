@@ -38,7 +38,7 @@
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
-#include <OverlayEditor2/QmitkIGIOverlayEditor2.h>
+#include <VLEditor/QmitkIGIVLEditor.h>
 #include <internal/IGIVLEditorPreferencePage.h>
 #include <internal/IGIVLEditorActivator.h>
 
@@ -58,7 +58,7 @@ public:
   IGIVLEditorPrivate();
   ~IGIVLEditorPrivate();
 
-  QmitkIGIOverlayEditor2* m_IGIOverlayEditor2;
+  QmitkIGIVLEditor* m_IGIVLEditor;
   berry::IPartListener::Pointer m_PartListener;
 };
 
@@ -89,7 +89,7 @@ struct IGIVLEditorWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
       IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
-      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
+      if (d->m_IGIVLEditor == editor->GetIGIVLEditor())
       {
         // Call editor to turn things off as the widget is being closed.
       }
@@ -102,7 +102,7 @@ struct IGIVLEditorWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
       IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
-      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
+      if (d->m_IGIVLEditor == editor->GetIGIVLEditor())
       {
         // Call editor to turn things off as the widget is being hidden.
       }
@@ -115,7 +115,7 @@ struct IGIVLEditorWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
       IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
-      if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
+      if (d->m_IGIVLEditor == editor->GetIGIVLEditor())
       {
         // Call editor to turn things on as the widget is being made visible.
       }
@@ -130,7 +130,7 @@ private:
 
 //-----------------------------------------------------------------------------
 IGIVLEditorPrivate::IGIVLEditorPrivate()
-  : m_IGIOverlayEditor2(0)
+  : m_IGIVLEditor(0)
   , m_PartListener(new IGIVLEditorWidgetPartListener(this))
 {
 }
@@ -156,9 +156,9 @@ IGIVLEditor::~IGIVLEditor()
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor2* IGIVLEditor::GetIGIOverlayEditor2()
+QmitkIGIVLEditor* IGIVLEditor::GetIGIVLEditor()
 {
-  return d->m_IGIOverlayEditor2;
+  return d->m_IGIVLEditor;
 }
 
 
@@ -266,13 +266,13 @@ bool IGIVLEditor::IsLinkedNavigationEnabled() const
 //-----------------------------------------------------------------------------
 void IGIVLEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_IGIOverlayEditor2 == 0)
+  if (d->m_IGIVLEditor == 0)
   {
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
 
-    d->m_IGIOverlayEditor2 = new QmitkIGIOverlayEditor2(parent);
-    layout->addWidget(d->m_IGIOverlayEditor2);
+    d->m_IGIVLEditor = new QmitkIGIVLEditor(parent);
+    layout->addWidget(d->m_IGIVLEditor);
 
 
     ctkPluginContext*     context     = mitk::IGIVLEditorActivator::/*GetDefault()->*/getContext();
@@ -282,11 +282,11 @@ void IGIVLEditor::CreateQtPartControl(QWidget* parent)
     {
       mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
     }
-    d->m_IGIOverlayEditor2->SetOclResourceService(oclService);
+    d->m_IGIVLEditor->SetOclResourceService(oclService);
 
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
-    d->m_IGIOverlayEditor2->SetDataStorage(ds);
+    d->m_IGIVLEditor->SetDataStorage(ds);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
 
@@ -328,9 +328,9 @@ void IGIVLEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
   // 0xAABBGGRR
   unsigned int   backgroundColour = prefs->GetInt(IGIVLEditorPreferencePage::BACKGROUND_COLOR_PREFSKEY, IGIVLEditorPreferencePage::DEFAULT_BACKGROUND_COLOR);
 
-  if (d->m_IGIOverlayEditor2 != 0)
+  if (d->m_IGIVLEditor != 0)
   {
-    d->m_IGIOverlayEditor2->SetBackgroundColour(backgroundColour);
+    d->m_IGIVLEditor->SetBackgroundColour(backgroundColour);
   }
 }
 
@@ -338,9 +338,9 @@ void IGIVLEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 //-----------------------------------------------------------------------------
 void IGIVLEditor::SetFocus()
 {
-  if (d->m_IGIOverlayEditor2 != 0)
+  if (d->m_IGIVLEditor != 0)
   {
-    d->m_IGIOverlayEditor2->setFocus();
+    d->m_IGIVLEditor->setFocus();
   }
 }
 
@@ -348,7 +348,7 @@ void IGIVLEditor::SetFocus()
 //-----------------------------------------------------------------------------
 void IGIVLEditor::OnIGIUpdate(const ctkEvent& event)
 {
-  d->m_IGIOverlayEditor2->Update();
+  d->m_IGIVLEditor->Update();
 }
 
 
