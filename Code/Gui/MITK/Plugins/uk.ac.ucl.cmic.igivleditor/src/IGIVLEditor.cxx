@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditor2.h"
+#include "IGIVLEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -39,43 +39,41 @@
 #include <mitkIDataStorageService.h>
 
 #include <OverlayEditor2/QmitkIGIOverlayEditor2.h>
-#include <internal/IGIOverlayEditor2PreferencePage.h>
-#include <internal/IGIOverlayEditor2Activator.h>
+#include <internal/IGIVLEditorPreferencePage.h>
+#include <internal/IGIVLEditorActivator.h>
 
 
 //-----------------------------------------------------------------------------
-const char* IGIOverlayEditor2::EDITOR_ID = "org.mitk.editors.igioverlayeditor2";
+const char* IGIVLEditor::EDITOR_ID = "org.mitk.editors.igivleditor";
 
 
 /**
- * \class IGIOverlayEditor2Private
- * \brief PIMPL pattern implementation of IGIOverlayEditor2.
+ * \class IGIVLEditorPrivate
+ * \brief PIMPL pattern implementation of IGIVLEditor.
  */
-class IGIOverlayEditor2Private
+class IGIVLEditorPrivate
 {
 public:
 
-  IGIOverlayEditor2Private();
-  ~IGIOverlayEditor2Private();
+  IGIVLEditorPrivate();
+  ~IGIVLEditorPrivate();
 
   QmitkIGIOverlayEditor2* m_IGIOverlayEditor2;
-  //std::string m_FirstBackgroundColor;
-  //std::string m_SecondBackgroundColor;
   berry::IPartListener::Pointer m_PartListener;
 };
 
 
 /**
- * \class IGIOverlayWidgetPartListener
+ * \class IGIVLEditorWidgetPartListener
  * \brief Used to handle interaction with the contained overlay
  * editor widget when this IGIOverlayEditor is opened/closed etc.
  */
-struct IGIOverlay2WidgetPartListener : public berry::IPartListener
+struct IGIVLEditorWidgetPartListener : public berry::IPartListener
 {
-  berryObjectMacro(IGIOverlay2WidgetPartListener)
+  berryObjectMacro(IGIVLEditorWidgetPartListener)
 
   //---------------------------------------------------------------------------
-  IGIOverlay2WidgetPartListener(IGIOverlayEditor2Private* dd)
+  IGIVLEditorWidgetPartListener(IGIVLEditorPrivate* dd)
     : d(dd)
   {}
 
@@ -88,9 +86,9 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartClosed(berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
+    if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
-      IGIOverlayEditor2::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor2>();
+      IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
       if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
       {
         // Call editor to turn things off as the widget is being closed.
@@ -101,9 +99,9 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartHidden(berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
+    if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
-      IGIOverlayEditor2::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor2>();
+      IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
       if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
       {
         // Call editor to turn things off as the widget is being hidden.
@@ -114,9 +112,9 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor2::EDITOR_ID)
+    if (partRef->GetId() == IGIVLEditor::EDITOR_ID)
     {
-      IGIOverlayEditor2::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor2>();
+      IGIVLEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLEditor>();
       if (d->m_IGIOverlayEditor2 == editor->GetIGIOverlayEditor2())
       {
         // Call editor to turn things on as the widget is being made visible.
@@ -126,67 +124,67 @@ struct IGIOverlay2WidgetPartListener : public berry::IPartListener
 
 private:
 
-  IGIOverlayEditor2Private* const d;
+  IGIVLEditorPrivate* const d;
 };
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor2Private::IGIOverlayEditor2Private()
+IGIVLEditorPrivate::IGIVLEditorPrivate()
   : m_IGIOverlayEditor2(0)
-  , m_PartListener(new IGIOverlay2WidgetPartListener(this))
+  , m_PartListener(new IGIVLEditorWidgetPartListener(this))
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor2Private::~IGIOverlayEditor2Private()
+IGIVLEditorPrivate::~IGIVLEditorPrivate()
 {
 }
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor2::IGIOverlayEditor2()
-  : d(new IGIOverlayEditor2Private)
+IGIVLEditor::IGIVLEditor()
+  : d(new IGIVLEditorPrivate)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor2::~IGIOverlayEditor2()
+IGIVLEditor::~IGIVLEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor2* IGIOverlayEditor2::GetIGIOverlayEditor2()
+QmitkIGIOverlayEditor2* IGIVLEditor::GetIGIOverlayEditor2()
 {
   return d->m_IGIOverlayEditor2;
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *IGIOverlayEditor2::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow *IGIVLEditor::GetActiveQmitkRenderWindow() const
 {
   return 0;
 }
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> IGIOverlayEditor2::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> IGIVLEditor::GetQmitkRenderWindows() const
 {
   return QHash<QString, QmitkRenderWindow *>();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *IGIOverlayEditor2::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow *IGIVLEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return 0;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D IGIOverlayEditor2::GetSelectedPosition(const QString & id) const
+mitk::Point3D IGIVLEditor::GetSelectedPosition(const QString & id) const
 {
   // Not implemented.
   mitk::Point3D point;
@@ -198,27 +196,27 @@ mitk::Point3D IGIOverlayEditor2::GetSelectedPosition(const QString & id) const
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
+void IGIVLEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
   // Not implemented.
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::EnableDecorations(bool /*enable*/, const QStringList & /*decorations*/)
+void IGIVLEditor::EnableDecorations(bool /*enable*/, const QStringList & /*decorations*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor2::IsDecorationEnabled(const QString & /*decoration*/) const
+bool IGIVLEditor::IsDecorationEnabled(const QString & /*decoration*/) const
 {
   return false;
 }
 
 
 //-----------------------------------------------------------------------------
-QStringList IGIOverlayEditor2::GetDecorations() const
+QStringList IGIVLEditor::GetDecorations() const
 {
   QStringList decorations;
   return decorations;
@@ -226,47 +224,47 @@ QStringList IGIOverlayEditor2::GetDecorations() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesRotator* IGIOverlayEditor2::GetSlicesRotator() const
+mitk::SlicesRotator* IGIVLEditor::GetSlicesRotator() const
 {
   return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesSwiveller* IGIOverlayEditor2::GetSlicesSwiveller() const
+mitk::SlicesSwiveller* IGIVLEditor::GetSlicesSwiveller() const
 {
   return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::EnableSlicingPlanes(bool /*enable*/)
+void IGIVLEditor::EnableSlicingPlanes(bool /*enable*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor2::IsSlicingPlanesEnabled() const
-{
-  return false;
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIOverlayEditor2::EnableLinkedNavigation(bool /*enable*/)
-{
-}
-
-
-//-----------------------------------------------------------------------------
-bool IGIOverlayEditor2::IsLinkedNavigationEnabled() const
+bool IGIVLEditor::IsSlicingPlanesEnabled() const
 {
   return false;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
+void IGIVLEditor::EnableLinkedNavigation(bool /*enable*/)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIVLEditor::IsLinkedNavigationEnabled() const
+{
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIVLEditor::CreateQtPartControl(QWidget* parent)
 {
   if (d->m_IGIOverlayEditor2 == 0)
   {
@@ -277,7 +275,7 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
     layout->addWidget(d->m_IGIOverlayEditor2);
 
 
-    ctkPluginContext*     context     = mitk::IGIOverlayEditor2Activator::/*GetDefault()->*/getContext();
+    ctkPluginContext*     context     = mitk::IGIVLEditorActivator::/*GetDefault()->*/getContext();
     ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
     OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
     if (oclService == NULL)
@@ -297,10 +295,10 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
     this->RequestUpdate();
 
     // Finally: Listen to update pulse coming off of event bus. This pulse comes from the data manager updating.
-    ctkServiceReference ref = mitk::IGIOverlayEditor2Activator::getContext()->getServiceReference<ctkEventAdmin>();
+    ctkServiceReference ref = mitk::IGIVLEditorActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
     {
-      ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditor2Activator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkEventAdmin* eventAdmin = mitk::IGIVLEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
       
       ctkDictionary propertiesIGI;
       propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
@@ -315,7 +313,7 @@ void IGIOverlayEditor2::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::OnPreferencesChanged()
+void IGIVLEditor::OnPreferencesChanged()
 {
   berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
   berry::IBerryPreferences::Pointer   prefsNode   = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
@@ -325,10 +323,10 @@ void IGIOverlayEditor2::OnPreferencesChanged()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
+void IGIVLEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
   // 0xAABBGGRR
-  unsigned int   backgroundColour = prefs->GetInt(IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY, IGIOverlayEditor2PreferencePage::DEFAULT_BACKGROUND_COLOR);
+  unsigned int   backgroundColour = prefs->GetInt(IGIVLEditorPreferencePage::BACKGROUND_COLOR_PREFSKEY, IGIVLEditorPreferencePage::DEFAULT_BACKGROUND_COLOR);
 
   if (d->m_IGIOverlayEditor2 != 0)
   {
@@ -338,7 +336,7 @@ void IGIOverlayEditor2::OnPreferencesChanged(const berry::IBerryPreferences* pre
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::SetFocus()
+void IGIVLEditor::SetFocus()
 {
   if (d->m_IGIOverlayEditor2 != 0)
   {
@@ -348,14 +346,14 @@ void IGIOverlayEditor2::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::OnIGIUpdate(const ctkEvent& event)
+void IGIVLEditor::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIOverlayEditor2->Update();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::WriteCurrentConfig(const QString& directory) const
+void IGIVLEditor::WriteCurrentConfig(const QString& directory) const
 {
   QFile   infoFile(directory + QDir::separator() + EDITOR_ID + ".txt");
   bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
@@ -369,7 +367,7 @@ void IGIOverlayEditor2::WriteCurrentConfig(const QString& directory) const
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2::OnRecordingStarted(const ctkEvent& event)
+void IGIVLEditor::OnRecordingStarted(const ctkEvent& event)
 {
   QString   directory = event.getProperty("directory").toString();
   if (!directory.isEmpty())

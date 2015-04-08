@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditor2PreferencePage.h"
-#include <IGIOverlayEditor2.h>
+#include "IGIVLEditorPreferencePage.h"
+#include <IGIVLEditor.h>
 
 #include <QLabel>
 #include <QPushButton>
@@ -27,12 +27,12 @@
 
 
 //-----------------------------------------------------------------------------
-const char*           IGIOverlayEditor2PreferencePage::BACKGROUND_COLOR_PREFSKEY  = "background colour";
-const unsigned int    IGIOverlayEditor2PreferencePage::DEFAULT_BACKGROUND_COLOR   = 0xFF000000;
+const char*           IGIVLEditorPreferencePage::BACKGROUND_COLOR_PREFSKEY  = "background colour";
+const unsigned int    IGIVLEditorPreferencePage::DEFAULT_BACKGROUND_COLOR   = 0xFF000000;
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor2PreferencePage::IGIOverlayEditor2PreferencePage()
+IGIVLEditorPreferencePage::IGIVLEditorPreferencePage()
   : m_MainControl(0)
   , m_BackgroundColourButton(0)
   , m_BackgroundColour(0)
@@ -41,19 +41,19 @@ IGIOverlayEditor2PreferencePage::IGIOverlayEditor2PreferencePage()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2PreferencePage::Init(berry::IWorkbench::Pointer )
+void IGIVLEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2PreferencePage::CreateQtControl(QWidget* parent)
+void IGIVLEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
     .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  m_IGIOverlayEditor2PreferencesNode = prefService->GetSystemPreferences()->Node(IGIOverlayEditor2::EDITOR_ID);
+  m_IGIVLEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIVLEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);
   QLabel* colorLabel = new QLabel("Background colour: ");
@@ -84,7 +84,7 @@ void IGIOverlayEditor2PreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2PreferencePage::OnBackgroundColourClicked()
+void IGIVLEditorPreferencePage::OnBackgroundColourClicked()
 {
   QColor  color = QColorDialog::getColor();
   m_BackgroundColourButton->setAutoFillBackground(true);
@@ -103,31 +103,31 @@ void IGIOverlayEditor2PreferencePage::OnBackgroundColourClicked()
 
 
 //-----------------------------------------------------------------------------
-QWidget* IGIOverlayEditor2PreferencePage::GetQtControl() const
+QWidget* IGIVLEditorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor2PreferencePage::PerformOk()
+bool IGIVLEditorPreferencePage::PerformOk()
 {
-  m_IGIOverlayEditor2PreferencesNode->PutInt(BACKGROUND_COLOR_PREFSKEY, m_BackgroundColour);
+  m_IGIVLEditorPreferencesNode->PutInt(BACKGROUND_COLOR_PREFSKEY, m_BackgroundColour);
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2PreferencePage::PerformCancel()
+void IGIVLEditorPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2PreferencePage::Update()
+void IGIVLEditorPreferencePage::Update()
 {
-  m_BackgroundColour = m_IGIOverlayEditor2PreferencesNode->GetInt(BACKGROUND_COLOR_PREFSKEY, DEFAULT_BACKGROUND_COLOR);
+  m_BackgroundColour = m_IGIVLEditorPreferencesNode->GetInt(BACKGROUND_COLOR_PREFSKEY, DEFAULT_BACKGROUND_COLOR);
 
   m_BackgroundColourButton->setAutoFillBackground(true);
 

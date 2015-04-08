@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#ifndef IGIOverlayEditor2Activator_h
-#define IGIOverlayEditor2Activator_h
+#ifndef IGIVLEditorActivator_h
+#define IGIVLEditorActivator_h
 
 #include <ctkPluginActivator.h>
 
 namespace mitk {
 
 /**
- * \class IGIOverlayEditor2Activator
- * \brief Activator class for the IGIOverlayEditor2.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor2_internal
+ * \class IGIVLEditorActivator
+ * \brief Activator class for the IGIVLEditor.
+ * \ingroup uk_ac_ucl_cmic_igivleditor_internal
  */
-class IGIOverlayEditor2Activator : public QObject, public ctkPluginActivator
+class IGIVLEditorActivator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -40,5 +40,5 @@ private:
 
 } // end namespace
 
-#endif /* IGIOverlayEditor2Activator_h */
+#endif /* IGIVLEditorActivator_h */
 

@@ -12,17 +12,18 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_igioverlayeditor2)
+project(uk_ac_ucl_cmic_igivleditor)
 
+# FIXME: this should go away: vlwidget should hide all the vl stuff behind pimpl
 find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
 include_directories(${VL_INCLUDE_DIRS})
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIOVERLAYEDITOR2
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVLEDITOR
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS MitkQtWidgets niftkIGIGui
   )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_igioverlayeditor2)
+  cotire(uk_ac_ucl_cmic_igivleditor)
 endif()

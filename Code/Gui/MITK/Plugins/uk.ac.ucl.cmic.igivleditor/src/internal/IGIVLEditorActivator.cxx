@@ -12,30 +12,30 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditor2Activator.h"
+#include "IGIVLEditorActivator.h"
 
-#include "../IGIOverlayEditor2.h"
-#include "IGIOverlayEditor2PreferencePage.h"
+#include "../IGIVLEditor.h"
+#include "IGIVLEditorPreferencePage.h"
 
 namespace mitk
 {
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext*               IGIOverlayEditor2Activator::s_PluginContext = 0;
+ctkPluginContext*               IGIVLEditorActivator::s_PluginContext = 0;
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2Activator::start(ctkPluginContext* context)
+void IGIVLEditorActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor2, context)
-  BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor2PreferencePage, context)
+  BERRY_REGISTER_EXTENSION_CLASS(IGIVLEditor, context)
+  BERRY_REGISTER_EXTENSION_CLASS(IGIVLEditorPreferencePage, context)
   s_PluginContext = context;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor2Activator::stop(ctkPluginContext* context)
+void IGIVLEditorActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
   s_PluginContext = NULL;
@@ -43,7 +43,7 @@ void IGIOverlayEditor2Activator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* IGIOverlayEditor2Activator::getContext()
+ctkPluginContext* IGIVLEditorActivator::getContext()
 {
   return s_PluginContext;
 }
@@ -52,4 +52,4 @@ ctkPluginContext* IGIOverlayEditor2Activator::getContext()
 //-----------------------------------------------------------------------------
 } // end namespace
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igioverlayeditor2, mitk::IGIOverlayEditor2Activator)
+Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igivleditor, mitk::IGIVLEditorActivator)

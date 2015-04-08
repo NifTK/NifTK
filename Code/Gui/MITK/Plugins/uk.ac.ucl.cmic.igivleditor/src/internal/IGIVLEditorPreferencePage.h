@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef IGIOverlayEditor2PreferencePage_h
-#define IGIOverlayEditor2PreferencePage_h
+#ifndef IGIVLEditorPreferencePage_h
+#define IGIVLEditorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -26,17 +26,17 @@ class QCheckBox;
 class ctkPathLineEdit;
 
 /**
- * \class IGIOverlayEditor2PreferencePage
- * \brief Preference page for IGIOverlayEditor2.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor2_internal
+ * \class IGIVLEditorPreferencePage
+ * \brief Preference page for IGIVLEditor.
+ * \ingroup uk_ac_ucl_cmic_igivleditor_internal
  */
-struct IGIOverlayEditor2PreferencePage : public QObject, public berry::IQtPreferencePage
+struct IGIVLEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  IGIOverlayEditor2PreferencePage();
+  IGIVLEditorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
   void CreateQtControl(QWidget* widget);
@@ -71,7 +71,7 @@ protected:
   QPushButton*    m_BackgroundColourButton;
   unsigned int    m_BackgroundColour;
 
-  berry::IPreferences::Pointer    m_IGIOverlayEditor2PreferencesNode;
+  berry::IPreferences::Pointer    m_IGIVLEditorPreferencesNode;
 };
 
-#endif /* IGIOverlayEditor2PreferencePage_h */
+#endif /* IGIVLEditorPreferencePage_h */

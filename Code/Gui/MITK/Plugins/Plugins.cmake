@@ -112,7 +112,7 @@ if(BUILD_IGI)
   if(BUILD_VL)
     set(PROJECT_PLUGINS
       ${PROJECT_PLUGINS}
-      Plugins/uk.ac.ucl.cmic.igioverlayeditor2:ON
+      Plugins/uk.ac.ucl.cmic.igivleditor:ON
     )
   endif()
 endif()

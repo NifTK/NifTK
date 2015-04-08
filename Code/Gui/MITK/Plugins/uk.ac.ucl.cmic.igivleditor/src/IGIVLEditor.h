@@ -12,25 +12,25 @@
 
 =============================================================================*/
 
-#ifndef IGIOverlayEditor2_h
-#define IGIOverlayEditor2_h
+#ifndef IGIVLEditor_h
+#define IGIVLEditor_h
 
 #include <QmitkAbstractRenderEditor.h>
 #include <mitkILinkedRenderWindowPart.h>
 #include <service/event/ctkEvent.h>
-#include <uk_ac_ucl_cmic_igioverlayeditor2_Export.h>
+#include <uk_ac_ucl_cmic_igivleditor_Export.h>
 
 class QmitkIGIOverlayEditor2;
-class IGIOverlayEditor2Private;
+class IGIVLEditorPrivate;
 
 /**
- * \class IGIOverlayEditor2
+ * \class IGIVLEditor
  * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor2,
  * and most methods are dummy or do-nothing implementations, as the widget is for
  * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor2
+ * \ingroup uk_ac_ucl_cmic_igivleditor
  */
-class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR2 IGIOverlayEditor2 : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
+class UK_AC_UCL_CMIC_IGIVLEDITOR IGIVLEditor : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
@@ -38,10 +38,10 @@ public:
 
   static const char* EDITOR_ID;
 
-  berryObjectMacro(IGIOverlayEditor2)
+  berryObjectMacro(IGIVLEditor)
 
-  IGIOverlayEditor2();
-  ~IGIOverlayEditor2();
+  IGIVLEditor();
+  ~IGIVLEditor();
 
   QmitkIGIOverlayEditor2* GetIGIOverlayEditor2();
 
@@ -143,7 +143,7 @@ private slots:
 
 private:
 
-  const QScopedPointer<IGIOverlayEditor2Private> d;
+  const QScopedPointer<IGIVLEditorPrivate> d;
 };
 
-#endif /*IGIOverlayEditor2_h */
+#endif /*IGIVLEditor_h */
