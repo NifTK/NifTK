@@ -283,11 +283,6 @@ mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_ITKFFTW)
 mark_as_advanced(BUILD_MESHING)
 
-# PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
-if(BUILD_PCL)
-  set(PCL_FIND_QUIETLY ON)
-endif()
-
 ######################################################################
 # Make sure Git is available.
 ######################################################################
@@ -811,6 +806,7 @@ if(GDCM_FOUND)
   link_directories(${GDCM_LIBRARY_DIRS})
 endif()
 
+######################################################################
 # Find OpenCV.
 ######################################################################
 if(BUILD_IGI)
@@ -827,6 +823,18 @@ if(BUILD_IGI)
   endif()
 
 endif(BUILD_IGI)
+
+
+######################################################################
+# Find PCL.
+######################################################################
+if(BUILD_PCL)
+  # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
+  set(PCL_FIND_QUIETLY ON)
+  find_package(PCL 1.7 REQUIRED)
+  # do not add the include paths, etc to the global compiler settings!
+  # instead, this is done for each module/plugin separately in PackageDepends/MITK_PCL_Config.cmake.
+endif()
 
 
 ######################################################################
