@@ -41,21 +41,3 @@ set(UI_FILES
 set(QRC_FILES
   Resources/niftkCoreGui.qrc
 )
-
-if(BUILD_VL)
-  set(CPP_FILES
-    ${CPP_FILES}
-    Rendering/VLQt4Widget.cpp
-    Rendering/OclTriangleSorter.cxx
-  )
-  set(MOC_H_FILES
-    ${MOC_H_FILES}
-    Rendering/VLQt4Widget.h
-  )
-endif()
-if(CUDA_FOUND AND NIFTK_USE_CUDA AND BUILD_VL)
-  set(CPP_FILES
-    ${CPP_FILES}
-    Rendering/VLFramebufferToCUDA.cxx
-  )
-endif()

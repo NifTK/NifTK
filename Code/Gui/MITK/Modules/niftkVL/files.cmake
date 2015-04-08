@@ -12,22 +12,27 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkCoreGui
-  EXPORT_DEFINE NIFTKCOREGUI_EXPORT
-  INCLUDE_DIRS Events LookupTables Rendering
-  DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore
-  PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets
+set(CPP_FILES
+  Rendering/VLQt4Widget.cpp
+  Rendering/OclTriangleSorter.cxx
+  VLEditor/QmitkIGIVLEditor.cxx
 )
 
-target_link_libraries(niftkCoreGui
-  niftkITK
-  niftkVTK
+set(MOC_H_FILES
+  Rendering/VLQt4Widget.h
+  VLEditor/QmitkIGIVLEditor.h
 )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkCoreGui)
+set(UI_FILES
+  VLEditor/QmitkIGIVLEditor.ui
+)
+
+set(QRC_FILES
+)
+
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  set(CPP_FILES
+    ${CPP_FILES}
+    Rendering/VLFramebufferToCUDA.cxx
+  )
 endif()
-
-if(BUILD_TESTING)
-  #add_subdirectory(Testing)
-endif(BUILD_TESTING)

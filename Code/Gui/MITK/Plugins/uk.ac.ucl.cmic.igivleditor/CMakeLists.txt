@@ -12,27 +12,18 @@
 #
 #============================================================================*/
 
-set(_packages Qt4|QtGui QVTK)
+project(uk_ac_ucl_cmic_igivleditor)
 
-# optional audio data source depends on qt-multimedia, which may not be available.
-if(QT_QTMULTIMEDIA_INCLUDE_DIR)
-  set(_packages
-    ${_packages}
-    Qt4|QtMultimedia
+# FIXME: this should go away: vlwidget should hide all the vl stuff behind pimpl
+find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+include_directories(${VL_INCLUDE_DIRS})
+
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVLEDITOR
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS MitkQtWidgets niftkVL
   )
-endif()
-
-MITK_CREATE_MODULE(niftkIGIGui
-  EXPORT_DEFINE NIFTKIGIGUI_EXPORT
-  INCLUDE_DIRS Common DataSources OverlayEditor
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS ${_packages}
-)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
+  cotire(uk_ac_ucl_cmic_igivleditor)
 endif()

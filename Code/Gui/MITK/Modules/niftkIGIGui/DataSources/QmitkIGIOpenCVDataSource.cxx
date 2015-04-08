@@ -23,6 +23,7 @@
 #include <cv.h>
 #include <QCoreApplication>
 #include <sstream>
+#include <vtkImageData.h>
 
 #ifdef _USE_CUDA
 #include <CUDAManager/CUDAManager.h>

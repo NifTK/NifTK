@@ -57,8 +57,8 @@ set(_include_plugins
 if(BUILD_VL)
   set(_include_plugins
     ${_include_plugins}
-    uk.ac.ucl.cmic.newvisualization
-    uk.ac.ucl.cmic.igioverlayeditor2
+    uk.ac.ucl.cmic.vlrenderer
+    uk.ac.ucl.cmic.igivleditor
   )
 endif()
 
