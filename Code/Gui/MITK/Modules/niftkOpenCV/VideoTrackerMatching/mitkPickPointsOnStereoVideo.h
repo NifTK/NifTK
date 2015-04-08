@@ -30,6 +30,24 @@ namespace mitk {
  */
 void PointPickingCallBackFunc (  int, int , int, int, void* );
 
+class NIFTKOPENCV_EXPORT PickedObject : public itk::Object
+{
+public:
+  mitkClassMacro(PickedObject, itk::Object);
+  itkNewMacro(PickedObject);
+  int id;
+  bool isLine;
+  bool ordered;
+  std::vector < cv::Point2d > points;
+
+protected:
+  PickedObject();
+  virtual ~PickedObject();
+
+  PickedObject(const PickedObject&); // Purposefully not implemented.
+  PickedObject& operator=(const PickedObject&); // Purposefully not implemented.
+};
+
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 
@@ -69,11 +87,11 @@ public:
    */
   void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
-
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
   itkSetMacro ( OrderedPoints, bool);
+  itkSetMacro ( PickingLine, bool);
   itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( WriteAnnotatedImages, bool);
@@ -101,6 +119,7 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_OrderedPoints; //picked points can be ordered or unordered
+  bool                          m_PickingLine; //if true we are picking a line defined by a vector of points
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
   bool                          m_HaltOnVideoReadFail; //halt if video read fail
   bool                          m_WriteAnnotatedImages; //halt if video read fail
