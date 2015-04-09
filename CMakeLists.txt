@@ -704,13 +704,28 @@ endif()
 # Find Mandatory External packages
 ######################################################################
 
+
+
 ######################################################################
-# Find Boost.
+# (Optional) Find PCL.
+# find it before boost because it will mess up Boost_LIBRARIES with its own requested components.
 ######################################################################
 set(Boost_NO_SYSTEM_PATHS ON)
 # off is the default, but our optional pcl dependency will try to use static libs if we dont define it explicitly.
 set(Boost_USE_STATIC_LIBS OFF)
 
+if(BUILD_PCL)
+  # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
+  set(PCL_FIND_QUIETLY ON)
+  find_package(PCL 1.7 REQUIRED)
+  # do not add the include paths, etc to the global compiler settings!
+  # instead, this is done for each module/plugin separately in PackageDepends/MITK_PCL_Config.cmake.
+endif()
+
+
+######################################################################
+# Find Boost.
+######################################################################
 find_package( Boost 1.54 COMPONENTS filesystem system date_time regex thread REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
@@ -823,18 +838,6 @@ if(BUILD_IGI)
   endif()
 
 endif(BUILD_IGI)
-
-
-######################################################################
-# Find PCL.
-######################################################################
-if(BUILD_PCL)
-  # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
-  set(PCL_FIND_QUIETLY ON)
-  find_package(PCL 1.7 REQUIRED)
-  # do not add the include paths, etc to the global compiler settings!
-  # instead, this is done for each module/plugin separately in PackageDepends/MITK_PCL_Config.cmake.
-endif()
 
 
 ######################################################################
