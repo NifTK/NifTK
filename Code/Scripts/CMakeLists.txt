@@ -25,7 +25,11 @@ add_subdirectory(CorticalThickness)
 add_subdirectory(Parcellation)
 add_subdirectory(MAPS)
 add_subdirectory(Slicer)
-add_subdirectory(MSTools)
+
+if(NOT WIN32)
+  add_subdirectory(MSTools)
+endif()
+
 if(BUILD_CAMINO)
   add_subdirectory(Camino)
 endif()
