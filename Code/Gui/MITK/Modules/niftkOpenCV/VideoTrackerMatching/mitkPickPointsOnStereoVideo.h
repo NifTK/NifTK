@@ -30,22 +30,15 @@ namespace mitk {
  */
 void PointPickingCallBackFunc (  int, int , int, int, void* );
 
-class PickedObject : public itk::Object
+class PickedObject 
 {
 public:
-  mitkClassMacro(PickedObject, itk::Object);
-  itkNewMacro(PickedObject);
   int id;
   bool isLine;
   std::vector < cv::Point2d > points;
 
   PickedObject();
-  virtual ~PickedObject();
-  PickedObject(const PickedObject&); // Purposefully not implemented.
-  PickedObject& operator=(const PickedObject&); // Purposefully not implemented.
-
-protected:
-
+  ~PickedObject();
 };
 
 class PickedPointList : public itk::Object
