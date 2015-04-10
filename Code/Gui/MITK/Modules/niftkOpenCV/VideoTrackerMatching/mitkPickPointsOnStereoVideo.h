@@ -47,7 +47,7 @@ class PickedPointList : public itk::Object
     mitkClassMacro(PickedPointList, itk::Object);
     itkNewMacro(PickedPointList);
     
-    std::ofstream& operator << (std::ofstream& os);
+    void PutOut (std::ofstream& os);
     void AnnotateImage (cv::Mat& image);
 
     itkSetMacro (InLineMode,bool);

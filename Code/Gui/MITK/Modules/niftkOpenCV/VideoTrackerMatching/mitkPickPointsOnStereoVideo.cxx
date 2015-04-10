@@ -50,7 +50,7 @@ PickedPointList::~PickedPointList()
 {}
 
 //-----------------------------------------------------------------------------
-std::ofstream& PickedPointList::operator << (std::ofstream& os )
+void PickedPointList::PutOut (std::ofstream& os )
 {
   os << "<frame>" <<  m_FrameNumber << "</frame>" << std::endl;
   os << "<channel>" << m_Channel <<"</channel>" << std::endl;
@@ -83,7 +83,6 @@ std::ofstream& PickedPointList::operator << (std::ofstream& os )
       os << "</point>" << std::endl;
     }
   }
-  return os;
 }
 
 //-----------------------------------------------------------------------------
@@ -123,8 +122,8 @@ unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
   {
     if ( m_InOrderedMode )
     {
-      int lastPoint = 0 ; 
-      for ( unsigned int i = 0 ; i < m_PickedObjects.size() - 1 ; i ++ ) 
+      int lastPoint = -1 ; 
+      for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; i ++ ) 
       {
         if ( ! m_PickedObjects[i].isLine ) 
         {
@@ -404,8 +403,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
           leftPickedPoints->SetInLineMode (m_PickingLine);
           leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetFrameNumber (framenumber);
           rightPickedPoints->SetInLineMode (m_PickingLine);
           rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetFrameNumber (framenumber + 1);
 
           cv::Mat leftAnnotatedVideoImage;
           cv::Mat rightAnnotatedVideoImage;
@@ -426,6 +427,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 {
                   MITK_INFO << "Switched to un ordered points mode";
                 }
+                leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+                rightPickedPoints->SetInOrderedMode (m_OrderedPoints);
               }
               if ( overWriteLeft )
               {
@@ -457,7 +460,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           if ( leftPickedPoints->GetIsModified() ) 
           {
             std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
-            leftPointOut << leftPickedPoints;
+            leftPickedPoints->PutOut( leftPointOut );
             leftPointOut.close();
 
             if ( m_WriteAnnotatedImages )
@@ -469,7 +472,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           if ( rightPickedPoints->GetIsModified() ) 
           {
             std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
-            rightPointOut << rightPickedPoints;
+            rightPickedPoints->PutOut (rightPointOut);
             rightPointOut.close();
 
             if ( m_WriteAnnotatedImages )
