@@ -30,24 +30,59 @@ namespace mitk {
  */
 void PointPickingCallBackFunc (  int, int , int, int, void* );
 
-class NIFTKOPENCV_EXPORT PickedObject : public itk::Object
+class PickedObject : public itk::Object
 {
 public:
   mitkClassMacro(PickedObject, itk::Object);
   itkNewMacro(PickedObject);
   int id;
   bool isLine;
-  bool ordered;
   std::vector < cv::Point2d > points;
 
-protected:
   PickedObject();
   virtual ~PickedObject();
-
   PickedObject(const PickedObject&); // Purposefully not implemented.
   PickedObject& operator=(const PickedObject&); // Purposefully not implemented.
+
+protected:
+
 };
 
+class PickedPointList : public itk::Object
+{
+  public:
+    mitkClassMacro(PickedPointList, itk::Object);
+    itkNewMacro(PickedPointList);
+    
+    std::ofstream& operator << (std::ofstream& os);
+    void AnnotateImage (cv::Mat& image);
+
+    itkSetMacro (InLineMode,bool);
+    itkSetMacro (InOrderedMode, bool);
+    itkGetMacro (IsModified, bool);
+    itkSetMacro (FrameNumber, unsigned int);
+    itkSetMacro (Channel, std::string);
+
+    unsigned int AddPoint (const cv::Point2d& point);
+    unsigned int RemoveLastPoint ();
+    unsigned int SkipOrderedPoint ();
+    unsigned int EndLine();
+
+  protected:
+    PickedPointList();
+    virtual ~PickedPointList();
+
+    PickedPointList (const PickedPointList&); // Purposefully not implemented.
+    PickedPointList& operator=(const PickedPointList&); // Purposefully not implemented.
+
+  private:
+    bool m_InLineMode;
+    bool m_InOrderedMode;
+    bool m_IsModified;
+    unsigned int m_FrameNumber;
+    std::string m_Channel;
+    std::vector < PickedObject > m_PickedObjects;
+};
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 
