@@ -84,10 +84,10 @@ void PNMWriterService::Write()
 
   try
   {
-    const std::string& locale = "C";
     const std::string& currLocale = setlocale( LC_ALL, NULL );
-    setlocale(LC_ALL, locale.c_str());
 
+    const std::string& locale = "C";
+    setlocale(LC_ALL, locale.c_str());
 
     std::locale previousLocale(out->getloc());
     std::locale I("C");
@@ -101,6 +101,8 @@ void PNMWriterService::Write()
     vtkImageData * nonConstImg = const_cast<vtkImageData *>(input->GetVtkImageData());
     pnmWriter->SetInputData(nonConstImg);
     pnmWriter->Write();
+
+    out->imbue( previousLocale );
 
     setlocale(LC_ALL, currLocale.c_str());
   }
