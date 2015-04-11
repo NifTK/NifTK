@@ -37,7 +37,9 @@ void CoreIOActivator::Load(us::ModuleContext* context)
 
   std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreIOMimeTypes::Get();
   for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
-    iterEnd = mimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
+    iterEnd = mimeTypes.end();
+    mimeTypeIter != iterEnd;
+    ++mimeTypeIter)
   {
     context->RegisterService(*mimeTypeIter, props);
   }

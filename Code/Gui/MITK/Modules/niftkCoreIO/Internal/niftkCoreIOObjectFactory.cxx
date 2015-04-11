@@ -61,16 +61,19 @@ CoreIOObjectFactory::CoreIOObjectFactory()
     if (useDRCAnalyze)
     {
       itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
-      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
+      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(),
+                                                            itkDrcAnalyzeIO.GetPointer(), 2);
       m_FileIOs.push_back(drcAnalyzeIO);
     }
 
     itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
-    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 1);
+    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(),
+                                                     itkNiftiIO.GetPointer(), 1);
     m_FileIOs.push_back(niftiIO);
 
     itk::INRImageIO::Pointer itkINRImageIO = itk::INRImageIO::New();
-    mitk::ItkImageIO* inrImageIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::INRIA_MIMETYPE(), itkINRImageIO.GetPointer(), 0);
+    mitk::ItkImageIO* inrImageIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::INRIA_MIMETYPE(),
+                                                        itkINRImageIO.GetPointer(), 0);
     m_FileIOs.push_back(inrImageIO);
 
     CreateFileExtensionsMap();
@@ -89,7 +92,9 @@ CoreIOObjectFactory::~CoreIOObjectFactory()
   /// ITK readers and writers should be unregistered from itk::NifTKImageIOFactory.
 
   for(std::vector<mitk::AbstractFileIO*>::iterator iter = m_FileIOs.begin(),
-      endIter = m_FileIOs.end(); iter != endIter; ++iter)
+      endIter = m_FileIOs.end();
+      iter != endIter;
+      ++iter)
   {
     delete *iter;
   }
@@ -173,4 +178,3 @@ struct RegisterNifTKCoreIOObjectFactory{
 static RegisterNifTKCoreIOObjectFactory registerNifTKCoreIOObjectFactory;
 
 } // end namespace
-

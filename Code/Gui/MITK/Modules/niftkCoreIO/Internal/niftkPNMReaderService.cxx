@@ -95,4 +95,3 @@ std::vector<itk::SmartPointer<mitk::BaseData> > PNMReaderService::Read()
 }
 
 } // end namespace
-

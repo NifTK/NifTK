@@ -21,9 +21,9 @@ namespace niftk
 {
 
 /**
- * Writes PNM format images to disk
- * @ingroup Process
- */
+* Writes PNM format images to disk
+* @ingroup Process
+*/
 class PNMWriterService : public mitk::AbstractFileWriter
 {
 public:
@@ -31,7 +31,6 @@ public:
   PNMWriterService();
   virtual ~PNMWriterService();
 
-  using mitk::AbstractFileWriter::Write;
   virtual void Write();
 
 private:

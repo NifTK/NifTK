@@ -21,9 +21,9 @@ namespace niftk
 {
 
 /**
- * @class PNMReaderService
- * @brief The PNMReaderService class
- */
+* @class PNMReaderService
+* @brief The PNMReaderService class
+*/
 class PNMReaderService : public mitk::AbstractFileReader
 {
 public:
@@ -31,7 +31,6 @@ public:
   PNMReaderService();
   virtual ~PNMReaderService();
 
-  using mitk::AbstractFileReader::Read;
   virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read();
 
 private:

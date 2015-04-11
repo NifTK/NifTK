@@ -16,20 +16,17 @@
 #define niftkCoreIOObjectFactory_h
 
 #include <mitkCoreObjectFactory.h>
-
-namespace mitk {
-class AbstractFileIO;
-}
+#include <mitkAbstractFileIO.h>
 
 namespace niftk {
 
 /**
- * \class CoreIOObjectFactory
- * \brief Object factory class to create and register our IO classes.
- *
- * Specifically, this class contains the logic to register a DRC specific
- * Analyze image reader, and NifTK specific Nifti reader.
- */
+* \class CoreIOObjectFactory
+* \brief Object factory class to create and register our IO classes.
+*
+* Specifically, this class contains the logic to register a DRC specific
+* Analyze image reader, and NifTK specific Nifti reader.
+*/
 class CoreIOObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
@@ -72,4 +69,3 @@ private:
 } // end namespace
 
 #endif
-

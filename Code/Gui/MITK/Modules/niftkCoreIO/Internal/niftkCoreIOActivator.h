@@ -28,9 +28,9 @@
 namespace niftk {
 
 /**
- * @class CoreIOActivator
- * @brief The CoreIOActivator class
- */
+* @class CoreIOActivator
+* @brief The CoreIOActivator class
+*/
 class CoreIOActivator : public us::ModuleActivator
 {
 public:

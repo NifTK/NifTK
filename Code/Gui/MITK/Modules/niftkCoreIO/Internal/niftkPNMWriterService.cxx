@@ -114,4 +114,3 @@ void PNMWriterService::Write()
 }
 
 } // end namespace
-

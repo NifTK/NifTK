@@ -21,10 +21,10 @@ namespace niftk
 {
 
 /**
- * @class CoordinateAxesDataReaderService
- * @brief Loads a 4x4 Matrix into a mitk::CoordinateAxesData.
- * @internal
- */
+* @class CoordinateAxesDataReaderService
+* @brief Loads a 4x4 Matrix into a mitk::CoordinateAxesData.
+* @internal
+*/
 class CoordinateAxesDataReaderService: public mitk::AbstractFileReader
 {
 public:
@@ -32,7 +32,6 @@ public:
   CoordinateAxesDataReaderService();
   virtual ~CoordinateAxesDataReaderService();
 
-  using AbstractFileReader::Read;
   virtual std::vector< itk::SmartPointer<mitk::BaseData> > Read();
 
 private:

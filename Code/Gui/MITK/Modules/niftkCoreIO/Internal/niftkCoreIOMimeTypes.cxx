@@ -116,7 +116,9 @@ std::string CoreIOMimeTypes::PNM_MIMETYPE_NAME()
 //-----------------------------------------------------------------------------
 std::string CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION()
 {
-  static std::string description = "The portable pixmap format (PPM), the portable graymap format (PGM) and the portable bitmap format (PBM) are image file formats used and defined by the Netpbm project.";
+  static std::string description = std::string("The portable pixmap format (PPM), the portable graymap format (PGM) ")
+      + std::string("and the portable bitmap format (PBM) are image file formats ")
+      + std::string("used and defined by the Netpbm project.");
   return description;
 }
 

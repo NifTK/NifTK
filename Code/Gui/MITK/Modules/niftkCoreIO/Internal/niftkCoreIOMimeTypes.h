@@ -21,9 +21,9 @@
 namespace niftk {
 
 /**
- * @class CoreIOMimeTypes
- * @brief The CoreIOMimeTypes class
- */
+* @class CoreIOMimeTypes
+* @brief The CoreIOMimeTypes class
+*/
 class CoreIOMimeTypes
 {
 public:
