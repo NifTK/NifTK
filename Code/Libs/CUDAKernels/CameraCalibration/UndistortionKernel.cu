@@ -20,7 +20,6 @@
 #include <sm_30_intrinsics.h>
 #include <cassert>
 #include <stdexcept>
-#include <iostream>
 #include <fstream>
 #include <cstring>
 #include <common_functions.h>
