@@ -45,7 +45,12 @@
 #include <DataSources/AudioDataSource.h>
 #endif
 
+#ifdef _WIN32
+#include <QmitkWindowsHotkeyHandler.h>
+#endif
 
+
+//-----------------------------------------------------------------------------
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
@@ -74,6 +79,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_PlaybackSliderFactor(1)
 , m_CurrentSourceGUI(NULL)
 , m_setupUiHasBeenCalled(false)
+, m_HotkeyHandler(0)
 {
   m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -101,6 +107,10 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
 {
+#ifdef _WIN32
+  delete m_HotkeyHandler;
+#endif
+
   // Stop both timers, to make sure nothing is triggering as we destroy.
   if (m_GuiUpdateTimer != NULL)
   {
@@ -416,7 +426,21 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 
+#ifdef _WIN32
+  m_HotkeyHandler = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F5);
+  ok = QObject::connect(m_HotkeyHandler, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  assert(ok);
+#endif
+
   m_setupUiHasBeenCalled = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey)
+{
+  // an example of what to do.
+  OnRecordStart();
 }
 
 

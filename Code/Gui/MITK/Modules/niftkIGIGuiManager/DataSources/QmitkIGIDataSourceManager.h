@@ -38,6 +38,8 @@ class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
 class QGridLayout;
 class QmitkIGIDataSourceGui;
+class QmitkWindowsHotkeyHandler;
+
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -263,6 +265,8 @@ private slots:
 
   void OnComputeStats();
 
+  void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
+
 private:
 
   mitk::DataStorage                        *m_DataStorage;
@@ -313,6 +317,8 @@ private:
 
   // used to decide whether to clean up signals in the destructor;
   bool                                      m_setupUiHasBeenCalled;
+
+  QmitkWindowsHotkeyHandler*                m_HotkeyHandler;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
