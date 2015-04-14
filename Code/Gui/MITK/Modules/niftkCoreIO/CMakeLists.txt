@@ -15,9 +15,8 @@
 MITK_CREATE_MODULE(niftkCoreIO
   EXPORT_DEFINE NIFTKCOREIO_EXPORT
   INCLUDE_DIRS 
-  DEPENDS niftkCore MitkCore
-  AUTOLOAD_WITH MitkCore
-  PACKAGE_DEPENDS 
+  DEPENDS niftkCore
+  AUTOLOAD_WITH niftkCore
 )
 
 target_link_libraries(niftkCoreIO
