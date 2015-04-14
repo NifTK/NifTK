@@ -103,7 +103,7 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
     }
     if ( ! m_PickedObjects[i].isLine )
     { 
-      assert ( m_PickedObjects[i].points.size() == 1 );
+      assert ( m_PickedObjects[i].points.size() <= 1 );
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
       {
         cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
@@ -206,7 +206,7 @@ void PickedPointList::SetInLineMode(const bool& mode)
 bool PickedPointList::GetIsModified()
 {
   bool state = m_IsModified;
- // m_IsModified = false;
+  m_IsModified = false;
   return state;
 }
 
@@ -234,7 +234,6 @@ unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
     }
     else
     {
-      // MITK_INFO << "Trying to add an unordered point to" << out->back();
       PickedObject pickedObject; 
       pickedObject.isLine = false;
       pickedObject.id = -1;
@@ -264,7 +263,11 @@ unsigned int PickedPointList::RemoveLastPoint()
   }
   else
   {
-    m_PickedObjects.pop_back();
+    if ( m_PickedObjects.size() != 0 )
+    {
+      MITK_INFO << "Removing last point";
+      m_PickedObjects.pop_back();
+    }
   }
   m_IsModified=true;
   return m_PickedObjects.size();
@@ -273,7 +276,34 @@ unsigned int PickedPointList::RemoveLastPoint()
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::SkipOrderedPoint()
 {
-  //do something
+  if ( ! m_InOrderedMode )
+  {
+    return m_PickedObjects.size();
+  }
+  
+  if ( ! m_InLineMode )
+  {
+    int pointID=this->GetNextAvailableID(false);
+    PickedObject pickedObject;
+    pickedObject.isLine = false;
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+
+    MITK_INFO << "Skipped ordered point " << pointID;
+  }
+  else
+  {
+    int pointID=this->GetNextAvailableID(true);
+    
+    PickedObject pickedObject;
+    pickedObject.isLine = true;
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+
+    MITK_INFO << "Skipped ordered line " << pointID-1;
+  }
   return m_PickedObjects.size();
 }
 
@@ -519,8 +549,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
 
-          cv::Mat leftAnnotatedVideoImage;
-          cv::Mat rightAnnotatedVideoImage;
+          cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+          cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
@@ -557,10 +587,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               }
               if ( overWriteLeft )
               {
-                leftAnnotatedVideoImage = leftVideoImage.clone();
                 cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);
                 if ( leftPickedPoints->GetIsModified() )
                 {
+                  leftAnnotatedVideoImage = leftVideoImage.clone();
                   leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
                 }
                 
@@ -570,10 +600,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
               if ( overWriteRight )
               {
-                rightAnnotatedVideoImage = rightVideoImage.clone();
                 cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, rightPickedPoints);
                 if ( rightPickedPoints->GetIsModified() )
                 {
+                  rightAnnotatedVideoImage = rightVideoImage.clone();
                   rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
                 }
                 
@@ -625,20 +655,16 @@ void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata
   PickedPointList* out = static_cast<PickedPointList*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    MITK_INFO << "Left mouse button event";
     out->AddPoint (cv::Point2d ( x,y));
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {
-    MITK_INFO << "Removed last picked object";
     out->RemoveLastPoint();
   }
   else if  ( event == cv::EVENT_MBUTTONDOWN )
   {
-    MITK_INFO << "Skipping Point ";
     out->SkipOrderedPoint();
   }
 }
-
 
 } // end namespace
