@@ -414,22 +414,26 @@ int DoMain(arguments args)
   // Write the deformed image
   // ~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename DeformedImageWriterType::Pointer deformedImageWriter = DeformedImageWriterType::New();
-
-  deformedImageWriter->SetInput( resampler->GetOutput() );
-  deformedImageWriter->SetFileName( args.fileOutputImage );
-
-  try
+  if ( args.fileOutputImage.length() )
   {
-    std::cout << "Writing the deformed image to file: " 
-              << args.fileOutputImage << std::endl;
-    deformedImageWriter->Update();
-  }
-  catch( itk::ExceptionObject & excp )
-  {
-    std::cerr << "ERROR: Cannot write the transformed image to a file, exception thrown " << std::endl
-              << excp << std::endl;
-    return EXIT_FAILURE;
+
+    typename DeformedImageWriterType::Pointer deformedImageWriter = DeformedImageWriterType::New();
+
+    deformedImageWriter->SetInput( resampler->GetOutput() );
+    deformedImageWriter->SetFileName( args.fileOutputImage );
+
+    try
+    {
+      std::cout << "Writing the deformed image to file: " 
+                << args.fileOutputImage << std::endl;
+      deformedImageWriter->Update();
+    }
+    catch( itk::ExceptionObject & excp )
+    {
+      std::cerr << "ERROR: Cannot write the transformed image to a file, exception thrown " << std::endl
+                << excp << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
 
@@ -439,63 +443,66 @@ int DoMain(arguments args)
   // input and the deformed image by using an iterator.
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename DisplacementFieldType::Pointer field = DisplacementFieldType::New();
-
-  field->SetRegions( region );
-  field->SetOrigin( origin );
-  field->SetSpacing( spacing );
-  field->Allocate();
-
-  typedef itk::ImageRegionIterator< DisplacementFieldType > FieldIterator;
-
-  FieldIterator fi( field, region );
-  fi.GoToBegin();
-
-  typename TransformType::InputPointType  point1;
-  typename TransformType::OutputPointType point2;
-  typename DisplacementFieldType::IndexType index;
-
-  FieldVectorType displacement;
-
-  while( ! fi.IsAtEnd() )
+  if ( args.fileOutputDeformationField.length() )
   {
-    index = fi.GetIndex();
 
-    field->TransformIndexToPhysicalPoint( index, point1 );
+    typename DisplacementFieldType::Pointer field = DisplacementFieldType::New();
 
-    point2 = tps->TransformPoint( point1 );
+    field->SetRegions( region );
+    field->SetOrigin( origin );
+    field->SetSpacing( spacing );
+    field->Allocate();
 
-    for ( unsigned int i = 0;i < ImageDimension;i++)
+    typedef itk::ImageRegionIterator< DisplacementFieldType > FieldIterator;
+
+    FieldIterator fi( field, region );
+    fi.GoToBegin();
+
+    typename TransformType::InputPointType  point1;
+    typename TransformType::OutputPointType point2;
+    typename DisplacementFieldType::IndexType index;
+
+    FieldVectorType displacement;
+
+    while( ! fi.IsAtEnd() )
     {
-      displacement[i] = point2[i] - point1[i];
+      index = fi.GetIndex();
+
+      field->TransformIndexToPhysicalPoint( index, point1 );
+
+      point2 = tps->TransformPoint( point1 );
+
+      for ( unsigned int i = 0;i < ImageDimension;i++)
+      {
+        displacement[i] = point2[i] - point1[i];
+      }
+      fi.Set( displacement );
+
+      ++fi;
     }
-    fi.Set( displacement );
-
-    ++fi;
-  }
 
 
-  // Write computed deformation field
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write computed deformation field
 
-  typename FieldWriterType::Pointer fieldWriter = FieldWriterType::New();
+    typename FieldWriterType::Pointer fieldWriter = FieldWriterType::New();
   
-  fieldWriter->SetFileName( args.fileOutputDeformationField );
+    fieldWriter->SetFileName( args.fileOutputDeformationField );
 
-  fieldWriter->SetInput( field );
+    fieldWriter->SetInput( field );
 
-  try
-  {
-    std::cout << "Writing the deformation field to file: " 
-              << args.fileOutputDeformationField << std::endl;
-     fieldWriter->Update();
-  }
+    try
+    {
+      std::cout << "Writing the deformation field to file: " 
+                << args.fileOutputDeformationField << std::endl;
+      fieldWriter->Update();
+    }
 
-  catch( itk::ExceptionObject &excp )
-  {
-    std::cerr << "ERROR: Failed to write the deformation field, exception thrown " << std::endl;
-    std::cerr << excp << std::endl;
-    return EXIT_FAILURE;
+    catch( itk::ExceptionObject &excp )
+    {
+      std::cerr << "ERROR: Failed to write the deformation field, exception thrown " << std::endl;
+      std::cerr << excp << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   return EXIT_SUCCESS;
