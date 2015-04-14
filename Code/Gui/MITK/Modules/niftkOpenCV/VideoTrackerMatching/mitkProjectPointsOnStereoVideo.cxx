@@ -23,7 +23,7 @@
 #include <highgui.h>
 #include <niftkFileHelper.h>
 
-#include <boost/filesystem.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace mitk {
 
