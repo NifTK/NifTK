@@ -112,6 +112,7 @@ if(SlicerExecutionModel_FOUND)
     niftkSubsampleImage
     niftkSubtract
     niftkThinPlateSplineScatteredDataPointSetToImage
+    niftkThinPlateSplineWarp
     niftkUnaryImageOperatorsOnDirectoryTree
     niftkVesselExtractor
     niftkVotingBinaryIterativeHoleFillingImageFilter
