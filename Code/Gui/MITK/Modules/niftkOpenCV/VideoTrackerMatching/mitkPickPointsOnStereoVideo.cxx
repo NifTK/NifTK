@@ -490,7 +490,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
               MITK_INFO << rightOutName  + ".xml" << " exists, overwrite (y/n)";
               while ( ! ( key == 'n' || key == 'y' ) )
               {
-                key = cvWaitKey(20);
+                key = cv::waitKey(20);
               }
               if ( key == 'n' ) 
               {
@@ -526,7 +526,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           {
             while ( key != 'n' && key != 'q' )
             {
-              key = cvWaitKey(20);
+              key = cv::waitKey(20);
               if ( key == 't' )
               {
                 m_OrderedPoints = ! m_OrderedPoints;
