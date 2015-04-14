@@ -38,7 +38,6 @@ class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
 class QGridLayout;
 class QmitkIGIDataSourceGui;
-class QmitkWindowsHotkeyHandler;
 
 
 /**
@@ -178,6 +177,13 @@ signals:
   void RecordingStarted(QString basedirectory);
 
 
+public slots:
+  /**
+   * \brief Callback to start recording data.
+   */
+  void OnRecordStart();
+
+
 protected:
 
   QmitkIGIDataSourceManager();
@@ -245,11 +251,6 @@ private slots:
   void OnCurrentIndexChanged(int indexNumber);
 
   /**
-   * \brief Callback to start recording data.
-   */
-  void OnRecordStart();
-
-  /**
    * \brief Callback to stop recording/playback data.
    */
   void OnStop();
@@ -264,8 +265,6 @@ private slots:
   void AdvancePlaybackTime();
 
   void OnComputeStats();
-
-  void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
 
 private:
 
@@ -317,8 +316,6 @@ private:
 
   // used to decide whether to clean up signals in the destructor;
   bool                                      m_setupUiHasBeenCalled;
-
-  QmitkWindowsHotkeyHandler*                m_HotkeyHandler;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.

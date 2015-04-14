@@ -20,6 +20,9 @@
 #include "ui_FootpedalHotkeyViewWidget.h"
 
 
+class QmitkWindowsHotkeyHandler;
+
+
 class FootpedalHotkeyView : public QmitkBaseView, public Ui::FootpedalHotkeyViewWidget
 {  
   Q_OBJECT
@@ -39,6 +42,10 @@ public:
    */
 
   virtual std::string GetViewID() const;
+
+signals:
+  void OnStartRecording(ctkDictionary d);
+  void OnStopRecording(ctkDictionary d);
 
 protected:
 
@@ -64,7 +71,10 @@ private slots:
   /** Triggered by igidatasources plugin (and QmitkIGIDataSourceManager) to tell us that recording has started. */
   void OnRecordingStarted(const ctkEvent& event);
 
+  void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
+
 private:
+  QmitkWindowsHotkeyHandler*      m_Footswitch1;
 
   // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
   qlonglong           m_IGIRecordingStartedSubscriptionID;

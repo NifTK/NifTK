@@ -18,6 +18,7 @@
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
+#include <service/event/ctkEventConstants.h>
 #include "DataSourcesViewActivator.h"
 #include <cassert>
 
@@ -57,6 +58,19 @@ DataSourcesView::~DataSourcesView()
 
 
 //-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
+{
+  m_DataSourceManager->OnRecordStart();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 std::string DataSourcesView::GetViewID() const
 {
   return VIEW_ID;
@@ -85,6 +99,13 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+
+    ctkDictionary properties;
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTARTRECORDING";
+    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
+    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
+
   }
 }
 
