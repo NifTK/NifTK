@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igifootpedalhotkey"
+          name="Foot pedal hotkey"
+          class="FootpedalHotkeyView"
+          icon="resources/icon.xpm" />
+  </extension>
+</plugin>
