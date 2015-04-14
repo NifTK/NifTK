@@ -41,6 +41,7 @@ PickedObject::~PickedObject()
 PickedPointList::PickedPointList()
 : m_InLineMode (false)
 , m_InOrderedMode (false)
+, m_IsModified (false)
 {
   MITK_INFO << "Creating new picked point list. Picked object vector size = " << m_PickedObjects.size() << " at " << this;
 }
@@ -59,6 +60,7 @@ void PickedPointList::PutOut (std::ofstream& os )
   {
     if ( m_PickedObjects[i].isLine )
     {
+      if ( m_PickedObjects[i].points.size() > 0 )
       os << "<line>" << std::endl;
       os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
       os << "<coordinates>" <<std::endl;
@@ -99,16 +101,113 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
     {
       number = boost::lexical_cast<std::string>(m_PickedObjects[i].id);
     }
-    if ( m_PickedObjects[i].points.size() > 1 ) 
-    {
-      MITK_INFO << "there are " << m_PickedObjects[i].points.size() << " points in the vector now";
+    if ( ! m_PickedObjects[i].isLine )
+    { 
+      assert ( m_PickedObjects[i].points.size() == 1 );
+      for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+      {
+        cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
+        cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+      }
     }
-    for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+    else 
     {
-      cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
-      cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+      if ( m_PickedObjects[i].points.size() > 0 )
+      {
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          if ( j == 0 )
+          {
+            cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
+            cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+          }
+          else 
+          {
+            cv::line(image,  m_PickedObjects[i].points[j],  m_PickedObjects[i].points[j-1], cv::Scalar(255,255,255));
+          }   
+        }
+      }
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+int PickedPointList::GetNextAvailableID( bool ForLine )
+{
+  int lastPoint = -1 ; 
+  for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; i ++ ) 
+  {
+    if ( (! ForLine ) && (! m_PickedObjects[i].isLine) ) 
+    {
+      if ( m_PickedObjects[i].id > lastPoint ) 
+      {
+        lastPoint = m_PickedObjects[i].id;
+      }
+    }
+    if ( ( ForLine ) && (m_PickedObjects[i].isLine) ) 
+    {
+      if ( m_PickedObjects[i].id > lastPoint ) 
+      {
+        lastPoint = m_PickedObjects[i].id;
+      }
+    }
+  }
+  return lastPoint+1;
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetInOrderedMode(const bool& mode)
+{
+  if ( m_InOrderedMode == mode )
+  {
+    return;
+  }
+  m_InOrderedMode = mode;
+  if ( m_InLineMode )
+  {
+    if ( ! m_InOrderedMode ) 
+    {
+      m_PickedObjects.back().id = -1;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      m_PickedObjects.back().id = pointID;
+    }
+    m_IsModified = true;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetInLineMode(const bool& mode)
+{
+  if ( m_InLineMode == mode )
+  {
+    return;
+  }
+  m_InLineMode = mode;
+  if ( m_InLineMode )
+  {
+    int pointID = -1;
+    PickedObject pickedObject;
+    pickedObject.isLine = true;
+    
+    if ( m_InOrderedMode )
+    {
+      pointID = this->GetNextAvailableID(true);
+    }
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool PickedPointList::GetIsModified()
+{
+  bool state = m_IsModified;
+ // m_IsModified = false;
+  return state;
 }
 
 //-----------------------------------------------------------------------------
@@ -116,32 +215,22 @@ unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
 {
   if ( m_InLineMode ) 
   {
-    //do something
+    m_PickedObjects.back().points.push_back(point);
+    MITK_INFO << "Added a point to line " << m_PickedObjects.back().id;
   }
   else
   {
     if ( m_InOrderedMode )
     {
-      int lastPoint = -1 ; 
-      for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; i ++ ) 
-      {
-        if ( ! m_PickedObjects[i].isLine ) 
-        {
-          if ( m_PickedObjects[i].id > lastPoint ) 
-          {
-            lastPoint = m_PickedObjects[i].id;
-          }
-        }
-      }
-
+      int pointID=this->GetNextAvailableID(false);
       PickedObject pickedObject;
       pickedObject.isLine = false;
-      pickedObject.id = lastPoint+1;
+      pickedObject.id = pointID;
       pickedObject.points.push_back(point);
 
       m_PickedObjects.push_back(pickedObject);
 
-      MITK_INFO << "Picked ordered point " << lastPoint+1 << " , " <<  point;
+      MITK_INFO << "Picked ordered point " << pointID << " , " <<  point;
     }
     else
     {
@@ -163,7 +252,15 @@ unsigned int PickedPointList::RemoveLastPoint()
 {
   if ( m_InLineMode )
   {
-    //we only want to delete the last point in the line
+    if ( m_PickedObjects.back().points.size() > 0 )
+    {
+      m_PickedObjects.back().points.pop_back();
+      MITK_INFO << "Removed point from line " << m_PickedObjects.back().id;
+    }
+    else
+    {
+      MITK_INFO << "No points in line, press l to exit line mode";
+    }
   }
   else
   {
@@ -210,7 +307,6 @@ m_VideoIn("")
 , m_Frequency(50)
 {
 }
-
 
 //-----------------------------------------------------------------------------
 PickPointsOnStereoVideo::~PickPointsOnStereoVideo()
@@ -331,14 +427,27 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-
-          if ( m_OrderedPoints )
+          if ( m_PickingLine )
           {
-            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, n for next frame, q to quit";
-          }
-          else 
+            if ( m_OrderedPoints )
+            {
+              MITK_INFO << "Picking ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to finish line, n for next frame, q to quit";
+            }
+            else
+            {
+              MITK_INFO << "Picking un ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to finish line, n for next frame, q to quit";
+            }
+          } 
+          else
           {
-            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, n for next frame, q to quit";
+            if ( m_OrderedPoints )
+            {
+              MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to pick a line, n for next frame, q to quit";
+            }
+            else 
+            {
+              MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to pick a line, n for next frame, q to quit";
+            }
           }
           
           std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
@@ -431,6 +540,20 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 }
                 leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
                 rightPickedPoints->SetInOrderedMode (m_OrderedPoints);
+              }
+              if ( key == 'l' )
+              {
+                m_PickingLine = ! m_PickingLine;
+                if ( m_PickingLine ) 
+                {
+                  MITK_INFO << "Switched to line picking mode";
+                }
+                else
+                {
+                  MITK_INFO << "Exited line picking mode";
+                }
+                leftPickedPoints->SetInLineMode (m_PickingLine);
+                rightPickedPoints->SetInLineMode (m_PickingLine);
               }
               if ( overWriteLeft )
               {

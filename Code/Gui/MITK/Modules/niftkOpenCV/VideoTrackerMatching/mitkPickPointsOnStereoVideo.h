@@ -50,9 +50,9 @@ class PickedPointList : public itk::Object
     void PutOut (std::ofstream& os);
     void AnnotateImage (cv::Mat& image);
 
-    itkSetMacro (InLineMode,bool);
-    itkSetMacro (InOrderedMode, bool);
-    itkGetMacro (IsModified, bool);
+    void SetInLineMode (const bool& mode);
+    void SetInOrderedMode ( const bool& mode);
+    bool GetIsModified();
     itkSetMacro (FrameNumber, unsigned int);
     itkSetMacro (Channel, std::string);
 
@@ -75,6 +75,7 @@ class PickedPointList : public itk::Object
     unsigned int m_FrameNumber;
     std::string m_Channel;
     std::vector < PickedObject > m_PickedObjects;
+    int GetNextAvailableID ( bool ForLine );
 };
 /**
  * \class Pick points in stereo video
