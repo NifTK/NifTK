@@ -56,7 +56,10 @@ QmitkWindowsHotkeyHandler::~QmitkWindowsHotkeyHandler()
   if (m_Pimpl != 0)
   {
     // send a message too, otherwise we could be waiting indefinitely here.
-    PostThreadMessage(m_Pimpl->m_HandlerThreadId, WM_QUIT, 0, 0);
+    // why not send WM_QUIT? because i dont know for how long the thread id is valid for.
+    // that depends on internals of Qt. so i could be sending a quit message to the wrong
+    // thread, terminating an arbitrary application on the users machine.
+    PostThreadMessage(m_Pimpl->m_HandlerThreadId, WM_NULL, 0, 0);
     this->wait();
 
     if (m_Pimpl->m_HotkeyAtom != 0)
@@ -120,6 +123,11 @@ void QmitkWindowsHotkeyHandler::run()
             MITK_INFO << "Hotkey pressed";
             emit HotkeyPressed(this, m_Hotkey);
           }
+          break;
+
+        // is send simply to get this loop to check the value of m_ShouldQuit.
+        // but take no other action!
+        case WM_NULL:
           break;
 
         case WM_QUIT:
