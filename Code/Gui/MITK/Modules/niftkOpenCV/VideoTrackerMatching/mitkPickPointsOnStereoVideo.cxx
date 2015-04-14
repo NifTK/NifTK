@@ -66,7 +66,7 @@ void PickedPointList::PutOut (std::ofstream& os )
       {
         os << m_PickedObjects[i].points[j];
       }
-      os << "</coordinates>" <<std::endl;
+      os << std::endl << "</coordinates>" <<std::endl;
       os << "</line>" << std::endl;
     }
     else
@@ -404,9 +404,11 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           leftPickedPoints->SetInLineMode (m_PickingLine);
           leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           leftPickedPoints->SetFrameNumber (framenumber);
+          leftPickedPoints->SetChannel ("left");
           rightPickedPoints->SetInLineMode (m_PickingLine);
           rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
+          rightPickedPoints->SetChannel ("right");
 
           cv::Mat leftAnnotatedVideoImage;
           cv::Mat rightAnnotatedVideoImage;
