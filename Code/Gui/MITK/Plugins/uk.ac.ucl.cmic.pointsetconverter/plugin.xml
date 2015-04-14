@@ -5,7 +5,7 @@
     <view id="org.mitk.views.pointsetconverter"
           name="Point Set Converter"
           class="PointSetConverterView"
-          icon="resources/icon.xpm" />
+          icon="resources/pointset_interaction.png" />
   </extension>
 
 </plugin>
