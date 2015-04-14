@@ -495,7 +495,7 @@ macro(CUDA_FIND_HELPER_FILE _name _extension)
   get_filename_component(CMAKE_CURRENT_LIST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
   set(CUDA_${_name} "${CMAKE_CURRENT_LIST_DIR}/${_full_name}")
   if(NOT EXISTS "${CUDA_${_name}}")
-    set(error_message "${_full_name} not found in ${CMAKE_CURRENT_LIST_DIR}/FindCUDA")
+    set(error_message "${_full_name} not found in ${CMAKE_CURRENT_LIST_DIR}")
     if(CUDA_FIND_REQUIRED)
       message(FATAL_ERROR "${error_message}")
     else()
@@ -608,7 +608,15 @@ set(CUDA_NVCC_FLAGS "" CACHE STRING "Semi-colon delimit multiple arguments.")
 if(CMAKE_GENERATOR MATCHES "Visual Studio")
   set(CUDA_HOST_COMPILER "$(VCInstallDir)bin" CACHE FILEPATH "Host side compiler used by NVCC")
 else()
-  set(CUDA_HOST_COMPILER "${CMAKE_C_COMPILER}" CACHE FILEPATH "Host side compiler used by NVCC")
+  # Using cc which is symlink to clang may let NVCC think it is GCC and issue
+  # unhandled -dumpspecs option to clang. Also in case neither
+  # CMAKE_C_COMPILER is defined (project does not use C language) nor
+  # CUDA_HOST_COMPILER is specified manually we should skip -ccbin and let
+  # nvcc use its own default C compiler.
+  if(DEFINED CMAKE_C_COMPILER AND NOT DEFINED CUDA_HOST_COMPILER)
+    get_filename_component(c_compiler_realpath "${CMAKE_C_COMPILER}" REALPATH)
+    set(CUDA_HOST_COMPILER "${c_compiler_realpath}" CACHE FILEPATH "Host side compiler used by NVCC")
+  endif()
 endif()
 
 # Propagate the host flags to the host compiler via -Xcompiler
