@@ -61,28 +61,32 @@ void PickedPointList::PutOut (std::ofstream& os )
     if ( m_PickedObjects[i].isLine )
     {
       if ( m_PickedObjects[i].points.size() > 0 )
-      os << "<line>" << std::endl;
-      os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
-      os << "<coordinates>" <<std::endl;
-      for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
       {
-        os << m_PickedObjects[i].points[j];
+        os << "<line>" << std::endl;
+        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
+        os << "<coordinates>" <<std::endl;
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          os << m_PickedObjects[i].points[j];
+        }
+        os << std::endl << "</coordinates>" <<std::endl;
+        os << "</line>" << std::endl;
       }
-      os << std::endl << "</coordinates>" <<std::endl;
-      os << "</line>" << std::endl;
     }
     else
     {
-      os << "<point>" << std::endl;
-      os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
-      os << "<coordinates>" <<std::endl;
-      for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+      if ( m_PickedObjects[i].points.size() > 0 )
       {
-        MITK_INFO << j << " of " << m_PickedObjects[i].points.size();
-        os << m_PickedObjects[i].points[j];
+        os << "<point>" << std::endl;
+        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
+        os << "<coordinates>" <<std::endl;
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          os << m_PickedObjects[i].points[j];
+        }
+        os << std::endl << "</coordinates>" <<std::endl;
+        os << "</point>" << std::endl;
       }
-      os << std::endl << "</coordinates>" <<std::endl;
-      os << "</point>" << std::endl;
     }
   }
 }
@@ -613,7 +617,6 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 {
                   rightAnnotatedVideoImage = rightVideoImage.clone();
                   rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
-                  rightIsModified = true;
 
                   std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
                   rightPickedPoints->PutOut (rightPointOut);
