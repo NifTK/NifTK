@@ -81,7 +81,7 @@ void PickedPointList::PutOut (std::ofstream& os )
         MITK_INFO << j << " of " << m_PickedObjects[i].points.size();
         os << m_PickedObjects[i].points[j];
       }
-      os << "</coordinates>" <<std::endl;
+      os << std::endl << "</coordinates>" <<std::endl;
       os << "</point>" << std::endl;
     }
   }
@@ -592,6 +592,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 {
                   leftAnnotatedVideoImage = leftVideoImage.clone();
                   leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
+
+                  std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
+                  leftPickedPoints->PutOut( leftPointOut );
+                  leftPointOut.close();
+                  if ( m_WriteAnnotatedImages )
+                  {
+                    cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
+                  }
                 }
                 
                 IplImage image(leftAnnotatedVideoImage);
@@ -605,36 +613,22 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 {
                   rightAnnotatedVideoImage = rightVideoImage.clone();
                   rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
+                  rightIsModified = true;
+
+                  std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
+                  rightPickedPoints->PutOut (rightPointOut);
+                  rightPointOut.close();
+
+                  if ( m_WriteAnnotatedImages )
+                  {
+                     cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
+                  }
                 }
                 
                 IplImage rimage(rightAnnotatedVideoImage);
                 cvShowImage("Right Channel" , &rimage);
               }
             }
-          }
-          if ( leftPickedPoints->GetIsModified() ) 
-          {
-            std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
-            leftPickedPoints->PutOut( leftPointOut );
-            leftPointOut.close();
-
-            if ( m_WriteAnnotatedImages )
-            {
-              leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
-              cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
-            }
-          }
-          if ( rightPickedPoints->GetIsModified() ) 
-          {
-            std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
-            rightPickedPoints->PutOut (rightPointOut);
-            rightPointOut.close();
-
-            if ( m_WriteAnnotatedImages )
-            {
-              rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
-              cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
-            } 
           }
           cvShowImage("Left Channel" , &blankImage);
           cvShowImage("Right Channel" , &blankImage);
