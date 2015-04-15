@@ -219,8 +219,22 @@ unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
 {
   if ( m_InLineMode ) 
   {
-    m_PickedObjects.back().points.push_back(point);
-    MITK_INFO << "Added a point to line " << m_PickedObjects.back().id;
+    if (  m_PickedObjects.back().isLine )
+    {
+      m_PickedObjects.back().points.push_back(point);
+      MITK_INFO << "Added a point to line " << m_PickedObjects.back().id;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      PickedObject pickedObject;
+      pickedObject.isLine = true;
+      pickedObject.id = pointID;
+      pickedObject.points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Created new line at " << m_PickedObjects.back().id;
+    }
   }
   else
   {
