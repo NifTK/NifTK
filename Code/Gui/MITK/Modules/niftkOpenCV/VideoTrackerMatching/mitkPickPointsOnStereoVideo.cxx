@@ -253,27 +253,52 @@ unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::RemoveLastPoint()
 {
-  if ( m_InLineMode )
+  if ( m_PickedObjects.size() != 0 )
   {
-    if ( m_PickedObjects.back().points.size() > 0 )
+    if ( m_InLineMode )
     {
-      m_PickedObjects.back().points.pop_back();
-      MITK_INFO << "Removed point from line " << m_PickedObjects.back().id;
+      std::vector<PickedObject>::iterator it = m_PickedObjects.end() -1 ;
+      while ( it >= m_PickedObjects.begin() )
+      {
+        if ( it->isLine )
+        {
+          MITK_INFO << "found a line at " << it->id;
+          if ( it->points.size() > 0 )
+          {
+            it->points.pop_back();
+            MITK_INFO << "Removed last point from line " << it->id;
+          }
+          else
+          {
+            MITK_INFO << "Removed line " << it->id;
+            m_PickedObjects.erase(it);
+          }
+          break;
+        }
+        else
+        {
+          MITK_INFO << it->id << " is not a line";
+        }
+        it -- ;
+      }
     }
     else
     {
-      MITK_INFO << "No points in line, press l to exit line mode";
-    }
-  }
-  else
-  {
-    if ( m_PickedObjects.size() != 0 )
-    {
       MITK_INFO << "Removing last point";
-      m_PickedObjects.pop_back();
+      std::vector<PickedObject>::iterator it = m_PickedObjects.end() - 1;
+      while ( it >= m_PickedObjects.begin() )
+      {
+        if ( ! (it->isLine) )
+        {
+          MITK_INFO << "found a point";
+          m_PickedObjects.erase(it);
+          break;
+        }
+        it -- ;
+      }
     }
-  }
   m_IsModified=true;
+  }
   return m_PickedObjects.size();
 }
 
