@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkLiuLeastSquaresWithNormalsRegistration.h"
+#include <niftkPointRegMaths.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkExceptionMacro.h>
 
@@ -77,14 +78,12 @@ double PointAndNormalBasedRegistration(const std::vector<cv::Point3d>& fixedPoin
   std::vector<cv::Point3d> qTilde = mitk::SubtractPointFromPoints(fixedPoints, qBar);
 
   // Liu Equation 13.
-  cv::Matx33d H1 = mitk::CalculateCrossCovarianceH(pTilde, qTilde);
-  cv::Matx33d H2 = mitk::CalculateCrossCovarianceH(movingNormals, fixedNormals);
+  cv::Matx33d H1 = niftk::CalculateCrossCovarianceH(pTilde, qTilde);
+  cv::Matx33d H2 = niftk::CalculateCrossCovarianceH(movingNormals, fixedNormals);
   cv::Matx33d H = H1 + H2;
 
   // Delegate to helper method for the rest of the implementation.
-  double fre = std::numeric_limits<double>::max();
-  mitk::DoSVDPointBasedRegistration(fixedPoints, movingPoints, H, qBar, qBar, outputMatrix, fre);
-
+  double fre = niftk::DoSVDPointBasedRegistration(fixedPoints, movingPoints, H, qBar, qBar, outputMatrix);
   return fre;
 }
 
@@ -100,8 +99,8 @@ double PointAndNormalBasedRegistration(const mitk::PointSet::Pointer& fixedPoint
   std::vector<cv::Point3d> fN = mitk::PointSetToVector(fixedNormals);
   std::vector<cv::Point3d> mP = mitk::PointSetToVector(movingPoints);
   std::vector<cv::Point3d> mN = mitk::PointSetToVector(movingNormals);
-  cv::Matx44d mat;
 
+  cv::Matx44d mat;
   double fre = niftk::PointAndNormalBasedRegistration(fP, fN, mP, mN, mat);
   mitk::CopyToVTK4x4Matrix(mat, matrix);
 

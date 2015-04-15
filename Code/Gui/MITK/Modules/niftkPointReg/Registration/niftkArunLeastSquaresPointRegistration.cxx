@@ -15,6 +15,7 @@
 #include "niftkArunLeastSquaresPointRegistration.h"
 #include <mitkOpenCVMaths.h>
 #include <mitkExceptionMacro.h>
+#include <niftkPointRegMaths.h>
 
 namespace niftk {
 
@@ -54,12 +55,10 @@ double PointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   std::vector<cv::Point3d> qPrime = mitk::SubtractPointFromPoints(fixedPoints, pPrime);
 
   // Arun Equation 11.
-  cv::Matx33d H = mitk::CalculateCrossCovarianceH(q, qPrime);
+  cv::Matx33d H = niftk::CalculateCrossCovarianceH(q, qPrime);
 
   // Delegate to helper method for the rest of the implementation.
-  double fre = std::numeric_limits<double>::max();
-  mitk::DoSVDPointBasedRegistration(fixedPoints, movingPoints, H, p, pPrime, outputMatrix, fre);
-
+  double fre = niftk::DoSVDPointBasedRegistration(fixedPoints, movingPoints, H, p, pPrime, outputMatrix);
   return fre;
 }
 
@@ -71,8 +70,8 @@ double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
 {
   std::vector<cv::Point3d> fP = mitk::PointSetToVector(fixedPoints);
   std::vector<cv::Point3d> mP = mitk::PointSetToVector(movingPoints);
-  cv::Matx44d mat;
 
+  cv::Matx44d mat;
   double fre = niftk::PointBasedRegistration(fP, mP, mat);
   mitk::CopyToVTK4x4Matrix(mat, matrix);
 

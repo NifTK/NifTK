@@ -15,7 +15,7 @@
 
 MITK_CREATE_MODULE(niftkPointReg
   EXPORT_DEFINE NIFTKPOINTREG_EXPORT
-  INCLUDE_DIRS Registration 
+  INCLUDE_DIRS Registration Maths
   DEPENDS niftkCore niftkOpenCV
   PACKAGE_DEPENDS OpenCV
 )
