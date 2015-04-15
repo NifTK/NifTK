@@ -22,12 +22,41 @@
 #include <deque>
 #include "niftkFileHelper.h"
 #include "niftkEnvironmentHelper.h"
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
+#include "Exceptions/niftkIOException.h"
+
+#include <NifTKConfigure.h>
+
+#if (defined(WIN32) || defined(_WIN32))
+#define FILE_SEPARATOR "\\"
+#else
+#define FILE_SEPARATOR "/"
+#endif
 
 namespace fs = boost::filesystem;
 
 namespace niftk
 {
+
+/**
+* Converts pathName to a boost::filesystem::path.
+* We throw std::logic_error if you pass an empty pathName.
+* @param pathName a string representing the path
+* @return boost path type
+*/
+//boost::filesystem::path ConvertToFullPath(const std::string& pathName);
+
+
+/**
+* Creates a unique file name for a file located in the O/S temporary directory.
+* @param prefix file basename prefix
+* @param suffix file basename suffix
+* @return a unique file name
+*/
+//boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
+
 
 //-----------------------------------------------------------------------------
 std::string GetFileSeparator()

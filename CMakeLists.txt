@@ -24,7 +24,7 @@ endif()
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 15 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 02 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
 set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
@@ -282,11 +282,6 @@ mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_ITKFFTW)
 mark_as_advanced(BUILD_MESHING)
-
-# PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
-if(BUILD_PCL)
-  set(PCL_FIND_QUIETLY ON)
-endif()
 
 ######################################################################
 # Make sure Git is available.
@@ -709,13 +704,28 @@ endif()
 # Find Mandatory External packages
 ######################################################################
 
+
+
 ######################################################################
-# Find Boost.
+# (Optional) Find PCL.
+# find it before boost because it will mess up Boost_LIBRARIES with its own requested components.
 ######################################################################
 set(Boost_NO_SYSTEM_PATHS ON)
 # off is the default, but our optional pcl dependency will try to use static libs if we dont define it explicitly.
 set(Boost_USE_STATIC_LIBS OFF)
 
+if(BUILD_PCL)
+  # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
+  set(PCL_FIND_QUIETLY ON)
+  find_package(PCL 1.7 REQUIRED)
+  # do not add the include paths, etc to the global compiler settings!
+  # instead, this is done for each module/plugin separately in PackageDepends/MITK_PCL_Config.cmake.
+endif()
+
+
+######################################################################
+# Find Boost.
+######################################################################
 find_package( Boost 1.54 COMPONENTS filesystem system date_time regex thread REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
@@ -811,6 +821,7 @@ if(GDCM_FOUND)
   link_directories(${GDCM_LIBRARY_DIRS})
 endif()
 
+######################################################################
 # Find OpenCV.
 ######################################################################
 if(BUILD_IGI)

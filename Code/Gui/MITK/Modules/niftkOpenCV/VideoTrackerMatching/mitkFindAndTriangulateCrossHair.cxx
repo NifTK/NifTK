@@ -22,8 +22,6 @@
 #include <highgui.h>
 #include <niftkFileHelper.h>
 
-#include <boost/filesystem.hpp>
-
 namespace mitk {
 
 //-----------------------------------------------------------------------------

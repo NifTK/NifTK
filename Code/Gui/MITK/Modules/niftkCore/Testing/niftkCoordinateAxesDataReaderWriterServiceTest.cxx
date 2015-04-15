@@ -22,7 +22,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <usModuleInitialization.h>
 
 /**
  *  @brief Tests for reading/writing .4x4 files via Services.
@@ -52,7 +51,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // Get CoordinateAxesData writer(s), check for only 1.
   mitk::FileWriterSelector writerSelector(cad.GetPointer());
   std::vector<mitk::FileWriterSelector::Item> writers = writerSelector.Get();
-  MITK_TEST_CONDITION_REQUIRED(writers.size() == 1, "Testing for 1 registered writers")
+  MITK_TEST_CONDITION_REQUIRED(writers.size() >= 1, "Testing for >=1 registered writers")
 
   // Test for exception handling. If invalid (non-writable) file, exception must be thrown.
 /*
@@ -95,7 +94,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // Check for 1 reader
   mitk::FileReaderRegistry readerRegistry;
   std::vector<mitk::IFileReader*> readers = readerRegistry.GetReaders(mitk::FileReaderRegistry::GetMimeTypeForFile("4x4"));
-  MITK_TEST_CONDITION_REQUIRED(readers.size() == 1, "Testing for 1 registered readers")
+  MITK_TEST_CONDITION_REQUIRED(readers.size() >= 1, "Testing for 1 registered readers")
 
   try
   {
@@ -132,5 +131,4 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   // always end with this!
   MITK_TEST_END();
 }
-US_INITIALIZE_MODULE
 

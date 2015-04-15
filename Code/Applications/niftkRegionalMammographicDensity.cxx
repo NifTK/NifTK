@@ -168,10 +168,6 @@ int main(int argc, char** argv)
   std::list< ROIMammoDensityType::Pointer > listOfPatients;
   std::list< ROIMammoDensityType::Pointer >::iterator itPatient;
 
-  boost::random::mt19937 gen;
-
-  gen.seed(static_cast<unsigned int>(std::time(0)));
-
 
   // To pass around command line args
   PARSE_ARGS;
@@ -712,7 +708,7 @@ int main(int argc, char** argv)
 
     try
     {
-      (*itPatient)->Compute( gen );
+      (*itPatient)->Compute();
     }
 
     catch (itk::ExceptionObject &ex)

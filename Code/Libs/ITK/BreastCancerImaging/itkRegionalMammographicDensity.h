@@ -18,9 +18,6 @@
 #include <iostream>     // std::cout, std::fixed
 #include <iomanip>      // std::setprecision
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-
 #include <itkObject.h>
 #include <itkImage.h>
 
@@ -45,6 +42,8 @@
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
+
+#include <boost/random/mersenne_twister.hpp>
 
 
 /*!
@@ -360,8 +359,7 @@ public:
 
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
 
-  void Compute( boost::random::mt19937 &gen );
-
+  void Compute();
 
 protected:
 
@@ -542,9 +540,6 @@ protected:
                                       typename FactoryType::EulerAffineTransformType::Pointer &transform,
                                       typename ImageType::Pointer &image );
 
-  void GenerateRandomTumourPositionInImage( boost::random::mt19937 &gen,
-                                            MammogramType mammoType );
-
   typename LabelImageType::Pointer 
        GenerateRegionLabels( BreastSideType breastSide,
                              typename LabelImageType::IndexType &idxTumourCenter,
@@ -557,8 +552,13 @@ protected:
 
 private:
 
+  void GenerateRandomTumourPositionInImage( MammogramType mammoType );
+
+
   RegionalMammographicDensity(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
+
+  boost::random::mt19937 m_Gen;
 
 };
 

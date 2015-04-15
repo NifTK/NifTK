@@ -5,6 +5,8 @@ set(CTEST_BUILD_NAME "@CTEST_BUILD_NAME@")
 set(CTEST_GIT_COMMAND "@GIT_EXECUTABLE@")
 set(NIFTK_BRANCH_NAME "@NIFTK_BRANCH_NAME@")
 
+set(ENV{NIFTK_DRC_ANALYZE} "ON")
+
 find_program(HOSTNAME_CMD NAMES hostname)
 exec_program("${HOSTNAME_CMD}" ARGS OUTPUT_VARIABLE HOSTNAME)
 set(CTEST_SITE  "${HOSTNAME}${CTEST_SITE_EXT}")
@@ -128,7 +130,29 @@ endif()
 
 set(PARALLEL_LEVEL ${cpu_cores})
 
+# Excluded from the continuous tests because of the long running time.
+# They are tested by the nightly builds.
+set(tests_to_exclude "FFD-Reg-MR")
+
+# Tests excluded on Windows because of concurrency bugs in ITK output window.
+# See #3497 for details.
+if (WIN32)
+  set(tests_to_exclude "${tests_to_exclude}|CTE-Stream-Int")
+endif()
+
+if (APPLE)
+  exec_program("sw_vers" ARGS "-productVersion" OUTPUT_VARIABLE osx_version)
+  if (osx_version VERSION_LESS "10.10")
+    message("Disabling microservices module autoloading feature on Mac OS X ${osx_version}. See #4230 for details.")
+    set(ENV{US_DISABLE_AUTOLOADING} "1")
+  endif()
+endif()
+
 ctest_start(Continuous TRACK ${group_name})
 ctest_build()
-ctest_test(EXCLUDE "FFD-Reg-MR")
+ctest_test(EXCLUDE "${tests_to_exclude}" RETURN_VALUE exitCode)
 ctest_submit()
+
+if (exitCode)
+  message(SEND_ERROR "Some unit tests failed. CTest exit code: ${exitCode}")
+endif()

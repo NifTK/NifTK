@@ -18,7 +18,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkDanielssonDistanceMapImageFilter.h>
-#include <itkInvertIntensityImageFilter.h>
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkAddImageFilter.h>
 #include <itkBinaryCrossStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
@@ -57,28 +57,17 @@ template <int Dimension, class PixelType>
 int DoMain(arguments args)
 {
   typedef typename itk::Image< PixelType, Dimension >     InputImageType;
+
   typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef typename itk::ImageFileWriter< InputImageType > OutputImageWriterType;
   typedef typename itk::DanielssonDistanceMapImageFilter<InputImageType, InputImageType> DistanceFilterType;
-  typedef typename itk::InvertIntensityImageFilter<InputImageType, InputImageType> InvertFilterType;
-  typedef typename itk::AddImageFilter<InputImageType, InputImageType> AddFilterType;
-  typedef typename itk::BinaryCrossStructuringElement<PixelType, Dimension> StructuringElementType;
-  typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, StructuringElementType> ErodeImageFilterType;
-  typedef typename itk::NegateImageFilter<InputImageType, InputImageType> NegateFilterType;
+
   try
   {
     typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
     typename DistanceFilterType::Pointer distanceFilter = DistanceFilterType::New();
-    typename InvertFilterType::Pointer invertInputImageFilter = InvertFilterType::New();
-    typename DistanceFilterType::Pointer insideDistanceFilter = DistanceFilterType::New();
-    typename AddFilterType::Pointer addFilter = AddFilterType::New();
-    typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
-    typename ErodeImageFilterType::Pointer erodeFilter = ErodeImageFilterType::New();
-    typename NegateFilterType::Pointer negateFilter = NegateFilterType::New();
 
-    StructuringElementType element;
-    element.SetRadius(1);
-    element.CreateStructuringElement();
+    typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
     imageReader->SetFileName(args.inputImage);
     imageWriter->SetFileName(args.outputImage);
@@ -91,6 +80,14 @@ int DoMain(arguments args)
 
     if (args.internal)
     {
+      typedef typename itk::BinaryCrossStructuringElement<PixelType, Dimension> StructuringElementType;
+
+      StructuringElementType element;
+      element.SetRadius(1);
+      element.CreateStructuringElement();
+
+      typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, StructuringElementType> ErodeImageFilterType;
+      typename ErodeImageFilterType::Pointer erodeFilter = ErodeImageFilterType::New();
 
       erodeFilter->SetInput(imageReader->GetOutput());
       erodeFilter->SetKernel(element);
@@ -99,15 +96,25 @@ int DoMain(arguments args)
       erodeFilter->SetBoundaryToForeground(false);
       erodeFilter->Update();
 
+      typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
+      typename InvertFilterType::Pointer invertInputImageFilter = InvertFilterType::New();
+
       invertInputImageFilter->SetInput(erodeFilter->GetOutput());
-      invertInputImageFilter->SetMaximum(1);
+
+      typename DistanceFilterType::Pointer insideDistanceFilter = DistanceFilterType::New();
 
       insideDistanceFilter->SetInput(invertInputImageFilter->GetOutput());
       insideDistanceFilter->SetSquaredDistance(false);
       insideDistanceFilter->SetInputIsBinary(true);
       insideDistanceFilter->SetUseImageSpacing(true);
 
+      typedef typename itk::NegateImageFilter<InputImageType, InputImageType> NegateFilterType;
+      typename NegateFilterType::Pointer negateFilter = NegateFilterType::New();
+
       negateFilter->SetInput(insideDistanceFilter->GetOutput());
+
+      typedef typename itk::AddImageFilter<InputImageType, InputImageType> AddFilterType;
+      typename AddFilterType::Pointer addFilter = AddFilterType::New();
 
       addFilter->SetInput(0, distanceFilter->GetOutput());
       addFilter->SetInput(1, negateFilter->GetOutput());
@@ -118,7 +125,7 @@ int DoMain(arguments args)
     }
     else
     {
-      imageWriter->SetInput(addFilter->GetOutput());
+      imageWriter->SetInput(distanceFilter->GetOutput());
       imageWriter->Update();
     }
 
@@ -175,7 +182,7 @@ int main(int argc, char** argv)
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
 

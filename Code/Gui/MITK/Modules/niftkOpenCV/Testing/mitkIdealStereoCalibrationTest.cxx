@@ -22,6 +22,7 @@
 #include <mitkHandeyeCalibrate.h>
 #include <mitkOpenCVMaths.h>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <niftkFileHelper.h>

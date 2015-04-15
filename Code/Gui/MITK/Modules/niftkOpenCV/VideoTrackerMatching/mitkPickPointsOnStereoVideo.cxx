@@ -22,6 +22,7 @@
 #include <niftkFileHelper.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace mitk {
 

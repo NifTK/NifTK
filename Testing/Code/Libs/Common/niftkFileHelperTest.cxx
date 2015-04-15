@@ -17,6 +17,7 @@
 #include <niftkFileHelper.h>
 #include <niftkEnvironmentHelper.h>
 #include <niftkConversionUtils.h>
+#include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
 

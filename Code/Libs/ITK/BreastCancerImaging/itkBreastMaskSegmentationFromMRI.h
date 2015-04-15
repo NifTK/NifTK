@@ -71,8 +71,6 @@
 #include <vnl/vnl_double_3.h>
 #include <vnl/algo/vnl_levenberg_marquardt.h>
 
-#include <boost/filesystem.hpp>
-
 namespace itk
 {
 
@@ -199,6 +197,8 @@ public:
   void SetOutputImageMaxClosed( std::string fn ) { fileOutputMaxClosedImage = fn; }
   void SetOutputBackground( std::string fn ) { fileOutputBackground = fn; }
   void SetOutputChestPoints( std::string fn ) { fileOutputChestPoints = fn; }
+
+  void SetPectoralControlPointSpacing( float d ) { pecControlPointSpacing = d; }
   void SetOutputPectoralMask( std::string fn ) { fileOutputPectoral = fn; }
   void SetOutputPecSurfaceMask( std::string fn ) { fileOutputPectoralSurfaceMask = fn; }
 
@@ -323,6 +323,8 @@ protected:
 
   float coilCropDistance;
   float cropDistPosteriorToMidSternum;
+
+  float pecControlPointSpacing;
 
   std::string fileOutputBIFs;
 
@@ -529,7 +531,7 @@ protected:
 				       const typename InternalImageType::DirectionType &direction,
 				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
-				       const int numOfControlPoints,
+				       const RealType controlPointSpacingInMM,
 				       const int numOfLevels,
 				       bool correctSurfaceOffest );
 
