@@ -27,7 +27,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>pointer</string>
+          <string>pointer model</string>
          </property>
         </widget>
        </item>
