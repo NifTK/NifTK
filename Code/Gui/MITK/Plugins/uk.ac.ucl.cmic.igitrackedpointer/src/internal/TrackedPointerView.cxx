@@ -211,6 +211,10 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
+  // dont move our own output pointset
+  if (probeModel == GetDataStorage()->GetNamedNode(mitk::TrackedPointer::TRACKED_POINTER_POINTSET_NAME))
+    probeModel = mitk::DataNode::Pointer();
+
   if (   probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)
   {
