@@ -25,20 +25,19 @@
 #include <itkImageFileReader.h>
 #include <itkImage.h>
 #include <itkResampleImageFilter.h>
-#include <itkThinPlateSplineKernelTransform.h>
-#include <itkThinPlateR2LogRSplineKernelTransform.h>
+#include <itkElasticBodySplineKernelTransform.h>
 #include <niftkCSVRow.h>
 #include <itkTransformFileWriter.h>
 #include <itkTransformFileReader.h>
 #include <itkTransformFactory.h>
 
-#include <niftkThinPlateSplineWarpCLP.h>
+#include <niftkElasticBodySplineWarpCLP.h>
 
 
 /*!
- * \file niftkThinPlateSplineWarp.cxx
- * \page niftkThinPlateSplineWarp
- * \section niftkThinPlateSplineWarpSummary Computes a thin plate spline warp from a set of landmarks.
+ * \file niftkElasticBodySplineWarp.cxx
+ * \page niftkElasticBodySplineWarp
+ * \section niftkElasticBodySplineWarpSummary Computes an elastic body spline warp from a set of landmarks.
  */
 
 
@@ -47,7 +46,6 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
-  bool flgDoNotUseR2LogRThinPlateSpline;
 
   std::string fileInputSourceImage;
   std::string fileInputTargetImage;
@@ -55,15 +53,19 @@ struct arguments
   std::string fileSourceLandmarks;
   std::string fileTargetLandmarks;
 
-  std::string fileInputThinPlateSplineMatrix;
+  std::string fileInputElasticBodySplineMatrix;
 
   std::string fileOutputImage;
-  std::string fileOutputThinPlateSplineMatrix;
+  std::string fileOutputElasticBodySplineMatrix;
   std::string fileOutputDeformationField;
+
+  float poisson;
 
   arguments() {
     flgVerbose = false;
     flgDebug = false;
+
+    poisson = 0.49;
   }
 };
 
@@ -231,11 +233,9 @@ int DoMain(arguments args)
   typedef itk::Point< CoordinateRepType, ImageDimension >  PointType;
   typedef std::vector< PointType >                         PointArrayType;
 
-  typedef itk::KernelTransform< CoordinateRepType, ImageDimension> KernelTransformType;
-  typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, ImageDimension> ThinPlateTransformType;
-  typedef itk::ThinPlateR2LogRSplineKernelTransform< CoordinateRepType, ImageDimension> ThinPlateTransformR2LogRType;
+  typedef itk::ElasticBodySplineKernelTransform< CoordinateRepType, ImageDimension> ElasticBodyTransformType;
 
-  typedef typename KernelTransformType::PointSetType PointSetType;
+  typedef typename ElasticBodyTransformType::PointSetType PointSetType;
   
   typedef typename PointSetType::Pointer PointSetPointer;
   typedef typename PointSetType::PointIdentifier PointIdType;
@@ -249,7 +249,7 @@ int DoMain(arguments args)
   // Read the input points
   // ~~~~~~~~~~~~~~~~~~~~~
 
-  typename KernelTransformType::Pointer tps;
+  typename ElasticBodyTransformType::Pointer ebs;
 
   if ( args.fileSourceLandmarks.length() && args.fileTargetLandmarks.length() )
   {
@@ -282,27 +282,22 @@ int DoMain(arguments args)
 
 
 
-    // Compute the thin-plate spline transformation
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Compute the elastic body spline transformation
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    if ( args.flgDoNotUseR2LogRThinPlateSpline )
-    {
-      tps = ThinPlateTransformType::New();
-    }
-    else
-    {
-      tps = ThinPlateTransformR2LogRType::New();
-    }
+    ebs = ElasticBodyTransformType::New();
 
     // The landmarks have to be swapped to transform the source image into the target space
 
-    tps->SetSourceLandmarks(targetLandMarks);
-    tps->SetTargetLandmarks(sourceLandMarks);
+    ebs->SetSourceLandmarks(targetLandMarks);
+    ebs->SetTargetLandmarks(sourceLandMarks);
+
+    ebs->SetAlpha( 12.*( 1. - args.poisson) - 1. );
 
     try
     {
-      std::cout << "Computing the thin-plate spline matrix" << std::endl;
-      tps->ComputeWMatrix();
+      std::cout << "Computing the elastic body spline matrix" << std::endl;
+      ebs->ComputeWMatrix();
     }
     catch( itk::ExceptionObject & err ) 
     { 
@@ -315,19 +310,19 @@ int DoMain(arguments args)
     // Save the matrix to a file?
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if ( args.fileOutputThinPlateSplineMatrix.length() )
+    if ( args.fileOutputElasticBodySplineMatrix.length() )
     {
       typedef itk::TransformFileWriterTemplate< CoordinateRepType > TransformWriterType;
       typename TransformWriterType::Pointer transformWriter = TransformWriterType::New();
       
-      transformWriter->SetInput( tps );
+      transformWriter->SetInput( ebs );
       
-      transformWriter->SetFileName( args.fileOutputThinPlateSplineMatrix );
+      transformWriter->SetFileName( args.fileOutputElasticBodySplineMatrix );
       
       try
       {
-        std::cout << "Writing the thin-plate spline matrix to file: " 
-                  << args.fileOutputThinPlateSplineMatrix << std::endl;
+        std::cout << "Writing the elastic body spline matrix to file: " 
+                  << args.fileOutputElasticBodySplineMatrix << std::endl;
         transformWriter->Update();       
       }
       catch( itk::ExceptionObject & excp )
@@ -344,26 +339,19 @@ int DoMain(arguments args)
   // Or read the matrix directly?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  else if ( args.fileInputThinPlateSplineMatrix.length() )
+  else if ( args.fileInputElasticBodySplineMatrix.length() )
   {
-    if ( args.flgDoNotUseR2LogRThinPlateSpline )
-    {
-      itk::TransformFactory< ThinPlateTransformType >::RegisterTransform();
-    }
-    else
-    {
-      itk::TransformFactory< ThinPlateTransformR2LogRType >::RegisterTransform();
-    }
+    itk::TransformFactory< ElasticBodyTransformType >::RegisterTransform();
 
     typedef itk::TransformFileReaderTemplate< CoordinateRepType > TransformReaderType;
     typename TransformReaderType::Pointer transformReader = TransformReaderType::New();
       
-    transformReader->SetFileName( args.fileInputThinPlateSplineMatrix );
+    transformReader->SetFileName( args.fileInputElasticBodySplineMatrix );
       
     try
     {
-      std::cout << "Reading the thin-plate spline matrix from file: " 
-                << args.fileInputThinPlateSplineMatrix << std::endl;
+      std::cout << "Reading the elastic body spline matrix from file: " 
+                << args.fileInputElasticBodySplineMatrix << std::endl;
       transformReader->Update();       
   
       typedef TransformReaderType::TransformListType *TransformListType;
@@ -371,15 +359,11 @@ int DoMain(arguments args)
       
       typename itk::TransformFileReader::TransformListType::const_iterator it = transforms->begin();
 
-      if ( args.flgDoNotUseR2LogRThinPlateSpline )
-      {
-        tps = static_cast<ThinPlateTransformType*>((*it).GetPointer());
-      }
-      else {
-        tps = static_cast<ThinPlateTransformR2LogRType*>((*it).GetPointer());
-      }
+      ebs = static_cast<ElasticBodyTransformType*>((*it).GetPointer());
 
-      tps->ComputeWMatrix();
+      ebs->SetAlpha( 12.*( 1. - args.poisson) - 1. );
+
+      ebs->ComputeWMatrix();
     }
     catch( itk::ExceptionObject & excp )
     {
@@ -464,7 +448,7 @@ int DoMain(arguments args)
   resampler->SetOutputDirection( direction );
   resampler->SetOutputOrigin(  origin  );
   resampler->SetSize( size );
-  resampler->SetTransform( tps );
+  resampler->SetTransform( ebs );
 
   resampler->SetOutputStartIndex(  region.GetIndex() );
   resampler->SetInput( inputImage );
@@ -529,8 +513,8 @@ int DoMain(arguments args)
     FieldIterator fi( field, region );
     fi.GoToBegin();
 
-    typename KernelTransformType::InputPointType  point1;
-    typename KernelTransformType::OutputPointType point2;
+    typename ElasticBodyTransformType::InputPointType  point1;
+    typename ElasticBodyTransformType::OutputPointType point2;
     typename DisplacementFieldType::IndexType index;
 
     FieldVectorType displacement;
@@ -541,7 +525,7 @@ int DoMain(arguments args)
 
       field->TransformIndexToPhysicalPoint( index, point1 );
 
-      point2 = tps->TransformPoint( point1 );
+      point2 = ebs->TransformPoint( point1 );
 
       for ( unsigned int i = 0;i < ImageDimension;i++)
       {
@@ -583,7 +567,7 @@ int DoMain(arguments args)
 
 
 /**
- * \brief Transforms an image using a thin-plate spline warp computed from a pair of point sets.
+ * \brief Transforms an image using a elastic body spline warp computed from a pair of point sets.
  */
 
 int main(int argc, char** argv)
@@ -600,11 +584,11 @@ int main(int argc, char** argv)
   args.flgVerbose = flgVerbose;
   args.flgDebug   = flgDebug;
 
-  args.flgDoNotUseR2LogRThinPlateSpline = flgDoNotUseR2LogRThinPlateSpline;
+  args.poisson = poisson;
 
   args.fileOutputImage                 = fileOutputImage;
   args.fileOutputDeformationField      = fileOutputDeformationField;
-  args.fileOutputThinPlateSplineMatrix = fileOutputThinPlateSplineMatrix;
+  args.fileOutputElasticBodySplineMatrix = fileOutputElasticBodySplineMatrix;
 
   args.fileSourceLandmarks = fileSourceLandmarks;
   args.fileTargetLandmarks = fileTargetLandmarks;
@@ -612,12 +596,12 @@ int main(int argc, char** argv)
   args.fileInputSourceImage = fileInputSourceImage;
   args.fileInputTargetImage = fileInputTargetImage;
 
-  args.fileInputThinPlateSplineMatrix = fileInputThinPlateSplineMatrix;
+  args.fileInputElasticBodySplineMatrix = fileInputElasticBodySplineMatrix;
 
 
   if ( ! ( args.fileSourceLandmarks.length() || 
            args.fileTargetLandmarks.length() || 
-           args.fileInputThinPlateSplineMatrix.length() ) )
+           args.fileInputElasticBodySplineMatrix.length() ) )
   {
     std::cerr << "ERROR: Two point sets or an input matrix must be specified" << std::endl;
     return EXIT_FAILURE;

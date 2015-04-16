@@ -9,10 +9,11 @@
   <contributor>John Hipwell. </contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
 
+
   <parameters>
 
-    <label>IO</label>
-    <description><![CDATA[Input/output parameters]]></description>
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
 
     <image>
       <name>fileInputImage</name>
@@ -21,16 +22,6 @@
       <description>An optional image to define the reference volume</description>
       <label>Image</label>
       <channel>input</channel>
-    </image>
-
-    <image>
-      <name>fileOutputImage</name>
-      <flag>o</flag>
-      <longflag>mask</longflag>
-      <description>The output spline surface mask image</description>      
-      <label>Output mask</label>
-      <default>MaskedImage.nii.gz</default>
-      <channel>output</channel>
     </image>
 
     <file>
@@ -66,6 +57,23 @@
       <description><![CDATA[Invert the mask (i.e. flip the spline 'height' dimension).]]></description>
       <label>Invert/flip the mask?</label>
     </boolean>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>mask</longflag>
+      <description>The output spline surface mask image</description>      
+      <label>Output mask</label>
+      <default>MaskedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
 
   </parameters>
 
