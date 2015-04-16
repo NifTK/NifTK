@@ -67,6 +67,7 @@ void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
 //-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
 {
+  m_DataSourceManager->OnStop();
 }
 
 

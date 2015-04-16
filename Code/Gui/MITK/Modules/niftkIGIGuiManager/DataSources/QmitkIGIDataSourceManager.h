@@ -183,6 +183,10 @@ public slots:
    */
   void OnRecordStart();
 
+  /**
+   * \brief Callback to stop recording/playback data.
+   */
+  void OnStop();
 
 protected:
 
@@ -249,12 +253,6 @@ private slots:
    * \brief Callback when combo box for data source type is changed, we enable/disable widgets accordingly.
    */
   void OnCurrentIndexChanged(int indexNumber);
-
-  /**
-   * \brief Callback to stop recording/playback data.
-   */
-  void OnStop();
-
 
   void OnPlayStart();
 

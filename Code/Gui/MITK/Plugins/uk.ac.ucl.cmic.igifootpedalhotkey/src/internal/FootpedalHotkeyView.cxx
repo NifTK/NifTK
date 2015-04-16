@@ -35,6 +35,7 @@ const char* FootpedalHotkeyView::VIEW_ID = "uk.ac.ucl.cmic.igifootpedalhotkey";
 //-----------------------------------------------------------------------------
 FootpedalHotkeyView::FootpedalHotkeyView()
   : m_Footswitch1(0)
+  , m_Footswitch1OffTimer(0)
   , m_IGIRecordingStartedSubscriptionID(-1)
 {
 }
@@ -44,6 +45,7 @@ FootpedalHotkeyView::FootpedalHotkeyView()
 FootpedalHotkeyView::~FootpedalHotkeyView()
 {
   delete m_Footswitch1;
+  delete m_Footswitch1OffTimer;
 
   // ctk event bus de-registration
   {
@@ -90,6 +92,21 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
   m_Footswitch1 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F5);
   ok = QObject::connect(m_Footswitch1, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
   assert(ok);
+
+  m_Footswitch1OffTimer = new QTimer(this);
+  m_Footswitch1OffTimer->setSingleShot(true);
+  m_Footswitch1OffTimer->setInterval(1000);       // should be slightly longer than key-repeat!
+  ok = QObject::connect(m_Footswitch1OffTimer, SIGNAL(timeout()), this, SLOT(OnTimer1()));
+  assert(ok);
+}
+
+
+//-----------------------------------------------------------------------------
+void FootpedalHotkeyView::OnTimer1()
+{
+  MITK_INFO << "Stopping recording due to footpedal/hotkey";
+  ctkDictionary   properties;
+  emit OnStopRecording(properties);
 }
 
 
@@ -101,7 +118,16 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
   switch (hotkey)
   {
     case QmitkWindowsHotkeyHandler::CTRL_ALT_F5:
-      emit OnStartRecording(properties);
+      if (!m_Footswitch1OffTimer->isActive())
+      {
+        MITK_INFO << "Starting recording due to footpedal/hotkey";
+        emit OnStartRecording(properties);
+      }
+
+      // if we get another hotkey event shortly, i.e. user is still pressing the key,
+      // and the system generates key-repeat events, then reset timer.
+      // otherwise it will expire at some point, and signal a hotkey-release.
+      m_Footswitch1OffTimer->start();
       break;
   }
 }

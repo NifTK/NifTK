@@ -18,6 +18,7 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_FootpedalHotkeyViewWidget.h"
+#include <QTimer>
 
 
 class QmitkWindowsHotkeyHandler;
@@ -73,8 +74,11 @@ private slots:
 
   void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
 
+  void OnTimer1();
+
 private:
   QmitkWindowsHotkeyHandler*      m_Footswitch1;
+  QTimer*                         m_Footswitch1OffTimer;    // to emulate hotkey-release events.
 
   // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
   qlonglong           m_IGIRecordingStartedSubscriptionID;

@@ -120,7 +120,7 @@ void QmitkWindowsHotkeyHandler::run()
         case WM_HOTKEY:
           if ((LOWORD(msg.lParam) == modifiers) && (HIWORD(msg.lParam) == keycode))
           {
-            MITK_INFO << "Hotkey pressed";
+            MITK_DEBUG << "Hotkey pressed";
             emit HotkeyPressed(this, m_Hotkey);
           }
           break;
