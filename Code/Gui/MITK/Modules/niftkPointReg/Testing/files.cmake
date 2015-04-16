@@ -12,5 +12,10 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS()
+# tests with no extra command line parameter
+set(MODULE_TESTS
+  niftkPointBasedRegTest.cxx
+)
 
+set(MODULE_CUSTOM_TESTS
+)
