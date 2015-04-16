@@ -26,8 +26,11 @@
 #include <itkImage.h>
 #include <itkResampleImageFilter.h>
 #include <itkThinPlateSplineKernelTransform.h>
+#include <itkThinPlateR2LogRSplineKernelTransform.h>
 #include <niftkCSVRow.h>
 #include <itkTransformFileWriter.h>
+#include <itkTransformFileReader.h>
+#include <itkTransformFactory.h>
 
 #include <niftkThinPlateSplineWarpCLP.h>
 
@@ -44,16 +47,19 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+  bool flgDoNotUseR2LogRThinPlateSpline;
 
-  std::string fileOutputImage;
-  std::string fileOutputThinPlateSplineMatrix;
-  std::string fileOutputDeformationField;
+  std::string fileInputSourceImage;
+  std::string fileInputTargetImage;
 
   std::string fileSourceLandmarks;
   std::string fileTargetLandmarks;
 
-  std::string fileInputSourceImage;
-  std::string fileInputTargetImage;
+  std::string fileInputThinPlateSplineMatrix;
+
+  std::string fileOutputImage;
+  std::string fileOutputThinPlateSplineMatrix;
+  std::string fileOutputDeformationField;
 
   arguments() {
     flgVerbose = false;
@@ -225,9 +231,11 @@ int DoMain(arguments args)
   typedef itk::Point< CoordinateRepType, ImageDimension >  PointType;
   typedef std::vector< PointType >                         PointArrayType;
 
-  typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, ImageDimension> TransformType;
+  typedef itk::KernelTransform< CoordinateRepType, ImageDimension> KernelTransformType;
+  typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, ImageDimension> ThinPlateTransformType;
+  typedef itk::ThinPlateR2LogRSplineKernelTransform< CoordinateRepType, ImageDimension> ThinPlateTransformR2LogRType;
 
-  typedef typename TransformType::PointSetType PointSetType;
+  typedef typename KernelTransformType::PointSetType PointSetType;
   
   typedef typename PointSetType::Pointer PointSetPointer;
   typedef typename PointSetType::PointIdentifier PointIdType;
@@ -241,81 +249,144 @@ int DoMain(arguments args)
   // Read the input points
   // ~~~~~~~~~~~~~~~~~~~~~
 
-  typename PointSetType::Pointer sourceLandMarks;
-  typename PointSetType::Pointer targetLandMarks;
+  typename KernelTransformType::Pointer tps;
 
-  // MITK Point Set?
-
-  sourceLandMarks = 
-    ReadMITKPointSet<PointType, PointSetType>( args.fileSourceLandmarks, args.flgVerbose );
-
-  targetLandMarks = 
-    ReadMITKPointSet<PointType, PointSetType>( args.fileTargetLandmarks, args.flgVerbose );
-
-  
-  // CSV File?
-
-  if ( ! sourceLandMarks )
+  if ( args.fileSourceLandmarks.length() && args.fileTargetLandmarks.length() )
   {
+
+    typename PointSetType::Pointer sourceLandMarks;
+    typename PointSetType::Pointer targetLandMarks;
+
+    // MITK Point Set?
+    
     sourceLandMarks = 
-      ReadCSVPointSet<PointType, PointSetType>( args.fileSourceLandmarks, args.flgVerbose );
-  }
-
-  if ( ! targetLandMarks )
-  {
+      ReadMITKPointSet<PointType, PointSetType>( args.fileSourceLandmarks, args.flgVerbose );
+    
     targetLandMarks = 
-      ReadCSVPointSet<PointType, PointSetType>( args.fileTargetLandmarks, args.flgVerbose );
+      ReadMITKPointSet<PointType, PointSetType>( args.fileTargetLandmarks, args.flgVerbose );
+    
+    
+    // CSV File?
+    
+    if ( ! sourceLandMarks )
+    {
+      sourceLandMarks = 
+        ReadCSVPointSet<PointType, PointSetType>( args.fileSourceLandmarks, args.flgVerbose );
+    }
+    
+    if ( ! targetLandMarks )
+    {
+      targetLandMarks = 
+        ReadCSVPointSet<PointType, PointSetType>( args.fileTargetLandmarks, args.flgVerbose );
+    }
+
+
+
+    // Compute the thin-plate spline transformation
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    if ( args.flgDoNotUseR2LogRThinPlateSpline )
+    {
+      tps = ThinPlateTransformType::New();
+    }
+    else
+    {
+      tps = ThinPlateTransformR2LogRType::New();
+    }
+
+    // The landmarks have to be swapped to transform the source image into the target space
+
+    tps->SetSourceLandmarks(targetLandMarks);
+    tps->SetTargetLandmarks(sourceLandMarks);
+
+    try
+    {
+      std::cout << "Computing the thin-plate spline matrix" << std::endl;
+      tps->ComputeWMatrix();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to compute the spline matrix, exception: " << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }
+
+
+    // Save the matrix to a file?
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    if ( args.fileOutputThinPlateSplineMatrix.length() )
+    {
+      typedef itk::TransformFileWriterTemplate< CoordinateRepType > TransformWriterType;
+      typename TransformWriterType::Pointer transformWriter = TransformWriterType::New();
+      
+      transformWriter->SetInput( tps );
+      
+      transformWriter->SetFileName( args.fileOutputThinPlateSplineMatrix );
+      
+      try
+      {
+        std::cout << "Writing the thin-plate spline matrix to file: " 
+                  << args.fileOutputThinPlateSplineMatrix << std::endl;
+        transformWriter->Update();       
+      }
+      catch( itk::ExceptionObject & excp )
+      {
+        std::cerr << "ERROR: Failed to write the spline matrix, exception: " << std::endl
+                  << excp << std::endl;
+        return EXIT_FAILURE;
+      }
+    }
+
   }
 
 
+  // Or read the matrix directly?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  // Compute the thin-plate spline transformation
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typename TransformType::Pointer tps = TransformType::New();
-
-  // The landmarks have to be swapped to transform the source image into the target space
-
-  tps->SetSourceLandmarks(targetLandMarks);
-  tps->SetTargetLandmarks(sourceLandMarks);
-
-  try
+  else if ( args.fileInputThinPlateSplineMatrix.length() )
   {
-    std::cout << "Computing the thin-plate spline matrix" << std::endl;
-    tps->ComputeWMatrix();
-  }
-  catch( itk::ExceptionObject & err ) 
-  { 
-    std::cerr << "ERROR: Failed to compute the spline matrix, exception: " << std::endl
-              << err << std::endl; 
-    return EXIT_FAILURE;
-  }
+    if ( args.flgDoNotUseR2LogRThinPlateSpline )
+    {
+      itk::TransformFactory< ThinPlateTransformType >::RegisterTransform();
+    }
+    else
+    {
+      itk::TransformFactory< ThinPlateTransformR2LogRType >::RegisterTransform();
+    }
 
+    typedef itk::TransformFileReaderTemplate< CoordinateRepType > TransformReaderType;
+    typename TransformReaderType::Pointer transformReader = TransformReaderType::New();
+      
+    transformReader->SetFileName( args.fileInputThinPlateSplineMatrix );
+      
+    try
+    {
+      std::cout << "Reading the thin-plate spline matrix from file: " 
+                << args.fileInputThinPlateSplineMatrix << std::endl;
+      transformReader->Update();       
+  
+      typedef TransformReaderType::TransformListType *TransformListType;
+      TransformListType transforms = transformReader->GetTransformList();
+      
+      typename itk::TransformFileReader::TransformListType::const_iterator it = transforms->begin();
 
-  // Save the matrix to a file?
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+      if ( args.flgDoNotUseR2LogRThinPlateSpline )
+      {
+        tps = static_cast<ThinPlateTransformType*>((*it).GetPointer());
+      }
+      else {
+        tps = static_cast<ThinPlateTransformR2LogRType*>((*it).GetPointer());
+      }
 
-  if ( args.fileOutputThinPlateSplineMatrix.length() )
-  {
-     typedef itk::TransformFileWriterTemplate< CoordinateRepType > TransformWriterType;
-     typename TransformWriterType::Pointer transformWriter = TransformWriterType::New();
-
-     transformWriter->SetInput( tps );
-
-     transformWriter->SetFileName( args.fileOutputThinPlateSplineMatrix );
-
-     try
-     {
-       std::cout << "Writing the thin-plate spline matrix to file: " 
-                 << args.fileOutputThinPlateSplineMatrix << std::endl;
-       transformWriter->Update();       
-     }
-     catch( itk::ExceptionObject & excp )
-     {
-       std::cerr << "ERROR: Failed to write the spline matrix, exception: " << std::endl
-                 << excp << std::endl;
-       return EXIT_FAILURE;
-     }
+      tps->ComputeWMatrix();
+    }
+    catch( itk::ExceptionObject & excp )
+    {
+      std::cerr << "ERROR: Failed to read the spline matrix, exception: " << std::endl
+                << excp << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
 
@@ -458,8 +529,8 @@ int DoMain(arguments args)
     FieldIterator fi( field, region );
     fi.GoToBegin();
 
-    typename TransformType::InputPointType  point1;
-    typename TransformType::OutputPointType point2;
+    typename KernelTransformType::InputPointType  point1;
+    typename KernelTransformType::OutputPointType point2;
     typename DisplacementFieldType::IndexType index;
 
     FieldVectorType displacement;
@@ -529,6 +600,8 @@ int main(int argc, char** argv)
   args.flgVerbose = flgVerbose;
   args.flgDebug   = flgDebug;
 
+  args.flgDoNotUseR2LogRThinPlateSpline = flgDoNotUseR2LogRThinPlateSpline;
+
   args.fileOutputImage                 = fileOutputImage;
   args.fileOutputDeformationField      = fileOutputDeformationField;
   args.fileOutputThinPlateSplineMatrix = fileOutputThinPlateSplineMatrix;
@@ -539,10 +612,14 @@ int main(int argc, char** argv)
   args.fileInputSourceImage = fileInputSourceImage;
   args.fileInputTargetImage = fileInputTargetImage;
 
+  args.fileInputThinPlateSplineMatrix = fileInputThinPlateSplineMatrix;
 
-  if ( ! ( args.fileSourceLandmarks.length() || args.fileTargetLandmarks.length() ) )
+
+  if ( ! ( args.fileSourceLandmarks.length() || 
+           args.fileTargetLandmarks.length() || 
+           args.fileInputThinPlateSplineMatrix.length() ) )
   {
-    std::cerr << "ERROR: Two point sets must be specified" << std::endl;
+    std::cerr << "ERROR: Two point sets or an input matrix must be specified" << std::endl;
     return EXIT_FAILURE;
   }
 
