@@ -86,6 +86,7 @@ if(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkDenoise
     niftkDilate
+    niftkElasticBodySplineWarp
     niftkErode
     niftkExportDICOMTagsToCSVFile
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
