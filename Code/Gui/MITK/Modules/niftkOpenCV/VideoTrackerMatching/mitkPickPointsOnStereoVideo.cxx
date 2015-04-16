@@ -31,7 +31,6 @@ PickedObject::PickedObject()
 : id (-1)
 , isLine (false)
 {
-  MITK_INFO << "Creating new picked point object. Point vector size = " << points.size() << " at " << this;
 }
 
 //-----------------------------------------------------------------------------
@@ -44,7 +43,6 @@ PickedPointList::PickedPointList()
 , m_InOrderedMode (false)
 , m_IsModified (false)
 {
-  MITK_INFO << "Creating new picked point list. Picked object vector size = " << m_PickedObjects.size() << " at " << this;
 }
 
 //-----------------------------------------------------------------------------
