@@ -83,6 +83,9 @@ std::string FootpedalHotkeyView::GetViewID() const
 void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
 {
   setupUi(parent);
+  m_LeftLabel->setText("");
+  m_MiddleLabel->setText("");
+  m_RightLabel->setText("");
 
   ctkServiceReference ref = mitk::FootpedalHotkeyViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -133,6 +136,8 @@ void FootpedalHotkeyView::OnTimer1()
   MITK_INFO << "Stopping recording due to footpedal/hotkey 1";
   ctkDictionary   properties;
   emit OnStopRecording(properties);
+
+  m_LeftLabel->setText("");
 }
 
 
@@ -141,6 +146,8 @@ void FootpedalHotkeyView::OnTimer2()
 {
   // what action?
   MITK_INFO << "Unassigned footpedal 2 release.";
+
+  m_MiddleLabel->setText("");
 }
 
 
@@ -149,6 +156,8 @@ void FootpedalHotkeyView::OnTimer3()
 {
   // what action?
   MITK_INFO << "Unassigned footpedal 3 release.";
+
+  m_RightLabel->setText("");
 }
 
 
@@ -163,6 +172,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       if (!m_Footswitch1OffTimer->isActive())
       {
         MITK_INFO << "Starting recording due to footpedal/hotkey 1.";
+        m_LeftLabel->setText("X");
         emit OnStartRecording(properties);
       }
 
@@ -176,6 +186,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       if (!m_Footswitch2OffTimer->isActive())
       {
         MITK_INFO << "Unassigned footpedal 2 press.";
+        m_MiddleLabel->setText("X");
         // what action?
       }
       m_Footswitch2OffTimer->start();
@@ -185,6 +196,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       if (!m_Footswitch3OffTimer->isActive())
       {
         MITK_INFO << "Unassigned footpedal 3 press.";
+        m_RightLabel->setText("X");
         // what action?
       }
       m_Footswitch3OffTimer->start();
