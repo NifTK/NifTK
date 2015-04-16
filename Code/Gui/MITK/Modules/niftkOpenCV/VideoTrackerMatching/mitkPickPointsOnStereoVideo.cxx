@@ -27,6 +27,329 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
+PickedObject::PickedObject()
+: id (-1)
+, isLine (false)
+{
+}
+
+//-----------------------------------------------------------------------------
+PickedObject::~PickedObject()
+{}
+
+//-----------------------------------------------------------------------------
+PickedPointList::PickedPointList()
+: m_InLineMode (false)
+, m_InOrderedMode (false)
+, m_IsModified (false)
+{
+}
+
+//-----------------------------------------------------------------------------
+PickedPointList::~PickedPointList()
+{}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::PutOut (std::ofstream& os )
+{
+  os << "<frame>" <<  m_FrameNumber << "</frame>" << std::endl;
+  os << "<channel>" << m_Channel <<"</channel>" << std::endl;
+
+  for ( int i = 0 ; i < m_PickedObjects.size(); i ++ ) 
+  {
+    if ( m_PickedObjects[i].isLine )
+    {
+      if ( m_PickedObjects[i].points.size() > 0 )
+      {
+        os << "<line>" << std::endl;
+        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
+        os << "<coordinates>" <<std::endl;
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          os << m_PickedObjects[i].points[j];
+        }
+        os << std::endl << "</coordinates>" <<std::endl;
+        os << "</line>" << std::endl;
+      }
+    }
+    else
+    {
+      if ( m_PickedObjects[i].points.size() > 0 )
+      {
+        os << "<point>" << std::endl;
+        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
+        os << "<coordinates>" <<std::endl;
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          os << m_PickedObjects[i].points[j];
+        }
+        os << std::endl << "</coordinates>" <<std::endl;
+        os << "</point>" << std::endl;
+      }
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::AnnotateImage(cv::Mat& image)
+{
+  for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ ) 
+  {
+    std::string number;
+    if ( m_PickedObjects[i].id == -1 )
+    {
+      number = "#";
+    }
+    else 
+    {
+      number = boost::lexical_cast<std::string>(m_PickedObjects[i].id);
+    }
+    if ( ! m_PickedObjects[i].isLine )
+    { 
+      assert ( m_PickedObjects[i].points.size() <= 1 );
+      for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+      {
+        cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
+        cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+      }
+    }
+    else 
+    {
+      if ( m_PickedObjects[i].points.size() > 0 )
+      {
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        {
+          if ( j == 0 )
+          {
+            cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
+            cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+          }
+          else 
+          {
+            cv::line(image,  m_PickedObjects[i].points[j],  m_PickedObjects[i].points[j-1], cv::Scalar(255,255,255));
+          }   
+        }
+      }
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+int PickedPointList::GetNextAvailableID( bool ForLine )
+{
+  int lastPoint = -1 ; 
+  for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; i ++ ) 
+  {
+    if ( (! ForLine ) && (! m_PickedObjects[i].isLine) ) 
+    {
+      if ( m_PickedObjects[i].id > lastPoint ) 
+      {
+        lastPoint = m_PickedObjects[i].id;
+      }
+    }
+    if ( ( ForLine ) && (m_PickedObjects[i].isLine) ) 
+    {
+      if ( m_PickedObjects[i].id > lastPoint ) 
+      {
+        lastPoint = m_PickedObjects[i].id;
+      }
+    }
+  }
+  return lastPoint+1;
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetInOrderedMode(const bool& mode)
+{
+  if ( m_InOrderedMode == mode )
+  {
+    return;
+  }
+  m_InOrderedMode = mode;
+  if ( m_InLineMode )
+  {
+    if ( ! m_InOrderedMode ) 
+    {
+      m_PickedObjects.back().id = -1;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      m_PickedObjects.back().id = pointID;
+    }
+    m_IsModified = true;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetInLineMode(const bool& mode)
+{
+  if ( m_InLineMode == mode )
+  {
+    return;
+  }
+  m_InLineMode = mode;
+  if ( m_InLineMode )
+  {
+    int pointID = -1;
+    PickedObject pickedObject;
+    pickedObject.isLine = true;
+    
+    if ( m_InOrderedMode )
+    {
+      pointID = this->GetNextAvailableID(true);
+    }
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool PickedPointList::GetIsModified()
+{
+  bool state = m_IsModified;
+  m_IsModified = false;
+  return state;
+}
+
+//-----------------------------------------------------------------------------
+unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
+{
+  if ( m_InLineMode ) 
+  {
+    if (  m_PickedObjects.back().isLine )
+    {
+      m_PickedObjects.back().points.push_back(point);
+      MITK_INFO << "Added a point to line " << m_PickedObjects.back().id;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      PickedObject pickedObject;
+      pickedObject.isLine = true;
+      pickedObject.id = pointID;
+      pickedObject.points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Created new line at " << m_PickedObjects.back().id;
+    }
+  }
+  else
+  {
+    if ( m_InOrderedMode )
+    {
+      int pointID=this->GetNextAvailableID(false);
+      PickedObject pickedObject;
+      pickedObject.isLine = false;
+      pickedObject.id = pointID;
+      pickedObject.points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+
+      MITK_INFO << "Picked ordered point " << pointID << " , " <<  point;
+    }
+    else
+    {
+      PickedObject pickedObject; 
+      pickedObject.isLine = false;
+      pickedObject.id = -1;
+      pickedObject.points.push_back(point);
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Picked unordered point, " <<  point;
+    }
+  }
+  m_IsModified=true;
+  return m_PickedObjects.size();
+}
+
+//-----------------------------------------------------------------------------
+unsigned int PickedPointList::RemoveLastPoint()
+{
+  if ( m_PickedObjects.size() != 0 )
+  {
+    if ( m_InLineMode )
+    {
+      std::vector<PickedObject>::iterator it = m_PickedObjects.end() -1 ;
+      while ( it >= m_PickedObjects.begin() )
+      {
+        if ( it->isLine )
+        {
+          MITK_INFO << "found a line at " << it->id;
+          if ( it->points.size() > 0 )
+          {
+            it->points.pop_back();
+            MITK_INFO << "Removed last point from line " << it->id;
+          }
+          else
+          {
+            MITK_INFO << "Removed line " << it->id;
+            m_PickedObjects.erase(it);
+          }
+          break;
+        }
+        else
+        {
+          MITK_INFO << it->id << " is not a line";
+        }
+        it -- ;
+      }
+    }
+    else
+    {
+      MITK_INFO << "Removing last point";
+      std::vector<PickedObject>::iterator it = m_PickedObjects.end() - 1;
+      while ( it >= m_PickedObjects.begin() )
+      {
+        if ( ! (it->isLine) )
+        {
+          MITK_INFO << "found a point";
+          m_PickedObjects.erase(it);
+          break;
+        }
+        it -- ;
+      }
+    }
+  m_IsModified=true;
+  }
+  return m_PickedObjects.size();
+}
+
+//-----------------------------------------------------------------------------
+unsigned int PickedPointList::SkipOrderedPoint()
+{
+  if ( ! m_InOrderedMode )
+  {
+    return m_PickedObjects.size();
+  }
+  
+  if ( ! m_InLineMode )
+  {
+    int pointID=this->GetNextAvailableID(false);
+    PickedObject pickedObject;
+    pickedObject.isLine = false;
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+
+    MITK_INFO << "Skipped ordered point " << pointID;
+  }
+  else
+  {
+    int pointID=this->GetNextAvailableID(true);
+    
+    PickedObject pickedObject;
+    pickedObject.isLine = true;
+    pickedObject.id = pointID;
+
+    m_PickedObjects.push_back(pickedObject);
+
+    MITK_INFO << "Skipped ordered line " << pointID-1;
+  }
+  return m_PickedObjects.size();
+}
+
+//-----------------------------------------------------------------------------
 PickPointsOnStereoVideo::PickPointsOnStereoVideo()
 : 
 m_VideoIn("")
@@ -47,6 +370,7 @@ m_VideoIn("")
 , m_Capture(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_OrderedPoints(false)
+, m_PickingLine(false)
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
 , m_WriteAnnotatedImages(false)
@@ -56,11 +380,9 @@ m_VideoIn("")
 {
 }
 
-
 //-----------------------------------------------------------------------------
 PickPointsOnStereoVideo::~PickPointsOnStereoVideo()
 {
-
 }
 
 //-----------------------------------------------------------------------------
@@ -173,22 +495,31 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       {
         key = cvWaitKey (20);
 
-        std::vector <cv::Point2d> leftPickedPoints;
-        unsigned int leftLastPointCount = leftPickedPoints.size() + 1;
-        std::vector <cv::Point2d> rightPickedPoints;
-        unsigned int rightLastPointCount = rightPickedPoints.size() + 1;
         if ( framenumber %m_Frequency == 0 ) 
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-
-          if ( m_OrderedPoints )
+          if ( m_PickingLine )
           {
-            MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, n for next frame, q to quit";
-          }
-          else 
+            if ( m_OrderedPoints )
+            {
+              MITK_INFO << "Picking ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to finish line, n for next frame, q to quit";
+            }
+            else
+            {
+              MITK_INFO << "Picking un ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to finish line, n for next frame, q to quit";
+            }
+          } 
+          else
           {
-            MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, n for next frame, q to quit";
+            if ( m_OrderedPoints )
+            {
+              MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to pick a line, n for next frame, q to quit";
+            }
+            else 
+            {
+              MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to pick a line, n for next frame, q to quit";
+            }
           }
           
           std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
@@ -197,11 +528,11 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
-          if ( boost::filesystem::exists (leftOutName + ".txt") )
+          if ( boost::filesystem::exists (leftOutName + ".xml") )
           {
             if ( m_AskOverWrite )
             {
-              MITK_INFO << leftOutName + ".txt" << " exists, overwrite (y/n)";
+              MITK_INFO << leftOutName + ".xml" << " exists, overwrite (y/n)";
               key = 0;
               while ( ! ( key == 'n' || key == 'y' ) )
               {
@@ -218,20 +549,20 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else
             {
-              MITK_INFO << leftOutName + ".txt" << " exists, skipping.";
+              MITK_INFO << leftOutName + ".xml" << " exists, skipping.";
               overWriteLeft = false;
             }
           }
 
           key = 0;
-          if ( boost::filesystem::exists (rightOutName + ".txt") )
+          if ( boost::filesystem::exists (rightOutName + ".xml") )
           {
             if ( m_AskOverWrite ) 
             {
-              MITK_INFO << rightOutName  + ".txt" << " exists, overwrite (y/n)";
+              MITK_INFO << rightOutName  + ".xml" << " exists, overwrite (y/n)";
               while ( ! ( key == 'n' || key == 'y' ) )
               {
-                key = cvWaitKey(20);
+                key = cv::waitKey(20);
               }
               if ( key == 'n' ) 
               {
@@ -244,19 +575,30 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else 
             {
-              MITK_INFO << rightOutName + ".txt" << " exists, skipping.";
+              MITK_INFO << rightOutName + ".xml" << " exists, skipping.";
               overWriteRight = false;
             }
           }
-         
-          cv::Mat leftAnnotatedVideoImage;
-          cv::Mat rightAnnotatedVideoImage;
+
+          PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
+          PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
+          leftPickedPoints->SetInLineMode (m_PickingLine);
+          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetFrameNumber (framenumber);
+          leftPickedPoints->SetChannel ("left");
+          rightPickedPoints->SetInLineMode (m_PickingLine);
+          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetFrameNumber (framenumber + 1);
+          rightPickedPoints->SetChannel ("right");
+
+          cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+          cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
             while ( key != 'n' && key != 'q' )
             {
-              key = cvWaitKey(20);
+              key = cv::waitKey(20);
               if ( key == 't' )
               {
                 m_OrderedPoints = ! m_OrderedPoints;
@@ -268,102 +610,66 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 {
                   MITK_INFO << "Switched to un ordered points mode";
                 }
+                leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+                rightPickedPoints->SetInOrderedMode (m_OrderedPoints);
+              }
+              if ( key == 'l' )
+              {
+                m_PickingLine = ! m_PickingLine;
+                if ( m_PickingLine ) 
+                {
+                  MITK_INFO << "Switched to line picking mode";
+                }
+                else
+                {
+                  MITK_INFO << "Exited line picking mode";
+                }
+                leftPickedPoints->SetInLineMode (m_PickingLine);
+                rightPickedPoints->SetInLineMode (m_PickingLine);
               }
               if ( overWriteLeft )
               {
-                leftAnnotatedVideoImage = leftVideoImage.clone();
-                cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, &leftPickedPoints);
-                if ( leftPickedPoints.size() != leftLastPointCount )
+                cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);
+                if ( leftPickedPoints->GetIsModified() )
                 {
-                  for ( int i = 0 ; i < leftPickedPoints.size() ; i ++ ) 
+                  leftAnnotatedVideoImage = leftVideoImage.clone();
+                  leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
+
+                  std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
+                  leftPickedPoints->PutOut( leftPointOut );
+                  leftPointOut.close();
+                  if ( m_WriteAnnotatedImages )
                   {
-                    std::string number = boost::lexical_cast<std::string>(i);
-                    cv::putText(leftAnnotatedVideoImage,number,leftPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
-                    cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+                    cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
                   }
-                
-                  IplImage image(leftAnnotatedVideoImage);
-                  cvShowImage("Left Channel" , &image);
-                  leftLastPointCount = leftPickedPoints.size();
                 }
                 
+                IplImage image(leftAnnotatedVideoImage);
+                cvShowImage("Left Channel" , &image);
               }
+
               if ( overWriteRight )
               {
-                rightAnnotatedVideoImage = rightVideoImage.clone();
-                cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, &rightPickedPoints);
-                if ( rightPickedPoints.size() != rightLastPointCount )
+                cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, rightPickedPoints);
+                if ( rightPickedPoints->GetIsModified() )
                 {
-                  for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ ) 
-                  {
-                    std::string number = boost::lexical_cast<std::string>(i);
-                    cv::putText(rightAnnotatedVideoImage,number,rightPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
-                    cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
-                  }
-                
-                  IplImage rimage(rightAnnotatedVideoImage);
-                  cvShowImage("Right Channel" , &rimage);
-                  rightLastPointCount = rightPickedPoints.size();
-                }
-              }
-            }
-          }
-          if ( leftPickedPoints.size() != 0 ) 
-          {
-            std::ofstream leftPointOut ((leftOutName+ ".txt").c_str());
-            leftPointOut << "# " << framenumber << std::endl;
-            if ( m_OrderedPoints ) 
-            {
-              leftPointOut << "# Ordered" << std::endl;
-            }
-            else
-            {
-              leftPointOut << "# UnOrdered" << std::endl;
-            }
+                  rightAnnotatedVideoImage = rightVideoImage.clone();
+                  rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
 
-            for ( int i = 0 ; i < leftPickedPoints.size(); i ++ ) 
-            {
-              leftPointOut << leftPickedPoints[i] << std::endl;
-            }
-            leftPointOut.close();
-            if ( m_WriteAnnotatedImages )
-            {
-              for ( int i = 0 ; i < leftPickedPoints.size(); i ++ )
-              {
-                std::string number = boost::lexical_cast<std::string>(i);
-                cv::putText(leftAnnotatedVideoImage,number,leftPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
-                cv::circle(leftAnnotatedVideoImage, leftPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
+                  std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
+                  rightPickedPoints->PutOut (rightPointOut);
+                  rightPointOut.close();
+
+                  if ( m_WriteAnnotatedImages )
+                  {
+                     cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
+                  }
+                }
+                
+                IplImage rimage(rightAnnotatedVideoImage);
+                cvShowImage("Right Channel" , &rimage);
               }
-              cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
             }
-          }
-          if ( rightPickedPoints.size() != 0 ) 
-          {
-            std::ofstream rightPointOut ((rightOutName + ".txt").c_str());
-            rightPointOut << "# " << framenumber+1 << std::endl;
-            if ( m_OrderedPoints ) 
-            {
-              rightPointOut << "# Ordered" << std::endl;
-            }
-            else
-            {
-              rightPointOut << "# UnOrdered" << std::endl;
-            }
-            for ( int i = 0 ; i < rightPickedPoints.size(); i ++ ) 
-            {
-              rightPointOut << rightPickedPoints[i] << std::endl;
-            }
-             if ( m_WriteAnnotatedImages )
-            {
-              for ( int i = 0 ; i < rightPickedPoints.size() ; i ++ )
-              {
-                std::string number = boost::lexical_cast<std::string>(i);
-                cv::putText(rightAnnotatedVideoImage,number,rightPickedPoints[i],0,1.0,cv::Scalar(255,255,255));
-                cv::circle(rightAnnotatedVideoImage, rightPickedPoints[i],5,cv::Scalar(255,255,255),1,1);
-              }
-              cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
-            }
-             rightPointOut.close();
           }
           cvShowImage("Left Channel" , &blankImage);
           cvShowImage("Right Channel" , &blankImage);
@@ -381,26 +687,19 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 //-----------------------------------------------------------------------------
 void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
-  std::vector<cv::Point2d>* out = static_cast<std::vector<cv::Point2d>*>(userdata);
+  PickedPointList* out = static_cast<PickedPointList*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    MITK_INFO << "Picked point " << out->size();
-    out->push_back (cv::Point2d(x,y));
+    out->AddPoint (cv::Point2d ( x,y));
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {
-    if ( out->size() > 0 ) 
-    { 
-      out->pop_back();
-      MITK_INFO << "Removed point" << out->size();
-    }
+    out->RemoveLastPoint();
   }
   else if  ( event == cv::EVENT_MBUTTONDOWN )
   {
-    MITK_INFO << "Skipping Point " << out->size();
-    out->push_back(cv::Point2d(-1,-1));
+    out->SkipOrderedPoint();
   }
 }
-
 
 } // end namespace

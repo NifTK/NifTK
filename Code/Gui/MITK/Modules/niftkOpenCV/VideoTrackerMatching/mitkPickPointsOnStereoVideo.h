@@ -30,6 +30,53 @@ namespace mitk {
  */
 void PointPickingCallBackFunc (  int, int , int, int, void* );
 
+class PickedObject 
+{
+public:
+  int id;
+  bool isLine;
+  std::vector < cv::Point2d > points;
+
+  PickedObject();
+  ~PickedObject();
+};
+
+class PickedPointList : public itk::Object
+{
+  public:
+    mitkClassMacro(PickedPointList, itk::Object);
+    itkNewMacro(PickedPointList);
+    
+    void PutOut (std::ofstream& os);
+    void AnnotateImage (cv::Mat& image);
+
+    void SetInLineMode (const bool& mode);
+    void SetInOrderedMode ( const bool& mode);
+    bool GetIsModified();
+    itkSetMacro (FrameNumber, unsigned int);
+    itkSetMacro (Channel, std::string);
+
+    unsigned int AddPoint (const cv::Point2d& point);
+    unsigned int RemoveLastPoint ();
+    unsigned int SkipOrderedPoint ();
+    unsigned int EndLine();
+
+  protected:
+    PickedPointList();
+    virtual ~PickedPointList();
+
+    PickedPointList (const PickedPointList&); // Purposefully not implemented.
+    PickedPointList& operator=(const PickedPointList&); // Purposefully not implemented.
+
+  private:
+    bool m_InLineMode;
+    bool m_InOrderedMode;
+    bool m_IsModified;
+    unsigned int m_FrameNumber;
+    std::string m_Channel;
+    std::vector < PickedObject > m_PickedObjects;
+    int GetNextAvailableID ( bool ForLine );
+};
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 
@@ -69,11 +116,11 @@ public:
    */
   void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
-
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
   itkSetMacro ( OrderedPoints, bool);
+  itkSetMacro ( PickingLine, bool);
   itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( WriteAnnotatedImages, bool);
@@ -101,6 +148,7 @@ private:
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_OrderedPoints; //picked points can be ordered or unordered
+  bool                          m_PickingLine; //if true we are picking a line defined by a vector of points
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
   bool                          m_HaltOnVideoReadFail; //halt if video read fail
   bool                          m_WriteAnnotatedImages; //halt if video read fail
