@@ -23,7 +23,12 @@
 
 class QmitkWindowsHotkeyHandler;
 
-
+/**
+ * Reacts to presses on a foot pedal.
+ * The pedals generate keystrokes that are registered as system-wide hotkeys, i.e. no matter
+ * what window currently has focus, the foot pedal presses will always be routed to this plugin.
+ * It then sends off a CTK event to trigger an action in some other plugin.
+ */
 class FootpedalHotkeyView : public QmitkBaseView, public Ui::FootpedalHotkeyViewWidget
 {  
   Q_OBJECT
@@ -75,10 +80,17 @@ private slots:
   void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
 
   void OnTimer1();
+  void OnTimer2();
+  void OnTimer3();
 
 private:
   QmitkWindowsHotkeyHandler*      m_Footswitch1;
   QTimer*                         m_Footswitch1OffTimer;    // to emulate hotkey-release events.
+  QmitkWindowsHotkeyHandler*      m_Footswitch2;
+  QTimer*                         m_Footswitch2OffTimer;
+  QmitkWindowsHotkeyHandler*      m_Footswitch3;
+  QTimer*                         m_Footswitch3OffTimer;
+
 
   // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
   qlonglong           m_IGIRecordingStartedSubscriptionID;

@@ -42,6 +42,8 @@ public:
   enum Hotkey
   {
     CTRL_ALT_F5     = 0x00030074    // VK_F5 | ((MOD_ALT | MOD_CONTROL) << 16)
+  , CTRL_ALT_F6     = 0x00030075    // VK_F6 | ((MOD_ALT | MOD_CONTROL) << 16)
+  , CTRL_ALT_F7     = 0x00030076    // VK_F7 | ((MOD_ALT | MOD_CONTROL) << 16)
   };
 
 

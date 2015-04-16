@@ -36,6 +36,10 @@ const char* FootpedalHotkeyView::VIEW_ID = "uk.ac.ucl.cmic.igifootpedalhotkey";
 FootpedalHotkeyView::FootpedalHotkeyView()
   : m_Footswitch1(0)
   , m_Footswitch1OffTimer(0)
+  , m_Footswitch2(0)
+  , m_Footswitch2OffTimer(0)
+  , m_Footswitch3(0)
+  , m_Footswitch3OffTimer(0)
   , m_IGIRecordingStartedSubscriptionID(-1)
 {
 }
@@ -46,6 +50,10 @@ FootpedalHotkeyView::~FootpedalHotkeyView()
 {
   delete m_Footswitch1;
   delete m_Footswitch1OffTimer;
+  delete m_Footswitch2;
+  delete m_Footswitch2OffTimer;
+  delete m_Footswitch3;
+  delete m_Footswitch3OffTimer;
 
   // ctk event bus de-registration
   {
@@ -92,11 +100,29 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
   m_Footswitch1 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F5);
   ok = QObject::connect(m_Footswitch1, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
   assert(ok);
+  m_Footswitch2 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F6);
+  ok = QObject::connect(m_Footswitch2, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  assert(ok);
+  m_Footswitch3 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F7);
+  ok = QObject::connect(m_Footswitch3, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  assert(ok);
 
   m_Footswitch1OffTimer = new QTimer(this);
   m_Footswitch1OffTimer->setSingleShot(true);
   m_Footswitch1OffTimer->setInterval(1000);       // should be slightly longer than key-repeat!
   ok = QObject::connect(m_Footswitch1OffTimer, SIGNAL(timeout()), this, SLOT(OnTimer1()));
+  assert(ok);
+
+  m_Footswitch2OffTimer = new QTimer(this);
+  m_Footswitch2OffTimer->setSingleShot(true);
+  m_Footswitch2OffTimer->setInterval(1000);       // should be slightly longer than key-repeat!
+  ok = QObject::connect(m_Footswitch2OffTimer, SIGNAL(timeout()), this, SLOT(OnTimer2()));
+  assert(ok);
+
+  m_Footswitch3OffTimer = new QTimer(this);
+  m_Footswitch3OffTimer->setSingleShot(true);
+  m_Footswitch3OffTimer->setInterval(1000);       // should be slightly longer than key-repeat!
+  ok = QObject::connect(m_Footswitch3OffTimer, SIGNAL(timeout()), this, SLOT(OnTimer3()));
   assert(ok);
 }
 
@@ -104,9 +130,25 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 void FootpedalHotkeyView::OnTimer1()
 {
-  MITK_INFO << "Stopping recording due to footpedal/hotkey";
+  MITK_INFO << "Stopping recording due to footpedal/hotkey 1";
   ctkDictionary   properties;
   emit OnStopRecording(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void FootpedalHotkeyView::OnTimer2()
+{
+  // what action?
+  MITK_INFO << "Unassigned footpedal 2 release.";
+}
+
+
+//-----------------------------------------------------------------------------
+void FootpedalHotkeyView::OnTimer3()
+{
+  // what action?
+  MITK_INFO << "Unassigned footpedal 3 release.";
 }
 
 
@@ -120,7 +162,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
     case QmitkWindowsHotkeyHandler::CTRL_ALT_F5:
       if (!m_Footswitch1OffTimer->isActive())
       {
-        MITK_INFO << "Starting recording due to footpedal/hotkey";
+        MITK_INFO << "Starting recording due to footpedal/hotkey 1.";
         emit OnStartRecording(properties);
       }
 
@@ -128,6 +170,24 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       // and the system generates key-repeat events, then reset timer.
       // otherwise it will expire at some point, and signal a hotkey-release.
       m_Footswitch1OffTimer->start();
+      break;
+
+    case QmitkWindowsHotkeyHandler::CTRL_ALT_F6:
+      if (!m_Footswitch2OffTimer->isActive())
+      {
+        MITK_INFO << "Unassigned footpedal 2 press.";
+        // what action?
+      }
+      m_Footswitch2OffTimer->start();
+      break;
+
+    case QmitkWindowsHotkeyHandler::CTRL_ALT_F7:
+      if (!m_Footswitch3OffTimer->isActive())
+      {
+        MITK_INFO << "Unassigned footpedal 3 press.";
+        // what action?
+      }
+      m_Footswitch3OffTimer->start();
       break;
   }
 }
