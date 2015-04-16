@@ -1161,7 +1161,14 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRecordStart()
 {
-  // FIXME: this needs logic to guard against recording while recording... dont start recording twice.
+  if (!m_RecordPushButton->isEnabled())
+    // shortcut in case we are already recording.
+    return;
+
+  m_RecordPushButton->setEnabled(false);
+  m_StopPushButton->setEnabled(true);
+  assert(!m_PlayPushButton->isChecked());
+  m_PlayPushButton->setEnabled(false);
 
   QString directoryName = this->GetDirectoryName();
   QDir directory(directoryName);
@@ -1173,11 +1180,6 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   {
     source->StartRecording(directory.absolutePath().toStdString(), this->m_SaveInBackground, this->m_SaveOnReceipt);
   }
-
-  m_RecordPushButton->setEnabled(false);
-  m_StopPushButton->setEnabled(true);
-  assert(!m_PlayPushButton->isChecked());
-  m_PlayPushButton->setEnabled(false);
 
   // tell interested parties (e.g. other plugins) that recording has started.
   // we do this before dumping the descriptor because that might pop up a message box,
