@@ -23,13 +23,11 @@ namespace niftk
 //-----------------------------------------------------------------------------
 PointRegServiceActivator::PointRegServiceActivator()
 {
-
 }
 
 //-----------------------------------------------------------------------------
 PointRegServiceActivator::~PointRegServiceActivator()
 {
-
 }
 
 
@@ -54,3 +52,5 @@ void PointRegServiceActivator::Unload(us::ModuleContext*)
 }
 
 } // end namespace
+
+US_EXPORT_MODULE_ACTIVATOR(niftk::PointRegServiceActivator)

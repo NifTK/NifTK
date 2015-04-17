@@ -43,7 +43,5 @@ private:
 
 } // end namespace
 
-US_EXPORT_MODULE_ACTIVATOR(niftk::PointRegServiceActivator);
-
 #endif
 
