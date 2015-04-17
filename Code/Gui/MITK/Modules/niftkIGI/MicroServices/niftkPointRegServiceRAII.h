@@ -17,6 +17,10 @@
 
 #include <niftkCoreExports.h>
 #include "niftkPointRegServiceI.h"
+
+#include <usServiceReference.h>
+#include <usModuleContext.h>
+
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
 
@@ -34,7 +38,7 @@ public:
   /**
    * @brief Obtains service or throws mitk::Exception.
    */
-  PointRegServiceRAII();
+  PointRegServiceRAII(const std::string& method="SVD");
 
   /**
    * @brief Releases service.
@@ -52,6 +56,10 @@ public:
 private:
   PointRegServiceRAII(const PointRegServiceRAII&); // deliberately not implemented
   PointRegServiceRAII& operator=(const PointRegServiceRAII&); // deliberately not implemented
+
+  us::ModuleContext* m_ModuleContext;
+  std::vector<us::ServiceReference<PointRegServiceI> > m_Refs;
+  niftk::PointRegServiceI* m_Service;
 };
 
 } // end namespace
