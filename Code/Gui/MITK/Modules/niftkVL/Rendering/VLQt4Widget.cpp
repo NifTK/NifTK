@@ -2868,12 +2868,31 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   // Get hold of the Index buffer of the merged object a'la OpenCL mem
   GLuint mergedIndexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
   m_MergedTranslucentIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  // note: m_MergedTranslucentIndexBuf is normally released at the beginning of this method.
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+    }
+    m_MergedTranslucentIndexBuf = 0;
+    return false;
+  }
 
   // Here we retrieve the merged and sorted index buffer
   cl_uint totalNumOfVertices;
-  m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
+  bool mergedok = m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
+  if (!mergedok)
+    return false;
 
   if (totalNumOfVertices != m_TotalNumOfTranslucentVertices)
   {
@@ -2881,19 +2900,44 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     return false;
   }
 
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
   m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   // Get normal array
   GLuint mergedNormalArrayHandle = vlNormals->bufferObject()->handle();
   cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
 /*
   // Create a buffer large enough to retrive the merged distance buffer
@@ -2954,33 +2998,69 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     // Get vertex array
     GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
     cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     clVertexBufs.push_back(clVertexBuf);
-    
-    clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    CHECK_OCL_ERR(clStatus);
+
+    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     // Copy to merged buffer
     clStatus = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, m_MergedTranslucentVertexBuf, 0, vertexBufferOffset, computedSize, 0, 0, 0);
-    CHECK_OCL_ERR(clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     vertexBufferOffset += computedSize;
 
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    
+    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get normal array
     GLuint normalArrayHandle = translucentSurfaces.at(i)->normalArray()->bufferObject()->handle();
     cl_mem clNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, normalArrayHandle, &clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     clNormalBufs.push_back(clNormalBuf);
-    
-    clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
-    CHECK_OCL_ERR(clStatus);
+
+    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     // Copy to merged buffer
     clStatus = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, computedSize, 0, 0, 0);
-    CHECK_OCL_ERR(clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     normalBufferOffset += computedSize;
 
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get color array
@@ -3077,23 +3157,35 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   delete colorData;
   delete vertDistData;
 */
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  clFinish(clCmdQue);
+  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+  clStatus |= clFinish(clCmdQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   for (size_t ii = 0; ii < clVertexBufs.size(); ii++)
   {
-    clReleaseMemObject(clVertexBufs.at(ii));
+    clStatus = clReleaseMemObject(clVertexBufs.at(ii));
+    CHECK_OCL_ERR(clStatus);
     clVertexBufs.at(ii) = 0;
   }
   
   for (size_t ii = 0; ii < clNormalBufs.size(); ii++)
   {
-    clReleaseMemObject(clNormalBufs.at(ii));
+    clStatus = clReleaseMemObject(clNormalBufs.at(ii));
+    CHECK_OCL_ERR(clStatus);
     clNormalBufs.at(ii) = 0;
   }
 
-  clReleaseMemObject(clMergedNormalBuf);
+  clStatus = clReleaseMemObject(clMergedNormalBuf);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
   clMergedNormalBuf = 0;
 
   m_TranslucentStructuresMerged = true;

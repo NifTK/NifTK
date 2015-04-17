@@ -57,7 +57,7 @@ public:
   void SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triCount, cl_uint vertCount);
 
   /// \brief Merges index buffers that were previously set to be merged
-  void MergeIndexBuffers(cl_mem &mergedBuffer, cl_uint &numOfElements);
+  bool MergeIndexBuffers(cl_mem &mergedBuffer, cl_uint &numOfElements);
 
   /// \brief Gets the resulting CL mem object that contains the distance of each triangle
   void GetTriangleDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalTriangleNum);
@@ -87,11 +87,11 @@ private:
   void InitKernels();
   
   // Sorting related kernels
-  void LaunchRadixSort(cl_mem bfKeyVal, cl_uint count);
-  void RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
-  void LocalHistogram(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
-  void RadixPermute(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem dataIn, cl_mem dataOut, cl_mem histScan, cl_mem blockHists, int bitOffset, unsigned int numBlocks);
-  void Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut);
+  bool LaunchRadixSort(cl_mem bfKeyVal, cl_uint count);
+  bool RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
+  bool LocalHistogram(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
+  bool RadixPermute(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem dataIn, cl_mem dataOut, cl_mem histScan, cl_mem blockHists, int bitOffset, unsigned int numBlocks);
+  bool Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut);
 
   void LaunchBitonicSort(cl_mem bfKeyVal, cl_uint count);
 
