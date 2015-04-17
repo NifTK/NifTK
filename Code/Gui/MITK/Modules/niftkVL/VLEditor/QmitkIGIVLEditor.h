@@ -23,6 +23,9 @@
 
 
 class QmitkRenderWindow;
+class VLQt4Widget;
+class OclResourceService;
+
 
 /**
  * \class QmitkIGIVLEditor
@@ -73,6 +76,9 @@ private:
   void NodeChanged(const mitk::DataNode* node);
   
   mitk::DataStorage::Pointer m_DataStorage;
+
+  VLQt4Widget*    m_OverlayViewer;
+  VLQt4Widget*    m_3DViewer;
 };
 
 #endif // QmitkIGIVLEditor_h

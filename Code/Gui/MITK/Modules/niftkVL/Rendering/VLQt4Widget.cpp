@@ -138,9 +138,10 @@ struct VLUserData : public vl::Object
 //-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
-  , m_Refresh(33) // 30 fps
-  , m_OclService(0)
+  , m_BackgroundWidth(0)
+  , m_BackgroundHeight(0)
   , m_CUDAInteropPimpl(0)
+  , m_OclService(0)
   , m_OclTriangleSorter(0)
   , m_TranslucentStructuresMerged(false)
   , m_TranslucentStructuresSorted(false)
@@ -148,6 +149,7 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
   , m_TotalNumOfTranslucentVertices(0)
   , m_MergedTranslucentIndexBuf(0)
   , m_MergedTranslucentVertexBuf(0)
+  , m_Refresh(33) // 30 fps
 {
   setContinuousUpdate(true);
   setMouseTracking(true);

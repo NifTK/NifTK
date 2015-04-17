@@ -21,12 +21,21 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
+#include <Rendering/SharedOGLContext.h>
+#include "VLQt4Widget.h"
 
 
 //-----------------------------------------------------------------------------
 QmitkIGIVLEditor::QmitkIGIVLEditor(QWidget * /*parent*/)
+  : m_OverlayViewer(0)
+  , m_3DViewer(0)
 {
   this->setupUi(this);
+
+  m_OverlayViewer = new VLQt4Widget(m_Splitter, SharedOGLContext::GetShareWidget());
+  m_Splitter->addWidget(m_OverlayViewer);
+  m_3DViewer = new VLQt4Widget(m_Splitter, SharedOGLContext::GetShareWidget());
+  m_Splitter->addWidget(m_3DViewer);
 
   m_OpacitySlider->setMinimum(0);
   m_OpacitySlider->setMaximum(100);
