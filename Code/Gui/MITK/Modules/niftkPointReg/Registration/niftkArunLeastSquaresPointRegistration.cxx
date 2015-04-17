@@ -20,10 +20,10 @@
 namespace niftk {
 
 //-----------------------------------------------------------------------------
-double PointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
-                              const std::vector<cv::Point3d>& movingPoints,
-                              cv::Matx44d& outputMatrix
-                             )
+double PointBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoints,
+                                      const std::vector<cv::Point3d>& movingPoints,
+                                      cv::Matx44d& outputMatrix
+                                     )
 {
   if (fixedPoints.size() < 3)
   {
@@ -64,15 +64,15 @@ double PointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
 
 
 //-----------------------------------------------------------------------------
-double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                              const mitk::PointSet::Pointer& movingPoints,
-                              vtkMatrix4x4& matrix)
+double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
+                                      const mitk::PointSet::Pointer& movingPoints,
+                                      vtkMatrix4x4& matrix)
 {
   std::vector<cv::Point3d> fP = mitk::PointSetToVector(fixedPoints);
   std::vector<cv::Point3d> mP = mitk::PointSetToVector(movingPoints);
 
   cv::Matx44d mat;
-  double fre = niftk::PointBasedRegistration(fP, mP, mat);
+  double fre = niftk::PointBasedRegistrationUsingSVD(fP, mP, mat);
   mitk::CopyToVTK4x4Matrix(mat, matrix);
 
   return fre;

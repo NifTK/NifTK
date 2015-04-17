@@ -31,6 +31,8 @@ set(CPP_FILES
   PointClouds/mitkMergePointClouds.cxx
   CentreLines/mitkBifurcationToPointSet.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
+  MicroServices/niftkPointRegServiceI.cxx
+  MicroServices/niftkPointRegServiceRAII.cxx
 )
 
 if(BUILD_PCL)

@@ -12,18 +12,13 @@
 #
 #============================================================================*/
 
-
-MITK_CREATE_MODULE(niftkPointReg
-  EXPORT_DEFINE NIFTKPOINTREG_EXPORT
-  INCLUDE_DIRS Registration Maths
-  DEPENDS niftkCore niftkOpenCV
-  PACKAGE_DEPENDS OpenCV
+MITK_CREATE_MODULE(niftkPointRegService
+  DEPENDS niftkIGI niftkPointReg
+  AUTOLOAD_WITH niftkIGI
+  PACKAGE_DEPENDS
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkPointReg)
+  cotire(niftkPointRegService)
 endif()
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

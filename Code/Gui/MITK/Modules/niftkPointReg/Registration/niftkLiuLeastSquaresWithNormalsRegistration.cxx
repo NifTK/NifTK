@@ -20,11 +20,11 @@
 namespace niftk {
 
 //-----------------------------------------------------------------------------
-double PointAndNormalBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
-                                       const std::vector<cv::Point3d>& fixedNormals,
-                                       const std::vector<cv::Point3d>& movingPoints,
-                                       const std::vector<cv::Point3d>& movingNormals,
-                                       cv::Matx44d& outputMatrix)
+double PointAndNormalBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoints,
+                                               const std::vector<cv::Point3d>& fixedNormals,
+                                               const std::vector<cv::Point3d>& movingPoints,
+                                               const std::vector<cv::Point3d>& movingNormals,
+                                               cv::Matx44d& outputMatrix)
 {
   if (fixedPoints.size() < 2)
   {
@@ -89,11 +89,11 @@ double PointAndNormalBasedRegistration(const std::vector<cv::Point3d>& fixedPoin
 
 
 //-----------------------------------------------------------------------------
-double PointAndNormalBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                                       const mitk::PointSet::Pointer& fixedNormals,
-                                       const mitk::PointSet::Pointer& movingPoints,
-                                       const mitk::PointSet::Pointer& movingNormals,
-                                       vtkMatrix4x4& matrix)
+double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
+                                               const mitk::PointSet::Pointer& fixedNormals,
+                                               const mitk::PointSet::Pointer& movingPoints,
+                                               const mitk::PointSet::Pointer& movingNormals,
+                                               vtkMatrix4x4& matrix)
 {
   std::vector<cv::Point3d> fP = mitk::PointSetToVector(fixedPoints);
   std::vector<cv::Point3d> fN = mitk::PointSetToVector(fixedNormals);
@@ -101,7 +101,7 @@ double PointAndNormalBasedRegistration(const mitk::PointSet::Pointer& fixedPoint
   std::vector<cv::Point3d> mN = mitk::PointSetToVector(movingNormals);
 
   cv::Matx44d mat;
-  double fre = niftk::PointAndNormalBasedRegistration(fP, fN, mP, mN, mat);
+  double fre = niftk::PointAndNormalBasedRegistrationUsingSVD(fP, fN, mP, mN, mat);
   mitk::CopyToVTK4x4Matrix(mat, matrix);
 
   return fre;

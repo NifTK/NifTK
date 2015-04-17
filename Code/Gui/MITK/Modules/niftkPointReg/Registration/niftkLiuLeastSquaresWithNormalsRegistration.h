@@ -39,11 +39,11 @@ namespace niftk {
  * @return fiducial registration error
  */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointAndNormalBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
-                                       const std::vector<cv::Point3d>& fixedNormals,
-                                       const std::vector<cv::Point3d>& movingPoints,
-                                       const std::vector<cv::Point3d>& movingNormals,
-                                       cv::Matx44d& outputMatrix);
+double PointAndNormalBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoints,
+                                               const std::vector<cv::Point3d>& fixedNormals,
+                                               const std::vector<cv::Point3d>& movingPoints,
+                                               const std::vector<cv::Point3d>& movingNormals,
+                                               cv::Matx44d& outputMatrix);
 
 
 /**
@@ -52,11 +52,11 @@ double PointAndNormalBasedRegistration(const std::vector<cv::Point3d>& fixedPoin
  * Calls the above method. Converts (copies) the point sets.
  */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointAndNormalBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                                       const mitk::PointSet::Pointer& fixedNormals,
-                                       const mitk::PointSet::Pointer& movingPoints,
-                                       const mitk::PointSet::Pointer& movingNormals,
-                                       vtkMatrix4x4& matrix);
+double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
+                                               const mitk::PointSet::Pointer& fixedNormals,
+                                               const mitk::PointSet::Pointer& movingPoints,
+                                               const mitk::PointSet::Pointer& movingNormals,
+                                               vtkMatrix4x4& matrix);
 
 } // end namespace
 

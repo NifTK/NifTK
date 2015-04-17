@@ -39,9 +39,9 @@ namespace niftk {
  * @return fiducial registration error
  */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
-                              const std::vector<cv::Point3d>& movingPoints,
-                              cv::Matx44d& outputMatrix);
+double PointBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoints,
+                                      const std::vector<cv::Point3d>& movingPoints,
+                                      cv::Matx44d& outputMatrix);
 
 /**
  * @brief Overloaded method for MITK and VTK data types.
@@ -49,9 +49,9 @@ double PointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
  * Calls the above method. Converts (copies) the point sets.
  */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                              const mitk::PointSet::Pointer& movingPoints,
-                              vtkMatrix4x4& matrix);
+double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
+                                      const mitk::PointSet::Pointer& movingPoints,
+                                      vtkMatrix4x4& matrix);
 } // end namespace
 
 #endif
