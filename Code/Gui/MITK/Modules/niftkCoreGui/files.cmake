@@ -38,3 +38,14 @@ set(UI_FILES
 set(QRC_FILES
   Resources/niftkCoreGui.qrc
 )
+
+if(WIN32)
+  set(CPP_FILES
+    ${CPP_FILES}
+    Events/QmitkWindowsHotkeyHandler.cxx
+  )
+  set(MOC_H_FILES
+    ${MOC_H_FILES}
+    Events/QmitkWindowsHotkeyHandler.h
+  )
+endif()

@@ -96,6 +96,13 @@ set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
 )
 
+if(WIN32)
+  set(IGI_PLUGINS
+    ${IGI_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.igifootpedalhotkey:ON
+  )
+endif()
+
 if(BUILD_IGI)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}

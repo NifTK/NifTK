@@ -39,6 +39,7 @@ class QTimer;
 class QGridLayout;
 class QmitkIGIDataSourceGui;
 
+
 /**
  * \class QmitkIGIDataSourceManager
  * \brief Class to manage a list of QmitkIGIDataSources (trackers, ultra-sound machines, video etc).
@@ -176,6 +177,17 @@ signals:
   void RecordingStarted(QString basedirectory);
 
 
+public slots:
+  /**
+   * \brief Callback to start recording data.
+   */
+  void OnRecordStart();
+
+  /**
+   * \brief Callback to stop recording/playback data.
+   */
+  void OnStop();
+
 protected:
 
   QmitkIGIDataSourceManager();
@@ -241,17 +253,6 @@ private slots:
    * \brief Callback when combo box for data source type is changed, we enable/disable widgets accordingly.
    */
   void OnCurrentIndexChanged(int indexNumber);
-
-  /**
-   * \brief Callback to start recording data.
-   */
-  void OnRecordStart();
-
-  /**
-   * \brief Callback to stop recording/playback data.
-   */
-  void OnStop();
-
 
   void OnPlayStart();
 

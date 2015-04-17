@@ -46,6 +46,7 @@
 #endif
 
 
+//-----------------------------------------------------------------------------
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
@@ -1160,6 +1161,15 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnRecordStart()
 {
+  if (!m_RecordPushButton->isEnabled())
+    // shortcut in case we are already recording.
+    return;
+
+  m_RecordPushButton->setEnabled(false);
+  m_StopPushButton->setEnabled(true);
+  assert(!m_PlayPushButton->isChecked());
+  m_PlayPushButton->setEnabled(false);
+
   QString directoryName = this->GetDirectoryName();
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
@@ -1170,11 +1180,6 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   {
     source->StartRecording(directory.absolutePath().toStdString(), this->m_SaveInBackground, this->m_SaveOnReceipt);
   }
-
-  m_RecordPushButton->setEnabled(false);
-  m_StopPushButton->setEnabled(true);
-  assert(!m_PlayPushButton->isChecked());
-  m_PlayPushButton->setEnabled(false);
 
   // tell interested parties (e.g. other plugins) that recording has started.
   // we do this before dumping the descriptor because that might pop up a message box,
