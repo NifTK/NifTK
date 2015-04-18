@@ -15,7 +15,7 @@
 #ifndef niftkPointRegServiceRAII_h
 #define niftkPointRegServiceRAII_h
 
-#include <niftkCoreExports.h>
+#include <niftkIGIExports.h>
 #include "niftkPointRegServiceI.h"
 
 #include <usServiceReference.h>
@@ -30,7 +30,7 @@ namespace niftk
 /**
  * \class RAII object to run Point Based Registration via a PointRegServiceI implementation.
  */
-class NIFTKCORE_EXPORT PointRegServiceRAII : public PointRegServiceI
+class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
 {
 
 public:

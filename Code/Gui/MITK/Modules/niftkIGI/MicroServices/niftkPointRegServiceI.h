@@ -15,7 +15,7 @@
 #ifndef niftkPointRegServiceI_h
 #define niftkPointRegServiceI_h
 
-#include <niftkCoreExports.h>
+#include <niftkIGIExports.h>
 
 #include <mitkServiceInterface.h>
 #include <mitkPointSet.h>
@@ -27,7 +27,7 @@ namespace niftk
 /**
  * \class Interface for a Point Based Registration Service.
  */
-class NIFTKCORE_EXPORT PointRegServiceI
+class NIFTKIGI_EXPORT PointRegServiceI
 {
 
 public:
