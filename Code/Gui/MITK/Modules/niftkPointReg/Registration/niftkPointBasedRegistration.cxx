@@ -12,26 +12,24 @@
 
 =============================================================================*/
 
-#include "mitkPointBasedRegistration.h"
+#include "niftkPointBasedRegistration.h"
 #include <limits>
+#include <mitkExceptionMacro.h>
 #include <mitkPointUtils.h>
 #include <mitkNavigationDataLandmarkTransformFilter.h>
-#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+#include "niftkArunLeastSquaresPointRegistration.h"
 
+const bool niftk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
+const bool niftk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
+const bool niftk::PointBasedRegistration::DEFAULT_STRIP_NAN_FROM_INPUT(true);
 
-const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
-const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
-const bool mitk::PointBasedRegistration::DEFAULT_USE_SVD_BASED_METHOD(true);
-const bool mitk::PointBasedRegistration::DEFAULT_STRIP_NAN_FROM_INPUT(true);
-
-namespace mitk
+namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 PointBasedRegistration::PointBasedRegistration()
 : m_UseICPInitialisation(DEFAULT_USE_ICP_INITIALISATION)
 , m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
-, m_UseSVDBasedMethod(DEFAULT_USE_SVD_BASED_METHOD)
 , m_StripNaNFromInput(DEFAULT_STRIP_NAN_FROM_INPUT)
 {
 }
@@ -44,30 +42,30 @@ PointBasedRegistration::~PointBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-bool PointBasedRegistration::Update(
-    const mitk::PointSet::Pointer fixedPointSet,
-    const mitk::PointSet::Pointer movingPointSet,
-    vtkMatrix4x4& outputTransform,
-    double& fiducialRegistrationError) const
+double PointBasedRegistration::Update(
+    const mitk::PointSet::Pointer& fixedPointSet,
+    const mitk::PointSet::Pointer& movingPointSet,
+    vtkMatrix4x4& outputTransform) const
 
 {
+  if (fixedPointSet.IsNull())
+  {
+    mitkThrow() << "The 'fixed' points are NULL";
+  }
+  if (movingPointSet.IsNull())
+  {
+    mitkThrow() << "The 'moving' points are NULL";
+  }
 
-  assert(fixedPointSet);
-  assert(movingPointSet);
-
-  bool isSuccessful = false;
-
-  fiducialRegistrationError = std::numeric_limits<double>::max();
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
-  mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
-  mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
   mitk::PointSet::Pointer noNaNFixedPoints = mitk::PointSet::New();
   mitk::PointSet::Pointer noNaNMovingPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
   mitk::PointSet* fixedPoints = fixedPointSet;
   mitk::PointSet* movingPoints = movingPointSet;
-
-  bool useICPInit = m_UseICPInitialisation;
 
   if (m_StripNaNFromInput)
   {
@@ -85,8 +83,8 @@ bool PointBasedRegistration::Update(
 
     fixedPoints = noNaNFixedPoints;
     movingPoints = noNaNMovingPoints;
-
   }
+
   if (m_UsePointIDToMatchPoints)
   {
 
@@ -96,42 +94,17 @@ bool PointBasedRegistration::Update(
                                                             *filteredMovingPoints
                                                             );
 
-    if (numberOfFilteredPoints >= 3)
+    if (numberOfFilteredPoints < 3)
     {
-      fixedPoints = filteredFixedPoints;
-      movingPoints = filteredMovingPoints;
+      mitkThrow() << "After filtering by pointID, there were only "
+                  << filteredFixedPoints->GetSize() << " 'fixed' points and "
+                  << filteredMovingPoints->GetSize() << " 'moving' points, and we need at least 3";
     }
-    else
-    {
-      MITK_DEBUG << "mitk::PointBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
-      return isSuccessful;
-    }
+    fixedPoints = filteredFixedPoints;
+    movingPoints = filteredMovingPoints;
   }
 
-  if (fixedPoints->GetSize() < 3 || movingPoints->GetSize() < 3)
-  {
-    MITK_DEBUG << "mitk::PointBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
-    return isSuccessful;
-  }
-
-  if (fixedPoints->GetSize() != movingPoints->GetSize() && !m_UseICPInitialisation && !m_UseSVDBasedMethod)
-  {
-    MITK_DEBUG << "mitk::PointBasedRegistration: Switching to use ICP Initialisation for mitk::NavigationDataLandmarkTransformFilter";
-    useICPInit = true;
-  }
-
-  if (m_UseSVDBasedMethod)
-  {
-    mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer registration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-    isSuccessful = registration->Update(fixedPoints, movingPoints, outputTransform, fiducialRegistrationError);
-
-    if (!isSuccessful)
-    {
-      MITK_ERROR << "mitk::PointBasedRegistration: SVD method failed" << std::endl;
-      return isSuccessful;
-    }
-  }
-  else
+  if (m_UseICPInitialisation && fixedPoints->GetSize() >= 6 && movingPoints->GetSize() >= 6)
   {
     mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::ConstPointer transform = NULL;
     mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::MatrixType rotationMatrix;
@@ -163,12 +136,24 @@ bool PointBasedRegistration::Update(
       }
       outputTransform.SetElement(i, 3, translationVector[i]);
     }
-
-    // The ICP method doesn't really have an accept / fail criteria.
-    // For now we are mainly using the SVD method above. So, we just assume this bit is always successful.
-    isSuccessful = true;
   }
-  return isSuccessful;
+  else
+  {
+    // Revert back to SVD. So we only use NavigationDataLandmarkTransformFilter if asked.
+    // Also, at this point, there must be exactly the same number of corresponding points, in the same order.
+    if (fixedPoints->GetSize() < 3)
+    {
+      mitkThrow() << "Not enough 'fixed' points for SVD";
+    }
+    if (movingPoints->GetSize() < 3)
+    {
+      mitkThrow() << "Not enough 'moving' points for SVD";
+    }
+
+    fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, outputTransform);
+  }
+
+  return fiducialRegistrationError;
 }
 
 } // end namespace

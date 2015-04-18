@@ -25,6 +25,7 @@ PointRegServiceActivator::PointRegServiceActivator()
 {
 }
 
+
 //-----------------------------------------------------------------------------
 PointRegServiceActivator::~PointRegServiceActivator()
 {

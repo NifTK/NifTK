@@ -24,7 +24,6 @@ set(CPP_FILES
   SurfaceReconstruction/QDSCommon.cxx
   TrackedImage/mitkTrackedImage.cxx
   TrackedPointer/mitkTrackedPointer.cxx
-  PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
   Utils/mitkMakeGeometry.cxx
   # this one does not depend on pcl!

@@ -17,7 +17,6 @@ set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
   mitkTrackedImageTest.cxx
   mitkTrackedPointerTest.cxx
-  mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx
   # does not depend on pcl
   mitkMergePointCloudsTest.cxx

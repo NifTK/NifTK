@@ -21,7 +21,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS CentreLines Common DataSources PointBasedRegistration SurfaceBasedRegistration SurfaceReconstruction TrackedImage TrackedPointer  PCLTest Utils Rendering MicroServices
+  INCLUDE_DIRS CentreLines Common DataSources SurfaceBasedRegistration SurfaceReconstruction TrackedImage TrackedPointer  PCLTest Utils Rendering MicroServices
   DEPENDS MitkCore MitkOpenCVVideoSupport niftkCore MitkCameraCalibration niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )

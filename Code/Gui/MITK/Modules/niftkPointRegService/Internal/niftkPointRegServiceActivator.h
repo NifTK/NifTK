@@ -23,6 +23,10 @@
 namespace niftk
 {
 
+/**
+* @class PointRegServiceActivator
+* @brief Activator to register instances of niftk::PointRegServiceI, currently only niftk::PointRegServiceUsingSVD.
+*/
 class PointRegServiceActivator : public us::ModuleActivator
 {
 public:

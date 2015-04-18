@@ -68,6 +68,15 @@ double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints
                                       const mitk::PointSet::Pointer& movingPoints,
                                       vtkMatrix4x4& matrix)
 {
+  if (fixedPoints.IsNull())
+  {
+    mitkThrow() << "The 'fixed' points are NULL";
+  }
+  if (movingPoints.IsNull())
+  {
+    mitkThrow() << "The 'moving' points are NULL";
+  }
+
   std::vector<cv::Point3d> fP = mitk::PointSetToVector(fixedPoints);
   std::vector<cv::Point3d> mP = mitk::PointSetToVector(movingPoints);
 

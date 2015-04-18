@@ -16,5 +16,6 @@ set(CPP_FILES
   Maths/niftkPointRegMaths.cxx
   Registration/niftkArunLeastSquaresPointRegistration.cxx
   Registration/niftkLiuLeastSquaresWithNormalsRegistration.cxx
+  Registration/niftkPointBasedRegistration.cxx
 )
 

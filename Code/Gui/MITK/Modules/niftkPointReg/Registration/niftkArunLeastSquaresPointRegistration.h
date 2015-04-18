@@ -15,7 +15,7 @@
 #ifndef niftkArunLeastSquaresPointRegistration_h
 #define niftkArunLeastSquaresPointRegistration_h
 
-#include "niftkPointRegExports.h"
+#include <niftkPointRegExports.h>
 
 #include <cv.h>
 #include <mitkPointSet.h>
@@ -32,7 +32,7 @@ namespace niftk {
  */
 
 /**
- * @brief Does Point Based Registration of two same sized, corresponding point sets.
+ * @brief Does Point Based Registration of two same sized, corresponding, ordered point sets.
  * @param fixedPoints fixed point set.
  * @param movingPoints moving point set.
  * @param outputMatrix output 4 x 4 homogeneous rigid body transformation.
@@ -46,7 +46,10 @@ double PointBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoint
 /**
  * @brief Overloaded method for MITK and VTK data types.
  *
- * Calls the above method. Converts (copies) the point sets.
+ * Calls the above method. Converts (copies) the point sets from
+ * the mitk::PointSet into a vector of cv::Point3D in order.
+ * The PointID in mitk::PointSet is not used, so the points
+ * must be in the right order, and corresponding.
  */
 extern "C++" NIFTKPOINTREG_EXPORT
 double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,

@@ -41,6 +41,7 @@ if(BUILD_IGI)
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
+    niftkPointReg
   )
 endif()
 
@@ -98,6 +99,7 @@ list(APPEND HELPER_APP_LIBRARIES
   niftkcommon 
   niftkOpenCV 
   niftkIGIGui
+  niftkPointReg
   MitkLegacyIO
 )
 

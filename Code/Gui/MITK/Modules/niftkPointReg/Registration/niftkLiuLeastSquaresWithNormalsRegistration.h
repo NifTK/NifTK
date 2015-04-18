@@ -15,7 +15,7 @@
 #ifndef niftkLiuLeastSquaresWithNormalsRegistration_h
 #define niftkLiuLeastSquaresWithNormalsRegistration_h
 
-#include "niftkPointRegExports.h"
+#include <niftkPointRegExports.h>
 
 #include <cv.h>
 #include <mitkPointSet.h>
@@ -49,7 +49,10 @@ double PointAndNormalBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& f
 /**
  * @brief Overloaded method for MITK and VTK data types.
  *
- * Calls the above method. Converts (copies) the point sets.
+ * Calls the above method. Converts (copies) the point sets from
+ * the mitk::PointSet into a vector of cv::Point3D in order.
+ * The PointID in mitk::PointSet is not used, so the points
+ * must be in the right order, and corresponding.
  */
 extern "C++" NIFTKPOINTREG_EXPORT
 double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,

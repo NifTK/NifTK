@@ -12,18 +12,17 @@
 
 =============================================================================*/
 
-#ifndef mitkPointBasedRegistration_h
-#define mitkPointBasedRegistration_h
+#ifndef niftkPointBasedRegistration_h
+#define niftkPointBasedRegistration_h
 
-#include "niftkIGIExports.h"
-#include <mitkDataStorage.h>
+#include <niftkPointRegExports.h>
+
 #include <vtkMatrix4x4.h>
 #include <mitkPointSet.h>
-#include <mitkDataNode.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
-namespace mitk {
+namespace niftk {
 
 /**
  * \class PointBasedRegistration
@@ -32,8 +31,10 @@ namespace mitk {
  * This class is called from both PointRegView and TagTrackerView.
  * This is two different use-cases, and the usage is quite different.
  * The code is kept here in one class for convenience to the user.
+ *
+ * IMPORTANT: Must throw mitk::Exception or subclasses for all errors.
  */
-class NIFTKIGI_EXPORT PointBasedRegistration : public itk::Object
+class NIFTKPOINTREG_EXPORT PointBasedRegistration : public itk::Object
 {
 public:
 
@@ -51,11 +52,6 @@ public:
   static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
 
   /**
-   * \brief Stores the default value of UseSVDBasedMethod = true.
-   */
-  static const bool DEFAULT_USE_SVD_BASED_METHOD;
-
-  /**
    * \brief Stores the default value of StripNaNFromInput = true.
    */
   static const bool DEFAULT_STRIP_NAN_FROM_INPUT;
@@ -67,14 +63,7 @@ public:
   itkGetMacro(UsePointIDToMatchPoints, bool);
 
   /**
-   * \brief If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter.
-   */
-  itkSetMacro(UseSVDBasedMethod, bool);
-  itkGetMacro(UseSVDBasedMethod, bool);
-
-  /**
-   * \brief If true, points are assumed to be unordered, and so an closest point search is used.
-   * Not relevant if you are doing SVD.
+   * \brief If true, points are assumed to be unordered, and so a closest point search is used.
    */
   itkSetMacro(UseICPInitialisation, bool);
   itkGetMacro(UseICPInitialisation, bool);
@@ -86,18 +75,15 @@ public:
   itkGetMacro(StripNaNFromInput, bool);
 
   /**
-   * \brief Main method to calculate the point based registration.
-   * \param[In] fixedPointSet a point set
-   * \param[In] movingPointSet a point set
-   * \param[Out] outputTransform the transformation to transform the moving point set into the coordinate system of the fixed point set.
-   * \param[Out] fiducialRegistrationError the Fiducial Registration Error
-   * \return returns true if the registration was successful and false otherwise. By successful, we mean
-   * the computation was deemed valid, and we are not saying whether the Fiducial Registration Error is "acceptable" or not.
+   * @brief Main method to calculate the point based registration.
+   * @param[In] fixedPoints a point set
+   * @param[In] movingPoints a point set
+   * @param[Out] outputMatrix the transformation to transform the moving point set into the coordinate system of the fixed point set.
+   * @return fiducial registration error
    */
-  bool Update(const mitk::PointSet::Pointer fixedPointSet,
-              const mitk::PointSet::Pointer movingPointSet,
-              vtkMatrix4x4& outputTransform,
-              double& fiducialRegistrationError) const;
+  double Update(const mitk::PointSet::Pointer& fixedPoints,
+                const mitk::PointSet::Pointer& movingPoints,
+                vtkMatrix4x4& outputMatrix) const;
 
 protected:
 
@@ -111,7 +97,6 @@ private:
 
   bool m_UseICPInitialisation;
   bool m_UsePointIDToMatchPoints;
-  bool m_UseSVDBasedMethod;
   bool m_StripNaNFromInput;
 
 }; // end class

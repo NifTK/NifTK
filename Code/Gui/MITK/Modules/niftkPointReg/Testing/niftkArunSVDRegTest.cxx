@@ -61,7 +61,7 @@ void TranslationTest()
   vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   matrix->Identity();
 
-  double fre = niftk::PointBasedRegistration(fixedPoints, movingPoints, *matrix);
+  double fre = niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, *matrix);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, 0),".. Testing fre=0, and it equals:" << fre);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing x translation=-1 and it equals:" << matrix->GetElement(0,3));
 }
@@ -143,7 +143,7 @@ void RotationTest()
   vtkSmartPointer<vtkMatrix4x4> actual = vtkSmartPointer<vtkMatrix4x4>::New();
   actual->Identity();
 
-  double fre = niftk::PointBasedRegistration(fixedPoints, movingPoints, *actual);
+  double fre = niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, *actual);
 
   double tolerance = 0.001;
   MITK_TEST_CONDITION_REQUIRED(fre < tolerance, ".. Testing fre < " << tolerance << " and it equals:" << fre);
@@ -163,10 +163,10 @@ void RotationTest()
 
 }
 
-int niftkPointBasedRegTest ( int argc, char * argv[] )
+int niftkArunSVDRegTest ( int argc, char * argv[] )
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkPointBasedRegTest");
+  MITK_TEST_BEGIN("niftkArunSVDRegTest");
 
   // When tests fail they throw exceptions, so no need to worry about return codes.
   TranslationTest();

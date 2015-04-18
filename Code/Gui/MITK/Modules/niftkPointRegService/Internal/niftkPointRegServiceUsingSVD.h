@@ -20,6 +20,10 @@
 namespace niftk
 {
 
+/**
+* @class PointRegServiceUsingSVD
+* @brief Implements niftk::PointRegServiceI using niftk::PointBasedRegistrationUsingSVD.
+*/
 class PointRegServiceUsingSVD : public niftk::PointRegServiceI
 {
 public:
@@ -27,6 +31,10 @@ public:
   PointRegServiceUsingSVD();
   ~PointRegServiceUsingSVD();
 
+  /**
+   * @see niftk::PointBasedRegistrationUsingSVD
+   * @throws mitk::Exception for all errors
+   */
   virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
                                         const mitk::PointSet::Pointer& movingPoints,
                                         vtkMatrix4x4& matrix) const;

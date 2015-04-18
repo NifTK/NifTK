@@ -14,7 +14,8 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  niftkPointBasedRegTest.cxx
+  niftkArunSVDRegTest.cxx
+  niftkPointBasedRegistrationTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

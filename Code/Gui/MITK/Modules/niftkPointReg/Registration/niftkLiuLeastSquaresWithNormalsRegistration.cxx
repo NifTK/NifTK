@@ -95,6 +95,23 @@ double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fi
                                                const mitk::PointSet::Pointer& movingNormals,
                                                vtkMatrix4x4& matrix)
 {
+  if (fixedPoints.IsNull())
+  {
+    mitkThrow() << "The 'fixed' points are NULL";
+  }
+  if (fixedNormals.IsNull())
+  {
+    mitkThrow() << "The 'fixed' normals are NULL";
+  }
+  if (movingPoints.IsNull())
+  {
+    mitkThrow() << "The 'moving' points are NULL";
+  }
+  if (movingNormals.IsNull())
+  {
+    mitkThrow() << "The 'moving' normals are NULL";
+  }
+
   std::vector<cv::Point3d> fP = mitk::PointSetToVector(fixedPoints);
   std::vector<cv::Point3d> fN = mitk::PointSetToVector(fixedNormals);
   std::vector<cv::Point3d> mP = mitk::PointSetToVector(movingPoints);
