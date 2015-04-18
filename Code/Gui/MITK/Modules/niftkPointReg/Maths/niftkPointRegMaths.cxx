@@ -54,7 +54,8 @@ double DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   // 10.1109/TPAMI.1987.4767965
   //
   // Also See:
-  // http://eecs.vanderbilt.edu/people/mikefitzpatrick/papers/2009_Medim_Fitzpatrick_TRE_FRE_uncorrelated_as_published.pdf
+  // http://eecs.vanderbilt.edu/people/mikefitzpatrick/papers/ (new line)
+  // 2009_Medim_Fitzpatrick_TRE_FRE_uncorrelated_as_published.pdf
   // Then:
   // http://tango.andrew.cmu.edu/~gustavor/42431-intro-bioimaging/readings/ch8.pdf
 
@@ -62,9 +63,9 @@ double DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   cv::SVD svd(H);
 
   // Arun Equation 13.
-  cv::Mat X = svd.vt.t() * svd.u.t();
+  // cv::Mat X = svd.vt.t() * svd.u.t();
 
-  // Replace with Fitzpatrick, chapter 8, page 470.
+  // Replace Arun Equation 13 with Fitzpatrick, chapter 8, page 470.
   cv::Mat VU = svd.vt.t() * svd.u;
   double detVU = cv::determinant(VU);
   cv::Matx33d diag = cv::Matx33d::zeros();
@@ -72,7 +73,7 @@ double DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   diag(1,1) = 1;
   diag(2,2) = detVU;
   cv::Mat diagonal(diag);
-  X = (svd.vt.t() * (diagonal * svd.u.t()));
+  cv::Mat X = (svd.vt.t() * (diagonal * svd.u.t()));
 
   // Arun Step 5.
 

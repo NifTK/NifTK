@@ -19,18 +19,14 @@
 #include <mitkNavigationDataLandmarkTransformFilter.h>
 #include "niftkArunLeastSquaresPointRegistration.h"
 
-const bool niftk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
-const bool niftk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
-const bool niftk::PointBasedRegistration::DEFAULT_STRIP_NAN_FROM_INPUT(true);
-
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 PointBasedRegistration::PointBasedRegistration()
-: m_UseICPInitialisation(DEFAULT_USE_ICP_INITIALISATION)
-, m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
-, m_StripNaNFromInput(DEFAULT_STRIP_NAN_FROM_INPUT)
+: m_UseICPInitialisation(PointBasedRegistrationConstants::DEFAULT_USE_ICP_INITIALISATION)
+, m_UsePointIDToMatchPoints(PointBasedRegistrationConstants::DEFAULT_USE_POINT_ID_TO_MATCH)
+, m_StripNaNFromInput(PointBasedRegistrationConstants::DEFAULT_STRIP_NAN_FROM_INPUT)
 {
 }
 
@@ -49,13 +45,9 @@ double PointBasedRegistration::Update(
 
 {
   if (fixedPointSet.IsNull())
-  {
     mitkThrow() << "The 'fixed' points are NULL";
-  }
   if (movingPointSet.IsNull())
-  {
     mitkThrow() << "The 'moving' points are NULL";
-  }
 
   double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
@@ -71,35 +63,30 @@ double PointBasedRegistration::Update(
   {
     int fixedPointsRemoved = mitk::RemoveNaNPoints(*fixedPointSet, *noNaNFixedPoints);
     int movingPointsRemoved = mitk::RemoveNaNPoints(*movingPointSet, *noNaNMovingPoints);
-
-    if ( fixedPointsRemoved != 0 ) 
+    if ( fixedPointsRemoved != 0 )
     {
       MITK_INFO << "Removed " << fixedPointsRemoved << " NaN points from fixed data";
     }
-    if ( movingPointsRemoved != 0 ) 
+    if ( movingPointsRemoved != 0 )
     {
       MITK_INFO << "Removed " << movingPointsRemoved << " NaN points from moving data";
     }
-
     fixedPoints = noNaNFixedPoints;
     movingPoints = noNaNMovingPoints;
   }
 
   if (m_UsePointIDToMatchPoints)
   {
-
     int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPoints,
                                                             *movingPoints,
                                                             *filteredFixedPoints,
                                                             *filteredMovingPoints
                                                             );
-
     if (numberOfFilteredPoints < 3)
-    {
       mitkThrow() << "After filtering by pointID, there were only "
                   << filteredFixedPoints->GetSize() << " 'fixed' points and "
                   << filteredMovingPoints->GetSize() << " 'moving' points, and we need at least 3";
-    }
+
     fixedPoints = filteredFixedPoints;
     movingPoints = filteredMovingPoints;
   }
@@ -112,16 +99,21 @@ double PointBasedRegistration::Update(
     rotationMatrix.SetIdentity();
     translationVector.Fill(0);
 
-    mitk::NavigationDataLandmarkTransformFilter::Pointer transformFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+    mitk::NavigationDataLandmarkTransformFilter::Pointer transformFilter
+      = mitk::NavigationDataLandmarkTransformFilter::New();
     transformFilter->SetUseICPInitialization(m_UseICPInitialisation);
     transformFilter->SetTargetLandmarks(fixedPoints);
     transformFilter->SetSourceLandmarks(movingPoints);
     transformFilter->Update();
 
-    MITK_INFO << "PointBasedRegistration: FRE=" << transformFilter->GetFRE() << "mm (Std. Dev. " << transformFilter->GetFREStdDev() << ")" << std::endl;
-    MITK_INFO << "PointBasedRegistration: RMS=" << transformFilter->GetRMSError() << "mm " << std::endl;
-    MITK_INFO << "PointBasedRegistration: min=" << transformFilter->GetMinError() << "mm" << std::endl;
-    MITK_INFO << "PointBasedRegistration: max=" << transformFilter->GetMaxError() << "mm" << std::endl;
+    MITK_INFO << "PointBasedRegistration: FRE=" << transformFilter->GetFRE()
+      << "mm (Std. Dev. " << transformFilter->GetFREStdDev() << ")" << std::endl;
+    MITK_INFO << "PointBasedRegistration: RMS=" << transformFilter->GetRMSError()
+      << "mm " << std::endl;
+    MITK_INFO << "PointBasedRegistration: min=" << transformFilter->GetMinError()
+      << "mm" << std::endl;
+    MITK_INFO << "PointBasedRegistration: max=" << transformFilter->GetMaxError()
+      << "mm" << std::endl;
 
     fiducialRegistrationError = transformFilter->GetFRE();
     transform = transformFilter->GetLandmarkTransform();
@@ -142,19 +134,12 @@ double PointBasedRegistration::Update(
     // Revert back to SVD. So we only use NavigationDataLandmarkTransformFilter if asked.
     // Also, at this point, there must be exactly the same number of corresponding points, in the same order.
     if (fixedPoints->GetSize() < 3)
-    {
       mitkThrow() << "Not enough 'fixed' points for SVD";
-    }
     if (movingPoints->GetSize() < 3)
-    {
       mitkThrow() << "Not enough 'moving' points for SVD";
-    }
-
     fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, outputTransform);
   }
-
   return fiducialRegistrationError;
 }
 
 } // end namespace
-

@@ -24,16 +24,23 @@
 
 namespace niftk {
 
+namespace PointBasedRegistrationConstants
+{
+const bool DEFAULT_USE_ICP_INITIALISATION = false;
+const bool DEFAULT_USE_POINT_ID_TO_MATCH = false;
+const bool DEFAULT_STRIP_NAN_FROM_INPUT = true;
+}
+
 /**
- * \class PointBasedRegistration
- * \brief Class to implement point based registration of two point sets.
- *
- * This class is called from both PointRegView and TagTrackerView.
- * This is two different use-cases, and the usage is quite different.
- * The code is kept here in one class for convenience to the user.
- *
- * IMPORTANT: Must throw mitk::Exception or subclasses for all errors.
- */
+* \class PointBasedRegistration
+* \brief Class to implement point based registration of two point sets.
+*
+* This class is called from both PointRegView and TagTrackerView.
+* This is two different use-cases, and the usage is quite different.
+* The code is kept here in one class for convenience to the user.
+*
+* IMPORTANT: Must throw mitk::Exception or subclasses for all errors.
+*/
 class NIFTKPOINTREG_EXPORT PointBasedRegistration : public itk::Object
 {
 public:
@@ -42,45 +49,31 @@ public:
   itkNewMacro(PointBasedRegistration);
 
   /**
-   * \brief Stores the default value of UseICPInitialisation = false.
-   */
-  static const bool DEFAULT_USE_ICP_INITIALISATION;
-
-  /**
-   * \brief Stores the default value of UsePointIDToMatchPoints = false.
-   */
-  static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
-
-  /**
-   * \brief Stores the default value of StripNaNFromInput = true.
-   */
-  static const bool DEFAULT_STRIP_NAN_FROM_INPUT;
-
-  /**
-   * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
-   */
+  * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
+  */
   itkSetMacro(UsePointIDToMatchPoints, bool);
   itkGetMacro(UsePointIDToMatchPoints, bool);
 
   /**
-   * \brief If true, points are assumed to be unordered, and so a closest point search is used.
-   */
+  * \brief If true, points are assumed to be unordered, and so a closest point search is used.
+  */
   itkSetMacro(UseICPInitialisation, bool);
   itkGetMacro(UseICPInitialisation, bool);
 
   /**
-   * \brief If true, both fixed and moving points are checked for NaN values prior to matching.
-   */
+  * \brief If true, both fixed and moving points are checked for NaN values prior to matching.
+  */
   itkSetMacro(StripNaNFromInput, bool);
   itkGetMacro(StripNaNFromInput, bool);
 
   /**
-   * @brief Main method to calculate the point based registration.
-   * @param[In] fixedPoints a point set
-   * @param[In] movingPoints a point set
-   * @param[Out] outputMatrix the transformation to transform the moving point set into the coordinate system of the fixed point set.
-   * @return fiducial registration error
-   */
+  * @brief Main method to calculate the point based registration.
+  * @param[In] fixedPoints a point set
+  * @param[In] movingPoints a point set
+  * @param[Out] outputMatrix the transformation to transform the moving
+  * point set into the coordinate system of the fixed point set.
+  * @return fiducial registration error
+  */
   double Update(const mitk::PointSet::Pointer& fixedPoints,
                 const mitk::PointSet::Pointer& movingPoints,
                 vtkMatrix4x4& outputMatrix) const;

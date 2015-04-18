@@ -25,13 +25,16 @@ namespace niftk
 {
 
 /**
- * \class Interface for a Point Based Registration Service.
- */
+* \class Interface for a Point Based Registration Service.
+*/
 class NIFTKIGI_EXPORT PointRegServiceI
 {
 
 public:
 
+  /**
+  * @brief Does Point Based Registration of equal length, corresponding, ordered point sets.
+  */
   virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
                                         const mitk::PointSet::Pointer& movingPoints,
                                         vtkMatrix4x4& matrix) const = 0;

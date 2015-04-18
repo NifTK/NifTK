@@ -106,8 +106,8 @@ void PointRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, niftk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION);
-    m_UsePointIDToMatch = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, niftk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH);
+    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, niftk::PointBasedRegistrationConstants::DEFAULT_USE_ICP_INITIALISATION);
+    m_UsePointIDToMatch = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, niftk::PointBasedRegistrationConstants::DEFAULT_USE_POINT_ID_TO_MATCH);
   }
 }
 

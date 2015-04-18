@@ -89,8 +89,3 @@ double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints
 
 //-----------------------------------------------------------------------------
 } // end namespace
-
-
-
-
-

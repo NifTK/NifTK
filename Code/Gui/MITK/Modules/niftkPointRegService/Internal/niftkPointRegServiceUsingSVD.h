@@ -32,9 +32,9 @@ public:
   ~PointRegServiceUsingSVD();
 
   /**
-   * @see niftk::PointBasedRegistrationUsingSVD
-   * @throws mitk::Exception for all errors
-   */
+  * @see niftk::PointBasedRegistrationUsingSVD
+  * @throws mitk::Exception for all errors
+  */
   virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
                                         const mitk::PointSet::Pointer& movingPoints,
                                         vtkMatrix4x4& matrix) const;
@@ -49,4 +49,3 @@ private:
 } // end namespace
 
 #endif
-

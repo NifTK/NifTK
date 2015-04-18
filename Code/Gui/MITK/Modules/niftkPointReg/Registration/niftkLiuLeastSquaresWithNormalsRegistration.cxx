@@ -126,8 +126,3 @@ double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fi
 
 //-----------------------------------------------------------------------------
 } // end namespace
-
-
-
-
-
