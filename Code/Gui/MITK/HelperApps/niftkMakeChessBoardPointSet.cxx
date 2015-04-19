@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     }
   }
 
-  mitk::IOUtil::SavePointSet(pointSet, outputPointSet);
+  mitk::IOUtil::Save(pointSet, outputPointSet);
 
   return EXIT_SUCCESS;
 }

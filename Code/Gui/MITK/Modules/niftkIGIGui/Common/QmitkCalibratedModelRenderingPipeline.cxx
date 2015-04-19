@@ -194,6 +194,6 @@ void QmitkCalibratedModelRenderingPipeline::SaveData()
 
   outputFile.close();
 
-  mitk::IOUtil::SavePointSet(pointSet, m_OutputData + std::string(".mps"));
+  mitk::IOUtil::Save(pointSet, m_OutputData + std::string(".mps"));
 }
 

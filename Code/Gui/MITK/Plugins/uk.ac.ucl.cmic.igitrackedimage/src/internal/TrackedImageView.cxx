@@ -336,11 +336,7 @@ void TrackedImageView::OnClonePushButtonClicked()
         identityMatrix->Identity();
         geometry->SetIndexToWorldTransformByVtkMatrix(identityMatrix);
       }
-      isSuccessful = mitk::IOUtil::SaveImage(untouchedImage, fileNameWithoutGeometry.toStdString());
-      if (!isSuccessful)
-      {
-        mitkThrow() << "Failed to save un-oriented image " << fileNameWithoutGeometry.toStdString() << std::endl;
-      }
+      mitk::IOUtil::Save(untouchedImage, fileNameWithoutGeometry.toStdString());
 
       // For immediate visualisation, we create a new DataNode with the new image.
       mitk::DataNode::Pointer savedImageNode = mitk::DataNode::New();

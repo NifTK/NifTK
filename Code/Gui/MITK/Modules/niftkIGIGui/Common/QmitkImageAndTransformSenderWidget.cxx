@@ -326,10 +326,7 @@ void QmitkImageAndTransformSenderWidget::SendImageAndTransform(const mitk::Image
     QString imageName = baseName + QString(".nii");
     QString matrixName = baseName + QString(".txt");
 
-    if (!mitk::IOUtil::SaveImage(image, imageName.toStdString()))
-    {
-      mitkThrow() << "Failed to save image to " << imageName.toStdString() << std::endl;
-    }
+    mitk::IOUtil::Save(image, imageName.toStdString());
     if (!SaveMatrixToFile(transform, matrixName))
     {
       mitkThrow() << "Failed to save matrix to " << matrixName.toStdString() << std::endl;
