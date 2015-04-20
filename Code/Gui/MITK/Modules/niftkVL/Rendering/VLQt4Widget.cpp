@@ -2733,13 +2733,15 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   if (m_MergedTranslucentIndexBuf != 0)
   {
-    clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    CHECK_OCL_ERR(clStatus);
     m_MergedTranslucentIndexBuf = 0;
   }
 
   if (m_MergedTranslucentVertexBuf != 0)
   {
-    clReleaseMemObject(m_MergedTranslucentVertexBuf);
+    clStatus = clReleaseMemObject(m_MergedTranslucentVertexBuf);
+    CHECK_OCL_ERR(clStatus);
     m_MergedTranslucentVertexBuf = 0;
   }
 

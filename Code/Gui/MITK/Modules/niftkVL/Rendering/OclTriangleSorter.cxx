@@ -177,43 +177,50 @@ void mitk::OclTriangleSorter::Reset()
 
   if (m_VertexDistances)
   {
-    clReleaseMemObject(m_VertexDistances);
+    cl_int  clStatus = clReleaseMemObject(m_VertexDistances);
+    CHECK_OCL_ERR(clStatus);
     m_VertexDistances = 0;
   }
 
   if (m_IndexBufferWithDist)
   {
-    clReleaseMemObject(m_IndexBufferWithDist);
+    cl_int  clStatus = clReleaseMemObject(m_IndexBufferWithDist);
+    CHECK_OCL_ERR(clStatus);
     m_IndexBufferWithDist = 0;
   }
 
   if (m_bfRadixHist1)
   {
-    clReleaseMemObject(m_bfRadixHist1);
+    cl_int  clStatus = clReleaseMemObject(m_bfRadixHist1);
+    CHECK_OCL_ERR(clStatus);
     m_bfRadixHist1 = 0;
   }
 
   if (m_bfRadixHist2)
   {
-    clReleaseMemObject(m_bfRadixHist2);
+    cl_int  clStatus = clReleaseMemObject(m_bfRadixHist2);
+    CHECK_OCL_ERR(clStatus);
     m_bfRadixHist2 = 0;
   }
 
   if (m_bfRadixHist1Scan)
   {
-    clReleaseMemObject(m_bfRadixHist1Scan);
+    cl_int  clStatus = clReleaseMemObject(m_bfRadixHist1Scan);
+    CHECK_OCL_ERR(clStatus);
     m_bfRadixHist1Scan = 0;
   }
   
   if (m_bfDataA)
   {
-    clReleaseMemObject(m_bfDataA);
+    cl_int  clStatus = clReleaseMemObject(m_bfDataA);
+    CHECK_OCL_ERR(clStatus);
     m_bfDataA = 0;
   }
 
   if (m_bfDataB)
   {
-    clReleaseMemObject(m_bfDataB);
+    cl_int  clStatus = clReleaseMemObject(m_bfDataB);
+    CHECK_OCL_ERR(clStatus);
     m_bfDataB = 0;
   }
 }
