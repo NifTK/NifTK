@@ -41,9 +41,11 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#ifdef BUILD_IGI
 #include <CameraCalibration/Undistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraIntrinsics.h>
+#endif
 #include <mitkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
@@ -941,6 +943,7 @@ void VLQt4Widget::UpdateCameraParameters()
   // so no background, no camera parameters.
   if (m_BackgroundNode.IsNotNull())
   {
+#ifdef BUILD_IGI
     mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
     if (cambp.IsNotNull())
     {
@@ -971,6 +974,7 @@ void VLQt4Widget::UpdateCameraParameters()
         }
       }
     }
+#endif
   }
 
   if (m_CameraNode.IsNotNull())
