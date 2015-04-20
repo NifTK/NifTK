@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource prefix="/NewVisualization">
+    <file>TriangleSorter.cl</file>
+    <file>volume_luminance_light.vs</file>
+    <file>volume_raycast_isosurface_transp.fs</file>
+  </qresource>
+</RCC>

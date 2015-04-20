@@ -28,6 +28,7 @@ set(UI_FILES
 )
 
 set(QRC_FILES
+  Resources/niftkVL.qrc
 )
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
