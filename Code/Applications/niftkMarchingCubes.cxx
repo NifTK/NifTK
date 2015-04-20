@@ -18,14 +18,19 @@
 #include <vtkStructuredGrid.h>
 #include <vtkPolyData.h>
 #include <vtkStructuredGridReader.h>
+#include <vtkStructuredPointsReader.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkContourFilter.h>
+#include <vtkMarchingCubes.h>
 #include <NifTKConfigure.h>
+#include <vtkPolyDataNormals.h>
+ #include <vtkSmartPointer.h>
+
 
 /*!
  * \file niftkMarchingCubes.cxx
  * \page niftkMarchingCubes
- * \section niftkMarchingCubesSummary Takes an image as a VTK structured grid (NOT structured points), and performs a marching cubes iso-surface extraction.
+ * \section niftkMarchingCubesSummary Takes an image as a VTK structured grid (or structured points), and performs a marching cubes iso-surface contour extraction.
  */
 
 void Usage(char *exec)
@@ -41,6 +46,7 @@ void Usage(char *exec)
     std::cout << "    -o    <filename>      Output VTK Poly Data" << std::endl << std::endl;      
     std::cout << "*** [options]   ***" << std::endl << std::endl;
     std::cout << "    -iso  <float> [128]   Threshold value to extract" << std::endl;
+    std::cout << "    -points               Input is structured points [structure grid]" << std::endl;
     std::cout << "    -withScalars          Computes scalar values for each vertex" << std::endl;
     std::cout << "    -withNormals          Computes normals at each vertex" << std::endl;
     std::cout <<"     -withGradient         Computes gradient at each vertex" << std::endl;
@@ -50,7 +56,10 @@ struct arguments
 {
   std::string inputImage;
   std::string outputPolyData;
+
   float isoSurfaceValue;
+
+  bool isStructuredPoints;
   bool withScalars;
   bool withGradients;
   bool withNormals;
@@ -63,7 +72,9 @@ int main(int argc, char** argv)
 {
   // To pass around command line args
   struct arguments args;
+
   args.isoSurfaceValue = 128;
+  args.isStructuredPoints = false;
   args.withGradients = false;
   args.withScalars = false;
   args.withNormals = false;
@@ -86,6 +97,10 @@ int main(int argc, char** argv)
     else if(strcmp(argv[i], "-iso") == 0){
       args.isoSurfaceValue=atof(argv[++i]);
       std::cout << "Set -iso=" << niftk::ConvertToString(args.isoSurfaceValue) << std::endl;
+    }
+    else if(strcmp(argv[i], "-points") == 0){
+      args.isStructuredPoints=true;
+      std::cout << "Set -points=" << niftk::ConvertToString(args.isStructuredPoints) << std::endl;
     }
     else if(strcmp(argv[i], "-withScalars") == 0){
       args.withScalars=true;
@@ -111,19 +126,100 @@ int main(int argc, char** argv)
       Usage(argv[0]);
       return EXIT_FAILURE;
     }
-  
-  vtkStructuredGridReader *reader = vtkStructuredGridReader::New();
-  reader->SetFileName(args.inputImage.c_str());
 
-  vtkContourFilter *filter = vtkContourFilter::New();
-  filter->SetInputDataObject(reader->GetOutput());
-  filter->SetValue(0, args.isoSurfaceValue);
-  filter->SetComputeScalars(args.withScalars);
-  filter->SetComputeGradients(args.withGradients);
-  filter->SetComputeNormals(args.withNormals);
+
+
+  // Read structured points
+  // ~~~~~~~~~~~~~~~~~~~~~~
   
-  vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInputDataObject(filter->GetOutput());
-  writer->SetFileName(args.outputPolyData.c_str());
-  writer->Update();
+  if ( args.isStructuredPoints )
+  {
+
+    vtkSmartPointer<vtkStructuredPointsReader> 
+      reader = vtkSmartPointer<vtkStructuredPointsReader>::New();
+
+    reader->SetFileName(args.inputImage.c_str());
+
+    reader->Update();
+     
+  
+    // Create the marching cubes filter
+
+    vtkSmartPointer<vtkMarchingCubes> 
+      filter = vtkSmartPointer<vtkMarchingCubes>::New();
+
+    filter->SetInputConnection( reader->GetOutputPort() );
+
+    filter->SetValue( 0, args.isoSurfaceValue );
+
+    filter->SetComputeScalars( args.withScalars );
+    filter->SetComputeGradients( args.withGradients );
+    filter->SetComputeNormals( args.withNormals );
+  
+    filter->Update();
+
+
+    // Write the ouput
+
+    vtkSmartPointer<vtkPolyDataWriter> 
+      writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+
+    writer->SetInputDataObject( filter->GetOutput() );
+    writer->SetFileName( args.outputPolyData.c_str() );
+
+    writer->Update();
+  }
+
+
+  // Read structured grid
+  // ~~~~~~~~~~~~~~~~~~~~
+  
+  else
+  {
+
+    vtkSmartPointer<vtkStructuredGridReader>
+      reader = vtkSmartPointer<vtkStructuredGridReader>::New();
+    reader->SetFileName(args.inputImage.c_str());
+
+    reader->Update();
+     
+
+    // Create the marching cubes filter
+
+    vtkSmartPointer<vtkContourFilter>
+      filter = vtkSmartPointer<vtkContourFilter>::New();
+
+    filter->SetInputDataObject( reader->GetOutput() );
+
+    filter->SetValue( 0, args.isoSurfaceValue );
+
+    filter->SetComputeScalars( args.withScalars );
+    filter->SetComputeGradients( args.withGradients );
+    filter->SetComputeNormals( args.withNormals );
+  
+    filter->Update();
+
+
+    // Compute normals
+
+    vtkSmartPointer<vtkPolyDataNormals>
+      normals = vtkSmartPointer<vtkPolyDataNormals>::New();
+
+    normals->SetInputDataObject( filter->GetOutput() );
+    normals->SetFeatureAngle(60.0);
+
+    normals->Update();
+
+
+    // Write the ouput
+
+    vtkSmartPointer<vtkPolyDataWriter>
+      writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+
+    writer->SetInputDataObject( normals->GetOutput() );
+    writer->SetFileName( args.outputPolyData.c_str() );
+
+    writer->Update();
+  }
+
 }
