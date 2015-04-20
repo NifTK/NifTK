@@ -2641,47 +2641,57 @@ void VLQt4Widget::UpdateTranslucentTriangles()
 #endif
   // m_TotalNumOfTranslucentVertices is set by MergeTranslucentTriangles().
 
-  if (m_TotalNumOfTranslucentVertices == 0 || m_TranslucentActors.size() == 0 || !thereIsSomethingTranslucent)
+  bool    mergedok = false;
+  if ((m_TotalNumOfTranslucentVertices > 0) && (m_TranslucentActors.size() > 0) && thereIsSomethingTranslucent)
+    mergedok = true;
+
+  bool  sortedok = false;
+  if (mergedok)
+    sortedok = SortTranslucentTriangles();
+
+  // the sorted-translucent-all-in-one-actor is only visible if merging and sorting actually worked.
+  // otherwise, fall back to unsorted.
+  if (mergedok && sortedok)
   {
-    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
-    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
-    return;
-  }
+    vl::ref<vl::Effect>    fx;
+    vl::ref<vl::Transform> tr;
 
-  SortTranslucentTriangles();
+    if (m_TranslucentSurfaceActor == 0)
+    {
+      // Add the new merged geometry actor
+      tr = new vl::Transform();
+      fx = new vl::Effect;
+      m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
+      m_TranslucentSurfaceActor->setObjectName("m_TranslucentSurfaceActor");
+    }
+    else
+    {
+      fx = m_TranslucentSurfaceActor->effect();
+      tr = m_TranslucentSurfaceActor->transform();
+    }
 
-  vl::ref<vl::Effect>    fx;
-  vl::ref<vl::Transform> tr;
+    m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
+    m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
+    fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
 
-  if (m_TranslucentSurfaceActor == 0)
-  {
-    // Add the new merged geometry actor
-    tr = new vl::Transform();
-    fx = new vl::Effect;
-    m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
+    // no backface culling for translucent objects: you should be able to see the backside!
+    fx->shader()->disable(vl::EN_CULL_FACE);
+
+    fx->shader()->enable(vl::EN_BLEND);
+    fx->shader()->enable(vl::EN_DEPTH_TEST);
+    fx->shader()->enable(vl::EN_LIGHTING);
+    fx->shader()->setRenderState(m_Light.get(), 0 );
+
+    // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
   }
   else
   {
-    fx = m_TranslucentSurfaceActor->effect();
-    tr = m_TranslucentSurfaceActor->transform();
+    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
+    // also re-enable unsorted possibly-translucent geometry.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() | ENABLEMASK_TRANSLUCENT);
   }
-  
-  m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
-  m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
-  fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
-  
-  // no backface culling for translucent objects: you should be able to see the backside!
-  fx->shader()->disable(vl::EN_CULL_FACE);
-  
-  fx->shader()->enable(vl::EN_BLEND);
-  fx->shader()->enable(vl::EN_DEPTH_TEST);
-
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(m_Light.get(), 0 );
-
-
-  // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
-  m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
 }
 
 
@@ -3194,14 +3204,14 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::SortTranslucentTriangles()
+bool VLQt4Widget::SortTranslucentTriangles()
 {
   // Get context 
   cl_context clContext = m_OclService->GetContext();
   cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
 
   if (clContext == 0 || clCmdQue == 0 || !m_TranslucentStructuresMerged)
-    return;
+    return false;
 
   // Get camera position
   vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
@@ -3217,7 +3227,9 @@ void VLQt4Widget::SortTranslucentTriangles()
   m_OclTriangleSorter->SetViewPoint(clCameraPos);
 
   // Compute trinagle distances and sort the triangles
-  m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
+  bool sortok = m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
+  if (!sortok)
+    return false;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // This code is only for debugging. It colors the translucent object's triangles based on distance from camera.
@@ -3336,6 +3348,8 @@ void VLQt4Widget::SortTranslucentTriangles()
   clReleaseMemObject(mergedDistBufOutput);
   mergedDistBufOutput = 0;
 */
+
+  return true;
 }
 
 

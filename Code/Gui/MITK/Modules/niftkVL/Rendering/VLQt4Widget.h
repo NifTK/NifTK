@@ -206,7 +206,7 @@ protected:
   vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
   void UpdateTranslucentTriangles();
-  void SortTranslucentTriangles();
+  bool SortTranslucentTriangles();
   bool MergeTranslucentTriangles();
   bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
   bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
