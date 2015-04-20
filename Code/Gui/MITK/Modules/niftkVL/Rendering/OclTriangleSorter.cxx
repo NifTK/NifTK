@@ -1195,6 +1195,12 @@ bool mitk::OclTriangleSorter::Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem da
     return false;
   }
 
-  //clFinish(m_CommandQue);
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
   return true;
 }
