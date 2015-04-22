@@ -30,53 +30,6 @@ namespace mitk {
  */
 void PointPickingCallBackFunc (  int, int , int, int, void* );
 
-class PickedObject 
-{
-public:
-  int id;
-  bool isLine;
-  std::vector < cv::Point2d > points;
-
-  PickedObject();
-  ~PickedObject();
-};
-
-class PickedPointList : public itk::Object
-{
-  public:
-    mitkClassMacro(PickedPointList, itk::Object);
-    itkNewMacro(PickedPointList);
-    
-    void PutOut (std::ofstream& os);
-    void AnnotateImage (cv::Mat& image);
-
-    void SetInLineMode (const bool& mode);
-    void SetInOrderedMode ( const bool& mode);
-    bool GetIsModified();
-    itkSetMacro (FrameNumber, unsigned int);
-    itkSetMacro (Channel, std::string);
-
-    unsigned int AddPoint (const cv::Point2d& point);
-    unsigned int RemoveLastPoint ();
-    unsigned int SkipOrderedPoint ();
-    unsigned int EndLine();
-
-  protected:
-    PickedPointList();
-    virtual ~PickedPointList();
-
-    PickedPointList (const PickedPointList&); // Purposefully not implemented.
-    PickedPointList& operator=(const PickedPointList&); // Purposefully not implemented.
-
-  private:
-    bool m_InLineMode;
-    bool m_InOrderedMode;
-    bool m_IsModified;
-    unsigned int m_FrameNumber;
-    std::string m_Channel;
-    std::vector < PickedObject > m_PickedObjects;
-    int GetNextAvailableID ( bool ForLine );
-};
 /**
  * \class Pick points in stereo video
  * \brief Takes an input video (.264) file and tracking data. The 
@@ -174,7 +127,6 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   cv::VideoCapture*             m_Capture;
-
   
   long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;
   
