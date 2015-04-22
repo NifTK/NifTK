@@ -53,6 +53,11 @@ public:
   cv::Point2d  m_Point;
 };
 
+extern "C++" NIFTKOPENCVUTILS_EXPORT
+std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
+
+extern "C++" NIFTKOPENCVUTILS_EXPORT
+bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
 
 /**
  * \class contains a point in 3D and a corresponding scalar value
