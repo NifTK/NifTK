@@ -130,7 +130,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       ps->InsertPoint(i, p);
     }
 
-    mitk::IOUtil::SavePointSet(ps, outputFileName);
+    mitk::IOUtil::Save(ps, outputFileName);
     isSuccessful = true;
   }
   catch (const std::logic_error& e)

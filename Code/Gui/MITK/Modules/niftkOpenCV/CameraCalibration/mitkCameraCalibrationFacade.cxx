@@ -1043,7 +1043,7 @@ std::vector<double> OutputCalibrationData(
     rms = sqrt((double)rms);
     allRMSErrors.push_back(rms);
 
-    mitk::IOUtil::SavePointSet(pointsInCameraCoordinates, niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".camera.mps")));
+    mitk::IOUtil::Save(pointsInCameraCoordinates, niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".camera.mps")));
   }
 
   cvReleaseMat(&extrinsicMatrix);
