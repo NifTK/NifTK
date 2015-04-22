@@ -38,6 +38,7 @@ if(BUILD_IGI)
 
   list(APPEND HELPER_APPS_REQUIRED_MODULES
     niftkCore
+    niftkOpenCVUtils
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
@@ -97,6 +98,7 @@ list(APPEND HELPER_APP_LINK_DIRECTORIES
 
 list(APPEND HELPER_APP_LIBRARIES
   niftkcommon 
+  niftkOpenCVUtils
   niftkOpenCV 
   niftkIGIGui
   niftkPointReg

@@ -15,7 +15,7 @@
 #ifndef mitkTrackingAndTimeStampsContainer_h
 #define mitkTrackingAndTimeStampsContainer_h
 
-#include "niftkOpenCVExports.h"
+#include "niftkOpenCVUtilsExports.h"
 #include "mitkTimeStampsContainer.h"
 
 namespace mitk
@@ -29,7 +29,7 @@ namespace mitk
  *
  * This class is not thread-safe.
  */
-class NIFTKOPENCV_EXPORT TrackingAndTimeStampsContainer
+class NIFTKOPENCVUTILS_EXPORT TrackingAndTimeStampsContainer
 {
 public:
 

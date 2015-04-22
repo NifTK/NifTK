@@ -15,7 +15,7 @@
 #ifndef mitkTimeStampsContainer_h
 #define mitkTimeStampsContainer_h
 
-#include "niftkOpenCVExports.h"
+#include "niftkOpenCVUtilsExports.h"
 #include <cv.h>
 
 namespace mitk
@@ -27,7 +27,7 @@ namespace mitk
  *
  * See also mitkTimeStampsContainerTest.cxx.
  */
-class NIFTKOPENCV_EXPORT TimeStampsContainer
+class NIFTKOPENCVUTILS_EXPORT TimeStampsContainer
 {
 public:
 

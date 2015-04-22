@@ -19,7 +19,6 @@
 #include <niftkFileHelper.h>
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
-#include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <cmath>
 

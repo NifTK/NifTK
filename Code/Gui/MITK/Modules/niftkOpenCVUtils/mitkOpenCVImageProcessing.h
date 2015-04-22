@@ -15,7 +15,7 @@
 #ifndef mitkOpenCVImageProcessing_h
 #define mitkOpenCVImageProcessing_h
 
-#include "niftkOpenCVExports.h"
+#include "niftkOpenCVUtilsExports.h"
 #include <cv.h>
 
 /**
@@ -28,7 +28,7 @@ namespace mitk {
  * \brief finds the intersection of two lines in an image
  */
 
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindCrosshairCentre(const cv::Mat& image,
+extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point2d FindCrosshairCentre(const cv::Mat& image,
   const int& cannyLowThreshold, const int& cannyHighThreshold, const int& cannyKernel, 
   const double& houghRho, const double& houghTheta, const int& houghThreshold, 
   const int& houghLineLength, const int& houghLineGap, cv::vector <cv::Vec4i>& lines);

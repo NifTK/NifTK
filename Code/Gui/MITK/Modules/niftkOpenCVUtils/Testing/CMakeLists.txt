@@ -12,18 +12,5 @@
 #
 #============================================================================*/
 
+MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCVUtils)
 
-MITK_CREATE_MODULE(niftkPointReg
-  EXPORT_DEFINE NIFTKPOINTREG_EXPORT
-  INCLUDE_DIRS Registration Maths
-  DEPENDS niftkCore niftkOpenCVUtils MitkIGT
-  PACKAGE_DEPENDS OpenCV
-)
-
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkPointReg)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

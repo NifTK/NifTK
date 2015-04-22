@@ -15,7 +15,7 @@
 #ifndef mitkOpenCVPointTypes_h
 #define mitkOpenCVPointTypes_h
 
-#include "niftkOpenCVExports.h"
+#include "niftkOpenCVUtilsExports.h"
 #include <opencv2/opencv.hpp> 
 #include <cv.h>
 #include <itkObject.h>
@@ -33,7 +33,7 @@ namespace mitk {
 * \class contains the gold standard points
 * consisting of the frame number, the point and optionally the point index
 */
-class NIFTKOPENCV_EXPORT GoldStandardPoint
+class NIFTKOPENCVUTILS_EXPORT GoldStandardPoint
 {
 public:
 
@@ -57,7 +57,7 @@ public:
 /**
  * \class contains a point in 3D and a corresponding scalar value
  */
-class NIFTKOPENCV_EXPORT WorldPoint
+class NIFTKOPENCVUTILS_EXPORT WorldPoint
 {
 public:
 
@@ -75,7 +75,7 @@ public:
 /**
  * \class contains a vector of world points and a corresponding long long timing error
  */
-class NIFTKOPENCV_EXPORT WorldPointsWithTimingError
+class NIFTKOPENCVUTILS_EXPORT WorldPointsWithTimingError
 {
 public:
 
@@ -91,7 +91,7 @@ public:
 /**
  * \class contains a left and right projected point
  */
-class NIFTKOPENCV_EXPORT ProjectedPointPair
+class NIFTKOPENCVUTILS_EXPORT ProjectedPointPair
 {
 public:
   ProjectedPointPair();
@@ -110,7 +110,7 @@ public:
 /**
  * \class contains a vector of left and right projected points and a timing error
  */
-class NIFTKOPENCV_EXPORT ProjectedPointPairsWithTimingError
+class NIFTKOPENCVUTILS_EXPORT ProjectedPointPairsWithTimingError
 {
 public:
   ProjectedPointPairsWithTimingError();
@@ -126,7 +126,7 @@ public:
  * \class contains an opencv matrix of video data, a left or right flag and the
  * timestamp
  */
-class NIFTKOPENCV_EXPORT VideoFrame
+class NIFTKOPENCVUTILS_EXPORT VideoFrame
 {
 public:
 

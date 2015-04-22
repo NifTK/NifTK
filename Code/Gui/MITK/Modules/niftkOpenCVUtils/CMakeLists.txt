@@ -13,15 +13,19 @@
 #============================================================================*/
 
 
-MITK_CREATE_MODULE(niftkPointReg
-  EXPORT_DEFINE NIFTKPOINTREG_EXPORT
-  INCLUDE_DIRS Registration Maths
-  DEPENDS niftkCore niftkOpenCVUtils MitkIGT
+MITK_CREATE_MODULE(niftkOpenCVUtils
+  EXPORT_DEFINE NIFTKOPENCVUTILS_EXPORT
+  DEPENDS niftkCore
   PACKAGE_DEPENDS OpenCV
 )
 
+target_link_libraries(niftkOpenCVUtils
+  niftkcommon
+  )
+
+
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkPointReg)
+  cotire(niftkOpenCVUtils)
 endif()
 
 if(BUILD_TESTING)
