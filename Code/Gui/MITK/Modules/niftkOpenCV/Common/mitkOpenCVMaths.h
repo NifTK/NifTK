@@ -200,7 +200,6 @@ extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint  operator*(const cv::Mat& M,
  */
 extern "C++" NIFTKOPENCV_EXPORT mitk::WorldPoint operator*(const cv::Matx44d& M, const mitk::WorldPoint& p);
 
-
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
@@ -211,11 +210,31 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(const cv::Mat& M, const cv
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(const cv::Matx44d& M, const cv::Point3d& p);
 
+/**
+ * \brief multiplies a  point pair by a 4x4 transformation matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d, cv::Point3d > TransformPointPair (const cv::Matx44d& M, 
+    const std::pair < cv::Point3d, cv::Point3d>& p);
 
 /**
  * \brief Tests equality of 2 2d points. The openCV == operator struggles on floating points, 
  */
 extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance );
+
+/**
+ * \brief Tests equality of 2 3d points. The openCV == operator struggles on floating points, 
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool NearlyEqual(const cv::Point3d& p1, const cv::Point3d& p2, const double& tolerance );
+
+/**
+ * \brief Tests whether two cv::Mat have the same header info (dimension and data type), 
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool ImageHeadersEqual(const cv::Mat& m1, const cv::Mat& m2);
+
+/**
+ * \brief Tests whether two cv::Mat have the same data 
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool ImageDataEqual(const cv::Mat& m1, const cv::Mat& m2, const double& tolerance );
 
 
 /**
@@ -526,6 +545,59 @@ extern "C++" NIFTKOPENCV_EXPORT void InterpolateTransformationMatrix(const cv::M
  * \brief returns the matrix type as a string
  */
 extern "C++" NIFTKOPENCV_EXPORT std::string MatrixType(const cv::Mat& matrix);
+
+/** 
+ * \brief check if point has a NaN value
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool IsNaN(const cv::Point2d&);
+
+/** 
+ * \brief check if 2D point has a NaN  or inf value
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool IsNotNaNorInf(const cv::Point2d&);
+
+/** 
+ * \brief check if 3D point has a NaN  or inf value
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool IsNotNaNorInf(const cv::Point3d&);
+
+/**
+ * \brief calculates the distance between a line and a point
+ * \param the line defined by two points on the line
+ * \param the point
+ */
+extern "C++" NIFTKOPENCV_EXPORT double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
+
+/**
+ * \brief calculates the shortest distance between two lines  
+ * \param line 1 define as x = P0 + lambda u
+ * \param line 2 defined as x = Q0 + lambda v
+ * \param holder to return the midpoint
+ */
+extern "C++" NIFTKOPENCV_EXPORT double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, 
+    const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint );
+
+/**
+ * \brief converts a line defined by two points on the line to the same line defined by a single point and it's unit vector
+ * \param line 1 define as x1 x2
+ * \return lin defined as x = Q0 + lambda v
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair < cv::Point3d , cv::Point3d > TwoPointsToPLambda ( const std::pair < cv::Point3d , cv::Point3d >& twoPointLine );
+
+/**
+ * \brief Calculates the cross product of two vectors (cv::Point3D)
+ * \param the vectors as points
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d CrossProduct ( const cv::Point3d& p1, const cv::Point3d& p2);
+
+/**
+ * \brief Calculates the norm product of a vectors (cv::Point3D)
+ * \param the vector as cv::Point3D
+ */
+extern "C++" NIFTKOPENCV_EXPORT double Norm ( const cv::Point3d& p1);
+
+
+
 
 } // end namespace
 
