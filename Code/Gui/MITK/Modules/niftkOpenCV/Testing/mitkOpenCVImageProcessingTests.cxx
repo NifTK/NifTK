@@ -27,7 +27,7 @@
  * \file Tests for some of the functions in openCVImageProcessing.
  */
 
-void FindCrossHairTest()
+void FindCrossHairTest(int imageType)
 {
 
   int cannyLowThreshold = 20;
@@ -40,20 +40,45 @@ void FindCrossHairTest()
   int houghLineGap = 20 ;
   cv::vector <cv::Vec4i> lines;
 
-  cv::Mat image ( 100 , 100 , CV_8UC3 );
-  for ( unsigned int i = 0 ; i < 100 ; i ++ )
+  cv::Mat image ( 1920 , 1080 , imageType );
+  for ( unsigned int i = 0 ; i < 1920 ; i ++ )
   {
-    for ( unsigned int j = 0 ; j < 100 ; j ++ )
+    for ( unsigned int j = 0 ; j < 1080 ; j ++ )
     {
-      for ( unsigned int channel = 0 ; channel < 3 ; channel ++ )
+      for ( unsigned int channel = 0 ; channel < image.channels()  ; channel ++ )
       {
-        image.at<cv::Vec3b>(i,j)[channel] = 0;
+        image.ptr<unsigned char>(i,j)[channel] = 0;
       }
     }
   }
- 
-  cv::line ( image, cvPoint ( 0 , 0 ) , cvPoint ( 100 , 100 ), cv::Scalar (255,  255, 255 ),1.0 ,1 );
-  cv::line ( image, cvPoint ( 100 , 10 ) , cvPoint ( 10 , 100 ), cv::Scalar (255, 255 , 255 ),1.0 ,1 );
+
+  switch ( imageType ) 
+  {
+    case CV_8UC1:
+      {
+        cv::line ( image, cvPoint ( 0 , 0 ) , cvPoint ( 100 , 100 ), cv::Scalar (255 ),1.0 ,1 );
+        cv::line ( image, cvPoint ( 100 , 10 ) , cvPoint ( 10 , 100 ), cv::Scalar (255 ),1.0 ,1 );
+        break;
+      }
+    case CV_8UC3:
+      {
+        cv::line ( image, cvPoint ( 0 , 0 ) , cvPoint ( 100 , 100 ), cv::Scalar (255,  255, 255 ),1.0 ,1 );
+        cv::line ( image, cvPoint ( 100 , 10 ) , cvPoint ( 10 , 100 ), cv::Scalar (255, 255 , 255 ),1.0 ,1 );
+        break;
+      }
+    case CV_8UC4:
+      {
+        cv::line ( image, cvPoint ( 0 , 0 ) , cvPoint ( 100 , 100 ), cv::Scalar (255,  255, 255 , 1),1.0 ,1 );
+        cv::line ( image, cvPoint ( 100 , 10 ) , cvPoint ( 10 , 100 ), cv::Scalar (255, 255 , 255, 1 ),1.0 ,1 );
+        break;
+      }
+    default:
+      {
+        MITK_ERROR << "Illegal test case";
+      }
+  }
+
+
 
   cv::Point2d intersect = mitk::FindCrosshairCentre (image, cannyLowThreshold, cannyHighThreshold,
       cannyKernel, houghRho, houghTheta, houghThreshold, houghLineLength, houghLineGap , lines ); 
@@ -67,7 +92,9 @@ int mitkOpenCVImageProcessingTests(int argc, char * argv[])
   // always start with this!
   MITK_TEST_BEGIN("mitkOpenCVImageProcessingTests");
 
-  FindCrossHairTest();
+  FindCrossHairTest(CV_8UC1);
+  FindCrossHairTest(CV_8UC3);
+  FindCrossHairTest(CV_8UC4);
   MITK_TEST_END();
 }
 

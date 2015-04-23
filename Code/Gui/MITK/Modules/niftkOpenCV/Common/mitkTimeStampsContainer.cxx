@@ -186,9 +186,7 @@ unsigned long long TimeStampsContainer::GetNearestTimeStamp (const TimeStamp& ti
       long long deltaUpper = after - timestamp;
       long long deltaLower = timestamp - before;
 
-      assert ( ( deltaUpper > 0 ) && (deltaLower > 0));
-
-      if ( deltaLower <= deltaUpper )
+      if ( abs(deltaLower) <= abs(deltaUpper) )
       {
         result = before;
       }
