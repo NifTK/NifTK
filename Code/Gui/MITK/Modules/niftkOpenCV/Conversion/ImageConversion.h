@@ -18,6 +18,7 @@
 #include "niftkOpenCVExports.h"
 #include <mitkITKImageImport.txx>
 #include <opencv2/core/types_c.h>
+#include <cv.h>
 
 
 namespace niftk
@@ -29,6 +30,16 @@ namespace niftk
  * Known bug: does not take care of different channel layouts: BGR vs RGB!
  */
 mitk::Image::Pointer NIFTKOPENCV_EXPORT CreateMitkImage(const IplImage* image);
+
+/**
+ * Same as above but takes cv:Mat
+ */
+mitk::Image::Pointer NIFTKOPENCV_EXPORT CreateMitkImage(const cv::Mat* image);
+
+/**
+ * mitk::Image::Pointer to cv::Mat* , supports 8 bit per channel RGB, RGBA and gray
+ */
+cv::Mat NIFTKOPENCV_EXPORT MitkImageToOpenCVMat ( const mitk::Image::Pointer );
 
 
 } // namespace
