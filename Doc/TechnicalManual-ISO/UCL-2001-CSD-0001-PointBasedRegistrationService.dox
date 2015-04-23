@@ -1,0 +1,25 @@
+/**
+\page PointBasedRegistrationService Point Based Registration Service
+
+\tableofcontents
+
+\section PBRSIntro Introduction
+\section PBRSFuncReq Functional Requirements
+
+REQ-2001-CSD-0001-FR-001-01: If number of points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0001-FR-002-01: If number of points doesn't match, throw mitk::Exception.
+
+REQ-2001-CSD-0001-FR-003-01: Two point sets, identical apart from translation should register with FRE < 0.001
+
+REQ-2001-CSD-0001-FR-004-01: Two point sets, identical apart from rotation should register with FRE < 0.001
+
+\section PBRSNonFuncReq Non-Functional Requirements
+\section PBRSArchitecture Architecture
+\section PBRSImpl Implementation
+\section PBRSError Error Handling
+\section PBRSLogging Logging
+\section PBRSRefs References
+\section PBRSValidation Validation
+
+*/

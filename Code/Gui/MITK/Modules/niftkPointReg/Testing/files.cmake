@@ -12,11 +12,13 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
+# Tests with no extra command line parameter.
+# Consider these as Developer-led, bare-bones unit tests.
 set(MODULE_TESTS
-  niftkArunSVDRegTest.cxx
   niftkPointBasedRegistrationTest.cxx
 )
 
+# For validation we prefer tests with externalised parameters.
 set(MODULE_CUSTOM_TESTS
+  niftkArunSVDRegTest.cxx
 )
