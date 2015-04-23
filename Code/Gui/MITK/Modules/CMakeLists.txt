@@ -46,10 +46,10 @@ if(BUILD_IGI)
     ${MODULE_DIRS}
     niftkOpenCVUtils
     niftkPointReg
-    niftkPointRegService
     niftkOpenCV
     niftkIGI
     niftkIGIGui
+    niftkPointRegService
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
