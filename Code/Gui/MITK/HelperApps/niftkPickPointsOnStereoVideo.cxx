@@ -65,7 +65,6 @@ int main(int argc, char** argv)
     matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
-    projector->SetMatcherCameraToTracker(matcher);
 
     projector->Project(matcher);
 
