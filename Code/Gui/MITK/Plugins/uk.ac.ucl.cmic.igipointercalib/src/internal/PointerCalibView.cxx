@@ -245,11 +245,11 @@ void PointerCalibView::UpdateRegistration()
   if (m_ImagePoints->GetSize() > 3 && m_SensorPoints->GetSize() > 3)
   {
     fre = m_Calibrator->DoPointerBasedCalibration();
-    m_Controls->m_FiducialRegistrationErrorLabel->setText(tr("FRE: %1").arg(fre));
 
     vtkSmartPointer<vtkMatrix4x4> scaling = m_Calibrator->GetScalingMatrix();
     vtkSmartPointer<vtkMatrix4x4> rigid = m_Calibrator->GetRigidBodyMatrix();
 
+    m_Controls->m_FiducialRegistrationErrorLabel->setText(tr("FRE: %1").arg(fre));
     m_Controls->m_ScalingParametersLabel->setText(tr("scaling: %1, %2").arg(scaling->GetElement(0,0)).arg(scaling->GetElement(1,1)));
     for (int i = 0; i < 4; i++)
     {
@@ -382,7 +382,7 @@ void PointerCalibView::OnSaveToFileButtonPressed()
   QString fileName = QFileDialog::getSaveFileName( NULL,
                                                    tr("Save Transform As ..."),
                                                    QDir::currentPath(),
-                                                   "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
+                                                   "4x4 file (*.4x4);;Matrix file (*.mat);;Text file (*.txt);;All files (*.*)" );
 
   vtkSmartPointer<vtkMatrix4x4> matrix = m_Calibrator->GetRigidBodyMatrix();
   if (fileName.size() > 0)
