@@ -531,8 +531,8 @@ void ComputeRightToLeftTransformations(
     const CvMat& translationVectorsLeft,
     const CvMat& rotationVectorsRight,
     const CvMat& translationVectorsRight,
-    const CvMat& rotationVectorsRightToLeft,
-    const CvMat& translationVectorsRightToLeft
+    CvMat& rotationVectorsRightToLeft,
+    CvMat& translationVectorsRightToLeft
     )
 {
   int numberOfMatrices = rotationVectorsLeft.rows;
@@ -1512,7 +1512,6 @@ cv::Point3d  TriangulatePointPairUsingGeometry(
   return returnVector[0];
 }
 
-
 //-----------------------------------------------------------------------------
 std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
@@ -1723,6 +1722,68 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   return outputPoints;
 }
 
+//-----------------------------------------------------------------------------
+std::pair< cv::Point3d , cv::Point3d > GetRay(
+    const cv::Point2d& inputUndistortedPoint,
+    const cv::Mat& cameraIntrinsicParams, const double& rayLength
+    )
+{
+  std::pair< cv::Point3d, cv::Point3d > outputPoints;
+  cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
+
+  // Copy data into cv::Mat data types.
+  // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
+  // These triangulation routines need 64 bit data.
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      if ( cameraIntrinsicParams.type() == CV_32FC1 )
+      {
+        K1.at<double>(i,j) = cameraIntrinsicParams.at<float>(i,j);
+      }
+      else
+      {
+        K1.at<double>(i,j) = cameraIntrinsicParams.at<double>(i,j);
+      }
+    }
+  }
+
+  // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
+  K1Inv = K1.inv();
+  
+  // Set up some working matrices...
+  cv::Mat p1                = cv::Mat(3, 1, CV_64FC1);
+  cv::Mat p1normalised      = cv::Mat(3, 1, CV_64FC1);
+
+  // Line from left camera = P0 + \lambda_1 u;
+  cv::Point3d P0;
+  cv::Point3d u;
+
+  // For each point...
+
+  p1.at<double>(0,0) = inputUndistortedPoint.x;
+  p1.at<double>(1,0) = inputUndistortedPoint.y;
+  p1.at<double>(2,0) = 1;
+
+  // Converting to normalised image points.
+  p1normalised = K1Inv * p1;
+
+  // Origin in LH camera, by definition is 0,0,0.
+  P0.x = 0;
+  P0.y = 0;
+  P0.z = 0;
+  
+  u.x = p1normalised.at<double>(0,0) * rayLength;
+  u.y = p1normalised.at<double>(1,0) * rayLength;
+  u.z = p1normalised.at<double>(2,0) * rayLength;
+
+  outputPoints.first = P0;
+  outputPoints.second = u;
+  return outputPoints;
+}
 
 //-----------------------------------------------------------------------------
 void CStyleTriangulatePointPairsUsingSVD(
