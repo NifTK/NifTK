@@ -137,6 +137,7 @@ if(SlicerExecutionModel_FOUND)
       niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkPickPointsOnStereoVideo
+      niftkMakeMaskImagesFromStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages

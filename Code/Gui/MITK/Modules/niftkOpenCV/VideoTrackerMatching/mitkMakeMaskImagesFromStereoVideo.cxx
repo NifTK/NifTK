@@ -40,8 +40,6 @@ m_VideoIn("")
 , m_VideoHeight(540)
 , m_Capture(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
-, m_OrderedPoints(false)
-, m_PickingLine(false)
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
 , m_WriteAnnotatedImages(false)
@@ -143,32 +141,11 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-          if ( m_PickingLine )
-          {
-            if ( m_OrderedPoints )
-            {
-              MITK_INFO << "Picking ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to finish line, n for next frame, q to quit";
-            }
-            else
-            {
-              MITK_INFO << "Picking un ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to finish line, n for next frame, q to quit";
-            }
-          } 
-          else
-          {
-            if ( m_OrderedPoints )
-            {
-              MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to pick a line, n for next frame, q to quit";
-            }
-            else 
-            {
-              MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to pick a line, n for next frame, q to quit";
-            }
-          }
+          MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], n for next frame, q to quit";
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
+          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftContour";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
+          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightContour";
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
@@ -226,12 +203,12 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (m_PickingLine);
-          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetInLineMode (true);
+          leftPickedPoints->SetInOrderedMode (false);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (m_PickingLine);
-          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetInLineMode (true);
+          rightPickedPoints->SetInOrderedMode (false);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
 
@@ -243,34 +220,6 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
             while ( key != 'n' && key != 'q' )
             {
               key = cv::waitKey(20);
-              if ( key == 't' )
-              {
-                m_OrderedPoints = ! m_OrderedPoints;
-                if ( m_OrderedPoints ) 
-                {
-                  MITK_INFO << "Switched to ordered points mode";
-                }
-                else
-                {
-                  MITK_INFO << "Switched to un ordered points mode";
-                }
-                leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
-                rightPickedPoints->SetInOrderedMode (m_OrderedPoints);
-              }
-              if ( key == 'l' )
-              {
-                m_PickingLine = ! m_PickingLine;
-                if ( m_PickingLine ) 
-                {
-                  MITK_INFO << "Switched to line picking mode";
-                }
-                else
-                {
-                  MITK_INFO << "Exited line picking mode";
-                }
-                leftPickedPoints->SetInLineMode (m_PickingLine);
-                rightPickedPoints->SetInLineMode (m_PickingLine);
-              }
               if ( overWriteLeft )
               {
                 cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);

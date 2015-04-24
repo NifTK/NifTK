@@ -96,8 +96,6 @@ private:
  
   bool                          m_InitOK;
   bool                          m_ProjectOK;
-  bool                          m_OrderedPoints; //picked points can be ordered or unordered
-  bool                          m_PickingLine; //if true we are picking a line defined by a vector of points
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
   bool                          m_HaltOnVideoReadFail; //halt if video read fail
   bool                          m_WriteAnnotatedImages; //halt if video read fail
