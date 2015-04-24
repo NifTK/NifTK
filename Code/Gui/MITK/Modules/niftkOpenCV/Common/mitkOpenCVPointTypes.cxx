@@ -466,6 +466,26 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
 }
 
 //-----------------------------------------------------------------------------
+cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
+{
+  cv::Mat mask = cv::Mat(image.size(), CV_8U);
+  
+  std::vector < std::vector < cv::Point2d > > contours;
+  for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
+  {
+    if ( m_PickedObjects[i].isLine )
+    {
+      if ( m_PickedObjects[i].points.size() > 0 )
+      {
+        contours.push_back( m_PickedObjects[i].points);
+      }
+    }
+  }
+  cv::drawContours (mask, contours , -1, cv::Scalar(255), CV_FILLED);
+}
+
+
+//-----------------------------------------------------------------------------
 int PickedPointList::GetNextAvailableID( bool ForLine )
 {
   int lastPoint = -1 ;

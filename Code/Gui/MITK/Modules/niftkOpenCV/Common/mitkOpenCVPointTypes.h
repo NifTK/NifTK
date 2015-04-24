@@ -177,6 +177,7 @@ public:
 
   void PutOut (std::ofstream& os);
   void AnnotateImage (cv::Mat& image);
+  cv::Mat CreateMaskImage ( const cv::Mat& image);
 
   void SetInLineMode (const bool& mode);
   void SetInOrderedMode ( const bool& mode);
