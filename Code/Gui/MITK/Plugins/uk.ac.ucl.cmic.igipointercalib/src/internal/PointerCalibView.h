@@ -74,6 +74,8 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  void OnSaveToFileButtonPressed();
+
 private:
 
   /**
@@ -107,6 +109,17 @@ private:
   void OnPointRemoved();
 
   /**
+   * \brief Returns the pointer tip in the coordinate frame of the sensor attached to the probe.
+   */
+  mitk::Point3D GetPointerTipInSensorCoordinates() const;
+
+  /**
+   * \brief Checks the size of a and b differs by 1, then finds the missing point id.
+   */
+  mitk::PointSet::PointIdentifier GetMissingPointId(const mitk::PointSet::Pointer& a,
+                                                    const mitk::PointSet::Pointer& b);
+
+  /**
    * \brief All the controls for the main view part.
    */
   Ui::PointerCalibView *m_Controls;
@@ -115,7 +128,6 @@ private:
    * \brief Member variables for keeping state between button clicks.
    */
   mitk::DataStorage::Pointer                       m_DataStorage;
-  mitk::Point3D                                    m_TipCoordinate;
   mitk::UltrasoundPointerBasedCalibration::Pointer m_Calibrator;
   mitk::PointSet::Pointer                          m_ImagePoints;
   mitk::DataNode::Pointer                          m_ImagePointsNode;
