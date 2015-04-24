@@ -700,5 +700,23 @@ unsigned int PickedPointList::SkipOrderedPoint()
   return m_PickedObjects.size();
 }
 
+//-----------------------------------------------------------------------------
+void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata)
+{
+  PickedPointList* out = static_cast<PickedPointList*>(userdata);
+  if  ( event == cv::EVENT_LBUTTONDOWN )
+  {
+    out->AddPoint (cv::Point2d ( x,y));
+  }
+  else if  ( event == cv::EVENT_RBUTTONDOWN )
+  {
+    out->RemoveLastPoint();
+  }
+  else if  ( event == cv::EVENT_MBUTTONDOWN )
+  {
+    out->SkipOrderedPoint();
+  }
+}
+
 
 } // end namespace

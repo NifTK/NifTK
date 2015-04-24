@@ -207,7 +207,10 @@ private:
   int GetNextAvailableID ( bool ForLine );
 };
 
-
+/**
+* \brief a call back function for dealing with PickedPointLists
+*/
+void PointPickingCallBackFunc (  int, int , int, int, void* );
 
 } // end namespace
 
