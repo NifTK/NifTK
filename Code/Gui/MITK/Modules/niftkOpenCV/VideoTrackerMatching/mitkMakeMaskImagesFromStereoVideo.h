@@ -68,8 +68,6 @@ public:
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
-  itkSetMacro ( OrderedPoints, bool);
-  itkSetMacro ( PickingLine, bool);
   itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( WriteAnnotatedImages, bool);
