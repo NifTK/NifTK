@@ -31,12 +31,6 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( calibrationInputDirectory.length() == 0 )
-  {
-    std::cout << calibrationInputDirectory.length() << std::endl;
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
-  }
 
   try
   {
@@ -47,7 +41,7 @@ int main(int argc, char** argv)
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
     
-    projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
+    projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
     if ( videoLag != 0 ) 

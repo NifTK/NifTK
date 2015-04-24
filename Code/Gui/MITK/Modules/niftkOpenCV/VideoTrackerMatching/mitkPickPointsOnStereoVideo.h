@@ -51,7 +51,7 @@ public:
    * Set up the projector, finds the video file in the directory, and the tracking data, 
    * and sets up the videotracker matcher
    */
-  void Initialise (std::string directory, std::string calibrationParameterDirectory);
+  void Initialise (std::string directory);
   /**
    * \brief
    * performs the point projection
@@ -105,16 +105,6 @@ private:
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end
   unsigned int                  m_Frequency; // the sample rate (process every m_Frequency frame)
-
-
-  //the camera calibration parameters
-  cv::Mat* m_LeftIntrinsicMatrix;
-  cv::Mat* m_LeftDistortionVector;
-  cv::Mat* m_RightIntrinsicMatrix;
-  cv::Mat* m_RightDistortionVector;
-  cv::Mat* m_RightToLeftRotationMatrix;
-  cv::Mat* m_RightToLeftTranslationVector;
-  cv::Mat* m_LeftCameraToTracker;
 
   //the dimensions of the video screen in pixels
   double   m_VideoWidth;

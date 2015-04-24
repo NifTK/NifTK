@@ -36,13 +36,6 @@ m_VideoIn("")
 , m_ReferenceIndex(-1)
 , m_InitOK(false)
 , m_ProjectOK(false)
-, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
-, m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
-, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
-, m_RightDistortionVector (new cv::Mat(1,4,CV_64FC1))
-, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
-, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
-, m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_VideoWidth(1920)
 , m_VideoHeight(540)
 , m_Capture(NULL)
@@ -64,37 +57,10 @@ PickPointsOnStereoVideo::~PickPointsOnStereoVideo()
 }
 
 //-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer trackerMatcher)
-{
-  if ( ! m_InitOK ) 
-  {
-    MITK_ERROR << "Can't set trackerMatcher handeye before projector initialiastion";
-    return;
-  }
-  trackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker, m_TrackerIndex);
-  return;
-}
-//-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::Initialise(std::string directory, 
-    std::string calibrationParameterDirectory)
+void PickPointsOnStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-
-  try
-  {
-    mitk::LoadStereoCameraParametersFromDirectory
-      ( calibrationParameterDirectory,
-      m_LeftIntrinsicMatrix,m_LeftDistortionVector,m_RightIntrinsicMatrix,
-      m_RightDistortionVector,m_RightToLeftRotationMatrix,
-      m_RightToLeftTranslationVector,m_LeftCameraToTracker);
-  }
-  catch ( int e )
-  {
-    MITK_ERROR << "Failed to load camera parameters";
-    m_InitOK = false;
-    return;
-  }
   
   if ( m_Capture == NULL ) 
   {
