@@ -240,6 +240,8 @@ protected:
   vl::ref<vl::Transform>                m_LightTr;
   vl::ref<vl::TrackballManipulator>     m_Trackball;
 
+  vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
+
   vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;

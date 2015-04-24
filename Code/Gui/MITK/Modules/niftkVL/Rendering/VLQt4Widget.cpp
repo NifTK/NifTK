@@ -550,6 +550,15 @@ void VLQt4Widget::initializeGL()
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
 
+  m_GenericGLSLShader = new vl::GLSLProgram;
+  m_GenericGLSLShader->attachShader(new vl::GLSLVertexShader(LoadGLSLSourceFromResources("generic.vs")));
+  m_GenericGLSLShader->attachShader(new vl::GLSLFragmentShader(LoadGLSLSourceFromResources("generic.fs")));
+  bool shadervalid = m_GenericGLSLShader->validateProgram();
+  if (!shadervalid)
+  {
+    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog();
+  }
+
   vl::OpenGLContext::dispatchInitEvent();
 
 #if 0
@@ -1920,6 +1929,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
+  //fx->shader()->pr
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
