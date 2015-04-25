@@ -45,10 +45,6 @@ PointerCalibView::PointerCalibView()
 , m_ImagePointsAddObserverTag(0)
 , m_ImagePointsRemoveObserverTag(0)
 {
-  m_Calibrator = mitk::UltrasoundPointerBasedCalibration::New();
-  m_Calibrator->SetImagePoints(m_ImagePoints);
-  m_Calibrator->SetSensorPoints(m_SensorPoints);
-
   m_ImagePoints = mitk::PointSet::New();
   m_ImagePointsNode = mitk::DataNode::New();
   m_ImagePointsNode->SetData(m_ImagePoints);
@@ -58,6 +54,10 @@ PointerCalibView::PointerCalibView()
   m_SensorPointsNode = mitk::DataNode::New();
   m_SensorPointsNode->SetData(m_SensorPoints);
   m_SensorPointsNode->SetName("PointerCalibSensorPoints");
+
+  m_Calibrator = mitk::UltrasoundPointerBasedCalibration::New();
+  m_Calibrator->SetImagePoints(m_ImagePoints);
+  m_Calibrator->SetSensorPoints(m_SensorPoints);
 
   itk::SimpleMemberCommand<PointerCalibView>::Pointer pointAddedCommand = itk::SimpleMemberCommand<PointerCalibView>::New();
   pointAddedCommand->SetCallbackFunction(this, &PointerCalibView::OnPointAdded);
@@ -232,7 +232,11 @@ void PointerCalibView::UpdateDisplayedPoints()
   {
     pointID = pIt->Index();
     imagePoint = pIt->Value();
-    sensorPoint = m_SensorPoints->GetPoint(pointID);
+    bool doesExist = m_SensorPoints->GetPointIfExists(pointID, &sensorPoint);
+    if (!doesExist)
+    {
+      mitkThrow() << "No Sensor Point " << pointID;
+    }
 
     m_Controls->m_PointsTextBox->appendPlainText(tr("%1:Image[%2, %3, %4]->Sensor[%5, %6, %7]")
       .arg(pointID)
@@ -249,7 +253,7 @@ void PointerCalibView::UpdateRegistration()
 {
   double fre = 0;
 
-  if (m_ImagePoints->GetSize() > 3 && m_SensorPoints->GetSize() > 3)
+  if (m_ImagePoints->GetSize() >= 3 && m_SensorPoints->GetSize() >= 3)
   {
     fre = m_Calibrator->DoPointerBasedCalibration();
 

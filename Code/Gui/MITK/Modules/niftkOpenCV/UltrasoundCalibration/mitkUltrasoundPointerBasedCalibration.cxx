@@ -82,7 +82,7 @@ void UltrasoundPointerBasedCalibration::SetSensorPoints(mitk::PointSet::Pointer 
 //-----------------------------------------------------------------------------
 void UltrasoundPointerBasedCalibration::SetImagePoints(mitk::PointSet::Pointer points)
 {
-  m_SensorPoints = points;
+  m_UltrasoundImagePoints = points;
   this->Modified();
 }
 
@@ -90,6 +90,10 @@ void UltrasoundPointerBasedCalibration::SetImagePoints(mitk::PointSet::Pointer p
 //-----------------------------------------------------------------------------
 double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 {
+  MITK_INFO << "Doing DoPointerBasedCalibration(), with "
+            << m_UltrasoundImagePoints->GetSize() << ", image points and "
+            << m_SensorPoints->GetSize() << " sensor points";
+
   double fiducialRegistrationError = std::numeric_limits<double>::max();
 
   this->Modified();
