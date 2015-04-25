@@ -53,7 +53,11 @@ PointerCalibView::PointerCalibView()
   m_ImagePointsNode = mitk::DataNode::New();
   m_ImagePointsNode->SetData(m_ImagePoints);
   m_ImagePointsNode->SetName("PointerCalibImagePoints");
+
   m_SensorPoints = mitk::PointSet::New();
+  m_SensorPointsNode = mitk::DataNode::New();
+  m_SensorPointsNode->SetData(m_SensorPoints);
+  m_SensorPointsNode->SetName("PointerCalibSensorPoints");
 
   itk::SimpleMemberCommand<PointerCalibView>::Pointer pointAddedCommand = itk::SimpleMemberCommand<PointerCalibView>::New();
   pointAddedCommand->SetCallbackFunction(this, &PointerCalibView::OnPointAdded);
@@ -74,6 +78,7 @@ PointerCalibView::~PointerCalibView()
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->Remove(m_ImagePointsNode);
+    m_DataStorage->Remove(m_SensorPointsNode);
   }
   if (m_Controls != NULL)
   {
@@ -102,6 +107,8 @@ void PointerCalibView::CreateQtPartControl( QWidget *parent )
 
     m_DataStorage = dataStorage;
     m_DataStorage->Add(m_ImagePointsNode);
+    m_DataStorage->Add(m_SensorPointsNode);
+
     m_Interactor = mitk::PointSetDataInteractor::New();
     m_Interactor->LoadStateMachine("PointSet.xml");
     m_Interactor->SetEventConfig("PointSetConfig.xml");

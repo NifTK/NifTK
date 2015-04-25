@@ -132,6 +132,7 @@ private:
   mitk::PointSet::Pointer                          m_ImagePoints;
   mitk::DataNode::Pointer                          m_ImagePointsNode;
   mitk::PointSet::Pointer                          m_SensorPoints;
+  mitk::DataNode::Pointer                          m_SensorPointsNode;
   mitk::PointSetDataInteractor::Pointer            m_Interactor;
   long                                             m_ImagePointsAddObserverTag;
   long                                             m_ImagePointsRemoveObserverTag;
