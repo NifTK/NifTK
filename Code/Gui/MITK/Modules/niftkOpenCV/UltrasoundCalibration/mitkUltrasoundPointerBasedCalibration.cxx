@@ -14,6 +14,13 @@
 
 #include "mitkUltrasoundPointerBasedCalibration.h"
 #include <mitkExceptionMacro.h>
+#include <mitkPointUtils.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+#include <itkUltrasoundPointerCalibrationCostFunction.h>
+#include <itkLevenbergMarquardtOptimizer.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace mitk
 {
@@ -94,10 +101,105 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
             << m_UltrasoundImagePoints->GetSize() << ", image points and "
             << m_SensorPoints->GetSize() << " sensor points";
 
+  if (m_SensorPoints->GetSize() < 3)
+  {
+    mitkThrow() << "We have < 3 sensor points";
+  }
+  if (m_UltrasoundImagePoints->GetSize() < 3)
+  {
+    mitkThrow() << "We have < 3 image points";
+  }
+  if (m_UltrasoundImagePoints->GetSize() != m_SensorPoints->GetSize())
+  {
+    mitkThrow() << "We have a different number of ultrasound and sensor points";
+  }
+
+  // Take a guess at the relative scale.
+  double scaleOfImagePoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_UltrasoundImagePoints); // e.g. 640x430 pixels
+  if (fabs(scaleOfImagePoints) < 0.001)
+  {
+    mitkThrow() << "Image points too close together";
+  }
+  double scaleOfSensorPoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_SensorPoints);         // e.g. 46mm x 46mm US image.
+  if (fabs(scaleOfSensorPoints) < 0.001)
+  {
+    mitkThrow() << "Sensor points too close together";
+  }
+
+  double millimetresPerPixel = scaleOfSensorPoints/scaleOfImagePoints;
+
+  // Now scale the image points.
+  mitk::PointSet::Pointer scaledImagePoints = mitk::PointSet::New();
+  mitk::ScalePointSets(*m_UltrasoundImagePoints, *scaledImagePoints, millimetresPerPixel);
+
+  // Declare.
+  vtkSmartPointer<vtkMatrix4x4> regMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   double fiducialRegistrationError = std::numeric_limits<double>::max();
 
+  // Run SVD based registration.
+  mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer regCalculator = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
+  bool isSuccessful = regCalculator->Update(m_SensorPoints, scaledImagePoints, *regMatrix, fiducialRegistrationError);
+  if (!isSuccessful)
+  {
+    mitkThrow() << "UltrasoundPointerBasedCalibration::DoPointerBasedCalibration failed at SVD stage";
+  }
+  std::cout << "UltrasoundPointerBasedCalibration: scaling=" << millimetresPerPixel << ", SVD FRE=" << fiducialRegistrationError << std::endl;
+
+  // Extract starting parameters for optimisation.
+  mitk::Point3D rodriguesRotationParameters;
+  mitk::Point3D translationParameters;
+  mitk::ExtractRigidBodyParameters(*regMatrix, rodriguesRotationParameters, translationParameters);
+
+  // Now optimise the scaling and rigid parameters.
+
+  itk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPointerCalibrationCostFunction::New();
+
+  itk::UltrasoundPointerCalibrationCostFunction::ParametersType parameters;
+  parameters.SetSize(costFunction->GetNumberOfParameters());
+  parameters[0] = rodriguesRotationParameters[0];
+  parameters[1] = rodriguesRotationParameters[1];
+  parameters[2] = rodriguesRotationParameters[2];
+  parameters[3] = translationParameters[0];
+  parameters[4] = translationParameters[1];
+  parameters[5] = translationParameters[2];
+  parameters[6] = millimetresPerPixel;
+  parameters[7] = millimetresPerPixel;
+
+  std::cerr << "UltrasoundPointerBasedCalibration: Optimisation started at:" << parameters << std::endl;
+
+  itk::UltrasoundPointerCalibrationCostFunction::ParametersType scaleFactors;
+  scaleFactors.SetSize(costFunction->GetNumberOfParameters());
+  scaleFactors.Fill(1);
+
+  costFunction->SetImagePoints(m_UltrasoundImagePoints);
+  costFunction->SetSensorPoints(m_SensorPoints);
+  costFunction->SetScales(scaleFactors);
+
+  double residualError = 0;
+  itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
+  optimizer->UseCostFunctionGradientOff(); // use default VNL derivative, not our one.
+  optimizer->SetCostFunction(costFunction);
+  optimizer->SetInitialPosition(parameters);
+  optimizer->SetNumberOfIterations(20000000);
+  optimizer->SetGradientTolerance(0.000000005);
+  optimizer->SetEpsilonFunction(0.000000005);
+  optimizer->SetValueTolerance(0.000000005);
+
+  optimizer->StartOptimization();
+  parameters = optimizer->GetCurrentPosition();
+
+  itk::UltrasoundPointerCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
+  residualError = costFunction->GetResidual(values);
+
+  std::cerr << "UltrasoundPointerBasedCalibration: Optimisation finished at:" << parameters << ", residual=" << residualError << std::endl;
+
+  // Setup the output.
+  m_ScalingMatrix = costFunction->GetScalingMatrix(parameters);
+  m_RigidBodyMatrix = costFunction->GetRigidMatrix(parameters);
+
+  // Finished.
   this->Modified();
-  return fiducialRegistrationError;
+  return residualError;
 }
 
 //-----------------------------------------------------------------------------

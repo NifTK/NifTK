@@ -27,7 +27,7 @@ namespace mitk {
 
 /**
  * \class UltrasoundPointerBasedCalibration
- * \brief Calibrates an Ultrasound Probe using Muratore 2001.
+ * \brief Calibrates an Ultrasound Probe using LM optimisation, as described in Muratore 2001.
  */
 class NIFTKOPENCV_EXPORT UltrasoundPointerBasedCalibration : public itk::Object
 {
@@ -63,7 +63,7 @@ public:
 
   /**
    * \brief Performs calibration.
-   * \return Fiducial Registration Error.
+   * \return RMS residual error.
    *
    * \see GetRegistrationMatrix()
    * \see GetScalingMatrix()

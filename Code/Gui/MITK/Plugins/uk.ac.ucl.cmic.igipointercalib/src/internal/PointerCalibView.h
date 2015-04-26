@@ -26,7 +26,7 @@
 
 /**
  * \class PointerCalibView
- * \brief User interface to provide controls for the Ultrasound Pointer Calibration View.
+ * \brief User interface for Ultrasound Pointer Based Calibration as described in Muratore 2001.
  * \ingroup uk_ac_ucl_cmic_igipointercalib_internal
 */
 class PointerCalibView : public QmitkBaseView

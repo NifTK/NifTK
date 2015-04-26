@@ -47,3 +47,4 @@ endif(OPENCV_WITH_FFMPEG)
 
 mitkAddCustomModuleTest(Pivot-Calibration mitkPivotCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/PivotCalibration ${CMAKE_BINARY_DIR}/Testing/Temporary/PivotCalibration.4x4 ${BASELINE}/PivotCalibration.4x4)
 
+mitkAddCustomModuleTest(Ultrasound-Pointer mitkUltrasoundPointerBasedCalibrationTest ${NIFTK_DATA_DIR}/Input/UltrasoundPointerCalibration/UltrasoundPointerCalibration-image.mps ${NIFTK_DATA_DIR}/Input/UltrasoundPointerCalibration/UltrasoundPointerCalibration-sensor.mps ${NIFTK_DATA_DIR}/Input/UltrasoundPointerCalibration/UltrasoundPointerCalibration-expected.4x4)

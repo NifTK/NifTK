@@ -2,7 +2,7 @@
   \defgroup uk_ac_ucl_cmic_igipointercalib uk.ac.ucl.cmic.igipointercalib Plugin
   \ingroup CMICPlugins
 
-  \brief Plugin to provide a method for calibrating ultrasound probes based on using a tracked pointer.
+  \brief Plugin to provide a method for calibrating ultrasound probes based on using a tracked pointer, as described in Muratore 2001.
   
   Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
   
