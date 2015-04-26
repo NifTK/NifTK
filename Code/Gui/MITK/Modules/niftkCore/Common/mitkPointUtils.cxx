@@ -167,7 +167,7 @@ double mitk::FindLargestDistanceBetweenTwoPoints(const mitk::PointSet& input)
 
   for ( ; outerIt != iterEnd; ++outerIt)
   {
-    for ( ; innerIt != iterEnd; ++outerIt)
+    for ( ; innerIt != iterEnd; ++innerIt)
     {
       double squaredDistance = mitk::GetSquaredDistanceBetweenPoints(outerIt->Value(), innerIt->Value());
       if (squaredDistance > maxSquaredDistance)
