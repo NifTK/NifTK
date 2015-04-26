@@ -84,6 +84,11 @@ NIFTKCORE_EXPORT void CrossProduct(const mitk::Point3D& a, const mitk::Point3D& 
 NIFTKCORE_EXPORT void ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& b, const mitk::Point3D& c, mitk::Point3D& output);
 
 /**
+ * \brief Computes the largest Euclidean Distance between any two points.
+ */
+NIFTKCORE_EXPORT double FindLargestDistanceBetweenTwoPoints(const mitk::PointSet& input);
+
+/**
  * \brief Copies input to output, i.e. the output is erased, and re-populated.
  */
 NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);

@@ -156,6 +156,31 @@ void mitk::Normalise(mitk::Point3D& vector)
 
 
 //-----------------------------------------------------------------------------
+double mitk::FindLargestDistanceBetweenTwoPoints(const mitk::PointSet& input)
+{
+  double maxSquaredDistance = 0;
+
+  mitk::PointSet::PointsContainer* inputContainer = input.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator outerIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator innerIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator iterEnd = inputContainer->End();
+
+  for ( ; outerIt != iterEnd; ++outerIt)
+  {
+    for ( ; innerIt != iterEnd; ++outerIt)
+    {
+      double squaredDistance = mitk::GetSquaredDistanceBetweenPoints(outerIt->Value(), innerIt->Value());
+      if (squaredDistance > maxSquaredDistance)
+      {
+        maxSquaredDistance = squaredDistance;
+      }
+    }
+  }
+  return sqrt(maxSquaredDistance);
+}
+
+
+//-----------------------------------------------------------------------------
 int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
 {
   output.Clear();
