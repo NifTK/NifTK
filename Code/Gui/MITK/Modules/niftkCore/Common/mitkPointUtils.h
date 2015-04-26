@@ -94,6 +94,11 @@ NIFTKCORE_EXPORT double FindLargestDistanceBetweenTwoPoints(const mitk::PointSet
 NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);
 
 /**
+ * \brief Copies input to output, i.e. the output is erased, and re-populated, multiplying by a scale factor.
+ */
+NIFTKCORE_EXPORT void ScalePointSets(const mitk::PointSet& input, mitk::PointSet& output, double scaleFactor);
+
+/**
  * \brief Takes fixed and moving points, and scans for matching ID's and returns 2 point sets with
  * ordered and corresponding points.
  * \return the number of points in the output

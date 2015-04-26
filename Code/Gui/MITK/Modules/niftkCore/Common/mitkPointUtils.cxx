@@ -197,6 +197,28 @@ int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
 
 
 //-----------------------------------------------------------------------------
+void mitk::ScalePointSets(const mitk::PointSet& input, mitk::PointSet& output, double scaleFactor)
+{
+  output.Clear();
+
+  mitk::PointSet::PointsContainer* inputContainer = input.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputEnd = inputContainer->End();
+  mitk::PointSet::PointType point;
+
+  for ( ; inputIt != inputEnd; ++inputIt)
+  {
+    point = inputIt->Value();
+    point[0] *= scaleFactor;
+    point[1] *= scaleFactor;
+    point[2] *= scaleFactor;
+
+    output.InsertPoint(inputIt->Index(), point);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void mitk::CopyValues(const mitk::Point3D& a, mitk::Point3D& b)
 {
   for (int i = 0; i < 3; i++)
