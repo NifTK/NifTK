@@ -42,10 +42,9 @@ m_VideoIn("")
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
-, m_WriteAnnotatedImages(false)
 , m_StartFrame(12) //by default we select different frames than mitkPickPointsOnStereoVideo
 , m_EndFrame(0)
-, m_Frequency(300)
+, m_Frequency(150)
 {
 }
 
@@ -137,11 +136,11 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
       {
         key = cvWaitKey (20);
 
-        if ( framenumber %m_Frequency == 0 ) 
+        if ( (framenumber-m_StartFrame) %m_Frequency == 0 ) 
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-          MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], n for next frame, q to quit";
+          MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], c to make mask image, n for next frame, q to quit";
           
           std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
