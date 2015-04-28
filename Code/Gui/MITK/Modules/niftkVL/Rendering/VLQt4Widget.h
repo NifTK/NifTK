@@ -206,7 +206,7 @@ protected:
   vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
   void UpdateTranslucentTriangles();
-  void SortTranslucentTriangles();
+  bool SortTranslucentTriangles();
   bool MergeTranslucentTriangles();
   bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
   bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
@@ -239,6 +239,10 @@ protected:
   vl::ref<vl::Light>                    m_Light;
   vl::ref<vl::Transform>                m_LightTr;
   vl::ref<vl::TrackballManipulator>     m_Trackball;
+
+  vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
+  vl::ref<vl::TexParameter>             m_DefaultTextureParams;
+  vl::ref<vl::Texture>                  m_DefaultTexture;         // empty
 
   vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
 

@@ -54,10 +54,10 @@ public:
   inline void SetViewPoint(cl_float4 vp) { m_ViewPoint = vp; }
   
   /// \brief Sorts the merged index buffer based on triangle distance
-  void SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triCount, cl_uint vertCount);
+  bool SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triCount, cl_uint vertCount);
 
   /// \brief Merges index buffers that were previously set to be merged
-  void MergeIndexBuffers(cl_mem &mergedBuffer, cl_uint &numOfElements);
+  bool MergeIndexBuffers(cl_mem &mergedBuffer, cl_uint &numOfElements);
 
   /// \brief Gets the resulting CL mem object that contains the distance of each triangle
   void GetTriangleDistOutput(cl_mem &mergedAndSortedDistBuf, cl_uint &totalTriangleNum);
@@ -87,25 +87,25 @@ private:
   void InitKernels();
   
   // Sorting related kernels
-  void LaunchRadixSort(cl_mem bfKeyVal, cl_uint count);
-  void RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
-  void LocalHistogram(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
-  void RadixPermute(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem dataIn, cl_mem dataOut, cl_mem histScan, cl_mem blockHists, int bitOffset, unsigned int numBlocks);
-  void Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut);
+  bool LaunchRadixSort(cl_mem bfKeyVal, cl_uint count);
+  bool RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
+  bool LocalHistogram(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
+  bool RadixPermute(cl_uint datasetSize, const size_t* globalWorkSize, const size_t* localWorkSize, cl_mem dataIn, cl_mem dataOut, cl_mem histScan, cl_mem blockHists, int bitOffset, unsigned int numBlocks);
+  bool Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut);
 
   void LaunchBitonicSort(cl_mem bfKeyVal, cl_uint count);
 
   /// \brief Performs coordinate transform and computes distance of the viewpoint from each vertex. Returns with the resulting mem object
-  void TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
+  bool TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
   
   /// \brief Computes the triangle distances from the vertex distances. Returns the array of floats as cl_mem
-  void ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
+  bool ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
 
   /// \brief Copies the contents of one IBO (vetex indices + distance) to the merged IBO while updating the indices
   void CopyAndUpdateIndices(cl_mem input, cl_mem output, cl_uint size, cl_uint triOffset, cl_uint vertOffset);
 
   /// \brief Copies only the vertex indices, without the distance bit
-  void CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);
+  bool CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size);
 
   /// \brief Copies only the vertex indices and distances separately
   void CopyIndicesWithDist(cl_mem input, cl_mem output, cl_mem outputDist, cl_uint size);

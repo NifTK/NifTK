@@ -149,22 +149,6 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="VLQt4Widget" name="m_OverlayViewer" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-       <widget class="VLQt4Widget" name="m_3DViewer" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
       </widget>
      </item>
     </layout>
@@ -176,12 +160,6 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>VLQt4Widget</class>
-   <extends>QWidget</extends>
-   <header location="global">Rendering/VLQt4Widget.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

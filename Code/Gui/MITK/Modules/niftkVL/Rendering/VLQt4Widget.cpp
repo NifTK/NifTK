@@ -41,9 +41,11 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#ifdef BUILD_IGI
 #include <CameraCalibration/Undistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraIntrinsics.h>
+#endif
 #include <mitkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
@@ -138,9 +140,10 @@ struct VLUserData : public vl::Object
 //-----------------------------------------------------------------------------
 VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
-  , m_Refresh(33) // 30 fps
-  , m_OclService(0)
+  , m_BackgroundWidth(0)
+  , m_BackgroundHeight(0)
   , m_CUDAInteropPimpl(0)
+  , m_OclService(0)
   , m_OclTriangleSorter(0)
   , m_TranslucentStructuresMerged(false)
   , m_TranslucentStructuresSorted(false)
@@ -148,6 +151,7 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
   , m_TotalNumOfTranslucentVertices(0)
   , m_MergedTranslucentIndexBuf(0)
   , m_MergedTranslucentVertexBuf(0)
+  , m_Refresh(33) // 30 fps
 {
   setContinuousUpdate(true);
   setMouseTracking(true);
@@ -546,6 +550,36 @@ void VLQt4Widget::initializeGL()
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
 
+  m_GenericGLSLShader = new vl::GLSLProgram;
+  m_GenericGLSLShader->attachShader(new vl::GLSLVertexShader(LoadGLSLSourceFromResources("generic.vs")));
+  m_GenericGLSLShader->attachShader(new vl::GLSLFragmentShader(LoadGLSLSourceFromResources("generic.fs")));
+  bool linkvalid = m_GenericGLSLShader->linkProgram(true);
+  if (!linkvalid)
+  {
+    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+  bool shadervalid = m_GenericGLSLShader->validateProgram();
+  if (!shadervalid)
+  {
+    MITK_ERROR << "Shader didnt validate: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+
+  m_DefaultTextureParams = new vl::TexParameter;
+  m_DefaultTextureParams->setMinFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setMagFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setWrapS(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapT(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapR(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setBorderColor(vl::fvec4(0, 0, 0, 0));
+
+  unsigned int      defaultTextureValue = 0x00000000;
+  vl::ref<vl::Image>   tempImg = new vl::Image(1, 1, 0, 1, vl::IF_RGBA, vl::IT_UNSIGNED_BYTE);
+  tempImg->allocate();
+  *((unsigned int*) tempImg->pixels()) = defaultTextureValue;
+  m_DefaultTexture = new vl::Texture(1, 1, vl::TF_RGBA, false);
+  m_DefaultTexture->setMipLevel(0, tempImg.get(), false);
+
+
   vl::OpenGLContext::dispatchInitEvent();
 
 #if 0
@@ -939,6 +973,7 @@ void VLQt4Widget::UpdateCameraParameters()
   // so no background, no camera parameters.
   if (m_BackgroundNode.IsNotNull())
   {
+#ifdef BUILD_IGI
     mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
     if (cambp.IsNotNull())
     {
@@ -969,6 +1004,7 @@ void VLQt4Widget::UpdateCameraParameters()
         }
       }
     }
+#endif
   }
 
   if (m_CameraNode.IsNotNull())
@@ -1378,35 +1414,24 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->setRenderState(m_Light.get(), 0 );
-    fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->setRenderState(m_Light.get(), 0);
+    fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
+    fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // see if we need to set vertex colour too.
-    // ideally, this would be a simple and lightweight state update, but vl has
-    // overridden this with an actual heavyweight colour array.
-    if (!fx->shader()->isEnabled(vl::EN_LIGHTING) && (colorProp != 0))
-    {
-      // this only applies for unshaded geometry.
-      vl::Geometry* g = vlActor->lod(0)->as<vl::Geometry>();
-      if (g != 0)
-      {
-        vl::ArrayFloat4* ca = g->colorArray()->as<vl::ArrayFloat4>();
-        if (ca != 0)
-        {
-          if (ca->size() > 0)
-          {
-            if (ca->at(0) != color)
-              ca = 0;      // reset colour below
-          }
-          else
-            ca = 0;     // reset colour below
-        }
+    // the uniform tint colour is defined on the actor, instead of shader or effect.
+    vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
 
-        // no colour defined yet (or we should reset it). set one.
-        if (ca == 0)
-          g->setColorArray(color);
-      }
-    }
+    // shader still needs to know whether to apply light-shading or not.
+    float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
+    vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
+
+    // by convention, all meaningful texture maps are bound in slot 0.
+    // slot 1 will have the default-empty-dummy.
+    if (fx->shader()->getTextureSampler(0) != 0)
+      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(0);
+    else
+      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(1);
+
 
     float   pointsize = 1;
     bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
@@ -1637,6 +1662,7 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
 
         texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
         vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        vlActor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
 
         err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
         if (err != cudaSuccess)
@@ -1793,6 +1819,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
   fx->shader()->disable(vl::EN_LIGHTING);
   fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
   fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[actor] = vlGeom;
@@ -1843,6 +1872,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
   fx->shader()->disable(vl::EN_LIGHTING);
   // FIXME: currently nothing assigns a pointsize property for PCLData nodes. so set an arbitrary fixed size.
   fx->shader()->setRenderState(new vl::PointSize(5));
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
@@ -1884,6 +1916,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
 
   vl::ref<vl::Effect>   fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
@@ -1914,6 +1949,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
@@ -1988,6 +2025,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
@@ -2359,6 +2398,9 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
   fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
+  fx->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
   // FIXME: alpha-blending? independent of opacity prop!
 
@@ -2639,47 +2681,57 @@ void VLQt4Widget::UpdateTranslucentTriangles()
 #endif
   // m_TotalNumOfTranslucentVertices is set by MergeTranslucentTriangles().
 
-  if (m_TotalNumOfTranslucentVertices == 0 || m_TranslucentActors.size() == 0 || !thereIsSomethingTranslucent)
+  bool    mergedok = false;
+  if ((m_TotalNumOfTranslucentVertices > 0) && (m_TranslucentActors.size() > 0) && thereIsSomethingTranslucent)
+    mergedok = true;
+
+  bool  sortedok = false;
+  if (mergedok)
+    sortedok = SortTranslucentTriangles();
+
+  // the sorted-translucent-all-in-one-actor is only visible if merging and sorting actually worked.
+  // otherwise, fall back to unsorted.
+  if (mergedok && sortedok)
   {
-    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
-    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
-    return;
-  }
+    vl::ref<vl::Effect>    fx;
+    vl::ref<vl::Transform> tr;
 
-  SortTranslucentTriangles();
+    if (m_TranslucentSurfaceActor == 0)
+    {
+      // Add the new merged geometry actor
+      tr = new vl::Transform();
+      fx = new vl::Effect;
+      m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
+      m_TranslucentSurfaceActor->setObjectName("m_TranslucentSurfaceActor");
+    }
+    else
+    {
+      fx = m_TranslucentSurfaceActor->effect();
+      tr = m_TranslucentSurfaceActor->transform();
+    }
 
-  vl::ref<vl::Effect>    fx;
-  vl::ref<vl::Transform> tr;
+    m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
+    m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
+    fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
 
-  if (m_TranslucentSurfaceActor == 0)
-  {
-    // Add the new merged geometry actor
-    tr = new vl::Transform();
-    fx = new vl::Effect;
-    m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
+    // no backface culling for translucent objects: you should be able to see the backside!
+    fx->shader()->disable(vl::EN_CULL_FACE);
+
+    fx->shader()->enable(vl::EN_BLEND);
+    fx->shader()->enable(vl::EN_DEPTH_TEST);
+    fx->shader()->enable(vl::EN_LIGHTING);
+    fx->shader()->setRenderState(m_Light.get(), 0 );
+
+    // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
   }
   else
   {
-    fx = m_TranslucentSurfaceActor->effect();
-    tr = m_TranslucentSurfaceActor->transform();
+    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
+    // also re-enable unsorted possibly-translucent geometry.
+    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() | ENABLEMASK_TRANSLUCENT);
   }
-  
-  m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
-  m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
-  fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
-  
-  // no backface culling for translucent objects: you should be able to see the backside!
-  fx->shader()->disable(vl::EN_CULL_FACE);
-  
-  fx->shader()->enable(vl::EN_BLEND);
-  fx->shader()->enable(vl::EN_DEPTH_TEST);
-
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(m_Light.get(), 0 );
-
-
-  // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
-  m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
 }
 
 
@@ -2721,13 +2773,15 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   if (m_MergedTranslucentIndexBuf != 0)
   {
-    clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    CHECK_OCL_ERR(clStatus);
     m_MergedTranslucentIndexBuf = 0;
   }
 
   if (m_MergedTranslucentVertexBuf != 0)
   {
-    clReleaseMemObject(m_MergedTranslucentVertexBuf);
+    clStatus = clReleaseMemObject(m_MergedTranslucentVertexBuf);
+    CHECK_OCL_ERR(clStatus);
     m_MergedTranslucentVertexBuf = 0;
   }
 
@@ -2866,12 +2920,31 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   // Get hold of the Index buffer of the merged object a'la OpenCL mem
   GLuint mergedIndexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
   m_MergedTranslucentIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  // note: m_MergedTranslucentIndexBuf is normally released at the beginning of this method.
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+    }
+    m_MergedTranslucentIndexBuf = 0;
+    return false;
+  }
 
   // Here we retrieve the merged and sorted index buffer
   cl_uint totalNumOfVertices;
-  m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
+  bool mergedok = m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
+  if (!mergedok)
+    return false;
 
   if (totalNumOfVertices != m_TotalNumOfTranslucentVertices)
   {
@@ -2879,19 +2952,44 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     return false;
   }
 
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
   m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   // Get normal array
   GLuint mergedNormalArrayHandle = vlNormals->bufferObject()->handle();
   cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clStatus);
-  clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  CHECK_OCL_ERR(clStatus);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
+  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
 /*
   // Create a buffer large enough to retrive the merged distance buffer
@@ -2952,33 +3050,69 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     // Get vertex array
     GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
     cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     clVertexBufs.push_back(clVertexBuf);
-    
-    clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    CHECK_OCL_ERR(clStatus);
+
+    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     // Copy to merged buffer
     clStatus = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, m_MergedTranslucentVertexBuf, 0, vertexBufferOffset, computedSize, 0, 0, 0);
-    CHECK_OCL_ERR(clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     vertexBufferOffset += computedSize;
 
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    
+    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get normal array
     GLuint normalArrayHandle = translucentSurfaces.at(i)->normalArray()->bufferObject()->handle();
     cl_mem clNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, normalArrayHandle, &clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     clNormalBufs.push_back(clNormalBuf);
-    
-    clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
-    CHECK_OCL_ERR(clStatus);
+
+    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     // Copy to merged buffer
     clStatus = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, computedSize, 0, 0, 0);
-    CHECK_OCL_ERR(clStatus);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
     normalBufferOffset += computedSize;
 
-    clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+    if (clStatus)
+    {
+      CHECK_OCL_ERR(clStatus);
+      return false;
+    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Get color array
@@ -3075,23 +3209,35 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   delete colorData;
   delete vertDistData;
 */
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  clFinish(clCmdQue);
+  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+  clStatus |= clFinish(clCmdQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   for (size_t ii = 0; ii < clVertexBufs.size(); ii++)
   {
-    clReleaseMemObject(clVertexBufs.at(ii));
+    clStatus = clReleaseMemObject(clVertexBufs.at(ii));
+    CHECK_OCL_ERR(clStatus);
     clVertexBufs.at(ii) = 0;
   }
   
   for (size_t ii = 0; ii < clNormalBufs.size(); ii++)
   {
-    clReleaseMemObject(clNormalBufs.at(ii));
+    clStatus = clReleaseMemObject(clNormalBufs.at(ii));
+    CHECK_OCL_ERR(clStatus);
     clNormalBufs.at(ii) = 0;
   }
 
-  clReleaseMemObject(clMergedNormalBuf);
+  clStatus = clReleaseMemObject(clMergedNormalBuf);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
   clMergedNormalBuf = 0;
 
   m_TranslucentStructuresMerged = true;
@@ -3100,14 +3246,14 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::SortTranslucentTriangles()
+bool VLQt4Widget::SortTranslucentTriangles()
 {
   // Get context 
   cl_context clContext = m_OclService->GetContext();
   cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
 
   if (clContext == 0 || clCmdQue == 0 || !m_TranslucentStructuresMerged)
-    return;
+    return false;
 
   // Get camera position
   vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
@@ -3123,7 +3269,9 @@ void VLQt4Widget::SortTranslucentTriangles()
   m_OclTriangleSorter->SetViewPoint(clCameraPos);
 
   // Compute trinagle distances and sort the triangles
-  m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
+  bool sortok = m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
+  if (!sortok)
+    return false;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // This code is only for debugging. It colors the translucent object's triangles based on distance from camera.
@@ -3242,6 +3390,8 @@ void VLQt4Widget::SortTranslucentTriangles()
   clReleaseMemObject(mergedDistBufOutput);
   mergedDistBufOutput = 0;
 */
+
+  return true;
 }
 
 

@@ -34,6 +34,7 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
+#include <mitkOclResourceService.h>
 
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
