@@ -6,7 +6,7 @@
 \section TOCProject Project Identifiers
 
 A four digit, with leading zeros, monotonically increasing identifier for
-each project, unique over all NifTK components.
+each project, unique over all NifTK projects.
 
 \li 2001: Smart Liver Surgery
 
@@ -15,13 +15,6 @@ each project, unique over all NifTK components.
 A four digit, with leading zeros, monotonically increasing identifier for
 each technical memorandum, unique over all NifTK components.
 
-\li 0001: \subpage PointBasedRegistrationService
-
-\section TOCTechMemo Technical Memorandi
-
-A four digit, with leading zeros, monotonically increasing identifier for
-each technical memorandum.
-
-\li 0001: \subpage HowToWriteAMicroService
+\li 0001: \ref PointBasedRegistrationService
 
 */

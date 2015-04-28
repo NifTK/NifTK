@@ -10,7 +10,7 @@
 <tr><td>Document ID:</td><td>UCL-2001-CSD-0001-PointBasedRegistrationService.dox</td></tr>
 <tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
 <tr><td>Authorised By:</td><td></td></tr>
-<tr><td>Last Modified:</td><td>27 April 2015</td></tr>
+<tr><td>Last Modified:</td><td>28 April 2015</td></tr>
 </table>
 
 \subsection PBRSCopyright Copyright
@@ -61,7 +61,7 @@ This section only describes the changes between authorised published versions.
       0.1
     </td>
     <td>
-      27 April 2015
+      28 April 2015
     </td>
     <td>
       Matt Clarkson
@@ -191,12 +191,14 @@ party library must not be exported.
 \section PBRSDesign Design
 \subsection PBRSArchitecture Architecture
 
+Please read background information on the <a href="http://docs.mitk.org/2014.03/MicroServices_Overview.html">MITK Micro Services</a>.
+
 The architecture shall be:
 
-\li A stateless function in an MITK module in niftkPointReg module.
-\li An MITK auto-loaded Micro Service in niftkPointRegService module.
 \li An abstract interface in niftkIGI module.
-\li An RAII object in niftkIGI module.
+\li A stateless function in an MITK module in niftkPointReg module.
+\li An MITK auto-loaded Micro Service in niftkPointRegService module that implements the abstract interface and calls the stateless function.
+\li An RAII object in niftkIGI module that optionally implements the abstract interface.
 
 This means that clients such as unit tests, other modules, or GUI code can
 either link directly to niftkPointReg which forces a link-time
