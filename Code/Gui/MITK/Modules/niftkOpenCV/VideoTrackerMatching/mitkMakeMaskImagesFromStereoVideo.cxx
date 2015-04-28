@@ -214,12 +214,22 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+          cv::Mat leftMaskImage;// = cv::Mat(leftVideoImage.size(), CV_8U);
+          cv::Mat rightMaskImage;// = cv::Mat(rightVideoimage.size(), CV_8U);
+          bool showMasks = false;
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
             while ( key != 'n' && key != 'q' )
             {
               key = cv::waitKey(20);
+              if ( key == 'c' )
+              {
+                MITK_INFO << "Attempting to make contour images";
+                leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
+                rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
+                showMasks = true;
+              }
               if ( overWriteLeft )
               {
                 cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);
@@ -231,14 +241,21 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
                   leftPickedPoints->PutOut( leftPointOut );
                   leftPointOut.close();
-                  if ( m_WriteAnnotatedImages )
-                  {
-                    cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
-                  }
+            //      if ( m_WriteAnnotatedImages )
+            //      {
+            //        cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
+            //      }
                 }
-                
-                IplImage image(leftAnnotatedVideoImage);
-                cvShowImage("Left Channel" , &image);
+                if ( showMasks )
+                {
+                  IplImage image(leftMaskImage);
+                  cvShowImage("Left Channel" , &image);
+                }
+                else
+                {
+                  IplImage image(leftAnnotatedVideoImage);
+                  cvShowImage("Left Channel" , &image);
+                }
               }
 
               if ( overWriteRight )
@@ -253,14 +270,21 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   rightPickedPoints->PutOut (rightPointOut);
                   rightPointOut.close();
 
-                  if ( m_WriteAnnotatedImages )
-                  {
-                     cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
-                  }
+            //      if ( m_WriteAnnotatedImages )
+            //      {
+            //         cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
+            //      }
                 }
-                
-                IplImage rimage(rightAnnotatedVideoImage);
-                cvShowImage("Right Channel" , &rimage);
+                if ( showMasks ) 
+                {
+                  IplImage rimage(rightMaskImage);
+                  cvShowImage("Right Channel" , &rimage);
+                }
+                else
+                {
+                  IplImage rimage(rightAnnotatedVideoImage);
+                  cvShowImage("Right Channel" , &rimage);
+                }
               }
             }
           }
