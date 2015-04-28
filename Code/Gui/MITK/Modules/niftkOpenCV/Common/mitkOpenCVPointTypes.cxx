@@ -468,8 +468,7 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
 //-----------------------------------------------------------------------------
 cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
 {
-  MITK_INFO << image.size();
-  cv::Mat mask = cv::Mat(image.size(), image.depth());
+  cv::Mat mask = cv::Mat::zeros(image.rows, image.cols, CV_8UC1);
   
   std::vector < std::vector < cv::Point2i > > contours;
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
@@ -484,7 +483,7 @@ cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
   }
   if ( contours.size() > 0 ) 
   {
-    cv::drawContours (mask, contours , -1, cv::Scalar(255,0,0), CV_FILLED);
+    cv::drawContours (mask, contours , -1, cv::Scalar(255), CV_FILLED);
   }
   return mask;
 }
