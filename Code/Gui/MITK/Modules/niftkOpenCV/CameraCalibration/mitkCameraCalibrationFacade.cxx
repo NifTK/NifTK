@@ -1753,7 +1753,7 @@ std::pair< cv::Point3d , cv::Point3d > GetRay(
 
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
-  
+
   // Set up some working matrices...
   cv::Mat p1                = cv::Mat(3, 1, CV_64FC1);
   cv::Mat p1normalised      = cv::Mat(3, 1, CV_64FC1);
@@ -1775,7 +1775,7 @@ std::pair< cv::Point3d , cv::Point3d > GetRay(
   P0.x = 0;
   P0.y = 0;
   P0.z = 0;
-  
+
   u.x = p1normalised.at<double>(0,0) * rayLength;
   u.y = p1normalised.at<double>(1,0) * rayLength;
   u.z = p1normalised.at<double>(2,0) * rayLength;
