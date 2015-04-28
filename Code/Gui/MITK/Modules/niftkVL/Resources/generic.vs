@@ -9,7 +9,7 @@ void main()
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
   //gl_FrontColor = XXX * gl_Color * u_TintColour;
-  gl_FrontColor = gl_Color;
+  gl_FrontColor = gl_Color * u_TintColour;
   gl_BackColor = gl_FrontColor;
 
   // we never do texture matrix stuff. so just pass it through

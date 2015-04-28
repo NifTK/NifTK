@@ -1394,35 +1394,11 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
     fx->shader()->setRenderState(m_Light.get(), 0);
-    fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
     fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // see if we need to set vertex colour too.
-    // ideally, this would be a simple and lightweight state update, but vl has
-    // overridden this with an actual heavyweight colour array.
-    if (!fx->shader()->isEnabled(vl::EN_LIGHTING) && (colorProp != 0))
-    {
-      // this only applies for unshaded geometry.
-      vl::Geometry* g = vlActor->lod(0)->as<vl::Geometry>();
-      if (g != 0)
-      {
-        vl::ArrayFloat4* ca = g->colorArray()->as<vl::ArrayFloat4>();
-        if (ca != 0)
-        {
-          if (ca->size() > 0)
-          {
-            if (ca->at(0) != color)
-              ca = 0;      // reset colour below
-          }
-          else
-            ca = 0;     // reset colour below
-        }
-
-        // no colour defined yet (or we should reset it). set one.
-        if (ca == 0)
-          g->setColorArray(color);
-      }
-    }
+    // the uniform tint colour is defined on the actor.
+    vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
 
     float   pointsize = 1;
     bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
