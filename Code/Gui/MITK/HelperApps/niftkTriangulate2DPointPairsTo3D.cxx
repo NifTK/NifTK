@@ -37,13 +37,13 @@ int main(int argc, char** argv)
   try
   {
     mitk::Triangulate2DPointPairsTo3D::Pointer triangulator = mitk::Triangulate2DPointPairsTo3D::New();
-    triangulator->Triangulate(
-                  inputPointPairs,
-                  intrinsicLeft,
-                  intrinsicRight,
-                  rightToLeftExtrinsics,
-                  outputPoints
-                  );
+    triangulator->SetInput2DPointPairsFileName(inputPointPairs);
+    triangulator->SetIntrinsicLeftFileName(intrinsicLeft);
+    triangulator->SetIntrinsicRightFileName(intrinsicRight);
+    triangulator->SetRightToLeftExtrinsics(rightToLeftExtrinsics);
+    triangulator->SetOutputFileName(outputPoints);
+
+    triangulator->Triangulate();
 
     returnStatus = EXIT_SUCCESS;
   }

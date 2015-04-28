@@ -42,27 +42,22 @@ Triangulate2DPointPairsTo3D::~Triangulate2DPointPairsTo3D()
 
 
 //-----------------------------------------------------------------------------
-bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPairsFileName,
-                                              const std::string& intrinsicLeftFileName,
-                                              const std::string& intrinsicRightFileName,
-                                              const std::string& rightToLeftExtrinsics,
-                                              const std::string& outputFileName
-                                             )
+bool Triangulate2DPointPairsTo3D::Triangulate()
 {
   bool isSuccessful = false;
 
   try
   {
     // Load the pairs of 2D points.
-    std::ifstream reader(input2DPointPairsFileName.c_str());
+    std::ifstream reader(m_Input2DPointPairsFileName.c_str());
     if (!reader)
     {
-      std::cerr << "Failed to open " << input2DPointPairsFileName << std::endl;
+      std::cerr << "Failed to open " << m_Input2DPointPairsFileName << std::endl;
       return false;
     }
     else
     {
-      std::cout << "Opened " << input2DPointPairsFileName << std::endl;
+      std::cout << "Opened " << m_Input2DPointPairsFileName << std::endl;
     }
 
     std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
@@ -106,9 +101,9 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
 
     // Load matrices. These throw exceptions if things fail.
-    LoadCameraIntrinsicsFromPlainText(intrinsicLeftFileName, &leftIntrinsic, &leftDistortion);
-    LoadCameraIntrinsicsFromPlainText(intrinsicRightFileName, &rightIntrinsic, &rightDistortion);
-    LoadStereoTransformsFromPlainText(rightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
+    LoadCameraIntrinsicsFromPlainText(m_IntrinsicLeftFileName, &leftIntrinsic, &leftDistortion);
+    LoadCameraIntrinsicsFromPlainText(m_IntrinsicRightFileName, &rightIntrinsic, &rightDistortion);
+    LoadStereoTransformsFromPlainText(m_RightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
     // batch-triangulate all points.
     std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
@@ -130,7 +125,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       ps->InsertPoint(i, p);
     }
 
-    mitk::IOUtil::Save(ps, outputFileName);
+    mitk::IOUtil::Save(ps, m_OutputFileName);
     isSuccessful = true;
   }
   catch (const std::logic_error& e)

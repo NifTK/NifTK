@@ -20,6 +20,7 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <cv.h>
 
 namespace mitk {
 
@@ -39,12 +40,13 @@ public:
   mitkClassMacro(Triangulate2DPointPairsTo3D, itk::Object);
   itkNewMacro(Triangulate2DPointPairsTo3D);
 
-  bool Triangulate(const std::string& input2DPointPairsFileName,
-      const std::string& intrinsicLeftFileName,
-      const std::string& intrinsicRightFileName,
-      const std::string& rightToLeftExtrinsics,
-      const std::string& outputFileName
-      );
+  itkSetMacro (Input2DPointPairsFileName, std::string);
+  itkSetMacro (IntrinsicLeftFileName, std::string);
+  itkSetMacro (IntrinsicRightFileName, std::string);
+  itkSetMacro (RightToLeftExtrinsics, std::string);
+  itkSetMacro (OutputFileName, std::string);
+  
+  bool Triangulate();
 
 protected:
 
@@ -54,6 +56,18 @@ protected:
   Triangulate2DPointPairsTo3D(const Triangulate2DPointPairsTo3D&); // Purposefully not implemented.
   Triangulate2DPointPairsTo3D& operator=(const Triangulate2DPointPairsTo3D&); // Purposefully not implemented.
 
+private:
+  
+  cv::Mat m_LeftMask; // the left mask image
+  cv::Mat m_RightMask; // the right mask image
+  cv::Mat m_LeftLensToWorld; // the transform to put the triangulated points in world coordinates
+  
+  std::string m_Input2DPointPairsFileName; //the input file name
+  std::string m_IntrinsicLeftFileName; // the left camera intrinsic parameters
+  std::string m_IntrinsicRightFileName; // the right camera intrinsic parameters
+  std::string m_RightToLeftExtrinsics; // the right to left camera transformation
+  std::string m_OutputFileName; // the output file name
+  
 }; // end class
 
 } // end namespace
