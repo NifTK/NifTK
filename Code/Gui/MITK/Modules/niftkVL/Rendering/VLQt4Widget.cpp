@@ -1397,8 +1397,12 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
     fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // the uniform tint colour is defined on the actor.
+    // the uniform tint colour is defined on the actor, instead of shader or effect.
     vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
+
+    // shader still needs to know whether to apply light-shading or not.
+    float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
+    vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
 
     float   pointsize = 1;
     bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
