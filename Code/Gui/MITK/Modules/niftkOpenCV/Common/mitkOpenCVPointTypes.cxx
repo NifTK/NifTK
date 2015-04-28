@@ -478,13 +478,7 @@ cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
     {
       if ( m_PickedObjects[i].points.size() > 0 )
       {
-        std::vector < cv::Point2i > contour;
-        for ( unsigned int j = 0 ; j <  m_PickedObjects[i].points.size() ; j ++ ) 
-        {
-          contour.push_back ( cv::Point2i (  static_cast<int>(m_PickedObjects[i].points[j].x),
-          static_cast<int>(m_PickedObjects[i].points[j].x)) );
-        }
-        contours.push_back( contour);
+        contours.push_back( m_PickedObjects[i].points );
       }
     }
   }
@@ -576,7 +570,7 @@ bool PickedPointList::GetIsModified()
 }
 
 //-----------------------------------------------------------------------------
-unsigned int PickedPointList::AddPoint(const cv::Point2d& point)
+unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
 {
   if ( m_InLineMode )
   {
@@ -717,7 +711,7 @@ void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata
   PickedPointList* out = static_cast<PickedPointList*>(userdata);
   if  ( event == cv::EVENT_LBUTTONDOWN )
   {
-    out->AddPoint (cv::Point2d ( x,y));
+    out->AddPoint (cv::Point2i ( x,y));
   }
   else if  ( event == cv::EVENT_RBUTTONDOWN )
   {

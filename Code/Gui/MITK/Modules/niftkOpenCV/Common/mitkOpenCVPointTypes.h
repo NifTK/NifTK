@@ -159,7 +159,7 @@ class NIFTKOPENCV_EXPORT PickedObject
       
     int id;
     bool isLine;
-    std::vector < cv::Point2d > points;
+    std::vector < cv::Point2i > points;
 
     PickedObject();
     ~PickedObject();
@@ -185,7 +185,7 @@ public:
   itkSetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
 
-  unsigned int AddPoint (const cv::Point2d& point);
+  unsigned int AddPoint (const cv::Point2i& point);
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
   unsigned int EndLine();

@@ -214,8 +214,8 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
-          cv::Mat leftMaskImage;// = cv::Mat(leftVideoImage.size(), CV_8U);
-          cv::Mat rightMaskImage;// = cv::Mat(rightVideoimage.size(), CV_8U);
+          cv::Mat leftMaskImage;
+          cv::Mat rightMaskImage;
           bool showMasks = false;
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
