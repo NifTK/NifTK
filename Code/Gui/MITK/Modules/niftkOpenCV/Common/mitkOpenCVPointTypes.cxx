@@ -675,6 +675,20 @@ unsigned int PickedPointList::SkipOrderedPoint()
 {
   if ( ! m_InOrderedMode )
   {
+    if ( ! m_InLineMode )
+    {
+      return m_PickedObjects.size();
+    }
+    else 
+    {
+      PickedObject pickedObject;
+      pickedObject.isLine = true;
+      pickedObject.id = -1;
+
+      m_PickedObjects.push_back(pickedObject);
+
+      MITK_INFO << "Skipped unordered line";
+    }
     return m_PickedObjects.size();
   }
 
