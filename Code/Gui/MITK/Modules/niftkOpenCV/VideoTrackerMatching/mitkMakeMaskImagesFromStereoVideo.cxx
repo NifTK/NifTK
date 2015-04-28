@@ -143,17 +143,17 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
           MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], n for next frame, q to quit";
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftContour";
+          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightContour";
+          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp);
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
-          if ( boost::filesystem::exists (leftOutName + ".xml") )
+          if ( boost::filesystem::exists (leftOutName + "_leftContour.xml") )
           {
             if ( m_AskOverWrite )
             {
-              MITK_INFO << leftOutName + ".xml" << " exists, overwrite (y/n)";
+              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, overwrite (y/n)";
               key = 0;
               while ( ! ( key == 'n' || key == 'y' ) )
               {
@@ -170,17 +170,17 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
             }
             else
             {
-              MITK_INFO << leftOutName + ".xml" << " exists, skipping.";
+              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, skipping.";
               overWriteLeft = false;
             }
           }
 
           key = 0;
-          if ( boost::filesystem::exists (rightOutName + ".xml") )
+          if ( boost::filesystem::exists (rightOutName + "_rightContour.xml") )
           {
             if ( m_AskOverWrite ) 
             {
-              MITK_INFO << rightOutName  + ".xml" << " exists, overwrite (y/n)";
+              MITK_INFO << rightOutName  + "_rightContour.xml" << " exists, overwrite (y/n)";
               while ( ! ( key == 'n' || key == 'y' ) )
               {
                 key = cv::waitKey(20);
@@ -196,7 +196,7 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
             }
             else 
             {
-              MITK_INFO << rightOutName + ".xml" << " exists, skipping.";
+              MITK_INFO << rightOutName + "_rightContour.xml" << " exists, skipping.";
               overWriteRight = false;
             }
           }
@@ -234,6 +234,10 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   MITK_INFO << "Attempting to make contour images";
                   leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
                   rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
+                  cv::imwrite(leftOutName + "_leftMask.png" ,leftMaskImage);
+                  cv::imwrite(rightOutName + "_rightMask.png" ,rightMaskImage);
+                  cv::imwrite(leftOutName + "_left.png" ,leftVideoImage);
+                  cv::imwrite(rightOutName + "_right.png" ,rightVideoImage);
                 }
                 showMasks = ! showMasks;
               }
@@ -245,13 +249,9 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   leftAnnotatedVideoImage = leftVideoImage.clone();
                   leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
 
-                  std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
+                  std::ofstream leftPointOut ((leftOutName+ "_leftContour.xml").c_str());
                   leftPickedPoints->PutOut( leftPointOut );
                   leftPointOut.close();
-            //      if ( m_WriteAnnotatedImages )
-            //      {
-            //        cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
-            //      }
                 }
                 if ( showMasks )
                 {
@@ -273,14 +273,9 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   rightAnnotatedVideoImage = rightVideoImage.clone();
                   rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
 
-                  std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
+                  std::ofstream rightPointOut ((rightOutName + "_rightContour.xml").c_str());
                   rightPickedPoints->PutOut (rightPointOut);
                   rightPointOut.close();
-
-            //      if ( m_WriteAnnotatedImages )
-            //      {
-            //         cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
-            //      }
                 }
                 if ( showMasks ) 
                 {
