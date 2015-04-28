@@ -225,10 +225,17 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
               key = cv::waitKey(20);
               if ( key == 'c' )
               {
-                MITK_INFO << "Attempting to make contour images";
-                leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
-                rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
-                showMasks = true;
+                if ( showMasks )
+                {
+                  MITK_INFO << "Exiting contour mode";
+                }
+                else
+                {
+                  MITK_INFO << "Attempting to make contour images";
+                  leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
+                  rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
+                }
+                showMasks = ! showMasks;
               }
               if ( overWriteLeft )
               {
