@@ -556,7 +556,7 @@ void VLQt4Widget::initializeGL()
   bool shadervalid = m_GenericGLSLShader->validateProgram();
   if (!shadervalid)
   {
-    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog();
+    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog().toStdString();
   }
 
   vl::OpenGLContext::dispatchInitEvent();
@@ -1393,8 +1393,9 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->setRenderState(m_Light.get(), 0 );
+    fx->shader()->setRenderState(m_Light.get(), 0);
     fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
     // see if we need to set vertex colour too.
     // ideally, this would be a simple and lightweight state update, but vl has

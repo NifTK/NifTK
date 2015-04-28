@@ -9,5 +9,5 @@ uniform sampler2D   u_TextureMap;
 void main()
 {
 
-    gl_FragData[0] = gl_Color;
+  gl_FragData[0] = gl_Color;
 }
