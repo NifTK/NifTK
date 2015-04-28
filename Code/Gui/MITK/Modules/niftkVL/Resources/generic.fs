@@ -9,6 +9,7 @@ uniform sampler2D   u_TextureMap;
 
 void main()
 {
+  vec4    texcolor = texture2D(u_TextureMap, gl_TexCoord[0].st);
 
-  gl_FragData[0] = gl_Color;
+  gl_FragData[0] = mix(gl_Color, texcolor, texcolor.a);
 }
