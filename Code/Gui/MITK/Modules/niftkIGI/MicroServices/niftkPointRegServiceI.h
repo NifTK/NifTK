@@ -25,7 +25,8 @@ namespace niftk
 {
 
 /**
-* \class Interface for a Point Based Registration Service.
+* \class PointRegServiceI
+* \brief Interface for a Point Based Registration Service.
 */
 class NIFTKIGI_EXPORT PointRegServiceI
 {

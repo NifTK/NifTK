@@ -1,25 +1,235 @@
 /**
-\page PointBasedRegistrationService Point Based Registration Service
-
+\page PointBasedRegistrationService Point Based Registration Service (PBRS)
 \tableofcontents
 
+\section PBRSPBRS Point Based Registration Service (PBRS)
+
+\subsection PBRSCSD Component Specification Document (CSD)
+
+<table>
+<tr><td>Document ID:</td><td>UCL-2001-CSD-0001-PointBasedRegistrationService.dox</td></tr>
+<tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
+<tr><td>Authorised By:</td><td></td></tr>
+<tr><td>Last Modified:</td><td>27 April 2015</td></tr>
+</table>
+
+\subsection PBRSCopyright Copyright
+
+Copyright University College London (UCL)
+
+Any information and data contained herein is the property of University College London,
+and may not be copied, used or disclosed in whole or part expect with the prior written
+permission of University College London.
+
+\verbatim
+University College London
+Centre for Medical Image Computing
+Gower Street
+London
+WC1E 2BT
+UK
+Tel: 020 7679 0221
+Fax: 020 7679 0255
+\endverbatim
+<a href="http://www.ucl.ac.uk/cmic">www.ucl.ac.uk/cmic</a>
+
+\subsection PBRSHistory Revision History
+
+A brief summary of changes between authorised releases of this document is recorded here.
+This section only describes the changes between authorised published versions.
+
+<table>
+  <tr>
+    <th>
+      Version
+    </th>
+    <th>
+      Date
+    </th>
+    <th>
+      Author(s)
+    </th>
+    <th>
+      Change(s)
+    </th>
+    <th>
+      Sections Affected
+    </th>
+  </tr>
+  <tr>
+    <td>
+      0.1
+    </td>
+    <td>
+      27 April 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Initial Version
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
+</table>
+
 \section PBRSIntro Introduction
-\section PBRSFuncReq Functional Requirements
 
-REQ-2001-CSD-0001-FR-001-01: If number of points < 3, throw mitk::Exception.
+The purpose of this Component Specification Document (CSD) is to describe the
+Point Based Registration Service (PBRS).  It is intended to be read by those wanting
+to gain a technical understanding as to the fundamental requirements, design and
+implementation.  This document is not intended for end-users.
 
-REQ-2001-CSD-0001-FR-002-01: If number of points doesn't match, throw mitk::Exception.
+\subsection PBRSScope Scope
 
-REQ-2001-CSD-0001-FR-003-01: Two point sets, identical apart from translation should register with FRE < 0.001
+This document defines the requirements, design and implementation.
 
-REQ-2001-CSD-0001-FR-004-01: Two point sets, identical apart from rotation should register with FRE < 0.001
+\subsection PBRCTraceability Traceability
 
-\section PBRSNonFuncReq Non-Functional Requirements
-\section PBRSArchitecture Architecture
+All traceable requirements are identified with a unique requirements identifier.
+The identifier has the following naming convention:
+
+\verbatim
+REQ-<Project Number>-<Document Type>-<Document ID>-<Section ID>-<Number>-<Version>
+\endverbatim
+
+where
+
+<table>
+<tr><td>Project Number:</td><td>Four digit number allocated to the project with leading zeros to facilitate searching and sorting.</td></tr>
+<tr><td>Document Type:</td><td>The two or three letter code of the document. e.g. Component Specification Document (CSD)</td></tr>
+<tr><td>Document ID:</td><td>Four digit number allocated to the document with leading zeros to facilitate searching and sorting.</td></tr>
+<tr><td>Section ID:</td><td>A set of letters constructed from the section heading. e.g. Functional Requirements (FR).</td></tr>
+<tr><td>Number:</td><td>A three digit number with leading zeros to facilitate searching and sorting,
+incremented within a Section ID. It is not necessary for numbers to be contiguous. If requirements are removed,
+existing requirements should maintain their numbers.</td></tr>
+<tr><td>Version:</td><td>A two digit number with leading zeros to facilitate search and sorting, incremented
+only for substantive change to a requirement. It is not incremented for clarifications or rewording.</td></tr>
+</table>
+
+\subsection PBRSDefinitions Definitions, Acronyms and Abbreviations
+
+<table>
+<tr><th>Term</th><th>Description</th></tr>
+<tr><td>shall</td><td>Wording used to indicate a requirement that must be fulfilled.</td></tr>
+<tr><td>should</td><td>Wording used to suggest a course of action that would be expected.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>may</td><td>Wording used to suggest an optional course of action.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>can</td><td>Wording used to indicate a possibility of, or ability to do something.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>CT</td><td>Computed Tomography</td></tr>
+<tr><td>GUI</td><td>Graphical User Interface</td></tr>
+<tr><td>MR</td><td>Magnetic Resonance</td></tr>
+<tr><td>RAII</td><td>Resource Allocation Is Initialisation</td></tr>
+<tr><td>SVD</td><td>Singular Value Decomposition</td></tr>
+</table>
+
+\subsection PBRSGeneral General Description
+
+Given two sets of ordered, corresponding points, the aim of point based registration
+is to find the geometrical transformation that best aligns them. One point set is
+normally termed the 'fixed' point set, and the other the 'moving' point set. Alternatively
+they may be described as 'target' and 'source' respectively. The aim is to find the
+transformation that maps the 'moving' points onto the 'fixed' points.
+
+This problem occurs frequently in image guided surgery, and image registration.
+In image guided surgery, the fixed points may come from landmarks in an MR or CT scan. The moving points
+are measured in the operating room using a tracked pointer, and the physical coordinates
+are therefore specified in terms of the tracking device coordinates. The resultant
+transformation then registers physical space to the scan space.
+
+The general requirement is therefore that
+
+\li The points correspond to some meaningful landmarks that can be identified in both spaces.
+\li At least 3 points in each point set are required.
+\li The two point sets are the same length as each point must have a corresponding partner.
+\li The point sets are ordered, or have some form of 1 to 1 correspondence (e.g. unique identifiers for each point).
+
+In this service, we implement the algorithm describe in [1],
+which results in a rigid body transformation, meaning rotations and translations.
+
+\subsection PBRSReferences References
+
+The following referenced documents relate to this document and may provide further detail or
+background information.  For dated references, only the edition cited applies.  For undated
+references, the latest edition of the referenced document (including any amendments) applies.
+
+\li [1]: <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=4767965">Least-Squares Fitting of two, 3-D Point Sets, Arun, 1987, 10.1109/TPAMI.1987.4767965</a>.
+\li [2]: Council Directive 93/42/EEC of 14 June 1993, concerning medical devices
+\li [3]: Directive 2007/47/EC of the European Parliament and of the council of 5 September 2007
+
+\section PBRSRequirements Requirements
+\subsection PBRSFuncReq Functional Requirements
+
+These functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0001-FR-001-01: If number of fixed points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0001-FR-002-01: If number of moving points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0001-FR-003-01: If number of points doesn't match, throw mitk::Exception.
+
+REQ-2001-CSD-0001-FR-004-01: Two point sets, identical apart from translation should register with FRE < 0.001
+
+REQ-2001-CSD-0001-FR-005-01: Two point sets, identical apart from rotation should register with FRE < 0.001
+
+\subsection PBRSNonFuncReq Non-Functional Requirements
+
+These non-functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0001-NFR-001-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
+
+REQ-2001-CSD-0001-NFR-002-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd
+party library must not be exported.
+
+\section PBRSDesign Design
+\subsection PBRSArchitecture Architecture
+
+The architecture shall be:
+
+\li A stateless function in an MITK module in niftkPointReg module.
+\li An MITK auto-loaded Micro Service in niftkPointRegService module.
+\li An abstract interface in niftkIGI module.
+\li An RAII object in niftkIGI module.
+
+This means that clients such as unit tests, other modules, or GUI code can
+either link directly to niftkPointReg which forces a link-time
+dependency, or they can have zero link-time dependency and rely on the Micro
+Service based approach.
+
+\subsection PBRSError Error Handling
+
+From a design perspective, all errors shall be communicated by throwing an mitk::Exception.
+
 \section PBRSImpl Implementation
-\section PBRSError Error Handling
-\section PBRSLogging Logging
-\section PBRSRefs References
-\section PBRSValidation Validation
+
+A few implementation details are described below.
+
+\subsection PBRSLogging Logging
+
+This service is primarily a function call to a mathematical routine. It is a stateless,
+synchronous design, and as errors will be thrown immediately there is no need for logging.
+Any logging to describe which points have been registered can be performed by the calling client.
+
+\subsection PBRSClassesFunctions Classes and Functions
+
+\li Main registration function in method niftk::PointBasedRegistrationUsingSVD in the niftkPointReg module.
+\li The abstract interface is in niftk::PointRegServiceI in the niftkIGI module.
+\li This is implemented by niftk::PointRegServiceUsingSVD in the niftkPointRegServiceModule.
+\li It is also implemented by the RAII object niftk::PointRegServiceRAII in the niftkIGI module.
+
+The purpose of the RAII object is so that clients of the service can easily
+instantiate the object, where the constructor performs all necessary lookups.
+If the constructor completes without throwing exceptions, the service is
+guaranteed to be ready to use. The C++ language also guarantees to call destructors
+on fully constructed objects when an exception is thrown. So, when
+the niftk::PointRegServiceRAII object is destroyed, the service is
+released in the destructor, guaranteeing no dangling references.
 
 */

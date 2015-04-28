@@ -28,7 +28,8 @@ namespace niftk
 {
 
 /**
-* \class RAII object to run Point Based Registration via a PointRegServiceI implementation.
+* \class PointRegServiceRAII
+* \brief RAII object to run Point Based Registration via a PointRegServiceI implementation.
 */
 class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
 {

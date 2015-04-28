@@ -1,10 +1,27 @@
 /**
 
-\page TOC Index of Contents
+\page TOC Technical File Table of Contents
 \tableofcontents
 
-\section Project Identifiers
+\section TOCProject Project Identifiers
 
-\section Component Identifiers
- 
+A four digit, with leading zeros, monotonically increasing identifier for
+each project, unique over all NifTK components.
+
+\li 2001: Smart Liver Surgery
+
+\section TOCComponent Component Identifiers
+
+A four digit, with leading zeros, monotonically increasing identifier for
+each technical memorandum, unique over all NifTK components.
+
+\li 0001: \subpage PointBasedRegistrationService
+
+\section TOCTechMemo Technical Memorandi
+
+A four digit, with leading zeros, monotonically increasing identifier for
+each technical memorandum.
+
+\li 0001: \subpage HowToWriteAMicroService
+
 */

@@ -18,6 +18,6 @@ MITK_CREATE_MODULE_TESTS()
 # Keep each test definition on one line, as the documentation parsing process searches by line.
 # Note that the test ID has to exactly match the requirement ID.
 
-mitkAddCustomModuleTest(REQ-2001-CSD-0001-FR-003-01 niftkArunSVDRegTest ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-fixed.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-moving.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-expected.4x4 0.001)
-mitkAddCustomModuleTest(REQ-2001-CSD-0001-FR-004-01 niftkArunSVDRegTest ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-fixed.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-moving.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-expected.4x4 0.001)
+mitkAddCustomModuleTest(REQ-2001-CSD-0001-FR-004-01 niftkArunSVDRegTest ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-fixed.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-moving.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-003-01-expected.4x4 0.001)
+mitkAddCustomModuleTest(REQ-2001-CSD-0001-FR-005-01 niftkArunSVDRegTest ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-fixed.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-moving.mps ${NIFTK_DATA_DIR}/Input-ISO/2001/2001-CSD-0001-FR-004-01-expected.4x4 0.001)
 
