@@ -43,9 +43,9 @@ m_VideoIn("")
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
 , m_WriteAnnotatedImages(false)
-, m_StartFrame(0)
+, m_StartFrame(12) //by default we select different frames than mitkPickPointsOnStereoVideo
 , m_EndFrame(0)
-, m_Frequency(50)
+, m_Frequency(300)
 {
 }
 

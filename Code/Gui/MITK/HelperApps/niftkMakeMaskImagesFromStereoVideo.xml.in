@@ -41,7 +41,7 @@
       <longflag>frequency</longflag>
       <description>Pick points in every nth frame pair</description>
       <label>Pick points in every nth frame pair</label>
-      <default>25</default>
+      <default>300</default>
     </integer>
    
     <boolean>
