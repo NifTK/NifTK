@@ -15,6 +15,7 @@
 set(CPP_FILES
   Rendering/VLQt4Widget.cpp
   Rendering/OclTriangleSorter.cxx
+  Rendering/TrackballManipulator.cxx
   VLEditor/QmitkIGIVLEditor.cxx
 )
 

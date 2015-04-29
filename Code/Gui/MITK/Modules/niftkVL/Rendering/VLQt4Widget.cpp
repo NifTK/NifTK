@@ -41,6 +41,7 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#include "TrackballManipulator.h"
 #ifdef BUILD_IGI
 #include <CameraCalibration/Undistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
@@ -620,7 +621,7 @@ void VLQt4Widget::EnableTrackballManipulator(bool enable)
   {
     if (m_Trackball.get() == 0)
     {
-      m_Trackball = new vl::TrackballManipulator;
+      m_Trackball = new TrackballManipulator;
       m_Trackball->setEnabled(true);
       m_Trackball->setCamera(m_Camera.get());
       //m_Trackball->setTransform(m_CameraTransform.get());

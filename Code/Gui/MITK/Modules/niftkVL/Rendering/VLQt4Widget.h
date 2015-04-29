@@ -26,7 +26,6 @@
 #include <vlGraphics/Rendering.hpp>
 #include <vlGraphics/RenderingTree.hpp>
 #include <vlGraphics/SceneManagerActorTree.hpp>
-#include <vlGraphics/TrackballManipulator.hpp>
 #include <vlGraphics/Geometry.hpp>
 #include <vlGraphics/Uniform.hpp>
 #include <vlGraphics/BlitFramebuffer.hpp>
@@ -61,6 +60,7 @@ class DataStorage;
 class PCLData;
 }
 struct VLUserData;
+class TrackballManipulator;
 
 #include "OclTriangleSorter.h"
 
@@ -238,7 +238,7 @@ protected:
   vl::ref<vl::Camera>                   m_BackgroundCamera;
   vl::ref<vl::Light>                    m_Light;
   vl::ref<vl::Transform>                m_LightTr;
-  vl::ref<vl::TrackballManipulator>     m_Trackball;
+  vl::ref<TrackballManipulator>         m_Trackball;
 
   vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
   vl::ref<vl::TexParameter>             m_DefaultTextureParams;
