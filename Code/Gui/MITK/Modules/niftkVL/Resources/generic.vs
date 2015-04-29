@@ -19,8 +19,9 @@ void main()
 
   // basic shading.
   vec3    normal  = gl_NormalMatrix * gl_Normal;
-  float   shading = dot(normal, vec3(0.0, 0.0, -1.0));    // FIXME: ignores light position
-  shading = clamp(shading, 0.0, 1.0);
+  float   shading = abs(dot(normal, vec3(0.0, 0.0, -1.0)));    // FIXME: ignores light position
+
+  // shading is in the range of 0..1, add another 1 to it saturates and effectively disables lighting.
   shading = clamp(shading + u_DisableLighting, 0.0, 1.0);
 
   gl_FrontColor = shading * gl_Color * u_TintColour;
