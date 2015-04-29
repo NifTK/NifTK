@@ -52,17 +52,37 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
 //-----------------------------------------------------------------------------
 class in_mask
 {
-  const cv::Mat m_LeftMask;
+  const cv::Mat m_Mask;
   const unsigned int m_BlankValue;
+  const bool m_UseFirstValue;
+
 public:
-  in_mask ( const cv::Mat& leftMask, const unsigned int& blankValue)
-  : m_LeftMask (leftMask)
+  in_mask ( const cv::Mat& mask, const unsigned int& blankValue, const bool& useFirstValue)
+  : m_Mask (mask)
   , m_BlankValue (blankValue )
+  , m_UseFirstValue (useFirstValue)
   {}
 
   bool operator () ( const std::pair<cv::Point2d, cv::Point2d> & pointPair ) const
   {
-    unsigned int maskValue = m_LeftMask.at<unsigned int> ( pointPair.first.x, pointPair.first.y );
+    unsigned int maskValue = m_BlankValue;
+    cv::Point2d point;
+    if ( m_UseFirstValue )
+    {
+      point = pointPair.first;
+    }
+    else
+    {
+      point = pointPair.second;
+    }
+
+    if ( (point.x >= 0) &&
+        (point.x < m_Mask.cols) &&
+        (point.y >= 0) &&
+        (point.y < m_Mask.rows) )
+    {
+      maskValue = m_Mask.at<unsigned int> ( point.x, point.y );
+    }
     if ( maskValue == m_BlankValue )
     {
       return true;
@@ -79,9 +99,8 @@ unsigned int ApplyMask ( std::vector <std::pair < cv::Point2d, cv::Point2d > >& 
     const unsigned int& blankValue, const bool& maskUsingFirst )
 {
   unsigned int originalSize = pointPairs.size();
-  pointPairs.erase ( std::remove_if ( pointPairs.begin(), pointPairs.end(), in_mask(mask, blankValue)  ), pointPairs.end());
-
-  return pointPairs.size() - originalSize;
+  pointPairs.erase ( std::remove_if ( pointPairs.begin(), pointPairs.end(), in_mask(mask, blankValue, maskUsingFirst)  ), pointPairs.end());
+  return originalSize - pointPairs.size();
 }
 
 } // end namespace
