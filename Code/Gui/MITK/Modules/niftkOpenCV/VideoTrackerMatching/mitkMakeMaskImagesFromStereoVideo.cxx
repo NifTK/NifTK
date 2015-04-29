@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkPickPointsOnStereoVideo.h"
+#include "mitkMakeMaskImagesFromStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
@@ -28,7 +28,7 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-PickPointsOnStereoVideo::PickPointsOnStereoVideo()
+MakeMaskImagesFromStereoVideo::MakeMaskImagesFromStereoVideo()
 : 
 m_VideoIn("")
 , m_Directory("")
@@ -40,24 +40,21 @@ m_VideoIn("")
 , m_VideoHeight(540)
 , m_Capture(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
-, m_OrderedPoints(false)
-, m_PickingLine(false)
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
-, m_WriteAnnotatedImages(false)
-, m_StartFrame(0)
+, m_StartFrame(12) //by default we select different frames than mitkPickPointsOnStereoVideo
 , m_EndFrame(0)
-, m_Frequency(50)
+, m_Frequency(150)
 {
 }
 
 //-----------------------------------------------------------------------------
-PickPointsOnStereoVideo::~PickPointsOnStereoVideo()
+MakeMaskImagesFromStereoVideo::~MakeMaskImagesFromStereoVideo()
 {
 }
 
 //-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::Initialise(std::string directory)
+void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
@@ -93,7 +90,7 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
 }
 
 //-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
+void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
   if ( ! m_InitOK )
   {
@@ -139,44 +136,23 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       {
         key = cvWaitKey (20);
 
-        if ( framenumber %m_Frequency == 0 ) 
+        if ( (framenumber-m_StartFrame) %m_Frequency == 0 ) 
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-          if ( m_PickingLine )
-          {
-            if ( m_OrderedPoints )
-            {
-              MITK_INFO << "Picking ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to finish line, n for next frame, q to quit";
-            }
-            else
-            {
-              MITK_INFO << "Picking un ordered line on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to finish line, n for next frame, q to quit";
-            }
-          } 
-          else
-          {
-            if ( m_OrderedPoints )
-            {
-              MITK_INFO << "Picking ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " <<  (timeStamp - startTime)/1e9 << " s ] t to pick unordered, l to pick a line, n for next frame, q to quit";
-            }
-            else 
-            {
-              MITK_INFO << "Picking un ordered points on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ] t to pick ordered, l to pick a line, n for next frame, q to quit";
-            }
-          }
+          MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], c to make mask image, n for next frame, q to quit";
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
+          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
+          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp);
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
-          if ( boost::filesystem::exists (leftOutName + ".xml") )
+          if ( boost::filesystem::exists (leftOutName + "_leftContour.xml") )
           {
             if ( m_AskOverWrite )
             {
-              MITK_INFO << leftOutName + ".xml" << " exists, overwrite (y/n)";
+              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, overwrite (y/n)";
               key = 0;
               while ( ! ( key == 'n' || key == 'y' ) )
               {
@@ -193,17 +169,17 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else
             {
-              MITK_INFO << leftOutName + ".xml" << " exists, skipping.";
+              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, skipping.";
               overWriteLeft = false;
             }
           }
 
           key = 0;
-          if ( boost::filesystem::exists (rightOutName + ".xml") )
+          if ( boost::filesystem::exists (rightOutName + "_rightContour.xml") )
           {
             if ( m_AskOverWrite ) 
             {
-              MITK_INFO << rightOutName  + ".xml" << " exists, overwrite (y/n)";
+              MITK_INFO << rightOutName  + "_rightContour.xml" << " exists, overwrite (y/n)";
               while ( ! ( key == 'n' || key == 'y' ) )
               {
                 key = cv::waitKey(20);
@@ -219,57 +195,50 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
             else 
             {
-              MITK_INFO << rightOutName + ".xml" << " exists, skipping.";
+              MITK_INFO << rightOutName + "_rightContour.xml" << " exists, skipping.";
               overWriteRight = false;
             }
           }
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (m_PickingLine);
-          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetInLineMode (true);
+          leftPickedPoints->SetInOrderedMode (false);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (m_PickingLine);
-          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetInLineMode (true);
+          rightPickedPoints->SetInOrderedMode (false);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+          cv::Mat leftMaskImage;
+          cv::Mat rightMaskImage;
+          bool showMasks = false;
           key = 0;
           if ( overWriteLeft  ||  overWriteRight  )
           {
             while ( key != 'n' && key != 'q' )
             {
               key = cv::waitKey(20);
-              if ( key == 't' )
+              if ( key == 'c' )
               {
-                m_OrderedPoints = ! m_OrderedPoints;
-                if ( m_OrderedPoints ) 
+                if ( showMasks )
                 {
-                  MITK_INFO << "Switched to ordered points mode";
+                  MITK_INFO << "Exiting contour mode";
                 }
                 else
                 {
-                  MITK_INFO << "Switched to un ordered points mode";
+                  MITK_INFO << "Attempting to make contour images";
+                  leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
+                  rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
+                  cv::imwrite(leftOutName + "_leftMask.png" ,leftMaskImage);
+                  cv::imwrite(rightOutName + "_rightMask.png" ,rightMaskImage);
+                  cv::imwrite(leftOutName + "_left.png" ,leftVideoImage);
+                  cv::imwrite(rightOutName + "_right.png" ,rightVideoImage);
                 }
-                leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
-                rightPickedPoints->SetInOrderedMode (m_OrderedPoints);
-              }
-              if ( key == 'l' )
-              {
-                m_PickingLine = ! m_PickingLine;
-                if ( m_PickingLine ) 
-                {
-                  MITK_INFO << "Switched to line picking mode";
-                }
-                else
-                {
-                  MITK_INFO << "Exited line picking mode";
-                }
-                leftPickedPoints->SetInLineMode (m_PickingLine);
-                rightPickedPoints->SetInLineMode (m_PickingLine);
+                showMasks = ! showMasks;
               }
               if ( overWriteLeft )
               {
@@ -279,17 +248,20 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   leftAnnotatedVideoImage = leftVideoImage.clone();
                   leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
 
-                  std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
+                  std::ofstream leftPointOut ((leftOutName+ "_leftContour.xml").c_str());
                   leftPickedPoints->PutOut( leftPointOut );
                   leftPointOut.close();
-                  if ( m_WriteAnnotatedImages )
-                  {
-                    cv::imwrite(leftOutName + ".png" ,leftAnnotatedVideoImage);
-                  }
                 }
-                
-                IplImage image(leftAnnotatedVideoImage);
-                cvShowImage("Left Channel" , &image);
+                if ( showMasks )
+                {
+                  IplImage image(leftMaskImage);
+                  cvShowImage("Left Channel" , &image);
+                }
+                else
+                {
+                  IplImage image(leftAnnotatedVideoImage);
+                  cvShowImage("Left Channel" , &image);
+                }
               }
 
               if ( overWriteRight )
@@ -300,18 +272,20 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   rightAnnotatedVideoImage = rightVideoImage.clone();
                   rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
 
-                  std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
+                  std::ofstream rightPointOut ((rightOutName + "_rightContour.xml").c_str());
                   rightPickedPoints->PutOut (rightPointOut);
                   rightPointOut.close();
-
-                  if ( m_WriteAnnotatedImages )
-                  {
-                     cv::imwrite(rightOutName + ".png" ,rightAnnotatedVideoImage);
-                  }
                 }
-                
-                IplImage rimage(rightAnnotatedVideoImage);
-                cvShowImage("Right Channel" , &rimage);
+                if ( showMasks ) 
+                {
+                  IplImage rimage(rightMaskImage);
+                  cvShowImage("Right Channel" , &rimage);
+                }
+                else
+                {
+                  IplImage rimage(rightAnnotatedVideoImage);
+                  cvShowImage("Right Channel" , &rimage);
+                }
               }
             }
           }

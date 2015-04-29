@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkPickPointsOnStereoVideo_h
-#define mitkPickPointsOnStereoVideo_h
+#ifndef mitkMakeMaskImagesFromStereoVideo_h
+#define mitkMakeMaskImagesFromStereoVideo_h
 
 #include "niftkOpenCVExports.h"
 #include <string>
@@ -38,13 +38,13 @@ namespace mitk {
  * The picked points are out put as the onscreen coordinates for each 
  * frame, and if matching points are present they are triangulated.
  */
-class NIFTKOPENCV_EXPORT PickPointsOnStereoVideo : public itk::Object
+class NIFTKOPENCV_EXPORT MakeMaskImagesFromStereoVideo : public itk::Object
 {
 
 public:
 
-  mitkClassMacro(PickPointsOnStereoVideo, itk::Object);
-  itkNewMacro(PickPointsOnStereoVideo);
+  mitkClassMacro(MakeMaskImagesFromStereoVideo, itk::Object);
+  itkNewMacro(MakeMaskImagesFromStereoVideo);
 
   /** 
    * \brief
@@ -68,11 +68,8 @@ public:
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
-  itkSetMacro ( OrderedPoints, bool);
-  itkSetMacro ( PickingLine, bool);
   itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
-  itkSetMacro ( WriteAnnotatedImages, bool);
   itkSetMacro ( Frequency, unsigned int);
 
   itkGetMacro ( InitOK, bool);
@@ -81,11 +78,11 @@ public:
  
 protected:
 
-  PickPointsOnStereoVideo();
-  virtual ~PickPointsOnStereoVideo();
+  MakeMaskImagesFromStereoVideo();
+  virtual ~MakeMaskImagesFromStereoVideo();
 
-  PickPointsOnStereoVideo(const PickPointsOnStereoVideo&); // Purposefully not implemented.
-  PickPointsOnStereoVideo& operator=(const PickPointsOnStereoVideo&); // Purposefully not implemented.
+  MakeMaskImagesFromStereoVideo(const MakeMaskImagesFromStereoVideo&); // Purposefully not implemented.
+  MakeMaskImagesFromStereoVideo& operator=(const MakeMaskImagesFromStereoVideo&); // Purposefully not implemented.
 
 private:
   std::string                   m_VideoIn; //the video in file
@@ -96,11 +93,8 @@ private:
  
   bool                          m_InitOK;
   bool                          m_ProjectOK;
-  bool                          m_OrderedPoints; //picked points can be ordered or unordered
-  bool                          m_PickingLine; //if true we are picking a line defined by a vector of points
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
   bool                          m_HaltOnVideoReadFail; //halt if video read fail
-  bool                          m_WriteAnnotatedImages; //halt if video read fail
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end

@@ -20,6 +20,7 @@
 #include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
+#include <mitkCommon.h>
 #include <mitkTimeStampsContainer.h>
 
 /**
@@ -148,6 +149,68 @@ private:
   unsigned int        m_SequenceNumber;
   unsigned int        m_Channel;
 };
+
+/**
+ * \class contains a vector of 2D points.
+ */
+class NIFTKOPENCV_EXPORT PickedObject
+{
+  public:
+      
+    int id;
+    bool isLine;
+    std::vector < cv::Point2i > points;
+
+    PickedObject();
+    ~PickedObject();
+};
+
+/**
+ * \class maintains a set a point vectors and ID's that 
+ * can be used to represent lines or points in an image
+ */
+class NIFTKOPENCV_EXPORT PickedPointList : public itk::Object
+{
+public:
+  mitkClassMacro(PickedPointList, itk::Object);
+  itkNewMacro(PickedPointList);
+
+  void PutOut (std::ofstream& os);
+  void AnnotateImage (cv::Mat& image);
+  cv::Mat CreateMaskImage ( const cv::Mat& image);
+
+  void SetInLineMode (const bool& mode);
+  void SetInOrderedMode ( const bool& mode);
+  bool GetIsModified();
+  itkSetMacro (FrameNumber, unsigned int);
+  itkSetMacro (Channel, std::string);
+
+  unsigned int AddPoint (const cv::Point2i& point);
+  unsigned int RemoveLastPoint ();
+  unsigned int SkipOrderedPoint ();
+  unsigned int EndLine();
+
+protected:
+  PickedPointList();
+  virtual ~PickedPointList();
+
+  PickedPointList (const PickedPointList&); // Purposefully not implemented.
+  PickedPointList& operator=(const PickedPointList&); // Purposefully not implemented.
+
+private:
+  bool m_InLineMode;
+  bool m_InOrderedMode;
+  bool m_IsModified;
+  unsigned int m_FrameNumber;
+  std::string m_Channel;
+  std::vector < PickedObject > m_PickedObjects;
+  int GetNextAvailableID ( bool ForLine );
+};
+
+/**
+* \brief a call back function for dealing with PickedPointLists
+*/
+void PointPickingCallBackFunc (  int, int , int, int, void* );
 
 } // end namespace
 

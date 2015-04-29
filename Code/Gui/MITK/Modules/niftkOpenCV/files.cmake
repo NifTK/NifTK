@@ -31,6 +31,7 @@ set(CPP_FILES
   VideoProcessing/mitkMakeGridOf2DImages.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkPickPointsOnStereoVideo.cxx
+  VideoTrackerMatching/mitkMakeMaskImagesFromStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   VideoTrackerMatching/mitkTwoTrackerMatching.cxx

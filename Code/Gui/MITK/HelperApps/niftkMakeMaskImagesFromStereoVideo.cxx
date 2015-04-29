@@ -16,8 +16,8 @@
 #include <limits>
 #include <fstream>
 
-#include <mitkPickPointsOnStereoVideo.h>
-#include <niftkPickPointsOnStereoVideoCLP.h>
+#include <mitkMakeMaskImagesFromStereoVideo.h>
+#include <niftkMakeMaskImagesFromStereoVideoCLP.h>
 
 int main(int argc, char** argv)
 {
@@ -34,12 +34,10 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
+    mitk::MakeMaskImagesFromStereoVideo::Pointer projector = mitk::MakeMaskImagesFromStereoVideo::New();
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetFrequency(frequency*2);
-    projector->SetOrderedPoints(orderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
-    projector->SetWriteAnnotatedImages(saveAnnotatedImages);
     
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
@@ -61,7 +59,6 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    matcher->SetFlipMatrices(FlipTracking);
     matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
