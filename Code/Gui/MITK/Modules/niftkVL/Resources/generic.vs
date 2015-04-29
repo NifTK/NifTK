@@ -24,7 +24,7 @@ void main()
   // shading is in the range of 0..1, add another 1 to it saturates and effectively disables lighting.
   shading = clamp(shading + u_DisableLighting, 0.0, 1.0);
 
-  gl_FrontColor = shading * gl_Color * u_TintColour;
+  gl_FrontColor = vec4(shading * gl_Color.rgb, gl_Color.a) * u_TintColour;
   gl_BackColor = gl_FrontColor;
 
   // we never do texture matrix stuff. so just pass it through
