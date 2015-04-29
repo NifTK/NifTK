@@ -42,6 +42,16 @@ int main(int argc, char** argv)
     triangulator->SetIntrinsicRightFileName(intrinsicRight);
     triangulator->SetRightToLeftExtrinsics(rightToLeftExtrinsics);
     triangulator->SetOutputFileName(outputPoints);
+    
+    if ( leftMask.length() == 0 ) 
+    {
+      triangulator->SetLeftMaskFileName(leftMask);
+    }
+
+    if ( rightMask.length() == 0 ) 
+    {
+      triangulator->SetRightMaskFileName(rightMask);
+    }
 
     triangulator->Triangulate();
 

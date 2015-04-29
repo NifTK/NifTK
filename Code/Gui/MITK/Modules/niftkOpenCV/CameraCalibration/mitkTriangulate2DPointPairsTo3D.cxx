@@ -110,6 +110,8 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
     LoadCameraIntrinsicsFromPlainText(m_IntrinsicRightFileName, &rightIntrinsic, &rightDistortion);
     LoadStereoTransformsFromPlainText(m_RightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
+    ApplyMasks();
+
     // batch-triangulate all points.
     std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
         m_PointPairs,
@@ -155,6 +157,16 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
     }
     unsigned int pointsRemoved = mitk::ApplyMask ( m_PointPairs , leftMask, m_BlankValue , true);
     MITK_INFO << "Removed " << pointsRemoved << " point pairs from vector using left mask";
+  }
+  if ( m_RightMaskFileName != "" )
+  {
+    rightMask = cv::imread(m_RightMaskFileName);
+    if ( ! rightMask.data )
+    {
+      MITK_ERROR << "Failed to open " << m_RightMaskFileName;
+    }
+    unsigned int pointsRemoved = mitk::ApplyMask ( m_PointPairs , rightMask, m_BlankValue , false);
+    MITK_INFO << "Removed " << pointsRemoved << " point pairs from vector using right mask";
   }
 }
 } // end namespace

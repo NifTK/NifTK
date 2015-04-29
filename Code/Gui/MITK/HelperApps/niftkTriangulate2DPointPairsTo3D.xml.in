@@ -40,6 +40,20 @@
       <label>Right to left camera transformation</label>
       <channel>input</channel>
     </file>
+    <file fileExtensions=".png">
+      <name>leftMask</name>
+      <longflag>leftMask</longflag>
+      <description>Left Mask Image</description>
+      <label>Left Mask Image</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".png">
+      <name>rightMask</name>
+      <longflag>rightMask</longflag>
+      <description>Right Mask Image</description>
+      <label>Right Mask Image</label>
+      <channel>input</channel>
+    </file>
     <file fileExtensions=".mps">
       <name>outputPoints</name>
       <longflag>outputPoints</longflag>

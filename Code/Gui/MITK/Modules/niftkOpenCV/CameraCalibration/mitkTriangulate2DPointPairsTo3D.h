@@ -45,7 +45,9 @@ public:
   itkSetMacro (IntrinsicRightFileName, std::string);
   itkSetMacro (RightToLeftExtrinsics, std::string);
   itkSetMacro (OutputFileName, std::string);
-  
+  itkSetMacro (LeftMaskFileName, std::string);
+  itkSetMacro (RightMaskFileName, std::string);
+
   bool Triangulate();
 
 protected:
