@@ -70,6 +70,8 @@ private:
  
   std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;
 
+  unsigned int m_BlankValue; // the value used by the mask for blanking
+
   void ApplyMasks (); 
 
 }; // end class

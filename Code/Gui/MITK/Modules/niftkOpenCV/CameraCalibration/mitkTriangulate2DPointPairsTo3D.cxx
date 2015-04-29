@@ -36,6 +36,7 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_IntrinsicRightFileName("")
 , m_RightToLeftExtrinsics("")
 , m_OutputFileName("")
+, m_BlankValue(0)
 {
 }
 
@@ -139,6 +140,18 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
   return isSuccessful;
 }
 
+bool inLeftMask ( const std::pair<cv::Point2d, cv::Point2d>& point )
+{
+  unsigned int maskValue = 0 ;// mask.at<unsigned int> ( point.first.x, point.first.y );
+  if ( maskValue == 0 )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 //-----------------------------------------------------------------------------
 void Triangulate2DPointPairsTo3D::ApplyMasks()
 {
@@ -151,7 +164,21 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
     {
       MITK_ERROR << "Failed to open " << m_LeftMaskFileName;
     }
+  
+    m_PointPairs.erase ( std::remove_if ( m_PointPairs.begin(), m_PointPairs.end(), inLeftMask  ), m_PointPairs.end());
+/*    std::vector < std::pair<cv::Point2d, cv::Point2d> >::iterator it = m_PointPairs.begin();
+
+    while ( it < m_PointPairs.end() ) 
+    {
+      unsigned int maskValue = leftMask.at<unsigned int> ( it->first.x, it->first.y );
+      if ( maskValue == m_BlankValue ) 
+      {
+        m_PointPairs.pop(it);
+      }
+      else;
+      it++;
+    }
+  }*/
   }
- 
 }
 } // end namespace
