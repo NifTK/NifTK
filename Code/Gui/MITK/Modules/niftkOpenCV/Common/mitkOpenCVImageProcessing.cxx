@@ -49,4 +49,39 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
   return mitk::GetCentroid ( intersections, true);
 }
 
+//-----------------------------------------------------------------------------
+class in_mask
+{
+  const cv::Mat m_LeftMask;
+  const unsigned int m_BlankValue;
+public:
+  in_mask ( const cv::Mat& leftMask, const unsigned int& blankValue)
+  : m_LeftMask (leftMask)
+  , m_BlankValue (blankValue )
+  {}
+
+  bool operator () ( const std::pair<cv::Point2d, cv::Point2d> & pointPair ) const
+  {
+    unsigned int maskValue = m_LeftMask.at<unsigned int> ( pointPair.first.x, pointPair.first.y );
+    if ( maskValue == m_BlankValue )
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+};
+
+//-----------------------------------------------------------------------------
+unsigned int ApplyMask ( std::vector <std::pair < cv::Point2d, cv::Point2d > >& pointPairs, const cv::Mat& mask, 
+    const unsigned int& blankValue, const bool& maskUsingFirst )
+{
+  unsigned int originalSize = pointPairs.size();
+  pointPairs.erase ( std::remove_if ( pointPairs.begin(), pointPairs.end(), in_mask(mask, blankValue)  ), pointPairs.end());
+
+  return pointPairs.size() - originalSize;
+}
+
 } // end namespace

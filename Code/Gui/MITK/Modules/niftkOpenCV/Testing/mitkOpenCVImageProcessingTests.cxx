@@ -61,6 +61,17 @@ void FindCrossHairTest()
   MITK_TEST_CONDITION ( mitk::NearlyEqual (intersect,cv::Point2d (55 , 55),0.6) , "Testing intersect for no noise state" << intersect );
 }
 
+void ApplyMaskTest()
+{
+  std::vector < std::pair < cv::Point2d, cv::Point2d > > pointPairs;
+  cv::Mat mask;
+  unsigned int maskValue = 0;
+  
+  MITK_TEST_CONDITION ( mitk::ApplyMask ( pointPairs, mask , maskValue, true ) == 0 , "Testing apply mask works on empty vectors ");
+
+  mask = cv::Mat ( 4, 4, CV_8U);
+}
+
 
 int mitkOpenCVImageProcessingTests(int argc, char * argv[])
 {
@@ -68,6 +79,7 @@ int mitkOpenCVImageProcessingTests(int argc, char * argv[])
   MITK_TEST_BEGIN("mitkOpenCVImageProcessingTests");
 
   FindCrossHairTest();
+  ApplyMaskTest();
   MITK_TEST_END();
 }
 
