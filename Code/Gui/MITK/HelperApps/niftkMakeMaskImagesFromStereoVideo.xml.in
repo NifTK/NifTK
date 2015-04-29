@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Stereo Point Picking</title>
-  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file and runs through the video allowing the user to manually pick points in a subset of frames]]></description>
+  <title>Stereo Mask Images</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file and runs through the video allowing the user to manually mask out parts of the image]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -41,16 +41,8 @@
       <longflag>frequency</longflag>
       <description>Pick points in every nth frame pair</description>
       <label>Pick points in every nth frame pair</label>
-      <default>25</default>
+      <default>150</default>
     </integer>
-
-    <boolean>
-      <name>orderedPoints</name>
-      <longflag>orderedPoints</longflag>
-      <description>Pick ordered points (where you know the point ID)</description>
-      <label>Pick ordered points (where yoy know the point ID</label>
-      <default>0</default>
-    </boolean>
    
     <boolean>
       <name>queryOverWrite</name>
@@ -60,27 +52,11 @@
       <default>0</default>
     </boolean>
 
-    <boolean>
-      <name>saveAnnotatedImages</name>
-      <longflag>saveAnnotatedImages</longflag>
-      <description>Save the annotated images for later reference</description>
-      <label>Save annotated Images</label>
-      <default>0</default>
-    </boolean>
-
   </parameters>
   
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
-    
-    <boolean>
-      <name>FlipTracking</name>
-      <longflag>FlipTracking</longflag>
-      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
-      <label>Flip the tracking matrices</label>
-      <default>0</default>
-    </boolean>
     
     <boolean>
       <name>WriteTimingErrors</name>
