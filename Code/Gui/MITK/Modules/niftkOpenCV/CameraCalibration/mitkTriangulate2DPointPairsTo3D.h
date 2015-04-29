@@ -58,16 +58,20 @@ protected:
 
 private:
   
-  cv::Mat m_LeftMask; // the left mask image
-  cv::Mat m_RightMask; // the right mask image
-  cv::Mat m_LeftLensToWorld; // the transform to put the triangulated points in world coordinates
+  std::string m_LeftMaskFileName; // the left mask image
+  std::string m_RightMaskFileName; // the right mask image
+  std::string m_LeftLensToWorldFileName; // the transform to put the triangulated points in world coordinates
   
   std::string m_Input2DPointPairsFileName; //the input file name
   std::string m_IntrinsicLeftFileName; // the left camera intrinsic parameters
   std::string m_IntrinsicRightFileName; // the right camera intrinsic parameters
   std::string m_RightToLeftExtrinsics; // the right to left camera transformation
   std::string m_OutputFileName; // the output file name
-  
+ 
+  std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;
+
+  void ApplyMasks (); 
+
 }; // end class
 
 } // end namespace

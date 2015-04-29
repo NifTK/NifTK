@@ -28,18 +28,22 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
+: m_LeftMaskFileName("")
+, m_RightMaskFileName("")
+, m_LeftLensToWorldFileName("")
+, m_Input2DPointPairsFileName("")
+, m_IntrinsicLeftFileName("")
+, m_IntrinsicRightFileName("")
+, m_RightToLeftExtrinsics("")
+, m_OutputFileName("")
 {
-
 }
 
 
 //-----------------------------------------------------------------------------
 Triangulate2DPointPairsTo3D::~Triangulate2DPointPairsTo3D()
 {
-
 }
-
-
 
 //-----------------------------------------------------------------------------
 bool Triangulate2DPointPairsTo3D::Triangulate()
@@ -60,7 +64,6 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
       std::cout << "Opened " << m_Input2DPointPairsFileName << std::endl;
     }
 
-    std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
     double numbersOnLine[4];
 
     while(!reader.eof())
@@ -82,16 +85,16 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
       rightPoint.x = numbersOnLine[2];
       rightPoint.y = numbersOnLine[3];
 
-      pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint, rightPoint));
+      m_PointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint, rightPoint));
     }
     reader.close();
 
-    if (pointPairs.size() == 0)
+    if (m_PointPairs.size() == 0)
     {
       throw std::logic_error("Failed to read 3D points");
     }
 
-    std::cout << "Triangulate2DPointPairsTo3D: Read in " << pointPairs.size() << " point pairs." << std::endl;
+    std::cout << "Triangulate2DPointPairsTo3D: Read in " << m_PointPairs.size() << " point pairs." << std::endl;
 
     cv::Mat leftIntrinsic = cvCreateMat (3,3,CV_64FC1);
     cv::Mat leftDistortion = cvCreateMat (1,4,CV_64FC1);    // not used (yet)
@@ -107,7 +110,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
 
     // batch-triangulate all points.
     std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
-        pointPairs,
+        m_PointPairs,
         leftIntrinsic,
         rightIntrinsic,
         rightToLeftRotationMatrix,
@@ -136,4 +139,19 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
   return isSuccessful;
 }
 
+//-----------------------------------------------------------------------------
+void Triangulate2DPointPairsTo3D::ApplyMasks()
+{
+  cv::Mat leftMask;
+  cv::Mat rightMask;
+  if ( m_LeftMaskFileName != "" )
+  {
+    leftMask = cv::imread(m_LeftMaskFileName);
+    if ( ! leftMask.data )
+    {
+      MITK_ERROR << "Failed to open " << m_LeftMaskFileName;
+    }
+  }
+ 
+}
 } // end namespace
