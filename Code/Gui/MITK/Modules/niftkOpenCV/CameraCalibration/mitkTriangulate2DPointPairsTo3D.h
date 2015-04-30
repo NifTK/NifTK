@@ -76,7 +76,7 @@ private:
 
   unsigned int m_BlankValue; // the value used by the mask for blanking
   void ApplyMasks (); 
-  void WritePointsAsImage ( const cv::Mat& templateMat );
+  void WritePointsAsImage (const std::string& prefix,  const cv::Mat& templateMat );
   
 }; // end class
 
