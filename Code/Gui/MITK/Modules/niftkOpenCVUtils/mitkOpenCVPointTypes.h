@@ -41,6 +41,13 @@ bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2)
 
 
 /**
+* \brief a call back function for dealing with PickedPointLists
+*/
+extern "C++" NIFTKOPENCVUTILS_EXPORT
+void PointPickingCallBackFunc (  int, int , int, int, void* );
+
+
+/**
 * \class contains the gold standard points
 * consisting of the frame number, the point and optionally the point index
 */
@@ -217,11 +224,6 @@ private:
   std::vector < PickedObject > m_PickedObjects;
   int GetNextAvailableID ( bool ForLine );
 };
-
-/**
-* \brief a call back function for dealing with PickedPointLists
-*/
-void PointPickingCallBackFunc (  int, int , int, int, void* );
 
 } // end namespace
 
