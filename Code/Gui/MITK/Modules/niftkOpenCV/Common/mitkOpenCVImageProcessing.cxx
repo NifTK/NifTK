@@ -94,7 +94,7 @@ public:
         (point.y >= 0) &&
         (point.y < m_Mask.rows) )
     {
-      maskValue = m_Mask.at<unsigned int> ( point.y, point.x );
+      maskValue = m_Mask.at<unsigned char> ( point.y, point.x );
     }
     if ( maskValue == m_BlankValue )
     {
