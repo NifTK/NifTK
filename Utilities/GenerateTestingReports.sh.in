@@ -52,7 +52,7 @@ echo "<tr><th>Requirement ID</th><th>Description</th><th>Status</th></tr>" >> ${
 # For all command line args.
 for f in $*
 do
-  grep REQ- ${DOXYGEN_INPUT_DIR}/$f > /tmp/GenerateTestingReports-${f}-REQ.txt
+  grep REQ- ${DOXYGEN_INPUT_DIR}/$f | grep -v "Project Number" > /tmp/GenerateTestingReports-${f}-REQ.txt
 
   cat /tmp/GenerateTestingReports-${f}-REQ.txt | while read line
   do
@@ -79,9 +79,9 @@ do
     echo "\endverbatim" > /tmp/doxygen.footer.txt
     echo "*/" >> /tmp/doxygen.footer.txt
 
-    # If test was not actually run, generate some dummy output.
-    if [! -f ${TEST_OUTPUT} ]; then
-      echo "Test not run" > ${TEST_OUTPUT}
+    # If test was not actually run, generate some dummy status.
+    if [ ! -f ${TEST_OUTPUT} ]; then
+      STATUS="No test output"
     fi
 
     # Stick it all together.

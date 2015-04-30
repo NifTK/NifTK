@@ -185,8 +185,7 @@ These non-functional requirements shall be expressed, each on a single line.
 
 REQ-2001-CSD-0001-NFR-001-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
 
-REQ-2001-CSD-0001-NFR-002-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd
-party library must not be exported.
+REQ-2001-CSD-0001-NFR-002-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd party library must not be exported.
 
 \section PBRSDesign Design
 \subsection PBRSArchitecture Architecture

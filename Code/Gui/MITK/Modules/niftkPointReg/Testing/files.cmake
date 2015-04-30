@@ -21,4 +21,5 @@ set(MODULE_TESTS
 # For validation we prefer tests with externalised parameters.
 set(MODULE_CUSTOM_TESTS
   niftkArunSVDRegTest.cxx
+  niftkArunSVDExceptionTest.cxx
 )
