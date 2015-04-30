@@ -163,6 +163,7 @@ if(SlicerExecutionModel_FOUND)
       niftkBifurcationToPointSet
       niftkMakeLapUSProbeAprilTagsModel
       niftkMakeLapUSProbeSimulationData
+      niftkImageFeatureMatching
     )
     
     if(BUILD_PCL)
