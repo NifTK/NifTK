@@ -48,6 +48,7 @@ public:
   itkSetMacro (LeftMaskFileName, std::string);
   itkSetMacro (RightMaskFileName, std::string);
   itkSetMacro (OutputMaskImagePrefix, std::string);
+  itkSetMacro (UndistortBeforeTriangulation, bool);
 
   bool Triangulate();
 

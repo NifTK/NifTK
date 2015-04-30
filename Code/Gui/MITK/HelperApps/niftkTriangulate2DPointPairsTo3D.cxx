@@ -58,6 +58,8 @@ int main(int argc, char** argv)
       triangulator->SetOutputMaskImagePrefix(outputMaskImagePrefix);
     }
 
+    triangulator->SetUndistortBeforeTriangulation(undistort);
+
     triangulator->Triangulate();
 
     returnStatus = EXIT_SUCCESS;

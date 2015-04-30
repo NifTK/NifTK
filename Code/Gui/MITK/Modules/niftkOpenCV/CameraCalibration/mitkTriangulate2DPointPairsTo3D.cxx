@@ -39,7 +39,7 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_OutputFileName("")
 , m_OutputMaskImagePrefix("")
 , m_BlankValue(0)
-, m_UndistortBeforeTriangulation(false)
+, m_UndistortBeforeTriangulation(true)
 {
 }
 
@@ -116,7 +116,32 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
 
     if ( m_UndistortBeforeTriangulation )
     {
+      std::vector<cv::Point2d> leftPoints;
+      std::vector<cv::Point2d>  rightPoints;
+      std::vector<cv::Point2d>  leftPoints_undistorted;
+      std::vector<cv::Point2d>  rightPoints_undistorted;
+      std::vector < std::pair < cv::Point2d, cv::Point2d > >::iterator it = m_PointPairs.begin();
+      while ( it < m_PointPairs.end() )
+      {
+        leftPoints.push_back ( it->first );
+        rightPoints.push_back ( it->second );
+        it++;
+      }
+      
+      mitk::UndistortPoints(leftPoints, leftIntrinsic, leftDistortion, leftPoints_undistorted);
+      mitk::UndistortPoints(rightPoints, rightIntrinsic, rightDistortion, rightPoints_undistorted);
+  
+      assert (  leftPoints_undistorted.size() == rightPoints_undistorted.size() );
 
+      std::vector < cv::Point2d >::iterator itleft = leftPoints_undistorted.begin();
+      std::vector < cv::Point2d >::iterator itright = rightPoints_undistorted.begin();
+      m_PointPairs.clear();
+      while ( itleft < leftPoints_undistorted.end() )
+      {
+        m_PointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d>  ( *itleft, *itright ));
+        itleft++;
+        itright++;
+      }
     }
     // batch-triangulate all points.
     std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
@@ -171,7 +196,7 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
   }
   if ( m_RightMaskFileName != "" )
   {
-    rightMask = cv::imread(m_RightMaskFileName);
+    rightMask = cv::imread(m_RightMaskFileName, CV_LOAD_IMAGE_GRAYSCALE);
     if ( m_OutputMaskImagePrefix.length() != 0 )
     {
       WritePointsAsImage ( m_OutputMaskImagePrefix + "_beforeRightMasking" , leftMask);
@@ -205,5 +230,6 @@ void Triangulate2DPointPairsTo3D::WritePointsAsImage(const std::string& prefix, 
   cv::imwrite(prefix + "_leftPoints.png", leftImage);
   cv::imwrite(prefix + "_rightPoints.png", rightImage);
 }
+
     
 } // end namespace
