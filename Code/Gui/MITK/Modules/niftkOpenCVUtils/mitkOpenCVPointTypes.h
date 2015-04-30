@@ -29,12 +29,13 @@
  */
 namespace mitk {
 
-
 // forward declaration
 class GoldStandardPoint;
 
+
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
+
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
