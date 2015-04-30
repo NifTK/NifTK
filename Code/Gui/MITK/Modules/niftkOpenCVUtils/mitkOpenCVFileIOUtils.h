@@ -17,6 +17,7 @@
 
 #include "niftkOpenCVUtilsExports.h"
 #include <mitkTimeStampsContainer.h>
+#include <mitkOpenCVPointTypes.h>
 #include <highgui.h>
 
 /**

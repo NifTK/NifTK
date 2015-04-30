@@ -164,7 +164,7 @@ private:
 /**
  * \class contains a vector of 2D points.
  */
-class NIFTKOPENCV_EXPORT PickedObject
+class NIFTKOPENCVUTILS_EXPORT PickedObject
 {
   public:
       
@@ -180,7 +180,7 @@ class NIFTKOPENCV_EXPORT PickedObject
  * \class maintains a set a point vectors and ID's that 
  * can be used to represent lines or points in an image
  */
-class NIFTKOPENCV_EXPORT PickedPointList : public itk::Object
+class NIFTKOPENCVUTILS_EXPORT PickedPointList : public itk::Object
 {
 public:
   mitkClassMacro(PickedPointList, itk::Object);
