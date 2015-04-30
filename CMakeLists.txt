@@ -55,8 +55,8 @@ endif()
 
 # Restrict the generated configuration to be what we configured above.
 # No point creating project files for build types that will not compile.
-# Note: it's not set to FORCE because one may want to add others via the GUI.
-set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate.")
+# Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
 
 
 ##################################################################################
