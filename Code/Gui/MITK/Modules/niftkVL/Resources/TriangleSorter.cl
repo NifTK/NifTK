@@ -740,7 +740,7 @@ __kernel
 __kernel
   void ckTransformVertexAndComputeDistance(
   __global       float  * vertexDistances,
-  __global       float  * vertexBuf,
+  __global const float  * vertexBuf,
            const float4   viewPoint,
            const uint     numOfVertices
   )
@@ -750,8 +750,8 @@ __kernel
   if (idx >= numOfVertices)
     return;
 
-  viewPoint.w = 0.0f;
-  float4 transformedVertexCoords;
+  viewPoint.w = 0.0f;     // FIXME: why does this compile?
+
   float4 vertexCoords;
   vertexCoords.x = vertexBuf[idx*3+0];
   vertexCoords.y = vertexBuf[idx*3+1];
@@ -777,8 +777,8 @@ inline float IFloatFlip(unsigned int f)
 __kernel
   void ckComputeTriangleDistances(
   __global       uint  * indexBufWithDist,
-  __global       float * vertexDist,
-  __global       uint  * indexBuf,
+  __global const float * vertexDist,
+  __global const uint  * indexBuf,
            const uint    numOfVertices,
            const uint    numOfTriangles
   )
@@ -803,7 +803,7 @@ __kernel
 
 __kernel
   void ckCopyAndUpdateIndicesOrig(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint4 * output,
            const uint    size,
            const uint    triangleOffset,
@@ -823,7 +823,7 @@ __kernel
 
 __kernel
   void ckCopyAndUpdateIndices(
-  __global       uint * input,
+  __global const uint * input,
   __global       uint * output,
            const uint   size,
            const uint   triangleOffset,
@@ -842,7 +842,7 @@ __kernel
 
 __kernel
   void ckCopyIndicesOnly(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint  * output,
            const uint    size
   )
@@ -861,7 +861,7 @@ __kernel
 
 __kernel
   void ckCopyIndicesWithDist(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint  * output,
   __global       uint  * outputDist,
            const uint    size
