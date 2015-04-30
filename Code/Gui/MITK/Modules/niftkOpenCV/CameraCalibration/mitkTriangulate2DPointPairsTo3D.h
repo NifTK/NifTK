@@ -71,12 +71,14 @@ private:
   std::string m_RightToLeftExtrinsics; // the right to left camera transformation
   std::string m_OutputFileName; // the output file name
   std::string m_OutputMaskImagePrefix; // optional prefix to write out masking images
- 
+
+  bool m_UndistortBeforeTriangulation; //optionally undistort point pairs before triangulation
   std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;
 
   unsigned int m_BlankValue; // the value used by the mask for blanking
   void ApplyMasks (); 
   void WritePointsAsImage (const std::string& prefix,  const cv::Mat& templateMat );
+
   
 }; // end class
 

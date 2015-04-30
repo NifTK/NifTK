@@ -39,6 +39,7 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_OutputFileName("")
 , m_OutputMaskImagePrefix("")
 , m_BlankValue(0)
+, m_UndistortBeforeTriangulation(false)
 {
 }
 
@@ -113,6 +114,10 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
   
     ApplyMasks();
 
+    if ( m_UndistortBeforeTriangulation )
+    {
+
+    }
     // batch-triangulate all points.
     std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
         m_PointPairs,
@@ -152,7 +157,7 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
 
   if ( m_LeftMaskFileName != "" )
   {
-    leftMask = cv::imread(m_LeftMaskFileName);
+    leftMask = cv::imread(m_LeftMaskFileName, CV_LOAD_IMAGE_GRAYSCALE);
     if ( m_OutputMaskImagePrefix.length() != 0 )
     {
       WritePointsAsImage ( m_OutputMaskImagePrefix + "_beforeLeftMasking" , leftMask);
@@ -169,7 +174,7 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
     rightMask = cv::imread(m_RightMaskFileName);
     if ( m_OutputMaskImagePrefix.length() != 0 )
     {
-      WritePointsAsImage ( m_OutputMaskImagePreix + "_beforeRightMasking" , leftMask);
+      WritePointsAsImage ( m_OutputMaskImagePrefix + "_beforeRightMasking" , leftMask);
     }
     if ( ! rightMask.data )
     {

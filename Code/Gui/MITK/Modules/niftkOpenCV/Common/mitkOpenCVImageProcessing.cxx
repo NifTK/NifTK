@@ -66,7 +66,7 @@ cv::Point2d FindCrosshairCentre(const cv::Mat& image,
 class in_mask
 {
   const cv::Mat m_Mask;
-  const unsigned int m_BlankValue;
+  const unsigned char m_BlankValue;
   const bool m_UseFirstValue;
 
 public:
@@ -74,11 +74,14 @@ public:
   : m_Mask (mask)
   , m_BlankValue (blankValue )
   , m_UseFirstValue (useFirstValue)
-  {}
+  {
+    assert ( mask.depth() == CV_8U );
+    assert ( mask.channels() == 1 );
+  }
 
   bool operator () ( const std::pair<cv::Point2d, cv::Point2d> & pointPair ) const
   {
-    unsigned int maskValue = m_BlankValue;
+    unsigned char maskValue = m_BlankValue;
     cv::Point2d point;
     if ( m_UseFirstValue )
     {
