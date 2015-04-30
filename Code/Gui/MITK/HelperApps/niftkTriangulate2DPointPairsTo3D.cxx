@@ -53,6 +53,11 @@ int main(int argc, char** argv)
       triangulator->SetRightMaskFileName(rightMask);
     }
 
+    if ( outputMaskImagePrefix.length() != 0 )
+    {
+      triangulator->SetOutputMaskImagePrefix(outputMaskImagePrefix);
+    }
+
     triangulator->Triangulate();
 
     returnStatus = EXIT_SUCCESS;

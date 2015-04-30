@@ -37,6 +37,7 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_IntrinsicRightFileName("")
 , m_RightToLeftExtrinsics("")
 , m_OutputFileName("")
+, m_OutputMaskImagePrefix("")
 , m_BlankValue(0)
 {
 }
@@ -152,7 +153,10 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
   if ( m_LeftMaskFileName != "" )
   {
     leftMask = cv::imread(m_LeftMaskFileName);
-    WritePointsAsImage ( "/dev/shm/before_Leftmask" , leftMask);
+    if ( m_OutputMaskImagePrefix.length() != 0 )
+    {
+      WritePointsAsImage ( m_OutputMaskImagePrefix + "_beforeLeftMasking" , leftMask);
+    }
     if ( ! leftMask.data )
     {
       MITK_ERROR << "Failed to open " << m_LeftMaskFileName;
@@ -163,7 +167,10 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
   if ( m_RightMaskFileName != "" )
   {
     rightMask = cv::imread(m_RightMaskFileName);
-    WritePointsAsImage ( "/dev/shm/before_Rightmask" , leftMask);
+    if ( m_OutputMaskImagePrefix.length() != 0 )
+    {
+      WritePointsAsImage ( m_OutputMaskImagePreix + "_beforeRightMasking" , leftMask);
+    }
     if ( ! rightMask.data )
     {
       MITK_ERROR << "Failed to open " << m_RightMaskFileName;
@@ -171,7 +178,10 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
     unsigned int pointsRemoved = mitk::ApplyMask ( m_PointPairs , rightMask, m_BlankValue , false);
     MITK_INFO << "Removed " << pointsRemoved << " point pairs from vector using right mask";
   }
-  WritePointsAsImage ( "/dev/shm/after_Masks" , leftMask);
+  if ( m_OutputMaskImagePrefix.length() != 0 )
+  {
+    WritePointsAsImage ( m_OutputMaskImagePrefix + "_afterMasking", leftMask);
+  }
 }
 //-----------------------------------------------------------------------------
 void Triangulate2DPointPairsTo3D::WritePointsAsImage(const std::string& prefix, const cv::Mat& templateMat )

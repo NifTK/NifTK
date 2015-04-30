@@ -62,5 +62,13 @@
       <default>output.mps</default>
       <channel>output</channel>
     </file>    
+    <directory>
+      <name>outputMaskImagePrefix</name>
+      <longflag>outputMaskImagePrefix</longflag>
+      <description>Optionally write out images showing effect of masking</description>
+      <label>Output mask image prefix</label>
+      <channel>output</channel>
+    </directory>
+
   </parameters>
 </executable>
