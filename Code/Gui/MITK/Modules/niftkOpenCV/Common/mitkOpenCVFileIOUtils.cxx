@@ -321,7 +321,8 @@ std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(
 
 
 //---------------------------------------------------------------------------
-void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName)
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, 
+    std::vector <mitk::ProjectedPointPair>& screenPoints, const std::string& fileName)
 {
   if (fileName.length() == 0)
   {
@@ -339,20 +340,34 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3
       double x = 0;
       double y = 0;
       double z = 0;
+      double lx = 0;
+      double ly = 0;
+      double rx = 0;
+      double ry = 0;
+
 
       myfile >> timeStamp;
       myfile >> x;
       myfile >> y;
       myfile >> z;
+      myfile >> lx;
+      myfile >> ly;
+      myfile >> rx;
+      myfile >> ry;
+     
 
       if (timeStamp > 0 && !boost::math::isnan(x) && !boost::math::isnan(y) && !boost::math::isnan(z)) // any other validation?
       {
         point.x = x;
         point.y = y;
         point.z = z;
-
         points.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
+        
+        mitk::ProjectedPointPair  pointPair( cv::Point2d(lx,ly), cv::Point2d (rx,ry));
+        pointPair.SetTimeStamp(timeStamp);
+        screenPoints.push_back ( pointPair );
       }
+     
     }
     while (!myfile.bad() && !myfile.eof() && !myfile.fail());
 
@@ -363,6 +378,47 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3
     mitkThrow() << "Failed to open file " << fileName << " for reading." << std::endl;
   }
 }
+//---------------------------------------------------------------------------
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point2d> >& points, 
+     const std::string& fileName)
+{
+  if (fileName.length() == 0)
+  {
+    mitkThrow() << "Filename should not be empty." << std::endl;
+  }
+
+  std::ifstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    cv::Point2d point;
+
+    do
+    {
+      mitk::TimeStampsContainer::TimeStamp timeStamp = 0;
+      double x = 0;
+      double y = 0;
+
+      myfile >> timeStamp;
+      myfile >> x;
+      myfile >> y;
+
+      if (timeStamp > 0 && !boost::math::isnan(x) && !boost::math::isnan(y) ) // any other validation?
+      {
+        point.x = x;
+        point.y = y;
+        points.push_back(std::pair<unsigned long long, cv::Point2d>(timeStamp, point));
+      }
+     
+    }
+    while (!myfile.bad() && !myfile.eof() && !myfile.fail());
+    myfile.close();
+  }
+  else
+  {
+    mitkThrow() << "Failed to open file " << fileName << " for reading." << std::endl;
+  }
+}
+
 
 
 //---------------------------------------------------------------------------

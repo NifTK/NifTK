@@ -108,6 +108,33 @@ int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName
   return numberLoaded;
 }
 
+//-----------------------------------------------------------------------------
+int TrackingAndTimeStampsContainer::SaveToDirectory(const std::string& dirName)
+{
+  int numberSaved = 0;
+  
+  boost::filesystem::path savePath (dirName);
+  if ( ! (( boost::filesystem::exists (savePath) ) || ( boost::filesystem::create_directories (savePath)) ) )
+  {
+    MITK_WARN << "TrackingAndTimeStampsContainer::SaveToDirectory failed to find or make save directory";
+    return numberSaved;
+  }
+
+  for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i ++ )
+  {
+
+    TimeStampsContainer::TimeStamp timeStamp = m_TimeStamps.GetTimeStamp(i);
+    cv::Matx44d matrix = m_TrackingMatrices[i];
+
+    std::string fileName = boost::lexical_cast<std::string>(timeStamp);
+    std::string fullFileName = dirName + fileName + ".txt";
+    mitk::SaveTrackerMatrix(fullFileName, matrix);
+    numberSaved++;
+  }
+  return numberSaved;
+}
+
+
 
 //-----------------------------------------------------------------------------
 void TrackingAndTimeStampsContainer::Insert(const TimeStampsContainer::TimeStamp& timeStamp, const cv::Matx44d& matrix)
@@ -166,6 +193,11 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
   cv::Matx44d interpolatedMatrix;
   std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
   std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
+
+  if ( m_TrackingMatrices.size() == 0 )
+  {
+    mitkThrow() << "TrackingAndTimeStampsContainer::InterpolateMatrix There are no tracking matrices set";
+  }
 
   if (m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion))
   {
