@@ -49,6 +49,8 @@ public:
   itkSetMacro (RightMaskFileName, std::string);
   itkSetMacro (OutputMaskImagePrefix, std::string);
   itkSetMacro (UndistortBeforeTriangulation, bool);
+  itkSetMacro (TrackingMatrixFileName, std::string);
+  itkSetMacro (HandeyeMatrixFileName, std::string); 
 
   bool Triangulate();
 
@@ -72,6 +74,8 @@ private:
   std::string m_RightToLeftExtrinsics; // the right to left camera transformation
   std::string m_OutputFileName; // the output file name
   std::string m_OutputMaskImagePrefix; // optional prefix to write out masking images
+  std::string m_TrackingMatrixFileName; // the optional tracking matrix name
+  std::string m_HandeyeMatrixFileName; // the optional handeye (leftLensToTracker) matrix file name
 
   bool m_UndistortBeforeTriangulation; //optionally undistort point pairs before triangulation
   std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;

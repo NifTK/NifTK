@@ -52,6 +52,8 @@ int main(int argc, char** argv)
     {
       triangulator->SetRightMaskFileName(rightMask);
     }
+    triangulator->SetTrackingMatrixFileName(trackerToWorld);
+    triangulator->SetHandeyeMatrixFileName(leftLensToTracker);
 
     if ( outputMaskImagePrefix.length() != 0 )
     {

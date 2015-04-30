@@ -23,26 +23,28 @@
 #include <niftkFileHelper.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
+#include <mitkOpenCVMaths.h>
 #include <mitkOpenCVImageProcessing.h>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
 Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
-: m_LeftMaskFileName("")
-, m_RightMaskFileName("")
-, m_LeftLensToWorldFileName("")
+: m_LeftLensToWorldFileName("")
 , m_Input2DPointPairsFileName("")
 , m_IntrinsicLeftFileName("")
 , m_IntrinsicRightFileName("")
 , m_RightToLeftExtrinsics("")
 , m_OutputFileName("")
+, m_LeftMaskFileName("")
+, m_RightMaskFileName("")
 , m_OutputMaskImagePrefix("")
 , m_BlankValue(0)
 , m_UndistortBeforeTriangulation(true)
+, m_TrackingMatrixFileName ("")
+, m_HandeyeMatrixFileName("")
 {
 }
-
 
 //-----------------------------------------------------------------------------
 Triangulate2DPointPairsTo3D::~Triangulate2DPointPairsTo3D()
@@ -106,12 +108,23 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
     cv::Mat rightDistortion = cvCreateMat (1,4,CV_64FC1);   // not used (yet)
     cv::Mat rightToLeftRotationMatrix = cvCreateMat (3,3,CV_64FC1);
     cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
+    cv::Mat trackerToWorld = cv::Mat::eye ( 4,4, CV_64FC1);
+    cv::Mat leftLensToTracker = cv::Mat::eye (4,4, CV_64FC1);
 
     // Load matrices. These throw exceptions if things fail.
     LoadCameraIntrinsicsFromPlainText(m_IntrinsicLeftFileName, &leftIntrinsic, &leftDistortion);
     LoadCameraIntrinsicsFromPlainText(m_IntrinsicRightFileName, &rightIntrinsic, &rightDistortion);
     LoadStereoTransformsFromPlainText(m_RightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
   
+    if ( m_TrackingMatrixFileName.length() != 0 ) 
+    {
+      LoadHandeyeFromPlainText ( m_TrackingMatrixFileName, &trackerToWorld);
+    }
+    if ( m_HandeyeMatrixFileName.length() != 0 ) 
+    {
+      LoadHandeyeFromPlainText ( m_HandeyeMatrixFileName,  &leftLensToTracker);
+    }
+
     ApplyMasks();
 
     if ( m_UndistortBeforeTriangulation )
@@ -152,6 +165,11 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
         rightToLeftTranslationVector,
         // choose an arbitrary threshold that is unlikely to overflow.
         std::numeric_limits<int>::max());
+    
+    //put them in tracker coordinates
+    pointsIn3D = leftLensToTracker * pointsIn3D;
+    //put them in word coordinates
+    pointsIn3D = trackerToWorld * pointsIn3D;
 
     mitk::PointSet::Pointer ps = mitk::PointSet::New();
     for (unsigned int i = 0; i < pointsIn3D.size(); i++)
