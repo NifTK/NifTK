@@ -109,7 +109,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
     LoadCameraIntrinsicsFromPlainText(m_IntrinsicLeftFileName, &leftIntrinsic, &leftDistortion);
     LoadCameraIntrinsicsFromPlainText(m_IntrinsicRightFileName, &rightIntrinsic, &rightDistortion);
     LoadStereoTransformsFromPlainText(m_RightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
-
+  
     ApplyMasks();
 
     // batch-triangulate all points.
@@ -148,9 +148,11 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
 {
   cv::Mat leftMask;
   cv::Mat rightMask;
+
   if ( m_LeftMaskFileName != "" )
   {
     leftMask = cv::imread(m_LeftMaskFileName);
+    WritePointsAsImage ( "/dev/shm/before_Leftmask" , leftMask);
     if ( ! leftMask.data )
     {
       MITK_ERROR << "Failed to open " << m_LeftMaskFileName;
@@ -161,6 +163,7 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
   if ( m_RightMaskFileName != "" )
   {
     rightMask = cv::imread(m_RightMaskFileName);
+    WritePointsAsImage ( "/dev/shm/before_Rightmask" , leftMask);
     if ( ! rightMask.data )
     {
       MITK_ERROR << "Failed to open " << m_RightMaskFileName;
@@ -168,5 +171,24 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
     unsigned int pointsRemoved = mitk::ApplyMask ( m_PointPairs , rightMask, m_BlankValue , false);
     MITK_INFO << "Removed " << pointsRemoved << " point pairs from vector using right mask";
   }
+  WritePointsAsImage ( "/dev/shm/after_Masks" , leftMask);
 }
+//-----------------------------------------------------------------------------
+void Triangulate2DPointPairsTo3D::WritePointsAsImage(const std::string& prefix, const cv::Mat& templateMat )
+{
+  cv::Mat leftImage = cv::Mat::zeros ( templateMat.rows, templateMat.cols , CV_8U );
+  cv::Mat rightImage = cv::Mat::zeros ( templateMat.rows, templateMat.cols , CV_8U );
+  std::vector<std::pair <cv::Point2d, cv::Point2d > >::iterator it = m_PointPairs.begin() ;
+
+  while ( it < m_PointPairs.end() ) 
+  {
+    cv::circle ( leftImage, it->first, 1 , cv::Scalar(255), 1, 1);
+    cv::circle ( rightImage,it->second, 1 , cv::Scalar(255), 1, 1);
+    it++;
+  }
+
+  cv::imwrite(prefix + "_leftPoints.png", leftImage);
+  cv::imwrite(prefix + "_rightPoints.png", rightImage);
+}
+    
 } // end namespace
