@@ -2602,7 +2602,7 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 void VLQt4Widget::UpdateTranslucentTriangles()
 {
   bool    thereIsSomethingTranslucent = true;
-  if (!m_TranslucentStructuresMerged)
+  //if (!m_TranslucentStructuresMerged)
   {
     thereIsSomethingTranslucent = MergeTranslucentTriangles();
   }
@@ -2710,6 +2710,9 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   if (m_OclService == 0)
     return false;
+
+  // hopefully the buffers wrapping vbos will have finished doing stuff.
+  glFinish();
 
   // Get context 
   cl_context clContext = m_OclService->GetContext();
@@ -2877,6 +2880,8 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   m_TranslucentSurface->normalArray()->updateBufferObject();
   m_TranslucentSurface->colorArray()->updateBufferObject();
   vlTriangles->indexBuffer()->updateBufferObject();
+
+  // this is good here! do not remove.
   glFinish();
 
 

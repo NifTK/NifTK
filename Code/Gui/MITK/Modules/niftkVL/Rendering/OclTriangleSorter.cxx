@@ -334,6 +334,10 @@ void mitk::OclTriangleSorter::InitKernels()
 /// \brief Main sort function
 bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triNum, cl_uint vertNum)
 {
+  // make sure caller's ogl part has finished.
+  glFinish();
+
+
   //Check if context & program available
   if (!this->Initialize())
   {
@@ -343,6 +347,7 @@ bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
   
   cl_int clStatus = 0;
 
+  glFinish();
   clStatus = clEnqueueAcquireGLObjects(m_CommandQue, 1, &mergedVertexBuf, 0, NULL, NULL);
   if (clStatus)
   {
@@ -447,6 +452,15 @@ bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
   delete buff2;
 */
 
+
+  // make sure our ocl part has finished before caller's ogl starts trampling all over it.
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
   return true;
 }
 
@@ -550,6 +564,12 @@ void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, 
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&vertOffset);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyAndUpdateIndices, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return;
+  }
 }
 
 bool mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size)
@@ -585,6 +605,12 @@ bool mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_ui
     CHECK_OCL_ERR(clStatus);
     return false;
   }
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   return true;
 }
@@ -604,6 +630,12 @@ void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, c
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&size);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyIndicesWithDist, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return;
+  }
 }
 
 
@@ -660,7 +692,12 @@ bool mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem vertexB
     CHECK_OCL_ERR(clStatus);
     return false;
   }
-
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
 /*
   cl_float * buff = new cl_float[numOfVertices];
@@ -739,6 +776,12 @@ bool mitk::OclTriangleSorter::ComputeTriangleDistances(
   }
 
   clStatus = clEnqueueNDRangeKernel(m_CommandQue, m_ckComputeTriangleDistances, 1, NULL, global_128, local_128, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  clStatus = clFinish(m_CommandQue);
   if (clStatus)
   {
     CHECK_OCL_ERR(clStatus);
@@ -955,8 +998,6 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
       return false;
     }
   }
-  
-  cl_uint nextSizePow2 = GetNextPowerOfTwo(datasetSize);
 
   for (unsigned int bitOffset = 0; bitOffset < m_SortBits; bitOffset += 4)
   {
@@ -1032,6 +1073,12 @@ bool mitk::OclTriangleSorter::RadixLocal(cl_uint datasetSize, cl_mem data, cl_me
     CHECK_OCL_ERR(clStatus);
     return false;
   }
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   return true;
 }
@@ -1072,6 +1119,12 @@ bool mitk::OclTriangleSorter::LocalHistogram(cl_uint datasetSize, const size_t* 
   }
 
   clStatus = clEnqueueNDRangeKernel(m_CommandQue, m_ckLocalHistogram, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  clStatus = clFinish(m_CommandQue);
   if (clStatus)
   {
     CHECK_OCL_ERR(clStatus);
@@ -1130,6 +1183,12 @@ bool mitk::OclTriangleSorter::RadixPermute(cl_uint datasetSize, const size_t* gl
   }
 
   clStatus = clEnqueueNDRangeKernel(m_CommandQue, m_ckRadixPermute, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  clStatus = clFinish(m_CommandQue);
   if (clStatus)
   {
     CHECK_OCL_ERR(clStatus);
