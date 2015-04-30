@@ -2928,6 +2928,13 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     return false;
   }
 
+  clStatus = clFinish(clCmdQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
   m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
@@ -3100,6 +3107,7 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     }
 
     vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+    glFinish();
     colorBufferOffset += colorBufSize;
     delete colorData;
  
