@@ -52,8 +52,14 @@ set(_include_plugins
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igiundistort
   uk.ac.ucl.cmic.igirmserror
-  uk.ac.ucl.cmic.igifootpedalhotkey
 )
+
+if(WIN32)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.igifootpedalhotkey
+  )
+endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI

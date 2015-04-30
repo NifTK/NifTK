@@ -469,6 +469,12 @@ cv::Point3d operator*(const cv::Matx44d& M, const cv::Point3d& p)
   return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
 }
 
+//-----------------------------------------------------------------------------
+std::pair < cv::Point3d , cv::Point3d > TransformPointPair(const cv::Matx44d& M, const std::pair < cv::Point3d, cv::Point3d >& p)
+{
+  return std::pair < cv::Point3d, cv::Point3d > ( M * p.first, M*p.second );
+}
+
 
 //-----------------------------------------------------------------------------
 bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance )
@@ -482,6 +488,108 @@ bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tol
     return false;
   }
 }
+
+//-----------------------------------------------------------------------------
+bool NearlyEqual(const cv::Point3d& p1, const cv::Point3d& p2, const double& tolerance )
+{
+  if ( fabs(( ( p1.x - p2.x ) + ( p2.y - p2.y ) + ( p1.z - p2.z ) )) < tolerance )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool ImageHeadersEqual ( const cv::Mat& m1 , const cv::Mat& m2 )
+{
+  bool equal = true;
+  if ( ! ( m1.type() == m2.type() ) )
+  {
+    equal = false;
+  }
+
+  if ( !( ( m1.rows == m2.rows ) && (m1.cols == m2.cols )  ) )
+  {
+    equal = false;
+  }
+  return equal;
+}
+
+//-----------------------------------------------------------------------------
+bool ImageDataEqual ( const cv::Mat& m1 , const cv::Mat& m2 , const double& tolerance) 
+{
+  bool equal = ImageHeadersEqual (m1, m2 );
+  
+  if ( ! equal )
+  {
+    MITK_WARN << "Attempted to compare data in matrices of different types or sizes";
+    return equal;
+  }
+  
+  double error = 0 ;
+  for ( unsigned int i = 0 ; i < m1.rows ; i ++ ) 
+  {
+    for ( unsigned int j = 0 ; j < m1.cols ; j ++ )
+    {
+      for ( unsigned int channel = 0 ; channel < m1.channels() ; channel++ )
+      {
+        switch ( m1.depth() )
+        {
+          case  CV_8U:
+          {
+            error += static_cast<double>(m1.ptr<unsigned char> (i,j)[channel]) - static_cast<double>(m2.ptr<unsigned char> (i,j)[channel]) ;
+            break;
+          }
+          case CV_8S:
+          {
+            error += static_cast<double>(m1.ptr<char> (i,j)[channel]) - static_cast<double>(m2.ptr<char> (i,j)[channel]) ;
+            break;
+          }
+          case CV_16U:
+          {
+            error += static_cast<double>(m1.ptr<unsigned int> (i,j)[channel]) - static_cast<double>(m2.ptr<unsigned int> (i,j)[channel]) ;
+            break;
+          }
+          case CV_16S:
+          {
+            error += static_cast<double>(m1.ptr<int> (i,j)[channel]) - static_cast<double>(m2.ptr<int> (i,j)[channel]) ;
+            break;
+          }
+          case CV_32S:
+          { 
+            error += static_cast<double>(m1.ptr<long int> (i,j)[channel]) - static_cast<double>(m2.ptr<long int> (i,j)[channel]) ;
+            break;
+          }
+          case CV_32F:
+          {
+            error += static_cast<double>(m1.ptr<float> (i,j)[channel]) - static_cast<double>(m2.ptr<float> (i,j)[channel]) ;
+            break;
+          }
+          case CV_64F:
+          {
+            error += static_cast<double>(m1.ptr<double> (i,j)[channel]) - static_cast<double>(m2.ptr<double> (i,j)[channel]) ;
+            break;
+          }
+          default:
+          {
+            MITK_WARN << "Called compare data in matrices of unknown depth " << m1.depth();
+            equal = false;
+            return equal;
+          }
+        }
+      }
+    }
+  }
+  if ( error > tolerance )
+  {
+    equal = false;
+  }
+  return equal;
+}
+
 
 //-----------------------------------------------------------------------------
 cv::Point2d operator/(const cv::Point2d& p1, const int& n)
@@ -2124,5 +2232,146 @@ std::string MatrixType ( const cv::Mat& matrix)
   return returnString;
 
 }
+
+//-----------------------------------------------------------------------------
+bool IsNaN ( const cv::Point2d& point)
+{
+  if ( ( boost::math::isnan ( point.x ))  || (boost::math::isnan (point.y)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+//-----------------------------------------------------------------------------
+bool IsNotNaNorInf ( const cv::Point2d& point)
+{
+  bool ok = true;
+  if ( ( boost::math::isnan ( point.x ))  || (boost::math::isnan (point.y)) )
+  {
+    ok = false;
+  }
+  if ( ( boost::math::isinf ( point.x ))  || (boost::math::isinf (point.y)) )
+  {
+    ok = false;
+  }
+  return ok;
+}
+
+//-----------------------------------------------------------------------------
+bool IsNotNaNorInf ( const cv::Point3d& point)
+{
+  bool ok = true;
+  if ( ( boost::math::isnan ( point.x ))  || (boost::math::isnan (point.y)) || (boost::math::isnan(point.z)) )
+  {
+    ok = false;
+  }
+  if ( ( boost::math::isinf ( point.x ))  || (boost::math::isinf (point.y)) || (boost::math::isinf(point.z)) )
+  {
+    ok = false;
+  }
+  return ok;
+}
+
+//-----------------------------------------------------------------------------
+double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0 )
+{
+  //courtesy Wolfram Mathworld
+  cv::Point3d x1;
+  cv::Point3d x2; 
+
+  x1 = line.first;
+  x2 = line.second;
+
+  cv::Point3d d1 = x1-x0;
+  cv::Point3d d2 = x2-x1;
+
+  return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
+}
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
+    cv::Point3d& midpoint)
+{
+  // Method 1. Solve for shortest line joining two rays, then get midpoint.
+  // Taken from: http://geomalgorithms.com/a07-_distance.html
+  double sc, tc, a, b, c, d, e;
+  double distance;
+
+  cv::Point3d Psc;
+  cv::Point3d Qtc;
+  cv::Point3d W0;
+
+  // Difference of two origins
+
+  W0.x = P0.x - Q0.x;
+  W0.y = P0.y - Q0.y;
+  W0.z = P0.z - Q0.z;
+
+  a = u.x*u.x + u.y*u.y + u.z*u.z;
+  b = u.x*v.x + u.y*v.y + u.z*v.z;
+  c = v.x*v.x + v.y*v.y + v.z*v.z;
+  d = u.x*W0.x + u.y*W0.y + u.z*W0.z;
+  e = v.x*W0.x + v.y*W0.y + v.z*W0.z;
+  sc = (b*e - c*d) / (a*c - b*b);
+  tc = (a*e - b*d) / (a*c - b*b);
+
+  if ( boost::math::isnan(sc) || boost::math::isnan(tc) || boost::math::isinf(sc) || boost::math::isinf(tc) )
+  {
+    //lines are parallel
+    distance = sqrt(W0.x*W0.x + W0.y*W0.y + W0.z * W0.z);
+    midpoint.x = std::numeric_limits<double>::quiet_NaN();
+    midpoint.y = std::numeric_limits<double>::quiet_NaN();
+    midpoint.z = std::numeric_limits<double>::quiet_NaN();
+    return distance;
+  }
+  Psc.x = P0.x + sc*u.x;
+  Psc.y = P0.y + sc*u.y;
+  Psc.z = P0.z + sc*u.z;
+  Qtc.x = Q0.x + tc*v.x;
+  Qtc.y = Q0.y + tc*v.y;
+  Qtc.z = Q0.z + tc*v.z;
+
+  distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
+                        +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
+                        +(Psc.z - Qtc.z)*(Psc.z - Qtc.z));
+
+  midpoint.x = (Psc.x + Qtc.x)/2.0;
+  midpoint.y = (Psc.y + Qtc.y)/2.0;
+  midpoint.z = (Psc.z + Qtc.z)/2.0;
+               
+  return distance;
+}
+
+//-----------------------------------------------------------------------------
+std::pair < cv::Point3d , cv::Point3d > TwoPointsToPLambda ( const std::pair < cv::Point3d , cv::Point3d >& twoPointLine ) 
+{
+  cv::Point3d delta = twoPointLine.first - twoPointLine.second;;
+  double length = sqrt ( ( delta.x * delta.x ) + ( delta.y * delta.y ) + (delta.z * delta.z) );
+  
+  cv::Point3d u = cv::Point3d (delta.x / length, delta.y/length, delta.z/length) ;
+
+  return ( std::pair < cv::Point3d , cv::Point3d > ( twoPointLine.first, u ) );
+}
+
+//-----------------------------------------------------------------------------
+cv::Point3d CrossProduct (const cv::Point3d& p1 , const cv::Point3d& p2)
+{
+  cv::Point3d cp;
+  cp.x = p1.y * p2.z - p1.z * p2.y;
+  cp.y = p1.z * p2.x - p1.x * p2.z;
+  cp.z = p1.x * p2.y - p1.y * p2.x;
+  return cp;
+}
+
+//-----------------------------------------------------------------------------
+double Norm (const cv::Point3d& p1)
+{
+  return sqrt ( p1.x * p1.x + p1.y * p1.y + p1.z*p1.z);
+}
+
 
 } // end namespace

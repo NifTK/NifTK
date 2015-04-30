@@ -14,10 +14,12 @@
 
 #include "../Conversion/ImageConversion.h"
 #include <mitkTestingMacros.h>
+#include <mitkOpenCVMaths.h>
 #include <mitkImageReadAccessor.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 #include <boost/gil/gil_all.hpp>
+#include <cv.h>
 
 // FIXME: how do i pull in non-test-driver code?
 #include "ImageTestHelper.cxx"
@@ -137,15 +139,46 @@ static void RGBATest()
   MITK_TEST_CONDITION(imagesAreTheSame, "MITK image [RGBA] is the same as test image");
 }
 
+//-----------------------------------------------------------------------------
+void ConversionLoopTest(const int ImageType )
+{
+//  MITK_TEST_BEGIN("mitkImageConversionLoopTest - " << ImageType);
+  cv::Mat input = cv::Mat(2,3,ImageType);
+  int channel = 0 ;
+  for ( int i = 0 ; i < 2 ; i ++ )
+  {
+    for ( int j = 0 ; j < 3 ; j++ )
+    {
+      for ( unsigned int c = 0; c < input.channels() ; c++ ) 
+      {
+        input.ptr<unsigned char> (i,j)[c] = static_cast<unsigned char> (i+j*9 + 5*c) ;
+      }
+    }
+  }
+ 
+  MITK_INFO << "Made image with " << input.depth() << " bits per channel";
+  mitk::Image::Pointer mitkImage = niftk::CreateMitkImage (&input);
+
+  cv::Mat output = niftk::MitkImageToOpenCVMat ( mitkImage );
+
+
+  MITK_TEST_CONDITION ( mitk::ImageHeadersEqual (input, output) , "Testing image headers equal" << std::endl);
+  MITK_TEST_CONDITION ( mitk::ImageDataEqual (input, output, 0.0) , "Testing image data equal" << std::endl );
+}
 
 //-----------------------------------------------------------------------------
-int ImageConversionTest(int /*argc*/, char* /*argv*/[])
+int ImageConversionTest(int argc, char* argv[])
 {
+  MITK_TEST_BEGIN("ImageConversionTests");
+
   // check whether testing code works
   TestAreImagesTheSame();
 
   RGBTest();
   RGBATest();
-
-  return EXIT_SUCCESS;
+  
+  ConversionLoopTest(CV_8UC1);
+  ConversionLoopTest(CV_8UC3);
+  ConversionLoopTest(CV_8UC4);
+  MITK_TEST_END();
 }

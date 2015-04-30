@@ -16,6 +16,7 @@
 #define mitkOpenCVFileIOUtils_h
 
 #include "niftkOpenCVExports.h"
+#include "mitkOpenCVPointTypes.h"
 #include <mitkTimeStampsContainer.h>
 #include <highgui.h>
 
@@ -83,9 +84,17 @@ extern "C++" NIFTKOPENCV_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::st
 extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory);
 
 /**
- * \brief Loads points from a flat text file.
+ * \brief Loads points from a flat text file with each line having the timestamp, the triangulated point, then the left and right screen points
  */
-extern "C++" NIFTKOPENCV_EXPORT void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName);
+extern "C++" NIFTKOPENCV_EXPORT void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points,
+    std::vector <mitk::ProjectedPointPair >& screenPoints, const std::string& fileName);
+
+/**
+ * \brief Loads points from a flat text file with each line having the time stamp, followed by the on screen points
+ */
+extern "C++" NIFTKOPENCV_EXPORT void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point2d> >& points,
+    const std::string& fileName);
+
 
 /**
  * \brief Saves points to a flat text file.

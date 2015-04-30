@@ -44,6 +44,11 @@ public:
   int LoadFromDirectory(const std::string& dirName);
 
   /**
+   * \brief Saves tracking data to directory.
+   */
+  int SaveToDirectory(const std::string& dirName);
+
+  /**
    * \brief Simply adds a TimeStamp+Matrix combo to the list.
    *
    * Most use-cases will load call LoadFromDirectory().

@@ -39,6 +39,31 @@ void ArithmaticTests()
   MITK_TEST_CONDITION (mitk::NearlyEqual (point1, point1, tolerance) , "Testing Nearly Equal " );
   MITK_TEST_CONDITION (mitk::NearlyEqual (( point1 + point2 ), cv::Point2d ( 1.5 , 1.3 ), tolerance), "Testing addition operator");
   MITK_TEST_CONDITION (mitk::NearlyEqual ((point4 - point3) ,cv::Point2d(0.8, 0.9), tolerance), "Testing subtraction operator");
+
+  cv::Point3d point3d_1 = cv::Point3d ( 1.0, 1.0, 1.0 );
+  cv::Point3d point3d_2 = cv::Point3d ( 4.0, 3.0, -1.0 );
+  cv::Matx44d mat44d_1;
+  cv::Mat mat ( 4,4,CV_64FC1 );
+  mat44d_1(0,0) = 1.0; mat44d_1(0,1) = 0.0; mat44d_1(0,2) = 0.0; mat44d_1(0,3) = 10.0;
+  mat44d_1(1,0) = 0.0; mat44d_1(1,1) = 1.0; mat44d_1(1,2) = 0.0; mat44d_1(1,3) = 16.0;
+  mat44d_1(2,0) = 0.0; mat44d_1(2,1) = 0.0; mat44d_1(2,2) = 1.0; mat44d_1(2,3) = 21.0;
+  mat44d_1(3,0) = 0.0; mat44d_1(3,1) = 0.0; mat44d_1(3,2) = 0.0; mat44d_1(3,3) = 1.0;
+
+  mat.at<double>(0,0) = 1.0; mat.at<double>(0,1) = 0.0; mat.at<double>(0,2) = 0.0; mat.at<double>(0,3) = 12.0;
+  mat.at<double>(1,0) = 0.0; mat.at<double>(1,1) = 1.0; mat.at<double>(1,2) = 0.0; mat.at<double>(1,3) = 14.0;
+  mat.at<double>(2,0) = 0.0; mat.at<double>(2,1) = 0.0; mat.at<double>(2,2) = 1.0; mat.at<double>(2,3) = 9.0;
+  mat.at<double>(3,0) = 0.0; mat.at<double>(3,1) = 0.0; mat.at<double>(3,2) = 0.0; mat.at<double>(3,3) = 1.0;
+
+  using namespace mitk;
+  cv::Point3d product = mat * point3d_1;
+  MITK_TEST_CONDITION (mitk::NearlyEqual(product, cv::Point3d(13.0, 15.0, 10.0), tolerance), "Checking cv::Mat * cv::Point3d operator");
+  product = mat44d_1 * point3d_1;
+  MITK_TEST_CONDITION (mitk::NearlyEqual(product, cv::Point3d(11.0, 17.0, 22.0), tolerance), "Checking cv::Matx44d * cv::Point3d operator");
+  std::pair < cv::Point3d, cv::Point3d > pairProduct = mitk::TransformPointPair ( mat44d_1, 
+      std::pair < cv::Point3d, cv::Point3d > ( point3d_1, point3d_2 ));
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pairProduct.first, cv::Point3d(11.0, 17.0, 22.0), tolerance), "Checking transform point pair first");
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pairProduct.second, cv::Point3d(14.0, 19.0, 20.0), tolerance), "Checking transform point pair second");
+
 }
 
 void RMSTest()
@@ -351,6 +376,77 @@ void PointInIntervalTest ( )
  
 }
 
+void DistanceToLineTest ()
+{
+  cv::Point3d u ( 0.0,0.0,0.0);
+  cv::Point3d v ( 1.0,1.0,1.0);
+  cv::Point3d x ( 0.0,1.0,0.5);
+  
+  double dtl = mitk::DistanceToLine (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
+  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line " << dtl);
+
+  cv::Point3d u1 ( 10.0, 10.0 , 10.0);
+  cv::Point3d v1 ( 11.0, 11.0, 11.0);
+
+  double dtl1 = mitk::DistanceToLine (std::pair<cv::Point3d, cv::Point3d>(u1,v1),x);
+  MITK_TEST_CONDITION( (dtl1 - 0.70711) < 1e-5 ,"Checking distance to line again " << dtl1);
+}
+
+void CrossProductTest ()
+{
+  cv::Point3d x ( 2.0,3.0,5.0);
+  cv::Point3d y ( 7.0,11.0,13.0);
+  cv::Point3d cp (-16.0,9.0,1.0);
+
+  MITK_TEST_CONDITION( mitk::NearlyEqual (mitk::CrossProduct(x,y),cp,1e-6),"Checking cross product " << mitk::CrossProduct(x,y));
+}
+
+void NormTest ()
+{
+  cv::Point3d x ( 2.0,3.0,5.0);
+  
+  MITK_TEST_CONDITION ( ( mitk::Norm (x) - 6.1644)  < 1e-4, "Checking point vector norm " << mitk::Norm(x) );
+}
+
+void DistanceBetweenLinesTest ()
+{
+  //a line through the origin an (1,1,0) 
+  cv::Point3d P0 (0,0,0);
+  cv::Point3d u (0.70711,0.7011,0);
+  //a line through (1,0,1) and (0,1,1)
+  cv::Point3d Q0 (1,0,1);
+  cv::Point3d v (-0.70711,0.7011,0);
+  cv::Point3d midPoint;
+  double distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
+  
+  MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
+}
+
+void TwoPointsToPLambdaTest ()
+{
+  //a line through the origin an (1,1,1) 
+  cv::Point3d P0 (0,0,0);
+  cv::Point3d P1 (1,1,1);
+  //a line through (1,1,1) and (-3,1,-3)
+  cv::Point3d Q0 (1,1,1);
+  cv::Point3d Q1 (-3,1,-3);
+
+  cv::Point3d x1;
+  cv::Point3d u1;
+  cv::Point3d x2;
+  cv::Point3d u2;
+
+  std::pair <cv::Point3d, cv::Point3d>  line1 = mitk::TwoPointsToPLambda (std::pair <cv::Point3d, cv::Point3d> ( P0,P1));
+  std::pair <cv::Point3d, cv::Point3d>  line2 = mitk::TwoPointsToPLambda (std::pair <cv::Point3d, cv::Point3d> ( Q0,Q1));
+  
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.first,cv::Point3d(0,0,0),1e-6),"Checking line 1 point " << line1.first);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.second,cv::Point3d(-1/sqrt(3),-1/sqrt(3),-1/sqrt(3)),1e-6),"Checking line 1 vector " << line1.second);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.first,cv::Point3d(1,1,1),1e-6),"Checking line 2 point " << line2.first);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32),0,4/sqrt(32)),1e-6),"Checking line 2 vector " << line2.second);
+}
+
+
 int mitkOpenCVMathTests(int argc, char * argv[])
 {
   // always start with this!
@@ -365,6 +461,11 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   AngleBetweenLinesTest();
   CheckIfLinesArePerpendicularTest();
   PointInIntervalTest();
+  DistanceToLineTest();
+  CrossProductTest();
+  NormTest();
+  DistanceBetweenLinesTest();
+  TwoPointsToPLambdaTest ();
   MITK_TEST_END();
 }
 
