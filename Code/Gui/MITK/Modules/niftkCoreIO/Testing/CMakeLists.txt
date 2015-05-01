@@ -12,16 +12,6 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cxx
-  mitkPointUtilsTest.cxx
-)
+MITK_CREATE_MODULE_TESTS(LABELS niftkCoreIO)
 
-set(MODULE_CUSTOM_TESTS
-  mitkMIDASOrientationUtilsTest.cxx
-  mitkMIDASAsAcquiredOrientationTest.cxx
-  mitkMIDASImageUtilsTest.cxx
-  mitkMIDASCompareImagesForEqualityTest.cxx
-  mitkCoordinateAxesDataRenderingTest.cxx
-)
+mitkAddCustomModuleTest(mitkCoordinateAxesDataReaderWriterServiceTest niftkCoordinateAxesDataReaderWriterServiceTest ${TEMP}/mitkCoordinateAxesDataReaderWriterServiceTest.4x4)

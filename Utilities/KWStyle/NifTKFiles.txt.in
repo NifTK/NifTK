@@ -4,3 +4,4 @@
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkEnvironment*
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFileHelper*
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFixedLengthFile*
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCoreIO/Internal/niftk*

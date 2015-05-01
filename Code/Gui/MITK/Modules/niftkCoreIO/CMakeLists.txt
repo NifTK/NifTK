@@ -12,16 +12,21 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cxx
-  mitkPointUtilsTest.cxx
+MITK_CREATE_MODULE(niftkCoreIO
+  EXPORT_DEFINE NIFTKCOREIO_EXPORT
+  INCLUDE_DIRS 
+  DEPENDS niftkCore
+  AUTOLOAD_WITH niftkCore
 )
 
-set(MODULE_CUSTOM_TESTS
-  mitkMIDASOrientationUtilsTest.cxx
-  mitkMIDASAsAcquiredOrientationTest.cxx
-  mitkMIDASImageUtilsTest.cxx
-  mitkMIDASCompareImagesForEqualityTest.cxx
-  mitkCoordinateAxesDataRenderingTest.cxx
+target_link_libraries(niftkCoreIO
+  niftkITK
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkCoreIO)
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

@@ -12,39 +12,40 @@
 
 =============================================================================*/
 
-#ifndef niftkCoreActivator_h
-#define niftkCoreActivator_h
+#ifndef niftkCoreIOActivator_h
+#define niftkCoreIOActivator_h
 
 #include "niftkCoordinateAxesDataReaderService.h"
 #include "niftkCoordinateAxesDataWriterService.h"
+#include "niftkPNMReaderService.h"
+#include "niftkPNMWriterService.h"
 #include <mitkIFileReader.h>
 #include <mitkIFileWriter.h>
-#include <mitkPNMReader.h>
-#include <mitkPNMWriter.h>
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
 
 namespace niftk {
 
-/*
- * This is the module activator for the "niftkCore" module. It registers core services
- */
-class CoreActivator : public us::ModuleActivator
+/**
+* @class CoreIOActivator
+* @brief The CoreIOActivator class
+*/
+class CoreIOActivator : public us::ModuleActivator
 {
 public:
 
-  CoreActivator();
+  CoreIOActivator();
   void Load(us::ModuleContext* context);
   void Unload(us::ModuleContext* );
 
 private:
 
-  std::auto_ptr<CoordinateAxesDataReaderService> m_CoordinateAxesDataReaderService;
-  std::auto_ptr<CoordinateAxesDataWriterService> m_CoordinateAxesDataWriterService;
+  std::auto_ptr<niftk::CoordinateAxesDataReaderService> m_CoordinateAxesDataReaderService;
+  std::auto_ptr<niftk::CoordinateAxesDataWriterService> m_CoordinateAxesDataWriterService;
   
-  std::auto_ptr<mitk::PNMReader> m_PNMReaderService;
-  std::auto_ptr<mitk::PNMWriter> m_PNMWriterService;
+  std::auto_ptr<niftk::PNMReaderService> m_PNMReaderService;
+  std::auto_ptr<niftk::PNMWriterService> m_PNMWriterService;
 };
 
 } // end namespace

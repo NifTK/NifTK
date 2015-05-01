@@ -27,9 +27,8 @@ namespace niftk {
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataReaderService::CoordinateAxesDataReaderService()
-  : AbstractFileReader(
-      mitk::CustomMimeType(niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()),
-      "NifTK Coordinate Axes Reader")
+: AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()),
+                     "NifTK Coordinate Axes Reader")
 {
   RegisterService();
 }
@@ -37,14 +36,22 @@ CoordinateAxesDataReaderService::CoordinateAxesDataReaderService()
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataReaderService::CoordinateAxesDataReaderService(const CoordinateAxesDataReaderService& other)
-  : mitk::AbstractFileReader(other)
+: mitk::AbstractFileReader(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataReaderService::~CoordinateAxesDataReaderService()
-{}
+{
+}
+
+
+//-----------------------------------------------------------------------------
+CoordinateAxesDataReaderService* CoordinateAxesDataReaderService::Clone() const
+{
+  return new CoordinateAxesDataReaderService(*this);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -62,13 +69,6 @@ std::vector< itk::SmartPointer<mitk::BaseData> > CoordinateAxesDataReaderService
 
   result.push_back(itk::SmartPointer<mitk::BaseData>(transform));
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-CoordinateAxesDataReaderService* CoordinateAxesDataReaderService::Clone() const
-{
-  return new CoordinateAxesDataReaderService(*this);
 }
 
 } // end namespace mitk

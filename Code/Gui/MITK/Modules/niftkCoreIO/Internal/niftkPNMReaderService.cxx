@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "mitkPNMReader.h"
-#include "../Internal/niftkCoreIOMimeTypes.h"
+#include "niftkPNMReaderService.h"
+#include "niftkCoreIOMimeTypes.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
@@ -26,25 +26,40 @@
 #include <vtkPNMWriter.h>
 #include <vtkImageData.h>
 
+namespace niftk
+{
 
-mitk::PNMReader::PNMReader()
-  : mitk::AbstractFileReader(CustomMimeType( niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME() ), niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION() )
+//-----------------------------------------------------------------------------
+PNMReaderService::PNMReaderService()
+: mitk::AbstractFileReader(mitk::CustomMimeType( niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME() ),
+                           niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION() )
 {
   m_ServiceReg = this->RegisterService();
 }
 
-mitk::PNMReader::PNMReader(const PNMReader &other)
+
+//-----------------------------------------------------------------------------
+PNMReaderService::PNMReaderService(const PNMReaderService &other)
   :mitk::AbstractFileReader(other)
 {
 }
 
-mitk::PNMReader * mitk::PNMReader::Clone() const
+
+//-----------------------------------------------------------------------------
+PNMReaderService::~PNMReaderService()
 {
-  return new PNMReader(*this);
 }
 
 
-std::vector<itk::SmartPointer<mitk::BaseData> > mitk::PNMReader::Read()
+//-----------------------------------------------------------------------------
+PNMReaderService* PNMReaderService::Clone() const
+{
+  return new PNMReaderService(*this);
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<itk::SmartPointer<mitk::BaseData> > PNMReaderService::Read()
 {
 
   std::vector<itk::SmartPointer<mitk::BaseData> > result;
@@ -64,7 +79,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::PNMReader::Read()
     pnmReader->Update();
     vtkSmartPointer<vtkImageData> vtkImageData = pnmReader->GetOutput();
 
-    mitk::Image::Pointer mitkInput = mitk::Image::New();  
+    mitk::Image::Pointer mitkInput = mitk::Image::New();
     mitkInput->Initialize(vtkImageData);
     mitkInput->SetVolume( vtkImageData->GetScalarPointer() );
     result.push_back(mitkInput.GetPointer());
@@ -78,3 +93,5 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::PNMReader::Read()
   }
   return result;
 }
+
+} // end namespace

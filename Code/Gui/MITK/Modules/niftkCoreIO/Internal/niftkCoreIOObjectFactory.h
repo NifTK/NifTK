@@ -12,26 +12,29 @@
 
 =============================================================================*/
 
-#ifndef mitkNifTKCoreObjectFactory_h
-#define mitkNifTKCoreObjectFactory_h
+#ifndef niftkCoreIOObjectFactory_h
+#define niftkCoreIOObjectFactory_h
 
 #include <mitkCoreObjectFactory.h>
-#include "niftkCoreExports.h"
+#include <mitkAbstractFileIO.h>
 
-namespace mitk {
+namespace niftk {
 
 /**
- * \class NifTKCoreObjectFactory
- * \brief Object factory class to instantiate or set properties on our non-IO related classes.
- */
-class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
+* \class CoreIOObjectFactory
+* \brief Object factory class to create and register our IO classes.
+*
+* Specifically, this class contains the logic to register a DRC specific
+* Analyze image reader, and NifTK specific Nifti reader.
+*/
+class CoreIOObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
-  mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
-  itkNewMacro(NifTKCoreObjectFactory);
+  mitkClassMacro(CoreIOObjectFactory, mitk::CoreObjectFactoryBase);
+  itkNewMacro(CoreIOObjectFactory);
 
   /// \see CoreObjectFactoryBase::CreateMapper
-  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+  virtual mitk::Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
 
   /// \see CoreObjectFactoryBase::SetDefaultProperties
   virtual void SetDefaultProperties(mitk::DataNode* node);
@@ -49,8 +52,9 @@ public:
   DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
 
 protected:
-  NifTKCoreObjectFactory();
-  virtual ~NifTKCoreObjectFactory();
+
+  CoreIOObjectFactory();
+  virtual ~CoreIOObjectFactory();
 
   void CreateFileExtensionsMap();
   MultimapType m_FileExtensionsMap;
@@ -58,9 +62,10 @@ protected:
 
 private:
 
+  std::vector<mitk::AbstractFileIO*> m_FileIOs;
+
 };
 
 } // end namespace
 
 #endif
-

@@ -14,6 +14,7 @@
 
 set(MODULE_DIRS
   niftkCore
+  niftkCoreIO
   niftkCoreGui
   niftkDnDDisplay
   niftkThumbnail
