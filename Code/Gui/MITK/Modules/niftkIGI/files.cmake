@@ -24,13 +24,14 @@ set(CPP_FILES
   SurfaceReconstruction/QDSCommon.cxx
   TrackedImage/mitkTrackedImage.cxx
   TrackedPointer/mitkTrackedPointer.cxx
-  PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
   Utils/mitkMakeGeometry.cxx
   # this one does not depend on pcl!
   PointClouds/mitkMergePointClouds.cxx
   CentreLines/mitkBifurcationToPointSet.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
+  MicroServices/niftkPointRegServiceI.cxx
+  MicroServices/niftkPointRegServiceRAII.cxx
 )
 
 if(BUILD_PCL)

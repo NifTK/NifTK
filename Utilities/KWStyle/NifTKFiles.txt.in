@@ -5,3 +5,11 @@
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFileHelper*
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFixedLengthFile*
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCoreIO/Internal/niftk*
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Maths/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Maths/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Registration/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Registration/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointRegService/Internal/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointRegService/Internal/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkIGI/MicroServices/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkIGI/MicroServices/niftk*.cxx

@@ -13,7 +13,7 @@
 #============================================================================*/
 
 
-set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore)
+set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore niftkOpenCVUtils niftkPointReg)
 
 # if cuda is available and enabled then we have possibility of doing
 # some computer vision stuff on the gpu.
@@ -23,7 +23,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
-  INCLUDE_DIRS Common CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
+  INCLUDE_DIRS CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
   DEPENDS ${_depends}
   PACKAGE_DEPENDS OpenCV
 )
@@ -54,4 +54,6 @@ if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkOpenCV)
 endif()
 
-add_subdirectory(Testing)
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

@@ -13,12 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Common/mitkOpenCVMaths.cxx
-  Common/mitkOpenCVImageProcessing.cxx
-  Common/mitkOpenCVFileIOUtils.cxx
-  Common/mitkOpenCVPointTypes.cxx
-  Common/mitkTimeStampsContainer.cxx
-  Common/mitkTrackingAndTimeStampsContainer.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
@@ -48,10 +42,6 @@ set(CPP_FILES
   CameraCalibration/Undistortion.cxx
   CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   CameraCalibration/mitkEvaluateIntrinsicParametersOnNumberOfFrames.cxx
-  Registration/mitkArunLeastSquaresPointRegistration.cxx
-  Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
-  Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
-  Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
   UltrasoundCalibration/itkInvariantPointCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
   UltrasoundCalibration/itkVideoHandEyeCalibrationCostFunction.cxx
