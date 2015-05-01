@@ -36,7 +36,11 @@ set(EP_DIRECTORY_PER_VERSION FALSE CACHE BOOL "Use separate directories for diff
 # cl.exe (Visual Studio compiler) crash with buffer overflow.
 # However, enabling this option breaks the packaging.
 
-set(EP_ALWAYS_USE_INSTALL_DIR FALSE CACHE BOOL "Use GDCM, ITK and VTK from their install directory. It breaks the packaging.")
+set(_initial_value_EP_ALWAYS_USE_INSTALL_DIR FALSE)
+if(MSVC)
+  set(_initial_value_EP_ALWAYS_USE_INSTALL_DIR TRUE)
+endif()
+set(EP_ALWAYS_USE_INSTALL_DIR ${_initial_value_EP_ALWAYS_USE_INSTALL_DIR} CACHE BOOL "Use GDCM, ITK and VTK from their install directory. It breaks the packaging.")
 
 # Compute -G arg for configuring external projects with the same CMake generator:
 if(CMAKE_EXTRA_GENERATOR)
