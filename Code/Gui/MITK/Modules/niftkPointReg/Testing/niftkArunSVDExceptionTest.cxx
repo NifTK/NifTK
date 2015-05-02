@@ -54,8 +54,6 @@ int niftkArunSVDExceptionTest ( int argc, char * argv[] )
     std::cout << "Caught exception e=" << e.what() << std::endl;
   }
 
-  mitkThrow() << "Forcing an exception";
-
   // always end with this!
   MITK_TEST_END();
 }
