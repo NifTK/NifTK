@@ -21,7 +21,6 @@
 
 #include <itkTransformFileWriter.h>
 #include <itkTransformFactory.h>
-#include <itkNIFTKTransformIOFactory.h>
 
 #include <itkGE5000_TomosynthesisGeometry.h>
 #include <itkGE6000_TomosynthesisGeometry.h>
@@ -702,8 +701,6 @@ int main(int argc, char** argv)
   if ( fileOutputGeometry.length() > 0 ) {
 
     geometry->Print(std::cout);
-
-    itk::ObjectFactoryBase::RegisterFactory(itk::NIFTKTransformIOFactory::New());
 
     ProjectionGeometryType::EulerAffineTransformPointerType pAffineTransform;
     ProjectionGeometryType::PerspectiveProjectionTransformPointerType pPerspectiveTransform;

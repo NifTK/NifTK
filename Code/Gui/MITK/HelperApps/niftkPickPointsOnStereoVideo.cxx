@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     projector->SetFrequency(frequency*2);
     projector->SetOrderedPoints(orderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
+    projector->SetWriteAnnotatedImages(saveAnnotatedImages);
     
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
@@ -67,6 +68,7 @@ int main(int argc, char** argv)
       return -1;
     }
     matcher->SetFlipMatrices(FlipTracking);
+    matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
     projector->SetMatcherCameraToTracker(matcher);

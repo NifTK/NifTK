@@ -94,6 +94,11 @@ public:
 
   /// Set an optional mask image
   itkSetObjectMacro( Mask, MaskImageType );
+  /// Get the computed mask image
+  itkGetObjectMacro( Mask, MaskImageType );
+
+  /// Get the computed bias field
+  itkGetObjectMacro( BiasField, InputImageType );
 
 protected:
   UCLN4BiasFieldCorrectionFilter();
@@ -110,6 +115,7 @@ protected:
   float m_NumberOfControlPoints;
 
   MaskImagePointer m_Mask;
+  InputImagePointer m_BiasField;
 
   void PrintSelf(std::ostream&os, Indent indent) const;
 

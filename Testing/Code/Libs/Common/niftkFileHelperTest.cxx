@@ -17,6 +17,7 @@
 #include <niftkFileHelper.h>
 #include <niftkEnvironmentHelper.h>
 #include <niftkConversionUtils.h>
+#include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -387,6 +388,43 @@ int TestModifyImageFileSuffix()
 }
 
 
+//-----------------------------------------------------------------------------
+int TestModifyFileSuffix()
+{
+  std::string ostr;
+  if (!((ostr=niftk::ModifyFileSuffix("", "")) == "" ))
+  {
+    std::cerr << "The method niftk::ModifyFileSuffix should "
+              << "return an empty string if the inputs are empty [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyFileSuffix("file.txt", "")) == "file" ))
+  {
+    std::cerr << "The method niftk::ModifyFileSuffix should remove the suffix " 
+              << "if the input suffix has zero length [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyFileSuffix("file.txt", ".txt")) == "file.txt" ))
+  {
+    std::cerr << "The method niftk::ModifyFileSuffix should return the input filename " 
+              << "if the input suffix is identical [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (!((ostr=niftk::ModifyFileSuffix("file.txt", "_hello.txt")) 
+             == "file_hello.txt" ))
+  {
+    std::cerr << "The method niftk::ModifyFileSuffix should return the input filename " 
+              << "with the suffix replaced by the new string [incorrect: " << ostr << "]." 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -439,6 +477,10 @@ int niftkFileHelperTest(int argc, char * argv[])
   else if (testNumber == 10)
   {
     return TestModifyImageFileSuffix();
+  }
+  else if (testNumber == 11)
+  {
+    return TestModifyFileSuffix();
   }
   else
   {

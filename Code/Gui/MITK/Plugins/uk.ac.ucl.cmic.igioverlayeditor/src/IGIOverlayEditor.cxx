@@ -279,8 +279,7 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
 
-    berry::IPreferences::Pointer prefs = this->GetPreferences();
-    this->OnPreferencesChanged(dynamic_cast<berry::IBerryPreferences*>(prefs.GetPointer()));
+    QMetaObject::invokeMethod(this, "OnPreferencesChanged", Qt::QueuedConnection);
 
     this->RequestUpdate();
 
@@ -303,6 +302,13 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
       eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), propertiesRecordingStarted);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::OnPreferencesChanged()
+{
+  this->OnPreferencesChanged(dynamic_cast<berry::IBerryPreferences*>(this->GetPreferences().GetPointer()));
 }
 
 

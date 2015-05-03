@@ -24,35 +24,35 @@ endif()
 
 if(BUILD_NIFTYREG)
 
-  set(proj NiftyReg)
-  set(proj_DEPENDENCIES )
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
-  set(NIFTYREG_DEPENDS ${proj})
+  set(version "7ac1f44ab7")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
 
   if(NOT DEFINED NIFTYREG_ROOT)
 
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
-
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_NIFTYREG}
-      URL_MD5 ${NIFTK_CHECKSUM_NIFTYREG}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYREG}
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      CMAKE_GENERATOR ${gen}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_ALL_DEP:BOOL=ON
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
-      )
+    )
 
     set(NIFTYREG_ROOT ${proj_INSTALL})
+
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading NiftyReg from ${NIFTYREG_ROOT}")
 

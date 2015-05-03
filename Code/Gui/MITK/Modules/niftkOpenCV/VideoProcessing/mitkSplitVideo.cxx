@@ -19,6 +19,8 @@
 #include <highgui.h>
 #include <fstream>
 
+#include <boost/lexical_cast.hpp>
+
 namespace mitk {
 
 //-----------------------------------------------------------------------------

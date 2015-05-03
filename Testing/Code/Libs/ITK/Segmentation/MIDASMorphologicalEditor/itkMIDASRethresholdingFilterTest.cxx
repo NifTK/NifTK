@@ -42,7 +42,7 @@ int itkMIDASRethresholdingFilterTest(int argc, char * argv[])
 
   // Declare the types of the images
   const unsigned int Dimension = 3;
-  typedef int PixelType;
+  typedef short PixelType;
 
   typedef itk::Image<PixelType, Dimension> ImageType;
   typedef itk::ImageFileReader<ImageType>  ImageFileReaderType;
@@ -59,7 +59,7 @@ int itkMIDASRethresholdingFilterTest(int argc, char * argv[])
   thresholdingFilter->SetInsideValue(1);
   thresholdingFilter->SetOutsideValue(0);
   thresholdingFilter->SetLowerThreshold(atoi(argv[2]));
-  thresholdingFilter->SetUpperThreshold(std::numeric_limits<int>::max());
+  thresholdingFilter->SetUpperThreshold(std::numeric_limits<PixelType>::max());
   thresholdingFilter->Update();
 
   RethresholdingFilterType::Pointer rethresholdingFilter = RethresholdingFilterType::New();

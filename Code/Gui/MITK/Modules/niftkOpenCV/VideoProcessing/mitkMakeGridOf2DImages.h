@@ -38,7 +38,8 @@ public:
   void MakeGrid(const std::string &inputDirectory,
                 const std::vector<int>& imageSize,
                 const std::vector<int>& gridDimensions,
-                const std::string &outputImageFile
+                const std::string &outputImageFile,
+                const bool fillLengthWise
                 );
 
 protected:

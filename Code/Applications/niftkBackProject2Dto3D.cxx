@@ -20,7 +20,6 @@
 #include <itkTransformFileReader.h>
 #include <itkTransformFileWriter.h>
 #include <itkBackwardImageProjector2Dto3D.h>
-#include <itkNIFTKTransformIOFactory.h>
 
 #include <itkLogHelper.h>
 
@@ -82,9 +81,6 @@ int main(int argc, char** argv)
 
   typedef itk::ImageFileWriter< ImageType3D > OutputImageWriterType;
   
-  itk::ObjectFactoryBase::RegisterFactory(itk::NIFTKTransformIOFactory::New());
-
-
   bool flgDebug = false;
 
   bool flgSingleThreadedExecution = false; // Perform single threaded execution

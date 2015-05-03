@@ -24,22 +24,26 @@
 #include <QCoreApplication>
 #include <sstream>
 
-QSet<int> QmitkIGIOpenCVDataSource::m_SourcesInUse = QSet<int>();
+
+//-----------------------------------------------------------------------------
+QMutex    QmitkIGIOpenCVDataSource::s_Lock(QMutex::Recursive);
+QSet<int> QmitkIGIOpenCVDataSource::s_SourcesInUse;
+
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_VideoSource(NULL)
 {
-  m_Lock.lock();
+  s_Lock.lock();
   unsigned int sourceCounter = 0;
-  while(m_SourcesInUse.contains(sourceCounter))
+  while(s_SourcesInUse.contains(sourceCounter))
   {
     sourceCounter++;
   }
-  m_SourcesInUse.insert(sourceCounter);
+  s_SourcesInUse.insert(sourceCounter);
   m_ChannelNumber = sourceCounter;
-  m_Lock.unlock();
+  s_Lock.unlock();
   
   qRegisterMetaType<mitk::VideoSource*>();
 
@@ -74,9 +78,9 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
-  m_Lock.lock();
-  m_SourcesInUse.remove(m_ChannelNumber);
-  m_Lock.unlock();
+  s_Lock.lock();
+  s_SourcesInUse.remove(m_ChannelNumber);
+  s_Lock.unlock();
 
   // explicitly tell base class to stop the thread.
   // otherwise there's a race condition where this class has been cleaned up but the thread

@@ -71,8 +71,6 @@
 #include <vnl/vnl_double_3.h>
 #include <vnl/algo/vnl_levenberg_marquardt.h>
 
-#include <boost/filesystem.hpp>
-
 namespace itk
 {
 
@@ -102,7 +100,7 @@ public:
   typedef float RealType;
     
   typedef itk::Image<InputPixelType, ImageDimension> InternalImageType;
-  typedef itk::Image<InputPixelType, SliceDimension> AxialImageType;
+  typedef itk::Image<RealType, SliceDimension> AxialImageType;
 
   typedef itk::Vector<RealType,     DataDimension>        VectorType;
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
@@ -183,7 +181,8 @@ public:
   void SetMarchingK2( float k2 ) { fMarchingK2 = k2; }
   void SetMarchingTime( float t ) { fMarchingTime = t; }
 
-  void SetCropDistancePosteriorToMidSternum( float fDistIn ) { this->cropDistPosteriorToMidSternum = fDistIn; }
+  void SetCoilCropDistance( float cropDist ) { coilCropDistance = cropDist; }
+  void SetCropDistancePosteriorToMidSternum( float fDistIn ) { cropDistPosteriorToMidSternum = fDistIn; }
   
   void SetOutputBIFS( std::string fn ) { fileOutputBIFs = fn; }
   void SetSigmaBIF( float sig ){ sigmaBIF = sig; }
@@ -198,6 +197,8 @@ public:
   void SetOutputImageMaxClosed( std::string fn ) { fileOutputMaxClosedImage = fn; }
   void SetOutputBackground( std::string fn ) { fileOutputBackground = fn; }
   void SetOutputChestPoints( std::string fn ) { fileOutputChestPoints = fn; }
+
+  void SetPectoralControlPointSpacing( float d ) { pecControlPointSpacing = d; }
   void SetOutputPectoralMask( std::string fn ) { fileOutputPectoral = fn; }
   void SetOutputPecSurfaceMask( std::string fn ) { fileOutputPectoralSurfaceMask = fn; }
 
@@ -207,6 +208,7 @@ public:
   
   void SetOutputPectoralSurf( std::string fn ) { fileOutputPectoralSurfaceVoxels = fn; }
   
+  void SetExcludeAxilla( bool flag ) { flgExcludeAxilla = flag; }
   void SetCropFit( bool flag ) { flgCropWithFittedSurface = flag; }
   void SetOutputBreastFittedSurfMask( std::string fn ) { fileOutputFittedBreastMask = fn; }
 
@@ -296,6 +298,7 @@ protected:
   bool flgRegGrowZcoord;
 
   bool flgCropWithFittedSurface;
+  bool flgExcludeAxilla;
 
   unsigned int i;
 
@@ -318,7 +321,10 @@ protected:
 
   float sigmaBIF;
 
+  float coilCropDistance;
   float cropDistPosteriorToMidSternum;
+
+  float pecControlPointSpacing;
 
   std::string fileOutputBIFs;
 
@@ -437,7 +443,7 @@ protected:
   void SegmentBackground( void );
 
   /// Compute a 2D map of the height of the patient's anterior skin surface
-  void ComputeElevationOfAnteriorSurface( void );
+  void ComputeElevationOfAnteriorSurface( bool flgCoilCrop=false );
 
   /// Find a point in the surface offset from the nipple
   typename InternalImageType::IndexType 
@@ -452,6 +458,8 @@ protected:
 							   unsigned long &iPointPec,
                                                            bool flgIncludeNippleSeeds=false );
 
+  /// Discard anything not within the skin elevation mask  
+  void CropTheMaskAccordingToEstimateOfCoilExtentInCoronalPlane( void );
   /// Discard anything not within a B-Spline fitted to the breast skin surface
   void MaskWithBSplineBreastSurface( RealType rYHeightOffset );
   /// Mask with a sphere centered on each breast
@@ -523,7 +531,7 @@ protected:
 				       const typename InternalImageType::DirectionType &direction,
 				       const RealType rYHeightOffset, 
 				       const int splineOrder, 
-				       const int numOfControlPoints,
+				       const RealType controlPointSpacingInMM,
 				       const int numOfLevels,
 				       bool correctSurfaceOffest );
 

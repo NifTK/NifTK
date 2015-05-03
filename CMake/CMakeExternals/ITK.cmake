@@ -22,8 +22,11 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
 endif()
 
-set(proj ITK)
-set(proj_DEPENDENCIES GDCM)
+set(version "4.5.1-3e550bf8")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
+
+niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
+set(proj_DEPENDENCIES GDCM VTK)
 
 if(MITK_USE_Python)
   list(APPEND proj_DEPENDENCIES CableSwig)
@@ -31,8 +34,6 @@ endif()
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
-
-set(ITK_DEPENDS ${proj})
 
 if(NOT DEFINED ITK_DIR)
 
@@ -42,7 +43,7 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
-  
+
   if(MITK_USE_Python)
 
     list(APPEND additional_cmake_args
@@ -77,7 +78,7 @@ if(NOT DEFINED ITK_DIR)
          -DOpenCV_DIR:PATH=${OpenCV_DIR}
         )
   endif()
-  
+
   if (BUILD_ITKFFTW)
     if(WIN32)
       # On Windows, you have to precompile one.
@@ -103,30 +104,34 @@ if(NOT DEFINED ITK_DIR)
 
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.5.1.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
-    URL ${NIFTK_LOCATION_ITK}
-    URL_MD5 ${NIFTK_CHECKSUM_ITK}
-    INSTALL_COMMAND ""
+    LIST_SEPARATOR ^^
+    PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${ITK_PATCH_COMMAND}
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       ${additional_cmake_args}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+      -DModule_ITKVtkGlue:BOOL=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(ITK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(ITK_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(ITK_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading ITK from ${ITK_DIR}")
 
 else()

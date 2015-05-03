@@ -246,14 +246,9 @@ add_test(Reg2D-Multi-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MultiRes2DMeanS
 add_test(Reg2D-Multi-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MultiRes2DMeanSquaresTest 1 ${INPUT_DATA}/BrainProtonDensitySlice.png ${INPUT_DATA}/BrainProtonDensitySlice.png -5 -5 0 0)
 add_test(Reg2D-Multi-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MultiRes2DMeanSquaresTest 2 ${INPUT_DATA}/BrainProtonDensitySlice.png ${INPUT_DATA}/BrainProtonDensitySlice.png 5 5 0 0)
 add_test(Reg2D-Multi-4 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MultiRes2DMeanSquaresTest 2 ${INPUT_DATA}/BrainProtonDensitySlice.png ${INPUT_DATA}/BrainProtonDensitySlice.png -5 -5 0 0)
-add_test(Reg2D-Mask-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii  1 0 0 0 0 0 0.0001)
-add_test(Reg2D-Mask-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest OFF ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii 1 0 0 0 0 0 0.0001)
-add_test(Reg2D-Mask-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii 3 3 0 0 0 0 0.0001)
-
-#add_test(Reg2D-TaR-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DMultiStageMethodTest 2 ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii  0 0 0 0 0 0)
-#add_test(Reg2D-TaR-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DMultiStageMethodTest 3 ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii  0 0 0 0 0 0)
-#add_test(Reg2D-TaR-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DMultiStageMethodTest 4 ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii  0 0 0 0 0 0)
-#add_test(Reg2D-TaR-4 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DMultiStageMethodTest 2 ON ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle-x1-y1-r1.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle_REG.nii ${INPUT_DATA}/ADNI-C-052_S_1250-Scr-01873-middle-x1-y1-r1_REG.nii  0 0 0 0 0 0)
+add_test(Reg2D-Mask-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest ON ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii  1 0 0 0 0 0 0.0001)
+add_test(Reg2D-Mask-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest OFF ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii 1 0 0 0 0 0 0.0001)
+add_test(Reg2D-Mask-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SingleRes2DCorrelationMaskTest ON ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.slice-87.threshold-150.nii 3 3 0 0 0 0 0.0001)
 
 # Filter. The aim is just to test that the filter can launch the registration and resample.
 add_test(RegFilter1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} ImageRegistrationFilterTest ${INPUT_DATA}/BrainProtonDensitySlice.png ${INPUT_DATA}/BrainProtonDensitySlice.png)
@@ -280,6 +275,13 @@ add_test(NondirectionalDerivativeOperatorTest ${REGISTRATION_TOOLBOX_INTEGRATION
 add_test(SSD-Registration-Force-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SSDRegistrationForceFilterTest ${INPUT_DATA}/fluid_fixed_10_x_10.png ${INPUT_DATA}/fluid_fixed_10_x_10_1_pixel_diff.png 1.9659821730068243 0.0001 4 2 2287.5 4575 )
 add_test(CC-Registration-Force-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} CrossCorrelationDerivativeForceFilterTest ${INPUT_DATA}/ellipse-128-128-128-50-45-40.nii ${INPUT_DATA}/ellipse-128-128-128-50-50-50.nii 1e-10 76 64 28 2.757567e-06 0 -2.757567e-06)
 add_test(JacTest-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS}  ForwardDifferenceDisplacementFieldJacobianDeterminantFilterTest)
+
+set_tests_properties(FFD-Reg-MR-15 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-16 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-17 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-18 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-19 PROPERTIES TIMEOUT 600)
+set_tests_properties(FFD-Reg-MR-20 PROPERTIES TIMEOUT 600)
 
 #################################################################################
 # Build instructions.

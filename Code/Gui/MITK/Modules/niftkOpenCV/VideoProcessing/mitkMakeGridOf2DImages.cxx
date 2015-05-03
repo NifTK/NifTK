@@ -40,7 +40,8 @@ MakeGridOf2DImages::~MakeGridOf2DImages()
 void MakeGridOf2DImages::MakeGrid(const std::string &inputDirectory,
                                   const std::vector<int>& imageSize,
                                   const std::vector<int>& gridDimensions,
-                                  const std::string &outputImageFile
+                                  const std::string &outputImageFile,
+                                  const bool fillLengthWise
                                  )
 {
 
@@ -60,10 +61,6 @@ void MakeGridOf2DImages::MakeGrid(const std::string &inputDirectory,
   if (files.size() == 0)
   {
     mitkThrow() << "ERROR: No files found in:" << inputDirectory;
-  }
-  if (files.size() < gridDimensions[0]*gridDimensions[1])
-  {
-    mitkThrow() << "ERROR: There are not enough files for the requested number of tiles!";
   }
 
   cv::Mat firstImage;
@@ -94,27 +91,60 @@ void MakeGridOf2DImages::MakeGrid(const std::string &inputDirectory,
     }
   }
 
-  if (images.size() < gridDimensions[0]*gridDimensions[1])
-  {
-    mitkThrow() << "ERROR: Not enough images for " << gridDimensions[0] << " x " << gridDimensions[1];
-  }
-
   // create output image.
   cv::Mat output = cvCreateMat (imageSize[1], imageSize[0], CV_8UC1);
 
-  for (int y = 0; y < gridDimensions[1]; y++)
+  if (!fillLengthWise)
+  {
+    for (int y = 0; y < gridDimensions[1]; y++)
+    {
+      for (int x = 0; x < gridDimensions[0]; x++)
+      {
+        int imageNumber = y*gridDimensions[0] + x;
+
+        for (int j = 0; j < firstImage.rows; j++)
+        {
+          for (int i = 0; i < firstImage.cols; i++)
+          {
+            int outputPixelX = x*firstImage.cols + i;
+            int outputPixelY = y*firstImage.rows + j;
+
+            if (imageNumber < images.size())
+            {
+              output.at<uchar>(outputPixelY, outputPixelX, 0) = images[imageNumber].at<uchar>(j, i, 0);
+            }
+            else
+            {
+              output.at<uchar>(outputPixelY, outputPixelX, 0) = 0;
+            }
+          }
+        }
+      }
+    }
+  }
+  else
   {
     for (int x = 0; x < gridDimensions[0]; x++)
     {
-      int imageNumber = y*gridDimensions[0] + x;
-
-      for (int j = 0; j < firstImage.rows; j++)
+      for (int y = 0; y < gridDimensions[1]; y++)
       {
-        for (int i = 0; i < firstImage.cols; i++)
+        int imageNumber = y + gridDimensions[1]*x;
+
+        for (int j = 0; j < firstImage.rows; j++)
         {
-          int outputPixelX = x*firstImage.cols + i;
-          int outputPixelY = y*firstImage.rows + j;
-          output.at<uchar>(outputPixelY, outputPixelX, 0) = images[imageNumber].at<uchar>(j, i, 0);
+          for (int i = 0; i < firstImage.cols; i++)
+          {
+            int outputPixelX = x*firstImage.cols + i;
+            int outputPixelY = y*firstImage.rows + j;
+            if (imageNumber < images.size())
+            {
+              output.at<uchar>(outputPixelY, outputPixelX, 0) = images[imageNumber].at<uchar>(j, i, 0);
+            }
+            else
+            {
+              output.at<uchar>(outputPixelY, outputPixelX, 0) = 0;
+            }
+          }
         }
       }
     }

@@ -66,7 +66,14 @@
       <label>If output file exists, ask if you want to overwrite it</label>
       <default>0</default>
     </boolean>
- 
+
+    <boolean>
+      <name>saveAnnotatedImages</name>
+      <longflag>saveAnnotatedImages</longflag>
+      <description>Save the annotated images for later reference</description>
+      <label>Save annotated Images</label>
+      <default>0</default>
+    </boolean>
 
   </parameters>
   
@@ -79,6 +86,14 @@
       <longflag>FlipTracking</longflag>
       <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
       <label>Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+    
+    <boolean>
+      <name>WriteTimingErrors</name>
+      <longflag>WriteTimingErrors</longflag>
+      <description>Write the timing errors out to file</description>
+      <label>Write the timing errors out to file</label>
       <default>0</default>
     </boolean>
 
