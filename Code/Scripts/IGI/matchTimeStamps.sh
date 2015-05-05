@@ -23,7 +23,7 @@ function Usage()
 cat <<EOF
 Scan time stamped files in 1st directory and find best match in 2nd directory
 Outputs timing errors and creates symbolic links to matched files
-Usage: matchTimeStamps.bash directory1 directory2
+Usage: matchTimeStamps.bash directory1 directory2 suffix timingLag
 EOF
 exit 127
 }
@@ -31,31 +31,46 @@ exit 127
 # Check args
 
 check_for_help_arg "$*"
-if [ $? -eq 1 ]; then
+if [ $# -eq 1 ]; then
   Usage
 fi
 dir1=$1
 dir2=$2
+if [ $# -lt 3 ]
+then
+	suffix=".txt"
+else
+	suffix=$3
+fi
+if [ $# -lt 4 ] 
+then
+	timingLag=0
+else
+	timingLag=$4
+fi
 
-if [ -z ${dir1} ]; then
+echo $suffix $timingLag
+
+if [ -z "${dir1}" ]; then
   Usage
 fi
 
-if [ -z ${dir2} ]; then
+if [ -z "${dir2}" ]; then
   Usage
 fi
 
-timesIn=$(ls $dir1 | grep -c $)
-matchTimes=$(ls $dir2 | grep -c $)
+timesIn=$(ls $dir1/???????????????????${suffix} | grep -c $)
+matchTimes=$(ls "$dir2" | grep -c $)
 
 echo There are $timesIn files in dir 1 and $matchTimes in dir 2
 
-timesIn=$(ls $dir1)
-matchTimes=$(ls $dir2)
+timesIn=$(ls $dir1/???????????????????${suffix} | tr -s '/')
+matchTimes=$(ls "$dir2")
 
 for time in $timesIn
 do
-	t1=${time%.*}
+	t1=${time%${suffix}*}
+	t1=${t1##*/}
 	echo best match for $t1 is ...
 	bestDelta=$t1
 	bestMatch=0
@@ -74,6 +89,11 @@ do
 		fi
 	done
 	echo $bestMatch with delta = $bestDelta
-	ln -s $dir2/$bestMatch.txt $dir1/$t1.match
+#	ln -s $dir2/$bestMatch.txt $dir1/$t1.match
+
+	here=$(pwd)
+	cd $dir1
+	 	ln -s "${here}/${dir2}/${bestMatch}.txt" $t1.match
+	cd $here
 done
 
