@@ -47,7 +47,10 @@ do
 	do
 		coord=$(grep -m ${point} -A 3 "<point>" ${file} | tail -n 1 | tr -d "[" | tr -d "]" | tr -d " " | tr -s "," "\t") 
 		index=$(grep -m ${point} -A 1 "<point>" ${file} | tail -n 1 | cut -d \> -f 2 | cut -f 1 -d \<)
-		echo -e ${frame}"\t"${index}"\t"${coord} | grep -v "\-1 \-1" >> GSPointsLeft.txt
+#		if [ $index -ne 5 ]
+#		then
+			echo -e ${frame}"\t"${index}"\t"${coord} | grep -v "\-1 \-1" >> GSPointsLeft.txt
+#		fi
 		point=$(($point+1))
 	done
 done
@@ -65,7 +68,10 @@ do
 	do
 		coord=$(grep -m ${point} -A 3 "<point>" ${file} | tail -n 1 | tr -d "[" | tr -d "]" | tr -d " " | tr -s "," "\t")
 		index=$(grep -m ${point} -A 1 "<point>" ${file} | tail -n 1 | cut -d \> -f 2 | cut -f 1 -d \<)
-		echo -e ${frame}"\t"${index}"\t"${coord} | grep -v "\-1 \-1" >> GSPointsRight.txt
+		if [ $index -ne 5 ]
+		then
+			echo -e ${frame}"\t"${index}"\t"${coord} | grep -v "\-1 \-1" >> GSPointsRight.txt
+		fi
 		point=$(($point+1))
 	done
 done

@@ -40,7 +40,6 @@ masks=$(ls *leftMask.png)
 for mask in $masks 
 do
 	timestamp=${mask%_leftMask.png*}
-	echo $timestamp
 	OK=1
 	if [ -e ${timestamp}_rightMask.png ]
 	then
@@ -64,5 +63,20 @@ do
 		echo "Couldn't find ${timestamp}_rightMask.png"
 	fi
 
+	if [ $OK -eq 0 ]
+	then
+		echo Found everything I need for $mask
+		niftkImageFeatureMatching --left ${timestamp}_left.png --right ${timestamp}_right.png --output ${timestamp}_pointPairs.txt
+
+		niftkTriangulate2DPointPairsTo3D --inputPointPairs ${timestamp}_pointPairs.txt \
+			--intrinsicRight ../scope_calibration/calib.right.intrinsic.txt \
+			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.txt \
+			--rightToLeftExtrinsics ../scope_calibration/calib.r2l.txt \
+			--outputPoints ${timestamp}_surface.mps \
+			--leftMask ${timestamp}_leftMask.png \
+			--rightMask ${timestamp}_rightMask.png \
+			--trackerToWorld ${timestamp}.match \
+			--leftLensToTracker ../scope_calibration/calib.left.handeye.txt
+	fi
 done
 
