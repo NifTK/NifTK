@@ -23,7 +23,7 @@ function Usage()
 cat <<EOF
 Scan time stamped files in 1st directory and find best match in 2nd directory
 Outputs timing errors and creates symbolic links to matched files
-Usage: matchTimeStamps.bash directory1 directory2 suffix timingLag
+Usage: matchTimeStamps.bash directory1 directory2 suffix timingLag maxTimingError
 EOF
 exit 127
 }
@@ -49,6 +49,14 @@ else
 	timingLag=$4
 fi
 
+if [ $# -lt 5 ] 
+then
+	maxTimingError=9999999999999999999
+else
+	maxTimingError=$5
+fi
+
+
 echo $suffix $timingLag
 
 if [ -z "${dir1}" ]; then
@@ -71,13 +79,13 @@ for time in $timesIn
 do
 	t1=${time%${suffix}*}
 	t1=${t1##*/}
-	echo best match for $t1 is ...
+	echo -n best match for $t1 is ...
 	bestDelta=$t1
 	bestMatch=0
 	for match in $matchTimes
 	do
 		t2=${match%.*}
-		delta=$(echo "sqrt(($t1-$t2)^2)" | bc)
+		delta=$(echo "sqrt(($t1-$t2 - $timingLag)^2)" | bc)
 		if [ $delta -lt $bestDelta ]
 		then
 			bestMatch=$t2
@@ -88,12 +96,18 @@ do
 			break
 		fi
 	done
-	echo $bestMatch with delta = $bestDelta
-#	ln -s $dir2/$bestMatch.txt $dir1/$t1.match
+	errorOK=$(echo "$bestDelta - $maxTimingError < 0 " | bc)
+	if [ $errorOK -eq 1 ]
+	then
+		echo $bestMatch with delta = $bestDelta
 
-	here=$(pwd)
-	cd $dir1
-	 	ln -s "${here}/${dir2}/${bestMatch}.txt" $t1.match
-	cd $here
+		here=$(pwd)
+		cd $dir1
+		 	ln -s -f "${here}/${dir2}/${bestMatch}.txt" $t1.match
+		cd $here
+	else
+		echo no match due to excessive timing error = $bestDelta
+	fi
+
 done
 
