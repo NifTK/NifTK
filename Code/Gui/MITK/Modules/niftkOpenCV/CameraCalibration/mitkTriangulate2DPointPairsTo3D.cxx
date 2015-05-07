@@ -43,8 +43,8 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_UndistortBeforeTriangulation(true)
 , m_TrackingMatrixFileName ("")
 , m_HandeyeMatrixFileName("")
-, m_MinimumDistanceFromLens(0.0)
-, m_MaximumDistanceFromLens(1000.0)
+, m_MinimumDistanceFromLens(- ( std::numeric_limits<double>::infinity() ) )
+, m_MaximumDistanceFromLens( std::numeric_limits<double>::infinity() )
 {
 }
 

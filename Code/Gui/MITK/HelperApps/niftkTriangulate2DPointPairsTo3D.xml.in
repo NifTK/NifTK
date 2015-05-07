@@ -93,5 +93,18 @@
       <label>Undistort points</label>
       <default>0</default>
     </boolean>
+    <string>
+      <name>minimumDistanceFromLens</name>
+      <longflag>minimumDistanceFromLens</longflag>
+      <description>Cull points closer to the lens than this</description>
+      <label>Minimum Distance from Lens</label>
+    </string>
+    <string>
+      <name>maximumDistanceFromLens</name>
+      <longflag>maximumDistanceFromLens</longflag>
+      <description>Cull points further from the lens than this</description>
+      <label>Maximum Distance from Lens</label>
+    </string>
+
   </parameters>
 </executable>

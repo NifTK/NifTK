@@ -51,6 +51,8 @@ public:
   itkSetMacro (UndistortBeforeTriangulation, bool);
   itkSetMacro (TrackingMatrixFileName, std::string);
   itkSetMacro (HandeyeMatrixFileName, std::string); 
+  itkSetMacro (MinimumDistanceFromLens, double);
+  itkSetMacro (MaximumDistanceFromLens, double);
 
   bool Triangulate();
 
