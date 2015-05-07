@@ -76,7 +76,9 @@ do
 			--leftMask ${timestamp}_leftMask.png \
 			--rightMask ${timestamp}_rightMask.png \
 			--trackerToWorld ${timestamp}.match \
-			--leftLensToTracker ../scope_calibration/calib.left.handeye.txt
+			--leftLensToTracker ../scope_calibration/calib.left.handeye.txt \
+			--minimumDistanceFromLens 20 \
+			--maximumDistanceFromLens 150
 	fi
 done
 
