@@ -79,10 +79,15 @@ private:
 
   bool m_UndistortBeforeTriangulation; //optionally undistort point pairs before triangulation
   std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;
+  std::vector< cv::Point3d > m_PointsIn3D; 
 
   unsigned int m_BlankValue; // the value used by the mask for blanking
   void ApplyMasks (); 
+  void CullOnDistance (); 
   void WritePointsAsImage (const std::string& prefix,  const cv::Mat& templateMat );
+
+  double m_MinimumDistanceFromLens; //reconstructed points closer to the lens than this will be removed
+  double m_MaximumDistanceFromLens; //reconstructed points further from the lens than this will be removed
 
   
 }; // end class

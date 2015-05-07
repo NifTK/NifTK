@@ -43,6 +43,8 @@ Triangulate2DPointPairsTo3D::Triangulate2DPointPairsTo3D()
 , m_UndistortBeforeTriangulation(true)
 , m_TrackingMatrixFileName ("")
 , m_HandeyeMatrixFileName("")
+, m_MinimumDistanceFromLens(0.0)
+, m_MaximumDistanceFromLens(1000.0)
 {
 }
 
@@ -157,7 +159,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
       }
     }
     // batch-triangulate all points.
-    std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
+    m_PointsIn3D = TriangulatePointPairsUsingGeometry(
         m_PointPairs,
         leftIntrinsic,
         rightIntrinsic,
@@ -165,19 +167,21 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
         rightToLeftTranslationVector,
         // choose an arbitrary threshold that is unlikely to overflow.
         std::numeric_limits<int>::max());
-    
+  
+    CullOnDistance ();
+
     //put them in tracker coordinates
-    pointsIn3D = leftLensToTracker * pointsIn3D;
+    m_PointsIn3D = leftLensToTracker * m_PointsIn3D;
     //put them in word coordinates
-    pointsIn3D = trackerToWorld * pointsIn3D;
+    m_PointsIn3D = trackerToWorld * m_PointsIn3D;
 
     mitk::PointSet::Pointer ps = mitk::PointSet::New();
-    for (unsigned int i = 0; i < pointsIn3D.size(); i++)
+    for (unsigned int i = 0; i < m_PointsIn3D.size(); i++)
     {
       mitk::Point3D p;
-      p[0] = pointsIn3D[i].x;
-      p[1] = pointsIn3D[i].y;
-      p[2] = pointsIn3D[i].z;
+      p[0] = m_PointsIn3D[i].x;
+      p[1] = m_PointsIn3D[i].y;
+      p[2] = m_PointsIn3D[i].z;
       ps->InsertPoint(i, p);
     }
 
@@ -230,6 +234,16 @@ void Triangulate2DPointPairsTo3D::ApplyMasks()
   {
     WritePointsAsImage ( m_OutputMaskImagePrefix + "_afterMasking", leftMask);
   }
+}
+//-----------------------------------------------------------------------------
+void Triangulate2DPointPairsTo3D::CullOnDistance()
+{
+  unsigned int pointsRemoved = mitk::RemoveOutliers ( m_PointsIn3D, 
+ - ( std::numeric_limits<double>::infinity() ), std::numeric_limits<double>::infinity(), 
+ - ( std::numeric_limits<double>::infinity() ), std::numeric_limits<double>::infinity(), 
+ m_MinimumDistanceFromLens, m_MaximumDistanceFromLens );
+
+  MITK_INFO << "Removed " << pointsRemoved << " using distance from lens";
 }
 //-----------------------------------------------------------------------------
 void Triangulate2DPointPairsTo3D::WritePointsAsImage(const std::string& prefix, const cv::Mat& templateMat )

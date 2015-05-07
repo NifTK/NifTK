@@ -446,6 +446,57 @@ void TwoPointsToPLambdaTest ()
   MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32),0,4/sqrt(32)),1e-6),"Checking line 2 vector " << line2.second);
 }
 
+void RemoveOutliersTest ()
+{
+  std::vector < cv::Point3d > points;
+  unsigned int pointsGone;
+
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 0 , " Remove points test with empty vector " << pointsGone ); 
+
+  points.push_back ( cv::Point3d ( std::numeric_limits<double>::infinity () , 0 , 0 ) );
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 0 , " Remove points test with infinite point and infinite limit " << pointsGone ); 
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), 10, 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 1 , " Remove points test with infinite point and finite limit " << pointsGone ); 
+  points.push_back ( cv::Point3d ( 0,  std::numeric_limits<double>::quiet_NaN () , 0 ) );
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity(), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 0 , " Remove points test with NaN point and infinite limit " << pointsGone ); 
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity() , 
+      -(std::numeric_limits<double>::infinity()), 10, 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 0 , " Remove points test with NaN point and finite limit " << pointsGone ); 
+  points.push_back ( cv::Point3d ( 0,  -20.0, 50.0 ) );
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity() , 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::quiet_NaN (), 
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity());
+  MITK_TEST_CONDITION ( pointsGone == 0 , " Remove points test with NaN point and NaN limit " << pointsGone ); 
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity() , 
+      -(std::numeric_limits<double>::infinity()), 0.0, 
+      -(std::numeric_limits<double>::infinity()), 40.0);
+  MITK_TEST_CONDITION ( pointsGone == 1 , " Remove points test with numeric point and numeric limit " << pointsGone ); 
+  points.push_back ( cv::Point3d ( 0,  -20.0, 50.0 ) );
+  pointsGone= mitk::RemoveOutliers ( points ,
+      -(std::numeric_limits<double>::infinity()), std::numeric_limits<double>::infinity() , 
+      -10.0, 0.0, 
+      -(std::numeric_limits<double>::infinity()), 100.0);
+  MITK_TEST_CONDITION ( pointsGone == 1 , " Remove points test with numeric point and numeric limit " << pointsGone ); 
+}
 
 int mitkOpenCVMathTests(int argc, char * argv[])
 {
@@ -466,6 +517,7 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   NormTest();
   DistanceBetweenLinesTest();
   TwoPointsToPLambdaTest ();
+  RemoveOutliersTest();
   MITK_TEST_END();
 }
 

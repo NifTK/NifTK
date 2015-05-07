@@ -596,8 +596,13 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d CrossProduct ( const cv::Point3d& p1
  */
 extern "C++" NIFTKOPENCV_EXPORT double Norm ( const cv::Point3d& p1);
 
-
-
+/** 
+ * \brief Removes points outside the passed limits
+ */
+extern "C++" NIFTKOPENCV_EXPORT unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
+  const double& xLow, const double& xHigh,
+  const double& yLow, const double& yHigh,
+  const double& zLow, const double& zHigh);
 
 } // end namespace
 
