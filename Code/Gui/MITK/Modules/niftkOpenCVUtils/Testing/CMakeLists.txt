@@ -14,3 +14,5 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCVUtils)
 
+mitkAddCustomModuleTest(mitkOpenCVFileIOUtilsTests mitkOpenCVFileIOUtilsTests ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2014.01.07-matt-calib-4DC7/)
+
