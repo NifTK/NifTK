@@ -20,6 +20,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
 #include <cmath>
 
 /**
@@ -37,8 +38,8 @@ void LoadTimeStampedPointsTest(std::string dir)
   MITK_TEST_CONDITION ( timeStampedPoints[0].first == 1389084822590698200 , "Testing first time stamp " <<  timeStampedPoints[0].first);
   MITK_TEST_CONDITION ( timeStampedPoints[87].first == 1389085072647000600 , "Testing last time stamp " <<  timeStampedPoints[87].first);
   
-  MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[0].second,cv::Point3d (0.0,0.0,0.0),10), "Testing first point value " <<  timeStampedPoints[0].second);
-  MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[87].second, cv::Point3d (0.0, 0.0, 0.0),1e-2), "Testing last time stamp " <<  timeStampedPoints[87].second);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[0].second,cv::Point3d (315.0,397.0,0.0),1e-6), "Testing first point value " <<  timeStampedPoints[0].second);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[87].second, cv::Point3d (338.0, 359.0, 0.0),1e-6), "Testing last time stamp " <<  timeStampedPoints[87].second);
 
 }
 

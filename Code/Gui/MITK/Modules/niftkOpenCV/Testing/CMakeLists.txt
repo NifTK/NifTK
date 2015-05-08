@@ -47,4 +47,3 @@ endif(OPENCV_WITH_FFMPEG)
 
 mitkAddCustomModuleTest(Pivot-Calibration mitkPivotCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/PivotCalibration ${CMAKE_BINARY_DIR}/Testing/Temporary/PivotCalibration.4x4 ${BASELINE}/PivotCalibration.4x4)
 
-mitkAddCustomModuleTest(mitkOpenCVFileIOUtilsTests mitkOpenCVFileIOUtilsTests ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2014.01.07-matt-calib-4DC7/)
