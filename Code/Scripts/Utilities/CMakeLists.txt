@@ -14,7 +14,6 @@
 
 set (scripts 
   anonymise.sh
-  matchTimeStamps.sh
 )
 foreach(script ${scripts})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script} ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
