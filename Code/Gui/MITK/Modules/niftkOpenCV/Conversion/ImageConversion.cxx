@@ -13,6 +13,8 @@
 =============================================================================*/
 
 #include "ImageConversion.h"
+//#include <mitkITKImageImport.txx>
+#include <mitkImageReadAccessor.h>
 #include <mitkImageCast.h>
 #include <itkImportImageFilter.h>
 #include <itkRGBPixel.h>
@@ -24,7 +26,6 @@ namespace niftk
 
 typedef itk::RGBPixel<unsigned char>                UCRGBPixelType;
 typedef itk::RGBAPixel<unsigned char>               UCRGBAPixelType;
-
 
 //-----------------------------------------------------------------------------
 template <typename ITKPixelType>
@@ -136,5 +137,32 @@ mitk::Image::Pointer CreateMitkImage(const IplImage* image)
   return 0;
 }
 
+//-----------------------------------------------------------------------------
+mitk::Image::Pointer CreateMitkImage(const cv::Mat* image)
+{
+  IplImage* IplImg = new IplImage(*image);
+  return CreateMitkImage (IplImg);
+}
+//-----------------------------------------------------------------------------
+cv::Mat MitkImageToOpenCVMat ( const mitk::Image::Pointer image )
+{
+  mitk::ImageReadAccessor  inputAccess(image);
+  const void* inputPointer = inputAccess.GetData();
+
+  cv::Size size (static_cast<int>(image->GetDimension(0)), static_cast<int>(image->GetDimension(1)));
+  int width = static_cast<int>(image->GetDimension(0));
+  int height = static_cast<int>(image->GetDimension(1));
+  int bitsPerComponent = image->GetPixelType().GetBitsPerComponent();
+  int numberOfComponents = image->GetPixelType().GetNumberOfComponents();
+  //expecting 8 bits per component, and 4 components, it might be more efficient to convert from RGBA to gray here ?
+  cv::Mat cvImage;
+  assert ( bitsPerComponent == 8 && (numberOfComponents == 3 || numberOfComponents == 4 || numberOfComponents == 1 ) );
+  //we can't handle anything else
+ // cvImage = cv::Mat(width, height, CV_8UC(numberOfComponents), const_cast<void*>(inputPointer), CV_AUTOSTEP);
+ // CV_AUTOSTEP doesn't work
+  cvImage = cv::Mat(height,width, CV_8UC(numberOfComponents), const_cast<void*>(inputPointer), width * bitsPerComponent/8 * numberOfComponents);
+
+  return cvImage;
+}
 
 } // namespace

@@ -38,9 +38,11 @@ if(BUILD_IGI)
 
   list(APPEND HELPER_APPS_REQUIRED_MODULES
     niftkCore
+    niftkOpenCVUtils
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
+    niftkPointReg
   )
 endif()
 
@@ -96,8 +98,10 @@ list(APPEND HELPER_APP_LINK_DIRECTORIES
 
 list(APPEND HELPER_APP_LIBRARIES
   niftkcommon 
+  niftkOpenCVUtils
   niftkOpenCV 
   niftkIGIGui
+  niftkPointReg
   MitkLegacyIO
 )
 
@@ -137,6 +141,7 @@ if(SlicerExecutionModel_FOUND)
       niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkPickPointsOnStereoVideo
+      niftkMakeMaskImagesFromStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages

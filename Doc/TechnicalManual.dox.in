@@ -29,10 +29,11 @@ the design decisions will be explained in detail. It is however assumed that the
 \li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
 \li \subpage HowToDoUltrasoundCalibration
-\li \subpage TestingApplications
 \li \subpage TechnicalCheckListPreRelease
 \li \subpage TechnicalCheckListPostRelease
 \li \subpage BuildInstructionsKelvin
+\li \subpage TestingApplications
+\li \subpage TestingReportsGenerated
 
 \section TechnicalManualAdditional Additional Reading
 

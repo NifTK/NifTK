@@ -57,15 +57,6 @@
       <default>false</default>
       <channel>input</channel>
     </boolean>
-   
-    <boolean>
-      <name>useSVDBasedMethod</name>
-      <longflag>useSVDBasedMethod</longflag>
-      <description>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</description>
-      <label>If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter</label>
-      <default>true</default>
-      <channel>input</channel>
-    </boolean>
     
     <boolean>
       <name>useICPInitialisation</name>

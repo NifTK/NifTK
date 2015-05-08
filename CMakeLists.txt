@@ -53,6 +53,12 @@ if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release
   message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} is not supported.")
 endif()
 
+# Restrict the generated configuration to be what we configured above.
+# No point creating project files for build types that will not compile.
+# Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
+
+
 ##################################################################################
 # Set some CMake Policies.
 # See http://cmake.org/cmake/help/cmake-2-8-docs.html#section_Policies for details
@@ -1083,8 +1089,15 @@ foreach(type LIBRARY RUNTIME ARCHIVE)
   mark_as_advanced(CMAKE_${type}_OUTPUT_DIRECTORY)
 endforeach()
 
+######################################################################
+# For doxygen:
+######################################################################
+
 configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in
-  ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen @ONLY)
+  ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen.sh @ONLY)
+
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateTestingReports.sh.in
+  ${EXECUTABLE_OUTPUT_PATH}/GenerateTestingReports.sh @ONLY)
 
 ######################################################################
 # Compilation specific stuff, like flags etc.

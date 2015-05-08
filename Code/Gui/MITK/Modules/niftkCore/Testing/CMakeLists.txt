@@ -44,4 +44,3 @@ mitkAddCustomModuleTest(MIDAS-mitkMIDASOrientationUtilsTest-30257    mitkMIDASOr
 # Trac 1706 - Dilations break through connection breaker image.
 mitkAddCustomModuleTest(MIDAS-mitkMIDASImageUtilsTest-16856 mitkMIDASImageUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
 
-mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataReaderWriterServiceTest niftkCoordinateAxesDataReaderWriterServiceTest ${TEMP}/mitkCoordinateAxesDataReaderWriterServiceTest.4x4)

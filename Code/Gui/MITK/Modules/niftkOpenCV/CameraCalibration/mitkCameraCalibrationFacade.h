@@ -45,9 +45,9 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadImages(const std::vector<std::string>& 
 
 /**
  * \brief Scans a directory for all filenames, and uses OpenCV to load images.
- * \param fullDirectoryName full directory name
- * \param images which the caller must take responsibility for and de-allocate appropriately.
- * \param fileNames list of filenames
+ * \param[In] fullDirectoryName full directory name
+ * \param[Out] images which the caller must take responsibility for and de-allocate appropriately.
+ * \param[Out] fileNames list of filenames
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadImagesFromDirectory(
   const std::string& fullDirectoryName,
@@ -90,18 +90,18 @@ extern "C++" NIFTKOPENCV_EXPORT void CheckConstImageSize(
 
 /**
  * \brief Extracts the chess board points, using OpenCV routines.
- * \param images vector of pointers to images, which must be all of the same size.
- * \param fileNames the corresponding file names, and this vector must be the same length as the vector of images.
- * \param numberCornersWidth the number of internal corners along the width axis (X).
- * \param numberCornersHeight the number of internal corners along the height axis (Y).
- * \param drawCorners if true will dump images in the same directory as the input images, to indicate which points were found (usefull for debugging).
- * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
- * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
- * \param outputImages list of successfully processed images, which are just pointers back to the same images as in the first parameter vector, i.e. they are not copied, so don't de-allocate the images twice.
- * \param outputFileNames corresponding list of successfully processed image filenames,
- * \param outputImagePoints output image points, array size = (number of successes (M) * numberOfCorners (N)) x 2, and caller must de-allocate.
- * \param outputObjectPoints output object points, array size = (number of successes (M) * numberOfCorners (N)) x 3, and caller must de-allocate.
- * \param outputPointCounts output point counts, array size = number of successes (M) x 1, and caller must de-allocate. In this case, a "successful" result is
+ * \param[In] images vector of pointers to images, where each image must be of the same size.
+ * \param[In] fileNames the corresponding file names, and this vector must be the same length as the vector of images.
+ * \param[In] numberCornersWidth the number of internal corners along the width axis (X).
+ * \param[In] numberCornersHeight the number of internal corners along the height axis (Y).
+ * \param[In] drawCorners if true will dump images in the same directory as the input images, to indicate which points were found (usefull for debugging).
+ * \param[In] squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param[In] pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
+ * \param[Out] outputImages list of successfully processed images, which are just pointers back to the same images as in the first parameter vector, i.e. they are not copied, so don't de-allocate the images twice.
+ * \param[Out] outputFileNames corresponding list of successfully processed image filenames,
+ * \param[Out] outputImagePoints output image points, array size = (number of successes (M) * numberOfCorners (N)) x 2, and caller must de-allocate.
+ * \param[Out] outputObjectPoints output object points, array size = (number of successes (M) * numberOfCorners (N)) x 3, and caller must de-allocate.
+ * \param[Out] outputPointCounts output point counts, array size = number of successes (M) x 1, and caller must de-allocate. In this case, a "successful" result is
  * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is M x 1, with each entry containing
  * the number N.
  */
@@ -123,13 +123,14 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
 
 /**
  * \brief Extracts the chess board points, using OpenCV routines.
- * \param image is a single image.
- * \param numberCornersWidth the number of internal corners along the width axis (X).
- * \param numberCornersHeight the number of internal corners along the height axis (Y).
- * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
- * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
- * \param outputImagePoints output image points, array size = (1 * numberOfCorners (N)) x 2, and caller must de-allocate.
- * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
+ * \param[In] image is a single image.
+ * \param[In] numberCornersWidth the number of internal corners along the width axis (X).
+ * \param[In] numberCornersHeight the number of internal corners along the height axis (Y).
+ * \param[In] drawCorners if true will dump images in the same directory as the input images, to indicate which points were found (usefull for debugging).
+ * \param[In] squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param[In] pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
+ * \param[Out] outputImagePoints if successful will contain (numberCornersWidth*numberCornersHeight) 2D image points, if unsuccessful, vector is untouched.
+ * \param[Out] outputObjectPoints if successful will contain (numberCornersWidth*numberCornersHeight) 3D object points, if unsuccessful, vector is untouched.
  */
 extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const cv::Mat& image,
@@ -169,9 +170,10 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
 /**
  * \brief Calibrate a single camera's intrinsic parameters by using 3 passes, firstly with fixed principal point
  * and fixed aspect ratio, then with fixed principal point, then with nothing fixed.
- * \param objectPoints \see CalibrateSingleCameraIntrinsicParameters
- * \param imagePoints \see CalibrateSingleCameraIntrinsicParameters
- * \param pointCounts \see CalibrateSingleCameraIntrinsicParameters
+ * \param[In] objectPoints \see CalibrateSingleCameraIntrinsicParameters
+ * \param[In] imagePoints \see CalibrateSingleCameraIntrinsicParameters
+ * \param[In] pointCounts \see CalibrateSingleCameraIntrinsicParameters
+ * \param[In] imageSize \see CalibrateSingleCameraIntrinsicParameters
  * \param outputIntrinsicMatrix \see CalibrateSingleCameraIntrinsicParameters
  * \param outputDistortionCoefficients \see CalibrateSingleCameraIntrinsicParameters
  */
@@ -205,10 +207,10 @@ extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsics(
 /**
  * \brief The above method CalibrateSingleCameraParameters outputs a whole load of rotation and translation vectors,
  * so this utility method reconstructs a single extrinsic parameter matrix, for a given viewNumber.
- * \param rotationVectors [Mx3] matrix of rotation vectors, where M is the number of views of the chess board.
- * \param translationVectors [Mx3] matrix of translation vectors, where M is the number of views of the chess board.
- * \param viewNumber which view to extract, where 0 <= viewNumber < M, and viewNumber is unvalidated (unchecked).
- * \param outputExtrinsicMatrix the output matrix, which should be a pre-allocated 4x4 matrix
+ * \param[In] rotationVectors [Mx3] matrix of rotation vectors, where M is the number of views of the chess board.
+ * \param[In] translationVectors [Mx3] matrix of translation vectors, where M is the number of views of the chess board.
+ * \param[In] viewNumber which view to extract, where 0 <= viewNumber < M, and viewNumber is unvalidated (unchecked).
+ * \param[Out] outputExtrinsicMatrix the output matrix, which should be a pre-allocated 4x4 matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
   const CvMat& rotationVectors,
@@ -226,14 +228,20 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTransl
  * hand camera, then when this point is multiplied by the rotationVectorsRightToLeft
  * and translationVectorsRightToLeft, the point will be converted to a point P_l
  * that is in the coordinate frame of the left hand camera.
+ * \param[In] rotationVectorsLeft [Mx3] matrix of row vectors representing rotations in the left hand coordinate frame, in Rodrigues format.
+ * \param[In] translationVectorsLeft [Mx3] matrix of row vectors representing translations in the left hand coordinate frame.
+ * \param[In] rotationVectorsRight [Mx3] matrix of row vectors representing rotations in the right hand coordinate frame, in Rodrigues format.
+ * \param[In] translationVectorsRight [Mx3] matrix of row vectors representing translations in the right hand coordinate frame.
+ * \param[Out] rotationVectorsRightToLeft [Mx3] rotations right to left
+ * \param[Out] translationVectorsRightToLeft [Mx3] translations right to left
  */
 extern "C++" NIFTKOPENCV_EXPORT void ComputeRightToLeftTransformations(
   const CvMat& rotationVectorsLeft,
   const CvMat& translationVectorsLeft,
   const CvMat& rotationVectorsRight,
   const CvMat& translationVectorsRight,
-  const CvMat& rotationVectorsRightToLeft,
-  const CvMat& translationVectorsRightToLeft
+  CvMat& rotationVectorsRightToLeft,
+  CvMat& translationVectorsRightToLeft
   );
 
 
@@ -272,7 +280,6 @@ extern "C++" NIFTKOPENCV_EXPORT double CalculateRPE(
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
  * and also outputs the rotation and translation vector between the two cameras.
- *
  * Now we also have an option to fix the intrinsics, and an option to fix the right to left calculation.
  */
 extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
@@ -389,8 +396,8 @@ extern "C++" NIFTKOPENCV_EXPORT void ApplyDistortionCorrectionMap(
 /**
  * \brief Used to project 3D points into 2D locations for a stereo pair.
  * Here, 3D model points means that the 3D coordinates are with respect to the model's natural
- * coordinate system. So, if for example, you were using a chessboard, the coordinates of
- * each corner are (0,0,0), (1,0,0), (2,0,0) etc. and are independent of the size of the grid in millimetres.
+ * coordinate system, but are in millimetres. So, you multiply the grid position by
+ * the number of millimetres per pixel to get model coordinates.
  *
  * \param modelPointsIn3D [Nx3] matrix containing points in model coordinates.
  * \param leftCameraIntrinsic [3x3] matrix of intrinsic parameters, as output from these and OpenCV routines.
@@ -552,9 +559,18 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
   const bool& preserveVectorSize = false
   );
 
+/**
+ * \brief Projects a ray from un-distorted (i.e. already correction for distortion) 2D point.
+ * \return a point pair defining P0 and P1 lying on the ray. ray length can be set.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair< cv::Point3d, cv::Point3d > GetRay(
+  const cv::Point2d& inputUndistortedPoint,
+  const cv::Mat& cameraIntrinsicParams,
+  const double& rayLength = 1000
+  );
 
 /**
- * \brief Triangulates a single point from two 2D points by calling TriangulatePointPairs().
+ * \brief Triangulates a single point from two 2D points by calling TriangulatePointPairsUsingGeometry().
  *
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
@@ -567,9 +583,8 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPairUsingGeometry(
   const cv::Mat& rightToLeftTranslationVector
   );
 
-
 /**
- * \brief C Wrapper for the other TriangulatePointPairs.
+ * \brief C Wrapper for the other TriangulatePointPairsUsingSVD.
  */
 extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& leftCameraUndistortedImagePoints,

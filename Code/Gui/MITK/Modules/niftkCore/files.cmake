@@ -39,11 +39,5 @@ set(CPP_FILES
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
-  IO/mitkPNMReader.cxx
-  IO/mitkPNMWriter.cxx
   Interactions/mitkPointSetUpdate.cxx
-  Internal/niftkCoreIOMimeTypes.cxx
-  Internal/niftkCoordinateAxesDataReaderService.cxx
-  Internal/niftkCoordinateAxesDataWriterService.cxx
-  Internal/niftkCoreActivator.cxx
 )

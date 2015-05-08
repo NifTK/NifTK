@@ -19,7 +19,6 @@
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
-#include <mitkPointBasedRegistration.h>
 #include <mitkDataStorageUtils.h>
 #include <QMessageBox>
 #include <QtConcurrentRun>

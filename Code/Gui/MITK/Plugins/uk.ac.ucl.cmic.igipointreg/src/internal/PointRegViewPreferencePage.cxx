@@ -23,7 +23,7 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
-#include <mitkPointBasedRegistration.h>
+#include <niftkPointBasedRegistration.h>
 
 const std::string PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
 const std::string PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
@@ -115,6 +115,6 @@ void PointRegViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void PointRegViewPreferencePage::Update()
 {
-  m_UseICPInitialisation->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION));
-  m_UsePointIDForMatching->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH));
+  m_UseICPInitialisation->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, niftk::PointBasedRegistrationConstants::DEFAULT_USE_ICP_INITIALISATION));
+  m_UsePointIDForMatching->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, niftk::PointBasedRegistrationConstants::DEFAULT_USE_POINT_ID_TO_MATCH));
 }

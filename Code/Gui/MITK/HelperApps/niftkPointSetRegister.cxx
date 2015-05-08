@@ -22,7 +22,7 @@
 #include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
-#include <mitkPointBasedRegistration.h>
+#include <niftkPointBasedRegistration.h>
 #include <niftkPointSetRegisterCLP.h>
 
 int main(int argc, char** argv)
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   PARSE_ARGS;
  
 
-  mitk::PointBasedRegistration::Pointer registerer = mitk::PointBasedRegistration::New();
+  niftk::PointBasedRegistration::Pointer registerer = niftk::PointBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
@@ -70,12 +70,10 @@ int main(int argc, char** argv)
    
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   registerer->SetUsePointIDToMatchPoints( usePointIDToMatchPoints);
-  registerer->SetUseSVDBasedMethod( useSVDBasedMethod );
   registerer->SetUseICPInitialisation ( useICPInitialisation); 
   
   MITK_INFO << "Starting registration";
-  double fre;
-  registerer->Update(fixedPoints, movingPoints, *resultMatrix, fre);
+  double fre = registerer->Update(fixedPoints, movingPoints, *resultMatrix);
   MITK_INFO << "Init" << *initialTransform;
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
@@ -90,6 +88,8 @@ int main(int argc, char** argv)
   }
  
   MITK_INFO << "Full Result " << *compound;
+  MITK_INFO << "FRE " << fre;
+
   if ( output.length () != 0 ) 
   {
     niftk::SaveMatrix4x4ToFile(output, *compound);
