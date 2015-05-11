@@ -2967,46 +2967,6 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     return false;
   }
 
-/*
-  // Create a buffer large enough to retrive the merged distance buffer
-  unsigned int totalNumOfVertices2 = 0;
-  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, totalNumOfTriangles*sizeof(cl_uint), 0, 0);
-  
-  // Here we retrieve the merged and sorted distance buffer
-  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, totalNumOfVertices2);
-
-  cl_uint * mergedDistances = new cl_uint[totalNumOfTriangles];
-  clStatus = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, totalNumOfTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  //std::ofstream outfileA;
-  //outfileA.open ("d://triangleDists.txt", std::ios::out);
-
-  float maxDist = -FLT_MAX;
-  for (int kk = 0; kk < totalNumOfTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-
-    if (val > maxDist)
-      maxDist = val;
-
-    //outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
-  }
-
-  //outfileA.close();
-
-  float minDist = FLT_MAX;
-  for (int kk = 0; kk < totalNumOfTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-    if (val < minDist)
-      minDist = val;
-  }
-
-  float range = (maxDist-minDist);
-  //MITK_INFO <<"maxDist: " <<std::setprecision(10) <<maxDist <<" minDist:" <<minDist <<" range: " <<range;
-*/
-
   size_t vertexBufferOffset = 0;
   size_t normalBufferOffset = 0;
   size_t colorBufferOffset = 0;
