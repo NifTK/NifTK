@@ -996,7 +996,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   // histogram : 16 values per block
   if (m_bfRadixHist1 == 0)
   {
-    m_bfRadixHist1 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist1 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
@@ -1006,7 +1006,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
 
   if (m_bfRadixHist2 == 0)
   {
-    m_bfRadixHist2 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist2 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
@@ -1015,7 +1015,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   }
   if (m_bfRadixHist1Scan == 0)
   {
-    m_bfRadixHist1Scan = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist1Scan = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
@@ -1247,7 +1247,7 @@ bool mitk::OclTriangleSorter::RadixPermute(cl_uint datasetSize, const size_t* gl
 bool mitk::OclTriangleSorter::Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut)
 {
   cl_int clStatus = 0;
-  size_t _workgroupSize = 256;
+  size_t _workgroupSize = 16;
   //clGetKernelWorkGroupInfo(m_ckScanBlockAnyLength, resources->GetCurrentDevice(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &_workgroupSize, 0);
 
   cl_uint blockSize = datasetSize / _workgroupSize;
