@@ -378,7 +378,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.x - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 
   //~~~~~~~~~~~~~~~~~~~~~~
@@ -391,7 +391,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.y - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 
   //~~~~~~~~~~~~~~~~~~~~~~
@@ -403,7 +403,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.z - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
   //~~~~~~~~~~~~~~~~~~~~~~
 
@@ -415,7 +415,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.w - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 }
 
