@@ -82,14 +82,16 @@ public:
   bool operator () ( const std::pair<cv::Point2d, cv::Point2d> & pointPair ) const
   {
     unsigned char maskValue = m_BlankValue;
-    cv::Point2d point;
+    cv::Point2i point;
     if ( m_UseFirstValue )
     {
-      point = pointPair.first;
+      point.x = round (pointPair.first.x );
+      point.y = round (pointPair.first.y );
     }
     else
     {
-      point = pointPair.second;
+      point.x = round (pointPair.second.x );
+      point.y = round (pointPair.second.y );
     }
 
     if ( (point.x >= 0) &&
@@ -99,6 +101,7 @@ public:
     {
       maskValue = m_Mask.at<unsigned char> ( point.y, point.x );
     }
+
     if ( maskValue == m_BlankValue )
     {
       return true;

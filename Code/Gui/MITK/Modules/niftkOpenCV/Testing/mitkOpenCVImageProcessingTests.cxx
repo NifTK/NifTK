@@ -99,18 +99,28 @@ void ApplyMaskTest()
   {
     for ( unsigned int j = 2 ; j < 4 ; j ++ ) 
     {
-      mask.at<unsigned int> (i,j) = 255;
+      mask.at<unsigned char> (i,j) = 255;
     }
   }
   
   pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (0,0), cv::Point2d(0,0) ) ); //both out of mask
-  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (-1,0), cv::Point2d(0,0) ) ); //left out in bounds
-  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (3,3), cv::Point2d(0,-56.5) ) ); //right out in bounds
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (-1,0), cv::Point2d(0,0) ) ); //left out of bounds
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (3,3), cv::Point2d(0,-56.5) ) ); //right out of bounds
   pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (2,3), cv::Point2d(3,3) ) ); //both in mask
   pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (1.7,3.2), cv::Point2d(3.5,3.0) ) ); //both in mask ?
+ 
+  unsigned int pointsRemoved = mitk::ApplyMask ( pointPairs , mask , maskValue , true );
+  MITK_TEST_CONDITION ( pointsRemoved == 2 , "Testing apply mask removed 2 left pointpairs : " << pointsRemoved);
+  
+  pointPairs.clear();
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (0,0), cv::Point2d(0,0) ) ); //both out of mask
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (-1,0), cv::Point2d(0,0) ) ); //left out of bounds
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (3,3), cv::Point2d(0,-56.5) ) ); //right out of bounds
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (2,3), cv::Point2d(3,3) ) ); //both in mask
+  pointPairs.push_back ( std::pair <cv::Point2d, cv::Point2d > ( cv::Point2d (1.7,3.2), cv::Point2d(3.4,3.0) ) ); //both in mask ?
 
-  MITK_TEST_CONDITION ( mitk::ApplyMask ( pointPairs , mask , maskValue , true ) == 2 , "Testing apply mask removed 2 left pointpairs");
-  MITK_TEST_CONDITION ( mitk::ApplyMask ( pointPairs , mask , maskValue , false ) == 1 , "Testing apply mask removed 1 right pointpairs");
+  pointsRemoved = mitk::ApplyMask ( pointPairs , mask , maskValue , false ); 
+  MITK_TEST_CONDITION (pointsRemoved == 3 , "Testing apply mask removed 3 right pointpairs : " << pointsRemoved);
 
 }
 
