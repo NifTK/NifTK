@@ -94,6 +94,12 @@ double UltrasoundPinCalibration::Calibrate()
   {
     numberOfParameters += 1;
   }
+  
+  if ( this->GetOptimiseTimingLag() && ( numberOfParameters != 1 || numberOfParameters != 12 ) )
+  {
+    MITK_ERROR << "You can't optimise timing lag without all or none of the other parameters";
+  }
+
   assert(   numberOfParameters == 1
          || numberOfParameters == 6
          || numberOfParameters == 9
