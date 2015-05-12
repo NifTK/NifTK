@@ -24,6 +24,7 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkTestingMacros.h>
 
+#include <QmitkMimeTypes.h>
 #include <QmitkRegisterClasses.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
@@ -179,23 +180,38 @@ void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vect
   Q_D(niftkMultiViewerWidgetTestClass);
 
   QMimeData* mimeData = new QMimeData;
+  QMimeData* mimeData2 = new QMimeData;
   QString dataNodeAddresses("");
+  QByteArray byteArray;
+  byteArray.resize(sizeof(quintptr) * nodes.size());
+
+  QDataStream ds(&byteArray, QIODevice::WriteOnly);
+  QTextStream ts(&dataNodeAddresses);
   for (int i = 0; i < nodes.size(); ++i)
   {
-    long dataNodeAddress = reinterpret_cast<long>(nodes[i]);
-    QTextStream(&dataNodeAddresses) << dataNodeAddress;
-
+    quintptr dataNodeAddress = reinterpret_cast<quintptr>(nodes[i]);
+    ds << dataNodeAddress;
+    ts << dataNodeAddress;
     if (i != nodes.size() - 1)
     {
-      QTextStream(&dataNodeAddresses) << ",";
+      ts << ",";
     }
   }
   mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
-  QStringList types;
-  types << "application/x-mitk-datanodes";
-  QDropEvent dropEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  mimeData2->setData(QmitkMimeTypes::DataNodePtrs, byteArray);
+//  QStringList types;
+//  types << "application/x-mitk-datanodes";
+  QDragEnterEvent dragEnterEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  QDropEvent dropEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData2, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
-  QApplication::instance()->sendEvent(window, &dropEvent);
+  if (!qApp->notify(window, &dragEnterEvent))
+  {
+    QTest::qWarn("Drag enter event not accepted by receiving widget.");
+  }
+  if (!qApp->notify(window, &dropEvent))
+  {
+    QTest::qWarn("Drop event not accepted by receiving widget.");
+  }
 }
 
 
