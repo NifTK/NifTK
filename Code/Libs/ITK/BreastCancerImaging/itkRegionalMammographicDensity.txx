@@ -13,6 +13,8 @@
 =============================================================================*/
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 #include <itkRegionalMammographicDensity.h>
 
@@ -103,6 +105,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   m_BreastSideDiagnostic    = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
   m_BreastSidePreDiagnostic = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
   m_BreastSideControl       = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
+
+  m_Gen.seed(static_cast<unsigned int>(std::time(0)));
 
   UnloadImages();
 };
@@ -423,15 +427,15 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     nPixelsTotal += nPixelsInPatch;
 
     if ( m_FlgDebug )
-      std::cout << setw(6) << itPatches->first << ": " << setprecision( 9 )
-                << setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
-                << setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
-                << setw(12) << preDiagDensity << " (N = "
-                << setw(12) << nPixelsTotal << ")"
+      std::cout << std::setw(6) << itPatches->first << ": " << std::setprecision( 9 )
+                << std::setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
+                << std::setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
+                << std::setw(12) << preDiagDensity << " (N = "
+                << std::setw(12) << nPixelsTotal << ")"
                 << std::endl;
 
     *foutOutputDensityCSV 
-      << setprecision( 9 )
+      << std::setprecision( 9 )
       << std::right << std::setw(10) << m_Id << ", "
                                    
       << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -471,7 +475,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   *foutOutputDensityCSV 
-    << setprecision( 9 )
+    << std::setprecision( 9 )
     << std::right << std::setw(10) << m_Id << ", "
                                    
     << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -524,15 +528,15 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     nPixelsTotal += nPixelsInPatch;
 
     if ( m_FlgDebug )
-      std::cout << setw(6) << itPatches->first << ": " << setprecision( 9 )
-                << setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
-                << setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
-                << setw(12) << controlDensity << " (N = "
-                << setw(12) << nPixelsTotal << ")"
+      std::cout << std::setw(6) << itPatches->first << ": " << std::setprecision( 9 )
+                << std::setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
+                << std::setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
+                << std::setw(12) << controlDensity << " (N = "
+                << std::setw(12) << nPixelsTotal << ")"
                 << std::endl;
 
     *foutOutputDensityCSV 
-      << setprecision( 9 )
+      << std::setprecision( 9 )
       << std::right << std::setw(10) << m_Id << ", "
                                    
       << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -572,7 +576,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   *foutOutputDensityCSV 
-    << setprecision( 9 )
+    << std::setprecision( 9 )
     << std::right << std::setw(10) << m_Id << ", "
                                    
     << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
@@ -887,7 +891,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::Compute( boost::random::mt19937 &gen )
+::Compute()
 {
   std::string fileMask;
   std::string fileRegnMask;
@@ -1185,7 +1189,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
   else 
   {
-    GenerateRandomTumourPositionInImage( gen, PREDIAGNOSTIC_MAMMO );
+    GenerateRandomTumourPositionInImage( PREDIAGNOSTIC_MAMMO );
   }
 
   m_ImPreDiagnosticLabels = GenerateRegionLabels( m_BreastSidePreDiagnostic,
@@ -1230,7 +1234,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
   else 
   {
-    GenerateRandomTumourPositionInImage( gen, CONTROL_MAMMO );
+    GenerateRandomTumourPositionInImage( CONTROL_MAMMO );
   }
 
   m_ImControlLabels = GenerateRegionLabels( m_BreastSideControl,
@@ -3019,8 +3023,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::GenerateRandomTumourPositionInImage( boost::random::mt19937 &gen,
-                                       MammogramType mammoType )
+::GenerateRandomTumourPositionInImage( MammogramType mammoType )
 {
   // Create a distance transform of the pre-diagnostic mask
 
@@ -3140,8 +3143,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   while ( ! found ) 
   {
-    idx[0] =  xdist( gen );
-    idx[1] =  ydist( gen );
+    idx[0] =  xdist( m_Gen );
+    idx[1] =  ydist( m_Gen );
 
     if ( m_FlgDebug )
     {

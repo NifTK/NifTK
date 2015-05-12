@@ -27,7 +27,6 @@
 #include <mitkDataNode.h>
 #include <mitkNifTKCoreObjectFactory.h>
 #include <mitkBaseData.h>
-#include <mitkBaseDataIOFactory.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCoordinateAxesDataWriter.h>
 #include <mitkIOUtil.h>
@@ -70,7 +69,7 @@ public:
     writer->SetFileName(fileName);
     writer->DoWrite(cad.GetPointer());
 
-    std::vector<mitk::BaseData::Pointer> matricesFromFile = mitk::BaseDataIO::LoadBaseDataFromFile(fileName, "", "", false );
+    std::vector<mitk::BaseData::Pointer> matricesFromFile = mitk::IOUtil::Load(fileName);
     MITK_TEST_CONDITION_REQUIRED(matricesFromFile.size() > 0, "check if LoadBaseDataFromFile returned anything")
 
     mitk::BaseData* baseData = matricesFromFile.at(0);

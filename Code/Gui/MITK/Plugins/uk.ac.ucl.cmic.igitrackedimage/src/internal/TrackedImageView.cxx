@@ -188,12 +188,10 @@ void TrackedImageView::RetrievePreferenceValues()
     m_Controls->m_RenderWindow->setVisible(m_Show2DWindow);
     if (m_Show2DWindow)
     {
-      m_Controls->m_VerticalLayout->removeItem(m_Controls->m_VerticalSpacer);
       mitk::RenderingManager::GetInstance()->AddRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
     else
     {
-      m_Controls->m_VerticalLayout->addItem(m_Controls->m_VerticalSpacer);
       mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetRenderWindow());
     }
   }

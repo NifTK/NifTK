@@ -68,8 +68,10 @@ public:
     m_PipelineManager->SetToolManager(m_ToolManager);
 
     // Load the single image.
-    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(fileName, *(m_DataStorage.GetPointer()));
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
+    std::vector<std::string> files;
+    files.push_back(fileName);
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(m_DataStorage.GetPointer()));
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 images loaded.");
 
     m_RenderingManager = mitk::RenderingManager::GetInstance();
     m_RenderingManager->SetDataStorage(m_DataStorage);

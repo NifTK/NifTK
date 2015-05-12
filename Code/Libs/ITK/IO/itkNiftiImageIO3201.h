@@ -118,6 +118,12 @@ public:
   itkSetMacro(LegacyAnalyze75Mode,bool);
   itkGetConstMacro(LegacyAnalyze75Mode,bool);
 
+  /** Supports dimensions 2, 3 and 4.
+    * The same fix is applied by the MITK in their internal (not exposed)
+    * NIfTI reader.
+    */
+  virtual bool SupportsDimension(unsigned long dim);
+
 protected:
   NiftiImageIO3201();
   ~NiftiImageIO3201();

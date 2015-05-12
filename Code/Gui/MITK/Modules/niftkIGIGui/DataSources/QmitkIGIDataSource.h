@@ -17,6 +17,7 @@
 
 #include "niftkIGIGuiExports.h"
 #include <mitkIGIDataSource.h>
+#include <QDir>
 #include <QObject>
 #include <QThread>
 #include <QTimer>

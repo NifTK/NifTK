@@ -15,60 +15,60 @@
 #include "mitkNifTKCoreObjectFactory.h"
 
 #include <itkObjectFactory.h>
-#include <mitkItkImageFileIOFactory.h>
+
+#include <mitkAbstractFileIO.h>
+#include <mitkItkImageIO.h>
 #include <mitkProperties.h>
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
+#include <mitkIOMimeTypes.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkCoordinateAxesDataWriter.h>
-#include <mitkCoordinateAxesDataReaderFactory.h>
-#include <mitkCoordinateAxesDataWriterFactory.h>
 #include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include <itkPNMImageIOFactory.h>
-#include <mitkNifTKItkImageFileIOFactory.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
+
+#include <niftkEnvironmentHelper.h>
+#include <itkDRCAnalyzeImageIO.h>
+#include <itkINRImageIO.h>
+#include <itkNiftiImageIO3201.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 :CoreObjectFactoryBase()
-, m_ItkImageFileIOFactory(NULL) // deliberately NULL
-, m_NifTKItkImageFileIOFactory(mitk::NifTKItkImageFileIOFactory::New().GetPointer())
-, m_PNMImageIOFactory(itk::PNMImageIOFactory::New().GetPointer())
-, m_CoordinateAxesDataReaderFactory(mitk::CoordinateAxesDataReaderFactory::New().GetPointer())
-, m_CoordinateAxesDataWriterFactory(mitk::CoordinateAxesDataWriterFactory::New().GetPointer())
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
   {
     MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
 
-    // At this point in this constructor, the main MITK CoreObjectFactory has been created,
-    // so MITKs file reader for ITK images will already be available. So, now we remove it.
-    std::list<itk::ObjectFactoryBase*> listOfObjectFactories = itk::ObjectFactoryBase::GetRegisteredFactories();
-    std::list<itk::ObjectFactoryBase*>::iterator iter;
-    mitk::ItkImageFileIOFactory::Pointer itkIOFactory = NULL;
-    for (iter = listOfObjectFactories.begin(); iter != listOfObjectFactories.end(); iter++)
+    /// Important note:
+    ///
+    /// Registering ITK image IOs to mitk::FileReaderRegistry here must follow the same
+    /// logic as registering them to the ITK object factories in itk::NifTKImageIOFactory
+    /// in the niftkITK library.
+
+    /// TODO
+    /// ITK readers and writers should be registered from itk::NifTKImageIOFactory.
+
+    bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
+
+    if (useDRCAnalyze)
     {
-      itkIOFactory = dynamic_cast<mitk::ItkImageFileIOFactory*>(*iter);
-      if (itkIOFactory.IsNotNull())
-      {
-        itk::ObjectFactoryBase::UnRegisterFactory(itkIOFactory.GetPointer());
-        m_ItkImageFileIOFactory = itkIOFactory;
-        break;
-      }
+      itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
+      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), 2);
+      m_FileIOs.push_back(drcAnalyzeIO);
     }
 
-    itk::ObjectFactoryBase::RegisterFactory(m_NifTKItkImageFileIOFactory);
-    itk::ObjectFactoryBase::RegisterFactory(m_PNMImageIOFactory);
-    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataReaderFactory);
-    itk::ObjectFactoryBase::RegisterFactory(m_CoordinateAxesDataWriterFactory);
+    itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
+    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 1);
+    m_FileIOs.push_back(niftiIO);
 
-    m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
+    itk::INRImageIO::Pointer itkINRImageIO = itk::INRImageIO::New();
+    mitk::ItkImageIO* inrImageIO = new mitk::ItkImageIO(Self::INRIA_MIMETYPE(), itkINRImageIO.GetPointer(), 0);
+    m_FileIOs.push_back(inrImageIO);
 
     CreateFileExtensionsMap();
     alreadyDone = true;
@@ -82,17 +82,15 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
 {
-  itk::ObjectFactoryBase::UnRegisterFactory(m_PNMImageIOFactory);
-  itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataReaderFactory);
-  itk::ObjectFactoryBase::UnRegisterFactory(m_CoordinateAxesDataWriterFactory);
+  /// TODO
+  /// ITK readers and writers should be unregistered from itk::NifTKImageIOFactory.
 
-  itk::ObjectFactoryBase::UnRegisterFactory(m_NifTKItkImageFileIOFactory);
-  if (m_ItkImageFileIOFactory.IsNotNull())
+  for(std::vector<mitk::AbstractFileIO*>::iterator iter = m_FileIOs.begin(),
+      endIter = m_FileIOs.end(); iter != endIter; ++iter)
   {
-    itk::ObjectFactoryBase::RegisterFactory(m_ItkImageFileIOFactory);
+    delete *iter;
   }
 }
-
 
 //-----------------------------------------------------------------------------
 mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
@@ -146,18 +144,7 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 {
   MITK_DEBUG << "Registering additional file extensions." << std::endl;
-
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
-  m_FileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
-
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
-  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
+  MITK_DEBUG << "Registering additional file extensions." << std::endl;
 }
 
 
@@ -190,6 +177,26 @@ const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
   std::string fileExtension;
   this->CreateFileExtensions(m_SaveFileExtensionsMap, fileExtension);
   return fileExtension.c_str();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::CustomMimeType mitk::NifTKCoreObjectFactory::INRIA_MIMETYPE()
+{
+  CustomMimeType mimeType(Self::INRIA_MIMETYPE_NAME());
+  mimeType.AddExtension("inr");
+  mimeType.AddExtension("inr.gz");
+  mimeType.SetCategory("Images");
+  mimeType.SetComment("INRIA image");
+  return mimeType;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string mitk::NifTKCoreObjectFactory::INRIA_MIMETYPE_NAME()
+{
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.inria";
+  return name;
 }
 
 

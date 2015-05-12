@@ -351,7 +351,7 @@ void CopyToOpenCVMatrix(const cv::Matx44d& input, cv::Mat& output)
 
 
 //-----------------------------------------------------------------------------
-std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::WorldPoint > & p)
+std::vector < mitk::WorldPoint > operator*(const cv::Mat& M, const std::vector< mitk::WorldPoint > & p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
@@ -366,16 +366,24 @@ std::vector < mitk::WorldPoint > operator*(cv::Mat M, const std::vector< mitk::W
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
     cv::Point3d point;
-    point.x = dst.at<double>(0,i);
-    point.y = dst.at<double>(1,i);
-    point.z = dst.at<double>(2,i);
+    point.x = dst.at<double>(0,i) / dst.at<double>(3,i);
+    point.y = dst.at<double>(1,i) / dst.at<double>(3,i);
+    point.z = dst.at<double>(2,i) / dst.at<double>(3,i);
     returnPoints.push_back(mitk::WorldPoint (point, p[i].m_Scalar));
   }
   return returnPoints;
 }
 
+
 //-----------------------------------------------------------------------------
-mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
+std::vector<mitk::WorldPoint> operator*(const cv::Matx44d& M, const std::vector<mitk::WorldPoint>& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::WorldPoint  operator*(const cv::Mat& M, const  mitk::WorldPoint & p)
 {
   cv::Mat src ( 4, 1 , CV_64F );
   src.at<double>(0,0) = p.m_Point.x;
@@ -387,16 +395,24 @@ mitk::WorldPoint  operator*(cv::Mat M, const  mitk::WorldPoint & p)
   mitk::WorldPoint  returnPoint;
    
   cv::Point3d point;
-  point.x = dst.at<double>(0,0);
-  point.y = dst.at<double>(1,0);
-  point.z = dst.at<double>(2,0);
+  point.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
+  point.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
+  point.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
   returnPoint = mitk::WorldPoint (point, p.m_Scalar);
   
   return returnPoint;
 }
 
+
 //-----------------------------------------------------------------------------
-std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
+mitk::WorldPoint  operator*(const cv::Matx44d& M, const mitk::WorldPoint& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Point3d>& p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
@@ -411,16 +427,24 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
     cv::Point3d point;
-    point.x = dst.at<double>(0,i);
-    point.y = dst.at<double>(1,i);
-    point.z = dst.at<double>(2,i);
+    point.x = dst.at<double>(0,i) / dst.at<double>(3, i);
+    point.y = dst.at<double>(1,i) / dst.at<double>(3, i);
+    point.z = dst.at<double>(2,i) / dst.at<double>(3, i);
     returnPoints.push_back(point);
   }
   return returnPoints;
 }
 
+
 //-----------------------------------------------------------------------------
-cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
+std::vector <cv::Point3d> operator*(const cv::Matx44d& M, const std::vector<cv::Point3d>& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Point3d operator*(const cv::Mat& M, const cv::Point3d& p)
 {
   cv::Mat src ( 4, 1, CV_64F );
   src.at<double>(0,0) = p.x;
@@ -431,12 +455,20 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
   cv::Mat dst = M*src;
   cv::Point3d returnPoint;
   
-  returnPoint.x = dst.at<double>(0,0);
-  returnPoint.y = dst.at<double>(1,0);
-  returnPoint.z = dst.at<double>(2,0);
+  returnPoint.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
+  returnPoint.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
+  returnPoint.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
 
   return returnPoint;
 }
+
+
+//-----------------------------------------------------------------------------
+cv::Point3d operator*(const cv::Matx44d& M, const cv::Point3d& p)
+{
+  return operator*(cv::Mat(4, 4, CV_64F, (void*) &M.val[0]), p);
+}
+
 
 //-----------------------------------------------------------------------------
 bool NearlyEqual(const cv::Point2d& p1, const cv::Point2d& p2, const double& tolerance )

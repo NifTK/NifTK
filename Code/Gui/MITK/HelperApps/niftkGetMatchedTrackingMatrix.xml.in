@@ -42,6 +42,14 @@
       <default>0</default>
     </boolean>
 
+    <boolean>
+      <name>WriteTimingErrors</name>
+      <longflag>WriteTimingErrors</longflag>
+      <description>Write the timing errors out to file</description>
+      <label>Write the timing errors out to file</label>
+      <default>0</default>
+    </boolean>
+
     <integer>
 	<name>frameNumber</name>
 	<longflag>frameNumber</longflag>

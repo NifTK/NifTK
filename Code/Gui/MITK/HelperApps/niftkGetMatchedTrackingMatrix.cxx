@@ -34,6 +34,7 @@ int main(int argc, char** argv)
   {
     mitk::VideoTrackerMatching::Pointer trackerMatcherObject = mitk::VideoTrackerMatching::New();
     trackerMatcherObject->SetFlipMatrices(FlipTracking);
+    trackerMatcherObject->SetWriteTimingErrors(WriteTimingErrors);
     trackerMatcherObject->Initialise(trackingInputDirectory);
     if ( handeyes.length() !=0 ) 
     {

@@ -142,7 +142,7 @@ void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
 
 
 //-----------------------------------------------------------------------------
-bool CoordinateAxesData::SaveToFile(const std::string& fileName)
+bool CoordinateAxesData::SaveToFile(const std::string& fileName) const
 {
   vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
   this->GetVtkMatrix(*tmp);

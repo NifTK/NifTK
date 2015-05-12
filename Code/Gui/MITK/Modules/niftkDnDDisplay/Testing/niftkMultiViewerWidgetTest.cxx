@@ -106,7 +106,10 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
   d->RenderingManager = mitk::RenderingManager::GetInstance();
   d->RenderingManager->SetDataStorage(d->DataStorage);
 
-  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(d->FileName, *(d->DataStorage.GetPointer()));
+  std::vector<std::string> files;
+  files.push_back(d->FileName);
+
+  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(d->DataStorage.GetPointer()));
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Test image loaded.");
 
   d->ImageNode = (*allImages)[0];

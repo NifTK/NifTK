@@ -20,25 +20,26 @@
 
 #include <string>
 
-// Environment variables 
 namespace niftk
 {
 
-  #define NIFTK_DIR "NIFTK_DIR"
-  #define USERS_HOME "HOME"
-  #define WORKING_DIR "PWD"
+#define NIFTK_DIR "NIFTK_DIR"
 
-  NIFTKCOMMON_WINEXPORT std::string GetHomeDirectory();
+#define USERS_HOME "HOME"
 
-  NIFTKCOMMON_WINEXPORT std::string GetWorkingDirectory();
+#define WORKING_DIR "PWD"
 
-  NIFTKCOMMON_WINEXPORT std::string GetNIFTKHome();
+NIFTKCOMMON_WINEXPORT std::string GetHomeDirectory();
 
-  NIFTKCOMMON_WINEXPORT std::string GetEnvironmentVariable(const std::string& variableName);
+NIFTKCOMMON_WINEXPORT std::string GetWorkingDirectory();
 
-  NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOn(const std::string& variableName);
+NIFTKCOMMON_WINEXPORT std::string GetNIFTKHome();
 
-  NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOff(const std::string& variableName);
+NIFTKCOMMON_WINEXPORT std::string GetEnvironmentVariable(const std::string& variableName);
+
+NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOn(const std::string& variableName);
+
+NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOff(const std::string& variableName);
 
 } // end namespace
 

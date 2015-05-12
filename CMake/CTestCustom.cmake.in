@@ -33,7 +33,7 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   ".*/ui_.*"
 
   # Exclude files from the External directories
-  ".*/.*-src/.*" 
+  "${EP_BASE}/[^/]*/[0-9a-f]*/src/.*"
 
   # Trac 2223: Remove these from coverage
   ".*/Testing/Code/.*"             # As we want to measure the coverage of real code, not tests.
@@ -111,7 +111,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac #1455: Sometimes we set values, and output them only in debug code. 
   # Seems a shame to delete the debug code just to get rid of the warning.
   ".*variable.*set but not used.*"
-  ".*-src.*" 
+  "${EP_BASE}/[^/]*/[0-9a-f]*/src/.*"
   ".*itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.txx:144.*imgSize.*"
   
   # PythonQt suppressions
@@ -148,7 +148,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*openigtlink.*"
   
   # Trac 2137: Tidying dashboard
-  "OpenCV-build"
+  "OpenCV/.*/build"
   "itk.*Point.*may be used uninitialized in this function" 
   "itk.*Index.*may be used uninitialized in this function"
   "itk.*Vector.*may be used uninitialized in this function"
@@ -159,9 +159,9 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
 
   # Trac 2332: Tidying dashboard
   ".*itk.*FixedArray.*is used uninitialized in this function.*"
-  ".*CTK-src.*"
-  ".*DCMTK-src.*"
-  ".*OpenCV-src.*"
+  "${EP_BASE}/CTK/[0-9a-f]*/src/.*"
+  "${EP_BASE}/DCMTK/[0-9a-f]*/src/.*"
+  "${EP_BASE}/OpenCV/[0-9a-f]*/src/.*"
 
   # Trac 2495: Removing warning for Kelvin
   ".*itkShapeBasedAveragingImageFilter.*"

@@ -32,8 +32,11 @@ set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #################################################################################
 
 add_test(Common-CheckDims-2D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/cte_20_x_20.png 2 )
-add_test(Common-CheckDims-3D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/ADNI-AD-098_S_0149-Scr-03300.img 3 )
+add_test(Common-CheckDims-3D ${ITK_COMMON_UNIT_TESTS} CheckImageDimensionalityTest ${INPUT_DATA}/volunteers/30257/mdeft_nifti/mdeft.1.nii 3 )
 add_test(Common-ReceptorMember ${ITK_COMMON_UNIT_TESTS} ReceptorMemberCommandTest )
+add_test(MIDAS-ITK-a ${ITK_COMMON_UNIT_TESTS} MIDASOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img 208 256 256)
+add_test(MIDAS-ITK-s ${ITK_COMMON_UNIT_TESTS} MIDASOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-s.img 256 256 208)
+add_test(MIDAS-ITK-c ${ITK_COMMON_UNIT_TESTS} MIDASOrientationTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img 208 256 256)
 
 #################################################################################
 # Build instructions.
@@ -41,6 +44,7 @@ add_test(Common-ReceptorMember ${ITK_COMMON_UNIT_TESTS} ReceptorMemberCommandTes
 set(ITKCommonUnitTests_SRCS
   CheckImageDimensionalityTest.cxx
   ReceptorMemberCommandTest.cxx
+  MIDASOrientationTest.cxx
 )
 
 add_executable(ITKCommonUnitTests ITKCommonUnitTests.cxx ${ITKCommonUnitTests_SRCS})

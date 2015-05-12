@@ -22,9 +22,10 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
 endif()
 
-set(proj VTK)
-set(proj_DEPENDENCIES )
-set(VTK_DEPENDS ${proj})
+set(version "6.1.0+74f4888")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/VTK-${version}.tar.gz")
+
+niftkMacroDefineExternalProjectVariables(VTK ${version} ${location})
 
 set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
 
@@ -79,24 +80,22 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(APPLE)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
-    URL ${NIFTK_LOCATION_VTK}
-    URL_MD5 ${NIFTK_CHECKSUM_VTK}
+    LIST_SEPARATOR ^^
+    PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DVTK_WRAP_TCL:BOOL=OFF
         -DVTK_WRAP_PYTHON:BOOL=OFF
         -DVTK_WRAP_JAVA:BOOL=OFF
-        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DVTK_USE_RPATH:BOOL=ON
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=${VTK_USE_SYSTEM_FREETYPE}
         -DVTK_USE_GUISUPPORT:BOOL=ON
@@ -106,9 +105,15 @@ if(NOT DEFINED VTK_DIR)
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
-    )
+  )
 
-  set(VTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(VTK_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(VTK_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

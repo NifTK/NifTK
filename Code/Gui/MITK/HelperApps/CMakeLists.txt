@@ -160,6 +160,8 @@ if(SlicerExecutionModel_FOUND)
       niftkEvaluateIntrinsicParametersOnNumberOfFrames
       niftkMakeChessBoardPointSet
       niftkBifurcationToPointSet
+      niftkMakeLapUSProbeAprilTagsModel
+      niftkMakeLapUSProbeSimulationData
     )
     
     if(BUILD_PCL)

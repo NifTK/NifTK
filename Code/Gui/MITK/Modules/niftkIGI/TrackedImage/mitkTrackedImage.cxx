@@ -17,6 +17,7 @@
 #include <mitkMathsUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <vtkImageData.h>
 #include <mitkImage.h>
 #include <mitkSurface.h>
 
@@ -76,6 +77,7 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
     {
       geometry->SetIndexToWorldTransformByVtkMatrix(image2world);
     }
+    image->GetVtkImageData()->Modified();
   }
 }
 

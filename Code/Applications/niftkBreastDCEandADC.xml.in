@@ -72,12 +72,12 @@
       <label>Save images?</label>
     </boolean>
  
-  </parameters>
-
-  <parameters advanced="true">
-
-    <label>Options</label>
-    <description><![CDATA[Optional parameters]]></description>
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>The default behaviour is to only process new data. Selecting this option will recalculate all the data and overwrite any existing files.</description>
+      <label>Regenerate output files?</label>
+    </boolean>
 
     <boolean>
       <name>flgCompression</name>
@@ -85,6 +85,20 @@
       <description>Select this checkbox to compress all the saved images and hence save on disk space.</description>
       <label>Compress images?</label>
     </boolean>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output (i.e. print the DICOM header).</description>
+      <label>Print debugging output?</label>
+    </boolean>
+ 
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>DICOM Series Descriptions</label>
+    <description><![CDATA[DICOM Series Descriptions]]></description>
 
     <string>
       <name>strSeriesDescT1W</name>
@@ -117,20 +131,38 @@
       <label>DCE series description</label>
       <default>t1_fl3d_tra_dynVIEWS_SPAIR_1x1x0.9_B1Med</default>
     </string>
+ 
+  </parameters>
 
-    <boolean>
-      <name>flgDebug</name>
-      <longflag>dbg</longflag>
-      <description>Generate debug output (i.e. print the DICOM header).</description>
-      <label>Print debugging output?</label>
-    </boolean>
+  <parameters advanced="true">
+
+    <label>Segmentation and Registration Executables</label>
+    <description><![CDATA[Segmentation and Registration Executables]]></description>
 
     <file>
-      <name>fileSegEM</name>
+      <name>comSegEM</name>
       <longflag>segEM</longflag>
-      <description>The NiftySeg 'seg_EM' program to segment the internal breast region into fat and glandular tissue classes.</description>
+      <description>The NiftySeg seg_EM program to segment the internal breast region into fat and glandular tissue classes.</description>
       <label>Seg_EM executable</label>
       <default>seg_EM</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>comRegAffine</name>
+      <longflag>regAffine</longflag>
+      <description>The NiftyReg reg_aladin or niftkAffine path and command line to perform an affine registration of two images.</description>
+      <label>Affine registration executable</label>
+      <default>niftkAffine --tr Rigid --levels2use 2  --rmin 0.1 -s Normalized_Mutual_Information</default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>comRegNonRigid</name>
+      <longflag>regNonRigid</longflag>
+      <description>The NiftyReg reg_f3d path and command line to perform a non-rigid B-Spline registration of two images.</description>
+      <label>Non-rigid registration executable</label>
+      <default>reg_f3d -jl 0.1</default>
       <channel>input</channel>
     </file>
 

@@ -33,10 +33,7 @@
 #include <mitkPointSet.h>
 #include <mitkIRenderWindowPartListener.h>
 
-#include <itkImage.h>
 #include <itkFixedArray.h>
-#include <itkImageSeriesReader.h>
-
 #include <QmitkBaseView.h>
 
 class IntensityProfileViewPrivate;

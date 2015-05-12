@@ -22,17 +22,45 @@
 #include <deque>
 #include "niftkFileHelper.h"
 #include "niftkEnvironmentHelper.h"
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
+#include "Exceptions/niftkIOException.h"
+
+#include <NifTKConfigure.h>
+
+#if (defined(WIN32) || defined(_WIN32))
+#define FILE_SEPARATOR "\\"
+#else
+#define FILE_SEPARATOR "/"
+#endif
 
 namespace fs = boost::filesystem;
 
 namespace niftk
 {
 
+/**
+* Converts pathName to a boost::filesystem::path.
+* We throw std::logic_error if you pass an empty pathName.
+* @param pathName a string representing the path
+* @return boost path type
+*/
+//boost::filesystem::path ConvertToFullPath(const std::string& pathName);
+
+
+/**
+* Creates a unique file name for a file located in the O/S temporary directory.
+* @param prefix file basename prefix
+* @param suffix file basename suffix
+* @return a unique file name
+*/
+//boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
+
 
 //-----------------------------------------------------------------------------
 std::string GetFileSeparator()
-{	
+{
   return FILE_SEPARATOR;
 }
 
@@ -40,9 +68,9 @@ std::string GetFileSeparator()
 //-----------------------------------------------------------------------------
 std::string ConcatenatePath(const std::string& path, const std::string& name)
 {
-  if ( ( path.length() > 0 ) && 
+  if ( ( path.length() > 0 ) &&
        ( path.substr( path.length() - 1 ) != GetFileSeparator() ) &&
-       ( name.length() > 0 ) && 
+       ( name.length() > 0 ) &&
        ( name.substr( 0, 1 ) != GetFileSeparator() ) )
     
   {
@@ -72,7 +100,7 @@ fs::path ConvertToFullPath(const std::string& pathName)
 //-----------------------------------------------------------------------------
 std::string ConvertToFullNativePath(const std::string& pathName)
 {
-  fs::path full_path = ConvertToFullPath(pathName);  
+  fs::path full_path = ConvertToFullPath(pathName);
   return full_path.string();
 }
 
@@ -87,7 +115,8 @@ std::string Basename(const std::string& pathName)
 
 
 //-----------------------------------------------------------------------------
-fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix) throw (niftk::IOException) {
+fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)
+{
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
 
@@ -132,22 +161,25 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
       std::string tmpPath;
       std::string::iterator i_char;
 
-      assert(*(fileNameTemplate.end() - suffix.length() - 6) == 'X' && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
+      assert(*(fileNameTemplate.end() - suffix.length() - 6) == 'X'
+             && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
       tmpPath = fileNameTemplate;
-      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++) {
+      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
+      {
         assert(*i_char == 'X');
-        switch (rand()%3) {
-        case 0:
-          *i_char = rand()%('z' - 'a') + 'a';
-          break;
+        switch (rand()%3)
+        {
+          case 0:
+            *i_char = rand()%('z' - 'a') + 'a';
+            break;
 
-        case 1:
-          *i_char = rand()%('Z' - 'A') + 'A';
-          break;
+          case 1:
+            *i_char = rand()%('Z' - 'A') + 'A';
+            break;
 
-        default:
-          *i_char = rand()%('9' - '0') + '0';
-        }
+          default:
+            *i_char = rand()%('9' - '0') + '0';
+          }
       }
 
       if (!fs::exists(tmpPath)) {
@@ -179,7 +211,7 @@ bool DirectoryExists(const std::string& directoryPath)
 bool CreateDirAndParents(const std::string& directoryPath)
 {
   std::deque< fs::path > directoryTree;
-  std::deque< fs::path >::iterator iterDirectoryTree;       
+  std::deque< fs::path >::iterator iterDirectoryTree;
 
   fs::path full_path = ConvertToFullPath(directoryPath);
   fs::path branch = full_path;
@@ -190,9 +222,9 @@ bool CreateDirAndParents(const std::string& directoryPath)
     branch = branch.branch_path();
   }
 
-  for ( iterDirectoryTree = directoryTree.begin(); 
-	iterDirectoryTree < directoryTree.end(); 
-	++iterDirectoryTree )
+  for ( iterDirectoryTree = directoryTree.begin();
+  iterDirectoryTree < directoryTree.end();
+  ++iterDirectoryTree )
   {
     if ( ! fs::exists( *iterDirectoryTree ) )
     {
@@ -252,9 +284,12 @@ bool FilenameHasPrefixAndExtension(
   size_t extensionLength = extension.length();
   
   if (prefixIndex == 0
-      && 
+      &&
         (
-           (extension.length() > 0 && extensionIndex == (filename.length() - extensionLength) && (extensionIndex - dotIndex) == 1)
+           (extension.length() > 0
+            && extensionIndex == (filename.length() - extensionLength)
+            && (extensionIndex - dotIndex) == 1
+           )
         || (extension.length() == 0))
       )
     {
@@ -277,18 +312,18 @@ bool FilenameMatches(
   
   // If extension is empty, then you wouldnt expect the "." either.
   if (extension.length() == 0)
-    {
-      tmp = prefix + middle;
-    }
+  {
+    tmp = prefix + middle;
+  }
   else
-    {
-      tmp = prefix + middle + "." + extension;
-    }
+  {
+    tmp = prefix + middle + "." + extension;
+  }
     
   if (filename.compare(tmp) == 0)
-    {
-      result = true;  
-    }
+  {
+    result = true;
+  }
   
   return result;
 }
@@ -297,7 +332,7 @@ bool FilenameMatches(
 //-----------------------------------------------------------------------------
 std::string GetImagesDirectory()
 {
-  return ConcatenatePath(GetNIFTKHome(), "images"); 
+  return ConcatenatePath(GetNIFTKHome(), "images");
 }
 
 
@@ -359,16 +394,16 @@ std::vector<std::string> GetDirectoriesInDirectory(const std::string& fullDirect
 }
 
 
-//  -------------------------------------------------------------------------
-void GetRecursiveFilesInDirectory( const std::string &directoryName, 
-				   std::vector<std::string> &fileNames )
+//-----------------------------------------------------------------------------
+void GetRecursiveFilesInDirectory(
+    const std::string &directoryName,
+    std::vector<std::string> &fileNames)
 {
   fs::path full_path( directoryName );
 
   if (!DirectoryExists(directoryName))
   {
     throw std::logic_error("Directory does not exist!");
-    return;
   }
 
   if ( fs::is_directory( full_path ) )
@@ -382,7 +417,7 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
       try
       {
         if ( fs::is_directory( dir_itr->status() ) )
-        { 
+        {
           GetRecursiveFilesInDirectory( dir_itr->path().string(), fileNames );
         }
         else if ( fs::is_regular_file( dir_itr->status() ) )
@@ -398,13 +433,13 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
   }
   else // must be a file
   {
-    fileNames.push_back( full_path.string() );    
+    fileNames.push_back( full_path.string() );
   }
 }
 
 
-//  -------------------------------------------------------------------------
-bool NumericStringCompare( const std::string &string1, const std::string &string2) 
+//-----------------------------------------------------------------------------
+bool NumericStringCompare( const std::string &string1, const std::string &string2)
 {
   fs::path path1 (string1);
   fs::path path2 (string2);
@@ -414,15 +449,15 @@ bool NumericStringCompare( const std::string &string1, const std::string &string
 }
 
 
-//  -------------------------------------------------------------------------
-std::vector<std::string> FindVideoData( std::string directory) 
+//-----------------------------------------------------------------------------
+std::vector<std::string> FindVideoData(const std::string& directory)
 {
   boost::filesystem::recursive_directory_iterator end_itr;
   std::vector<std::string> returnStrings;
 
   boost::regex avifilter ( "(.+)(.avi)", boost::regex::icase);
   for ( boost::filesystem::recursive_directory_iterator it(directory);
-          it != end_itr ; ++it)
+          it != end_itr; ++it)
   {
     if ( boost::regex_match (it->path().string().c_str(), avifilter))
     {
@@ -431,7 +466,7 @@ std::vector<std::string> FindVideoData( std::string directory)
   }
   //also look for 264 files, but put them further along the vector
   for ( boost::filesystem::recursive_directory_iterator it(directory);
-          it != end_itr ; ++it)
+          it != end_itr; ++it)
   {
     if (  it->path().extension() == ".264" )
     {
@@ -442,7 +477,7 @@ std::vector<std::string> FindVideoData( std::string directory)
 }
 
 
-//  -------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension)
 {
   std::vector<std::string> returnStrings;
@@ -450,7 +485,8 @@ std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDire
 
   if (niftk::DirectoryExists(fullDirectoryName))
   {
-    for ( boost::filesystem::recursive_directory_iterator it(niftk::ConvertToFullNativePath(fullDirectoryName)); it != endItr; ++it)
+    for ( boost::filesystem::recursive_directory_iterator it(niftk::ConvertToFullNativePath(fullDirectoryName));
+          it != endItr; ++it)
     {
       if ( it->path().extension() == extension)
       {
@@ -462,8 +498,8 @@ std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDire
 }
 
 
-//  -------------------------------------------------------------------------
-std::string ExtractImageFileSuffix( const std::string fileName )
+//-----------------------------------------------------------------------------
+std::string ExtractImageFileSuffix(const std::string& fileName )
 {
   std::string suffix;
   std::string compSuffix;       // The .gz or .zip suffix if present
@@ -471,21 +507,21 @@ std::string ExtractImageFileSuffix( const std::string fileName )
   suffix.clear();
   compSuffix.clear();
 
-  if ( ( fileName.length() >= 3 ) && 
-       ( ( fileName.substr( fileName.length() - 3 ) == std::string( ".gz" ) ) || 
+  if ( ( fileName.length() >= 3 ) &&
+       ( ( fileName.substr( fileName.length() - 3 ) == std::string( ".gz" ) ) ||
          ( fileName.substr( fileName.length() - 3 ) == std::string( ".GZ" ) ) ) )
   {
     compSuffix = fileName.substr( fileName.length() - 3 );
   }
 
-  else if ( ( fileName.length() >= 4 ) && 
-            ( ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) || 
-              ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ) )
+  else if ( ( fileName.length() >= 4 ) &&
+            ( ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ||
+              ( fileName.substr( fileName.length() - 4 ) == std::string( ".ZIP" ) ) ) )
   {
     compSuffix = fileName.substr( fileName.length() - 4 );
   }
 
-  if ( ( fileName.length() >= 4 + compSuffix.length() ) && 
+  if ( ( fileName.length() >= 4 + compSuffix.length() ) &&
        ( ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".dcm" ) ) ||
          ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".DCM" ) ) ||
          ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".nii" ) ) ||
@@ -508,8 +544,8 @@ std::string ExtractImageFileSuffix( const std::string fileName )
     suffix = fileName.substr( fileName.length() - compSuffix.length() - 4 );
   }
 
-  else if ( ( fileName.length() >= 5 + compSuffix.length() ) && 
-            ( ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".tiff" ) ) || 
+  else if ( ( fileName.length() >= 5 + compSuffix.length() ) &&
+            ( ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".tiff" ) ) ||
               ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".TIFF" ) ) ||
               ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".gipl" ) ) ||
               ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".GIPL" ) ) ) )
@@ -517,7 +553,7 @@ std::string ExtractImageFileSuffix( const std::string fileName )
     suffix = fileName.substr( fileName.length() - compSuffix.length() - 5 );
   }
 
-  else if ( ( fileName.length() >= 6 + compSuffix.length() ) && 
+  else if ( ( fileName.length() >= 6 + compSuffix.length() ) &&
             ( ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".dicom" ) ) ||
               ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".DICOM" ) ) ) )
   {
@@ -528,9 +564,9 @@ std::string ExtractImageFileSuffix( const std::string fileName )
 }
 
 
-//  -------------------------------------------------------------------------
-std::string ExtractImageFileSuffix( const std::string fileName,
-                                    std::string &fileNameWithoutSuffix )
+//-----------------------------------------------------------------------------
+std::string ExtractImageFileSuffix(const std::string& fileName,
+                                   std::string &fileNameWithoutSuffix )
 {
   std::string suffix = niftk::ExtractImageFileSuffix( fileName );
   fileNameWithoutSuffix = fileName.substr( 0, fileName.length() - suffix.length() );
@@ -539,9 +575,9 @@ std::string ExtractImageFileSuffix( const std::string fileName,
 }
 
 
-//  -------------------------------------------------------------------------
-std::string AddStringToImageFileSuffix( const std::string fileName,
-                                        std::string stringToAdd )
+//-----------------------------------------------------------------------------
+std::string AddStringToImageFileSuffix(const std::string& fileName,
+                                       std::string stringToAdd )
 {
   std::string fileNameWithoutSuffix;
   std::string suffix = ExtractImageFileSuffix( fileName,
@@ -550,9 +586,9 @@ std::string AddStringToImageFileSuffix( const std::string fileName,
 }
 
 
-//  -------------------------------------------------------------------------
-std::string ModifyImageFileSuffix( const std::string fileName,
-                                   std::string newSuffix )
+//-----------------------------------------------------------------------------
+std::string ModifyImageFileSuffix(const std::string& fileName,
+                                  std::string newSuffix )
 {
   std::string fileNameWithoutSuffix;
   niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
@@ -560,5 +596,33 @@ std::string ModifyImageFileSuffix( const std::string fileName,
 }
 
 
+//-----------------------------------------------------------------------------
+std::string GetFilenameStem(const std::string& fileName )
+{
+  fs::path filePath( fileName );
+  return filePath.stem().string();
+}
+
+
+//-----------------------------------------------------------------------------
+std::string ModifyFileSuffix(const std::string& fileName,
+                             std::string newSuffix )
+{
+  fs::path filePath( fileName );
+
+  std::string stem = filePath.stem().string();
+
+  if ( filePath.has_parent_path() )
+  {
+    std::string parentPath;
+    parentPath = filePath.parent_path().string();
+
+    return ConcatenatePath( parentPath, stem + newSuffix );
+  }
+  else
+  {
+    return stem + newSuffix;
+  }
+}
 
 } // end namespace

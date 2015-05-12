@@ -64,12 +64,12 @@ Website : http://opencv.willowgarage.com/wiki
 Purpose : Computer Vision.
 License : Doc/Licences/OpenCV.txt (BSD 3 clause license)
 
-Library : Aruco
+Library : ArUco
 Website : http://www.uco.es/investiga/grupos/ava/node/26
 Purpose : AR marker tracking.
-License : Doc/Licenses/Aruco.txt (BSD 2 clause license)
+License : Doc/Licenses/ArUco.txt (BSD 2 clause license)
 
-Library : EIGEN
+Library : Eigen
 Website : http://eigen.tuxfamily.org
 Purpose : Matrix library used by AprilTags, PCL etc.
 License : http://www.mozilla.org/MPL/2.0/ (Mozilla Public License v2.0)

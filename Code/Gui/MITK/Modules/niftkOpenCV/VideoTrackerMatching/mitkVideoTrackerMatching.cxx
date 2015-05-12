@@ -16,7 +16,6 @@
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <sstream>
@@ -30,6 +29,7 @@ namespace mitk
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 , m_FlipMatrices(false)
+, m_WriteTimingErrors(false)
 , m_HaltOnFrameSkip(true)
 {}
 
@@ -281,6 +281,21 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 
   for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i++ )
   {
+    std::ofstream fout;
+    if ( m_WriteTimingErrors )
+    {
+       std::string fileout = m_TrackingMatrixDirectories[i] + ".timimgErrors";
+       fout.open(fileout.c_str());
+       if ( fout )
+       {
+         MITK_INFO << "Writing Timing errors to " << fileout;
+       }
+       else
+       {
+         MITK_ERROR << "Failed to open " << fileout << " to write timing errors to";
+       }
+    }
+    
     double mean = 0 ; 
     double absmean = 0 ; 
     long long minimum = m_TrackingMatrices[i].m_TimingErrors[0];
@@ -292,7 +307,10 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
       absmean += fabs(static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]));
       minimum = m_TrackingMatrices[i].m_TimingErrors[j] < minimum ? m_TrackingMatrices[i].m_TimingErrors[j] : minimum;
       maximum = m_TrackingMatrices[i].m_TimingErrors[j] > maximum ? m_TrackingMatrices[i].m_TimingErrors[j] : maximum;
-
+      if ( fout ) 
+      {
+        fout << static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]) << std::endl;
+      }
     }
     mean /= m_TrackingMatrices[i].m_TimingErrors.size();
     absmean /= m_TrackingMatrices[i].m_TimingErrors.size();

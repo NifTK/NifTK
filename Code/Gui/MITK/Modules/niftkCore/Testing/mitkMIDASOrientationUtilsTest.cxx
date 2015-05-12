@@ -47,8 +47,9 @@ public:
   {
     m_DataStorage = mitk::StandaloneDataStorage::New();
     std::string fileName = argv[1];
-
-    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(fileName, *(m_DataStorage.GetPointer()));
+    std::vector<std::string> files;
+    files.push_back(fileName);
+    mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(m_DataStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
 
     m_Node = (*allImages)[0];

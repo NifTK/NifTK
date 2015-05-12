@@ -53,7 +53,6 @@ public:
     files.push_back(fileName1);
     files.push_back(fileName2);
     mitk::StandaloneDataStorage::Pointer localStorage = mitk::StandaloneDataStorage::New();
-
     mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(localStorage.GetPointer()));
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
 

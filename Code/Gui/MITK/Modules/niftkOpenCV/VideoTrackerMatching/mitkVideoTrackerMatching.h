@@ -70,6 +70,11 @@ public:
   itkSetMacro (FlipMatrices, bool);
 
   /**
+   * \brief Set a flag as to whether to write out the timing errors
+   */
+  itkSetMacro (WriteTimingErrors, bool);
+
+  /**
    * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
    */
   itkSetMacro (HaltOnFrameSkip, bool);
@@ -113,6 +118,7 @@ protected:
   TimeStampsContainer              m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
+  bool                                  m_WriteTimingErrors;
   std::string                           m_Directory;
 
   /**

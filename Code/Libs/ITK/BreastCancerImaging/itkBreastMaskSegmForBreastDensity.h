@@ -40,13 +40,17 @@ public:
   itkTypeMacro( BreastMaskSegmForBreastDensity, BreastMaskSegmentationFromMRI );
 
   typedef typename Superclass::InternalImageType               InternalImageType;
+  typedef typename Superclass::AxialImageType                  AxialImageType;
   typedef typename Superclass::PointSetType                    PointSetType;
   typedef typename Superclass::PointDataIterator               PointDataIterator;
   typedef typename Superclass::RealType                        RealType;
   typedef typename Superclass::IteratorType                    IteratorType;
-  typedef typename Superclass::ConnectedSurfaceVoxelFilterType ConnectedSurfaceVoxelFilterType;
   typedef typename Superclass::VectorType                      VectorType;
   typedef typename Superclass::LineIteratorType                LineIteratorType;
+  typedef typename Superclass::SliceIteratorType               SliceIteratorType;
+
+  typedef typename Superclass::ConnectedSurfaceVoxelFilterType ConnectedSurfaceVoxelFilterType;
+  typedef typename Superclass::ThresholdingFilterType          ThresholdingFilterType;
 
   /// Execute the segmentation 
   virtual void Execute( void );

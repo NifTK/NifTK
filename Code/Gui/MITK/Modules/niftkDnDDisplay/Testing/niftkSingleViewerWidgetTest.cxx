@@ -555,7 +555,10 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   /// not with the real application. We simply suppress them here.
   vtkObject::GlobalWarningDisplayOff();
 
-  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(d->FileName, *(d->DataStorage.GetPointer()));
+  std::vector<std::string> files;
+  files.push_back(d->FileName);
+
+  mitk::DataStorage::SetOfObjects::Pointer allImages = mitk::IOUtil::Load(files, *(d->DataStorage.GetPointer()));
 
   /// Note:
   /// If the file is a DICOM file then all the DICOM images from the same directory

@@ -63,7 +63,4 @@ add_test(VTK-3Point-Reader-Test ${VTK_INTEGRATION_TESTS} niftkVTK3PointReaderTes
 add_test(VTK-Distance-To-Surface-PolyData-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTest ${INPUT_DATA}/3points.txt  ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/PointsToSurfaceDist.txt)
 add_test(VTK-Distance-To-Surface-Single-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTestSinglePoint 5.4 2.20 1.134 ${INPUT_DATA}/liver.vtk 146.72)
 add_test(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk noperturb)
-if(BUILD_SLS_TESTING)
-  add_test(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
-  add_test(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointRepeatTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk)
-endif()
+

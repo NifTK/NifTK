@@ -17,7 +17,7 @@
 # GDCM
 #
 # Note: NifTK as such doesn't need GDCM. However, if we use MITK,
-# then MITK needs a version of ITK that has been built with a specfic 
+# then MITK needs a version of ITK that has been built with a specfic
 # version of GDCM. So we build GDCM, and then ITK in that same fashion.
 #-----------------------------------------------------------------------------
 
@@ -35,36 +35,39 @@ if(ITK_DIR)
   endif()
 endif()
 
+set(version "2.4.1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${version}.tar.gz")
 
-set(proj GDCM)
-set(proj_DEPENDENCIES )
-set(GDCM_DEPENDS ${proj})
+niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location})
 
 if(NOT DEFINED GDCM_DIR)
 
   set(GDCM_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-20130814.cmake)
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
-
   ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
-    URL ${NIFTK_LOCATION_GDCM}
-    URL_MD5 ${NIFTK_CHECKSUM_GDCM}
-    INSTALL_COMMAND ""
+    LIST_SEPARATOR ^^
+    PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${GDCM_PATCH_COMMAND}
-    CMAKE_GENERATOR ${GEN}
+    CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+      -DGDCM_BUILD_SHARED_LIBS:BOOL=ON
     DEPENDS ${proj_DEPENDENCIES}
   )
-  set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+  if(EP_ALWAYS_USE_INSTALL_DIR)
+    set(GDCM_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  else()
+    set(GDCM_DIR ${proj_BUILD})
+  endif()
+
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
 else()

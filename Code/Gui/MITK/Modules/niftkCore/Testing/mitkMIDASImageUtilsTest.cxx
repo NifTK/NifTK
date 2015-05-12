@@ -56,7 +56,7 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 2),".. Testing 2 images loaded.");
 
     const mitk::DataNode::Pointer inputNode = (*allImages)[0];
-    mitk::Image::Pointer inputImage = dynamic_cast<mitk::Image*>(inputNode->GetData());
+    mitk::Image::ConstPointer inputImage = dynamic_cast<const mitk::Image*>(inputNode->GetData());
 
     const mitk::DataNode::Pointer outputNode = (*allImages)[1];
     mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());

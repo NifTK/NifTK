@@ -18,11 +18,7 @@
 #include <iostream>     // std::cout, std::fixed
 #include <iomanip>      // std::setprecision
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-
 #include <itkObject.h>
-#include <vtkSmartPointer.h>
 #include <itkImage.h>
 
 #include <itkImageFileReader.h>
@@ -46,6 +42,8 @@
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
+
+#include <boost/random/mersenne_twister.hpp>
 
 
 /*!
@@ -164,18 +162,18 @@ public:
               << "center: (" << xCenter << ", " << yCenter << ") "
               << indent
               << "no. of dense pixels: "
-              << std::right << setprecision( 6 ) << std::setw(12) << nDensePixels << " ( "
-              << std::fixed << setprecision( 2 )
+              << std::right << std::setprecision( 6 ) << std::setw(12) << nDensePixels << " ( "
+              << std::fixed << std::setprecision( 2 )
               << std::right << std::setw(7) << 100.*nDensePixels/nPixels << "% )";
 
     std::cout.unsetf( std::ios_base::fixed );
 
     std::cout << indent
               << "no. of pixels in patch: "
-              << std::right << setprecision( 6 ) << std::setw(12) << nPixels << " ( "
-              << std::fixed << setprecision( 2 )
+              << std::right << std::setprecision( 6 ) << std::setw(12) << nPixels << " ( "
+              << std::fixed << std::setprecision( 2 )
               << std::right << std::setw(7) << 100.*nPixels/maxNumberOfPixels << "% )"
-              << setprecision( 0 ) << std::endl;
+              << std::setprecision( 0 ) << std::endl;
 
     std::cout.unsetf( std::ios_base::fixed );
   }
@@ -361,8 +359,7 @@ public:
 
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
 
-  void Compute( boost::random::mt19937 &gen );
-
+  void Compute();
 
 protected:
 
@@ -543,9 +540,6 @@ protected:
                                       typename FactoryType::EulerAffineTransformType::Pointer &transform,
                                       typename ImageType::Pointer &image );
 
-  void GenerateRandomTumourPositionInImage( boost::random::mt19937 &gen,
-                                            MammogramType mammoType );
-
   typename LabelImageType::Pointer 
        GenerateRegionLabels( BreastSideType breastSide,
                              typename LabelImageType::IndexType &idxTumourCenter,
@@ -558,8 +552,13 @@ protected:
 
 private:
 
+  void GenerateRandomTumourPositionInImage( MammogramType mammoType );
+
+
   RegionalMammographicDensity(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
+
+  boost::random::mt19937 m_Gen;
 
 };
 

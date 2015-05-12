@@ -45,7 +45,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_INT, "yrg", "yCoord", "The 'y' voxel coordinate to regio-grow the bgnd from [ny/4]."},
   {OPT_INT, "zrg", "zCoord", "The 'z' voxel coordinate to regio-grow the bgnd from [nz/2]."},
   
-  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0.25]."},
+  {OPT_FLOAT, "tbg", "threshold", "The value at which to threshold the bgnd (0<tbg<1) [0]. "
+   "If zero then estimate automatically."},
 
   {OPT_FLOAT, "tsg", "threshold", "The value at which to threshold the final segmentation (0<tsg<1). Changing this value influences the final size of the breast mask with tsg<0.5 expanding the mask and tsg>0.5 contracting it [0.45]"},
 
@@ -71,8 +72,10 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "obgnd", "filename", "Output the background mask."},
   {OPT_STRING, "oelevation", "filename", "Output the skin elevation map."},
   {OPT_STRING, "ochpts", "filename", "Output the chest surface points image."},
-  {OPT_STRING, "opec", "filename", "Output the pectoral mask."},
-  {OPT_STRING, "opecsurf", "filename", "Output the pectoral surface mask."},
+
+  {OPT_FLOAT,  "pecSpacing", "distance", "The control point spacing to use for the pectoral surface b-spline fit in mm [30]."},
+  {OPT_STRING, "opec", "filename",       "Output the pectoral mask."},
+  {OPT_STRING, "opecsurf", "filename",   "Output the pectoral surface mask."},
 
   {OPT_STRING, "ogradmag", "filename", "Output the gradient magnitude image."},
   {OPT_STRING, "ospeed", "filename", "Output the sigmoid speedimage."},
@@ -82,9 +85,10 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "opecsurfvox", "filename", "Output the surface voxels of the pectoralis (used for region growing)."},
   
   {OPT_SWITCH, "cropfit",  NULL,       "Crop the final mask with a fitted B-Spline surface."},
+  {OPT_FLOAT,  "coilCrop", "distance", "MR coil coronal crop distance in mm [10]."},
   {OPT_STRING, "ofitsurf", "filename", "Output fitted skin surface mask to file."},
   {OPT_SWITCH, "cropPS",  NULL,        "Crop for prone-supine simulations."},
-  {OPT_FLOAT,  "cropPSMidSternumDist",  NULL,  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [80]."},
+  {OPT_FLOAT,  "cropPSMidSternumDist", "distance",  "Crop distance posterior to mid sternum given in mm for prone-supine scheme [80]."},
 
   {OPT_STRING, "ovtk", "filename", "Output a VTK surface (PolyData) representation of the segmentation."},
   
@@ -143,6 +147,8 @@ enum {
   O_OUTPUT_BACKGROUND,
   O_OUTPUT_ELEVATION,
   O_OUTPUT_CHEST_POINTS,
+
+  O_PECTORAL_CONTROL_POINT_SPACING,
   O_OUTPUT_PECTORAL_MASK,
   O_OUTPUT_PEC_SURFACE_MASK,
 
@@ -154,6 +160,7 @@ enum {
   O_OUTPUT_PECTORAL_SURF,
   
   O_CROP_FIT,
+  O_COIL_CROP,
   O_OUTPUT_BREAST_FITTED_SURF_MASK,
   O_CROP_PRONE_SUPINE_SCHEME,
   O_CROP_PRONE_SUPINE_DIST_POST_MIDSTERNUM,
@@ -189,7 +196,7 @@ int main( int argc, char *argv[] )
   int regGrowYcoord = 0;
   int regGrowZcoord = 0;
 
-  float bgndThresholdProb = 0.25;
+  float bgndThresholdProb = 0.;
 
   float finalSegmThreshold = 0.45;
 
@@ -201,7 +208,10 @@ int main( int argc, char *argv[] )
 
   float sigmaBIF = 3.0;
 
+  float coilCropDistance = 10.0;
   float cropProneSupineDistPostMidSternum  = 80.0;
+
+  float pecControlPointSpacing = 30.;
 
   std::string fileBIFs;
   std::string fileOutputBIFs;
@@ -309,8 +319,10 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,          fileOutputBackground );
   CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,           fileOutputSkinElevationMap );
   CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,        fileOutputChestPoints );
-  CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK,       fileOutputPectoral );
-  CommandLineOptions.GetArgument( O_OUTPUT_PEC_SURFACE_MASK,    fileOutputPectoralSurfaceMask );
+
+  CommandLineOptions.GetArgument( O_PECTORAL_CONTROL_POINT_SPACING, pecControlPointSpacing );
+  CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK,           fileOutputPectoral );
+  CommandLineOptions.GetArgument( O_OUTPUT_PEC_SURFACE_MASK,        fileOutputPectoralSurfaceMask );
 
   CommandLineOptions.GetArgument( O_OUTPUT_GRADIENT_MAG_IMAGE, fileOutputGradientMagImage );
   CommandLineOptions.GetArgument( O_OUTPUT_SPEED_IMAGE, fileOutputSpeedImage );
@@ -318,7 +330,8 @@ int main( int argc, char *argv[] )
   
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_SURF,           fileOutputPectoralSurfaceVoxels );
   
-  CommandLineOptions.GetArgument( O_CROP_FIT,                       flgCropWithFittedSurface     );
+  CommandLineOptions.GetArgument( O_CROP_FIT,                       flgCropWithFittedSurface );
+  CommandLineOptions.GetArgument( O_COIL_CROP,                      coilCropDistance );
   CommandLineOptions.GetArgument( O_OUTPUT_BREAST_FITTED_SURF_MASK, fileOutputFittedBreastMask );
   
   CommandLineOptions.GetArgument( O_CROP_PRONE_SUPINE_SCHEME,       flgProneSupineBoundary     );
@@ -397,6 +410,8 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetOutputBackground( fileOutputBackground );
   breastMaskSegmentor->SetOutputSkinElevationMap( fileOutputSkinElevationMap );
   breastMaskSegmentor->SetOutputChestPoints( fileOutputChestPoints );
+
+  breastMaskSegmentor->SetPectoralControlPointSpacing( pecControlPointSpacing );
   breastMaskSegmentor->SetOutputPectoralMask( fileOutputPectoral );
   breastMaskSegmentor->SetOutputPecSurfaceMask( fileOutputPectoralSurfaceMask );
 
@@ -409,6 +424,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetCropDistancePosteriorToMidSternum( cropProneSupineDistPostMidSternum );
 
   breastMaskSegmentor->SetCropFit( flgCropWithFittedSurface );
+  breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
   breastMaskSegmentor->SetOutputBreastFittedSurfMask( fileOutputFittedBreastMask );
 
   breastMaskSegmentor->SetOutputVTKSurface( fileOutputVTKSurface );

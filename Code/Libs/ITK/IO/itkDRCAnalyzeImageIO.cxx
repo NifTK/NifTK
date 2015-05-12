@@ -12,9 +12,6 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIO_CXX
-#define ITKDRCANALYZEIMAGEIO_CXX
-
 #include "itkDRCAnalyzeImageIO.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +19,6 @@
 #include <itkByteSwapper.h>
 #include <itkSpatialOrientation.h>
 #include <itkSpatialOrientationAdapter.h>
-
-#include <itkUCLMacro.h>
 
 namespace itk {
 
@@ -90,12 +85,12 @@ static std::string GetHeaderFileName( const std::string & filename )
 void DRCAnalyzeImageIO::ReadImageInformation() {
 
   // First do all base class method
-  AnalyzeImageIO::ReadImageInformation();
+  AnalyzeImageIO3160::ReadImageInformation();
 
   // Now fix the orientation/direction stuff according to DRC analyze
   if (m_DRCMode) {
 
-	niftkitkDebugMacro("DRCAnalyzeImageIO::ReadImageInformation(): - Providing DRC specific functionality.");
+    itkDebugMacro(<< "DRCAnalyzeImageIO::ReadImageInformation(): - Providing DRC specific functionality.");
 
 
     // Set m_MachineByteOrder to the ByteOrder of the machine
@@ -123,11 +118,11 @@ void DRCAnalyzeImageIO::ReadImageInformation() {
     inputStream.open(headerFileName.c_str(), std::ios::in | std::ios::binary);
     if( inputStream.fail())
       {
-      itkExceptionMacro("File " << headerFileName << " cannot be read");
+      itkExceptionMacro(<< "File " << headerFileName << " cannot be read");
       }
     if( ! this->ReadBufferAsBinary( inputStream, (void *)&(header), sizeof(struct dsr) ) )
       {
-      itkExceptionMacro("Unexpected end of file");
+      itkExceptionMacro(<< "Unexpected end of file");
       }
     inputStream.close();
 
@@ -189,7 +184,7 @@ void DRCAnalyzeImageIO::ReadImageInformation() {
   }
   else
   {
-	niftkitkDebugMacro("DRCAnalyzeImageIO::ReadImageInformation(): - Providing base class (ITK) functionality from itkAnalyzeImageIO.");
+    itkDebugMacro(<< "DRCAnalyzeImageIO::ReadImageInformation(): - Providing base class (ITK) functionality from itkAnalyzeImageIO.");
   }
 }
 
@@ -357,10 +352,8 @@ DRCAnalyzeImageIO::SwapHeaderBytesIfNecessary( ImageIOBase::ByteOrder& byteOrder
     }
   else
     {
-    itkExceptionMacro("Machine Endian Type Unknown");
+    itkExceptionMacro(<< "Machine Endian Type Unknown");
     }
 }
 
 } // end namespace
-
-#endif // end ITKDRCANALYZEIMAGEIO_CXX

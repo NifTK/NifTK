@@ -22,68 +22,91 @@
 namespace niftk
 {
 
+//-----------------------------------------------------------------------------
 std::string ConvertToString(int x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(unsigned int x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(unsigned long long x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(long int x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(long unsigned int x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(double x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(bool x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToString(float x)
 {
   return boost::lexical_cast<std::string>(x);
 }
 
-int ConvertToInt(std::string x)
+
+//-----------------------------------------------------------------------------
+int ConvertToInt(const std::string& x)
 {
   return boost::lexical_cast<int>(x);
 }
 
-double ConvertToDouble(std::string x)
+
+//-----------------------------------------------------------------------------
+double ConvertToDouble(const std::string& x)
 {
   return boost::lexical_cast<double>(x);
 }
 
-bool ConvertToBool(const std::string x)
+
+//-----------------------------------------------------------------------------
+bool ConvertToBool(const std::string& x)
 {
-  if ("true" == x || "True" == x) 
-    {
-      return true;
-    }
+  if ("true" == x || "True" == x)
+  {
+    return true;
+  }
   else
-    {
-      return false;
-    }
+  {
+    return false;
+  }
 }
 
+
+//-----------------------------------------------------------------------------
 double CalculateVarianceFromFWHM(double fwhm)
 {
   // http://mathworld.wolfram.com/GaussianFunction.html
@@ -91,6 +114,8 @@ double CalculateVarianceFromFWHM(double fwhm)
   return variance;
 }
 
+
+//-----------------------------------------------------------------------------
 double CalculateStdDevFromFWHM(double fwhm)
 {
   // http://mathworld.wolfram.com/GaussianFunction.html
@@ -98,43 +123,55 @@ double CalculateStdDevFromFWHM(double fwhm)
   return stdDev;
 }
 
+
+//-----------------------------------------------------------------------------
 double ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(
   double millimetreCoordinateOfFirstVoxel,
   int numberOfVoxelsInThatAxis,
   double voxelSpacingInThatAxis)
 {
-  return (static_cast<double>(numberOfVoxelsInThatAxis - 1) 
-      * voxelSpacingInThatAxis / 2.0) 
+  return (static_cast<double>(numberOfVoxelsInThatAxis - 1)
+      * voxelSpacingInThatAxis / 2.0)
     + millimetreCoordinateOfFirstVoxel;
 }
 
+
+//-----------------------------------------------------------------------------
 double ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(
     double millimetreCoordinateOfMiddleVoxel,
     int numberOfVoxelsInThatAxis,
     double voxelSpacingInThatAxis)
 {
-  return (static_cast<double>(numberOfVoxelsInThatAxis - 1) 
-      * voxelSpacingInThatAxis / -2.0) 
+  return (static_cast<double>(numberOfVoxelsInThatAxis - 1)
+      * voxelSpacingInThatAxis / -2.0)
     + millimetreCoordinateOfMiddleVoxel;
 }
 
+
+//-----------------------------------------------------------------------------
 double fixRangeTo1(double d)
 {
   return std::min(std::max(d, -1.0), 1.0);
   
 }
 
+
+//-----------------------------------------------------------------------------
 int Round(double d)
 {
   return boost::math::iround<double>(d);
 }
 
+
+//-----------------------------------------------------------------------------
 double Round(double d, int numberDecimalPlaces)
 {
   double f = pow((double)10, numberDecimalPlaces);
   return ((double)Round(d*f))/f;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string GetLastNCharacters(std::string s, int n)
 {
   int length = s.length();
@@ -156,4 +193,3 @@ std::string GetLastNCharacters(std::string s, int n)
 }
 
 } // end namespace
-

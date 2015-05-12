@@ -23,7 +23,6 @@
 #include <itkTransformFileWriter.h>
 #include <itkForwardImageProjector3Dto2D.h>
 #include <itkPerspectiveProjectionTransform.h>
-#include <itkNIFTKTransformIOFactory.h>
 
 /*!
  * \file niftkForwardProject3Dto2D.cxx
@@ -94,9 +93,6 @@ int main(int argc, char** argv)
   typedef itk::ImageFileReader< InputImageType >  InputImageReaderType;
   typedef itk::ImageFileWriter< OutputImageType > OutputImageWriterType;
   
-  itk::ObjectFactoryBase::RegisterFactory(itk::NIFTKTransformIOFactory::New());
-
-
   // Parse command line args
   // ~~~~~~~~~~~~~~~~~~~~~~~
 

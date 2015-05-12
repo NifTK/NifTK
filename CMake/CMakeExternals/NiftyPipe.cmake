@@ -24,21 +24,23 @@ endif()
 
 if(BUILD_NIFTYPIPE)
 
-  set(proj NiftyPipe)
-  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
-  set(NIFTYPIPE_DEPENDS ${proj})
+  set(version "5766ac61c9")
+  set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
+
+  niftkMacroDefineExternalProjectVariables(NiftyPipe ${version} ${location})
 
   if(NOT DEFINED NIFTYPIPE_ROOT)
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${proj}-src
-      BINARY_DIR ${proj}-build
-      PREFIX ${proj}-cmake
-      INSTALL_DIR ${proj}-install
-      GIT_REPOSITORY ${NIFTK_LOCATION_NiftyPipe_GIT}
-      GIT_TAG ${NIFTK_VERSION_NiftyPipe}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NiftyPipe}
-      CMAKE_GENERATOR ${GEN}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      GIT_REPOSITORY ${proj_LOCATION}
+      GIT_TAG ${proj_VERSION}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
+      CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       )

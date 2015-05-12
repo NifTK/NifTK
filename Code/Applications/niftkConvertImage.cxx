@@ -23,7 +23,6 @@
 #include <itkImageIOBase.h>
 #include <itkGiplImageIO.h>
 #include <itkVTKImageIO.h>
-#include <itkINRImageIOFactory.h>
 #include <itkVectorImage.h>
 #include <itkRGBPixel.h>
 #include <itkRGBToLuminanceImageFilter.h>
@@ -135,9 +134,6 @@ int main(int argc, char **argv)
   try
   {
       
-    // Data variable type
-    itk::ObjectFactoryBase::RegisterFactory(itk::INRImageIOFactory::New());
-
     std::cout << "Input             :\t" << args.fileInputImage << std::endl;
     std::cout << "Output            :\t" << args.fileOutputImage << std::endl;
 
@@ -387,8 +383,6 @@ template <class TOutputPixel, const int dimension> bool ConvertRGBToScalarLumina
   typedef itk::Image<itk::RGBPixel<unsigned char>, dimension>  InputImageType;
   typedef itk::Image<TOutputPixel, dimension>  OutputImageType;
 
-  itk::ObjectFactoryBase::RegisterFactory(itk::INRImageIOFactory::New());
-
   typedef itk::ImageFileReader<InputImageType> ImageReaderType;
   typename ImageReaderType::Pointer reader = ImageReaderType::New();
 
@@ -530,8 +524,6 @@ template <class TPixel, const int dimension> bool WriteNewScalarImage(Arguments 
 {
   typedef itk::Image<TPixel, dimension>  ImageType;
 
-  itk::ObjectFactoryBase::RegisterFactory(itk::INRImageIOFactory::New());
-
   typedef itk::ImageFileReader<ImageType> ImageReaderType;
   typename ImageReaderType::Pointer reader = ImageReaderType::New();
 
@@ -623,8 +615,6 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
   typedef itk::Image<TPixel, inputDimension>  InputImageType;
   typedef itk::VectorImage<TPixel, outputDimension> OutputImageType;
     
-  itk::ObjectFactoryBase::RegisterFactory(itk::INRImageIOFactory::New());
-
   typedef itk::ImageFileReader<InputImageType> ImageReaderType;
   typename ImageReaderType::Pointer reader = ImageReaderType::New();
 
