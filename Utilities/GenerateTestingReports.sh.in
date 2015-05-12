@@ -1,0 +1,282 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+# -----------------------------------------------------------------------------
+# Setting defaults. Generated into code by CMake.
+# -----------------------------------------------------------------------------
+
+BINARY_DIR=@EXECUTABLE_OUTPUT_PATH@
+DOXYGEN_ISO_INPUT_DIR=@CMAKE_SOURCE_DIR@/Doc/TechnicalManual-ISO
+DOXYGEN_ISO_OUTPUT_DIR=@CMAKE_BINARY_DIR@/Doxygen/TestingReports
+SUMMARY_FILE=TestingReports.dox
+TEST_OUTPUT=Testing/Temporary/LastTest.log
+COPYRIGHT_TEXT="@NIFTK_COPYRIGHT@"
+PLATFORM_TEXT="@NIFTK_PLATFORM@, @NIFTK_VERSION_STRING@ - @NIFTK_REVISION_SHORTID@"
+WARNING_GENERATED="<b>(Note: This page is automatically generated. Please do not attempt to edit it!)</b>"
+GIT_HASH="@NIFTK_REVISION_SHORTID@"
+DO_HEADER=true
+DO_FOOTER=true
+DO_TESTS=true
+SELECTED_FILES="_"
+
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+print_usage() {
+  echo "
+Simple bash script to generate test reports for validation/verification purposes.
+
+Usage:
+
+    GenerateTestingReports.sh [options] [input directory] [output directory] [list of filenames all inside double quotes]
+
+
+Default binary directory is '@EXECUTABLE_OUTPUT_PATH@'
+Default input directory is '@NIFTK_DOXYGEN_ISO_INPUT_DIR@'.
+Default output directory is '@NIFTK_DOXYGEN_ISO_OUTPUT_DIR@'
+
+Options:
+
+    --binary-dir <directory>        Sets the binary directory.
+
+    --summary-file <filename>       Names the output file. Defaults to TestingReports.dox.
+
+    --testing-file <filename>       Set the name of the ctest test output. Defaults to Testing/Temporary/LastTest.log
+
+    --no-header                     Don't print out a doxygen header.
+
+    --no-footer                     Don't print out a doxygen footer.
+
+    --no-tests                      Don't actually run tests (useful for just generating headers and footers).
+
+    -h, --help                      Prints this help.
+
+"
+  exit
+}
+
+print_options() {
+  echo "
+GenerateTestingReports.sh has been called with the following command:
+
+  $command_line
+
+Options:
+
+  binary directory:            $BINARY_DIR
+
+  doxygen input:               $DOXYGEN_ISO_INPUT_DIR
+
+  doxygen output:              $DOXYGEN_ISO_OUTPUT_DIR
+
+  summary file:                $SUMMARY_FILE
+
+  testing file:                $TEST_OUTPUT
+
+  do header:                   $DO_HEADER
+
+  do footer:                   $DO_FOOTER
+
+  do tests:                    $DO_TESTS
+
+"
+}
+
+check_next_arg() {
+  if [ $# -lt 2 ]
+  then
+    echo "Missing argument."
+    print_usage
+  fi
+  next_arg="$2"
+  if [ ${#next_arg} -eq 0 ]
+  then
+    echo "Value is missing for option $1."
+    print_usage
+  fi
+  if [ "${next_arg:0:1}" == "-" ]
+  then
+    echo "Value is missing for option $1."
+    print_usage
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Processing arguments
+# -----------------------------------------------------------------------------
+
+command_line="$0 $@"
+
+# Until there is any option.
+while [ $# -gt 0 ] && [ ${1:0:1} == "-" ]
+do
+  if [ "$1" == "--binary-dir" ]
+  then
+    check_next_arg ${@}
+    BINARY_DIR="$2"
+    if [ ! -d "${BINARY_DIR}" ]
+    then
+      echo "ERROR: The binary directory does not exist."
+      exit 1
+    fi
+    shift 2
+  elif [ "$1" == "--summary-file" ]
+  then
+    check_next_arg ${@}
+    SUMMARY_FILE="$2"
+    shift 2
+  elif [ "$1" == "--testing-file" ]
+  then
+    check_next_arg ${@}
+    TEST_OUTPUT="$2"
+    shift 2
+  elif [ "$1" == "--no-header" ]
+  then
+    DO_HEADER=false
+    shift 1
+  elif [ "$1" == "--no-footer" ]
+  then
+    DO_FOOTER=false
+    shift 1
+  elif [ "$1" == "--no-tests" ]
+  then
+    DO_TESTS=false
+    shift 1
+  elif [ "$1" == "-h" ] || [ "$1" == "--help" ]
+  then
+    print_usage
+  else
+    echo "Unknown argument: $1"
+    print_usage
+  fi
+done
+
+if [ $# -gt 0 ]
+then
+  DOXYGEN_ISO_INPUT_DIR="$1"
+  shift 1
+fi
+
+if [ $# -gt 0 ]
+then
+  DOXYGEN_ISO_OUTPUT_DIR="$1"
+  shift 1
+fi
+
+if [ $# -gt 0 ]
+then
+  SELECTED_FILES="$1"
+  shift 1
+fi
+
+if [ $# -gt 0 ]
+then
+  print_usage
+fi
+
+echo "Build started at `date` on `hostname -f`."
+print_options
+
+if [ ! -d ${DOXYGEN_ISO_OUTPUT_DIR} ]; then
+  mkdir -p ${DOXYGEN_ISO_OUTPUT_DIR}
+fi
+
+output_file=${DOXYGEN_ISO_OUTPUT_DIR}/${SUMMARY_FILE}
+
+# This erases any existing file.
+echo "" > $output_file
+
+if ${DO_HEADER}
+then
+  echo "/**" > ${output_file}
+  echo "" >> ${output_file}
+  echo "\page TestingReportsGenerated Testing Reports" >> ${output_file}
+  echo "" >> ${output_file}
+  echo "${WARNING_GENERATED}" >> ${output_file}
+  echo "" >> ${output_file}
+  echo "" >> ${output_file}
+  echo "This page is generated by running specific unit tests, and it confirms that tests are associated with functional requirements." >> ${output_file}
+  echo "<table>" >> ${output_file}
+  echo "<tr><th>Requirement ID</th><th>Description</th><th>Status</th></tr>" >> ${output_file}
+fi
+
+
+if [ "${SELECTED_FILES}" == "_" ]; then
+  echo "Scanning all doxygen files in ${DOXYGEN_ISO_INPUT_DIR}"
+  SELECTED_FILES=`ls ${DOXYGEN_ISO_INPUT_DIR}/*.dox`
+fi
+
+if ${DO_TESTS}
+then
+  # For all command line args.
+  for f in `echo ${SELECTED_FILES}`
+  do
+    base=`basename ${f}`
+    grep REQ- ${DOXYGEN_ISO_INPUT_DIR}/${base} | grep -v "Project Number" > /tmp/GenerateTestingReports-${base}-REQ.txt
+
+    cat /tmp/GenerateTestingReports-${base}-REQ.txt | while read line
+    do
+      REQ=`echo ${line} | cut -f 1 -d ":"`
+      DESCR=`echo ${line} | cut -f 2-1000 -d ":"`
+
+      # If test output exists from previous test, delete it to avoid associating with the wrong test ID.
+      if [ -f ${BINARY_DIR}/../${TEST_OUTPUT} ]; then
+        rm ${BINARY_DIR}/../${TEST_OUTPUT}
+      fi
+
+      # Run test and collect pass/fail status
+      ctest -R ${REQ} --output-log /tmp/GenerateTestingReports-${base}-${REQ}.txt
+      STATUS=`cat /tmp/GenerateTestingReports-${base}-${REQ}.txt | grep "Test #" | cut -f "2" -d ":"`
+
+      # Generate a doxygen compatible page header
+      echo "/**" > /tmp/doxygen.header.txt
+      echo "" >> /tmp/doxygen.header.txt
+      echo "\page ${REQ} ${REQ}" >> /tmp/doxygen.header.txt
+      echo "${WARNING_GENERATED}" >> /tmp/doxygen.header.txt
+      echo "\verbatim" >> /tmp/doxygen.header.txt
+
+      # Generate a doxygen compatible page footer
+      echo "\endverbatim" > /tmp/doxygen.footer.txt
+      echo "*/" >> /tmp/doxygen.footer.txt
+
+      # If test was not actually run, generate some dummy status.
+      if [ ! -f ${TEST_OUTPUT} ]; then
+        STATUS="No test output"
+      fi
+
+      # Stick it all together.
+      cat /tmp/doxygen.header.txt ${BINARY_DIR}/../${TEST_OUTPUT} /tmp/doxygen.footer.txt > ${DOXYGEN_ISO_OUTPUT_DIR}/${REQ}.dox
+
+      # Generate links in summary file
+      echo "<tr><td>\subpage ${REQ}</td><td>${DESCR}</td><td>${STATUS}</td></tr>" >> ${output_file}
+
+    done
+  done
+fi
+
+if ${DO_FOOTER}
+then
+  echo "</table>" >> ${output_file}
+  echo "" >> ${output_file}
+  echo "*/" >> ${output_file}
+fi
+
+if ${DO_TESTS}
+then
+  rm /tmp/doxygen.*
+  rm /tmp/GenerateTestingReports*
+fi

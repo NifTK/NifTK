@@ -20,7 +20,7 @@ PROJECT_NAME          = @NIFTK_PLATFORM@
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER        = @NIFTK_VERSION_STRING@
+PROJECT_NUMBER        = "@NIFTK_VERSION_STRING@ - @NIFTK_REVISION_SHORTID@"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -705,7 +705,7 @@ TAGFILES              =
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads. 
 
-GENERATE_TAGFILE      = 
+GENERATE_TAGFILE      = Doxygen/@NIFTK_VERSION_STRING@/NifTK.tag
 
 # If the ALLEXTERNALS tag is set to YES all external classes will be listed 
 # in the class index. If set to NO only the inherited external classes 

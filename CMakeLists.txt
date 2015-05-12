@@ -1089,8 +1089,15 @@ foreach(type LIBRARY RUNTIME ARCHIVE)
   mark_as_advanced(CMAKE_${type}_OUTPUT_DIRECTORY)
 endforeach()
 
+######################################################################
+# For doxygen:
+######################################################################
+
 configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in
   ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen @ONLY)
+
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateTestingReports.sh.in
+  ${EXECUTABLE_OUTPUT_PATH}/GenerateTestingReports @ONLY)
 
 ######################################################################
 # Compilation specific stuff, like flags etc.

@@ -20,7 +20,7 @@
 #include <mitkFileIOUtils.h>
 #include <mitkPointUtils.h>
 #include <mitkExceptionMacro.h>
-#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+#include <niftkArunLeastSquaresPointRegistration.h>
 #include <niftkFileHelper.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -161,8 +161,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
 
   mitk::PointSet::Pointer modelPointsInTrackerSpace = mitk::PointSet::New();
 
-  mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer pointBasedRegistration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-  double fiducialRegistrationError = 0;
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
 
   cv::Mat trackerToHand = cvCreateMat(4,4,CV_64FC1);
   cv::Mat cameraToTracker = cvCreateMat(4,4,CV_64FC1);
@@ -199,12 +198,10 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
     // In this case we know triangulation, and tracking etc. are likely to be unreliable.
     if (fabs(origin[2]) < distanceThreshold)
     {
-      pointBasedRegistration->Update(
-        modelPointsInTrackerSpace, // fixed points   so this gives us camera-to-tracker
-        cameraPoints[i],           // moving points
-        *registrationMatrix,
-        fiducialRegistrationError
-        );
+      fiducialRegistrationError =
+          niftk::PointBasedRegistrationUsingSVD(modelPointsInTrackerSpace, // fixed points   so this gives us camera-to-tracker
+                                                cameraPoints[i],           // moving points
+                                                *registrationMatrix);
 
       if (fiducialRegistrationError < fiducialRegistrationThreshold)
       {
