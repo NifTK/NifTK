@@ -16,7 +16,7 @@ MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
 mitkAddCustomModuleTest(CameraCalibRegression mitkCameraCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibLeft ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibRight ${CMAKE_BINARY_DIR}/Testing/Temporary/CameraCalibration 14 10 3 0.577703 0.913)
 
-#mitkAddCustomModuleTest(USPinCalibRegression mitkUltrasoundPinCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/matrices ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/points ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4 )
+mitkAddCustomModuleTest(USPinCalibRegression mitkUltrasoundPinCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/Aurora_2/1/ ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/pins/ ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4  ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/pins/initialParameters.txt)
   
 mitkAddCustomModuleTest(Handeye-Calibration mitkHandeyeCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices NoSort ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_NoSort_Result.txt )
 

@@ -26,6 +26,7 @@
 #include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkMathsUtils.h>
+#include <mitkOpenCVFileIOUtils.h>
 
 /**
  * \class UltrasoundPinCalibrationRegressionTest
@@ -41,47 +42,69 @@ public:
       std::string& directoryOfMatrices,
       std::string& directoryOfPoints,
       std::string& outputMatrixFileName,
-      std::string& fileNameToCompareAgainst
+      std::string& fileNameToCompareAgainst,
+      std::string& initialParametersFileName
       )
   {
     MITK_TEST_OUTPUT(<< "Starting DoCalibration...");
 
-    mitk::Point3D invariantPoint;
-    invariantPoint[0] = 0;
-    invariantPoint[1] = 0;
-    invariantPoint[2] = 0;
-
-    double scaleFactors;
-    scaleFactors = 0.156; // Assuming image is 256 pixels, and depth = 4cm = 40/256 mm per pixel.
-
+    std::ifstream initialParamsStream;
+    initialParamsStream.open(initialParametersFileName.c_str());
+  
+    double in;
     std::vector<double> initialTransformation;
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
+    for ( unsigned int i = 0 ; i < 6 ; i ++ )
+    {
+      initialParamsStream >> in;
+      initialTransformation.push_back(in);
+    }
 
+    mitk::Point3D invariantPoint;
+    for ( unsigned int i = 0 ; i < 6 ; i ++ )
+    {
+      initialParamsStream >> in;
+      invariantPoint[i] = in;
+    }
+
+    mitk::Point2D scaleFactors;
+    initialParamsStream >> scaleFactors[0];
+    initialParamsStream >> scaleFactors[0];
+
+    double timingLag;
+    initialParamsStream >> timingLag;
+    
+    initialParamsStream.close();
     double residualError = 0;
     vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
     bool successfullyCalibrated = false;
+    
+    calibration->SetOptimiseImageScaleFactors(true);
+    calibration->SetImageScaleFactors(scaleFactors);
+    calibration->SetOptimiseInvariantPoint(true);
+    calibration->SetInvariantPoint(invariantPoint);
+    calibration->SetOptimiseTimingLag(false); //timing lag optimisation isn't quite right yet
+    calibration->SetTimingLag(timingLag);
+  //  calibration->LoadRigidTransformation(initialGuess);
+    calibration->SetVerbose(false);
 
-    /* NOT READY YET
-    calibration->Calibrate(
-        directoryOfMatrices,
-        directoryOfPoints,
-        false,
-        true,
-        initialTransformation,
-        invariantPoint,
-        scaleFactors,
-        residualError,
-        *calibrationMatrix
-        );
-    */
+    mitk::TrackingAndTimeStampsContainer trackingData;
+    trackingData.LoadFromDirectory(directoryOfMatrices);
+    if (trackingData.GetSize() == 0)
+    {
+      mitkThrow() << "Failed to tracking data from " << directoryOfMatrices << std::endl;
+    }
+    calibration->SetTrackingData(&trackingData);
+    std::vector< std::pair<unsigned long long, cv::Point3d> > pointData = mitk::LoadTimeStampedPoints(directoryOfPoints);
+    if (pointData.size() == 0)
+    {
+      mitkThrow() << "Failed to load point data from " << directoryOfPoints << std::endl;
+    }
+    calibration->SetPointData(&pointData);
+
+    residualError = calibration->Calibrate();
 
     MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
 
@@ -116,8 +139,9 @@ int mitkUltrasoundPinCalibrationRegressionTest(int argc, char * argv[])
   std::string directoryOfPoints(argv[2]);
   std::string outputFileName(argv[3]);
   std::string comparisonFileName(argv[4]);
+  std::string initialParametersFileName(argv[5]);
 
-  UltrasoundPinCalibrationRegressionTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName);
+  UltrasoundPinCalibrationRegressionTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName, initialParametersFileName);
 
   MITK_TEST_END();
 }
