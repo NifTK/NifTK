@@ -22,6 +22,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <boost/regex.hpp>
+#include <vtkPNGReader.h>
+//#include <vtkNIFTIImageReader.h> // this header isn't in VTK yet
 
 //-----------------------------------------------------------------------------
 QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
@@ -31,6 +33,7 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
 : QVTKWidget(parent)
 , m_InputImageDirectory(inputImageDirectory)
 , m_OutputPointDirectory(outputPointDirectory)
+, m_PNG(true)
 {
   m_ImageViewer = vtkImageViewer::New();
   this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
@@ -38,10 +41,19 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   m_ImageViewer->SetColorLevel(127.5);
   m_ImageViewer->SetColorWindow(255);  
   
-  m_PNGReader = vtkPNGReader::New();
-
-  // Load all data, and set up the PNG reader to the first image.
-  m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".png");
+  if ( m_PNG )
+  {
+    m_ImageReader = dynamic_cast<vtkImageReader2*>(vtkPNGReader::New());
+    // Load all data, and set up the PNG reader to the first image.
+    m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".png");
+  }
+  else
+  {
+    //m_ImageReader = dynamic_cast<vtkImageReader2*>(vtkNIFTIImageReader::New());
+    // Load all data, and set up the NII reader to the first image.
+    m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".nii");
+  }
+  
   if (m_ImageFiles.size() == 0)
   {
     throw std::runtime_error("Did not find any .png files.");
@@ -50,12 +62,12 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   m_ImageFileCounter = 0;
   m_PointsOutputCounter = 0;
 
-  m_PNGReader->SetFileName(m_ImageFiles[m_ImageFileCounter].c_str());
-  m_ImageViewer->SetInputConnection(m_PNGReader->GetOutputPort());
-  m_PNGReader->Update();
+  m_ImageReader->SetFileName(m_ImageFiles[m_ImageFileCounter].c_str());
+  m_ImageViewer->SetInputConnection(m_ImageReader->GetOutputPort());
+  m_ImageReader->Update();
 
   int extent[6];
-  m_PNGReader->GetDataExtent(extent);
+  m_ImageReader->GetDataExtent(extent);
   m_ImageWidth = extent[1] + 1;
   m_ImageHeight = extent[3] + 1;
 }
@@ -131,7 +143,7 @@ void QmitkUltrasoundPinCalibrationWidget::QuitApplication()
 //-----------------------------------------------------------------------------
 void QmitkUltrasoundPinCalibrationWidget::ShowImage(const unsigned long int& imageNumber)
 {
-  m_PNGReader->SetFileName(m_ImageFiles[imageNumber].c_str());
+  m_ImageReader->SetFileName(m_ImageFiles[imageNumber].c_str());
   m_ImageViewer->Render();
 
   int offsetImageNumber = imageNumber + 1;
