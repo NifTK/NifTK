@@ -20,6 +20,7 @@
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
 #include <opencv2/gpu/gpu.hpp>
+#include <boost/math/special_functions/round.hpp>
 
 namespace mitk {
 
@@ -85,13 +86,13 @@ public:
     cv::Point2i point;
     if ( m_UseFirstValue )
     {
-      point.x = round (pointPair.first.x );
-      point.y = round (pointPair.first.y );
+      point.x = boost::math::round (pointPair.first.x );
+      point.y = boost::math::round (pointPair.first.y );
     }
     else
     {
-      point.x = round (pointPair.second.x );
-      point.y = round (pointPair.second.y );
+      point.x = boost::math::round (pointPair.second.x );
+      point.y = boost::math::round (pointPair.second.y );
     }
 
     if ( (point.x >= 0) &&
