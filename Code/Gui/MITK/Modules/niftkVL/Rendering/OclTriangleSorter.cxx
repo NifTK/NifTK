@@ -1107,7 +1107,7 @@ bool mitk::OclTriangleSorter::RadixPermute(cl_uint datasetSize, const size_t* gl
 bool mitk::OclTriangleSorter::Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut)
 {
   cl_int clStatus = 0;
-  size_t _workgroupSize = 16; // This has to be 16 otherwise it fails on NVidia GeForce M
+  size_t _workgroupSize = 64; // This has to be fixed and kernel adjusted accordingly!
 
   cl_uint blockSize = datasetSize / _workgroupSize;
   cl_uint B = blockSize * _workgroupSize;
