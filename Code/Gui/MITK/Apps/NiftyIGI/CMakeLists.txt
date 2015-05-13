@@ -61,6 +61,14 @@ if(WIN32)
   )
 endif()
 
+if(BUILD_VL)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.vlrenderer
+    uk.ac.ucl.cmic.igivleditor
+  )
+endif()
+
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI
   INCLUDE_PLUGINS ${_include_plugins}

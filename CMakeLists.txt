@@ -170,6 +170,7 @@ option(BUILD_NIFTYSIM "Build NiftySim." ON)
 option(BUILD_NIFTYSEG "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
+option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
 option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
@@ -177,11 +178,11 @@ option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
+#if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
-else()
-  set(NIFTK_SHOW_CONSOLE_WINDOW_VAL OFF)
-endif()
+#else()
+#  set(NIFTK_SHOW_CONSOLE_WINDOW_VAL OFF)
+#endif()
 option(NIFTK_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications on Windows" ${NIFTK_SHOW_CONSOLE_WINDOW_VAL})
 option(NIFTK_BUILD_ALL_PLUGINS "Build all NIFTK plugins" OFF)
 option(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OFF)
@@ -875,6 +876,7 @@ endif(MITK_FOUND)
 # Find Optional External packages
 ######################################################################
 
+
 ######################################################################
 # Find CGAL.
 ######################################################################
@@ -991,6 +993,18 @@ if(BUILD_RTK)
     include(${RTK_USE_FILE})
   endif(RTK_FOUND)
 endif(BUILD_RTK)
+
+######################################################################
+# Find VL
+######################################################################
+
+if(BUILD_VL)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume REQUIRED)
+  if(VL_FOUND)
+    message("Found VL")
+    #include(${VL_USE_FILE})
+  endif(VL_FOUND)
+endif(BUILD_VL)
 
 ######################################################################
 # Find SlicerExecutionModel
@@ -1199,6 +1213,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LI
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt ${CMAKE_BINARY_DIR}/LICENSE_VL.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
@@ -1229,6 +1244,7 @@ set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISuppo
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)

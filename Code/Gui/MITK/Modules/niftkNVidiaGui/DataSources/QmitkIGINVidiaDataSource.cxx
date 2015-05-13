@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
+#include <vtkImageData.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
 #include <boost/typeof/typeof.hpp>
 #include <mitkProperties.h>
@@ -483,7 +484,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             imageInNode->GetGeometry()->SetSpacing(shouldbeImageSpacing);
           }
 
-
+          imageInNode->GetVtkImageData()->Modified();
           node->Modified();
         } // for
 

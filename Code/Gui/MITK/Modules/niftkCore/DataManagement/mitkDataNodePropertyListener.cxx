@@ -66,8 +66,61 @@ private:
 
 //-----------------------------------------------------------------------------
 DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName)
-: mitk::DataStorageListener(dataStorage),
-  m_PropertyName(propertyName)
+: mitk::DataStorageListener(dataStorage)
+, m_PropertyName(propertyName)
+, m_DefaultValueType(NoType)
+{
+  assert(dataStorage.IsNotNull());
+
+  this->AddAllObservers();
+}
+
+
+//-----------------------------------------------------------------------------
+DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, bool defaultValue)
+: mitk::DataStorageListener(dataStorage)
+, m_PropertyName(propertyName)
+, m_DefaultValueType(BoolType)
+, m_BoolDefaultValue(defaultValue)
+{
+  assert(dataStorage.IsNotNull());
+
+  this->AddAllObservers();
+}
+
+
+//-----------------------------------------------------------------------------
+DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, int defaultValue)
+: mitk::DataStorageListener(dataStorage)
+, m_PropertyName(propertyName)
+, m_DefaultValueType(IntType)
+, m_IntDefaultValue(defaultValue)
+{
+  assert(dataStorage.IsNotNull());
+
+  this->AddAllObservers();
+}
+
+
+//-----------------------------------------------------------------------------
+DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, float defaultValue)
+: mitk::DataStorageListener(dataStorage)
+, m_PropertyName(propertyName)
+, m_DefaultValueType(FloatType)
+, m_FloatDefaultValue(defaultValue)
+{
+  assert(dataStorage.IsNotNull());
+
+  this->AddAllObservers();
+}
+
+
+//-----------------------------------------------------------------------------
+DataNodePropertyListener::DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, const std::string& defaultValue)
+: mitk::DataStorageListener(dataStorage)
+, m_PropertyName(propertyName)
+, m_DefaultValueType(StringType)
+, m_StringDefaultValue(defaultValue)
 {
   assert(dataStorage.IsNotNull());
 
@@ -99,6 +152,55 @@ void DataNodePropertyListener::SetRenderers(const std::vector<const mitk::BaseRe
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 {
+  mitk::BaseProperty* globalProperty = node->GetProperty(m_PropertyName.c_str());
+  if (!globalProperty)
+  {
+    if (m_DefaultValueType == BoolType)
+    {
+      node->SetBoolProperty(m_PropertyName.c_str(), m_BoolDefaultValue);
+    }
+    else if (m_DefaultValueType == IntType)
+    {
+      node->SetIntProperty(m_PropertyName.c_str(), m_IntDefaultValue);
+    }
+    else if (m_DefaultValueType == FloatType)
+    {
+      node->SetFloatProperty(m_PropertyName.c_str(), m_FloatDefaultValue);
+    }
+    else if (m_DefaultValueType == StringType)
+    {
+      node->SetStringProperty(m_PropertyName.c_str(), m_StringDefaultValue.c_str());
+    }
+  }
+
+  for (std::size_t i = 0; i < m_Renderers.size(); ++i)
+  {
+    /// Note:
+    /// GetProperty() returns the global property if there is no renderer specific property.
+    /// Therefore, we need to check if the property is really renderer specific.
+    mitk::BaseProperty* rendererSpecificProperty = node->GetProperty(m_PropertyName.c_str(), m_Renderers[i]);
+    if (!rendererSpecificProperty)
+    {
+      if (m_DefaultValueType == BoolType)
+      {
+        node->SetBoolProperty(m_PropertyName.c_str(), m_BoolDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
+      }
+      else if (m_DefaultValueType == IntType)
+      {
+        node->SetIntProperty(m_PropertyName.c_str(), m_IntDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
+      }
+      else if (m_DefaultValueType == FloatType)
+      {
+        node->SetFloatProperty(m_PropertyName.c_str(), m_FloatDefaultValue, const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
+      }
+      else if (m_DefaultValueType == StringType)
+      {
+        node->SetStringProperty(m_PropertyName.c_str(), m_StringDefaultValue.c_str(), const_cast<mitk::BaseRenderer*>(m_Renderers[i]));
+      }
+    }
+  }
+
+  Superclass::OnNodeAdded(node);
   this->AddObservers(node);
 }
 
@@ -106,6 +208,7 @@ void DataNodePropertyListener::OnNodeAdded(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 {
+  Superclass::OnNodeRemoved(node);
   this->RemoveObservers(node);
 }
 
@@ -113,6 +216,7 @@ void DataNodePropertyListener::OnNodeRemoved(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnNodeDeleted(mitk::DataNode* node)
 {
+  Superclass::OnNodeDeleted(node);
   this->RemoveObservers(node);
 }
 
@@ -253,6 +357,10 @@ void DataNodePropertyListener::RemoveAllObservers()
 //-----------------------------------------------------------------------------
 void DataNodePropertyListener::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
+  if (!this->IsBlocked())
+  {
+    NodePropertyChanged.Send(node, renderer);
+  }
 }
 
 }

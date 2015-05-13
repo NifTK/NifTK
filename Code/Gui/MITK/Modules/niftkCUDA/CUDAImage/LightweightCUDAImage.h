@@ -56,6 +56,9 @@ public:
    */
   unsigned int GetId() const;
 
+  unsigned int GetWidth() const;
+  unsigned int GetHeight() const;
+  unsigned int GetBytePitch() const;
 
   /**
    * Returns the CUDA event object that can be used to synchronise kernel
@@ -78,7 +81,10 @@ private:
   unsigned int    m_Width;          // in pixel
   unsigned int    m_Height;         // in (pixel) lines
   unsigned int    m_BytePitch;      // length of a line of pixels in bytes.
-  // FIXME: pixel type descriptor
+  int             m_PixelType;      // FIXME: not fully spec'd!
+
+  // debugging
+  cudaStream_t    m_LastUsedByStream;
 };
 
 #endif // LightweightCUDAImage_h

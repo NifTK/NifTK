@@ -12,7 +12,19 @@
 #
 #============================================================================*/
 
+# empty first, more added below, depending on conditions.
+set(MODULE_DIRS )
+
+# will most likely be used by IGI only, but in itself not limited to that.
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkCUDA
+  )
+endif()
+
 set(MODULE_DIRS
+  ${MODULE_DIRS}
   niftkCore
   niftkCoreIO
   niftkCoreGui
@@ -21,27 +33,14 @@ set(MODULE_DIRS
 )
 
 if(BUILD_MIDAS)
-
   set(MODULE_DIRS
     ${MODULE_DIRS}
     niftkMIDAS
     niftkMIDASGui
   )
-
-endif()
-
-# will most likely be used by IGI only, but in itself not limited to that.
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-
-  set(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkCUDA
-  )
-
 endif()
 
 if(BUILD_IGI)
-
   set(MODULE_DIRS
     ${MODULE_DIRS}
     niftkOpenCVUtils
@@ -64,7 +63,13 @@ if(BUILD_IGI)
     ${MODULE_DIRS}
     niftkIGIGuiManager
   )
+endif()
 
+if(BUILD_VL)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkVL
+  )
 endif()
 
 foreach(MODULE_DIR ${MODULE_DIRS})

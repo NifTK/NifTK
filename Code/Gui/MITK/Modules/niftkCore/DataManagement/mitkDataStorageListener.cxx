@@ -196,26 +196,42 @@ void DataStorageListener::NodeDeletedProxy( const mitk::DataNode* node )
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::OnNodeAdded(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeAdded(mitk::DataNode* node)
 {
+  if (!this->IsBlocked())
+  {
+    NodeAdded.Send(node);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::OnNodeChanged(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeChanged(mitk::DataNode* node)
 {
+  if (!this->IsBlocked())
+  {
+    NodeChanged.Send(node);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::OnNodeRemoved(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeRemoved(mitk::DataNode* node)
 {
+  if (!this->IsBlocked())
+  {
+    NodeRemoved.Send(node);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void DataStorageListener::OnNodeDeleted(mitk::DataNode* /*node*/)
+void DataStorageListener::OnNodeDeleted(mitk::DataNode* node)
 {
+  if (!this->IsBlocked())
+  {
+    NodeDeleted.Send(node);
+  }
 }
 
 }

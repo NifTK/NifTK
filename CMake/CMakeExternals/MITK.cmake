@@ -22,7 +22,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "b3a85ad767")
+set(version "2565443106")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -107,6 +107,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_Boost_LIBRARIES:STRING=filesystem^^system^^date_time
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
+        -DMITK_USE_OpenCL:BOOL=${BUILD_VL}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
         -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT

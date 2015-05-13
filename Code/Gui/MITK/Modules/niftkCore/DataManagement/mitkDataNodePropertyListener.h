@@ -46,13 +46,25 @@ public:
 
   mitkClassMacro(DataNodePropertyListener, mitk::DataStorageListener);
   mitkNewMacro2Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&);
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, bool);
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, int);
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, float);
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, const std::string&);
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
+  
+  /// \brief GUI independent message callback.
+  Message2<mitk::DataNode*, const mitk::BaseRenderer*> NodePropertyChanged;
 
 protected:
 
   DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName);
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, bool defaultValue);
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, int defaultValue);
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, float defaultValue);
+  DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, const std::string& defaultValue);
+
   virtual ~DataNodePropertyListener();
 
   DataNodePropertyListener(const DataNodePropertyListener&); // Purposefully not implemented.
@@ -104,6 +116,17 @@ private:
   /// specific properties in the same order as in m_Renderers.
   /// The observers are notified when a property of a node is changed or removed.
   NodePropertyObserverTags m_PropertyObserverTagsPerNode;
+
+  enum DefaultValueType
+  {
+    NoType, BoolType, IntType, FloatType, StringType
+  };
+
+  DefaultValueType m_DefaultValueType;
+  bool             m_BoolDefaultValue;
+  int              m_IntDefaultValue;
+  float            m_FloatDefaultValue;
+  std::string      m_StringDefaultValue;
 
 friend class PropertyChangedCommand;
 

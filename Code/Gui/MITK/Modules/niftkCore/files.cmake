@@ -41,3 +41,9 @@ set(CPP_FILES
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
 )
+
+if(BUILD_PCL)
+  list(APPEND CPP_FILES
+    PointClouds/mitkPCLData.cxx
+  )
+endif()

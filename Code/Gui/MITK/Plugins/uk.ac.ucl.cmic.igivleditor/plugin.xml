@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.igivleditor"
+      name="IGI Display VL"
+      extensions="mitk"
+      class="IGIVLEditor">
+    </editor>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.IGIVLEditorPreferencePage" name="IGI Display VL"
+      class="IGIVLEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.IGIVLEditorPreferencePageKeywords"/>
+    </page>
+  </extension>
+</plugin>

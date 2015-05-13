@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <boost/lockfree/queue.hpp>
 
 
 // FIXME: not yet implemented
@@ -44,6 +45,10 @@ struct ReadAccessor
 {
   const void*     m_DevicePointer;
   std::size_t     m_SizeInBytes;
+  unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -59,6 +64,10 @@ struct WriteAccessor
 {
   void*           m_DevicePointer;
   std::size_t     m_SizeInBytes;
+  unsigned int    m_BytePitch;
+  unsigned int    m_PixelWidth;
+  unsigned int    m_PixelHeight;            // obviously the unit is lines of pixels
+  int             m_FIXME_pixeltype;        // still havent thought about this one...
 
   unsigned int    m_Id;
   cudaEvent_t     m_ReadyEvent;
@@ -69,6 +78,7 @@ struct WriteAccessor
 namespace impldetail
 {
 struct ModuleCleanup;
+struct StreamCallbackReleasePOD;
 }
 
 
@@ -148,6 +158,9 @@ public:
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
 
+  void Autorelease(WriteAccessor& writeAccessor, cudaStream_t stream);
+
+
 protected:
   CUDAManager();
   virtual ~CUDAManager();
@@ -157,7 +170,7 @@ protected:
    * Used by LightweightCUDAImage to notify us that all references to it have been dropped,
    * and that it can be placed back onto m_AvailableImagePool for later re-use.
    */
-  void AllRefsDropped(LightweightCUDAImage& lwci, bool fromStreamCallback);
+  void AllRefsDropped(LightweightCUDAImage& lwci);
 
 
   /** Copy and assignment is not allowed. */
@@ -180,15 +193,23 @@ private:
    * The callback is queued by FinaliseAndAutorelease() to release an image.
    * Note: this callback will block work on the stream, therefore the image-ready-events are
    * triggered before the callback so that work on other streams can proceed in parallel.
+   * @internal
    */
-  static void CUDART_CB StreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
+  static void CUDART_CB AutoReleaseStreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
 
 
   /**
    * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
    * a previously requested image.
+   * @internal
    */
   void ReleaseReadAccess(unsigned int id);
+
+  /**
+   * Called at opportune moments to free up items on m_AutoreleaseQueue.
+   * @internal
+   */
+  void ProcessAutoreleaseQueue();
 
 
   static CUDAManager*           s_Instance;
@@ -207,6 +228,9 @@ private:
   std::map<unsigned int, LightweightCUDAImage>    m_ValidImages;
 
   std::map<std::string, cudaStream_t>     m_Streams;
+
+  // the auto-release callback cannot acquire s_Lock because that will deadlock within the cuda driver.
+  boost::lockfree::queue<impldetail::StreamCallbackReleasePOD*>     m_AutoreleaseQueue;
 };
 
 
