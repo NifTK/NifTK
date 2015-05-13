@@ -3,5 +3,7 @@
     <file>TriangleSorter.cl</file>
     <file>volume_luminance_light.vs</file>
     <file>volume_raycast_isosurface_transp.fs</file>
+    <file>generic.fs</file>
+    <file>generic.vs</file>
   </qresource>
 </RCC>

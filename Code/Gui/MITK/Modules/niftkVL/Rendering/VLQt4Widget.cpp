@@ -41,6 +41,7 @@
 #include <stdexcept>
 #include <sstream>
 #include "ScopedOGLContext.h"
+#include "TrackballManipulator.h"
 #ifdef BUILD_IGI
 #include <CameraCalibration/Undistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
@@ -550,6 +551,36 @@ void VLQt4Widget::initializeGL()
   m_ThresholdVal = new vl::Uniform("val_threshold");
   m_ThresholdVal->setUniformF(0.5f);
 
+  m_GenericGLSLShader = new vl::GLSLProgram;
+  m_GenericGLSLShader->attachShader(new vl::GLSLVertexShader(LoadGLSLSourceFromResources("generic.vs")));
+  m_GenericGLSLShader->attachShader(new vl::GLSLFragmentShader(LoadGLSLSourceFromResources("generic.fs")));
+  bool linkvalid = m_GenericGLSLShader->linkProgram(true);
+  if (!linkvalid)
+  {
+    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+  bool shadervalid = m_GenericGLSLShader->validateProgram();
+  if (!shadervalid)
+  {
+    MITK_ERROR << "Shader didnt validate: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+
+  m_DefaultTextureParams = new vl::TexParameter;
+  m_DefaultTextureParams->setMinFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setMagFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setWrapS(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapT(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapR(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setBorderColor(vl::fvec4(0, 0, 0, 0));
+
+  unsigned int      defaultTextureValue = 0x00000000;
+  vl::ref<vl::Image>   tempImg = new vl::Image(1, 1, 0, 1, vl::IF_RGBA, vl::IT_UNSIGNED_BYTE);
+  tempImg->allocate();
+  *((unsigned int*) tempImg->pixels()) = defaultTextureValue;
+  m_DefaultTexture = new vl::Texture(1, 1, vl::TF_RGBA, false);
+  m_DefaultTexture->setMipLevel(0, tempImg.get(), false);
+
+
   vl::OpenGLContext::dispatchInitEvent();
 
 #if 0
@@ -590,7 +621,7 @@ void VLQt4Widget::EnableTrackballManipulator(bool enable)
   {
     if (m_Trackball.get() == 0)
     {
-      m_Trackball = new vl::TrackballManipulator;
+      m_Trackball = new TrackballManipulator;
       m_Trackball->setEnabled(true);
       m_Trackball->setCamera(m_Camera.get());
       //m_Trackball->setTransform(m_CameraTransform.get());
@@ -1384,35 +1415,24 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
     vl::ref<vl::Effect> fx = vlActor->effect();
     fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->setRenderState(m_Light.get(), 0 );
-    fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->setRenderState(m_Light.get(), 0);
+    fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
+    fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // see if we need to set vertex colour too.
-    // ideally, this would be a simple and lightweight state update, but vl has
-    // overridden this with an actual heavyweight colour array.
-    if (!fx->shader()->isEnabled(vl::EN_LIGHTING) && (colorProp != 0))
-    {
-      // this only applies for unshaded geometry.
-      vl::Geometry* g = vlActor->lod(0)->as<vl::Geometry>();
-      if (g != 0)
-      {
-        vl::ArrayFloat4* ca = g->colorArray()->as<vl::ArrayFloat4>();
-        if (ca != 0)
-        {
-          if (ca->size() > 0)
-          {
-            if (ca->at(0) != color)
-              ca = 0;      // reset colour below
-          }
-          else
-            ca = 0;     // reset colour below
-        }
+    // the uniform tint colour is defined on the actor, instead of shader or effect.
+    vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
 
-        // no colour defined yet (or we should reset it). set one.
-        if (ca == 0)
-          g->setColorArray(color);
-      }
-    }
+    // shader still needs to know whether to apply light-shading or not.
+    float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
+    vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
+
+    // by convention, all meaningful texture maps are bound in slot 0.
+    // slot 1 will have the default-empty-dummy.
+    if (fx->shader()->getTextureSampler(0) != 0)
+      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(0);
+    else
+      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(1);
+
 
     float   pointsize = 1;
     bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
@@ -1643,6 +1663,7 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
 
         texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
         vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        vlActor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
 
         err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
         if (err != cudaSuccess)
@@ -1799,6 +1820,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
   fx->shader()->disable(vl::EN_LIGHTING);
   fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
   fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[actor] = vlGeom;
@@ -1849,6 +1873,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
   fx->shader()->disable(vl::EN_LIGHTING);
   // FIXME: currently nothing assigns a pointsize property for PCLData nodes. so set an arbitrary fixed size.
   fx->shader()->setRenderState(new vl::PointSize(5));
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
@@ -1890,6 +1917,9 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
 
   vl::ref<vl::Effect>   fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
 
   vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[psActor] = vlGeom;
@@ -1920,6 +1950,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->enable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
@@ -1994,6 +2026,8 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
   vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
@@ -2365,6 +2399,9 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
   fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
+  fx->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
   // FIXME: alpha-blending? independent of opacity prop!
 
