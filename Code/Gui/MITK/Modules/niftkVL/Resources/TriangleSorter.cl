@@ -474,22 +474,30 @@ __kernel
 
 inline T scan_simt_exclusive(__local VOLATILE T* input, size_t idx, const uint lane)
 {
-  if (lane > 0 ) input[idx] = OPERATOR_APPLY(input[idx - 1] , input[idx]);
-  if (lane > 1 ) input[idx] = OPERATOR_APPLY(input[idx - 2] , input[idx]);
-  if (lane > 3 ) input[idx] = OPERATOR_APPLY(input[idx - 4] , input[idx]);
-  if (lane > 7 ) input[idx] = OPERATOR_APPLY(input[idx - 8] , input[idx]);
-  if (lane > 15) input[idx] = OPERATOR_APPLY(input[idx - 16], input[idx]);
+  if (lane >   0) input[idx] = OPERATOR_APPLY(input[idx -   1], input[idx]);
+  if (lane >   1) input[idx] = OPERATOR_APPLY(input[idx -   2], input[idx]);
+  if (lane >   3) input[idx] = OPERATOR_APPLY(input[idx -   4], input[idx]);
+  if (lane >   7) input[idx] = OPERATOR_APPLY(input[idx -   8], input[idx]);
+  if (lane >  15) input[idx] = OPERATOR_APPLY(input[idx -  16], input[idx]);
+  if (lane >  31) input[idx] = OPERATOR_APPLY(input[idx -  32], input[idx]);
+  if (lane >  63) input[idx] = OPERATOR_APPLY(input[idx -  64], input[idx]);
+  if (lane > 127) input[idx] = OPERATOR_APPLY(input[idx - 128], input[idx]);
+  if (lane > 255) input[idx] = OPERATOR_APPLY(input[idx - 256], input[idx]);
 
   return (lane > 0) ? input[idx-1] : OPERATOR_IDENTITY;
 }
 
 inline T scan_simt_inclusive(__local VOLATILE T* input, size_t idx, const uint lane)
 {
-  if (lane > 0 ) input[idx] = OPERATOR_APPLY(input[idx - 1] , input[idx]);
-  if (lane > 1 ) input[idx] = OPERATOR_APPLY(input[idx - 2] , input[idx]);
-  if (lane > 3 ) input[idx] = OPERATOR_APPLY(input[idx - 4] , input[idx]);
-  if (lane > 7 ) input[idx] = OPERATOR_APPLY(input[idx - 8] , input[idx]);
-  if (lane > 15) input[idx] = OPERATOR_APPLY(input[idx - 16], input[idx]);
+  if (lane >   0) input[idx] = OPERATOR_APPLY(input[idx -   1], input[idx]);
+  if (lane >   1) input[idx] = OPERATOR_APPLY(input[idx -   2], input[idx]);
+  if (lane >   3) input[idx] = OPERATOR_APPLY(input[idx -   4], input[idx]);
+  if (lane >   7) input[idx] = OPERATOR_APPLY(input[idx -   8], input[idx]);
+  if (lane >  15) input[idx] = OPERATOR_APPLY(input[idx -  16], input[idx]);
+  if (lane >  31) input[idx] = OPERATOR_APPLY(input[idx -  32], input[idx]);
+  if (lane >  63) input[idx] = OPERATOR_APPLY(input[idx -  64], input[idx]);
+  if (lane > 127) input[idx] = OPERATOR_APPLY(input[idx - 128], input[idx]);
+  if (lane > 255) input[idx] = OPERATOR_APPLY(input[idx - 256], input[idx]);
 
   return input[idx];
 }
@@ -501,7 +509,7 @@ inline T scan_workgroup_exclusive(__local T* localBuf, const uint idx, const uin
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // Step 2: Collect per-warp partial results (the sum)
-  if (lane > 30) localBuf[simt_bid] = localBuf[idx];
+  if (lane > 254) localBuf[simt_bid] = localBuf[idx];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // Step 3: Use 1st warp to scan per-warp results
@@ -533,8 +541,8 @@ __kernel
   const uint bidx = get_group_id(0);
   const uint TC = get_local_size(0);
 
-  const uint lane = idx & 31;
-  const uint simt_bid = idx >> 5;
+  const uint lane = idx & 255;
+  const uint simt_bid = idx >> 8;
 
   T reduceValue = OPERATOR_IDENTITY;
 
