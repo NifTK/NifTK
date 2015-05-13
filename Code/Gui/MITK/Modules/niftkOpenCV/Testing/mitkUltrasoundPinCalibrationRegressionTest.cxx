@@ -21,9 +21,6 @@
 #include <mitkIOUtil.h>
 #include <mitkUltrasoundPinCalibration.h>
 #include <mitkVector.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
-#include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
@@ -76,11 +73,9 @@ public:
     
     initialParamsStream.close();
     double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    bool successfullyCalibrated = false;
     
     calibration->SetOptimiseImageScaleFactors(true);
     calibration->SetImageScaleFactors(scaleFactors);
@@ -107,23 +102,21 @@ public:
 
     residualError = calibration->Calibrate();
 
-    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
+    cv::Matx44d comparisonMatrix;
+    mitk::ReadTrackerMatrix ( fileNameToCompareAgainst , comparisonMatrix);
+    MITK_INFO << comparisonMatrix;
 
-    bool successfullySaved = niftk::SaveMatrix4x4ToFile(outputMatrixFileName, *calibrationMatrix);
-    MITK_TEST_CONDITION_REQUIRED(successfullySaved == true, "Checking saved file successfully to filename:" << outputMatrixFileName);
+    cv::Matx44d calibrationMatrix = calibration->GetRigidTransformation();
 
-    vtkSmartPointer<vtkMatrix4x4> comparisonMatrix = NULL;
-    comparisonMatrix = niftk::LoadMatrix4x4FromFile(fileNameToCompareAgainst);
-
-    MITK_TEST_CONDITION_REQUIRED(comparisonMatrix != NULL, "Checking comparison matrix is not null");
-
+    mitk::SaveTrackerMatrix ( "/dev/shm/thing.4x4" , calibrationMatrix);
     for (int i = 0; i < 4; i++)
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
+        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
       }
     }
+    MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(0.486643 - residualError),0.0001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");
   }
 };
