@@ -334,6 +334,10 @@ void mitk::OclTriangleSorter::InitKernels()
 /// \brief Main sort function
 bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triNum, cl_uint vertNum)
 {
+  // make sure caller's ogl part has finished.
+  glFinish();
+
+
   //Check if context & program available
   if (!this->Initialize())
   {
@@ -343,6 +347,7 @@ bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
   
   cl_int clStatus = 0;
 
+  glFinish();
   clStatus = clEnqueueAcquireGLObjects(m_CommandQue, 1, &mergedVertexBuf, 0, NULL, NULL);
   if (clStatus)
   {
@@ -374,14 +379,16 @@ bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
   if (!ComputeTriangleDistances(m_VertexDistances, vertNum, mergedIndexBuf, triNum))
     return false;
 
+
+
   //// Sort the triangles based on the distance
-  //LaunchBitonicSort(mergedIndexBuffWithDist, m_TotalTriangleNum);
+  //LaunchBitonicSort(m_IndexBufferWithDist, triNum);
   if (!LaunchRadixSort(m_IndexBufferWithDist, triNum))
     return false;
 
+
   if (!CopyIndicesOnly(m_IndexBufferWithDist, mergedIndexBuf, triNum))
     return false;
-  //CopyIndicesWithDist(indexBufferWithDist, mergedIndexBuf, m_VertexDistances, m_TotalTriangleNum);
 
   // Release CL index buffer
   clStatus = clEnqueueReleaseGLObjects(m_CommandQue, 1, &mergedIndexBuf, 0, NULL, NULL);
@@ -391,61 +398,13 @@ bool mitk::OclTriangleSorter::SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_m
     return false;
   }
 
-
-/*
-  cl_uint * buff0 = new cl_uint[m_TotalTriangleNum*3];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedIndexBuffer, true, 0, m_TotalTriangleNum*3* sizeof(cl_uint), buff0, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  std::ofstream outfile0;
-  outfile0.open ("d://SortedMergedIBO.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < m_TotalTriangleNum; r++)
+  // make sure our ocl part has finished before caller's ogl starts trampling all over it.
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
   {
-    outfile0 <<"Index: " <<r <<" Indices: " <<buff0[r*3+0] <<" " <<buff0[r*3+1] <<" " <<buff0[r*3+2] <<"\n";
+    CHECK_OCL_ERR(clStatus);
+    return false;
   }
-
-  outfile0.close();
-  delete buff0;
-
-
-  cl_uint * buff1 = new cl_uint[m_TotalTriangleNum];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, m_MergedDistanceBuffer, true, 0, m_TotalTriangleNum* sizeof(cl_uint), buff1, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  std::ofstream outfile1;
-  outfile1.open ("d://SortedMergedDistances.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < m_TotalTriangleNum; r++)
-  {
-    outfile1 <<"Index: " <<r <<" Dist-uint: " <<buff1[r] <<" Dist-float: " <<std::setprecision(10) <<IFloatFlip(buff1[r])  <<"\n";
-  }
-
-  outfile1.close();
-  delete buff1;
-*/
-/*
-  cl_uint * buff2 = new cl_uint[m_TotalTriangleNum*4];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, mergedIndexBuffWithDist, true, 0, m_TotalTriangleNum*4* sizeof(cl_uint), buff2, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  std::ofstream outfile2;
-  outfile2.open ("d://SortedMergedIBO2.txt", std::ios::out);
-
-      
-  // Write out filtered volume
-  for (int r = 0 ; r < m_TotalTriangleNum; r++)
-  {
-    outfile2 <<"Index: " <<r <<" Dist-uint: " <<buff2[r*4+0] <<" Dist-float: " <<std::setprecision(10) <<IFloatFlip(buff2[r*4+0]) <<" Indices: " <<buff2[r*4+1] <<" " <<buff2[r*4+2] <<" " <<buff2[r*4+3] <<"\n";
-  }
-
-  outfile2.close();
-  delete buff2;
-*/
 
   return true;
 }
@@ -550,6 +509,12 @@ void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, 
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_uint), (const void*)&vertOffset);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyAndUpdateIndices, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return;
+  }
 }
 
 bool mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_uint size)
@@ -585,6 +550,12 @@ bool mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_ui
     CHECK_OCL_ERR(clStatus);
     return false;
   }
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   return true;
 }
@@ -604,8 +575,13 @@ void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, c
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_uint), (const void*)&size);
   clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_ckCopyIndicesWithDist, 1, NULL, global_128, local_128, 0, NULL, NULL);
   CHECK_OCL_ERR(clStatus);
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return;
+  }
 }
-
 
 inline int roundUpDiv(int A, int B) { return (A + B - 1) / (B); }
 
@@ -660,25 +636,12 @@ bool mitk::OclTriangleSorter::TransformVerticesAndComputeDistance(cl_mem vertexB
     CHECK_OCL_ERR(clStatus);
     return false;
   }
-
-
-/*
-  cl_float * buff = new cl_float[numOfVertices];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, vertexDistances, CL_TRUE, 0, numOfVertices*sizeof(cl_float), buff, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  MITK_INFO <<"numOfVertices: " <<numOfVertices;
-  std::ofstream outfile0;
-  outfile0.open ("d://verticesWithDists.txt", std::ios::out);
-    
-  // Write out filtered volume
-  for (int r = 0 ; r < numOfVertices; r++)
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
   {
-    outfile0 <<"Index: " <<r <<" Dist: " <<std::setprecision(10) <<IFloatFlip(buff[r]) <<"\n";// <<" Vert: " <<buff[r*4+1] <<" " <<buff[r*4+2] <<" " <<buff[r*4+3] <<"\n";
+    CHECK_OCL_ERR(clStatus);
+    return false;
   }
-
-  outfile0.close();
-*/
 
   return true;
 }
@@ -744,25 +707,12 @@ bool mitk::OclTriangleSorter::ComputeTriangleDistances(
     CHECK_OCL_ERR(clStatus);
     return false;
   }
-
-/*
-  cl_uint * buff = new cl_uint[numOfTriangles*4];
-  clStatus = clEnqueueReadBuffer(m_CommandQue, indexBufWithDist, CL_TRUE, 0, numOfTriangles*4*sizeof(cl_uint), buff, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
- 
-  MITK_INFO <<"numOfTriangles: " <<numOfTriangles;
-  std::ofstream outfile0;
-  outfile0.open ("d://trianglesWithDists.txt", std::ios::out);
-    
-  // Write out filtered volume
-  for (int r = 0 ; r < numOfTriangles; r++)
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
   {
-    outfile0 <<"Index: " <<r <<" Dist: " <<buff[r*4+0] <<" Indices: " <<buff[r*4+1] <<" " <<buff[r*4+2] <<" " <<buff[r*4+3] <<"\n";
+    CHECK_OCL_ERR(clStatus);
+    return false;
   }
-
-  outfile0.close();
-*/
 
   return true;
 }
@@ -878,8 +828,6 @@ void mitk::OclTriangleSorter::LaunchBitonicSort(cl_mem bfKeyVal, cl_uint _datase
   }
 }
 
-
-
 bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSize)
 {
   // Satish et al. empirically set b = 4. The size of a work-group is in hundreds of
@@ -929,7 +877,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   // histogram : 16 values per block
   if (m_bfRadixHist1 == 0)
   {
-    m_bfRadixHist1 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist1 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
@@ -939,7 +887,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
 
   if (m_bfRadixHist2 == 0)
   {
-    m_bfRadixHist2 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist2 = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
@@ -948,15 +896,13 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
   }
   if (m_bfRadixHist1Scan == 0)
   {
-    m_bfRadixHist1Scan = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint4) * 16 * numBlocks, NULL, &clStatus);
+    m_bfRadixHist1Scan = clCreateBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(cl_uint) * 16 * numBlocks, NULL, &clStatus);
     if (clStatus)
     {
       CHECK_OCL_ERR(clStatus);
       return false;
     }
   }
-  
-  cl_uint nextSizePow2 = GetNextPowerOfTwo(datasetSize);
 
   for (unsigned int bitOffset = 0; bitOffset < m_SortBits; bitOffset += 4)
   {
@@ -977,6 +923,7 @@ bool mitk::OclTriangleSorter::LaunchRadixSort(cl_mem bfKeyVal, cl_uint datasetSi
     bool permuteok = RadixPermute(datasetSize, &globalWorkSize, &localWorkSize, m_bfDataA, m_bfDataB, m_bfRadixHist1Scan, m_bfRadixHist2, bitOffset, numBlocks);
     if (!permuteok)
       return false;
+
 
     // Swap buffers for the next iteration
     std::swap(m_bfDataA, m_bfDataB);
@@ -1032,6 +979,12 @@ bool mitk::OclTriangleSorter::RadixLocal(cl_uint datasetSize, cl_mem data, cl_me
     CHECK_OCL_ERR(clStatus);
     return false;
   }
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   return true;
 }
@@ -1072,6 +1025,12 @@ bool mitk::OclTriangleSorter::LocalHistogram(cl_uint datasetSize, const size_t* 
   }
 
   clStatus = clEnqueueNDRangeKernel(m_CommandQue, m_ckLocalHistogram, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+  clStatus = clFinish(m_CommandQue);
   if (clStatus)
   {
     CHECK_OCL_ERR(clStatus);
@@ -1135,6 +1094,12 @@ bool mitk::OclTriangleSorter::RadixPermute(cl_uint datasetSize, const size_t* gl
     CHECK_OCL_ERR(clStatus);
     return false;
   }
+  clStatus = clFinish(m_CommandQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
 
   return true;
 }
@@ -1142,8 +1107,7 @@ bool mitk::OclTriangleSorter::RadixPermute(cl_uint datasetSize, const size_t* gl
 bool mitk::OclTriangleSorter::Scan(cl_uint datasetSize, cl_mem dataIn, cl_mem dataOut)
 {
   cl_int clStatus = 0;
-  size_t _workgroupSize = 256;
-  //clGetKernelWorkGroupInfo(m_ckScanBlockAnyLength, resources->GetCurrentDevice(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &_workgroupSize, 0);
+  size_t _workgroupSize = 64; // This has to be fixed and kernel adjusted accordingly!
 
   cl_uint blockSize = datasetSize / _workgroupSize;
   cl_uint B = blockSize * _workgroupSize;

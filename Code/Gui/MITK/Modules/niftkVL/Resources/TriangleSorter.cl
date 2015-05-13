@@ -378,7 +378,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.x - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 
   //~~~~~~~~~~~~~~~~~~~~~~
@@ -391,7 +391,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.y - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 
   //~~~~~~~~~~~~~~~~~~~~~~
@@ -403,7 +403,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.z - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
   //~~~~~~~~~~~~~~~~~~~~~~
 
@@ -415,7 +415,7 @@ __kernel
   myShiftedKeys = EXTRACT_KEY_4BITS(myData, bitOffset);
   finalOffset = tid4.w - localHistStart[myShiftedKeys] + sharedHistSum[myShiftedKeys];
   
-  if (finalOffset < N)
+  if (finalOffset >= 0 && finalOffset < N)
     dataOut[finalOffset] = myData;
 }
 
@@ -474,22 +474,30 @@ __kernel
 
 inline T scan_simt_exclusive(__local VOLATILE T* input, size_t idx, const uint lane)
 {
-  if (lane > 0 ) input[idx] = OPERATOR_APPLY(input[idx - 1] , input[idx]);
-  if (lane > 1 ) input[idx] = OPERATOR_APPLY(input[idx - 2] , input[idx]);
-  if (lane > 3 ) input[idx] = OPERATOR_APPLY(input[idx - 4] , input[idx]);
-  if (lane > 7 ) input[idx] = OPERATOR_APPLY(input[idx - 8] , input[idx]);
-  if (lane > 15) input[idx] = OPERATOR_APPLY(input[idx - 16], input[idx]);
+  if (lane >   0) input[idx] = OPERATOR_APPLY(input[idx -   1], input[idx]);
+  if (lane >   1) input[idx] = OPERATOR_APPLY(input[idx -   2], input[idx]);
+  if (lane >   3) input[idx] = OPERATOR_APPLY(input[idx -   4], input[idx]);
+  if (lane >   7) input[idx] = OPERATOR_APPLY(input[idx -   8], input[idx]);
+  if (lane >  15) input[idx] = OPERATOR_APPLY(input[idx -  16], input[idx]);
+  if (lane >  31) input[idx] = OPERATOR_APPLY(input[idx -  32], input[idx]);
+  if (lane >  63) input[idx] = OPERATOR_APPLY(input[idx -  64], input[idx]);
+  if (lane > 127) input[idx] = OPERATOR_APPLY(input[idx - 128], input[idx]);
+  if (lane > 255) input[idx] = OPERATOR_APPLY(input[idx - 256], input[idx]);
 
   return (lane > 0) ? input[idx-1] : OPERATOR_IDENTITY;
 }
 
 inline T scan_simt_inclusive(__local VOLATILE T* input, size_t idx, const uint lane)
 {
-  if (lane > 0 ) input[idx] = OPERATOR_APPLY(input[idx - 1] , input[idx]);
-  if (lane > 1 ) input[idx] = OPERATOR_APPLY(input[idx - 2] , input[idx]);
-  if (lane > 3 ) input[idx] = OPERATOR_APPLY(input[idx - 4] , input[idx]);
-  if (lane > 7 ) input[idx] = OPERATOR_APPLY(input[idx - 8] , input[idx]);
-  if (lane > 15) input[idx] = OPERATOR_APPLY(input[idx - 16], input[idx]);
+  if (lane >   0) input[idx] = OPERATOR_APPLY(input[idx -   1], input[idx]);
+  if (lane >   1) input[idx] = OPERATOR_APPLY(input[idx -   2], input[idx]);
+  if (lane >   3) input[idx] = OPERATOR_APPLY(input[idx -   4], input[idx]);
+  if (lane >   7) input[idx] = OPERATOR_APPLY(input[idx -   8], input[idx]);
+  if (lane >  15) input[idx] = OPERATOR_APPLY(input[idx -  16], input[idx]);
+  if (lane >  31) input[idx] = OPERATOR_APPLY(input[idx -  32], input[idx]);
+  if (lane >  63) input[idx] = OPERATOR_APPLY(input[idx -  64], input[idx]);
+  if (lane > 127) input[idx] = OPERATOR_APPLY(input[idx - 128], input[idx]);
+  if (lane > 255) input[idx] = OPERATOR_APPLY(input[idx - 256], input[idx]);
 
   return input[idx];
 }
@@ -501,7 +509,7 @@ inline T scan_workgroup_exclusive(__local T* localBuf, const uint idx, const uin
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // Step 2: Collect per-warp partial results (the sum)
-  if (lane > 30) localBuf[simt_bid] = localBuf[idx];
+  if (lane > 254) localBuf[simt_bid] = localBuf[idx];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // Step 3: Use 1st warp to scan per-warp results
@@ -533,8 +541,8 @@ __kernel
   const uint bidx = get_group_id(0);
   const uint TC = get_local_size(0);
 
-  const uint lane = idx & 31;
-  const uint simt_bid = idx >> 5;
+  const uint lane = idx & 255;
+  const uint simt_bid = idx >> 8;
 
   T reduceValue = OPERATOR_IDENTITY;
 
@@ -740,7 +748,7 @@ __kernel
 __kernel
   void ckTransformVertexAndComputeDistance(
   __global       float  * vertexDistances,
-  __global       float  * vertexBuf,
+  __global const float  * vertexBuf,
            const float4   viewPoint,
            const uint     numOfVertices
   )
@@ -750,8 +758,8 @@ __kernel
   if (idx >= numOfVertices)
     return;
 
-  viewPoint.w = 0.0f;
-  float4 transformedVertexCoords;
+  viewPoint.w = 0.0f;     // FIXME: why does this compile?
+
   float4 vertexCoords;
   vertexCoords.x = vertexBuf[idx*3+0];
   vertexCoords.y = vertexBuf[idx*3+1];
@@ -777,8 +785,8 @@ inline float IFloatFlip(unsigned int f)
 __kernel
   void ckComputeTriangleDistances(
   __global       uint  * indexBufWithDist,
-  __global       float * vertexDist,
-  __global       uint  * indexBuf,
+  __global const float * vertexDist,
+  __global const uint  * indexBuf,
            const uint    numOfVertices,
            const uint    numOfTriangles
   )
@@ -803,7 +811,7 @@ __kernel
 
 __kernel
   void ckCopyAndUpdateIndicesOrig(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint4 * output,
            const uint    size,
            const uint    triangleOffset,
@@ -823,7 +831,7 @@ __kernel
 
 __kernel
   void ckCopyAndUpdateIndices(
-  __global       uint * input,
+  __global const uint * input,
   __global       uint * output,
            const uint   size,
            const uint   triangleOffset,
@@ -842,7 +850,7 @@ __kernel
 
 __kernel
   void ckCopyIndicesOnly(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint  * output,
            const uint    size
   )
@@ -861,7 +869,7 @@ __kernel
 
 __kernel
   void ckCopyIndicesWithDist(
-  __global       uint4 * input,
+  __global const uint4 * input,
   __global       uint  * output,
   __global       uint  * outputDist,
            const uint    size

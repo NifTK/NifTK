@@ -2639,7 +2639,7 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 void VLQt4Widget::UpdateTranslucentTriangles()
 {
   bool    thereIsSomethingTranslucent = true;
-  if (!m_TranslucentStructuresMerged)
+  //if (!m_TranslucentStructuresMerged)
   {
     thereIsSomethingTranslucent = MergeTranslucentTriangles();
   }
@@ -2747,6 +2747,9 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
   if (m_OclService == 0)
     return false;
+
+  // hopefully the buffers wrapping vbos will have finished doing stuff.
+  glFinish();
 
   // Get context 
   cl_context clContext = m_OclService->GetContext();
@@ -2914,6 +2917,8 @@ bool VLQt4Widget::MergeTranslucentTriangles()
   m_TranslucentSurface->normalArray()->updateBufferObject();
   m_TranslucentSurface->colorArray()->updateBufferObject();
   vlTriangles->indexBuffer()->updateBufferObject();
+
+  // this is good here! do not remove.
   glFinish();
 
 
@@ -2960,6 +2965,13 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     return false;
   }
 
+  clStatus = clFinish(clCmdQue);
+  if (clStatus)
+  {
+    CHECK_OCL_ERR(clStatus);
+    return false;
+  }
+
   // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
   GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
   m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
@@ -2991,46 +3003,6 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     CHECK_OCL_ERR(clStatus);
     return false;
   }
-
-/*
-  // Create a buffer large enough to retrive the merged distance buffer
-  unsigned int totalNumOfVertices2 = 0;
-  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, totalNumOfTriangles*sizeof(cl_uint), 0, 0);
-  
-  // Here we retrieve the merged and sorted distance buffer
-  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, totalNumOfVertices2);
-
-  cl_uint * mergedDistances = new cl_uint[totalNumOfTriangles];
-  clStatus = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, totalNumOfTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  //std::ofstream outfileA;
-  //outfileA.open ("d://triangleDists.txt", std::ios::out);
-
-  float maxDist = -FLT_MAX;
-  for (int kk = 0; kk < totalNumOfTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-
-    if (val > maxDist)
-      maxDist = val;
-
-    //outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
-  }
-
-  //outfileA.close();
-
-  float minDist = FLT_MAX;
-  for (int kk = 0; kk < totalNumOfTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-    if (val < minDist)
-      minDist = val;
-  }
-
-  float range = (maxDist-minDist);
-  //MITK_INFO <<"maxDist: " <<std::setprecision(10) <<maxDist <<" minDist:" <<minDist <<" range: " <<range;
-*/
 
   size_t vertexBufferOffset = 0;
   size_t normalBufferOffset = 0;
@@ -3132,6 +3104,7 @@ bool VLQt4Widget::MergeTranslucentTriangles()
     }
 
     vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+    glFinish();
     colorBufferOffset += colorBufSize;
     delete colorData;
  
