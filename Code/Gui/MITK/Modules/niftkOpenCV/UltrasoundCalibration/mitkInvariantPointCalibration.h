@@ -57,6 +57,8 @@ public:
   void SetRigidTransformation(const cv::Matx44d& rigidBodyTrans);
   cv::Matx44d GetRigidTransformation() const;
 
+  void SetRigidTransformationParameters(const std::vector<double>& rigidBodyTrans);
+
   void SetOptimiseRigidTransformation(const bool&);
   bool GetOptimiseRigidTransformation() const;
 

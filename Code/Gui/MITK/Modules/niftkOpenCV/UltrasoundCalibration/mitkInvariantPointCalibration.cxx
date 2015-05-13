@@ -129,6 +129,14 @@ void InvariantPointCalibration::SetRigidTransformation(const cv::Matx44d& rigidB
   this->Modified();
 }
 
+//-----------------------------------------------------------------------------
+void InvariantPointCalibration::SetRigidTransformationParameters(const std::vector<double>& rigidBodyTrans)
+{
+  m_CostFunction->SetRigidTransformationParameters(rigidBodyTrans);
+  this->Modified();
+}
+
+
 
 //-----------------------------------------------------------------------------
 cv::Matx44d InvariantPointCalibration::GetRigidTransformation() const

@@ -50,7 +50,11 @@ public:
 
     std::ifstream initialParamsStream;
     initialParamsStream.open(initialParametersFileName.c_str());
-  
+
+    if ( ! initialParamsStream )
+    {
+      mitkThrow() << "Failed to open " << initialParametersFileName;
+    }
     double in;
     std::vector<double> initialTransformation;
     for ( unsigned int i = 0 ; i < 6 ; i ++ )
@@ -58,17 +62,14 @@ public:
       initialParamsStream >> in;
       initialTransformation.push_back(in);
     }
-
     mitk::Point3D invariantPoint;
-    for ( unsigned int i = 0 ; i < 6 ; i ++ )
+    for ( unsigned int i = 0 ; i < 3 ; i ++ )
     {
-      initialParamsStream >> in;
-      invariantPoint[i] = in;
+      initialParamsStream >> invariantPoint[i];
     }
-
     mitk::Point2D scaleFactors;
     initialParamsStream >> scaleFactors[0];
-    initialParamsStream >> scaleFactors[0];
+    initialParamsStream >> scaleFactors[1];
 
     double timingLag;
     initialParamsStream >> timingLag;
@@ -87,7 +88,7 @@ public:
     calibration->SetInvariantPoint(invariantPoint);
     calibration->SetOptimiseTimingLag(false); //timing lag optimisation isn't quite right yet
     calibration->SetTimingLag(timingLag);
-  //  calibration->LoadRigidTransformation(initialGuess);
+    calibration->SetRigidTransformationParameters(initialTransformation);
     calibration->SetVerbose(false);
 
     mitk::TrackingAndTimeStampsContainer trackingData;
