@@ -72,6 +72,7 @@ set(MIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+  Plugins/uk.ac.ucl.cmic.pointsetconverter:ON
 )
 
 if(BUILD_MIDAS)

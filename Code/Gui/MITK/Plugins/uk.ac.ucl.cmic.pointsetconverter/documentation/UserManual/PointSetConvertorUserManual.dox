@@ -1,0 +1,34 @@
+/**
+\page uk_ac_ucl_cmic_pointsetconverter The Point Set Converter
+
+\imageMacro{pointset_interaction.png,"Icon of Point Set Converter",2.00}
+
+\li \ref PointSetConverterIntro
+\li \ref PointSetConverterAdd
+\li \ref PointSetConverterConversion
+
+\section PointSetConverterIntro Introduction
+
+This plugin provides the Pointer Set Converter toolset. Briefly, the tool enables the creation of points of interest within a 3D volume.
+
+\section PointSetConverterAdd Placement of New Points
+
+This section describes how to place points on an image. 
+
+Initially an image must by loaded into the program. The user must then select the image to place points on. Once selected the name of the image will be listed as the reference image on the plugin.
+
+To add a new point set press the 'Create New Point Set' button. A prompt will require the user to provide a name of the point set to be created. Once the name is entered and the okay button is pressed a new point set with the user specified name should be listed under the reference image. 
+
+The plus icon on the point set widget will enable manual placement of new points via the mouse. 
+Press the button to turn on this feature.
+Press the shift button on the keyboard and the left button on the mouse to add a new point.
+
+
+\section PointSetConverterConversion Conversion of Planar Objects to Points
+
+This section describes how to convert PlanarCircle objects to points. 
+
+Initially an image that has planarcircle objects must be loaded into the program. The user must then select the image to place points on. Once selected the name of the image will be listed as the reference image on the plugin.
+
+To convert the planarcircle objects press the 'Convert to Point Set' button.
+*/
