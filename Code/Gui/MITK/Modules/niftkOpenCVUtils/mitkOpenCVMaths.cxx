@@ -2374,4 +2374,43 @@ double Norm (const cv::Point3d& p1)
 }
 
 
+//-----------------------------------------------------------------------------
+class out_of_bounds
+{
+  const double m_XLow;
+  const double m_XHigh;
+  const double m_YLow;
+  const double m_YHigh;
+  const double m_ZLow;
+  const double m_ZHigh;
+
+public:
+  out_of_bounds ( const double& xLow, const double& xHigh, const double& yLow, const double& yHigh, const double& zLow, const double zHigh)
+  : m_XLow (xLow)
+  , m_XHigh (xHigh)
+  , m_YLow (yLow)
+  , m_YHigh (yHigh)
+  , m_ZLow (zLow)
+  , m_ZHigh (zHigh)
+  {}
+
+  bool operator () ( const cv::Point3d& point ) const
+  {
+    return ( ( point.x < m_XLow ) || ( point.x > m_XHigh ) 
+        || ( point.y < m_YLow ) || ( point.y > m_YHigh ) 
+        || ( point.z < m_ZLow ) || ( point.z > m_ZHigh ) );
+  }
+};
+
+//-----------------------------------------------------------------------------
+unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points, 
+    const double& xLow, const double& xHigh, 
+    const double& yLow, const double& yHigh, 
+    const double& zLow, const double& zHigh)
+{
+  unsigned int originalSize = points.size();
+  points.erase ( std::remove_if ( points.begin(), points.end(), out_of_bounds (xLow, xHigh, yLow, yHigh, zLow, zHigh )), points.end() );
+  return originalSize - points.size();
+}
+
 } // end namespace

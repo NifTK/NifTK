@@ -33,6 +33,13 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point2d FindCrosshairCentre(const cv::M
   const double& houghRho, const double& houghTheta, const int& houghThreshold, 
   const int& houghLineLength, const int& houghLineGap, cv::vector <cv::Vec4i>& lines);
 
+/** 
+ * \brief Applies binary mask to a vector of point pairs
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned int ApplyMask (
+    std::vector < std::pair <cv::Point2d, cv::Point2d> >& pointPairs,
+    const cv::Mat& maskImage, const unsigned int& maskValue, const bool& maskUsingFirst);
+
 } // end namespace
 
 #endif
