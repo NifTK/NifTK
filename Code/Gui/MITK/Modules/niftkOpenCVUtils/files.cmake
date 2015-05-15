@@ -19,5 +19,6 @@ set(CPP_FILES
   mitkOpenCVPointTypes.cxx
   mitkTimeStampsContainer.cxx
   mitkTrackingAndTimeStampsContainer.cxx
+  mitkProjectionErrors.cxx
 )
 
