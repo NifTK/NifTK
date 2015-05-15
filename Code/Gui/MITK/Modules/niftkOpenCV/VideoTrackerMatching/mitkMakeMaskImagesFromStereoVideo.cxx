@@ -202,14 +202,16 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (true);
-          leftPickedPoints->SetInOrderedMode (false);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (true);
-          rightPickedPoints->SetInOrderedMode (false);
+          leftPickedPoints->SetTimeStamp(timestamp);
+          leftPickedPoints->SetInLineMode (true);
+          leftPickedPoints->SetInOrderedMode (false);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
+          rightPickedPoints->SetTimeStamp(timestamp);
+          rightPickedPoints->SetInLineMode (true);
+          rightPickedPoints->SetInOrderedMode (false);
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();

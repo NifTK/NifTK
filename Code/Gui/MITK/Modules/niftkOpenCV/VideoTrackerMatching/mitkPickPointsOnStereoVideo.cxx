@@ -226,14 +226,16 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (m_PickingLine);
-          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (m_PickingLine);
-          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          leftPickedPoints->SetTimeStamp(timeStamp);
+          leftPickedPoints->SetInLineMode (m_PickingLine);
+          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
+          rightPickedPoints->SetTimeStamp(timeStamp);
+          rightPickedPoints->SetInLineMode (m_PickingLine);
+          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
