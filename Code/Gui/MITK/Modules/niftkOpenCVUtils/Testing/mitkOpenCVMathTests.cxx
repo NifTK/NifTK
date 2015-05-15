@@ -383,13 +383,13 @@ void DistanceToLineTest ()
   cv::Point3d x ( 0.0,1.0,0.5);
   
   double dtl = mitk::DistanceToLine (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
-  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line " << dtl);
+  MITK_TEST_CONDITION( fabs(dtl - 0.70711) < 1e-5 ,"Checking distance to line " << dtl);
 
   cv::Point3d u1 ( 10.0, 10.0 , 10.0);
   cv::Point3d v1 ( 11.0, 11.0, 11.0);
 
   double dtl1 = mitk::DistanceToLine (std::pair<cv::Point3d, cv::Point3d>(u1,v1),x);
-  MITK_TEST_CONDITION( (dtl1 - 0.70711) < 1e-5 ,"Checking distance to line again " << dtl1);
+  MITK_TEST_CONDITION( fabs(dtl1 - 0.70711) < 1e-5 ,"Checking distance to line again " << dtl1);
 }
 
 void DistanceToLineSegmentTest ()
@@ -399,22 +399,38 @@ void DistanceToLineSegmentTest ()
   cv::Point3d x ( 0.0,1.0,0.5);
   
   double dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
-  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment: " << dtl);
+  MITK_TEST_CONDITION( fabs(dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment: " << dtl);
   dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
-  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment, flipped ends: " << dtl);
+  MITK_TEST_CONDITION( fabs(dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment, flipped ends: " << dtl);
 
   x = cv::Point3d ( 2.0, 2.0, 2.0 );
   dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
-  MITK_TEST_CONDITION( (dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment: " << dtl);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment: " << dtl);
   dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
-  MITK_TEST_CONDITION( (dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment, flipped ends: " << dtl);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment, flipped ends: " << dtl);
+
+  v = cv::Point3d ( -1.0, -1.0, -1.0 );
+  x = cv::Point3d ( 0.0,1.0,0.5);
+
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(1.25)) < 1e-5 ,"Checking distance to line segment with projection off line and off segment: " << dtl);
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(1.25)) < 1e-5 ,"Checking distance to line segment with projection off line and off segment, flipped ends: " << dtl);
+
+  u = cv::Point3d ( -2.0, -2.0, -2.0 );
+  x = cv::Point3d ( 0.0,1.0,-0.5);
+
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(5.25)) < 1e-5 ,"Checking distance to line segment with projection off line and off segment: " << dtl);
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
+  MITK_TEST_CONDITION( fabs(dtl - sqrt(5.25)) < 1e-5 ,"Checking distance to line segment with projection off line and off segment, flipped ends: " << dtl);
 
   cv::Point3d u1 ( 10.0, 10.0 , 10.0);
   cv::Point3d v1 ( 11.0, 11.0, 11.0);
   x = cv::Point3d ( 0.0,1.0,0.5);
 
   double dtl1 = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u1,v1),x);
-  MITK_TEST_CONDITION( (dtl1 - 16.4696690) < 1e-5 ,"Checking distance to line segment again " << dtl1);
+  MITK_TEST_CONDITION( fabs(dtl1 - 16.4696690) < 1e-5 ,"Checking point off line and off segment " << dtl1);
 }
 
 
@@ -469,9 +485,9 @@ void TwoPointsToPLambdaTest ()
   std::pair <cv::Point3d, cv::Point3d>  line2 = mitk::TwoPointsToPLambda (std::pair <cv::Point3d, cv::Point3d> ( Q0,Q1));
   
   MITK_TEST_CONDITION( mitk::NearlyEqual (line1.first,cv::Point3d(0,0,0),1e-6),"Checking line 1 point " << line1.first);
-  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.second,cv::Point3d(-1/sqrt(3),-1/sqrt(3),-1/sqrt(3)),1e-6),"Checking line 1 vector " << line1.second);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.second,cv::Point3d(-1/sqrt(3.0),-1/sqrt(3.0),-1/sqrt(3.0)),1e-6),"Checking line 1 vector " << line1.second);
   MITK_TEST_CONDITION( mitk::NearlyEqual (line2.first,cv::Point3d(1,1,1),1e-6),"Checking line 2 point " << line2.first);
-  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32),0,4/sqrt(32)),1e-6),"Checking line 2 vector " << line2.second);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32.0),0,4/sqrt(32.0)),1e-6),"Checking line 2 vector " << line2.second);
 }
 
 void RemoveOutliersTest ()
