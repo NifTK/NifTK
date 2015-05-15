@@ -49,6 +49,8 @@ struct arguments
   bool flgDebug;
   bool flgDoNotUseR2LogRThinPlateSpline;
 
+  float stiffness;
+
   std::string fileInputSourceImage;
   std::string fileInputTargetImage;
 
@@ -64,6 +66,8 @@ struct arguments
   arguments() {
     flgVerbose = false;
     flgDebug = false;
+
+    stiffness = 0.;
   }
 };
 
@@ -298,6 +302,8 @@ int DoMain(arguments args)
 
     tps->SetSourceLandmarks(targetLandMarks);
     tps->SetTargetLandmarks(sourceLandMarks);
+
+    tps->SetStiffness( args.stiffness );
 
     try
     {
@@ -601,6 +607,8 @@ int main(int argc, char** argv)
   args.flgDebug   = flgDebug;
 
   args.flgDoNotUseR2LogRThinPlateSpline = flgDoNotUseR2LogRThinPlateSpline;
+
+  args.stiffness = stiffness;
 
   args.fileOutputImage                 = fileOutputImage;
   args.fileOutputDeformationField      = fileOutputDeformationField;
