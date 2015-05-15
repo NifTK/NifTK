@@ -60,12 +60,14 @@ struct arguments
   std::string fileOutputDeformationField;
 
   float poisson;
+  float stiffness;
 
   arguments() {
     flgVerbose = false;
     flgDebug = false;
 
     poisson = 0.49;
+    stiffness = 0.;
   }
 };
 
@@ -293,6 +295,7 @@ int DoMain(arguments args)
     ebs->SetTargetLandmarks(sourceLandMarks);
 
     ebs->SetAlpha( 12.*( 1. - args.poisson) - 1. );
+    ebs->SetStiffness( args.stiffness );
 
     try
     {
@@ -579,12 +582,12 @@ int main(int argc, char** argv)
   struct arguments args;
 
   PARSE_ARGS;
-  GENERATE_ECHOARGS;
 
   args.flgVerbose = flgVerbose;
   args.flgDebug   = flgDebug;
 
   args.poisson = poisson;
+  args.stiffness = stiffness;
 
   args.fileOutputImage                 = fileOutputImage;
   args.fileOutputDeformationField      = fileOutputDeformationField;

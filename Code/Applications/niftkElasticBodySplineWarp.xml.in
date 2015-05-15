@@ -69,6 +69,19 @@
       </constraints>
     </float>
 
+    <float>
+      <name>stiffness</name>
+      <longflag>stiffness</longflag>
+      <description>Stiffness of the spline.  A stiffness of zero results in the standard interpolating spline.  A non-zero stiffness allows the spline to approximate rather than interpolate the landmarks. Stiffness values are usually rather small, typically in the range of 0.001 to 0.1 [default is zero].</description>      
+      <label>Spline stiffness</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10</maximum>
+        <step>0.001</step>
+      </constraints>
+    </float>
+
   </parameters>
 
   <parameters>
