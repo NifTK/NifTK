@@ -184,6 +184,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     std::string m_Channel;
 
     PickedObject();
+    PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
     ~PickedObject();
 };
 
@@ -206,6 +207,7 @@ public:
   bool GetIsModified();
   itkSetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
+  itkSetMacro (TimeStamp, unsigned long long);
 
   unsigned int AddPoint (const cv::Point2i& point);
   unsigned int RemoveLastPoint ();
@@ -223,6 +225,7 @@ private:
   bool m_InLineMode;
   bool m_InOrderedMode;
   bool m_IsModified;
+  unsigned long long m_TimeStamp;
   unsigned int m_FrameNumber;
   std::string m_Channel;
   std::vector < PickedObject > m_PickedObjects;
