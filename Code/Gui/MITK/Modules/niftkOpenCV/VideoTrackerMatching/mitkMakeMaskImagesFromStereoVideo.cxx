@@ -204,12 +204,12 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          leftPickedPoints->SetTimeStamp(timestamp);
+          leftPickedPoints->SetTimeStamp(timeStamp);
           leftPickedPoints->SetInLineMode (true);
           leftPickedPoints->SetInOrderedMode (false);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
-          rightPickedPoints->SetTimeStamp(timestamp);
+          rightPickedPoints->SetTimeStamp(timeStamp);
           rightPickedPoints->SetInLineMode (true);
           rightPickedPoints->SetInOrderedMode (false);
 
