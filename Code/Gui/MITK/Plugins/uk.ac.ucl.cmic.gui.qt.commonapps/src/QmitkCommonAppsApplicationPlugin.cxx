@@ -20,21 +20,22 @@
 #include "internal/QmitkModuleView.h"
 
 #include <mitkCoreServices.h>
-#include <mitkIPropertyExtensions.h>
-#include <mitkFloatPropertyExtension.h>
-#include <mitkProperties.h>
-#include <mitkVersion.h>
-#include <mitkLogMacros.h>
+#include <mitkDataNodeFactory.h>
 #include <mitkDataStorage.h>
-#include <mitkVtkResliceInterpolationProperty.h>
+#include <mitkExceptionMacro.h>
+#include <mitkFloatPropertyExtension.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
-#include <mitkRenderingModeProperty.h>
+#include <mitkIPropertyExtensions.h>
+#include <mitkLevelWindowProperty.h>
+#include <mitkLogMacros.h>
 #include <mitkNamedLookupTableProperty.h>
-#include <mitkExceptionMacro.h>
-#include <mitkDataNodeFactory.h>
-#include <mitkSceneIO.h>
 #include <mitkProgressBar.h>
+#include <mitkProperties.h>
+#include <mitkRenderingModeProperty.h>
+#include <mitkSceneIO.h>
+#include <mitkVersion.h>
+#include <mitkVtkResliceInterpolationProperty.h>
 
 #include <berryPlatformUI.h>
 
@@ -53,18 +54,49 @@
 #include <usModuleContext.h>
 #include <usModuleInitialization.h>
 
-#include <QFileInfo>
 #include <QDateTime>
-#include <QMap>
-#include <QtPlugin>
-#include <QProcess>
+#include <QFileInfo>
 #include <QMainWindow>
+#include <QMap>
+#include <QMetaType>
+#include <QProcess>
+#include <QtPlugin>
 
 #include <NifTKConfigure.h>
 #include <mitkDataStorageUtils.h>
 
 
 US_INITIALIZE_MODULE
+
+
+/// \brief Helper class to store a pair of double values in a QVariant.
+class QLevelWindow : private QPair<double, double>
+{
+public:
+  QLevelWindow()
+  : QPair(0.0, 0.0)
+  {
+  }
+
+  QLevelWindow(double min, double max)
+  : QPair(min, max)
+  {
+  }
+
+  double min() const
+  {
+    return this->first;
+  }
+
+  double max() const
+  {
+    return this->second;
+  }
+
+};
+
+Q_DECLARE_METATYPE(QLevelWindow)
+
 
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
 
@@ -986,11 +1018,34 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
       }
       else
       {
-        propertyTypedValue = QVariant(propertyValue);
+        int hyphenIndex = propertyValue.indexOf('-', 1);
+        if (hyphenIndex != -1)
+        {
+          /// It might be a level window min-max range.
+          QString minPart = propertyValue.mid(0, hyphenIndex);
+          QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
+          MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() min part: " << minPart.toStdString();
+          MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() max part: " << maxPart.toStdString();
+          double minValue = minPart.toDouble(&ok);
+          if (ok)
+          {
+            double maxValue = maxPart.toDouble(&ok);
+            if (ok)
+            {
+              QLevelWindow range(minValue, maxValue);
+              propertyTypedValue.setValue(range);
+            }
+          }
+          if (!ok)
+          {
+            propertyTypedValue = QVariant(propertyValue);
+          }
+        }
       }
     }
   }
 
+  MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() type: " << propertyTypedValue.type();
   return propertyTypedValue;
 }
 
@@ -1015,6 +1070,21 @@ void QmitkCommonAppsApplicationPlugin::SetNodeProperty(mitk::DataNode* node, con
   {
     mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
   }
+  else if (propertyValue.type() == QMetaType::type("QLevelWindow"))
+  {
+    QLevelWindow qLevelWindow = propertyValue.value<QLevelWindow>();
+    mitk::LevelWindow levelWindow;
+    node->GetLevelWindow(levelWindow);
+    MITK_INFO << "1 level window min: " << levelWindow.GetLowerWindowBound() << " max: " << levelWindow.GetUpperWindowBound();
+    levelWindow.SetWindowBounds(qLevelWindow.min(), qLevelWindow.max());
+    MITK_INFO << "2 level window min: " << levelWindow.GetLowerWindowBound() << " max: " << levelWindow.GetUpperWindowBound();
+    node->SetLevelWindow(levelWindow);
+    node->GetData()->SetProperty("levelwindow", mitk::LevelWindowProperty::New(levelWindow));
+  }
+
+  MITK_INFO << "property name: " << propertyName.toStdString();
+  MITK_INFO << "property value type: " << propertyValue.type();
+  MITK_INFO << "qlevelwindow type: " << QMetaType::type("QLevelWindow");
 
   if (rendererName.isEmpty())
   {
@@ -1140,7 +1210,6 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
   }
 
 }
-
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
