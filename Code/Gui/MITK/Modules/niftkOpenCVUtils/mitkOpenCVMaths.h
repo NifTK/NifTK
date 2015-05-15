@@ -569,6 +569,13 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNotNaNorInf(const cv::Point3d&);
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
 
 /**
+ * \brief calculates the distance between a line segment and a point
+ * \param the line defined by the two end points of the line segment
+ * \param the point
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
+
+/**
  * \brief calculates the shortest distance between two lines  
  * \param line 1 define as x = P0 + lambda u
  * \param line 2 defined as x = Q0 + lambda v
@@ -589,6 +596,12 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT std::pair < cv::Point3d , cv::Point3d > Two
  * \param the vectors as points
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point3d CrossProduct ( const cv::Point3d& p1, const cv::Point3d& p2);
+
+/**
+ * \brief Calculates the dot product of two vectors (cv::Point3D)
+ * \param the vectors as points
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DotProduct ( const cv::Point3d& p1, const cv::Point3d& p2);
 
 /**
  * \brief Calculates the norm product of a vectors (cv::Point3D)

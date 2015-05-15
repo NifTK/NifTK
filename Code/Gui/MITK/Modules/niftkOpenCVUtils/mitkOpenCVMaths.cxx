@@ -2293,6 +2293,36 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
 }
 
 //-----------------------------------------------------------------------------
+double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0 )
+{
+  //courtesy Wolfram Mathworld
+  cv::Point3d x1;
+  cv::Point3d x2; 
+
+  x1 = line.first;
+  x2 = line.second;
+
+  cv::Point3d d1 = x2-x0;
+  cv::Point3d d2 = x2-x1;
+  
+  double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
+
+  if ( lambda < 0 ) //were beyond x2
+  {
+    return mitk::Norm ( x2 - x0 );
+  }
+  if ( lambda > 1 ) //we're beyond x1
+  {
+    return mitk::Norm ( x1 - x0 );
+  }
+  //else we're on the line segment
+  
+  return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
+
+}
+
+
+//-----------------------------------------------------------------------------
 double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
     cv::Point3d& midpoint)
 {
@@ -2365,6 +2395,12 @@ cv::Point3d CrossProduct (const cv::Point3d& p1 , const cv::Point3d& p2)
   cp.y = p1.z * p2.x - p1.x * p2.z;
   cp.z = p1.x * p2.y - p1.y * p2.x;
   return cp;
+}
+
+//-----------------------------------------------------------------------------
+double DotProduct (const cv::Point3d& p1 , const cv::Point3d& p2)
+{
+  return p1.x * p2.x + p1.y * p2.y + p1.z * p2.z;
 }
 
 //-----------------------------------------------------------------------------

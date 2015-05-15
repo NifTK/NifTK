@@ -392,13 +392,41 @@ void DistanceToLineTest ()
   MITK_TEST_CONDITION( (dtl1 - 0.70711) < 1e-5 ,"Checking distance to line again " << dtl1);
 }
 
-void CrossProductTest ()
+void DistanceToLineSegmentTest ()
+{
+  cv::Point3d u ( 0.0,0.0,0.0);
+  cv::Point3d v ( 1.0,1.0,1.0);
+  cv::Point3d x ( 0.0,1.0,0.5);
+  
+  double dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
+  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment: " << dtl);
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
+  MITK_TEST_CONDITION( (dtl - 0.70711) < 1e-5 ,"Checking distance to line segment with projection in segment, flipped ends: " << dtl);
+
+  x = cv::Point3d ( 2.0, 2.0, 2.0 );
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u,v),x);
+  MITK_TEST_CONDITION( (dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment: " << dtl);
+  dtl = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(v,u),x);
+  MITK_TEST_CONDITION( (dtl - sqrt(3.0)) < 1e-5 ,"Checking distance to line segment with projection on line but off segment, flipped ends: " << dtl);
+
+  cv::Point3d u1 ( 10.0, 10.0 , 10.0);
+  cv::Point3d v1 ( 11.0, 11.0, 11.0);
+  x = cv::Point3d ( 0.0,1.0,0.5);
+
+  double dtl1 = mitk::DistanceToLineSegment (std::pair<cv::Point3d, cv::Point3d>(u1,v1),x);
+  MITK_TEST_CONDITION( (dtl1 - 16.4696690) < 1e-5 ,"Checking distance to line segment again " << dtl1);
+}
+
+
+void DotAndCrossProductTest ()
 {
   cv::Point3d x ( 2.0,3.0,5.0);
   cv::Point3d y ( 7.0,11.0,13.0);
   cv::Point3d cp (-16.0,9.0,1.0);
+  double dp =  112.0;
 
   MITK_TEST_CONDITION( mitk::NearlyEqual (mitk::CrossProduct(x,y),cp,1e-6),"Checking cross product " << mitk::CrossProduct(x,y));
+  MITK_TEST_CONDITION( ( mitk::DotProduct(x,y) - dp < 1e-6),"Checking dot product " << mitk::DotProduct(x,y));
 }
 
 void NormTest ()
@@ -513,7 +541,8 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   CheckIfLinesArePerpendicularTest();
   PointInIntervalTest();
   DistanceToLineTest();
-  CrossProductTest();
+  DistanceToLineSegmentTest();
+  DotAndCrossProductTest();
   NormTest();
   DistanceBetweenLinesTest();
   TwoPointsToPLambdaTest ();
