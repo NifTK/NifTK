@@ -582,7 +582,6 @@ int main(int argc, char** argv)
   struct arguments args;
 
   PARSE_ARGS;
-  GENERATE_ECHOARGS;
 
   args.flgVerbose = flgVerbose;
   args.flgDebug   = flgDebug;
