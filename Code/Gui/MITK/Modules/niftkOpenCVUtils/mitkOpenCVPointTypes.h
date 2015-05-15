@@ -170,15 +170,18 @@ private:
 };
 
 /**
- * \class contains a vector of 2D points.
+ * \class contains a vector of 3D points, an identifier and whether or not it's a line
  */
 class NIFTKOPENCVUTILS_EXPORT PickedObject
 {
   public:
       
-    int id;
-    bool isLine;
-    std::vector < cv::Point2i > points;
+    int m_Id;
+    bool m_IsLine;
+    std::vector < cv::Point3d > m_Points;
+    unsigned int m_FrameNumber;
+    unsigned long long m_TimeStamp;
+    std::string m_Channel;
 
     PickedObject();
     ~PickedObject();
@@ -225,6 +228,10 @@ private:
   std::vector < PickedObject > m_PickedObjects;
   int GetNextAvailableID ( bool ForLine );
 };
+/**
+ * \brief a function to cast a point3d to a point2i, checks that z is zero, throws an error is not
+ */
+cv::Point2i NIFTKOPENCVUTILS_EXPORT Point3dToPoint2i (const cv::Point3d& point);
 
 } // end namespace
 
