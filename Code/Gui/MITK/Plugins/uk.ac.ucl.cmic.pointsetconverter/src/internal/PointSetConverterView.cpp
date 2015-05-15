@@ -144,7 +144,7 @@ void PointSetConverterView::OnConvertPolygonsToPointSetButtonClicked()
     if( object.IsNotNull() )
     {
       mitk::Point3D point = PlanarCircleToPoint(object);
-      mitk::PointSet::Pointer pointSet = FindPointSetNode( currentDataNode->GetName() );
+      mitk::PointSet::Pointer pointSet = this->FindPointSetNode( currentDataNode->GetName() );
 
       if( pointSet.IsNull() )
       {
@@ -166,7 +166,7 @@ void PointSetConverterView::OnConvertPolygonsToPointSetButtonClicked()
 
 }
 
-mitk::Point3D PointSetConverterView::PlanarCircleToPoint( mitk::PlanarCircle* circle)
+mitk::Point3D PointSetConverterView::PlanarCircleToPoint( const mitk::PlanarCircle* circle)
 {
   mitk::Point3D point;
   point.Fill(0.0);
@@ -182,7 +182,7 @@ mitk::Point3D PointSetConverterView::PlanarCircleToPoint( mitk::PlanarCircle* ci
 }
 
 
-mitk::PointSet::Pointer PointSetConverterView::FindPointSetNode( std::string &name )
+mitk::PointSet::Pointer PointSetConverterView::FindPointSetNode( const std::string& name )
 {
     //get all the children nodes of the reference image
   typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer > DataNodeContainerType;

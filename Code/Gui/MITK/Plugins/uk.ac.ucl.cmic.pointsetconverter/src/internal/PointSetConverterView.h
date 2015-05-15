@@ -71,10 +71,10 @@ class PointSetConverterView : public QmitkAbstractView
   private:
 
     /// \brief Caclulate the centroid of a mitkPlanarCircle 
-    mitk::Point3D PlanarCircleToPoint( mitk::PlanarCircle* circle);
+    mitk::Point3D PlanarCircleToPoint( const mitk::PlanarCircle* circle);
     
     /// \breif Find the Point set with the given name
-    mitk::PointSet::Pointer FindPointSetNode( std::string &name );
+    mitk::PointSet::Pointer FindPointSetNode( const std::string& name );
 
     mitk::DataNode::Pointer m_ReferenceImage;
     QWidget* m_Parent;
