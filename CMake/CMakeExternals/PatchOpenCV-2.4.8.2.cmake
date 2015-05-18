@@ -16,3 +16,10 @@ string(REPLACE "COMMAND \${CMAKE_COMMAND} -DCL_DIR=\"\${CMAKE_CURRENT_SOURCE_DIR
 # set variable CONTENTS, which is substituted in TEMPLATE_FILE
 set(CONTENTS ${sourceCode})
 configure_file(${TEMPLATE_FILE} cmake/OpenCVModule.cmake @ONLY)
+
+# fix compiler error with clang 602 (Mac 10.10.3)
+file(STRINGS cmake/OpenCVCompilerOptions.cmake sourceCode NEWLINE_CONSUME)
+string(REPLACE "add_extra_compiler_option(-Werror=address)" "#add_extra_compiler_option(-Werror=address)" sourceCode ${sourceCode})
+# set variable CONTENTS, which is substituted in TEMPLATE_FILE
+set(CONTENTS ${sourceCode})
+configure_file(${TEMPLATE_FILE} cmake/OpenCVCompilerOptions.cmake @ONLY)
