@@ -31,7 +31,6 @@ set(MOC_H_FILES
   Events/QmitkMouseEventEater.h
   QmitkDataStorageCheckableComboBox.h
   QmitkHelpAboutDialog.h
-  Rendering/SharedOGLContext.h
 )
 
 set(UI_FILES
