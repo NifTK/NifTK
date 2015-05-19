@@ -186,6 +186,12 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     PickedObject();
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
     ~PickedObject();
+
+    /**
+     * \brief compare the header information (Id, IsLine, Channel, FrameNumber)
+     * and return true if they all match;
+     */
+    bool HeadersMatch ( const PickedObject& otherPickedObject); 
 };
 
 /**

@@ -383,6 +383,22 @@ PickedObject::~PickedObject()
 {}
 
 //-----------------------------------------------------------------------------
+bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject)
+{
+  if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
+       ( m_IsLine == otherPickedObject.m_IsLine ) &&
+       ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
+       ( m_Id == otherPickedObject.m_Id ) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+//-----------------------------------------------------------------------------
 PickedPointList::PickedPointList()
 : m_InLineMode (false)
 , m_InOrderedMode (false)
