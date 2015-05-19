@@ -22,6 +22,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <mitkTimeStampsContainer.h>
+#include <mitkOpenCVPointTypes.h>
 
 /**
  * \file mitkProjectionErrors.h
@@ -39,12 +40,24 @@ public:
   mitkClassMacro (ProjectionErrorCalculator, itk::Object);
   itkNewMacro(ProjectionErrorCalculator);
 
+  mitk::PickedObject CalculateProjectionError (mitk::PickedObject point , std::string channel); // calculates the projection error in pixels for a single point or line
+
+  void SetProjectedPoints ( const std::vector < mitk::PickedObject >& points );
+  void SetClassifierProjectedPoints (const  std::vector < mitk::PickedObject >& points );
+
 protected:
   ProjectionErrorCalculator();
   virtual ~ProjectionErrorCalculator();
 
   ProjectionErrorCalculator (const ProjectionErrorCalculator&); // Purposefully not implemented.
   ProjectionErrorCalculator& operator=(const ProjectionErrorCalculator&); // Purposefully not implemented.
+
+private:
+  mitk::PickedObject FindNearestScreenPoint ( mitk::PickedObject, std::string channel, double* minRatio, unsigned int* index );
+
+  std::vector < mitk::PickedObject > m_ProjectedPoints; //the projected points to measure errors against
+  std::vector < mitk::PickedObject > m_ClassifierProjectedPoints; //optionally we can specify classifier points
+  double m_AllowablePointMatchingRatio; //used for optional point classifier
 
 };
 

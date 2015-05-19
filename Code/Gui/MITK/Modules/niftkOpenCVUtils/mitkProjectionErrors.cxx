@@ -25,4 +25,77 @@
 #include <fstream>
 
 namespace mitk {
+
+//-----------------------------------------------------------------------------
+mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::PickedObject GSPoint, std::string channel , double* minRatio, unsigned int* index)
+{
+  unsigned int matches =0;
+  mitk::PickedObject matchingObject;
+  if ( GSPoint.m_Id != -1 )
+  {
+    if ( index != NULL ) 
+    {
+      *index = GSPoint.m_Id;
+    }
+    if ( minRatio != NULL ) 
+    {
+      *minRatio = m_AllowablePointMatchingRatio + 1.0;
+    }
+
+    for ( std::vector<mitk::PickedObject>::iterator it = m_ProjectedPoints.begin() ; it < m_ProjectedPoints.end() ; it++ )
+    {
+      if ( it->HeadersMatch (GSPoint) )
+      {
+        matchingObject = *it;
+        matches++;
+      }
+    }
+  }
+  else
+  {
+ /*   assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ==
+      m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() );
+    std::vector < cv::Point2d > pointVector;
+    for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ; i ++ )
+    {
+      if ( left )
+      {
+        pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Left );
+      }
+      else
+      {
+        pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Right );
+      }
+    }
+    unsigned int myIndex;
+    if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.m_Point , pointVector ,minRatio, &myIndex ).x))
+    {
+      if ( index != NULL ) 
+      {
+        *index = myIndex;
+      }
+      if ( left ) 
+      {
+        return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Left;
+      }
+      else
+      {
+        return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Right;
+      }
+    }
+    else
+    {
+      return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
+    }*/
+  }
+  if ( matches > 1 )
+  {
+    mitkThrow() << "mitkProjectionErrors::FindNearestScreenPoint found multiple matches: " << matches;
+  }
+  if ( matches == 0 )
+  {
+    mitkThrow() << "mitkProjectionErrors::FindNearestScreenPoint found no matches: " << matches;
+  }
+}
+
 } // end namespace
