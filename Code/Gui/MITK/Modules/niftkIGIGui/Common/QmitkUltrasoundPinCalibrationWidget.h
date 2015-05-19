@@ -64,7 +64,7 @@ public:
    */
   virtual void enterEvent(QEvent* event);
 
-  itkSetMacro ( PNG , bool );
+  void SetPNG ( bool );
 
 private slots:
   

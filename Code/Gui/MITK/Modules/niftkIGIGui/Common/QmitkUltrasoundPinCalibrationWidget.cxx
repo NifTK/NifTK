@@ -86,6 +86,11 @@ void QmitkUltrasoundPinCalibrationWidget::enterEvent(QEvent* event)
   QVTKWidget::enterEvent(event);
 }
 
+//-----------------------------------------------------------------------------
+void QmitkUltrasoundPinCalibrationWidget::SetPNG ( bool png ) 
+{
+  m_PNG = png;
+}
 
 //-----------------------------------------------------------------------------
 void QmitkUltrasoundPinCalibrationWidget::mousePressEvent(QMouseEvent* event)
