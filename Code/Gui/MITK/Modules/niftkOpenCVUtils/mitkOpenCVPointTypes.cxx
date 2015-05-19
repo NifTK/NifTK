@@ -412,6 +412,7 @@ void PickedPointList::PutOut (std::ofstream& os )
       os << "<id>" << m_PickedObjects[i].m_Id << "</id>" << std::endl;
       os << "<frame>" << m_PickedObjects[i].m_FrameNumber << "</frame>" << std::endl;
       os << "<channel>" << m_PickedObjects[i].m_Channel <<"</channel>" << std::endl;
+      os << "<timestamp>" << m_PickedObjects[i].m_TimeStamp <<"</timestamp>" << std::endl;
       os << "<coordinates>" <<std::endl;
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
@@ -569,7 +570,6 @@ void PickedPointList::SetInLineMode(const bool& mode)
     int pointID = -1;
     PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
     pickedObject.m_IsLine = true;
-
 
     if ( m_InOrderedMode )
     {
