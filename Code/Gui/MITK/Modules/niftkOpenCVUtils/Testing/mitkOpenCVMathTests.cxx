@@ -441,9 +441,9 @@ void TwoPointsToPLambdaTest ()
   std::pair <cv::Point3d, cv::Point3d>  line2 = mitk::TwoPointsToPLambda (std::pair <cv::Point3d, cv::Point3d> ( Q0,Q1));
   
   MITK_TEST_CONDITION( mitk::NearlyEqual (line1.first,cv::Point3d(0,0,0),1e-6),"Checking line 1 point " << line1.first);
-  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.second,cv::Point3d(-1/sqrt(3),-1/sqrt(3),-1/sqrt(3)),1e-6),"Checking line 1 vector " << line1.second);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line1.second,cv::Point3d(-1/sqrt(3.0),-1/sqrt(3.0),-1/sqrt(3.0)),1e-6),"Checking line 1 vector " << line1.second);
   MITK_TEST_CONDITION( mitk::NearlyEqual (line2.first,cv::Point3d(1,1,1),1e-6),"Checking line 2 point " << line2.first);
-  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32),0,4/sqrt(32)),1e-6),"Checking line 2 vector " << line2.second);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (line2.second,cv::Point3d(4/sqrt(32.0),0,4/sqrt(32.0)),1e-6),"Checking line 2 vector " << line2.second);
 }
 
 
