@@ -104,19 +104,17 @@ public:
 
     cv::Matx44d comparisonMatrix;
     mitk::ReadTrackerMatrix ( fileNameToCompareAgainst , comparisonMatrix);
-    MITK_INFO << comparisonMatrix;
 
     cv::Matx44d calibrationMatrix = calibration->GetRigidTransformation();
 
-    mitk::SaveTrackerMatrix ( "/dev/shm/thing.4x4" , calibrationMatrix);
     for (int i = 0; i < 4; i++)
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
+        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.05), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
       }
     }
-    MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(0.486643 - residualError),0.0001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
+    MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(0.486643 - residualError),0.001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");
   }
 };
