@@ -289,7 +289,7 @@ std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(
     }
 
     // Parse timestamp.
-    boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
+    boost::regex timeStampFilter ( "([0-9]{19})");
     boost::cmatch what;
     unsigned long long timeStamp = 0;
 

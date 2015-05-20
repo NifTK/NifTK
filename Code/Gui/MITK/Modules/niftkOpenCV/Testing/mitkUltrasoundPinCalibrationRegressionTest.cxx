@@ -21,11 +21,9 @@
 #include <mitkIOUtil.h>
 #include <mitkUltrasoundPinCalibration.h>
 #include <mitkVector.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
-#include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkMathsUtils.h>
+#include <mitkOpenCVFileIOUtils.h>
 
 /**
  * \class UltrasoundPinCalibrationRegressionTest
@@ -41,65 +39,82 @@ public:
       std::string& directoryOfMatrices,
       std::string& directoryOfPoints,
       std::string& outputMatrixFileName,
-      std::string& fileNameToCompareAgainst
+      std::string& fileNameToCompareAgainst,
+      std::string& initialParametersFileName
       )
   {
     MITK_TEST_OUTPUT(<< "Starting DoCalibration...");
 
-    mitk::Point3D invariantPoint;
-    invariantPoint[0] = 0;
-    invariantPoint[1] = 0;
-    invariantPoint[2] = 0;
+    std::ifstream initialParamsStream;
+    initialParamsStream.open(initialParametersFileName.c_str());
 
-    double scaleFactors;
-    scaleFactors = 0.156; // Assuming image is 256 pixels, and depth = 4cm = 40/256 mm per pixel.
-
+    if ( ! initialParamsStream )
+    {
+      mitkThrow() << "Failed to open " << initialParametersFileName;
+    }
+    double in;
     std::vector<double> initialTransformation;
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
-    initialTransformation.push_back(0);
+    for ( unsigned int i = 0 ; i < 6 ; i ++ )
+    {
+      initialParamsStream >> in;
+      initialTransformation.push_back(in);
+    }
+    mitk::Point3D invariantPoint;
+    for ( unsigned int i = 0 ; i < 3 ; i ++ )
+    {
+      initialParamsStream >> invariantPoint[i];
+    }
+    mitk::Point2D scaleFactors;
+    initialParamsStream >> scaleFactors[0];
+    initialParamsStream >> scaleFactors[1];
 
+    double timingLag;
+    initialParamsStream >> timingLag;
+    
+    initialParamsStream.close();
     double residualError = 0;
-    vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    bool successfullyCalibrated = false;
+    
+    calibration->SetOptimiseImageScaleFactors(true);
+    calibration->SetImageScaleFactors(scaleFactors);
+    calibration->SetOptimiseInvariantPoint(true);
+    calibration->SetInvariantPoint(invariantPoint);
+    calibration->SetOptimiseTimingLag(false); //timing lag optimisation isn't quite right yet
+    calibration->SetTimingLag(timingLag);
+    calibration->SetRigidTransformationParameters(initialTransformation);
+    calibration->SetVerbose(false);
 
-    /* NOT READY YET
-    calibration->Calibrate(
-        directoryOfMatrices,
-        directoryOfPoints,
-        false,
-        true,
-        initialTransformation,
-        invariantPoint,
-        scaleFactors,
-        residualError,
-        *calibrationMatrix
-        );
-    */
+    mitk::TrackingAndTimeStampsContainer trackingData;
+    trackingData.LoadFromDirectory(directoryOfMatrices);
+    if (trackingData.GetSize() == 0)
+    {
+      mitkThrow() << "Failed to tracking data from " << directoryOfMatrices << std::endl;
+    }
+    calibration->SetTrackingData(&trackingData);
+    std::vector< std::pair<unsigned long long, cv::Point3d> > pointData = mitk::LoadTimeStampedPoints(directoryOfPoints);
+    if (pointData.size() == 0)
+    {
+      mitkThrow() << "Failed to load point data from " << directoryOfPoints << std::endl;
+    }
+    calibration->SetPointData(&pointData);
 
-    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
+    residualError = calibration->Calibrate();
 
-    bool successfullySaved = niftk::SaveMatrix4x4ToFile(outputMatrixFileName, *calibrationMatrix);
-    MITK_TEST_CONDITION_REQUIRED(successfullySaved == true, "Checking saved file successfully to filename:" << outputMatrixFileName);
+    cv::Matx44d comparisonMatrix;
+    mitk::ReadTrackerMatrix ( fileNameToCompareAgainst , comparisonMatrix);
 
-    vtkSmartPointer<vtkMatrix4x4> comparisonMatrix = NULL;
-    comparisonMatrix = niftk::LoadMatrix4x4FromFile(fileNameToCompareAgainst);
-
-    MITK_TEST_CONDITION_REQUIRED(comparisonMatrix != NULL, "Checking comparison matrix is not null");
+    cv::Matx44d calibrationMatrix = calibration->GetRigidTransformation();
 
     for (int i = 0; i < 4; i++)
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
+        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.05), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
       }
     }
+    MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(0.486643 - residualError),0.001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");
   }
 };
@@ -116,8 +131,9 @@ int mitkUltrasoundPinCalibrationRegressionTest(int argc, char * argv[])
   std::string directoryOfPoints(argv[2]);
   std::string outputFileName(argv[3]);
   std::string comparisonFileName(argv[4]);
+  std::string initialParametersFileName(argv[5]);
 
-  UltrasoundPinCalibrationRegressionTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName);
+  UltrasoundPinCalibrationRegressionTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName, initialParametersFileName);
 
   MITK_TEST_END();
 }

@@ -23,7 +23,7 @@
 #include <QString>
 #include <vtkImageViewer.h>
 #include <vtkSmartPointer.h>
-#include <vtkPNGReader.h>
+#include <vtkImageReader2.h>
 
 /**
  * \class QmitkUltrasoundPinCalibrationWidget
@@ -64,6 +64,8 @@ public:
    */
   virtual void enterEvent(QEvent* event);
 
+  void SetPNG ( bool );
+
 private slots:
   
 private:
@@ -72,12 +74,13 @@ private:
   const QString m_OutputPointDirectory;
 
   vtkSmartPointer<vtkImageViewer> m_ImageViewer;
-  vtkSmartPointer<vtkPNGReader> m_PNGReader;
+  vtkSmartPointer<vtkImageReader2> m_ImageReader;
   std::vector<std::string> m_ImageFiles;
   int m_ImageWidth;
   int m_ImageHeight;
   unsigned long int m_ImageFileCounter;
   unsigned long int m_PointsOutputCounter;
+  bool m_PNG; //by default we look for nii, but we can read png
 
   void NextImage();
   void PreviousImage();
