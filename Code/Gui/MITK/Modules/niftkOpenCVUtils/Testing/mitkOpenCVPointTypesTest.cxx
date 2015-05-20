@@ -26,10 +26,10 @@
  * \file Test mitkOpenCVPointTypes
  */
 
-void TestPickeObjectCompare()
+void TestPickedObjectCompare()
 {
-  mitk::PickedObject p1();
-  mitk::PickedObject p2();
+  mitk::PickedObject p1;
+  mitk::PickedObject p2;
 
   MITK_TEST_CONDITION ( p1.HeadersMatch(p2) , "Testing headers match for empty point list" );
 
@@ -38,16 +38,16 @@ void TestPickeObjectCompare()
   MITK_TEST_CONDITION ( ! p2.HeadersMatch(p1) , "Testing headers don't match for different ID" );
 
   p2.m_Id =2;
-  p2.IsLine = true;
+  p2.m_IsLine = true;
 
   MITK_TEST_CONDITION ( ! p2.HeadersMatch(p1) , "Testing headers don't match for different isLine" );
 
-  p1.IsLine = true;
-  p1.FrameNumber = 200;
+  p1.m_IsLine = true;
+  p1.m_FrameNumber = 200;
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different framenumbers" );
   
-  p2.FrameNumber = 200;
+  p2.m_FrameNumber = 200;
   p2.m_Channel = "left";
   
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different channels" );
