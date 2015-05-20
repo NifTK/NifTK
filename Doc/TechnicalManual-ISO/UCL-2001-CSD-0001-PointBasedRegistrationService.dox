@@ -10,7 +10,7 @@
 <tr><td>Document ID:</td><td>UCL-2001-CSD-0001-PointBasedRegistrationService.dox</td></tr>
 <tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
 <tr><td>Authorised By:</td><td></td></tr>
-<tr><td>Last Modified:</td><td>28 April 2015</td></tr>
+<tr><td>Last Modified:</td><td>20 May 2015</td></tr>
 </table>
 
 \subsection PBRSCopyright Copyright
@@ -73,6 +73,23 @@ This section only describes the changes between authorised published versions.
       All
     </td>
   </tr>
+  <tr>
+    <td>
+      0.2
+    </td>
+    <td>
+      20 May 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Update format of requirements identifier.
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
 </table>
 
 \section PBRSIntro Introduction
@@ -92,18 +109,17 @@ All traceable requirements are identified with a unique requirements identifier.
 The identifier has the following naming convention:
 
 \verbatim
-REQ-<Project Number>-<Document Type>-<Document ID>-<Section ID>-<Number>-<Version>
+REQ-<Project Code>-<Document Type>-<Document ID>-<Number>-<Version>
 \endverbatim
 
 where
 
 <table>
-<tr><td>Project Number:</td><td>Four digit number allocated to the project with leading zeros to facilitate searching and sorting.</td></tr>
+<tr><td>Project Code:</td><td>Four digit number allocated to the project with leading zeros to facilitate searching and sorting.</td></tr>
 <tr><td>Document Type:</td><td>The two or three letter code of the document. e.g. Component Specification Document (CSD)</td></tr>
 <tr><td>Document ID:</td><td>Four digit number allocated to the document with leading zeros to facilitate searching and sorting.</td></tr>
-<tr><td>Section ID:</td><td>A set of letters constructed from the section heading. e.g. Functional Requirements (FR).</td></tr>
-<tr><td>Number:</td><td>A three digit number with leading zeros to facilitate searching and sorting,
-incremented within a Section ID. It is not necessary for numbers to be contiguous. If requirements are removed,
+<tr><td>Number:</td><td>A three digit number with leading zeros to facilitate searching and sorting.
+It is not necessary for numbers to be contiguous. If requirements are removed,
 existing requirements should maintain their numbers.</td></tr>
 <tr><td>Version:</td><td>A two digit number with leading zeros to facilitate search and sorting, incremented
 only for substantive change to a requirement. It is not incremented for clarifications or rewording.</td></tr>
@@ -169,23 +185,23 @@ references, the latest edition of the referenced document (including any amendme
 
 These functional requirements shall be expressed, each on a single line.
 
-REQ-2001-CSD-0001-FR-001-01: If number of fixed points < 3, throw mitk::Exception.
+REQ-2001-CSD-0001-001-01: If number of fixed points < 3, throw mitk::Exception.
 
-REQ-2001-CSD-0001-FR-002-01: If number of moving points < 3, throw mitk::Exception.
+REQ-2001-CSD-0001-002-01: If number of moving points < 3, throw mitk::Exception.
 
-REQ-2001-CSD-0001-FR-003-01: If number of points doesn't match, throw mitk::Exception.
+REQ-2001-CSD-0001-003-01: If number of points doesn't match, throw mitk::Exception.
 
-REQ-2001-CSD-0001-FR-004-01: Two point sets, identical apart from translation should register with FRE < 0.001
+REQ-2001-CSD-0001-004-01: Two point sets, identical apart from translation should register with FRE < 0.001
 
-REQ-2001-CSD-0001-FR-005-01: Two point sets, identical apart from rotation should register with FRE < 0.001
+REQ-2001-CSD-0001-005-01: Two point sets, identical apart from rotation should register with FRE < 0.001
 
 \subsection PBRSNonFuncReq Non-Functional Requirements
 
 These non-functional requirements shall be expressed, each on a single line.
 
-REQ-2001-CSD-0001-NFR-001-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
+REQ-2001-CSD-0001-006-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
 
-REQ-2001-CSD-0001-NFR-002-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd party library must not be exported.
+REQ-2001-CSD-0001-007-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd party library must not be exported.
 
 \section PBRSDesign Design
 \subsection PBRSArchitecture Architecture
