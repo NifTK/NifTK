@@ -388,13 +388,31 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject)
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
        ( m_IsLine == otherPickedObject.m_IsLine ) &&
        ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
-       ( m_Id == otherPickedObject.m_Id ) )
+       ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) )
   {
     return true;
   }
   else
   {
     return false;
+  }
+}
+
+//-----------------------------------------------------------------------------
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject)
+{
+  if ( ! this->HeadersMatch (otherPickedObject) )
+  {
+    mitkThrow () << "Attempted invalid comparison between non matching picked objects";
+    return std::number_limits<double>::infinity;
+  }
+  if ( m_IsLine )
+  {
+    return mitk::DistanceBetweenTwoLines ( m_Points, otherPickedObject.m_Points );
+  }
+  else
+  {
+    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0] );
   }
 }
 

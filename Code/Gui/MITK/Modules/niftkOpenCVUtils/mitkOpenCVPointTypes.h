@@ -189,9 +189,16 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 
     /**
      * \brief compare the header information (Id, IsLine, Channel, FrameNumber)
-     * and return true if they all match;
+     * and return true if they all match, except if m_Id in matchee is -1, which acts
+     * as a wildcard
      */
     bool HeadersMatch ( const PickedObject& otherPickedObject); 
+
+    /**
+     * \brief Calculates a distance between two picked objects
+     */
+    double DistanceTo ( const PickedObject& otherPickedObject); 
+
 };
 
 /**

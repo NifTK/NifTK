@@ -53,18 +53,18 @@ mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::Pic
   }
   else
   {
- /*   assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ==
-      m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() );
-    std::vector < cv::Point2d > pointVector;
-    for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ; i ++ )
+    if ( m_ClassifierProjectedPoints.size() != m_ProjectedPoints.size() )
     {
-      if ( left )
+      mitkThrow() << "mitkProjectionErrors::FindNearestPoint classifier and projected point list sizes differ: " << 
+      m_ClassifierProjectedPoints.size() << " != " <<  m_ProjectedPoints.size() ;
+    }
+
+    std::vector < mitk::PickedObject > pointVector;
+    for ( std::vector<mitk::PickedObject>::iterator it = m_ClassifierProjectedPoints.begin() ; it < m_ClassifierProjectedPoints.rnd() ; it ++ )
+    {
+      if ( it->HeadersMatch (GSPoint) )
       {
-        pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Left );
-      }
-      else
-      {
-        pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Right );
+        pointVector.push_back ( *it );
       }
     }
     unsigned int myIndex;
@@ -86,7 +86,7 @@ mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::Pic
     else
     {
       return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
-    }*/
+    }
   }
   if ( matches > 1 )
   {
