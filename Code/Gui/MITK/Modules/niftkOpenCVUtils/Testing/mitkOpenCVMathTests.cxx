@@ -542,6 +542,18 @@ void RemoveOutliersTest ()
   MITK_TEST_CONDITION ( pointsGone == 1 , " Remove points test with numeric point and numeric limit " << pointsGone ); 
 }
 
+void FindNearestPointTest ()
+{
+  mitk::PickedObject p;
+  std::vector < mitk::PickedObject> classifierPoints;
+}
+
+void DistanceBetweenTwoPointsTest()
+{}
+
+void DistanceBetweenTwoSplinesTest()
+{}
+
 int mitkOpenCVMathTests(int argc, char * argv[])
 {
   // always start with this!
@@ -563,6 +575,10 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   DistanceBetweenLinesTest();
   TwoPointsToPLambdaTest ();
   RemoveOutliersTest();
+  FindNearestPointTest();
+  DistanceBetweenTwoPointsTest();
+  DistanceBetweenTwoSplinesTest();
+
   MITK_TEST_END();
 }
 
