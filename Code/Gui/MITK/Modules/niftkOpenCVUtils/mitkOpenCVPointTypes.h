@@ -196,6 +196,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 
     /**
      * \brief Calculates a distance between two picked objects
+     * returns infinity if the headers don't match
      */
     double DistanceTo ( const PickedObject& otherPickedObject); 
 

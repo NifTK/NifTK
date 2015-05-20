@@ -1450,6 +1450,32 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
 }
 
 //-----------------------------------------------------------------------------
+mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
+    double* minRatio )
+{
+  mitk::PickedObject nearestPoint;
+  mitk::PickedObject localPoint = point;
+  double nearestDistance = std::numeric_limits<double>::infinity();
+  double nextNearestDistance = std::numeric_limits<double>::infinity();
+
+  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; it++ )
+  {
+    double distance = localPoint.DistanceTo(*it);
+    if ( distance < nearestDistance ) 
+    {
+      nextNearestDistance = nearestDistance;
+      nearestDistance = distance;
+      nearestPoint = *it;
+    }
+  }
+  if ( minRatio != NULL )
+  {
+    *minRatio = nextNearestDistance / nearestDistance;
+  }
+  return nearestPoint;
+}
+
+//-----------------------------------------------------------------------------
 bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
 {
   double d1 = sqrt( p1.x * p1.x + p1.y * p1.y );
@@ -2290,6 +2316,46 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
   cv::Point3d d2 = x2-x1;
 
   return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
+}
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 )
+{
+  return mitk::Norm ( p1 - p2 );
+}
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
+    unsigned int splineOrder )
+{
+  if ( ( s1.size() < 1) || (s2.size() < 2) )
+  {
+    MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
+    return std::numeric_limits<double>::infinity();
+  }
+  if ( splineOrder == 1 )
+  {
+    double sumOfSquares = 0;
+    for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
+    {
+      double shortestDistance = std::numeric_limits<double>::infinity();
+      for ( std::vector<cv::Point3d>::const_iterator it_2 = s2.begin() + 1 ; it_2 < s2.end() ; it_2 ++ )
+      {
+        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1 );
+        if ( distance < shortestDistance )
+        {
+          shortestDistance = distance;
+        }
+      }
+      sumOfSquares += shortestDistance;
+    }
+    return sqrt( sumOfSquares / s1.size() );
+  }
+  else
+  {
+    MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with invalid splineOrder, returning inf.: " << splineOrder;
+    return std::numeric_limits<double>::infinity();
+  }
 }
 
 //-----------------------------------------------------------------------------

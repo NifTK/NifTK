@@ -53,7 +53,7 @@ protected:
   ProjectionErrorCalculator& operator=(const ProjectionErrorCalculator&); // Purposefully not implemented.
 
 private:
-  mitk::PickedObject FindNearestScreenPoint ( mitk::PickedObject, std::string channel, double* minRatio, unsigned int* index );
+  mitk::PickedObject FindNearestScreenPoint ( mitk::PickedObject, std::string channel, double* minRatio );
 
   std::vector < mitk::PickedObject > m_ProjectedPoints; //the projected points to measure errors against
   std::vector < mitk::PickedObject > m_ClassifierProjectedPoints; //optionally we can specify classifier points

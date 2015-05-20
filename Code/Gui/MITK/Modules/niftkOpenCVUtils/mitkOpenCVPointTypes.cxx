@@ -21,6 +21,7 @@
 #include <functional>
 #include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
+#include <mitkOpenCVMaths.h>
 #include <string>
 #include <fstream>
 
@@ -404,11 +405,12 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject)
   if ( ! this->HeadersMatch (otherPickedObject) )
   {
     mitkThrow () << "Attempted invalid comparison between non matching picked objects";
-    return std::number_limits<double>::infinity;
+    return std::numeric_limits<double>::infinity();
   }
   if ( m_IsLine )
   {
-    return mitk::DistanceBetweenTwoLines ( m_Points, otherPickedObject.m_Points );
+    unsigned int splineOrder = 1;
+    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder );
   }
   else
   {

@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkProjectionErrors.h"
+#include "mitkOpenCVMaths.h"
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/round.hpp>
@@ -27,16 +28,12 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::PickedObject GSPoint, std::string channel , double* minRatio, unsigned int* index)
+mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::PickedObject GSPoint, std::string channel , double* minRatio)
 {
   unsigned int matches =0;
   mitk::PickedObject matchingObject;
   if ( GSPoint.m_Id != -1 )
   {
-    if ( index != NULL ) 
-    {
-      *index = GSPoint.m_Id;
-    }
     if ( minRatio != NULL ) 
     {
       *minRatio = m_AllowablePointMatchingRatio + 1.0;
@@ -58,34 +55,10 @@ mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::Pic
       mitkThrow() << "mitkProjectionErrors::FindNearestPoint classifier and projected point list sizes differ: " << 
       m_ClassifierProjectedPoints.size() << " != " <<  m_ProjectedPoints.size() ;
     }
-
-    std::vector < mitk::PickedObject > pointVector;
-    for ( std::vector<mitk::PickedObject>::iterator it = m_ClassifierProjectedPoints.begin() ; it < m_ClassifierProjectedPoints.rnd() ; it ++ )
+    matchingObject = mitk::FindNearestPoint( GSPoint , m_ClassifierProjectedPoints ,minRatio );
+    if ( matchingObject.m_Points.size () != 0)
     {
-      if ( it->HeadersMatch (GSPoint) )
-      {
-        pointVector.push_back ( *it );
-      }
-    }
-    unsigned int myIndex;
-    if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.m_Point , pointVector ,minRatio, &myIndex ).x))
-    {
-      if ( index != NULL ) 
-      {
-        *index = myIndex;
-      }
-      if ( left ) 
-      {
-        return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Left;
-      }
-      else
-      {
-        return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Right;
-      }
-    }
-    else
-    {
-      return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
+      matches = 1;
     }
   }
   if ( matches > 1 )
