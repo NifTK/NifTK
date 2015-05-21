@@ -384,12 +384,13 @@ PickedObject::~PickedObject()
 {}
 
 //-----------------------------------------------------------------------------
-bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject) const
+bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
 {
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
        ( m_IsLine == otherPickedObject.m_IsLine ) &&
        ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
-       ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) )
+       ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) &&
+       ( abs ( m_TimeStamp - otherPickedObject.m_TimeStamp ) < allowableTimingError ) )
   {
     return true;
   }
@@ -400,7 +401,7 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject) const
 }
 
 //-----------------------------------------------------------------------------
-double PickedObject::DistanceTo(const PickedObject& otherPickedObject) const
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const long long& allowableTimingError) const
 {
   if ( ! otherPickedObject.HeadersMatch (*this) )
   {

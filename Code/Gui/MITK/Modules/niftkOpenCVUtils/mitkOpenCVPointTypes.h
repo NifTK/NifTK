@@ -192,13 +192,13 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
      * and return true if they all match, except if m_Id in otherPickedObject is -1, which acts
      * as a wildcard
      */
-    bool HeadersMatch ( const PickedObject& otherPickedObject) const; 
+    bool HeadersMatch ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const; 
 
     /**
      * \brief Calculates a distance between two picked objects
      * returns infinity if the headers don't match
      */
-    double DistanceTo ( const PickedObject& otherPickedObject) const;
+    double DistanceTo ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
 
 };
 

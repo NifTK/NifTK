@@ -60,6 +60,10 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing wild card for p1 doesn't  match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch(p1) , "Testing wild card for p2 does match" );
+  
+  p1.m_TimeStamp = 100;
+  MITK_TEST_CONDITION ( ! p2.HeadersMatch (p1, 10) , "Testing timing error check works - no match" );
+  MITK_TEST_CONDITION ( p2.HeadersMatch (p1, 101) , "Testing timing error check works - match" );
 
 
 }
