@@ -384,7 +384,7 @@ PickedObject::~PickedObject()
 {}
 
 //-----------------------------------------------------------------------------
-bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject)
+bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject) const
 {
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
        ( m_IsLine == otherPickedObject.m_IsLine ) &&
@@ -400,11 +400,10 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject)
 }
 
 //-----------------------------------------------------------------------------
-double PickedObject::DistanceTo(const PickedObject& otherPickedObject)
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject) const
 {
-  if ( ! this->HeadersMatch (otherPickedObject) )
+  if ( ! otherPickedObject.HeadersMatch (*this) )
   {
-    mitkThrow () << "Attempted invalid comparison between non matching picked objects";
     return std::numeric_limits<double>::infinity();
   }
   if ( m_IsLine )

@@ -544,8 +544,62 @@ void RemoveOutliersTest ()
 
 void FindNearestPointTest ()
 {
-  mitk::PickedObject p;
+  mitk::PickedObject p ( "left", 0, 0 );
   std::vector < mitk::PickedObject> classifierPoints;
+  mitk::PickedObject c1( "left", 0, 0 );
+  c1.m_Id = 0;
+  c1.m_Points.push_back ( cv::Point3d ( 1.0, 0.0, 0.0 ));
+  classifierPoints.push_back ( c1 );
+  mitk::PickedObject c2( "left", 0, 0 );
+  c2.m_Id = 1;
+  c2.m_Points.push_back ( cv::Point3d ( 1.0, 1.0, 0.0 ));
+  classifierPoints.push_back ( c2 );
+  mitk::PickedObject c3( "left", 0, 0 );
+  c3.m_Id = 2;
+  c3.m_Points.push_back ( cv::Point3d ( 0.0, 1.0, 0.0 ));
+  classifierPoints.push_back ( c3 );
+  mitk::PickedObject c4( "left", 0, 0 );
+  c4.m_Id = 3;
+  c4.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
+  classifierPoints.push_back ( c4 );
+  mitk::PickedObject c5( "left", 0, 0 );
+  c5.m_Id = 0;
+  c5.m_IsLine = true;
+  c5.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
+  c5.m_Points.push_back ( cv::Point3d ( 1.0, 1.0, 0.0 ));
+  classifierPoints.push_back ( c5 );
+  
+  p.m_Points.push_back ( cv::Point3d ( 0.3, 0.6, 0.0) );
+  p.m_Id = -1;
+
+  mitk::PickedObject matched;
+  double minRatio = 0 ;
+  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+
+  MITK_TEST_CONDITION ( matched.m_Id == 2 , "Testing matched to point 2, got , " << matched.m_Id );
+  MITK_TEST_CONDITION ( ( fabs ( minRatio - 0.6708/0.5000)) < 1e-3  , "Testing min ratio is 1.342 , got  " << minRatio) ;
+
+  p.m_Id = 3;
+  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  MITK_TEST_CONDITION ( matched.m_Id == 3 , "Testing matched to point 3 when point id set, got , " << matched.m_Id );
+  MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is infinite , got  " << minRatio) ;
+
+  p.m_IsLine = true;
+  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when point id beyond end, got , " << matched.m_Id );
+  MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
+
+  p.m_Id = -1;
+  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  MITK_TEST_CONDITION ( matched.m_Id == 0 , "Testing matched to line 0 when point id not set, got , " << matched.m_Id );
+  MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is inf , got  " << minRatio) ;
+
+  classifierPoints.clear();
+  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when classifier points in empty " << matched.m_Id );
+  MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
+
+  
 }
 
 void DistanceBetweenTwoPointsTest()

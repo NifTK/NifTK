@@ -56,6 +56,12 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( p1.HeadersMatch(p2) , "Testing headers do match" );
 
+  p1.m_Id = -1;
+
+  MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing wild card for p1 doesn't  match" );
+  MITK_TEST_CONDITION ( p2.HeadersMatch(p1) , "Testing wild card for p2 does match" );
+
+
 }
 
 
