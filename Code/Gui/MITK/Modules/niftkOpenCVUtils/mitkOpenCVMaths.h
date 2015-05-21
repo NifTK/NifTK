@@ -558,6 +558,11 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT std::string MatrixType(const cv::Mat& matri
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNaN(const cv::Point2d&);
 
 /** 
+ * \brief check if point has a NaN value
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNaN(const cv::Point3d&);
+
+/** 
  * \brief check if 2D point has a NaN  or inf value
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNotNaNorInf(const cv::Point2d&);

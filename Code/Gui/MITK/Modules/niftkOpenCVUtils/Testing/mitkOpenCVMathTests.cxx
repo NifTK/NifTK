@@ -619,11 +619,51 @@ void DistanceBetweenTwoPointsTest()
   MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between points is infinite, got : " << distance );
   distance = mitk::DistanceBetweenTwoPoints ( p4, p3 );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
-
 }
 
 void DistanceBetweenTwoSplinesTest()
-{}
+{
+  cv::Point3d l1 ( -1.0, -1.0, -1.0);
+  cv::Point3d l2 ( 0.0, 0.0, 0.0);
+  cv::Point3d l3 ( 2.0, 2.0, 1.0);
+  cv::Point3d l4 ( 2.0, 2.0, std::numeric_limits<double>::infinity());
+  cv::Point3d l5 ( 2.0, 2.0, std::numeric_limits<double>::quiet_NaN());
+  
+  cv::Point3d p1 ( 0.0, -0.5, -0.5);
+  cv::Point3d p2 ( 1.0, 1.0, 1.0);
+
+  std::vector < cv::Point3d > spline1;
+  std::vector < cv::Point3d > spline2;
+
+  spline1.push_back(l1);
+  spline1.push_back(l2);
+  spline1.push_back(l3);
+
+  spline2.push_back(p1);
+  
+  double distance;
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  MITK_TEST_CONDITION ( fabs ( distance - 0.408 ) < 1e-3 , "Testing distance between splines = 0.408, got : " << distance );
+  spline2.push_back(p2);
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  MITK_TEST_CONDITION ( fabs ( distance -  1.094 ) < 1e-3 , "Testing distance between splines = 1.094, got : " << distance );
+
+  spline1.push_back(l4);
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between splines is infinite, got : " << distance );
+
+  spline1.push_back(l5);
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
+
+
+}
 
 int mitkOpenCVMathTests(int argc, char * argv[])
 {

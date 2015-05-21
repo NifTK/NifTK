@@ -2279,6 +2279,20 @@ bool IsNaN ( const cv::Point2d& point)
 }
 
 //-----------------------------------------------------------------------------
+bool IsNaN ( const cv::Point3d& point)
+{
+  if ( ( boost::math::isnan ( point.x ))  || (boost::math::isnan (point.y)) || (boost::math::isnan (point.z)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool IsNotNaNorInf ( const cv::Point2d& point)
 {
   bool ok = true;
@@ -2334,7 +2348,6 @@ double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 
 double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
     unsigned int splineOrder )
 {
-  MITK_INFO << "DistanceBetweenTwoSplines " << s1.size() << ", " << s2.size();
   if ( ( s1.size() < 1) || (s2.size() < 2) )
   {
     MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
@@ -2345,17 +2358,24 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
     double sumOfSquares = 0;
     for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
     {
+      if ( mitk::IsNaN ( *it_1) )
+      {
+        return std::numeric_limits<double>::quiet_NaN();
+      }
       double shortestDistance = std::numeric_limits<double>::infinity();
       for ( std::vector<cv::Point3d>::const_iterator it_2 = s2.begin() + 1 ; it_2 < s2.end() ; it_2 ++ )
       {
+        if ( mitk::IsNaN ( *it_2) )
+        {
+          return std::numeric_limits<double>::quiet_NaN();
+        }
         double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1 );
-        MITK_INFO << *(it_2) << " , " << *(it_2-1) << " - " << *it_1 << " = " << distance;
         if ( distance < shortestDistance )
         {
           shortestDistance = distance;
         }
       }
-      sumOfSquares += shortestDistance;
+      sumOfSquares += shortestDistance * shortestDistance;
     }
     return sqrt( sumOfSquares / s1.size() );
   }
@@ -2380,7 +2400,6 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
   cv::Point3d d2 = x2-x1;
   
   double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
-
   if ( lambda < 0 ) //were beyond x2
   {
     return mitk::Norm ( x2 - x0 );
