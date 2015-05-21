@@ -598,12 +598,29 @@ void FindNearestPointTest ()
   matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when classifier points in empty " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
-
   
 }
 
 void DistanceBetweenTwoPointsTest()
-{}
+{
+  cv::Point3d p1 ( -1.1, 20.2, 3.0);
+  cv::Point3d p2 ( 1.1, 10.4, 3.6);
+  cv::Point3d p3 ( 1.1, 10.4, std::numeric_limits<double>::quiet_NaN());
+  cv::Point3d p4 ( 1.1, 10.4, std::numeric_limits<double>::infinity());
+
+  double distance;
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p2 );
+  MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p1 );
+  MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p3 );
+  MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p4 );
+  MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between points is infinite, got : " << distance );
+  distance = mitk::DistanceBetweenTwoPoints ( p4, p3 );
+  MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
+
+}
 
 void DistanceBetweenTwoSplinesTest()
 {}
