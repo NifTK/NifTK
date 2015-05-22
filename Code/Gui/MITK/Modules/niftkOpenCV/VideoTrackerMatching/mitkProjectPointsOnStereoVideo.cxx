@@ -1038,6 +1038,23 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( GoldStandardPoint GS
 //-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoint GSPoint, bool left , double* minRatio, unsigned int* index)
 {
+  mitk::PickedObject GSPickedObject ( GSPoint );
+  //I want this to have a time stamp, rather than the timing error being in the projected points
+  if ( left )
+  {
+    GSPickedObject.m_Channel = "left";
+  }
+  else
+  {
+    GSPickedObject.m_Channel = "right";
+  }
+  std::vector<mitk::PickedObject> ClassifierPoints;
+  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPickedObject.m_FrameNumber].m_Points.size() ; i ++ )
+  {
+    //what here?
+  }
+  std::vector<mitk::PickedObject> ProjectedPoints;
+
   if ( GSPoint.m_Index != -1 )
   {
     if ( index != NULL ) 

@@ -380,8 +380,64 @@ PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsign
 }
 
 //-----------------------------------------------------------------------------
+PickedObject::PickedObject(GoldStandardPoint gsp)
+: m_Id (gsp.m_Index)
+, m_IsLine (false)
+, m_FrameNumber(gsp.m_FrameNumber)
+, m_TimeStamp(0)
+, m_Channel("")
+{
+  m_Points.push_back(cv::Point3d ( gsp.m_Point.x, gsp.m_Point.y, 0.0 ));
+}
+
+//-----------------------------------------------------------------------------
 PickedObject::~PickedObject()
 {}
+
+//-----------------------------------------------------------------------------
+std::istream& operator >> ( std::istream& is, mitk::PickedObject& po ) 
+{
+  is >> po.m_Id;
+  return is;
+}
+
+//-----------------------------------------------------------------------------
+std::ostream& operator << ( std::ostream& os, const mitk::PickedObject& po ) 
+{
+  if ( po.m_Points.size() > 0 )
+  {
+    if ( po.m_IsLine )
+    {
+      os << "<line>" << std::endl;
+    }
+    else
+    {
+      os << "<point>" << std::endl;
+    }
+    os << "<id>" << po.m_Id << "</id>" << std::endl;
+    os << "<frame>" << po.m_FrameNumber << "</frame>" << std::endl;
+    os << "<channel>" << po.m_Channel <<"</channel>" << std::endl;
+    os << "<timestamp>" << po.m_TimeStamp <<"</timestamp>" << std::endl;
+    os << "<coordinates>" << std::endl;
+    for ( unsigned int j = 0 ; j < po.m_Points.size() ; j ++ )
+    {
+      os << po.m_Points[j];
+    }
+    os << std::endl << "</coordinates>" <<std::endl;
+
+    if ( po.m_IsLine )
+    {
+      os << "</line>" << std::endl;
+    }
+    else
+    {
+      os << "</point>" << std::endl;
+    }
+  }
+  return os;
+}
+
+
 
 //-----------------------------------------------------------------------------
 bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
@@ -435,36 +491,7 @@ void PickedPointList::PutOut (std::ofstream& os )
 {
   for ( int i = 0 ; i < m_PickedObjects.size(); i ++ )
   {
-    if ( m_PickedObjects[i].m_Points.size() > 0 )
-    {
-      if ( m_PickedObjects[i].m_IsLine )
-      {
-        os << "<line>" << std::endl;
-      }
-      else
-      {
-        os << "<point>" << std::endl;
-      }
-      os << "<id>" << m_PickedObjects[i].m_Id << "</id>" << std::endl;
-      os << "<frame>" << m_PickedObjects[i].m_FrameNumber << "</frame>" << std::endl;
-      os << "<channel>" << m_PickedObjects[i].m_Channel <<"</channel>" << std::endl;
-      os << "<timestamp>" << m_PickedObjects[i].m_TimeStamp <<"</timestamp>" << std::endl;
-      os << "<coordinates>" <<std::endl;
-      for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
-      {
-        os << m_PickedObjects[i].m_Points[j];
-      }
-      os << std::endl << "</coordinates>" <<std::endl;
-
-      if ( m_PickedObjects[i].m_IsLine )
-      {
-        os << "</line>" << std::endl;
-      }
-      else
-      {
-        os << "</point>" << std::endl;
-      }
-    }
+    os << m_PickedObjects[i];
   }
 }
 

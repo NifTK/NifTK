@@ -185,8 +185,9 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 
     PickedObject();
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
+    PickedObject(GoldStandardPoint gsp); //cast a gold standard point to a PickedObject
     ~PickedObject();
-
+    
     /**
      * \brief compare the header information (Id, IsLine, Channel, FrameNumber)
      * and return true if they all match, except if m_Id in otherPickedObject is -1, which acts
@@ -201,6 +202,9 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     double DistanceTo ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
 
 };
+
+std::istream& operator >> ( std::istream& is, PickedObject& po);
+std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
 /**
  * \class maintains a set a point vectors and ID's that 
