@@ -226,7 +226,7 @@ then
   for f in `echo ${SELECTED_FILES}`
   do
     base=`basename ${f}`
-    grep REQ- ${DOXYGEN_ISO_INPUT_DIR}/${base} | grep -v "Project Number" > /tmp/GenerateTestingReports-${base}-REQ.txt
+    grep REQ- ${DOXYGEN_ISO_INPUT_DIR}/${base} | grep -v "Project Code" > /tmp/GenerateTestingReports-${base}-REQ.txt
 
     cat /tmp/GenerateTestingReports-${base}-REQ.txt | while read line
     do
