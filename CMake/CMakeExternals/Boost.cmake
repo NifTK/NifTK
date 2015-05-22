@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(MITK_USE_Boost 1)
-set(MITK_USE_Boost_LIBRARIES "filesystem;system;date_time;regex;thread;iostreams")
+set(MITK_USE_Boost_LIBRARIES "filesystem;system;date_time;regex;thread;iostreams;program_options")
 
 if(MITK_USE_Boost)
 
