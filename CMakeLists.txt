@@ -1330,16 +1330,16 @@ endif()
 
 # NiftyPipe
 if(BUILD_NIFTYPIPE AND NOT WIN32)
-  file(GLOB niftypipe_bash_files      ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.sh)
-  file(GLOB niftypipe_matlab_files    ${CMAKE_BINARY_DIR}/../NiftyPipe-install/bin/*.m)
-  file(GLOB niftypipe_python_programs ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/perform_*.py)
+  file(GLOB niftypipe_bash_files      ${NiftyPipe_ROOT}/bin/*.sh)
+  file(GLOB niftypipe_matlab_files    ${NiftyPipe_ROOT}/bin/*.m)
+  file(GLOB niftypipe_python_programs ${NiftyPipe_ROOT}/python/perform_*.py)
   
   install(FILES    ${niftypipe_matlab_files}    DESTINATION bin)
   install(PROGRAMS ${niftypipe_bash_files}      DESTINATION bin)
   install(PROGRAMS ${niftypipe_python_programs} DESTINATION python)
 
   install(
-    DIRECTORY ${CMAKE_BINARY_DIR}/../NiftyPipe-install/python/niftk 
+    DIRECTORY ${NiftyPipe_ROOT}/python/niftk 
     DESTINATION python 
     USE_SOURCE_PERMISSIONS
   )
