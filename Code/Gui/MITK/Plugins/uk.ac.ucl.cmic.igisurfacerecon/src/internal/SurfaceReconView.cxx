@@ -31,7 +31,6 @@
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include <QtConcurrentRun>
-#include <boost/bind.hpp>
 #include <cctype>
 
 
