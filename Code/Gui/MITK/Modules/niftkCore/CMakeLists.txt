@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-set(_packages ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL)
+set(_packages ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL Boost|boost_system)
 if(BUILD_PCL)
   # pcl depends on eigen
   list(APPEND _packages Eigen)
