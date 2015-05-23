@@ -734,6 +734,52 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   return result;
 }
 
+
+template<class TScalarType, unsigned int NInputDimensions,
+                            unsigned int NOutputDimensions>
+bool
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::SaveNiftyRegAffineMatrix(std::string filename)
+{
+
+
+  std::ofstream *foutMatrix;
+
+  foutMatrix = new std::ofstream( filename.c_str() );
+  
+  if ( (! *foutMatrix) || foutMatrix->bad() ) {
+    niftkitkErrorMacro( "SaveNiftyRegAffineMatrix(" << filename << ") Failed to open file." );
+    return false;
+  }
+
+
+  if (InputSpaceDimension == 3)
+  {      
+    *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << -this->m_Matrix[0][2] << " " << -this->m_Offset[0] << std::endl;
+    *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << -this->m_Matrix[1][2] << " " << -this->m_Offset[1] << std::endl;
+    *foutMatrix << -this->m_Matrix[2][0] << " " << -this->m_Matrix[2][1] << " " <<  this->m_Matrix[2][2] << " " <<  this->m_Offset[2] << std::endl;
+    
+    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
+  }
+  else if (InputSpaceDimension == 2)
+  {        
+    *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << 0 << " " << -this->m_Offset[0] << std::endl;
+    *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << 0 << " " << -this->m_Offset[1] << std::endl;
+    *foutMatrix <<               0 << " " <<               0 << " " << 1 << " " <<            0 << std::endl;
+    
+    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;    
+  }
+  else
+  {
+    itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");
+  }
+
+  foutMatrix->close();
+  delete foutMatrix;
+
+
+}
+
 } // namespace
 
 #endif // __itkEulerAffineTransform_txx
