@@ -96,7 +96,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                       this->m_DiagDictionary );
   }
 
-
   // The control image registration
 
   if ( this->m_ImDiagnostic && this->m_ImControl )
