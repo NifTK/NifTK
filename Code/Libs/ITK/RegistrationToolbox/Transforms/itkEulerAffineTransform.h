@@ -162,6 +162,9 @@ public:
 
   /** Loads matrix from a plain text file containing 4x4 matrix, returns true if successfull, false otherwise. */
   bool LoadFullAffineMatrix(std::string filename);
+
+  /** Saves matrix as a NiftyReg affine transformation text file as a 4x4 matrix, returns true if successfull, false otherwise. */
+  bool SaveNiftyRegAffineMatrix(std::string filename);
   
   /**
    * Initilise the transform with the centers of mass of the fixed and moving images. 
