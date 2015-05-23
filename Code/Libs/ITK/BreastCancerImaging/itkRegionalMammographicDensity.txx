@@ -2570,25 +2570,25 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if (useCogInitialisation || symmetricMetric == 2)
   {
-    typename ImageMomentCalculatorType::Pointer fixedImageMomentCalulator = ImageMomentCalculatorType::New(); 
+    typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New(); 
 
-    fixedImageMomentCalulator->SetImage(m_ImDiagnostic); 
-    fixedImageMomentCalulator->Compute(); 
-    fixedImgeCOG = fixedImageMomentCalulator->GetCenterOfGravity(); 
+    fixedImageMomentCalculator->SetImage(m_ImDiagnostic); 
+    fixedImageMomentCalculator->Compute(); 
+    fixedImgeCOG = fixedImageMomentCalculator->GetCenterOfGravity(); 
 
-    typename ImageMomentCalculatorType::Pointer movingImageMomentCalulator = ImageMomentCalculatorType::New(); 
+    typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New(); 
 
     if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
-      movingImageMomentCalulator->SetImage(m_ImPreDiagnostic); 
+      movingImageMomentCalculator->SetImage(m_ImPreDiagnostic); 
     }
     else
     {
-      movingImageMomentCalulator->SetImage(m_ImControl); 
+      movingImageMomentCalculator->SetImage(m_ImControl); 
     }
 
-    movingImageMomentCalulator->Compute(); 
-    movingImgeCOG = movingImageMomentCalulator->GetCenterOfGravity(); 
+    movingImageMomentCalculator->Compute(); 
+    movingImgeCOG = movingImageMomentCalculator->GetCenterOfGravity(); 
   }
   
   if (symmetricMetric == 2)
