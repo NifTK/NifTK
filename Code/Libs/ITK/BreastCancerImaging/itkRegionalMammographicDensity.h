@@ -47,11 +47,11 @@
 
 
 /*!
- * \file niftkRegionalDensity.cxx
- * \page niftkRegionalDensity
- * \section niftkRegionalDensitySummary Calculates the density within regions on interest across a mammogram.
+ * \file niftkRegionalMammographicDensity.cxx
+ * \page niftkRegionalMammographicDensity
+ * \section niftkRegionalMammographicDensitySummary Calculates the density within regions on interest across a mammogram.
  *
- * \section niftkRegionalDensityCaveats Caveats
+ * \section niftkRegionalMammographicDensityCaveats Caveats
  * \li None
  */
 
