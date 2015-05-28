@@ -78,19 +78,36 @@ public:
   {
   }
 
-  QLevelWindow(double min, double max)
-  : QPair(min, max)
+  void SetWindowBounds(double lowerWindowBound, double upperWindowBound)
   {
+    this->first = lowerWindowBound;
+    this->second = upperWindowBound;
   }
 
-  double min() const
+  void SetLevelWindow(double level, double window)
+  {
+    this->first = level - window / 2.0;
+    this->second = level + window / 2.0;
+  }
+
+  double GetLowerWindowBound() const
   {
     return this->first;
   }
 
-  double max() const
+  double GetUpperWindowBound() const
   {
     return this->second;
+  }
+
+  double GetLevel() const
+  {
+    return (this->first + this->second) / 2.0;
+  }
+
+  double GetWindow() const
+  {
+    return this->second - this->first;
   }
 
 };
@@ -1024,15 +1041,14 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
           /// It might be a level window min-max range.
           QString minPart = propertyValue.mid(0, hyphenIndex);
           QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
-          MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() min part: " << minPart.toStdString();
-          MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() max part: " << maxPart.toStdString();
           double minValue = minPart.toDouble(&ok);
           if (ok)
           {
             double maxValue = maxPart.toDouble(&ok);
             if (ok)
             {
-              QLevelWindow range(minValue, maxValue);
+              QLevelWindow range;
+              range.SetWindowBounds(minValue, maxValue);
               propertyTypedValue.setValue(range);
             }
           }
@@ -1045,7 +1061,6 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
     }
   }
 
-  MITK_INFO << "QmitkCommonAppsApplicationPlugin::ParsePropertyValue() type: " << propertyTypedValue.type();
   return propertyTypedValue;
 }
 
@@ -1070,21 +1085,18 @@ void QmitkCommonAppsApplicationPlugin::SetNodeProperty(mitk::DataNode* node, con
   {
     mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
   }
-  else if (propertyValue.type() == QMetaType::type("QLevelWindow"))
+  else if (propertyValue.type() == QVariant::UserType)
   {
-    QLevelWindow qLevelWindow = propertyValue.value<QLevelWindow>();
-    mitk::LevelWindow levelWindow;
-    node->GetLevelWindow(levelWindow);
-    MITK_INFO << "1 level window min: " << levelWindow.GetLowerWindowBound() << " max: " << levelWindow.GetUpperWindowBound();
-    levelWindow.SetWindowBounds(qLevelWindow.min(), qLevelWindow.max());
-    MITK_INFO << "2 level window min: " << levelWindow.GetLowerWindowBound() << " max: " << levelWindow.GetUpperWindowBound();
-    node->SetLevelWindow(levelWindow);
-    node->GetData()->SetProperty("levelwindow", mitk::LevelWindowProperty::New(levelWindow));
+    if (propertyValue.canConvert<QLevelWindow>())
+    {
+      QLevelWindow qLevelWindow = propertyValue.value<QLevelWindow>();
+      mitk::LevelWindow levelWindow;
+      node->GetLevelWindow(levelWindow);
+      levelWindow.SetWindowBounds(qLevelWindow.GetLowerWindowBound(), qLevelWindow.GetUpperWindowBound());
+      node->SetLevelWindow(levelWindow);
+      node->GetData()->SetProperty("levelwindow", mitk::LevelWindowProperty::New(levelWindow));
+    }
   }
-
-  MITK_INFO << "property name: " << propertyName.toStdString();
-  MITK_INFO << "property value type: " << propertyValue.type();
-  MITK_INFO << "qlevelwindow type: " << QMetaType::type("QLevelWindow");
 
   if (rendererName.isEmpty())
   {
