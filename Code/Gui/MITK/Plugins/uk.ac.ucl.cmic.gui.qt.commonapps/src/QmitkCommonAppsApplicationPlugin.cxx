@@ -59,6 +59,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QMetaType>
+#include <QPair>
 #include <QProcess>
 #include <QtPlugin>
 
@@ -74,7 +75,6 @@ class QLevelWindow : private QPair<double, double>
 {
 public:
   QLevelWindow()
-  : QPair(0.0, 0.0)
   {
   }
 
