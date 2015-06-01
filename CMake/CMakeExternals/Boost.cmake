@@ -79,7 +79,7 @@ if(MITK_USE_Boost)
         set(INSTALL_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
 
         set(APPLE_CLANG_FLAGS)
-        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_OSX_DEPLOYMENT_TARGET} STREQUAL "10.8")
+        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "10.8" )
           set(APPLE_CLANG_FLAGS toolset=clang cxxflags="-stdlib=libstdc++" linkflags="-stdlib=libstdc++")
         endif()
 
