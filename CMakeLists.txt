@@ -862,6 +862,20 @@ if(NIFTK_GENERATE_DOXYGEN_HELP)
   set(BLUEBERRY_USE_QT_HELP ON)
 endif(NIFTK_GENERATE_DOXYGEN_HELP)
 
+# Note:
+# We build NifTK with Boost but MITK without it. The next 'find_package(MITK REQUIRED)'
+# loads values from MITKConfig.cmake that overwrites some Boost related variables, e.g.
+# MITK_USE_Boost. This causes that if a module depends on the Boost package, the
+# MITK_CREATE_MODULE macro will think that the software is being built without Boost,
+# and it will not create the module because of the missing dependency.
+# As a workaround, here we save the values of these variables and restore them after
+# the find_package() call.
+
+set(_boost_root ${BOOST_ROOT})
+set(_mitk_use_boost ${MITK_USE_Boost})
+set(_mitk_use_system_boost ${MITK_USE_SYSTEM_Boost})
+set(_mitk_use_boost_libraries ${MITK_USE_Boost_LIBRARIES})
+
 find_package(MITK REQUIRED)
 if(MITK_FOUND)
   message("Found MITK")
@@ -871,6 +885,11 @@ if(MITK_FOUND)
   )
   link_directories(${MITK_LINK_DIRECTORIES})
 endif(MITK_FOUND)
+
+set(BOOST_ROOT ${_boost_root})
+set(MITK_USE_Boost ${_mitk_use_boost})
+set(MITK_USE_SYSTEM_Boost ${_mitk_use_system_boost})
+set(MITK_USE_Boost_LIBRARIES ${_mitk_use_boost_libraries})
 
 ######################################################################
 # Find Optional External packages

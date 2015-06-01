@@ -16,10 +16,6 @@
 #include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 #include <sstream>
 #include <fstream>

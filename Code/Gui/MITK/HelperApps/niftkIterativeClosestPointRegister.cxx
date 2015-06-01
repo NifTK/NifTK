@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <boost/math/special_functions/fpclassify.hpp>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>

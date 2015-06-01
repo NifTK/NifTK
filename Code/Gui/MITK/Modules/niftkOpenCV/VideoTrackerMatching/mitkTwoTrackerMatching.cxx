@@ -15,9 +15,6 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 #include <fstream>

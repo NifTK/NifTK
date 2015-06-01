@@ -26,7 +26,7 @@ set(version "2565443106")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
-set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
+set(proj_DEPENDENCIES ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
@@ -42,13 +42,6 @@ if(WIN32)
   set(MITK_ADDITIONAL_C_FLAGS ${MITK_ADDITIONAL_C_FLAGS} "-DNOMINMAX")
   set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-DNOMINMAX")
 endif(WIN32)
-
-# there are additional warnings in boost headers in Release mode with special gcc versions
-if(CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_BUILD_TYPE STREQUAL "Release" AND (${GCC_VERSION} VERSION_EQUAL "4.4" OR ${GCC_VERSION} VERSION_GREATER "4.4") AND ${GCC_VERSION} VERSION_LESS "4.5")
-    set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-Wno-error=uninitialized")
-  endif()
-endif()
 
 if(NOT DEFINED MITK_DIR)
 
@@ -103,16 +96,11 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
         -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
-        -DMITK_USE_Boost:BOOL=ON
-        -DMITK_USE_Boost_LIBRARIES:STRING=filesystem^^system^^date_time
-        -DMITK_USE_SYSTEM_Boost:BOOL=OFF
+        -DMITK_USE_Boost:BOOL=OFF
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_USE_OpenCL:BOOL=${BUILD_VL}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
-        -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT
-        -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
-        -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
         -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR

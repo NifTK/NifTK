@@ -21,7 +21,6 @@
 #include <iostream>
 #include <QApplication>
 #include <QMessageBox>
-#include <boost/regex.hpp>
 #include <vtkPNGReader.h>
 //#include <vtkNIFTIImageReader.h> // this header isn't in VTK yet
 
