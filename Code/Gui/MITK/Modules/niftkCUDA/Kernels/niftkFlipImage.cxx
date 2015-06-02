@@ -12,10 +12,12 @@
 
 =============================================================================*/
 
-#include "FlipImage.h"
-#include <Image/FlipImageKernel.h>
+#include "niftkFlipImage.h"
+#include <Image/niftkFlipImageKernel.h>
 #include <stdexcept>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 void FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t stream)
@@ -57,3 +59,5 @@ void FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream
       stream
   );
 }
+
+} // end namespace

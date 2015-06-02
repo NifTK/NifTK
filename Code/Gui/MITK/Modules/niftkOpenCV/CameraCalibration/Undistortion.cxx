@@ -20,9 +20,9 @@
 #include <Conversion/ImageConversion.h>
 #include <stdexcept>
 #ifdef _USE_CUDA
-#include <CUDAManager/CUDAManager.h>
-#include <CUDAImage/LightweightCUDAImage.h>
-#include <CameraCalibration/UndistortionKernel.h>
+#include <CUDAManager/niftkCUDAManager.h>
+#include <CUDAImage/niftkLightweightCUDAImage.h>
+#include <CameraCalibration/niftkUndistortionKernel.h>
 #endif
 
 

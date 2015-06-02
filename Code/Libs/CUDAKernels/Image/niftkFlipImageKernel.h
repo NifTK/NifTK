@@ -12,15 +12,23 @@
 
 =============================================================================*/
 
-#ifndef EdgeDetectionKernel_h
-#define EdgeDetectionKernel_h
+#ifndef niftkFlipImageKernel_h
+#define niftkFlipImageKernel_h
 
 #include <niftkCUDAKernelsWin32ExportHeader.h>
 #include <driver_types.h>
-#include <texture_types.h>
 
+namespace niftk
+{
 
-void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream);
+/**
+* \brief Flips image in y-axis.
+*
+* Width and pitch are in bytes.
+* Pitch has to be a multiple of 4.
+*/
+void NIFTKCUDAKERNELS_WINEXPORT RunFlipImageKernel(char* output, int widthInBytes, int height, int outputpitchInBytes, const char* input, int inputpitchInBytes, cudaStream_t stream);
 
+} // end namespace
 
-#endif // EdgeDetectionKernel_h
+#endif

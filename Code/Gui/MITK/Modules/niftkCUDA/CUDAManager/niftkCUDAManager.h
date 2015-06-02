@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef CUDAManager_h
-#define CUDAManager_h
+#ifndef niftkCUDAManager_h
+#define niftkCUDAManager_h
 
 #include "niftkCUDAExports.h"
-#include <CUDAImage/CUDAImage.h>
-#include <CUDAImage/LightweightCUDAImage.h>
+#include <CUDAImage/niftkCUDAImage.h>
+#include <CUDAImage/niftkLightweightCUDAImage.h>
 #include <QThread>
 #include <QMutex>
 #include <cuda.h>
@@ -28,6 +28,8 @@
 #include <string>
 #include <boost/lockfree/queue.hpp>
 
+namespace niftk
+{
 
 // FIXME: not yet implemented
 struct ScopedCUDADevice
@@ -233,5 +235,5 @@ private:
   boost::lockfree::queue<impldetail::StreamCallbackReleasePOD*>     m_AutoreleaseQueue;
 };
 
-
-#endif // CUDAManager_h
+} // end namespace
+#endif

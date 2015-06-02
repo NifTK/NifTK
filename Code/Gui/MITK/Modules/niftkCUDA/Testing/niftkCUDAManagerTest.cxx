@@ -12,12 +12,14 @@
 
 =============================================================================*/
 
-#include <CUDAManager/CUDAManager.h>
+#include <CUDAManager/niftkCUDAManager.h>
 #include <cassert>
 #include <mitkTestingMacros.h>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 
+namespace niftk
+{
 
 void Producer(const mitk::StandaloneDataStorage::Pointer& datastorage)
 {
@@ -152,17 +154,18 @@ void RefcountTest(const mitk::StandaloneDataStorage::Pointer& datastorage)
   // at this point, the above lwci should have a refcount of 1
 }
 
+} // end namespace
 
-int CUDAManagerTest(int /*argc*/, char* /*argv*/[])
+int niftkCUDAManagerTest(int /*argc*/, char* /*argv*/[])
 {
-  MITK_TEST_BEGIN("CUDAManagerTest");
+  MITK_TEST_BEGIN("niftkCUDAManagerTest");
 
   mitk::StandaloneDataStorage::Pointer    datastorage(mitk::StandaloneDataStorage::New());
-  RefcountTest(datastorage);
-  Producer(datastorage);
-  Consumer(datastorage);
-  AnotherConsumer(datastorage);
-  WaitForResult(datastorage);
+  niftk::RefcountTest(datastorage);
+  niftk::Producer(datastorage);
+  niftk::Consumer(datastorage);
+  niftk::AnotherConsumer(datastorage);
+  niftk::WaitForResult(datastorage);
   MITK_TEST_END();
 
   return EXIT_SUCCESS;

@@ -12,8 +12,7 @@
 
 =============================================================================*/
 
-#include "../niftkCUDAKernelsWin32ExportHeader.h"
-#include "EdgeDetectionKernel.h"
+#include "niftkEdgeDetectionKernel.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
@@ -23,6 +22,8 @@
 #include <driver_types.h>
 #include <cassert>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 __global__ void edgedetection_kernel(char* outputRGBA, unsigned int outputPixelPitch, const char* inputRGBA, unsigned int inputPixelPitch, int width, int height)
@@ -64,3 +65,5 @@ void RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, cons
   // note to self: the third param is "dynamically allocated shared mem".
   edgedetection_kernel<<<grid, threads, 0, stream>>>(outputRGBA, outputBytePitch / 4, inputRGBA, inputBytePitch / 4, width, height);
 }
+
+} // end namespace

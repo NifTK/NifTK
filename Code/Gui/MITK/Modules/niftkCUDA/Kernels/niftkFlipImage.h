@@ -11,24 +11,27 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef FlipImage_h
-#define FlipImage_h
+#ifndef niftkFlipImage_h
+#define niftkFlipImage_h
 
 #include "niftkCUDAExports.h"
-#include <CUDAManager/CUDAManager.h>
+#include <CUDAManager/niftkCUDAManager.h>
 
+namespace niftk
+{
 
 /**
- * Flips the image upside down. This implementation is likely not very efficient.
- * @throws std::runtime_error
- */
+* \brief Flips the image upside down. This implementation is likely not very efficient.
+* \throws std::runtime_error
+*/
 void NIFTKCUDA_EXPORT FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t stream);
 
 /**
- * Flips the image upside down. This implementation is likely not very efficient.
- * @throws std::runtime_error
- */
+* \brief Flips the image upside down. This implementation is likely not very efficient.
+* \throws std::runtime_error
+*/
 void NIFTKCUDA_EXPORT FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream);
 
+} // end namespace
 
-#endif // FlipImage_h
+#endif

@@ -12,8 +12,10 @@
 
 =============================================================================*/
 
-#include "CUDAImage.h"
+#include "niftkCUDAImage.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 CUDAImage::CUDAImage()
@@ -65,3 +67,5 @@ void CUDAImage::SetLightweightCUDAImage(const LightweightCUDAImage& lwci)
 {
   m_LWCImage = lwci;
 }
+
+} // end namespace

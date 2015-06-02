@@ -12,15 +12,21 @@
 
 =============================================================================*/
 
-#ifndef UndistortionKernel_h
-#define UndistortionKernel_h
+#ifndef niftkEdgeDetectionKernel_h
+#define niftkEdgeDetectionKernel_h
 
 #include <niftkCUDAKernelsWin32ExportHeader.h>
 #include <driver_types.h>
 #include <texture_types.h>
 
+namespace niftk
+{
 
-void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t srcTexture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream);
+/**
+* \brief Basic example kernel to do some edge detection, but is not yet implemented.
+*/
+void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream);
 
+} // end namespace
 
-#endif // UndistortionKernel_h
+#endif

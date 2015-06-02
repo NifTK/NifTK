@@ -12,18 +12,20 @@
 
 =============================================================================*/
 
-#ifndef CUDAImageProperty_h
-#define CUDAImageProperty_h
+#ifndef niftkCUDAImageProperty_h
+#define niftkCUDAImageProperty_h
 
 #include "niftkCUDAExports.h"
-#include <CUDAImage/LightweightCUDAImage.h>
+#include <CUDAImage/niftkLightweightCUDAImage.h>
 #include <mitkBaseProperty.h>
 
+namespace niftk
+{
 
 /**
- * A wrapper for LightweightCUDAImage that can be attached as a property to
- * an existing data object or node.
- */
+* A wrapper for LightweightCUDAImage that can be attached as a property to
+* an existing data object or node.
+*/
 class NIFTKCUDA_EXPORT CUDAImageProperty : public mitk::BaseProperty
 {
 public:
@@ -53,5 +55,6 @@ private:
   LightweightCUDAImage      m_LWCI;
 };
 
+} // end namespace
 
-#endif // CUDAImageProperty_h
+#endif

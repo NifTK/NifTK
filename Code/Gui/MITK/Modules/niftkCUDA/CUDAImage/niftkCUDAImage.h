@@ -12,18 +12,20 @@
 
 =============================================================================*/
 
-#ifndef CUDAImage_h
-#define CUDAImage_h
+#ifndef niftkCUDAImage_h
+#define niftkCUDAImage_h
 
 #include "niftkCUDAExports.h"
-#include <CUDAImage/LightweightCUDAImage.h>
+#include <CUDAImage/niftkLightweightCUDAImage.h>
 #include <mitkBaseData.h>
 
+namespace niftk
+{
 
 /**
- * A holder for LightweightCUDAImage so that it can be added to a DataNode
- * and be made available via DataStorage.
- */
+* A holder for LightweightCUDAImage so that it can be added to a DataNode
+* and be made available via DataStorage.
+*/
 class NIFTKCUDA_EXPORT CUDAImage : public mitk::BaseData
 {
 
@@ -45,17 +47,17 @@ public:
   //@}
 
   /**
-   * Returns a copy of the LightweightCUDAImage. Remember: LightweightCUDAImage is merely some
-   * form of opaque handle.
-   * @throws nothing should not throw anything.
-   */
+  * Returns a copy of the LightweightCUDAImage. Remember: LightweightCUDAImage is merely some
+  * form of opaque handle.
+  * @throws nothing should not throw anything.
+  */
   LightweightCUDAImage GetLightweightCUDAImage() const;
 
   /**
-   * Sets the LightweightCUDAImage handle.
-   * Remember: LightweightCUDAImage is merely some form of opaque handle.
-   * @throws nothing should not throw anything.
-   */
+  * Sets the LightweightCUDAImage handle.
+  * Remember: LightweightCUDAImage is merely some form of opaque handle.
+  * @throws nothing should not throw anything.
+  */
   void SetLightweightCUDAImage(const LightweightCUDAImage& lwci);
 
 
@@ -76,5 +78,6 @@ private:
   LightweightCUDAImage      m_LWCImage;
 };
 
+} // end namespace
 
-#endif // CUDAImage_h
+#endif

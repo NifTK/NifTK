@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "CUDAManager.h"
+#include "niftkCUDAManager.h"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <QMutexLocker>
@@ -20,6 +20,8 @@
 #include <cmath>
 #include <new>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 static bool CUDADelayLoadCheck()
@@ -92,10 +94,10 @@ struct ModuleCleanup
 
 
 /**
- * @internal
- * Used by FinaliseAndAutorelease() and StreamCallback() to pass information through
- * the CUDA driver about what should be released.
- */
+* @internal
+* Used by FinaliseAndAutorelease() and StreamCallback() to pass information through
+* the CUDA driver about what should be released.
+*/
 struct StreamCallbackReleasePOD
 {
   CUDAManager*        m_Manager;
@@ -192,7 +194,8 @@ CUDAManager::~CUDAManager()
 
   for (int i = 0; i < m_AvailableImagePool.size(); ++i)
   {
-    for (std::list<LightweightCUDAImage>::iterator j = m_AvailableImagePool[i].begin(); j != m_AvailableImagePool[i].end(); ++j)
+    for (std::list<LightweightCUDAImage>::iterator j = m_AvailableImagePool[i].begin();
+         j != m_AvailableImagePool[i].end(); ++j)
     {
       // FIXME: make sure to activate the correct device context.
 
@@ -241,8 +244,6 @@ cudaStream_t CUDAManager::GetStream(const std::string& name)
 WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype)
 {
   // FIXME: figure out how to best deal with pixel types.
-
-
   QMutexLocker    lock(&s_Lock);
 
   // use this opportunity to clear up auto-released but dangling images.
@@ -273,13 +274,16 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     assert(fullTierSize >= minSizeInBytes);
     assert(SizeToTier(fullTierSize) == sizeTier);
 
-    cudaError_t   err = cudaSuccess;
     void*         devptr = 0;
+    cudaError_t   err = cudaSuccess;
+    assert(err == cudaSuccess);
+
     err = cudaMalloc(&devptr, fullTierSize);
     if (err == cudaErrorMemoryAllocation)
     {
       throw std::bad_alloc();
     }
+
     assert(err == cudaSuccess);
 
     ++m_LastIssuedId;
@@ -313,7 +317,8 @@ WriteAccessor CUDAManager::RequestOutputImage(unsigned int width, unsigned int h
     // so these should get a new id.
     ++m_LastIssuedId;
     i->m_Id = m_LastIssuedId;
-    // also dont forget to update the size: our recycled image may have a different size than what is requested right now.
+    // also dont forget to update the size: our recycled image may have a
+    // different size than what is requested right now.
     i->m_Width      = width;
     i->m_Height     = height;
     i->m_PixelType  = FIXME_pixeltype;
@@ -379,8 +384,7 @@ LightweightCUDAImage CUDAManager::Finalise(WriteAccessor& writeAccessor, cudaStr
 
   LightweightCUDAImage  lwci = i->second;
 
-  cudaError_t   err = cudaSuccess;
-  err = cudaEventRecord(lwci.m_ReadyEvent, stream);
+  cudaError_t   err = cudaEventRecord(lwci.m_ReadyEvent, stream);
   assert(err == cudaSuccess);
 
   // debugging
@@ -437,7 +441,8 @@ ReadAccessor CUDAManager::RequestReadAccess(const LightweightCUDAImage& lwci)
 
 
 //-----------------------------------------------------------------------------
-LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream)
+LightweightCUDAImage CUDAManager::FinaliseAndAutorelease(
+    WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream)
 {
   QMutexLocker    lock(&s_Lock);
 
@@ -463,8 +468,7 @@ void CUDAManager::Autorelease(ReadAccessor& readAccessor, cudaStream_t stream)
   pod->m_Manager = this;
   pod->m_Id      = readAccessor.m_Id;
 
-  cudaError_t   err = cudaSuccess;
-  err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
+  cudaError_t   err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
   if (err != cudaSuccess)
   {
     // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
@@ -510,8 +514,7 @@ void CUDAManager::Autorelease(WriteAccessor& writeAccessor, cudaStream_t stream)
   pod->m_Manager = this;
   pod->m_Id      = writeAccessor.m_Id;
 
-  cudaError_t   err = cudaSuccess;
-  err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
+  cudaError_t   err = cudaStreamAddCallback(stream, AutoReleaseStreamCallback, pod, 0);
   if (err != cudaSuccess)
   {
     // this is a critical error: we wont be able to cleanup the refcount for read-requested-images.
@@ -552,7 +555,8 @@ void CUDAManager::AllRefsDropped(LightweightCUDAImage& lwci)
   // as the image is back on the free-list, it can no longer be read.
   // beware: m_ValidImages does not account for the refcount, so removing the image will recursively
   // call this method as its refcount goes to zero all the time.
-  // work-around is to inc refcount. that works because in Finalise() we've dec'd the refcount specifically for m_ValidImages.
+  // work-around is to inc refcount. that works because in Finalise() we've dec'd
+  // the refcount specifically for m_ValidImages.
   lwci.m_RefCount->ref();
   m_ValidImages.erase(i);
 }
@@ -593,7 +597,8 @@ void CUDAManager::ReleaseReadAccess(unsigned int id)
     // for now, the autoreleased id has to be either on m_ValidImages (see above), or on m_InFlightOutputImages.
     assert(i != m_InFlightOutputImages.end());
 
-    std::pair<std::map<unsigned int, LightweightCUDAImage>::iterator, bool>   inserted = m_ValidImages.insert(std::make_pair(i->second.GetId(), i->second));
+    std::pair<std::map<unsigned int, LightweightCUDAImage>::iterator, bool>
+        inserted = m_ValidImages.insert(std::make_pair(i->second.GetId(), i->second));
     assert(inserted.second);
 
     // and drop it.
@@ -625,7 +630,8 @@ void CUDAManager::ProcessAutoreleaseQueue()
 {
   // dont grab s_Lock here. ReleaseReadAccess() will lock itself.
   // and if called synchronously from RequestOutputImage() then that will/might have locked already.
-  // and if called async from (a not yet existing) worker-thread then not locking will... prob do nothing to improve anthing...
+  // and if called async from (a not yet existing) worker-thread then
+  // not locking will... prob do nothing to improve anthing...
 
   impldetail::StreamCallbackReleasePOD*   pod = 0;
   while (m_AutoreleaseQueue.pop(pod))
@@ -635,5 +641,6 @@ void CUDAManager::ProcessAutoreleaseQueue()
 
     delete pod;
   }
-
 }
+
+} // end namespace

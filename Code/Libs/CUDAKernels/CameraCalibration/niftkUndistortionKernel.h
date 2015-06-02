@@ -12,19 +12,21 @@
 
 =============================================================================*/
 
-#ifndef FlipImageKernel_h
-#define FlipImageKernel_h
+#ifndef niftkUndistortionKernel_h
+#define niftkUndistortionKernel_h
 
 #include <niftkCUDAKernelsWin32ExportHeader.h>
 #include <driver_types.h>
-//#include <texture_types.h>
+#include <texture_types.h>
 
+namespace niftk
+{
 
 /**
- * Width and pitch are in bytes.
- * Pitch has to be a multiple of 4.
- */
-void NIFTKCUDAKERNELS_WINEXPORT RunFlipImageKernel(char* output, int widthInBytes, int height, int outputpitchInBytes, const char* input, int inputpitchInBytes, cudaStream_t stream);
+* \brief Provides 2D image undistortion, given a cameras intrinsic and distortion co-efficients.
+*/
+void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int width, int height, cudaTextureObject_t srcTexture, const float* intrinsic3x3, const float* distortion4, cudaStream_t stream);
 
+} // end namespace
 
-#endif // FlipImageKernel_h
+#endif

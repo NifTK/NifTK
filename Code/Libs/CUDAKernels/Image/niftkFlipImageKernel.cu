@@ -12,13 +12,15 @@
 
 =============================================================================*/
 
-#include "FlipImageKernel.h"
+#include "niftkFlipImageKernel.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <stdexcept>
 #include <cassert>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 __global__ void flipimage_kernel(unsigned int* output, int width, int height, int outputpitch, unsigned int* input, int inputpitch)
@@ -72,3 +74,5 @@ void RunFlipImageKernel(char* output, int widthInBytes, int height, int outputpi
   // note to self: the third param is "dynamically allocated shared mem".
   flipimage_kernel<<<grid, threads, 0, stream>>>((unsigned int*) output, width, height, outputpitchInBytes / 4, (unsigned int*) input, inputpitchInBytes / 4);
 }
+
+} // end namespace

@@ -15,9 +15,9 @@
 find_package(CUDA REQUIRED)
  
 set(niftkCUDAKernels_SRCS
-  CameraCalibration/UndistortionKernel.cu
-  Example/EdgeDetectionKernel.cu
-  Image/FlipImageKernel.cu
+  CameraCalibration/niftkUndistortionKernel.cu
+  Example/niftkEdgeDetectionKernel.cu
+  Image/niftkFlipImageKernel.cu
 )
 
 # with all the itk etc stuff, nvcc dies with "command line too long".

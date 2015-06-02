@@ -17,7 +17,7 @@
 
 #include <NifTKConfigure.h>
 
-#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
+#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC)
   #ifdef niftkCUDAKernels_EXPORTS
     #define NIFTKCUDAKERNELS_WINEXPORT __declspec(dllexport)
   #else
@@ -28,5 +28,4 @@
   #define NIFTKCUDAKERNELS_WINEXPORT
 #endif
 
-
-#endif  //niftkCUDAKernelsWin32ExportHeader_h
+#endif
