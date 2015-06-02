@@ -144,6 +144,10 @@ public:
   /// Set the source mask.
   void SetSourceMask(InputImagePointer maskSource) { this->SetInput(3, maskSource); }
 
+  /// Set the target registration mask.
+  void SetTargetRegnMask(InputImagePointer maskTargetRegn) { this->SetInput(4, maskTargetRegn); }
+
+
 
   /// Set the working directory for storing any intermediate files
   void SetWorkingDirectory( std::string directory ) { 
@@ -298,6 +302,9 @@ protected:
   InputImagePointer m_TargetMask;
   /// The source mask image
   InputImagePointer m_SourceMask;
+
+  /// The target registration mask image
+  InputImagePointer m_TargetRegnMask;
 
   /// The affine transformation
   EulerAffinePointerType m_AffineTransform;
