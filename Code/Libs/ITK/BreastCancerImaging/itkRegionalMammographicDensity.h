@@ -28,17 +28,11 @@
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkPolygonSpatialObject.h>
  
-#include <itkImageRegistrationFilter.h>
-#include <itkImageRegistrationFactory.h>
-#include <itkGradientDescentOptimizer.h>
-#include <itkUCLSimplexOptimizer.h>
-#include <itkUCLRegularStepGradientDescentOptimizer.h>
-#include <itkSingleResolutionImageRegistrationBuilder.h>
-#include <itkMaskedImageRegistrationMethod.h>
 #include <itkTransformFileWriter.h>
 #include <itkImageMomentsCalculator.h>
-#include <itkImageRegistrationFactory.h>
+
 #include <itkMammogramLeftOrRightSideCalculator.h>
+#include <itkMammogramRegistrationFilter.h>
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -249,20 +243,17 @@ public:
 
   // Setup objects to build registration.
 
-  typedef  double          ScalarType;
-  typedef  float           DeformableScalarType;
-
-  typedef typename itk::ImageRegistrationFactory< ImageType, InputDimension, ScalarType > FactoryType;
-  typedef typename itk::SingleResolutionImageRegistrationBuilder< ImageType, InputDimension, ScalarType > BuilderType;
-  typedef typename itk::MaskedImageRegistrationMethod< ImageType > SingleResImageRegistrationMethodType;
-  typedef typename itk::MultiResolutionImageRegistrationWrapper< ImageType > MultiResImageRegistrationMethodType;
-  typedef typename itk::ImageRegistrationFilter< ImageType, OutputImageType, InputDimension, ScalarType, DeformableScalarType > RegistrationFilterType;
-  typedef typename SingleResImageRegistrationMethodType::ParametersType ParametersType;
-  typedef typename itk::SimilarityMeasure< ImageType, ImageType > SimilarityMeasureType;
   typedef typename itk::ImageMomentsCalculator< ImageType > ImageMomentCalculatorType;
   typedef typename itk::SignedMaurerDistanceMapImageFilter< ImageType, RealImageType> DistanceTransformType;
 
+  typedef typename itk::MammogramRegistrationFilter< ImageType, ImageType > RegistrationFilterType;
 
+  typedef typename RegistrationFilterType::enumRegistrationImagesType enumRegistrationImagesType;
+  
+  /// Set the registration image type.
+  void SetTypeOfInputImagesToRegister( enumRegistrationImagesType regImagesType ) { 
+    m_TypeOfInputImagesToRegister = regImagesType;
+  }
 
   enum MammogramType 
   { 
@@ -310,7 +301,8 @@ public:
   void SetRegionSizeInMM( float roiSize ) { m_RegionSizeInMM = roiSize; }
 
   void SetRegisterOn( void ) { m_FlgRegister = true; }
-  void SetRegisterOff( void ) { m_FlgRegister = false; }
+  void SetRegisterOff( void ) { m_FlgRegister = false;
+                                m_FlgRegisterNonRigid = false; }
 
   void SetVerboseOn( void ) { m_FlgVerbose = true; }
   void SetVerboseOff( void ) { m_FlgVerbose = false; }
@@ -321,6 +313,11 @@ public:
   void SetDebugOn( void ) { m_FlgDebug = true; }
   void SetDebugOff( void ) { m_FlgDebug = false; }
 
+  /// Specify whether to perform a non-rigid registration
+  void SetRegisterNonRigidOn( void ) { m_FlgRegister = true; 
+                                       m_FlgRegisterNonRigid = true; }
+  void SetRegisterNonRigidOff( void ) { m_FlgRegisterNonRigid = false; }
+ 
 
   std::string GetPatientID( void ) { return m_Id; }
 
@@ -374,6 +371,12 @@ protected:
 
   bool m_FlgOverwrite;
   bool m_FlgRegister;
+  
+  /// Specify whether to perform a non-rigid registration
+  bool m_FlgRegisterNonRigid;
+  
+  /// Specify the input images to register
+  enumRegistrationImagesType m_TypeOfInputImagesToRegister;
 
   std::string m_Id;
 
@@ -384,6 +387,8 @@ protected:
 
   std::string m_IdDiagnosticImage;
   std::string m_FileDiagnostic;
+  std::string m_FileDiagnosticRegn;
+  std::string m_FileDiagnosticRegnMask;
 
   int m_ThresholdDiagnostic;
 
@@ -393,6 +398,7 @@ protected:
 
   std::string m_IdPreDiagnosticImage;
   std::string m_FilePreDiagnostic;
+  std::string m_FilePreDiagnosticRegn;
 
   int m_ThresholdPreDiagnostic;
 
@@ -402,6 +408,7 @@ protected:
 
   std::string m_IdControlImage;
   std::string m_FileControl;
+  std::string m_FileControlRegn;
 
   int m_ThresholdControl;
 
@@ -474,8 +481,8 @@ protected:
   std::map< LabelPixelType, Patch > m_ControlPatches;
 
 
-  typename FactoryType::EulerAffineTransformType::Pointer m_TransformPreDiag;
-  typename FactoryType::EulerAffineTransformType::Pointer m_TransformControl;
+  typename RegistrationFilterType::Pointer m_RegistrationPreDiag;
+  typename RegistrationFilterType::Pointer m_RegistrationControl;
 
   void PrintDictionary( DictionaryType &dictionary );
 
@@ -486,11 +493,11 @@ protected:
   std::string BuildOutputFilename( std::string fileInput, std::string suffix );
 
   template < typename TOutputImageType >
-  void CastImageAndWriteToFile( std::string fileInput, 
-                                std::string suffix,
-                                const char *description,
-                                typename ImageType::Pointer image,
-                                DictionaryType &dictionary );
+  std::string CastImageAndWriteToFile( std::string fileInput, 
+                                       std::string suffix,
+                                       const char *description,
+                                       typename ImageType::Pointer image,
+                                       DictionaryType &dictionary );
 
   template < typename TOutputImageType >
   void WriteImageFile( std::string fileInput, 
@@ -528,17 +535,23 @@ protected:
   ScalesType SetRegistrationParameterScales( typename itk::TransformTypeEnum transformType,
                                              unsigned int nParameters );
 
-  void InitialiseTransformationFromImageMoments( MammogramType mammoType,
-                                                 typename FactoryType::EulerAffineTransformType::Pointer &transform );
-
   void RegisterTheImages();
-  void RegisterTheImages( MammogramType mammoType,
-                          typename FactoryType::EulerAffineTransformType::Pointer &transform );
+
+  typename RegistrationFilterType::Pointer 
+    RegisterTheImages( typename ImageType::Pointer imSource,
+                       std::string fileInputSource,
+                       typename ImageType::Pointer maskSource,
+                       
+                       std::string fileOutputAffineTransformation,
+                       std::string fileOutputAffineRegistered,
+                       
+                       std::string fileOutputNonRigidTransformation,
+                       std::string fileOutputNonRigidRegistered );
 
   typename LabelImageType::IndexType
     TransformTumourPositionIntoImage( typename LabelImageType::IndexType &idxTumourCenter,
-                                      typename FactoryType::EulerAffineTransformType::Pointer &transform,
-                                      typename ImageType::Pointer &image );
+                                      typename ImageType::Pointer &image,
+                                      typename RegistrationFilterType::Pointer registration );
 
   typename LabelImageType::Pointer 
        GenerateRegionLabels( BreastSideType breastSide,
