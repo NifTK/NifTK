@@ -53,10 +53,12 @@ if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release
   message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} is not supported.")
 endif()
 
-# Restrict the generated configuration to be what we configured above.
-# No point creating project files for build types that will not compile.
-# Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
-set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
+if(WIN32)
+  # Restrict the generated configuration to be what we configured above.
+  # No point creating project files for build types that will not compile.
+  # Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
+  set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
+endif()
 
 
 ##################################################################################
