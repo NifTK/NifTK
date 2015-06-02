@@ -978,13 +978,13 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   std::string fileMask;
   std::string fileRegnMask;
 
-  std::string diagMaskSuffix(       "_DiagMask.dcm" );
-  std::string preDiagMaskSuffix( "_PreDiagMask.dcm" );
-  std::string controlMaskSuffix( "_ControlMask.dcm" );
+  std::string diagMaskSuffix(       "_DiagMask.nii.gz" );
+  std::string preDiagMaskSuffix( "_PreDiagMask.nii.gz" );
+  std::string controlMaskSuffix( "_ControlMask.nii.gz" );
 
-  std::string diagRegnMaskSuffix(       "_DiagRegnMask.dcm" );
-  std::string preDiagRegnMaskSuffix( "_PreDiagRegnMask.dcm" );
-  std::string controlRegnMaskSuffix( "_ControlRegnMask.dcm" );
+  std::string diagRegnMaskSuffix(       "_DiagRegnMask.nii.gz" );
+  std::string preDiagRegnMaskSuffix( "_PreDiagRegnMask.nii.gz" );
+  std::string controlRegnMaskSuffix( "_ControlRegnMask.nii.gz" );
   
 
   // If this is a right mammogram then flip the tumour index in 'x'
@@ -1970,21 +1970,21 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     if ( mammoType == DIAGNOSTIC_MAMMO )
     {
       CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                                std::string( "_DiagBreastEdgeMask.dcm" ), 
+                                                std::string( "_DiagBreastEdgeMask.nii.gz" ), 
                                                 "diagnostic breast edge mask", 
                                                 imMask, m_DiagDictionary );
     }
     else if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                                std::string( "_PreDiagBreastEdgeMask.dcm" ), 
+                                                std::string( "_PreDiagBreastEdgeMask.nii.gz" ), 
                                                 "pre-diagnostic breast edge mask", 
                                                 imMask, m_PreDiagDictionary );
     }
     else
     {
       CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                std::string( "_ControlBreastEdgeMask.dcm" ), 
+                                                std::string( "_ControlBreastEdgeMask.nii.gz" ), 
                                                 "control breast edge mask", 
                                                 imMask, m_ControlDictionary );
     }
@@ -1992,21 +1992,21 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     if ( mammoType == DIAGNOSTIC_MAMMO )
     {
       CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                                std::string( "_DiagPectoralMask.dcm" ), 
+                                                std::string( "_DiagPectoralMask.nii.gz" ), 
                                                 "diagnostic pectoral mask",
                                                 imMaskPec, m_DiagDictionary );
     }
     else if ( mammoType == PREDIAGNOSTIC_MAMMO )
     {
       CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                                std::string( "_PreDiagPectoralMask.dcm" ), 
+                                                std::string( "_PreDiagPectoralMask.nii.gz" ), 
                                                 "pre-diagnostic pectoral mask", 
                                                 imMaskPec, m_PreDiagDictionary );
     }
     else
     {
       CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                std::string( "_ControlPectoralMask.dcm" ), 
+                                                std::string( "_ControlPectoralMask.nii.gz" ), 
                                                 "control pectoral mask", 
                                                 imMaskPec, m_ControlDictionary );
     }
@@ -2086,7 +2086,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       
       m_FileDiagnosticRegnMask = 
         CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                                  std::string( "_DiagRegnMask.dcm" ), 
+                                                  std::string( "_DiagRegnMask.nii.gz" ), 
                                                   "diagnostic pectoral registration mask",
                                                   m_ImDiagnosticRegnMask, m_DiagDictionary );
     }
@@ -2096,7 +2096,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       m_ImPreDiagnosticRegnMask->DisconnectPipeline();
       
       CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                                std::string( "_PreDiagRegnMask.dcm" ), 
+                                                std::string( "_PreDiagRegnMask.nii.gz" ), 
                                                 "pre-diagnostic registration mask", 
                                                 m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
     }
@@ -2106,7 +2106,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       m_ImControlRegnMask->DisconnectPipeline();
       
       CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                                std::string( "_ControlRegnMask.dcm" ), 
+                                                std::string( "_ControlRegnMask.nii.gz" ), 
                                                 "control registration mask", 
                                                 m_ImControlRegnMask, m_ControlDictionary );
     }
@@ -2320,22 +2320,26 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 ::WriteRegistrationDifferenceImage( std::string fileInput, 
                                     std::string suffix, 
                                     const char *description,
-                                    typename OutputImageType::Pointer image,
+                                    typename ImageType::Pointer image,
                                     DictionaryType &dictionary )
 {
   if ( fileInput.length() ) 
   {
     typedef typename itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
-    typename CastFilterType::Pointer castFilter = CastFilterType::New();
-    castFilter->SetInput( m_ImDiagnostic );
+
+    typename CastFilterType::Pointer castTargetFilter = CastFilterType::New();
+    castTargetFilter->SetInput( m_ImDiagnostic );
+ 
+    typename CastFilterType::Pointer castSourceFilter = CastFilterType::New();
+    castSourceFilter->SetInput( image );
  
     // Subtract the images
 
     typedef typename itk::SubtractImageFilter<OutputImageType, OutputImageType> SubtractFilterType;
 
     typename SubtractFilterType::Pointer subtractionFilter = SubtractFilterType::New();
-    subtractionFilter->SetInput1( castFilter->GetOutput() );
-    subtractionFilter->SetInput2( image );
+    subtractionFilter->SetInput1( castTargetFilter->GetOutput() );
+    subtractionFilter->SetInput2( castSourceFilter->GetOutput() );
 
     try
     {
@@ -2439,6 +2443,16 @@ void
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::RegisterTheImages( void )
 {
+  typename ImageType::Pointer imAffineRegistered;
+  typename ImageType::Pointer imNonRigidRegistered;
+
+  // The pre-diagniostic registration
+
+  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                    std::string( "_PreDiag2DiagDifference.jpg" ), 
+                                    "un-registered pre-diagnostic difference image", 
+                                    m_ImPreDiagnostic, 
+                                    m_DiagDictionary );
 
   m_RegistrationPreDiag = 
     RegisterTheImages( m_ImPreDiagnostic,
@@ -2454,6 +2468,31 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                             "_PreDiagReg2Diag_NonRigidTransform.nii.gz" ),
                        BuildOutputFilename( m_FileDiagnostic, 
                                             "_PreDiagReg2Diag_NonRigidRegistered.nii.gz" ) );
+ 
+  imAffineRegistered   = m_RegistrationPreDiag->GetOutput( 0 );
+
+  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                    std::string( "_PreDiagReg2DiagAffineDifference.jpg" ), 
+                                    "affine registered pre-diagnostic difference image", 
+                                    imAffineRegistered, 
+                                    m_DiagDictionary );
+
+  imNonRigidRegistered = m_RegistrationPreDiag->GetOutput( 1 );
+
+  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                    std::string( "_PreDiagReg2DiagNonRigidDifference.jpg" ), 
+                                    "non-rigidly registered pre-diagnostic difference image", 
+                                    imNonRigidRegistered, 
+                                    m_DiagDictionary );
+
+
+  // The control image registration
+
+  WriteRegistrationDifferenceImage( m_FileControl, 
+                                    std::string( "_Control2DiagDifference.jpg" ), 
+                                    "un-registered control difference image", 
+                                    m_ImControl, 
+                                    m_DiagDictionary );
 
   m_RegistrationControl = 
     RegisterTheImages( m_ImControl,
@@ -2469,6 +2508,22 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                             "_ControlReg2Diag_NonRigidTransform.nii.gz" ),
                        BuildOutputFilename( m_FileDiagnostic, 
                                             "_ControlReg2Diag_NonRigidRegistered.nii.gz" ) );
+ 
+  imAffineRegistered   = m_RegistrationControl->GetOutput( 0 );
+
+  WriteRegistrationDifferenceImage( m_FileControl, 
+                                    std::string( "_ControlReg2DiagAffineDifference.jpg" ), 
+                                    "affine registered control difference image", 
+                                    imAffineRegistered, 
+                                    m_DiagDictionary );
+
+  imNonRigidRegistered = m_RegistrationControl->GetOutput( 1 );
+
+  WriteRegistrationDifferenceImage( m_FileControl, 
+                                    std::string( "_ControlReg2DiagNonRigidDifference.jpg" ), 
+                                    "non-rigidly  registered control difference image", 
+                                    imNonRigidRegistered, 
+                                    m_DiagDictionary );
 
 };
 
@@ -2517,7 +2572,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   registration->SetTargetMask( m_ImDiagnosticMask );
   registration->SetSourceMask( maskSource );
 
+  registration->SetTargetRegnMask( m_ImDiagnosticRegnMask );
   registration->SetFileInputTargetRegistrationMask( m_FileDiagnosticRegnMask );
+  registration->SetFileOutputTargetRegistrationMask( m_FileDiagnosticRegnMask );
 
   registration->SetFileOutputAffineTransformation( fileOutputAffineTransformation );
   registration->SetFileOutputNonRigidTransformation( fileOutputNonRigidTransformation );
@@ -2528,9 +2585,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   std::cout << std::endl << "Starting the registration" << std::endl;
   registration->Update();
- 
-  typename ImageType::Pointer imAffineRegistered   = registration->GetOutput( 0 );
-  typename ImageType::Pointer imNonRigidRegistered = registration->GetOutput( 1 );
 
   return registration;
 };
