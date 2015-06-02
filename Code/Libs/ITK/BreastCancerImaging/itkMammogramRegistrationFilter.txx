@@ -90,7 +90,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>::MammogramRegistrationFil
 }
 
 
-
 /* -----------------------------------------------------------------------
    MakeOutput()
    ----------------------------------------------------------------------- */
@@ -323,7 +322,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   std::cout << "Computing distance transform of breast mask" << std::endl;
   distanceTransform->UpdateLargestPossibleRegion();
 
-
   // Apply the input mask
 
   typedef itk::MaskImageFilter< RealImageType, InputImageType, InputImageType > MaskFilterType;
@@ -337,7 +335,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   InputImagePointer imDistanceTransform = maskFilter->GetOutput();
   imDistanceTransform->DisconnectPipeline();
-
 
   return imDistanceTransform;
 }
@@ -384,7 +381,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   std::cout << "Thresholding distance transform of breast edge mask at: "
             << threshold << std::endl;
   thresholdFilter->UpdateLargestPossibleRegion();
-
 
   typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
 
@@ -508,7 +504,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   double parameterChangeTolerance;
   bool useCogInitialisation;
 
-
   // Set defaults
   finalInterpolator = 4;
   registrationInterpolator = 2;
@@ -541,8 +536,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   userSetPadValue = true;
   useWeighting = false;
   useCogInitialisation = true;
-
-
 
 
   // The factory.
@@ -826,7 +819,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
       singleResMethod->SetRescaleFixedUpperThreshold(intensityFixedUpperBound);
       singleResMethod->SetRescaleFixedMinimum((InputImagePixelType)lowerIntensity+1);
       singleResMethod->SetRescaleFixedMaximum((InputImagePixelType)higherIntensity);
-
       singleResMethod->SetRescaleMovingImage(true);
       singleResMethod->SetRescaleMovingBoundaryValue(lowerIntensity);
       singleResMethod->SetRescaleMovingLowerThreshold(intensityMovingLowerBound);
@@ -1076,6 +1068,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::string fileSearchRegNonRigid = niftk::ConcatenatePath( m_DirExecutable,
                                                           progRegNonRigid );
 
+
     if ( niftk::FileExists( fileSearchRegNonRigid ) )
     {
       progRegNonRigid = fileSearchRegNonRigid;
@@ -1186,7 +1179,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::cout << " " << envStringList[i].toStdString();
   }
   std::cout << std::endl << std::endl;
-
 
   if ( ( ! flgFinished ) ||
        ( callRegNonRigid.exitCode() ) ||
@@ -1752,7 +1744,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
       if ( m_FileTarget.length() )
       {
         m_FileOutputTargetRegistrationMask = niftk::ModifyImageFileSuffix( m_FileTarget,
-                                                   std::string( "_RegnMask.nii.gz" ) );
+									   std::string( "_RegnMask.nii.gz" ) );
 
         if ( m_DirWorking.length() )
         {
@@ -2039,7 +2031,6 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   imNonRigidRegistered = RunNonRigidRegistration();
 
   this->GraftNthOutput( 1, imNonRigidRegistered );
-
 }
 
 }

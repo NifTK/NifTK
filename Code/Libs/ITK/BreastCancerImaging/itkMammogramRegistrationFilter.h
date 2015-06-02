@@ -35,6 +35,7 @@ namespace itk
 
 template< class TInputImage, class TOutputImage >
 class MammogramRegistrationFilter :
+class MammogramRegistrationFilter :
   public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
@@ -118,6 +119,7 @@ public:
   }
 
   /// Set the final control point spacing for non-rigid registrations
+
   itkSetMacro( ControlPointSpacing, float );
   /// Get the final control point spacing for non-rigid registrations
   itkGetMacro( ControlPointSpacing, float );
@@ -223,7 +225,6 @@ public:
 
   /// Non-rigidly trasnform an image file using the registration
   void NonRigidlyTransformImageFile( std::string fileImage, std::string fileResult );
-
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /// Begin concept checking
@@ -345,7 +346,6 @@ protected:
                                            InputImagePointer imSource,
                                            int finalInterpolator=4,
                                            int registrationInterpolator=2 );
-
   /// The a non-rigid registration
   InputImagePointer RunNonRigidRegistration( void );
 
@@ -366,7 +366,6 @@ protected:
 private:
   MammogramRegistrationFilter(const Self &); //purposely not implemented
   void operator=(const Self &);  //purposely not implemented
-
 };
 
 
