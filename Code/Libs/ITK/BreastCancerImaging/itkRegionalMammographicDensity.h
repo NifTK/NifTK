@@ -17,7 +17,6 @@
 
 #include <itkMammogramAnalysis.h>
 
-
 /*!
  * \file niftkRegionalMammographicDensity.cxx
  * \page niftkRegionalMammographicDensity
