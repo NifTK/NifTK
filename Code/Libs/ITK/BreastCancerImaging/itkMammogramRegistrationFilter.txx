@@ -75,6 +75,8 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>::MammogramRegistrationFil
   m_TargetMask = 0;
   m_SourceMask = 0;
 
+  m_TargetRegnMask = 0;
+
   m_AffineTransform = 0;
   m_DeformationField = 0;
 
@@ -853,8 +855,8 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   if ( m_FlgDebug ) imSource->Print( std::cout );
 
   std::cout << "Setting fixed mask"<< std::endl;
-  filter->SetFixedMask( m_TargetMask );  
-  if ( m_FlgDebug ) m_TargetMask->Print( std::cout );
+  filter->SetFixedMask( m_TargetRegnMask );  
+  if ( m_FlgDebug ) m_TargetRegnMask->Print( std::cout );
 
   // If we havent asked for output, turn off reslicing.
   filter->SetDoReslicing(true);
@@ -1082,9 +1084,10 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   QStringList argsRegNonRigid; 
 
   argsRegNonRigid 
-    << "-ln"     << ssNumberOfLevels.str().c_str()
-    << "-lp"     << ssNumberOfLevelsToUse.str().c_str()
-    << "-sx"     << ssControlPointSpacing.str().c_str();
+    << "-pad" << "0."
+    << "-ln"  << ssNumberOfLevels.str().c_str()
+    << "-lp"  << ssNumberOfLevelsToUse.str().c_str()
+    << "-sx"  << ssControlPointSpacing.str().c_str();
 
   std::string fileTarget;
   std::string fileSource;
@@ -1645,6 +1648,8 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   m_TargetMask = static_cast< InputImageType* >( this->ProcessObject::GetInput( 2 ) );
   m_SourceMask = static_cast< InputImageType* >( this->ProcessObject::GetInput( 3 ) );
 
+  m_TargetRegnMask = static_cast< InputImageType* >( this->ProcessObject::GetInput( 4 ) );
+
   
   // Create the mask images?
   // ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1715,34 +1720,41 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   // Read or create a target registration mask
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImagePointer maskTargetRegn;
-
-  if ( m_FileInputTargetRegistrationMask.length() > 0 )
+  if ( m_TargetRegnMask )
   {
-    typedef itk::ImageFileReader< InputImageType  > ImageReaderType;
-
-    typename ImageReaderType::Pointer reader = ImageReaderType::New();
-
-    reader->SetFileName( m_FileInputTargetRegistrationMask );
-
-    std::cout << std::endl
-              << "Reading the target registration mask image: " 
-              << m_FileInputTargetRegistrationMask << std::endl;
-
-    reader->Update();
-
-    maskTargetRegn = reader->GetOutput();
-    maskTargetRegn->DisconnectPipeline();
-  }
-
-  else
-  {
-    maskTargetRegn = GetTargetRegistrationMask( m_TargetMask );
-
     if ( m_FileOutputTargetRegistrationMask.length() > 0 )
     {
       itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(), 
-                                               "target registration mask image", maskTargetRegn );
+                                               "target registration mask image", m_TargetRegnMask );
+    }
+  }
+
+  else if ( m_FileInputTargetRegistrationMask.length() > 0 )
+  {
+    typedef itk::ImageFileReader< InputImageType  > ImageReaderType;
+    
+    typename ImageReaderType::Pointer reader = ImageReaderType::New();
+    
+    reader->SetFileName( m_FileInputTargetRegistrationMask );
+    
+    std::cout << std::endl
+              << "Reading the target registration mask image: " 
+              << m_FileInputTargetRegistrationMask << std::endl;
+    
+    reader->Update();
+    
+    m_TargetRegnMask = reader->GetOutput();
+    m_TargetRegnMask->DisconnectPipeline();
+  }
+  
+  else
+  {
+    m_TargetRegnMask = GetTargetRegistrationMask( m_TargetMask );
+    
+    if ( m_FileOutputTargetRegistrationMask.length() > 0 )
+    {
+      itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(), 
+                                               "target registration mask image", m_TargetRegnMask );
     }
   }
     
