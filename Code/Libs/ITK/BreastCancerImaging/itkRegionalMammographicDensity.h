@@ -516,7 +516,7 @@ protected:
   void WriteRegistrationDifferenceImage( std::string fileInput, 
                                          std::string suffix, 
                                          const char *description,
-                                         typename OutputImageType::Pointer image,
+                                         typename ImageType::Pointer image,
                                          DictionaryType &dictionary );
 
   void AddPointToPolygon( typename PolygonType::Pointer &polygon, 
