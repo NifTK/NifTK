@@ -113,6 +113,9 @@ protected:
 
   std::vector< RealType > m_AcquistionTime;
 
+  /// Resample the mask image
+  MaskImagePointer ResampleMask();
+
   /** Does the real work. */
   virtual void GenerateData();
 

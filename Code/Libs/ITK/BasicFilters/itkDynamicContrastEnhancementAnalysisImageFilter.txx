@@ -19,7 +19,11 @@
  
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionConstIterator.h>
- 
+#include <itkIdentityTransform.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkResampleImageFilter.h>
+
+
 namespace itk
 {
  
@@ -96,6 +100,76 @@ DynamicContrastEnhancementAnalysisImageFilter<TInputImage, TOutputImage>::MakeOu
  
 
 /* -----------------------------------------------------------------------
+   ResampleMask()
+   ----------------------------------------------------------------------- */
+
+template< class TInputImage, class TOutputImage >
+typename DynamicContrastEnhancementAnalysisImageFilter<TInputImage, TOutputImage>::MaskImagePointer 
+DynamicContrastEnhancementAnalysisImageFilter<TInputImage, TOutputImage>::ResampleMask( void )
+{ 
+  if ( ! m_Mask )
+  {
+    return 0;
+  }
+
+  unsigned int iDim;
+
+  typename MaskImageType::RegionType maskRegion = m_Mask->GetLargestPossibleRegion();
+  InputImageRegionType imRegion = this->GetInput( 0 )->GetLargestPossibleRegion();
+
+  typename MaskImageType::SizeType maskSize = maskRegion.GetSize();
+  typename InputImageType::SizeType imSize = imRegion.GetSize();
+
+  
+  // Do we need to resample?
+
+  bool flgImageSizesAreIdentical = true;
+  for ( iDim=0; iDim<ImageDimension; iDim++ )
+  {
+    if ( imSize[iDim] != maskSize[iDim] )
+    {
+      flgImageSizesAreIdentical = false;
+      break;
+    }
+  }
+
+  if ( flgImageSizesAreIdentical )
+  {
+    return m_Mask;
+  }
+
+
+  // Yes
+
+  typedef itk::IdentityTransform<double, ImageDimension> TransformType;
+  typename TransformType::Pointer identityTransform = TransformType::New();
+
+  typedef itk::ResampleImageFilter<MaskImageType, MaskImageType > ResampleFilterType;
+  typename ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
+
+  typedef itk::NearestNeighborInterpolateImageFunction< MaskImageType, double >  InterpolatorType;
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
+
+  resampleFilter->SetSize( imSize );
+  resampleFilter->SetOutputSpacing(   this->GetInput( 0 )->GetSpacing() );
+  resampleFilter->SetOutputOrigin(    this->GetInput( 0 )->GetOrigin() );
+  resampleFilter->SetOutputDirection( this->GetInput( 0 )->GetDirection() );
+
+  resampleFilter->SetTransform( identityTransform );
+  resampleFilter->SetInterpolator( interpolator );
+
+  resampleFilter->SetInput( m_Mask );
+
+  resampleFilter->Update();
+
+  m_Mask = resampleFilter->GetOutput();
+  m_Mask->DisconnectPipeline();
+  
+  return m_Mask;
+}
+ 
+
+/* -----------------------------------------------------------------------
    GenerateData()
    ----------------------------------------------------------------------- */
 
@@ -125,6 +199,8 @@ void DynamicContrastEnhancementAnalysisImageFilter<TInputImage, TOutputImage>::G
   {
     itkExceptionMacro( << "ERROR: At least two input images required." );
   }
+
+  std::cout << "Number of input images: " << m_NumberOfInputImages << std::endl;
   
 
   // Allocate the output images
@@ -192,6 +268,9 @@ void DynamicContrastEnhancementAnalysisImageFilter<TInputImage, TOutputImage>::G
 
   if ( m_Mask )
   {
+    // Resample the mask if necessary
+    m_Mask = ResampleMask();
+
     itMask = new MaskIteratorType( m_Mask, m_Mask->GetLargestPossibleRegion() );
   }
 
