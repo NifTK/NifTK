@@ -179,7 +179,8 @@ int main(int argc, char** argv)
             << "Input breast edge points XML file: " << fileBreastEdgeXML << std::endl
             << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
             << "Region size in mm: " << regionSizeInMM << std::endl
-            << "Register? " << flgRegister << std::endl
+            << "Affine registration? " << flgRegisterAffine << std::endl
+            << "Non-rigid registration? " << flgRegisterNonRigid << std::endl
             << "Ouput directory: " << dirOutput << std::endl
             << "Output CSV file: " << fileOutputDensityCSV << std::endl
             << "Verbose? " << flgVerbose << std::endl
@@ -349,7 +350,9 @@ int main(int argc, char** argv)
       patient->SetRegionSizeInMM( regionSizeInMM );
 
       if ( flgOverwrite ) patient->SetOverwriteOn();
-      if ( flgRegister )  patient->SetRegisterOn();
+
+      if ( flgRegisterAffine )   patient->SetRegisterOn();
+      if ( flgRegisterNonRigid ) patient->SetRegisterNonRigidOn();
 
       if ( flgVerbose )   patient->SetVerboseOn();
       if ( flgDebug )     patient->SetDebugOn();
