@@ -12,7 +12,16 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
+MITK_CREATE_MODULE(niftkPCL
+  EXPORT_DEFINE NIFTKPCL_EXPORT
+  DEPENDS MitkCore
+  PACKAGE_DEPENDS Eigen PCL
+)
 
-mitkAddCustomModuleTest(mitkIGI-Make-Geometry-Test mitkIGIMakeGeometryTest ${NIFTK_DATA_DIR}/Input/IGI/)
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkPCL)
+endif()
 
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

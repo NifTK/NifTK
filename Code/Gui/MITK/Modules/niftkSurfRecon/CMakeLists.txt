@@ -12,16 +12,31 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_imagelookuptables)
+find_package(OpenMP)
 
-set(QT_USE_QTXML TRUE)
+set(_packages )
+if(BUILD_PCL)
+  list(APPEND _packages PCL)
+endif()
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE IMAGELOOKUPTABLES_EXPORTS
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkCoreGui
+MITK_CREATE_MODULE(niftkSurfRecon
+  EXPORT_DEFINE NIFTKSURFRECON_EXPORT
+  DEPENDS MitkCore niftkOpenCV niftkPCL
+  PACKAGE_DEPENDS ${_packages}
 )
 
+# only enable openmp on windows, for now.
+# see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2502
+if(MSVC)
+  if(OPENMP_FOUND)
+    set_target_properties(niftkSurfRecon PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+  endif()
+endif()
+
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_imagelookuptables)
+  cotire(niftkSurfRecon)
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
 endif()

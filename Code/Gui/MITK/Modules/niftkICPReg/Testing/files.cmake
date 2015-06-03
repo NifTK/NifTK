@@ -12,7 +12,12 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
+# tests with no extra command line parameter
+set(MODULE_TESTS
+)
 
-mitkAddCustomModuleTest(mitkIGI-Make-Geometry-Test mitkIGIMakeGeometryTest ${NIFTK_DATA_DIR}/Input/IGI/)
+set(MODULE_CUSTOM_TESTS
+  mitkSurfaceBasedRegistrationTest.cxx
+  mitkSurfaceBasedRegistrationTestRealData.cxx
+)
 

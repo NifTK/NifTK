@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <PointClouds/FitPlaneToPointCloudWrapper.h>
+#include <FitPlaneToPointCloudWrapper.h>
 
 
 //-----------------------------------------------------------------------------

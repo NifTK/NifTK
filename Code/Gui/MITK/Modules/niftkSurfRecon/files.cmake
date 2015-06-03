@@ -12,7 +12,9 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
-
-mitkAddCustomModuleTest(mitkIGI-Make-Geometry-Test mitkIGIMakeGeometryTest ${NIFTK_DATA_DIR}/Input/IGI/)
+set(CPP_FILES
+  SurfaceReconstruction.cxx
+  SequentialCpuQds.cxx
+  QDSCommon.cxx
+)
 

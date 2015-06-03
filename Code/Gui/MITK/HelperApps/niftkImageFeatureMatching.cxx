@@ -14,7 +14,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <SurfaceReconstruction/SequentialCpuQds.h>
+#include <SequentialCpuQds.h>
 #include <opencv2/core/types_c.h>
 #include <opencv/highgui.h>
 #include <mitkLogMacros.h>

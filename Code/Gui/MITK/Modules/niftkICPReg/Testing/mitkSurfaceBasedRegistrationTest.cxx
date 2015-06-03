@@ -16,7 +16,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
-#include <mitkPointSetReader.h>
+#include <mitkIOUtil.h>
 #include <mitkVtkSurfaceReader.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
@@ -97,13 +97,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
-  mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
-  PointReader->SetFileName(argv[1]);
-  mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer FixedPoints = mitk::IOUtil::LoadPointSet(argv[1]);
   mitk::Surface::Pointer FixedSurface = mitk::Surface::New();
-  PointReader->Update();
-  FixedPoints = PointReader->GetOutput();
-
+  
   int numberOfPoints = FixedPoints->GetSize();
   if ( numberOfPoints == 0  )
   {

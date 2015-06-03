@@ -14,7 +14,7 @@
 
 #include "QmitkStereoImageAndCameraSelectionWidget.h"
 #include <mitkNodePredicateDataType.h>
-#include <SurfaceReconstruction.h>
+#include <Undistortion.h>
 
 //-----------------------------------------------------------------------------
 QmitkStereoImageAndCameraSelectionWidget::QmitkStereoImageAndCameraSelectionWidget(QWidget *parent)

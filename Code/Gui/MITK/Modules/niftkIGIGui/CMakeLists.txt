@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-set(_packages Qt4|QtGui QVTK)
+set(_packages Qt4|QtGui QVTK NiftyLink)
 
 # optional audio data source depends on qt-multimedia, which may not be available.
 if(QT_QTMULTIMEDIA_INCLUDE_DIR)
@@ -25,7 +25,7 @@ endif()
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
   INCLUDE_DIRS Common DataSources OverlayEditor
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
+  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )
 

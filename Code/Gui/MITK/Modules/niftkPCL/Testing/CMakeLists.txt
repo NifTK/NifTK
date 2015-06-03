@@ -12,7 +12,6 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
+MITK_CREATE_MODULE_TESTS(LABELS niftkPCL)
 
-mitkAddCustomModuleTest(mitkIGI-Make-Geometry-Test mitkIGIMakeGeometryTest ${NIFTK_DATA_DIR}/Input/IGI/)
-
+mitkAddCustomModuleTest(FitPlaneToPointCloud-Test FitPlaneToPointCloudTest ${NIFTK_DATA_DIR}/Input/PointClouds/stereo_matching_output.mps)

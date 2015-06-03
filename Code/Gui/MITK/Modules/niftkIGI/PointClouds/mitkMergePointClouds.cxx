@@ -13,8 +13,7 @@
 =============================================================================*/
 
 #include "mitkMergePointClouds.h"
-#include <mitkPointSetReader.h>
-
+#include <mitkIOUtil.h>
 
 namespace mitk
 {
@@ -40,13 +39,7 @@ void MergePointClouds::AddPointSet(const std::string& filename)
     throw std::runtime_error("Point cloud file name cannot be empty");
 
   // read .mps file with mitk's build-in mechanism (very slow).
-  mitk::PointSetReader::Pointer   psreader = mitk::PointSetReader::New();
-  psreader->SetFileName(filename);
-  psreader->Update();
-  if (!psreader->GetSuccess())
-    throw std::runtime_error("Could not read point set file " + filename);
-
-  mitk::PointSet::Pointer pointset = psreader->GetOutput();
+  mitk::PointSet::Pointer pointset = mitk::IOUtil::LoadPointSet(filename);
   assert(pointset.IsNotNull());
 
   AddPointSet(pointset);

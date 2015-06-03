@@ -40,6 +40,13 @@ if(BUILD_MIDAS)
   )
 endif()
 
+if(BUILD_PCL)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkPCL
+  )
+endif()
+
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
@@ -48,7 +55,9 @@ if(BUILD_IGI)
     niftkOpenCV
     niftkIGI
     niftkIGIGui
+    niftkICPReg
     niftkPointRegService
+    niftkSurfRecon
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)

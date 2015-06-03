@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
-#include <PointClouds/FitPlaneToPointCloudWrapper.h>
+#include <FitPlaneToPointCloudWrapper.h>
 #include <FitPlaneToPointCloudCLP.h>
 
 

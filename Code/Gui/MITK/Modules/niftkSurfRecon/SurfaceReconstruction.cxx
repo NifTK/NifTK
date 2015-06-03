@@ -22,7 +22,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraCalibrationFacade.h>
 #ifdef _USE_PCL
-#include <PointClouds/mitkPCLData.h>
+#include <mitkPCLData.h>
 #endif
 
 namespace niftk 

@@ -12,27 +12,11 @@
 #
 #============================================================================*/
 
-find_package(OpenMP)
-
-set(_packages NiftyLink)
-if(BUILD_PCL)
-  list(APPEND _packages PCL)
-endif()
-
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS CentreLines Common DataSources SurfaceBasedRegistration SurfaceReconstruction TrackedImage TrackedPointer  PCLTest Utils Rendering MicroServices
-  DEPENDS MitkCore MitkOpenCVVideoSupport niftkCore MitkCameraCalibration niftkOpenCV niftkOpenCVUtils
-  PACKAGE_DEPENDS ${_packages}
+  INCLUDE_DIRS CentreLines TrackedImage TrackedPointer  Utils Rendering MicroServices
+  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils 
 )
-
-# only enable openmp on windows, for now.
-# see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2502
-if(MSVC)
-  if(OPENMP_FOUND)
-    set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
-  endif()
-endif()
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkIGI)

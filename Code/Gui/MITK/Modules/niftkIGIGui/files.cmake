@@ -21,6 +21,10 @@ set(CPP_FILES
   Common/QmitkImageAndTransformSenderWidget.cxx
   Common/QmitkMatrixWidget.cxx
   Common/QmitkCalibratedModelRenderingPipeline.cxx
+  DataSources/mitkIGITestDataUtils.cxx
+  DataSources/mitkIGIDataType.cxx
+  DataSources/mitkIGIDataSource.cxx
+  DataSources/mitkIGIOpenCVDataType.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
   DataSources/QmitkIGITimerBasedThread.cxx
