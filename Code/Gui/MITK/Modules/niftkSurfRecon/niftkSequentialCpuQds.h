@@ -12,25 +12,23 @@
 
 =============================================================================*/
 
-#ifndef SequentialCpuQds_h
-#define SequentialCpuQds_h
+#ifndef niftkSequentialCpuQds_h
+#define niftkSequentialCpuQds_h
 
-#include "niftkIGIExports.h"
-#include "QDSCommon.h"
+#include "niftkSurfReconExports.h"
+#include "niftkQDSCommon.h"
 #include <opencv2/core/types_c.h>
 // FIXME: typedefs.hpp should be enough! but there seem to be some issues...
 //#include <boost/gil/typedefs.hpp>
 #include <boost/gil/gil_all.hpp>
 #include <vector>
 
-#ifndef NIFTKIGI_EXPORT
-#define NIFTKIGI_EXPORT
+#ifndef NIFTKSURFRECON_EXPORT
+#define NIFTKSURFRECON_EXPORT
 #endif
-
 
 namespace niftk 
 {
-
 
 struct PropagationParameters
 {
@@ -50,7 +48,7 @@ struct PropagationParameters
 
 
 // FIXME: this is actually shared between all qds variants, so refactor this (later)
-struct NIFTKIGI_EXPORT RefPoint
+struct NIFTKSURFRECON_EXPORT RefPoint
 {
   unsigned short  x;
   unsigned short  y;
@@ -96,8 +94,7 @@ struct NIFTKIGI_EXPORT RefPoint
 #pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
 #endif
 
-
-class NIFTKIGI_EXPORT SequentialCpuQds : public QDSInterface
+class NIFTKSURFRECON_EXPORT SequentialCpuQds : public QDSInterface
 {
 
 public:
@@ -176,7 +173,6 @@ private:
 #pragma warning(pop)
 #endif
 
+} // end namespace
 
-} // namespace
-
-#endif // mitkSequentialCpuQds_h
+#endif

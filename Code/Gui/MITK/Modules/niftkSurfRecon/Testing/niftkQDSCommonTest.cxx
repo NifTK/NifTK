@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <mitkTestingMacros.h>
-#include <QDSCommon.h>
+#include <niftkQDSCommon.h>
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 
@@ -255,7 +255,7 @@ void Zncc_C1Tests()
 
 
 //-----------------------------------------------------------------------------
-int QDSCommonTest(int /*argc*/, char* /*argv*/[])
+int niftkQDSCommonTest(int /*argc*/, char* /*argv*/[])
 {
   //TestAreImagesTheSame();
 

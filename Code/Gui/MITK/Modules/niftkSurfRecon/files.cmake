@@ -13,8 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
-  SurfaceReconstruction.cxx
-  SequentialCpuQds.cxx
-  QDSCommon.cxx
+  niftkSurfaceReconstruction.cxx
+  niftkSequentialCpuQds.cxx
+  niftkQDSCommon.cxx
 )
 

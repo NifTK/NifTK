@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "SurfaceReconstruction.h"
-#include "SequentialCpuQds.h"
+#include "niftkSurfaceReconstruction.h"
+#include "niftkSequentialCpuQds.h"
 #include <opencv2/core/core_c.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkCameraIntrinsicsProperty.h>

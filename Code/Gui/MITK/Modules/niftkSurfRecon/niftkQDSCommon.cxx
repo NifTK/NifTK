@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QDSCommon.h"
+#include "niftkQDSCommon.h"
 #include <boost/gil/gil_all.hpp>
 #include <boost/static_assert.hpp>
 #include <stdexcept>
@@ -79,7 +79,13 @@ void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gi
 
 //-----------------------------------------------------------------------------
 // NOTE: returns values in the range of [-1...+1]
-float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view_t img0, boost::gil::gray8c_view_t img1, boost::gil::gray32sc_view_t integral0, boost::gil::gray32sc_view_t integral1, boost::gil::gray64fc_view_t square0, boost::gil::gray64fc_view_t square1)
+float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
+              boost::gil::gray8c_view_t img0,
+              boost::gil::gray8c_view_t img1,
+              boost::gil::gray32sc_view_t integral0,
+              boost::gil::gray32sc_view_t integral1,
+              boost::gil::gray64fc_view_t square0,
+              boost::gil::gray64fc_view_t square1)
 {
   // random variables used by code below
   // this is a relic from dan's code
@@ -93,11 +99,17 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
   int   Step  = &img0(0, 1)[0] - &img0(0, 0)[0];
   int   Steps = &integral0(0, 1)[0] - &integral0(0, 0)[0];
 
-  int x,y,otl,otr,obl,obr;
-  double  m0 = 0.0,
-          m1 = 0.0,
-          s0 = 0.0,
-          s1 = 0.0;
+  int x,
+      y,
+      otl,
+      otr,
+      obl,
+      obr;
+
+  double  m0,
+          m1,
+          s0,
+          s1;
 
   const float wa = (float) ((2 * w + 1) * (2 * w + 1));
 
@@ -106,8 +118,6 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
 
   int oy0=boy0,
       oy1=boy1;
-  int ox0=0,
-      ox1=0;
 
   // offsets for corners top-left, top-right, bottom-left, bottom-right
   int   w1 = w + 1;
@@ -156,8 +166,8 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
   float zncc = 0;
   for (y = -w; y <= w; ++y, oy1 += Step, oy0 += Step)
   {
-    ox0 = 0;
-    ox1 = 0;
+    int ox0 = 0;
+    int ox1 = 0;
     const unsigned char* line0 = &data0[oy0];
     const unsigned char* line1 = &data1[oy1];
     for (x = -w; x <= w; ++x)
@@ -168,12 +178,6 @@ float Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w, boost::gil::gray8c_view
 
   // the final result
   zncc = (zncc - wa * m0 * m1) / (s0 * s1);
-
-//if (zncc < -1.0f)
-//  std::cout << "burp";
-//if (zncc > 1.0f)
-//  std::cout << "bla";
-
   return zncc;
 }
 

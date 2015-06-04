@@ -14,11 +14,11 @@
 
 #include <iostream>
 #include <fstream>
-#include <SequentialCpuQds.h>
+#include <niftkSequentialCpuQds.h>
+#include <niftkImageFeatureMatchingCLP.h>
 #include <opencv2/core/types_c.h>
 #include <opencv/highgui.h>
 #include <mitkLogMacros.h>
-#include <niftkImageFeatureMatchingCLP.h>
 
 
 int main(int argc, char** argv)

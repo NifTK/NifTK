@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "SequentialCpuQds.h"
-#include "QDSCommon.h"
+#include "niftkSequentialCpuQds.h"
+#include "niftkQDSCommon.h"
 #include <queue>
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
@@ -26,13 +26,10 @@
 #include <omp.h>
 #endif
 
-
 BOOST_STATIC_ASSERT((sizeof(niftk::RefPoint) == sizeof(boost::gil::dev2n16_pixel_t)));
-
 
 namespace niftk 
 {
-
 
 //-----------------------------------------------------------------------------
 bool RefPoint::operator<(const RefPoint& rhs) const 

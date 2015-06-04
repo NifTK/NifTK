@@ -15,7 +15,7 @@
 #ifndef SurfaceReconstruction_h
 #define SurfaceReconstruction_h
 
-#include "niftkIGIExports.h"
+#include "niftkSurfReconExports.h"
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
 #include <itkObject.h>
@@ -25,17 +25,14 @@
 #include <itkMatrix.h>
 #include <CameraCalibration/Undistortion.h>
 
-
 // forward-decl
 namespace niftk 
 {
 class SequentialCpuQds;
 }
 
-
 namespace niftk 
 {
-
 
 // used for stereo-rig transformation, i.e. between left and right camera
 // FIXME: sticking in an opencv matrix would be prefered
@@ -46,7 +43,7 @@ typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> >    MatrixProperty;
  * \class SurfaceReconstruction
  * \brief Takes image data, and calculates a surface reconstruction, and write a point cloud to mitk::DataStorage.
  */
-class NIFTKIGI_EXPORT SurfaceReconstruction : public itk::Object
+class NIFTKSURFRECON_EXPORT SurfaceReconstruction : public itk::Object
 {
 public:
   enum Method
