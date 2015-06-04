@@ -15,13 +15,15 @@
 find_package(OpenMP)
 
 set(_packages )
+set(_modules MitkCore niftkOpenCV )
 if(BUILD_PCL)
   list(APPEND _packages PCL)
+  list(APPEND _modules niftkPCL)
 endif()
 
 MITK_CREATE_MODULE(niftkSurfRecon
   EXPORT_DEFINE NIFTKSURFRECON_EXPORT
-  DEPENDS MitkCore niftkOpenCV niftkPCL
+  DEPENDS ${_modules}
   PACKAGE_DEPENDS ${_packages}
 )
 
