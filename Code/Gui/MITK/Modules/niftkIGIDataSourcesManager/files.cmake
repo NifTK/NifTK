@@ -12,4 +12,20 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGIGuiManager)
+set(CPP_FILES
+  QmitkIGIDataSourceManager.cxx
+  QmitkIGIDataSourceManagerClearDownThread.cxx
+  QmitkIGIDataSourceManagerGuiUpdateThread.cxx
+)
+
+set(MOC_H_FILES
+  QmitkIGIDataSourceManager.h
+)
+
+set(UI_FILES
+  QmitkIGIDataSourceManager.ui
+)
+
+set(QRC_FILES
+  Resources/niftkIGIDataSourcesManager.qrc
+)

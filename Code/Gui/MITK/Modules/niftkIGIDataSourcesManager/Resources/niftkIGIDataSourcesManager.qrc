@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-  <qresource prefix="/niftkIGIGuiManagerResources/">
+  <qresource prefix="/niftkIGIDataSourcesManagerResources/">
     <file>play.png</file>
     <file>stop.png</file>
     <file>pause.png</file>

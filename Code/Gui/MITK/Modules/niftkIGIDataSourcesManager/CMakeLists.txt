@@ -12,27 +12,27 @@
 #
 #============================================================================*/
 
-set(niftkIGIGuiManager_DEPENDS
+set(niftkIGIDataSourcesManager_DEPENDS
   niftkIGIDataSources
 )
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-  set(niftkIGIGuiManager_DEPENDS
-    ${niftkIGIGuiManager_DEPENDS}
+  set(niftkIGIDataSourcesManager_DEPENDS
+    ${niftkIGIDataSourcesManager_DEPENDS}
     niftkNVidia
     niftkNVidiaGui
   )
 endif()
 
-MITK_CREATE_MODULE(niftkIGIGuiManager
+MITK_CREATE_MODULE(niftkIGIDataSourcesManager
   EXPORT_DEFINE NIFTKIGIGUIMANAGER_EXPORT
   INCLUDE_DIRS DataSources
-  DEPENDS ${niftkIGIGuiManager_DEPENDS}
+  DEPENDS ${niftkIGIDataSourcesManager_DEPENDS}
   PACKAGE_DEPENDS Qt4|QtGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGuiManager)
+  cotire(niftkIGIDataSourcesManager)
 endif()
 
 if(BUILD_TESTING)  
