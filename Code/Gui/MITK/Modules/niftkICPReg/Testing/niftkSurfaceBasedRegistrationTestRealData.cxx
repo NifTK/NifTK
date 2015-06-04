@@ -17,11 +17,9 @@
 #include <mitkTestingMacros.h>
 #include <niftkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
-#include <mitkPointSetReader.h>
-#include <mitkVtkSurfaceReader.h>
+#include <mitkIOUtil.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
-
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
@@ -57,41 +55,36 @@ int niftkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   
   int MaxIterations = atoi(argv[3]);
   int MaxLandmarks = atoi(argv[4]);
-  niftk::SurfaceBasedRegistration::Pointer registerer = niftk::SurfaceBasedRegistration::New();
+
+  // Read Fixed Points
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
+  mitk::PointSet::Pointer fixedPoints = mitk::PointSet::New();
+  mitk::Surface::Pointer fixedSurface = mitk::Surface::New();
+
+  try
+  {
+    fixedPoints = mitk::IOUtil::LoadPointSet(argv[1]);
+    fixednode->SetData(fixedPoints);
+  }
+  catch (const mitk::Exception& e)
+  {
+    // try again, maybe its a surface
+    int numberOfPoints = fixedPoints->GetSize();
+    if ( numberOfPoints == 0  )
+    {
+      fixedSurface = mitk::IOUtil::LoadSurface(argv[1]);
+      fixednode->SetData(fixedSurface);
+    }
+  }
+
+  // Read Moving Surface
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
-  //Read Fixed Points
-  mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
-  PointReader->SetFileName(argv[1]);
-  mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
-  mitk::Surface::Pointer FixedSurface = mitk::Surface::New();
-  PointReader->Update();
-  FixedPoints = PointReader->GetOutput();
+  mitk::Surface::Pointer movingSurface = mitk::Surface::New();
+  movingSurface = mitk::IOUtil::LoadSurface(argv[2]);
+  movingnode->SetData(movingSurface);
 
-  int numberOfPoints = FixedPoints->GetSize();
-  if ( numberOfPoints == 0  )
-  {
-    mitk::VtkSurfaceReader::Pointer  FixedSurfaceReader = mitk::VtkSurfaceReader::New();
-    FixedSurfaceReader->SetFileName(argv[1]);
-    FixedSurfaceReader->Update();
-    FixedSurface = FixedSurfaceReader->GetOutput();
-    fixednode->SetData(FixedSurface);
-  }
-  else
-  {
-    fixednode->SetData(FixedPoints);
-  }
-
-  //Read Moving Surface
-  mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
-  SurfaceReader->SetFileName(argv[2]);
-  mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
-  SurfaceReader->Update();
-  MovingSurface = SurfaceReader->GetOutput();
-  
-  movingnode->SetData(MovingSurface);
-  vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
-  
+  vtkSmartPointer<vtkMatrix4x4> resultMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  niftk::SurfaceBasedRegistration::Pointer registerer = niftk::SurfaceBasedRegistration::New();
   registerer->SetMaximumIterations(MaxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(MaxLandmarks);
   registerer->Update(fixednode, movingnode, *resultMatrix);

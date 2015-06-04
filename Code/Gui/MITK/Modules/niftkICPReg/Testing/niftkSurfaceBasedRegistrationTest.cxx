@@ -17,11 +17,9 @@
 #include <niftkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
-#include <mitkVtkSurfaceReader.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkDataStorageUtils.h>
-
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
@@ -94,46 +92,45 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
   niftk::TestSurfaceBasedRegistration::Pointer registerer = niftk::TestSurfaceBasedRegistration::New();
   registerer->SetMaximumNumberOfLandmarkPointsToUse(2000);
   registerer->SetMaximumIterations(100);
-  mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
+
+  // Read Fixed Points
+  mitk::DataNode::Pointer fixednode = mitk::DataNode::New();  
+  mitk::PointSet::Pointer fixedPoints = mitk::PointSet::New();
+  mitk::Surface::Pointer fixedSurface = mitk::Surface::New();
+
+  try
+  {
+    fixedPoints = mitk::IOUtil::LoadPointSet(argv[1]);
+    fixednode->SetData(fixedPoints);
+  }
+  catch (const mitk::Exception& e)
+  {
+    // try again, maybe its a surface
+    int numberOfPoints = fixedPoints->GetSize();
+    if ( numberOfPoints == 0  )
+    {
+      fixedSurface = mitk::IOUtil::LoadSurface(argv[1]);
+      fixednode->SetData(fixedSurface);
+    }
+  }
+  
+  // Read Moving Surface
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
-  //Read Fixed Points
-  mitk::PointSet::Pointer FixedPoints = mitk::IOUtil::LoadPointSet(argv[1]);
-  mitk::Surface::Pointer FixedSurface = mitk::Surface::New();
-  
-  int numberOfPoints = FixedPoints->GetSize();
-  if ( numberOfPoints == 0  )
-  {
-    mitk::VtkSurfaceReader::Pointer  FixedSurfaceReader = mitk::VtkSurfaceReader::New();
-    FixedSurfaceReader->SetFileName(argv[1]);
-    FixedSurfaceReader->Update();
-    FixedSurface = FixedSurfaceReader->GetOutput();
-    fixednode->SetData(FixedSurface);
-  }
-  else
-  {
-    fixednode->SetData(FixedPoints);
-  }
+  mitk::Surface::Pointer movingSurface = mitk::Surface::New();
+  movingSurface = mitk::IOUtil::LoadSurface(argv[2]);
+  movingnode->SetData(movingSurface);
 
-  //Read Moving Surface
-  mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
-  SurfaceReader->SetFileName(argv[2]);
-  mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
-  SurfaceReader->Update();
-  MovingSurface = SurfaceReader->GetOutput();
-  
-  movingnode->SetData(MovingSurface);
-
-  //Set up index to world matrices for each node
-  vtkMatrix4x4 * fixedMatrix = vtkMatrix4x4::New();
-  vtkMatrix4x4 * movingMatrix = vtkMatrix4x4::New();
-  vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
+  // Set up index to world matrices for each node
+  vtkSmartPointer<vtkMatrix4x4> fixedMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> movingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> resultMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   fixedMatrix->Identity();
   movingMatrix->Identity();
 
-
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   Uni_Rand->SetSeed(2);
-  //first test, both index to world ID
+
+  // First test, both index to world ID
   if ( registerer->SetIndexToWorld (fixednode, fixedMatrix) && 
       registerer->SetIndexToWorld (movingnode, movingMatrix ) )
   {
@@ -150,7 +147,7 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
 
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
-  //second test, moving non id fixed ID
+  // Second test, moving non id fixed ID
   niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(movingMatrix);
@@ -169,7 +166,8 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
   {
     return EXIT_FAILURE;
   }
-   //third test, fixed non id moving ID
+
+  // Third test, fixed non id moving ID
   niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(fixedMatrix);
@@ -188,7 +186,8 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
   {
     return EXIT_FAILURE;
   }
-    //forth test, both non id.
+
+  // Forth test, both non id.
   niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(fixedMatrix);
@@ -212,6 +211,7 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
   {
     return EXIT_FAILURE;
   }
+
   //still need to test
   //Set rigid, non rigid, 
   //Set number of iterations, 
