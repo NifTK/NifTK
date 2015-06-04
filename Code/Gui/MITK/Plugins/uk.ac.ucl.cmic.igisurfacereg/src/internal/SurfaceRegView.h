@@ -18,7 +18,7 @@
 #include <QmitkBaseView.h>
 #include "ui_SurfaceRegView.h"
 #include <vtkSmartPointer.h>
-#include <mitkSurfaceBasedRegistration.h>
+#include <niftkSurfaceBasedRegistration.h>
 #include <QFuture>
 #include <QFutureWatcher>
 
@@ -29,7 +29,7 @@ class vtkMatrix4x4;
  * \brief User interface to provide controls for surface based registration.
  *
  * This class manages user interaction, but delegates the algorithm to
- * mitk::SurfaceBasedRegistration.
+ * niftk::SurfaceBasedRegistration.
  *
  * \ingroup uk_ac_ucl_cmic_igisurfacereg_internal
 */
@@ -105,7 +105,7 @@ private:
 
   int m_MaxIterations;
   int m_MaxPoints;
-  mitk::SurfaceBasedRegistration::Method m_Method;
+  niftk::SurfaceBasedRegistration::Method m_Method;
 
   QFuture<float>           m_BackgroundProcess;
   QFutureWatcher<float>    m_BackgroundProcessWatcher;

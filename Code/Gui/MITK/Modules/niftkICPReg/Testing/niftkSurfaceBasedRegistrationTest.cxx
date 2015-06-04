@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <mitkSurfaceBasedRegistration.h>
+#include <niftkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
 #include <mitkVtkSurfaceReader.h>
@@ -27,7 +27,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
 
-namespace mitk
+namespace niftk
 {
 class TestSurfaceBasedRegistration : public SurfaceBasedRegistration
 {
@@ -78,7 +78,7 @@ bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix
 
 } // end namespace
 
-int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
+int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
 {
   if (argc != 3)
   {
@@ -91,7 +91,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
     return EXIT_FAILURE;
   } 
   
-  mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
+  niftk::TestSurfaceBasedRegistration::Pointer registerer = niftk::TestSurfaceBasedRegistration::New();
   registerer->SetMaximumNumberOfLandmarkPointsToUse(2000);
   registerer->SetMaximumIterations(100);
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();

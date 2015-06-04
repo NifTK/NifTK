@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef mitkSurfaceBasedRegistration_h
-#define mitkSurfaceBasedRegistration_h
+#ifndef niftkSurfaceBasedRegistration_h
+#define niftkSurfaceBasedRegistration_h
 
-#include "niftkIGIExports.h"
+#include "niftkICPRegExports.h"
 #include <mitkDataStorage.h>
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
@@ -26,28 +26,31 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 
-namespace mitk {
+namespace niftk {
+
+namespace SurfaceBasedRegistrationConstants
+{
+static const int DEFAULT_MAX_ITERATIONS = 2000;
+static const int DEFAULT_MAX_POINTS = 8000;
+static const bool DEFAULT_USE_DEFORMABLE = false;
+}
 
 /**
- * \class SurfaceBasedRegistration
- * \brief Class to perform a surface based registration of two MITK Surfaces/PointSets.
- */
-class NIFTKIGI_EXPORT SurfaceBasedRegistration : public itk::Object
+* \class SurfaceBasedRegistration
+* \brief Class to perform a surface based registration of two MITK Surfaces/PointSets.
+*/
+class NIFTKICPREG_EXPORT SurfaceBasedRegistration : public itk::Object
 {
 public:
 
   mitkClassMacro(SurfaceBasedRegistration, itk::Object);
   itkNewMacro(SurfaceBasedRegistration);
 
-  enum Method 
+  enum Method
   {
     VTK_ICP, // VTK's ICP algorithm, point to surface
     DEFORM   // A hypothetical non rigid point to surface algorithm
   };
-
-  static const int DEFAULT_MAX_ITERATIONS;
-  static const int DEFAULT_MAX_POINTS;
-  static const bool DEFAULT_USE_DEFORMABLE;
 
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
@@ -66,7 +69,10 @@ public:
   /**
    * \brief Generates a poly data from a mitk::DataNode.
    */
-  static void NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(), bool flipnormals = false);
+  static void NodeToPolyData ( const mitk::DataNode::Pointer& node ,
+                               vtkPolyData& polyOut,
+                               const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(),
+                               bool flipnormals = false);
 
   /**
    * \brief Generates a poly data from a mitk::PointSet.
@@ -83,12 +89,12 @@ protected:
 
 private:
 
-  int m_MaximumIterations;
-  int m_MaximumNumberOfLandmarkPointsToUse;
-  Method m_Method;
+  int                           m_MaximumIterations;
+  int                           m_MaximumNumberOfLandmarkPointsToUse;
+  Method                        m_Method;
 
-  mitk::DataNode::Pointer     m_CameraNode;
-  bool                        m_FlipNormals;
+  mitk::DataNode::Pointer       m_CameraNode;
+  bool                          m_FlipNormals;
 
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 

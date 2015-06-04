@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkTestingMacros.h>
-#include <mitkSurfaceBasedRegistration.h>
+#include <niftkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
 #include <mitkPointSetReader.h>
 #include <mitkVtkSurfaceReader.h>
@@ -42,7 +42,7 @@ bool MatrixOK ( vtkMatrix4x4 * matrix )
   return true;
 }
 
-int mitkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
+int niftkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
 {
   if (argc != 5)
   {
@@ -57,7 +57,7 @@ int mitkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   
   int MaxIterations = atoi(argv[3]);
   int MaxLandmarks = atoi(argv[4]);
-  mitk::SurfaceBasedRegistration::Pointer registerer = mitk::SurfaceBasedRegistration::New();
+  niftk::SurfaceBasedRegistration::Pointer registerer = niftk::SurfaceBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points

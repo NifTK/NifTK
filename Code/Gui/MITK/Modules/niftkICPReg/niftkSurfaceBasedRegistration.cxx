@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkSurfaceBasedRegistration.h"
+#include "niftkSurfaceBasedRegistration.h"
 #include <niftkVTKIterativeClosestPoint.h>
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
@@ -26,18 +26,13 @@
 #include <mitkDataStorageUtils.h>
 #include <vtkPolyDataNormals.h>
 
-
-namespace mitk
+namespace niftk
 {
- 
-const int SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS = 2000;
-const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 8000;
-const bool SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE = false;
 
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
-: m_MaximumIterations(SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS)
-, m_MaximumNumberOfLandmarkPointsToUse(SurfaceBasedRegistration::DEFAULT_MAX_POINTS)
+: m_MaximumIterations(SurfaceBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS)
+, m_MaximumNumberOfLandmarkPointsToUse(SurfaceBasedRegistrationConstants::DEFAULT_MAX_POINTS)
 , m_Method(VTK_ICP)
 , m_FlipNormals(false)
 , m_Matrix(NULL)
@@ -133,7 +128,9 @@ void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointe
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode, bool flipnormals)
+void SurfaceBasedRegistration::NodeToPolyData (
+    const mitk::DataNode::Pointer& node , vtkPolyData& polyOut,
+    const mitk::DataNode::Pointer& cameranode, bool flipnormals)
 {
   if (node.IsNull())
   {
@@ -190,7 +187,8 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
       vtkSmartPointer<vtkMatrix4x4> camtxf = vtkSmartPointer<vtkMatrix4x4>::New();
       mitk::GetCurrentTransformFromNode(cameranode, *camtxf);
 
-      vtkSmartPointer<niftk::BackfaceCullingFilter>   backfacecullingfilter = vtkSmartPointer<niftk::BackfaceCullingFilter>::New();
+      vtkSmartPointer<niftk::BackfaceCullingFilter>   backfacecullingfilter =
+          vtkSmartPointer<niftk::BackfaceCullingFilter>::New();
       backfacecullingfilter->SetInputDataObject(normalspoly);
       backfacecullingfilter->SetOutput(&polyOut);
       backfacecullingfilter->SetCameraPosition(camtxf);
@@ -201,10 +199,10 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
   }
   else
   {
-    mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, node is neither mitk::PointSet or mitk::Surface";
+    mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, \
+                   node is neither mitk::PointSet or mitk::Surface";
   }
 }
 
 //-----------------------------------------------------------------------------
 } // end namespace
-

@@ -13,6 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  mitkSurfaceBasedRegistration.cxx
+  niftkSurfaceBasedRegistration.cxx
 )
 
