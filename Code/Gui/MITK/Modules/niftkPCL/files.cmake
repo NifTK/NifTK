@@ -13,6 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  mitkPCLData.cxx
-  FitPlaneToPointCloudWrapper.cxx
+  niftkPCLData.cxx
+  niftkFitPlaneToPointCloudWrapper.cxx
 )

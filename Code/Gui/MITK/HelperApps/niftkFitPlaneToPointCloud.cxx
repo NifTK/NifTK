@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
-#include <FitPlaneToPointCloudWrapper.h>
-#include <FitPlaneToPointCloudCLP.h>
+#include <niftkFitPlaneToPointCloudWrapper.h>
+#include <niftkFitPlaneToPointCloudCLP.h>
 
 
 int main(int argc, char* argv[])

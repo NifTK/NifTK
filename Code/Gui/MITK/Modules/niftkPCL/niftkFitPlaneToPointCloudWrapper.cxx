@@ -12,16 +12,14 @@
 
 =============================================================================*/
 
-#include "FitPlaneToPointCloudWrapper.h"
+#include "niftkFitPlaneToPointCloudWrapper.h"
 #include <mitkIOUtil.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 
-
 namespace niftk
 {
-
 
 //-----------------------------------------------------------------------------
 FitPlaneToPointCloudWrapper::FitPlaneToPointCloudWrapper()
@@ -65,7 +63,12 @@ void FitPlaneToPointCloudWrapper::PrintOutput(std::ostream& log) const
     throw std::logic_error("Need to call FitPlane() first!");
   }
 
-  log << m_PlaneCoefficients->values[0] << ' ' << m_PlaneCoefficients->values[1] << ' ' << m_PlaneCoefficients->values[2] << ' ' << m_PlaneCoefficients->values[3] << std::endl;
+  log << m_PlaneCoefficients->values[0] << ' '
+      << m_PlaneCoefficients->values[1] << ' '
+      << m_PlaneCoefficients->values[2] << ' '
+      << m_PlaneCoefficients->values[3]
+      << std::endl;
+
   log << "# plane coefficients above." << std::endl;
   log << "# plane fitting errors:" << std::endl;
   log << "# minimum distance to estimated plane: " << m_MinPlaneDistance << std::endl
@@ -130,10 +133,18 @@ void FitPlaneToPointCloudWrapper::FitPlane(const mitk::PointSet::Pointer& points
   }
 
   // compute distance of each point to the fitted plane.
-  float   planecoeffthingy = std::sqrt(m_PlaneCoefficients->values[0] * m_PlaneCoefficients->values[0] +  m_PlaneCoefficients->values[1] * m_PlaneCoefficients->values[1] + m_PlaneCoefficients->values[2] * m_PlaneCoefficients->values[2]);
+  float   planecoeffthingy = std::sqrt(m_PlaneCoefficients->values[0] * m_PlaneCoefficients->values[0] +
+                                       m_PlaneCoefficients->values[1] * m_PlaneCoefficients->values[1] +
+                                       m_PlaneCoefficients->values[2] * m_PlaneCoefficients->values[2]
+                                      );
+
   for (pcl::PointCloud<pcl::PointXYZ>::const_iterator i = cloud->begin(); i != cloud->end(); ++i)
   {
-    float   dist = std::abs(m_PlaneCoefficients->values[0] * i->x + m_PlaneCoefficients->values[1] * i->y + m_PlaneCoefficients->values[2] * i->z + m_PlaneCoefficients->values[3]);
+    float   dist = std::abs(m_PlaneCoefficients->values[0] * i->x +
+                            m_PlaneCoefficients->values[1] * i->y +
+                            m_PlaneCoefficients->values[2] * i->z +
+                            m_PlaneCoefficients->values[3]
+                           );
     dist /= planecoeffthingy;
 
     m_RmsPlaneDistance += dist * dist;
@@ -146,6 +157,5 @@ void FitPlaneToPointCloudWrapper::FitPlane(const mitk::PointSet::Pointer& points
 
   // done.
 }
-
 
 } // namespace

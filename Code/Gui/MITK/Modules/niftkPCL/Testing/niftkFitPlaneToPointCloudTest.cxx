@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <FitPlaneToPointCloudWrapper.h>
+#include <niftkFitPlaneToPointCloudWrapper.h>
 
 
 //-----------------------------------------------------------------------------
@@ -186,7 +186,7 @@ static void RunRegressionTest(const char* filename)
 
 
 //-----------------------------------------------------------------------------
-int FitPlaneToPointCloudTest(int argc, char* argv[])
+int niftkFitPlaneToPointCloudTest(int argc, char* argv[])
 {
   if (argc != 2)
   {

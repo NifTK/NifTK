@@ -22,7 +22,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraCalibrationFacade.h>
 #ifdef _USE_PCL
-#include <mitkPCLData.h>
+#include <niftkPCLData.h>
 #endif
 
 namespace niftk 
@@ -319,7 +319,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         mitk::PointSet::Pointer points = mitk::PointSet::New();
 #ifdef _USE_PCL
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-        mitk::PCLData::Pointer                  pcldata = mitk::PCLData::New();
+        niftk::PCLData::Pointer                  pcldata = niftk::PCLData::New();
         pcldata->SetCloud(cloud);
 #endif
 

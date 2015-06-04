@@ -12,11 +12,10 @@
 
 =============================================================================*/
 
-#ifndef FitPlaneToPointCloudWrapper_h
-#define FitPlaneToPointCloudWrapper_h
+#ifndef niftkPlaneToPointCloudWrapper_h
+#define niftkPlaneToPointCloudWrapper_h
 
-
-#include "niftkIGIExports.h"
+#include "niftkPCLExports.h"
 #include <string>
 #include <ostream>
 #include <mitkCommon.h>
@@ -25,20 +24,17 @@
 #include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
 
-
 // forward declaration to avoid pulling in truckloads of pcl headers.
 namespace pcl
 {
 struct ModelCoefficients;
 }
 
-
 namespace niftk
 {
 
-
 // i dont think this should be called ...Wrapper. suggestions for a better name?
-class NIFTKIGI_EXPORT FitPlaneToPointCloudWrapper : public itk::Object
+class NIFTKPCL_EXPORT FitPlaneToPointCloudWrapper : public itk::Object
 {
 public:
   mitkClassMacro(FitPlaneToPointCloudWrapper, itk::Object);
@@ -80,15 +76,13 @@ public:
 
 
 private:
-  pcl::ModelCoefficients*     m_PlaneCoefficients;
-
-  float   m_MinPlaneDistance;
-  float   m_MaxPlaneDistance;
-  float   m_AvgPlaneDistance;
-  float   m_RmsPlaneDistance;
+  pcl::ModelCoefficients*  m_PlaneCoefficients;
+  float                    m_MinPlaneDistance;
+  float                    m_MaxPlaneDistance;
+  float                    m_AvgPlaneDistance;
+  float                    m_RmsPlaneDistance;
 };
 
+} // end namespace
 
-} // namespace
-
-#endif // FitPlaneToPointCloudWrapper
+#endif

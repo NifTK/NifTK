@@ -17,6 +17,6 @@ set(MODULE_TESTS
 )
 
 set(MODULE_CUSTOM_TESTS
-  FitPlaneToPointCloudTest.cxx
+  niftkFitPlaneToPointCloudTest.cxx
 )
 

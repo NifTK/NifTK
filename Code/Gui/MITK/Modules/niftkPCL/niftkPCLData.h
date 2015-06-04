@@ -12,20 +12,19 @@
 
 =============================================================================*/
 
-#ifndef mitkPCLData_h
-#define mitkPCLData_h
+#ifndef niftkPCLData_h
+#define niftkPCLData_h
 
-#include "niftkCoreExports.h"
+#include "niftkPCLExports.h"
 #include <mitkBaseData.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
 
-namespace mitk
+namespace niftk
 {
 
-
-class NIFTKCORE_EXPORT PCLData : public mitk::BaseData
+class NIFTKPCL_EXPORT PCLData : public mitk::BaseData
 {
 public:
   mitkClassMacro(PCLData, mitk::BaseData);
@@ -70,4 +69,4 @@ private:
 
 } // namespace
 
-#endif // mitkPCLData_h
+#endif

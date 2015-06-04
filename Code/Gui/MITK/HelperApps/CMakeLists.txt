@@ -188,7 +188,7 @@ if(SlicerExecutionModel_FOUND)
     if(BUILD_PCL)
       set(SLICER_HELPER_APPS
         ${SLICER_HELPER_APPS}
-        FitPlaneToPointCloud
+        niftkFitPlaneToPointCloud
       )
     endif()
 

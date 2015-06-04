@@ -12,13 +12,12 @@
 
 =============================================================================*/
 
-#include "mitkPCLData.h"
+#include "niftkPCLData.h"
 #include <mitkGeometry3D.h>
 
 
-namespace mitk
+namespace niftk
 {
-
 
 //-----------------------------------------------------------------------------
 PCLData::PCLData()
