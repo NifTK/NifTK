@@ -12,5 +12,7 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGIGui)
+MITK_CREATE_MODULE_TESTS(LABELS niftkIGIDataSources)
 
+mitkAddCustomModuleTest(QmitkIGIUltrasonixToolMemoryTest-greyscale QmitkIGIUltrasonixToolMemoryTest ${NIFTK_DATA_DIR}/Input/cte_circle_gm.png)
+mitkAddCustomModuleTest(QmitkIGIUltrasonixToolMemoryTest-colour QmitkIGIUltrasonixToolMemoryTest ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png)

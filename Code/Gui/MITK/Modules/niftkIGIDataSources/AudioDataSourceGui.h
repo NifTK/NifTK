@@ -15,7 +15,7 @@
 #ifndef AudioDataSourceGui_h
 
 #include "niftkIGIGuiExports.h"
-#include <DataSources/QmitkIGIDataSourceGui.h>
+#include <QmitkIGIDataSourceGui.h>
 #include "ui_AudioDataSourceGui.h"
 
 class QWidget;

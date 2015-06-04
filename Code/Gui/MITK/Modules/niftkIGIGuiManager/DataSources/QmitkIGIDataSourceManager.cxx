@@ -42,7 +42,7 @@
 #endif
 
 #ifdef QT_MULTIMEDIA_LIB
-#include <DataSources/AudioDataSource.h>
+#include <AudioDataSource.h>
 #endif
 
 

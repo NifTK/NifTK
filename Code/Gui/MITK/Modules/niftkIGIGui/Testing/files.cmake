@@ -14,12 +14,8 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  mitkIGIDataSourceTest.cxx
-  QmitkIGINiftyLinkDataSourceMemoryTest.cxx
-  QmitkIGITrackerSourceTransformTest.cxx
   QmitkIGIUtilsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
-  QmitkIGIUltrasonixToolMemoryTest.cxx
 )

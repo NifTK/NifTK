@@ -55,6 +55,7 @@ if(BUILD_IGI)
     niftkOpenCV
     niftkIGI
     niftkIGIGui
+    niftkIGIDataSources
     niftkICPReg
     niftkPointRegService
     niftkSurfRecon

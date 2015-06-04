@@ -12,5 +12,13 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGIGui)
+# tests with no extra command line parameter
+set(MODULE_TESTS
+  mitkIGIDataSourceTest.cxx
+  QmitkIGINiftyLinkDataSourceMemoryTest.cxx
+  QmitkIGITrackerSourceTransformTest.cxx
+)
 
+set(MODULE_CUSTOM_TESTS
+  QmitkIGIUltrasonixToolMemoryTest.cxx
+)

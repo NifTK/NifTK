@@ -12,29 +12,26 @@
 #
 #============================================================================*/
 
-set(niftkIGIGuiManager_DEPENDS
-  niftkIGIDataSources
-)
+set(_packages Qt4|QtGui QVTK NiftyLink)
 
-if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-  set(niftkIGIGuiManager_DEPENDS
-    ${niftkIGIGuiManager_DEPENDS}
-    niftkNVidia
-    niftkNVidiaGui
+# optional audio data source depends on qt-multimedia, which may not be available.
+if(QT_QTMULTIMEDIA_INCLUDE_DIR)
+  set(_packages
+    ${_packages}
+    Qt4|QtMultimedia
   )
 endif()
 
-MITK_CREATE_MODULE(niftkIGIGuiManager
-  EXPORT_DEFINE NIFTKIGIGUIMANAGER_EXPORT
-  INCLUDE_DIRS DataSources
-  DEPENDS ${niftkIGIGuiManager_DEPENDS}
-  PACKAGE_DEPENDS Qt4|QtGui
+MITK_CREATE_MODULE(niftkIGIDataSources
+  EXPORT_DEFINE NIFTKIGIDATASOURCES_EXPORT
+  DEPENDS niftkIGIGui niftkIGI niftkOpenCV
+  PACKAGE_DEPENDS ${_packages}
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGuiManager)
+  cotire(niftkIGIDataSources)
 endif()
 
-if(BUILD_TESTING)  
-  #add_subdirectory(Testing)
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
 endif()

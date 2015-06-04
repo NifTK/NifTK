@@ -15,8 +15,8 @@
 #ifndef AudioDataSource_h
 
 #include "niftkIGIGuiExports.h"
-#include <DataSources/mitkIGIDataType.h>
-#include <DataSources/QmitkIGILocalDataSource.h>
+#include <mitkIGIDataType.h>
+#include <QmitkIGILocalDataSource.h>
 #include <QAudioInput>
 
 
