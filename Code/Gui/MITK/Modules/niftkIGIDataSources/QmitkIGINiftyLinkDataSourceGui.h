@@ -15,7 +15,7 @@
 #ifndef QmitkIGINiftyLinkDataSourceGui_h
 #define QmitkIGINiftyLinkDataSourceGui_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGIDataSourceGui.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 
@@ -25,7 +25,7 @@ class ClientDescriptorXMLBuilder;
  * \class QmitkIGINiftyLinkDataSourceGui
  * \brief Base class for NiftyLink Data Source Guis.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataSourceGui : public QmitkIGIDataSourceGui
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGINiftyLinkDataSourceGui : public QmitkIGIDataSourceGui
 {
   Q_OBJECT
 

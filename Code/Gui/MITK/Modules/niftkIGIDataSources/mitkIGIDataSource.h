@@ -15,7 +15,7 @@
 #ifndef mitkIGIDataSource_h
 #define mitkIGIDataSource_h
 
-#include "niftkIGIExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <NiftyLinkUtils.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
@@ -41,7 +41,7 @@ namespace mitk {
  * representation of it, i.e. if you Set/Get the igtlUint64 values, then NO-ONE can modify the
  * timestamp and set the time to TAI for example.
  */
-class NIFTKIGI_EXPORT IGIDataSource : public itk::Object
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSource : public itk::Object
 {
 
 public:

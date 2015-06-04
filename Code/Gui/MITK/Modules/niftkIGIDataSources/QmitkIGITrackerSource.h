@@ -15,7 +15,7 @@
 #ifndef QmitkIGITrackerSource_h
 #define QmitkIGITrackerSource_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
@@ -29,7 +29,7 @@
  * \class QmitkIGITrackerSource
  * \brief Base class for IGI Tracker Tools.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGITrackerSource : public QmitkIGINiftyLinkDataSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGITrackerSource : public QmitkIGINiftyLinkDataSource
 {
   Q_OBJECT
 

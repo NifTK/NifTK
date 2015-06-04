@@ -15,7 +15,7 @@
 #ifndef QmitkIGINiftyLinkDataType_h
 #define QmitkIGINiftyLinkDataType_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <mitkIGIDataType.h>
 #include <NiftyLinkMessage.h>
 
@@ -23,7 +23,7 @@
  * \class QmitkIGINiftyLinkDataType
  * \brief Data wrapper for messages coming from NiftyLink.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataType : public mitk::IGIDataType
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGINiftyLinkDataType : public mitk::IGIDataType
 {
 
 public:

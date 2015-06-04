@@ -14,14 +14,14 @@
 
 #ifndef AudioDataSourceGui_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <QmitkIGIDataSourceGui.h>
 #include "ui_AudioDataSourceGui.h"
 
 class QWidget;
 
 
-class NIFTKIGIGUI_EXPORT AudioDataSourceGui : public QmitkIGIDataSourceGui, public Ui_AudioDataSourceGui
+class NIFTKIGIDATASOURCES_EXPORT AudioDataSourceGui : public QmitkIGIDataSourceGui, public Ui_AudioDataSourceGui
 {
   Q_OBJECT
 

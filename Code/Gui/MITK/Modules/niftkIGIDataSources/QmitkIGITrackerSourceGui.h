@@ -15,7 +15,7 @@
 #ifndef QmitkIGITrackerSourceGui_h
 #define QmitkIGITrackerSourceGui_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGITrackerSourceGui.h"
 
@@ -26,7 +26,7 @@ class QmitkIGITrackerSource;
  * \class QmitkIGITrackerSourceGui
  * \brief Base class for IGI Tracker Source GUIs.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGITrackerSourceGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGITrackerSourceGui
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGITrackerSourceGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGITrackerSourceGui
 {
   Q_OBJECT
 

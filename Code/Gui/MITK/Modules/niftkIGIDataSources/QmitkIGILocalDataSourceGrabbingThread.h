@@ -15,7 +15,7 @@
 #ifndef QmitkIGILocalDataSourceGrabbingThread_h
 #define QmitkIGILocalDataSourceGrabbingThread_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGITimerBasedThread.h"
 #include "QmitkIGILocalDataSource.h"
 
@@ -23,7 +23,7 @@
  * \class QmitkIGILocalDataSourceGrabbingThread
  * \brief Thread simply to call back onto QmitkIGILocalDataSource and call QmitkIGILocalDataSource::GrabData().
  */
-class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGILocalDataSourceGrabbingThread : public QmitkIGITimerBasedThread
 {
 public:
   QmitkIGILocalDataSourceGrabbingThread(QObject *parent, QmitkIGILocalDataSource *source);

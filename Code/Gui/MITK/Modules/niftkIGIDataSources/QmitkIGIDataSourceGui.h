@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSourceGui_h
 #define QmitkIGIDataSourceGui_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <itkObject.h>
 #include <QWidget>
 #include <mitkDataStorage.h>
@@ -25,7 +25,7 @@
  * \class QmitkIGIDataSourceGui
  * \brief Base class for the GUI belonging to an IGI Tool.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceGui : public QWidget, public itk::Object
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGIDataSourceGui : public QWidget, public itk::Object
 {
   Q_OBJECT
 

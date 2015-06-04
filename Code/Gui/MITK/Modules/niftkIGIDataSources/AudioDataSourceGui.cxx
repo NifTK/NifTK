@@ -22,7 +22,7 @@
 
 Q_DECLARE_METATYPE(QAudioFormat);
 
-NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, AudioDataSourceGui, "IGI Audio Source Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIDATASOURCES_EXPORT, AudioDataSourceGui, "IGI Audio Source Gui")
 
 
 //-----------------------------------------------------------------------------

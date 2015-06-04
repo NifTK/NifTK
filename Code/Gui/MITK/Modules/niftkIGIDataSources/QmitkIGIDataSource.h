@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSource_h
 #define QmitkIGIDataSource_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <mitkIGIDataSource.h>
 #include <QDir>
 #include <QObject>
@@ -28,7 +28,7 @@ class QmitkIGIDataSourceBackgroundSaveThread;
  * \class QmitkIGIDataSource
  * \brief Base class for IGI Data Sources to provide a background thread to save data.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIDataSource : public QObject, public mitk::IGIDataSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGIDataSource : public QObject, public mitk::IGIDataSource
 {
 
   Q_OBJECT

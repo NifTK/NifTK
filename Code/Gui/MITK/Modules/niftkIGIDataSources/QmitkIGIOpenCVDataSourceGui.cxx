@@ -23,7 +23,7 @@
 #include "QmitkIGIOpenCVDataSource.h"
 #include <QmitkStdMultiWidget.h>
 
-NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI Open CV Video Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIDATASOURCES_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI Open CV Video Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()

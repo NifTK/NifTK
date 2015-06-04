@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSourceBackgroundSaveThread_h
 #define QmitkIGIDataSourceBackgroundSaveThread_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGITimerBasedThread.h"
 #include "QmitkIGIDataSource.h"
 
@@ -23,7 +23,7 @@
  * \class QmitkIGIDataSourceBackgroundSaveThread
  * \brief Thread class, based on QmitkIGITimerBasedThread to simply call "Save" on the mitk::IGIDataSource's buffer.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIDataSourceBackgroundSaveThread : public QmitkIGITimerBasedThread
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGIDataSourceBackgroundSaveThread : public QmitkIGITimerBasedThread
 {
 public:
   QmitkIGIDataSourceBackgroundSaveThread(QObject *parent, QmitkIGIDataSource *source);

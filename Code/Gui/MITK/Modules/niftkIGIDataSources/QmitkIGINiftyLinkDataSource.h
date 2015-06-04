@@ -15,7 +15,7 @@
 #ifndef QmitkIGINiftyLinkDataSource_h
 #define QmitkIGINiftyLinkDataSource_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGIDataSource.h"
 #include <NiftyLinkSocketObject.h>
 #include <Common/NiftyLinkXMLBuilder.h>
@@ -26,7 +26,7 @@
  * from NiftyLink. NiftyLink uses Qt, so this class is in the Qt library, and named
  * Qmitk.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGINiftyLinkDataSource : public QmitkIGIDataSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGINiftyLinkDataSource : public QmitkIGIDataSource
 {
   Q_OBJECT
 

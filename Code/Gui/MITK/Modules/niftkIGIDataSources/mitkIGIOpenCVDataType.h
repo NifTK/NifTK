@@ -15,7 +15,7 @@
 #ifndef mitkIGIOpenCVDataType_h
 #define mitkIGIOpenCVDataType_h
 
-#include "niftkIGIExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "mitkIGIDataType.h"
 #include <cv.h>
 
@@ -26,7 +26,7 @@ namespace mitk
  * \class IGIOpenCVDataType
  * \brief Class to represent video frame data from OpenCV, to integrate within the niftkIGI framework.
  */
-class NIFTKIGI_EXPORT IGIOpenCVDataType : public IGIDataType
+class NIFTKIGIDATASOURCES_EXPORT IGIOpenCVDataType : public IGIDataType
 {
 public:
 

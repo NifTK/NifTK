@@ -15,7 +15,7 @@
 #ifndef QmitkIGILocalDataSource_h
 #define QmitkIGILocalDataSource_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGIDataSource.h"
 #include <mitkITKImageImport.txx>
 #include <itkImportImageFilter.h>
@@ -29,7 +29,7 @@ class QmitkIGILocalDataSourceGrabbingThread;
  * \brief Base class for IGI Data Sources that are not receiving networked input,
  * and hence are grabbing data from the local machine - eg. Video grabber.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGILocalDataSource : public QmitkIGIDataSource
 {
 
   Q_OBJECT

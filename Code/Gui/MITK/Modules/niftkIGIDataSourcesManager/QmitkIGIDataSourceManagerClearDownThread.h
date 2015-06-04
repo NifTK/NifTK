@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSourceManagerClearDownThread_h
 #define QmitkIGIDataSourceManagerClearDownThread_h
 
-#include "niftkIGIGuiManagerExports.h"
+#include "niftkIGIDataSourcesManagerExports.h"
 #include <QmitkIGITimerBasedThread.h>
 #include "QmitkIGIDataSourceManager.h"
 
@@ -23,7 +23,7 @@
  * \class QmitkIGIDataSourceManagerClearDownThread
  * \brief Class thats triggered from a QTimer in its own thread, to call QmitkIGIDataSourceManager::OnCleanData.
  */
-class NIFTKIGIGUIMANAGER_EXPORT QmitkIGIDataSourceManagerClearDownThread : public QmitkIGITimerBasedThread
+class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManagerClearDownThread : public QmitkIGITimerBasedThread
 {
 public:
   QmitkIGIDataSourceManagerClearDownThread(QObject *parent, QmitkIGIDataSourceManager *manager);

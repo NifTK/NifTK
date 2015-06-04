@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSourceManager_h
 #define QmitkIGIDataSourceManager_h
 
-#include "niftkIGIGuiManagerExports.h"
+#include "niftkIGIDataSourcesManagerExports.h"
 #include "ui_QmitkIGIDataSourceManager.h"
 #include <itkObject.h>
 #include <QWidget>
@@ -47,7 +47,7 @@ class QmitkIGIDataSourceGui;
  * This widget acts like a widget factory, setting up sources, instantiating
  * the appropriate GUI, and loading it into the grid layout owned by this widget.
  */
-class NIFTKIGIGUIMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_QmitkIGIDataSourceManager, public itk::Object
+class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_QmitkIGIDataSourceManager, public itk::Object
 {
 
   Q_OBJECT

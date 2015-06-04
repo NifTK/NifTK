@@ -15,7 +15,7 @@
 #ifndef mitkIGITestDataUtils_h
 #define mitkIGITestDataUtils_h
 
-#include "niftkIGIExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <mitkVector.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
@@ -34,7 +34,7 @@ namespace mitk
  * \param centerPoint the centre of the cone (in VTK terms, see SetCenter).
  * \param direction the directionof the cone (in VTK terms, see SetDirection).
  */
-NIFTKIGI_EXPORT
+NIFTKIGIDATASOURCES_EXPORT
 mitk::DataNode::Pointer CreateConeRepresentation(
     const char* label,
     const mitk::Vector3D& centerPoint,
@@ -45,7 +45,7 @@ mitk::DataNode::Pointer CreateConeRepresentation(
  * \param label the name as it appears in DataStorage
  * \param direction the directionof the cone (in VTK terms, see SetDirection).
  */
-NIFTKIGI_EXPORT
+NIFTKIGIDATASOURCES_EXPORT
 mitk::DataNode::Pointer CreateConeRepresentation(
     const char* label,
     mitk::Vector3D& direction

@@ -15,7 +15,7 @@
 #ifndef QmitkIGIUltrasonixToolGui_h
 #define QmitkIGIUltrasonixToolGui_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
 #include <NiftyLinkMessage.h>
@@ -30,7 +30,7 @@ class QLabel;
  * \class QmitkIGIUltrasonixToolGui
  * \brief Implements a tool GUI interface to receive and process messages from the Ultrasonix scanner.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixToolGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGIUltrasonixToolGui
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGIUltrasonixToolGui : public QmitkIGINiftyLinkDataSourceGui, public Ui_QmitkIGIUltrasonixToolGui
 {
   Q_OBJECT
 

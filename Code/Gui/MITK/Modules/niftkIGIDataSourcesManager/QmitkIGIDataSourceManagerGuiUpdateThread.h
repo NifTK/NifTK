@@ -15,7 +15,7 @@
 #ifndef QmitkIGIDataSourceManagerGuiUpdateThread_h
 #define QmitkIGIDataSourceManagerGuiUpdateThread_h
 
-#include "niftkIGIGuiManagerExports.h"
+#include "niftkIGIDataSourcesManagerExports.h"
 #include <QmitkIGITimerBasedThread.h>
 #include "QmitkIGIDataSourceManager.h"
 
@@ -23,7 +23,7 @@
  * \class QmitkIGIDataSourceManagerGuiUpdateThread
  * \brief Class thats triggered from a QTimer in its own thread, to call QmitkIGIDataSourceManager::OnUpdateDisplay.
  */
-class NIFTKIGIGUIMANAGER_EXPORT QmitkIGIDataSourceManagerGuiUpdateThread : public QmitkIGITimerBasedThread
+class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManagerGuiUpdateThread : public QmitkIGITimerBasedThread
 {
 public:
   QmitkIGIDataSourceManagerGuiUpdateThread(QObject *parent, QmitkIGIDataSourceManager *manager);

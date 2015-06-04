@@ -23,14 +23,14 @@
 #include <itkRGBAPixel.h>
 #include <QImage>
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 
 /**
  * \class QmitkQImageToMitkImageFilter
  * \brief A basic interface to produce a 2D Mitk image from a 2D QImage.
  * Currently only supports a QImage with format
  */
-class NIFTKIGIGUI_EXPORT QmitkQImageToMitkImageFilter : public mitk::ImageSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkQImageToMitkImageFilter : public mitk::ImageSource
 {
   public:
     typedef itk::RGBPixel< unsigned char > UCRGBPixelType;

@@ -15,7 +15,7 @@
 #ifndef QmitkIGITimerBasedThread_h
 #define QmitkIGITimerBasedThread_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <QThread>
 #include <QTimer>
 #include "niftkIGIGuiExports.h"
@@ -28,7 +28,7 @@
  * \see QmitkIGIDataSourceManagerClearDownThread
  * \see QmitkIGIDataSourceManagerGuiUpdateThread
  */
-class NIFTKIGIGUI_EXPORT QmitkIGITimerBasedThread : public QThread
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGITimerBasedThread : public QThread
 {
   Q_OBJECT
 

@@ -14,7 +14,7 @@
 
 #ifndef AudioDataSource_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include <mitkIGIDataType.h>
 #include <QmitkIGILocalDataSource.h>
 #include <QAudioInput>
@@ -26,7 +26,7 @@ class QAudioFormat;
 class QFile;
 
 
-class NIFTKIGIGUI_EXPORT AudioDataType : public mitk::IGIDataType
+class NIFTKIGIDATASOURCES_EXPORT AudioDataType : public mitk::IGIDataType
 {
 public:
   mitkClassMacro(AudioDataType, mitk::IGIDataType);
@@ -52,7 +52,7 @@ private:
 };
 
 
-class NIFTKIGIGUI_EXPORT AudioDataSource : public QmitkIGILocalDataSource
+class NIFTKIGIDATASOURCES_EXPORT AudioDataSource : public QmitkIGILocalDataSource
 {
   Q_OBJECT
 

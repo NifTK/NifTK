@@ -22,7 +22,7 @@
 #include "QmitkIGIDataSourceMacro.h"
 #include <mitkRenderingManager.h>
 
-NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIDATASOURCES_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()

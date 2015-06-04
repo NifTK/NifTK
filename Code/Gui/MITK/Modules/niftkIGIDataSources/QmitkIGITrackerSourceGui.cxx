@@ -19,7 +19,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 
-NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerSourceGui, "IGI Tracker Source Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIDATASOURCES_EXPORT, QmitkIGITrackerSourceGui, "IGI Tracker Source Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSourceGui::QmitkIGITrackerSourceGui()

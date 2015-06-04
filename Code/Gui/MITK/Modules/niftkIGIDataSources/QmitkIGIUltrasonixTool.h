@@ -15,7 +15,7 @@
 #ifndef QmitkIGIUltrasonixTool_h
 #define QmitkIGIUltrasonixTool_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIDataSourcesExports.h"
 #include "QmitkQImageToMitkImageFilter.h"
 #include "QmitkIGINiftyLinkDataSource.h"
 #include <mitkImage.h>
@@ -28,7 +28,7 @@
  * \class QmitkIGIUltrasonixTool
  * \brief Implements a QmitkIGINiftyLinkDataSource interface to receive and process messages from the Ultrasonix scanner.
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSource
+class NIFTKIGIDATASOURCES_EXPORT QmitkIGIUltrasonixTool : public QmitkIGINiftyLinkDataSource
 {
   Q_OBJECT
 
