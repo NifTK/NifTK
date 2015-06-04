@@ -17,7 +17,6 @@ include(ExternalProject)
 set(EP_BASE "${CMAKE_BINARY_DIR}" CACHE PATH "Directory where the external projects are configured and built")
 set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 
-
 # This option makes different versions of the same external project build in separate directories.
 # This allows switching branches in the NifTK source code and build NifTK quickly, even if the
 # branches use different versions of the same library. A given version of an EP will be built only
@@ -41,6 +40,10 @@ if(MSVC)
   set(_initial_value_EP_ALWAYS_USE_INSTALL_DIR TRUE)
 endif()
 set(EP_ALWAYS_USE_INSTALL_DIR ${_initial_value_EP_ALWAYS_USE_INSTALL_DIR} CACHE BOOL "Use GDCM, ITK and VTK from their install directory. It breaks the packaging.")
+
+mark_as_advanced(EP_BASE)
+mark_as_advanced(EP_DIRECTORY_PER_VERSION)
+mark_as_advanced(EP_ALWAYS_USE_INSTALL_DIR)
 
 # Compute -G arg for configuring external projects with the same CMake generator:
 if(CMAKE_EXTRA_GENERATOR)
