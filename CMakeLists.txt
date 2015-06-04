@@ -58,6 +58,7 @@ if(WIN32)
   # No point creating project files for build types that will not compile.
   # Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
   set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
+  mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
 endif()
 
 
