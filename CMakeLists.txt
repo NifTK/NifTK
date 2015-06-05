@@ -494,6 +494,15 @@ if(BUILD_ITKFFTW)
   message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This is not supported by NifTK.")
 endif(BUILD_ITKFFTW)
 
+if(BUILD_VL AND NOT NIFTK_USE_COTIRE)
+  # Im making this a fatal error rather than a warning, as 
+  # the user really does not want the whole build to run, and then
+  # find out that the value was wrong. Also, then the user will explicitly
+  # know that they have set this value, and by having an error it might
+  # encourage developers to try and work out why COTIRE to be set when VL is on.
+  message(FATAL_ERROR "If you want VL, you must select NIFTK_USE_COTIRE.")
+endif()
+ 
 ########################################################################
 # Simplest if we list ALL our include directories here.
 # We need to reference the CMAKE_BINARY_DIR, as we generate stuff there.
