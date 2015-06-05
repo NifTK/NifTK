@@ -607,7 +607,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned int RemoveOutliers ( std::vector <
 /**
  * \brief Decomposes a rigid body matrix into Rodrigues Rotations and Translations.
  */
-extern "C++" NIFTKOPENCV_EXPORT void ExtractRigidBodyParameters(const vtkMatrix4x4& matrix, mitk::Point3D& outputRodriguesRotationParameters, mitk::Point3D& outputTranslationParameters);
+extern "C++" NIFTKOPENCVUTILS_EXPORT void ExtractRigidBodyParameters(const vtkMatrix4x4& matrix, mitk::Point3D& outputRodriguesRotationParameters, mitk::Point3D& outputTranslationParameters);
 
 } // end namespace
 
