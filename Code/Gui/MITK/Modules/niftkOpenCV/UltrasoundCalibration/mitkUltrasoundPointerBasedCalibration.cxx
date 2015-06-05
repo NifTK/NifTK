@@ -16,7 +16,7 @@
 #include <mitkExceptionMacro.h>
 #include <mitkPointUtils.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+#include <niftkArunLeastSquaresPointRegistration.h>
 #include <itkUltrasoundPointerCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <vtkSmartPointer.h>
@@ -136,13 +136,8 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   vtkSmartPointer<vtkMatrix4x4> regMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   double fiducialRegistrationError = std::numeric_limits<double>::max();
 
-  // Run SVD based registration.
-  mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer regCalculator = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-  bool isSuccessful = regCalculator->Update(m_SensorPoints, scaledImagePoints, *regMatrix, fiducialRegistrationError);
-  if (!isSuccessful)
-  {
-    mitkThrow() << "UltrasoundPointerBasedCalibration::DoPointerBasedCalibration failed at SVD stage";
-  }
+  // Run SVD based registration, which throws mitk::Exception on error.
+  fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(m_SensorPoints, scaledImagePoints, *regMatrix);
   std::cout << "UltrasoundPointerBasedCalibration: scaling=" << millimetresPerPixel << ", SVD FRE=" << fiducialRegistrationError << std::endl;
 
   // Extract starting parameters for optimisation.
