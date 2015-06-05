@@ -13,30 +13,15 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Common/mitkImage2DToTexturePlaneMapper3D.cxx
-  Common/mitkNifTKIGIObjectFactory.cxx
-  DataSources/mitkIGITestDataUtils.cxx
-  DataSources/mitkIGIDataType.cxx
-  DataSources/mitkIGIDataSource.cxx
-  DataSources/mitkIGIOpenCVDataType.cxx
-  SurfaceReconstruction/SurfaceReconstruction.cxx
-  SurfaceReconstruction/SequentialCpuQds.cxx
-  SurfaceReconstruction/QDSCommon.cxx
+  mitkNifTKIGIObjectFactory.cxx
   TrackedImage/mitkTrackedImage.cxx
   TrackedPointer/mitkTrackedPointer.cxx
-  SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
   Utils/mitkMakeGeometry.cxx
-  # this one does not depend on pcl!
   PointClouds/mitkMergePointClouds.cxx
   CentreLines/mitkBifurcationToPointSet.cxx
+  Rendering/mitkImage2DToTexturePlaneMapper3D.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
   MicroServices/niftkPointRegServiceI.cxx
   MicroServices/niftkPointRegServiceRAII.cxx
 )
 
-if(BUILD_PCL)
-  list(APPEND CPP_FILES
-    PCLTest/mitkPCLTest.cxx
-    PointClouds/FitPlaneToPointCloudWrapper.cxx
-  )
-endif()

@@ -14,24 +14,13 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  mitkIGIDataSourceTest.cxx
   mitkTrackedImageTest.cxx
   mitkTrackedPointerTest.cxx
   niftkPointRegServiceRAIITest.cxx
-  QDSCommonTest.cxx
-  # does not depend on pcl
   mitkMergePointCloudsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
-  mitkSurfaceBasedRegistrationTest.cxx
-  mitkSurfaceBasedRegistrationTestRealData.cxx
   mitkIGIMakeGeometryTest.cxx
 )
 
-if(BUILD_PCL)
-  set(MODULE_CUSTOM_TESTS
-    ${MODULE_CUSTOM_TESTS}
-    FitPlaneToPointCloudTest.cxx
-  )
-endif()
