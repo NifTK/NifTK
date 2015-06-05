@@ -50,7 +50,7 @@
 #include <mitkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
-#include <PointClouds/mitkPCLData.h>
+#include <niftkPCLData.h>
 #endif
 
 #ifdef _MSC_VER
@@ -586,7 +586,7 @@ void VLQt4Widget::initializeGL()
 #if 0
   // debugging
   mitk::DataNode::Pointer   n = mitk::DataNode::New();
-  mitk::PCLData::Pointer    p = mitk::PCLData::New();
+  mitk::PCLData::Pointer    p = niftk::PCLData::New();
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
   for (int i = 0; i < 100; ++i)
   {
@@ -1271,7 +1271,7 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
   mitk::PointSet::Pointer mitkPS    = dynamic_cast<mitk::PointSet*>(node->GetData());
 #ifdef _USE_PCL
-  mitk::PCLData::Pointer  pclPS     = dynamic_cast<mitk::PCLData*>(node->GetData());
+  niftk::PCLData::Pointer  pclPS     = dynamic_cast<niftk::PCLData*>(node->GetData());
 #endif
   mitk::CoordinateAxesData::Pointer   coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 #ifdef _USE_CUDA
@@ -1832,7 +1832,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(mitk::PCLData* pcl)
+vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(niftk::PCLData* pcl)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
