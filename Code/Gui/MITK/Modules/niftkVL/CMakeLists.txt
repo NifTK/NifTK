@@ -32,6 +32,10 @@ if(BUILD_IGI)
   set(_modules ${_modules} niftkOpenCV MitkCameraCalibration)
 endif()
 
+# vl renderer can draw nice textured point clouds.
+if(BUILD_PCL)
+  set(_modules ${_modules} niftkPCL)
+endif()
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   # if cuda is available then it can dump the renderer output into datastorage.
