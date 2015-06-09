@@ -15,7 +15,7 @@
 #ifndef niftkHandeyeCalibrateUsingRegistration_h
 #define niftkHandeyeCalibrateUsingRegistration_h
 
-#include "niftkOpenCVExports.h"
+#include <niftkPointRegExports.h>
 #include <string>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
@@ -30,7 +30,7 @@ namespace niftk {
 * \class HandeyeCalibrateUsingRegistration
 * \brief Computes hand-eye using registration.
 */
-class NIFTKOPENCV_EXPORT HandeyeCalibrateUsingRegistration : public itk::Object
+class NIFTKPOINTREG_EXPORT HandeyeCalibrateUsingRegistration : public itk::Object
 {
 
 public:
