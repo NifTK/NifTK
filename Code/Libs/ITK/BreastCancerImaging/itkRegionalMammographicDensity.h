@@ -262,7 +262,9 @@ public:
     PREDIAGNOSTIC_MAMMO,
     CONTROL_MAMMO
   };
-  
+
+  const static char* MammogramTypeNames[];
+
   enum LocusType 
   { 
     UNKNOWN_LOCUS_TYPE,
@@ -271,21 +273,21 @@ public:
   };
 
 
-  void SetPatientID( std::string &idPatient ) { m_Id = idPatient; }
+  void SetPatientID( std::string idPatient ) { m_Id = idPatient; }
 
-  void SetInputDirectory( std::string &dirIn ) { m_DirInput = dirIn; }
-  void SetOutputDirectory( std::string &dirOut ) { m_DirOutput = dirOut; }
+  void SetInputDirectory( std::string dirIn ) { m_DirInput = dirIn; }
+  void SetOutputDirectory( std::string dirOut ) { m_DirOutput = dirOut; }
 
-  void SetIDDiagnosticImage( std::string &idDiagImage )       { m_IdDiagnosticImage    = idDiagImage; }
-  void SetIDPreDiagnosticImage( std::string &idPreDiagImage ) { m_IdPreDiagnosticImage = idPreDiagImage; }
-  void SetIDControlImage( std::string &idControlImage )       { m_IdControlImage       = idControlImage; }
+  void SetIDDiagnosticImage( std::string idDiagImage )       { m_IdDiagnosticImage    = idDiagImage; }
+  void SetIDPreDiagnosticImage( std::string idPreDiagImage ) { m_IdPreDiagnosticImage = idPreDiagImage; }
+  void SetIDControlImage( std::string idControlImage )       { m_IdControlImage       = idControlImage; }
 
-  void SetFileDiagnostic( std::string &fileDiag )       { m_FileDiagnostic    = fileDiag; }
-  void SetFilePreDiagnostic( std::string &filePreDiag ) { m_FilePreDiagnostic = filePreDiag; }
-  void SetFileControl( std::string &fileControl )       { m_FileControl       = fileControl; }
+  void SetFileDiagnostic( std::string fileDiag )       { m_FileDiagnostic    = fileDiag; }
+  void SetFilePreDiagnostic( std::string filePreDiag ) { m_FilePreDiagnostic = filePreDiag; }
+  void SetFileControl( std::string fileControl )       { m_FileControl       = fileControl; }
 
-  void SetTumourID( std::string &strTumID )           { m_StrTumourID          = strTumID; }
-  void SetTumourImageID( std::string &strTumImageID ) { m_StrTumourImageID     = strTumImageID; }
+  void SetTumourID( std::string strTumID )           { m_StrTumourID          = strTumID; }
+  void SetTumourImageID( std::string strTumImageID ) { m_StrTumourImageID     = strTumImageID; }
 
   void SetThresholdDiagnostic(    int thrDiag    ) { m_ThresholdDiagnostic    = thrDiag; }
   void SetThresholdPreDiagnostic( int thrPreDiag ) { m_ThresholdPreDiagnostic = thrPreDiag; }
@@ -488,7 +490,7 @@ protected:
 
   typename ImageType::SpacingType GetImageResolutionFromDictionary( DictionaryType &dictionary );
 
-  void ReadImage( MammogramType mammoType );
+  bool ReadImage( MammogramType mammoType );
 
   std::string BuildOutputFilename( std::string fileInput, std::string suffix );
 
