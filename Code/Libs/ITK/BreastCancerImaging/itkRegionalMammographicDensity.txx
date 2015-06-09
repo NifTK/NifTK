@@ -51,6 +51,13 @@ bool CmpCoordsDescending(PointOnBoundary c1, PointOnBoundary c2) {
   return ( c1.id > c2.id ); 
 }
 
+template <class InputPixelType, unsigned int InputDimension>
+const char* RegionalMammographicDensity< InputPixelType, InputDimension >::MammogramTypeNames[] = { 
+  "UNKNOWN_MAMMO_TYPE",
+  "DIAGNOSTIC_MAMMO",
+  "PREDIAGNOSTIC_MAMMO",
+  "CONTROL_MAMMO"
+};
 
 
 // --------------------------------------------------------------------------
@@ -706,7 +713,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 // --------------------------------------------------------------------------
 
 template <class InputPixelType, unsigned int InputDimension>
-void
+bool
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::ReadImage( MammogramType mammoType ) 
 {
@@ -728,7 +735,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   if ( ! fileImage.length() ) {
-    itkExceptionMacro( << "ERROR: Cannot read image, filename not set" );
+    std::cerr << "WARNING: Cannot read " << MammogramTypeNames[mammoType] 
+              << " image, filename not set" << std::endl;
+    return false;
   }
 
   fileInput = niftk::ConcatenatePath( m_DirInput, fileImage );
@@ -778,7 +787,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   { 
     std::cerr << "ERROR: Failed to compute left or right breast" << std::endl
               << err << std::endl; 
-    return;
+    return false;
   }                
 
   if ( m_FlgDebug )
@@ -813,6 +822,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
+      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
+
       itk::WriteImageToFile< ImageType >( fileOutput.c_str(), 
                                                "diagnostic image",  m_ImDiagnostic );      
       m_FileDiagnosticRegn = fileOutput;
@@ -845,6 +856,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         niftk::ConcatenatePath( m_DirOutput, 
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
+
+      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
 
       itk::WriteImageToFile< ImageType >( fileOutput.c_str(), 
                                                "pre-diagnostic image",  m_ImPreDiagnostic );      
@@ -879,6 +892,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
+      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
+
       itk::WriteImageToFile< ImageType >( fileOutput.c_str(), 
                                                "control image",  m_ImControl );      
       m_FileControlRegn = fileOutput;
@@ -890,6 +905,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     m_BreastSideControl = leftOrRightCalculator->GetBreastSide();
   }
+
+  return true;
 }
 
 
@@ -1013,209 +1030,219 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   // Generate the Diagnostic Mask
 
-  fileMask = BuildOutputFilename( m_FileDiagnostic, diagMaskSuffix );
-
-  if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
+  if ( m_ImDiagnostic )
   {
-    typename ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName( fileMask );
 
-    try
+    fileMask = BuildOutputFilename( m_FileDiagnostic, diagMaskSuffix );
+
+    if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
     {
-      std::cout << "Reading the diagnostic mask: " << fileMask << std::endl;
-      reader->Update();
-    }
+      typename ReaderType::Pointer reader = ReaderType::New();
+      reader->SetFileName( fileMask );
 
-    catch (ExceptionObject &ex)
-    {
-      std::cerr << "ERROR: Could not read file: " 
-                << fileMask << std::endl << ex << std::endl;
-      throw( ex );
-    }
-
-    m_ImDiagnosticMask = reader->GetOutput();
-    m_ImDiagnosticMask->DisconnectPipeline();
-
-    // And registration version?
-
-    if ( m_FlgRegister || m_FlgRegisterNonRigid )
-    {
-      m_FileDiagnosticRegnMask = BuildOutputFilename( m_FileDiagnostic, diagRegnMaskSuffix );
-
-      if ( niftk::FileExists( m_FileDiagnosticRegnMask ) )
+      try
       {
-        reader->SetFileName( m_FileDiagnosticRegnMask );
+        std::cout << "Reading the diagnostic mask: " << fileMask << std::endl;
+        reader->Update();
+      }
 
-        try
-        {
-          std::cout << "Reading the diagnostic registration mask: " << m_FileDiagnosticRegnMask << std::endl;
-          reader->Update();
-        }
+      catch (ExceptionObject &ex)
+      {
+        std::cerr << "ERROR: Could not read file: " 
+                  << fileMask << std::endl << ex << std::endl;
+        throw( ex );
+      }
 
-        catch (ExceptionObject &ex)
+      m_ImDiagnosticMask = reader->GetOutput();
+      m_ImDiagnosticMask->DisconnectPipeline();
+
+      // And registration version?
+
+      if ( m_FlgRegister || m_FlgRegisterNonRigid )
+      {
+        m_FileDiagnosticRegnMask = BuildOutputFilename( m_FileDiagnostic, diagRegnMaskSuffix );
+
+        if ( niftk::FileExists( m_FileDiagnosticRegnMask ) )
         {
-          std::cerr << "ERROR: Could not read file: " 
-                    << m_FileDiagnosticRegnMask << std::endl << ex << std::endl;
-          throw( ex );
-        }
+          reader->SetFileName( m_FileDiagnosticRegnMask );
+
+          try
+          {
+            std::cout << "Reading the diagnostic registration mask: " << m_FileDiagnosticRegnMask << std::endl;
+            reader->Update();
+          }
+
+          catch (ExceptionObject &ex)
+          {
+            std::cerr << "ERROR: Could not read file: " 
+                      << m_FileDiagnosticRegnMask << std::endl << ex << std::endl;
+            throw( ex );
+          }
         
-        m_ImDiagnosticRegnMask = reader->GetOutput();
-        m_ImDiagnosticRegnMask->DisconnectPipeline();
-      }
-      else
-      {
-        itkExceptionMacro( << "ERROR: Cannot read diagnostic registration mask: " << m_FileDiagnosticRegnMask );
+          m_ImDiagnosticRegnMask = reader->GetOutput();
+          m_ImDiagnosticRegnMask->DisconnectPipeline();
+        }
+        else
+        {
+          itkExceptionMacro( << "ERROR: Cannot read diagnostic registration mask: " << m_FileDiagnosticRegnMask );
+        }
       }
     }
-  }
-  else
-  {
-    m_ImDiagnosticMask = MaskWithPolygon( DIAGNOSTIC_MAMMO );
+    else
+    {
+      m_ImDiagnosticMask = MaskWithPolygon( DIAGNOSTIC_MAMMO );
 
-    CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
-                                              diagMaskSuffix, 
-                                              "diagnostic mask", 
-                                              m_ImDiagnosticMask, 
-                                              m_DiagDictionary );
+      CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
+                                                diagMaskSuffix, 
+                                                "diagnostic mask", 
+                                                m_ImDiagnosticMask, 
+                                                m_DiagDictionary );
+    }
   }
-
 
   // Generate the Pre-diagnostic Mask
 
-  fileMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagMaskSuffix );
-
-  if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
+  if ( m_ImPreDiagnostic )
   {
-    typename ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName( fileMask );
 
-    try
+    fileMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagMaskSuffix );
+
+    if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
     {
-      std::cout << "Reading the pre-diagnostic mask: " << fileMask << std::endl;
-      reader->Update();
-    }
+      typename ReaderType::Pointer reader = ReaderType::New();
+      reader->SetFileName( fileMask );
 
-    catch (ExceptionObject &ex)
-    {
-      std::cerr << "ERROR: Could not read file: " 
-                << fileMask << std::endl << ex << std::endl;
-      throw( ex );
-    }
-
-    m_ImPreDiagnosticMask = reader->GetOutput();
-    m_ImPreDiagnosticMask->DisconnectPipeline();
-
-    // And registration version?
-
-    if ( m_FlgRegister || m_FlgRegisterNonRigid )
-    {
-      fileRegnMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagRegnMaskSuffix );
-
-      if ( niftk::FileExists( fileRegnMask ) )
+      try
       {
-        reader->SetFileName( fileRegnMask );
+        std::cout << "Reading the pre-diagnostic mask: " << fileMask << std::endl;
+        reader->Update();
+      }
 
-        try
-        {
-          std::cout << "Reading the pre-diagnostic registration mask: " << fileRegnMask << std::endl;
-          reader->Update();
-        }
+      catch (ExceptionObject &ex)
+      {
+        std::cerr << "ERROR: Could not read file: " 
+                  << fileMask << std::endl << ex << std::endl;
+        throw( ex );
+      }
 
-        catch (ExceptionObject &ex)
+      m_ImPreDiagnosticMask = reader->GetOutput();
+      m_ImPreDiagnosticMask->DisconnectPipeline();
+
+      // And registration version?
+
+      if ( m_FlgRegister || m_FlgRegisterNonRigid )
+      {
+        fileRegnMask = BuildOutputFilename( m_FilePreDiagnostic, preDiagRegnMaskSuffix );
+
+        if ( niftk::FileExists( fileRegnMask ) )
         {
-          std::cerr << "ERROR: Could not read file: " 
-                    << fileRegnMask << std::endl << ex << std::endl;
-          throw( ex );
-        }
+          reader->SetFileName( fileRegnMask );
+
+          try
+          {
+            std::cout << "Reading the pre-diagnostic registration mask: " << fileRegnMask << std::endl;
+            reader->Update();
+          }
+
+          catch (ExceptionObject &ex)
+          {
+            std::cerr << "ERROR: Could not read file: " 
+                      << fileRegnMask << std::endl << ex << std::endl;
+            throw( ex );
+          }
         
-        m_ImPreDiagnosticRegnMask = reader->GetOutput();
-        m_ImPreDiagnosticRegnMask->DisconnectPipeline();
-      }
-      else
-      {
-        itkExceptionMacro( << "ERROR: Cannot read pre-diagnostic registration mask: " << fileRegnMask );
+          m_ImPreDiagnosticRegnMask = reader->GetOutput();
+          m_ImPreDiagnosticRegnMask->DisconnectPipeline();
+        }
+        else
+        {
+          itkExceptionMacro( << "ERROR: Cannot read pre-diagnostic registration mask: " << fileRegnMask );
+        }
       }
     }
-  }
-  else
-  {
-    m_ImPreDiagnosticMask = MaskWithPolygon( PREDIAGNOSTIC_MAMMO );
+    else
+    {
+      m_ImPreDiagnosticMask = MaskWithPolygon( PREDIAGNOSTIC_MAMMO );
 
-    CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
-                                              preDiagMaskSuffix, 
-                                              "pre-diagnostic mask", 
-                                              m_ImPreDiagnosticMask, 
-                                              m_PreDiagDictionary );
+      CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
+                                                preDiagMaskSuffix, 
+                                                "pre-diagnostic mask", 
+                                                m_ImPreDiagnosticMask, 
+                                                m_PreDiagDictionary );
+    }
   }
 
   // Generate the Control Mask
 
-  fileMask = BuildOutputFilename( m_FileControl, controlMaskSuffix );
-
-  if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
+  if ( m_ImControl )
   {
-    typename ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName( fileMask );
 
-    try
+    fileMask = BuildOutputFilename( m_FileControl, controlMaskSuffix );
+
+    if ( niftk::FileExists( fileMask ) && ( ! m_FlgOverwrite ) )
     {
-      std::cout << "Reading the control mask: " << fileMask << std::endl;
-      reader->Update();
-    }
+      typename ReaderType::Pointer reader = ReaderType::New();
+      reader->SetFileName( fileMask );
 
-    catch (ExceptionObject &ex)
-    {
-      std::cerr << "ERROR: Could not read file: " 
-                << fileMask << std::endl << ex << std::endl;
-      throw( ex );
-    }
-
-    m_ImControlMask = reader->GetOutput();
-    m_ImControlMask->DisconnectPipeline();
-
-    // And registration version?
-
-    if ( m_FlgRegister || m_FlgRegisterNonRigid )
-    {
-      fileRegnMask = BuildOutputFilename( m_FileControl, controlRegnMaskSuffix );
-
-      if ( niftk::FileExists( fileRegnMask ) )
+      try
       {
-        reader->SetFileName( fileRegnMask );
+        std::cout << "Reading the control mask: " << fileMask << std::endl;
+        reader->Update();
+      }
 
-        try
-        {
-          std::cout << "Reading the control registration mask: " << fileRegnMask << std::endl;
-          reader->Update();
-        }
+      catch (ExceptionObject &ex)
+      {
+        std::cerr << "ERROR: Could not read file: " 
+                  << fileMask << std::endl << ex << std::endl;
+        throw( ex );
+      }
 
-        catch (ExceptionObject &ex)
+      m_ImControlMask = reader->GetOutput();
+      m_ImControlMask->DisconnectPipeline();
+
+      // And registration version?
+
+      if ( m_FlgRegister || m_FlgRegisterNonRigid )
+      {
+        fileRegnMask = BuildOutputFilename( m_FileControl, controlRegnMaskSuffix );
+
+        if ( niftk::FileExists( fileRegnMask ) )
         {
-          std::cerr << "ERROR: Could not read file: " 
-                    << fileRegnMask << std::endl << ex << std::endl;
-          throw( ex );
-        }
+          reader->SetFileName( fileRegnMask );
+
+          try
+          {
+            std::cout << "Reading the control registration mask: " << fileRegnMask << std::endl;
+            reader->Update();
+          }
+
+          catch (ExceptionObject &ex)
+          {
+            std::cerr << "ERROR: Could not read file: " 
+                      << fileRegnMask << std::endl << ex << std::endl;
+            throw( ex );
+          }
         
-        m_ImControlRegnMask = reader->GetOutput();
-        m_ImControlRegnMask->DisconnectPipeline();
-      }
-      else
-      {
-        itkExceptionMacro( << "ERROR: Cannot read control registration mask: " << fileRegnMask );
+          m_ImControlRegnMask = reader->GetOutput();
+          m_ImControlRegnMask->DisconnectPipeline();
+        }
+        else
+        {
+          itkExceptionMacro( << "ERROR: Cannot read control registration mask: " << fileRegnMask );
+        }
       }
     }
-  }
-  else
-  {
-    m_ImControlMask = MaskWithPolygon( CONTROL_MAMMO );
+    else
+    {
+      m_ImControlMask = MaskWithPolygon( CONTROL_MAMMO );
 
-    CastImageAndWriteToFile< unsigned char >( m_FileControl, 
-                                              controlMaskSuffix, 
-                                              "control mask", 
-                                              m_ImControlMask, 
-                                              m_ControlDictionary );
+      CastImageAndWriteToFile< unsigned char >( m_FileControl, 
+                                                controlMaskSuffix, 
+                                                "control mask", 
+                                                m_ImControlMask, 
+                                                m_ControlDictionary );
+    }
   }
-
 
   // Register the images?
 
@@ -1227,122 +1254,129 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   // Calculate the diagnostic labels 
 
-  if ( m_FlgVerbose ) 
-    std::cout << "Computing diagnostic mammo labels." << std::endl;
-
-
-  m_ImDiagnosticLabels = GenerateRegionLabels( m_BreastSideDiagnostic,
-                                               m_DiagTumourCenterIndex,
-                                               m_DiagTumourRegion,
-                                               m_DiagTumourRegionValue,
-                                               m_ImDiagnostic, 
-                                               m_ImDiagnosticMask, 
-                                               m_DiagPatches, 
-                                               m_ThresholdDiagnostic );
-
-  if ( m_FlgDebug )
+  if ( m_ImDiagnostic )
   {
-    WriteImageFile<LabelImageType>( m_FileDiagnostic, 
-                                    std::string( "_DiagLabels.dcm" ), 
-                                    "diagnostic labels", 
-                                    m_ImDiagnosticLabels, m_DiagDictionary );
-  }
+    if ( m_FlgVerbose ) 
+      std::cout << "Computing diagnostic mammo labels." << std::endl;
 
-  WriteLabelImageFile( m_FileDiagnostic, 
-                       std::string( "_DiagLabels.jpg" ), 
-                       "diagnostic labels", 
-                       m_ImDiagnosticLabels,  m_DiagTumourRegion,
-                       m_DiagDictionary );
+
+    m_ImDiagnosticLabels = GenerateRegionLabels( m_BreastSideDiagnostic,
+                                                 m_DiagTumourCenterIndex,
+                                                 m_DiagTumourRegion,
+                                                 m_DiagTumourRegionValue,
+                                                 m_ImDiagnostic, 
+                                                 m_ImDiagnosticMask, 
+                                                 m_DiagPatches, 
+                                                 m_ThresholdDiagnostic );
+
+    if ( m_FlgDebug )
+    {
+      WriteImageFile<LabelImageType>( m_FileDiagnostic, 
+                                      std::string( "_DiagLabels.dcm" ), 
+                                      "diagnostic labels", 
+                                      m_ImDiagnosticLabels, m_DiagDictionary );
+    }
+
+    WriteLabelImageFile( m_FileDiagnostic, 
+                         std::string( "_DiagLabels.jpg" ), 
+                         "diagnostic labels", 
+                         m_ImDiagnosticLabels,  m_DiagTumourRegion,
+                         m_DiagDictionary );
+  }
   
   // Calculate the pre-diagnostic labels 
 
-  if ( m_FlgVerbose ) 
-    std::cout << "Computing pre-diagnostic mammo labels." << std::endl;
-
-  if ( m_FlgRegister || m_FlgRegisterNonRigid ) 
+  if ( m_ImPreDiagnostic )
   {
-    m_PreDiagCenterIndex = TransformTumourPositionIntoImage( m_DiagTumourCenterIndex,
-                                                             m_ImPreDiagnostic,
-                                                             m_RegistrationPreDiag );
-
     if ( m_FlgVerbose ) 
-      std::cout << "   Tumour center in pre-diag image: " 
-                << m_PreDiagCenterIndex[0] << ", " 
-                << m_PreDiagCenterIndex[1] << std::endl;    
-  }
-  else 
-  {
-    GenerateRandomTumourPositionInImage( PREDIAGNOSTIC_MAMMO );
-  }
+      std::cout << "Computing pre-diagnostic mammo labels." << std::endl;
 
-  m_ImPreDiagnosticLabels = GenerateRegionLabels( m_BreastSidePreDiagnostic,
-                                                  m_PreDiagCenterIndex,
-                                                  m_PreDiagTumourRegion,
-                                                  m_PreDiagTumourRegionValue,
-                                                  m_ImPreDiagnostic, 
-                                                  m_ImPreDiagnosticMask, 
-                                                  m_PreDiagPatches,
-                                                  m_ThresholdPreDiagnostic );
+    if ( m_FlgRegister || m_FlgRegisterNonRigid ) 
+    {
+      m_PreDiagCenterIndex = TransformTumourPositionIntoImage( m_DiagTumourCenterIndex,
+                                                               m_ImPreDiagnostic,
+                                                               m_RegistrationPreDiag );
 
-  if ( m_FlgDebug )
-  {
-    WriteImageFile<LabelImageType>( m_FilePreDiagnostic, 
-                                    std::string( "_PreDiagLabels.dcm" ), 
-                                    "pre-diagnostic labels", 
-                                    m_ImPreDiagnosticLabels, m_PreDiagDictionary );
-  }
+      if ( m_FlgVerbose ) 
+        std::cout << "   Tumour center in pre-diag image: " 
+                  << m_PreDiagCenterIndex[0] << ", " 
+                  << m_PreDiagCenterIndex[1] << std::endl;    
+    }
+    else 
+    {
+      GenerateRandomTumourPositionInImage( PREDIAGNOSTIC_MAMMO );
+    }
 
-  WriteLabelImageFile( m_FilePreDiagnostic, 
-                       std::string( "_PreDiagLabels.jpg" ), 
-                       "pre-diagnostic labels", 
-                       m_ImPreDiagnosticLabels, m_PreDiagTumourRegion,
-                       m_PreDiagDictionary );
-  
+    m_ImPreDiagnosticLabels = GenerateRegionLabels( m_BreastSidePreDiagnostic,
+                                                    m_PreDiagCenterIndex,
+                                                    m_PreDiagTumourRegion,
+                                                    m_PreDiagTumourRegionValue,
+                                                    m_ImPreDiagnostic, 
+                                                    m_ImPreDiagnosticMask, 
+                                                    m_PreDiagPatches,
+                                                    m_ThresholdPreDiagnostic );
+
+    if ( m_FlgDebug )
+    {
+      WriteImageFile<LabelImageType>( m_FilePreDiagnostic, 
+                                      std::string( "_PreDiagLabels.dcm" ), 
+                                      "pre-diagnostic labels", 
+                                      m_ImPreDiagnosticLabels, m_PreDiagDictionary );
+    }
+
+    WriteLabelImageFile( m_FilePreDiagnostic, 
+                         std::string( "_PreDiagLabels.jpg" ), 
+                         "pre-diagnostic labels", 
+                         m_ImPreDiagnosticLabels, m_PreDiagTumourRegion,
+                         m_PreDiagDictionary );
+  }  
   
   // Calculate the control-diagnostic labels 
 
-  if ( m_FlgVerbose ) 
-    std::cout << "Computing control mammo labels." << std::endl;
-
-  if ( m_FlgRegister || m_FlgRegisterNonRigid ) 
+  if ( m_ImControl )
   {
-    m_ControlCenterIndex = TransformTumourPositionIntoImage( m_DiagTumourCenterIndex,
-                                                             m_ImControl,
-                                                             m_RegistrationControl );
-
     if ( m_FlgVerbose ) 
-      std::cout << "   Tumour center in control image: " 
-                << m_ControlCenterIndex[0] << ", " 
-                << m_ControlCenterIndex[1] << std::endl;    
-  }
-  else 
-  {
-    GenerateRandomTumourPositionInImage( CONTROL_MAMMO );
-  }
+      std::cout << "Computing control mammo labels." << std::endl;
 
-  m_ImControlLabels = GenerateRegionLabels( m_BreastSideControl,
-                                            m_ControlCenterIndex,
-                                            m_ControlTumourRegion,
-                                            m_ControlTumourRegionValue,
-                                            m_ImControl, 
-                                            m_ImControlMask, 
-                                            m_ControlPatches,
-                                            m_ThresholdControl );
+    if ( m_FlgRegister || m_FlgRegisterNonRigid ) 
+    {
+      m_ControlCenterIndex = TransformTumourPositionIntoImage( m_DiagTumourCenterIndex,
+                                                               m_ImControl,
+                                                               m_RegistrationControl );
 
-  if ( m_FlgDebug )
-  {
-    WriteImageFile<LabelImageType>( m_FileControl, 
-                                    std::string( "_ControlLabels.dcm" ), 
-                                    "control labels", 
-                                    m_ImControlLabels, m_ControlDictionary );
-  }
+      if ( m_FlgVerbose ) 
+        std::cout << "   Tumour center in control image: " 
+                  << m_ControlCenterIndex[0] << ", " 
+                  << m_ControlCenterIndex[1] << std::endl;    
+    }
+    else 
+    {
+      GenerateRandomTumourPositionInImage( CONTROL_MAMMO );
+    }
 
-  WriteLabelImageFile( m_FileControl, 
-                       std::string( "_ControlLabels.jpg" ), 
-                       "control labels", 
-                       m_ImControlLabels, m_ControlTumourRegion,
-                       m_ControlDictionary );
-  
+    m_ImControlLabels = GenerateRegionLabels( m_BreastSideControl,
+                                              m_ControlCenterIndex,
+                                              m_ControlTumourRegion,
+                                              m_ControlTumourRegionValue,
+                                              m_ImControl, 
+                                              m_ImControlMask, 
+                                              m_ControlPatches,
+                                              m_ThresholdControl );
+
+    if ( m_FlgDebug )
+    {
+      WriteImageFile<LabelImageType>( m_FileControl, 
+                                      std::string( "_ControlLabels.dcm" ), 
+                                      "control labels", 
+                                      m_ImControlLabels, m_ControlDictionary );
+    }
+
+    WriteLabelImageFile( m_FileControl, 
+                         std::string( "_ControlLabels.jpg" ), 
+                         "control labels", 
+                         m_ImControlLabels, m_ControlTumourRegion,
+                         m_ControlDictionary );
+  }  
 };
 
 
@@ -1393,6 +1427,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if ( fileInput.length() ) 
   {
+    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+
     typedef RescaleIntensityImageFilter< ImageType, OutputImageType > CastFilterType;
     typedef ImageFileWriter< OutputImageType > FileWriterType;
 
@@ -1490,6 +1526,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 {
   if ( fileInput.length() ) 
   {
+    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+
     typedef ImageFileWriter< TOutputImageType > FileWriterType;
 
     std::string fileModifiedOutput = BuildOutputFilename( fileInput, suffix );
@@ -1554,6 +1592,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 {
   if ( fileInput.length() ) 
   {
+    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
 
     typedef itk::RGBPixel<unsigned char>             RGBPixelType;
     typedef itk::Image<RGBPixelType, InputDimension> RGBImageType;
@@ -1794,9 +1833,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     }
   }
 
-  if ( ! pPointOnBoundary )
+  if ( pPointOnBoundary->size() == 0 )
   {
-    itkExceptionMacro( << "ERROR: No boundary points defined" );
+    itkExceptionMacro( << "ERROR: No boundary points defined for " 
+                       << MammogramTypeNames[ mammoType ] );
     return 0;
   }
 
@@ -2325,6 +2365,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 {
   if ( fileInput.length() ) 
   {
+    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+
     typedef typename itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
 
     typename CastFilterType::Pointer castTargetFilter = CastFilterType::New();
@@ -2421,7 +2463,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   
     catch (ExceptionObject &ex)
     {
-      std::cerr << "ERROR: Could notwrite file: " << fileModifiedOutput << std::endl 
+      std::cerr << "ERROR: Could not write file: " << fileModifiedOutput << std::endl 
                 << ex << std::endl;
       throw( ex );
     }
@@ -2448,82 +2490,88 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   // The pre-diagniostic registration
 
-  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
-                                    std::string( "_PreDiag2DiagDifference.jpg" ), 
-                                    "un-registered pre-diagnostic difference image", 
-                                    m_ImPreDiagnostic, 
-                                    m_DiagDictionary );
-
-  m_RegistrationPreDiag = 
-    RegisterTheImages( m_ImPreDiagnostic,
-                       m_FilePreDiagnosticRegn,
-                       m_ImPreDiagnosticMask,
+  if ( m_ImDiagnostic && m_ImPreDiagnostic )
+  {
+    WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                      std::string( "_PreDiag2DiagDifference.jpg" ), 
+                                      "un-registered pre-diagnostic difference image", 
+                                      m_ImPreDiagnostic, 
+                                      m_DiagDictionary );
+    
+    m_RegistrationPreDiag = 
+      RegisterTheImages( m_ImPreDiagnostic,
+                         m_FilePreDiagnosticRegn,
+                         m_ImPreDiagnosticMask,
+                         
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_PreDiagReg2Diag_AffineTransform.txt" ),
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_PreDiagReg2Diag_AffineRegistered.nii.gz" ),
                        
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_PreDiagReg2Diag_AffineTransform.txt" ),
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_PreDiagReg2Diag_AffineRegistered.nii.gz" ),
-                       
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_PreDiagReg2Diag_NonRigidTransform.nii.gz" ),
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_PreDiagReg2Diag_NonRigidRegistered.nii.gz" ) );
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_PreDiagReg2Diag_NonRigidTransform.nii.gz" ),
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_PreDiagReg2Diag_NonRigidRegistered.nii.gz" ) );
  
-  imAffineRegistered   = m_RegistrationPreDiag->GetOutput( 0 );
+    imAffineRegistered   = m_RegistrationPreDiag->GetOutput( 0 );
 
-  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
-                                    std::string( "_PreDiagReg2DiagAffineDifference.jpg" ), 
-                                    "affine registered pre-diagnostic difference image", 
-                                    imAffineRegistered, 
-                                    m_DiagDictionary );
+    WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                      std::string( "_PreDiagReg2DiagAffineDifference.jpg" ), 
+                                      "affine registered pre-diagnostic difference image", 
+                                      imAffineRegistered, 
+                                      m_DiagDictionary );
 
-  imNonRigidRegistered = m_RegistrationPreDiag->GetOutput( 1 );
+    imNonRigidRegistered = m_RegistrationPreDiag->GetOutput( 1 );
 
-  WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
-                                    std::string( "_PreDiagReg2DiagNonRigidDifference.jpg" ), 
-                                    "non-rigidly registered pre-diagnostic difference image", 
-                                    imNonRigidRegistered, 
-                                    m_DiagDictionary );
+    WriteRegistrationDifferenceImage( m_FilePreDiagnostic, 
+                                      std::string( "_PreDiagReg2DiagNonRigidDifference.jpg" ), 
+                                      "non-rigidly registered pre-diagnostic difference image", 
+                                      imNonRigidRegistered, 
+                                      m_DiagDictionary );
+  }
 
 
   // The control image registration
 
-  WriteRegistrationDifferenceImage( m_FileControl, 
-                                    std::string( "_Control2DiagDifference.jpg" ), 
-                                    "un-registered control difference image", 
-                                    m_ImControl, 
-                                    m_DiagDictionary );
+  if ( m_ImDiagnostic && m_ImControl )
+  {
+    WriteRegistrationDifferenceImage( m_FileControl, 
+                                      std::string( "_Control2DiagDifference.jpg" ), 
+                                      "un-registered control difference image", 
+                                      m_ImControl, 
+                                      m_DiagDictionary );
 
-  m_RegistrationControl = 
-    RegisterTheImages( m_ImControl,
-                       m_FileControlRegn,
-                       m_ImControlMask,
-                       
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_ControlReg2Diag_AffineTransform.txt" ),
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_ControlReg2Diag_AffineRegistered.nii.gz" ),
-                       
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_ControlReg2Diag_NonRigidTransform.nii.gz" ),
-                       BuildOutputFilename( m_FileDiagnostic, 
-                                            "_ControlReg2Diag_NonRigidRegistered.nii.gz" ) );
- 
-  imAffineRegistered   = m_RegistrationControl->GetOutput( 0 );
-
-  WriteRegistrationDifferenceImage( m_FileControl, 
-                                    std::string( "_ControlReg2DiagAffineDifference.jpg" ), 
-                                    "affine registered control difference image", 
-                                    imAffineRegistered, 
-                                    m_DiagDictionary );
-
-  imNonRigidRegistered = m_RegistrationControl->GetOutput( 1 );
-
-  WriteRegistrationDifferenceImage( m_FileControl, 
-                                    std::string( "_ControlReg2DiagNonRigidDifference.jpg" ), 
-                                    "non-rigidly  registered control difference image", 
-                                    imNonRigidRegistered, 
-                                    m_DiagDictionary );
+    m_RegistrationControl = 
+      RegisterTheImages( m_ImControl,
+                         m_FileControlRegn,
+                         m_ImControlMask,
+                         
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_ControlReg2Diag_AffineTransform.txt" ),
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_ControlReg2Diag_AffineRegistered.nii.gz" ),
+                         
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_ControlReg2Diag_NonRigidTransform.nii.gz" ),
+                         BuildOutputFilename( m_FileDiagnostic, 
+                                              "_ControlReg2Diag_NonRigidRegistered.nii.gz" ) );
+    
+    imAffineRegistered   = m_RegistrationControl->GetOutput( 0 );
+    
+    WriteRegistrationDifferenceImage( m_FileControl, 
+                                      std::string( "_ControlReg2DiagAffineDifference.jpg" ), 
+                                      "affine registered control difference image", 
+                                      imAffineRegistered, 
+                                      m_DiagDictionary );
+    
+    imNonRigidRegistered = m_RegistrationControl->GetOutput( 1 );
+    
+    WriteRegistrationDifferenceImage( m_FileControl, 
+                                      std::string( "_ControlReg2DiagNonRigidDifference.jpg" ), 
+                                      "non-rigidly  registered control difference image", 
+                                      imNonRigidRegistered, 
+                                      m_DiagDictionary );
+  }
 
 };
 

@@ -99,6 +99,7 @@ if(SlicerExecutionModel_FOUND)
     niftkLogInvertImage
     niftkMammogramFatSubtraction
     niftkMammogramMaskSegmentation
+    niftkMammographicTumourDistribution
     niftkMaskDICOMMammograms
     niftkMammogramPectoralisSegmentation
     niftkMultiply
