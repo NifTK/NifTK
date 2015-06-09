@@ -24,6 +24,7 @@
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkOpenCVImageProcessing.h>
 
 namespace mitk {

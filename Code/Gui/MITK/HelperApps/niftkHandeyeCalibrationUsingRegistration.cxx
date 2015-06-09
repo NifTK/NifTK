@@ -16,7 +16,7 @@
 #include <limits>
 
 #include <mitkCameraCalibrationFacade.h>
-#include <mitkHandeyeCalibrateUsingRegistration.h>
+#include <niftkHandeyeCalibrateUsingRegistration.h>
 #include <niftkHandeyeCalibrationUsingRegistrationCLP.h>
 
 int main(int argc, char** argv)
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::HandeyeCalibrateUsingRegistration::Pointer calibrator = mitk::HandeyeCalibrateUsingRegistration::New();
+    niftk::HandeyeCalibrateUsingRegistration::Pointer calibrator = niftk::HandeyeCalibrateUsingRegistration::New();
     calibrator->Calibrate(
       modelInputFile,
       modelTrackingDirectory,

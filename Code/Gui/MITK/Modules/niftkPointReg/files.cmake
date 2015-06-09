@@ -17,5 +17,6 @@ set(CPP_FILES
   Registration/niftkArunLeastSquaresPointRegistration.cxx
   Registration/niftkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/niftkPointBasedRegistration.cxx
+  Utilities/niftkHandeyeCalibrateUsingRegistration.cxx
 )
 

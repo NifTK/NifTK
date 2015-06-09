@@ -19,6 +19,7 @@
 #include <vtkMatrix4x4.h>
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkMathsUtils.h>
 #include <stdexcept>
 #include <sstream>
