@@ -239,7 +239,6 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -419,7 +418,6 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-
     // Get the records for this tumour
 
     for ( iNodeRecord = 0;
@@ -519,7 +517,6 @@ int main(int argc, char** argv)
       patient->SetTumourRight(  atoi( strTumourRight.c_str() ) );
       patient->SetTumourTop(    atoi( strTumourTop.c_str() ) );
       patient->SetTumourBottom( atoi( strTumourBottom.c_str() ) );
-
       patient->SetTumourDiameter( atof( strTumourDiameter.c_str() ) );
     }
   }
@@ -547,7 +544,6 @@ int main(int argc, char** argv)
       std::cout << "  tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
-
 
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -652,7 +648,6 @@ int main(int argc, char** argv)
       std::cout << "    tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
-
 
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
