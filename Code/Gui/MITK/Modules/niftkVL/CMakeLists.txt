@@ -58,7 +58,8 @@ target_link_libraries(niftkVL
 
 # Note:
 # Cotire must be off on Linux because of a symbol name class in Xlib.h and qstyleoption.h
-if (NIFTK_USE_COTIRE AND COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+# Cotire must be ON on Windows and Mac.
+if (COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   cotire(niftkVL)
 endif()
 
