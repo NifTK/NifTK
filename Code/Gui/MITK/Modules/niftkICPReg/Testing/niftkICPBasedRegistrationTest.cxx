@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <niftkSurfaceBasedRegistration.h>
+#include <niftkICPBasedRegistration.h>
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
 #include <mitkCoordinateAxesData.h>
@@ -27,19 +27,19 @@
 
 namespace niftk
 {
-class TestSurfaceBasedRegistration : public SurfaceBasedRegistration
+class TestICPBasedRegistration : public ICPBasedRegistration
 {
 public:
-  mitkClassMacro(TestSurfaceBasedRegistration, SurfaceBasedRegistration);
-  itkNewMacro(TestSurfaceBasedRegistration);
+  mitkClassMacro(TestICPBasedRegistration, ICPBasedRegistration);
+  itkNewMacro(TestICPBasedRegistration);
   bool SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix);
   bool CompareMatrices(vtkMatrix4x4 * m1, vtkMatrix4x4 * m2);
   virtual void Initialize(){};
 protected:
-  virtual ~TestSurfaceBasedRegistration() {};
+  virtual ~TestICPBasedRegistration() {};
 };
 
-bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
+bool TestICPBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
 {
   mitk::BaseGeometry* geometry = node->GetData()->GetGeometry();
   if (geometry)
@@ -53,7 +53,7 @@ bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node 
     return false;
   }
 }
-bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix4x4 * m2)
+bool TestICPBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix4x4 * m2)
 {
   double delta=0.0;
   for ( int i = 0 ; i < 4 ; i ++ ) 
@@ -76,11 +76,11 @@ bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix
 
 } // end namespace
 
-int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
+int niftkICPBasedRegistrationTest(int argc, char* argv[])
 {
   if (argc != 3)
   {
-    std::cerr << "Usage: mitkSurfaceBasedRegistrationTest points.vtp/.mps surface.vtp" << std::endl;
+    std::cerr << "Usage: mitkICPBasedRegistrationTest points.vtp/.mps surface.vtp" << std::endl;
     std::cerr << " argc=" << argc << std::endl;
     for (int i = 0; i < argc; ++i)
     {
@@ -89,7 +89,7 @@ int niftkSurfaceBasedRegistrationTest(int argc, char* argv[])
     return EXIT_FAILURE;
   } 
   
-  niftk::TestSurfaceBasedRegistration::Pointer registerer = niftk::TestSurfaceBasedRegistration::New();
+  niftk::TestICPBasedRegistration::Pointer registerer = niftk::TestICPBasedRegistration::New();
   registerer->SetMaximumNumberOfLandmarkPointsToUse(2000);
   registerer->SetMaximumIterations(100);
 
