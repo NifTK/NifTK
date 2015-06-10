@@ -189,6 +189,8 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     ~PickedObject();
 
     void WriteXML ( std::ostream& os );
+    void ReadXML ( std::istream& is );
+    void ReadXML ( char* is );
     
     /**
      * \brief compare the header information (Id, IsLine, Channel, FrameNumber)

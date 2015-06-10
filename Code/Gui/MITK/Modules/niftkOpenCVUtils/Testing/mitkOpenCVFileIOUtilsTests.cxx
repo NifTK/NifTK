@@ -43,6 +43,21 @@ void LoadTimeStampedPointsTest(std::string dir)
 
 }
 
+void TestLoadPickedObject ( char * filename )
+{
+  MITK_INFO << "Attemting to open " << filename;
+  std::vector <mitk::PickedObject> p1;
+  std::ifstream stream;
+  stream.open(filename);
+  if ( stream )
+  {
+    LoadPickedObjects ( p1, stream ); 
+  }
+  else
+  {
+    MITK_ERROR << "Failed to open " << filename;
+  }
+}
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 {
@@ -50,6 +65,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   MITK_TEST_BEGIN("mitkOpenCVFileIOUtilsTests");
 
   LoadTimeStampedPointsTest(argv[1]);
+  TestLoadPickedObject(argv[2]);
   MITK_TEST_END();
 }
 

@@ -16,6 +16,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
 #include <fstream>
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
@@ -443,6 +446,82 @@ void SaveTimeStampedPoints(const std::vector< std::pair<unsigned long long, cv::
   {
     mitkThrow() << "Failed to open file " << fileName << " for writing." << std::endl;
   }
+}
+//---------------------------------------------------------------------------
+void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std::ostream& os )
+{
+  boost::property_tree::ptree pt;
+  pt.add ("picked_object_list.version", 1);
+  for ( std::vector<PickedObject>::const_iterator it = points.begin() ; it < points.end() ; ++it )
+  {
+    if ( it->m_Points.size() != 0 )
+    {
+      boost::property_tree::ptree& node = pt.add("picked_object_list.picked_object", "");
+      node.put("id",it->m_Id);
+      node.put("frame",it->m_FrameNumber);
+      node.put("channel", it->m_Channel);
+      node.put("timestamp",it->m_TimeStamp);
+
+      boost::property_tree::ptree& points = node.add("points", "");
+      for ( unsigned int i = 0 ; i < it->m_Points.size() ; i ++ )
+      {
+        boost::property_tree::ptree& coordinate = points.add("coordinate", "");
+        std::ostringstream xyzstream;
+        xyzstream << it->m_Points[i].x << " " << it->m_Points[i].y << " " << it->m_Points[i].z; 
+        coordinate.put("<xmlattr>.xyz", xyzstream.str());
+      }
+      if ( it->m_IsLine )
+      {
+        node.put("<xmlattr>.line",  true);
+      }
+      else
+      {
+        node.put("<xmlattr>.line", false);
+      }
+    }
+  }
+  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
+  std::locale locale();
+  boost::property_tree::write_xml (os, pt, settings);// std::locale());// settings);
+
+}
+
+//---------------------------------------------------------------------------
+void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is )
+{
+  boost::property_tree::ptree pt;
+  try
+    {
+    boost::property_tree::read_xml (is, pt);
+    BOOST_FOREACH ( boost::property_tree::ptree::value_type const& v , pt.get_child("picked_object_list") )
+    {
+      MITK_INFO << v.first;
+      if ( v.first == "picked_object" )
+      {
+        mitk::PickedObject po;
+        po.m_Id = v.second.get<int> ("id");
+        po.m_FrameNumber = v.second.get<unsigned int> ("frame");
+        po.m_Channel = v.second.get<std::string> ( "channel" );
+        po.m_TimeStamp = v.second.get<unsigned long long > ("timestamp");
+        po.m_IsLine = v.second.get<bool> ("<xmlattr>.line", false);
+        BOOST_FOREACH ( boost::property_tree::ptree::value_type const& coord , v.second.get_child("points" ) )
+        {
+           if ( coord.first == "coordinate" )
+           {
+             std::string xyz = coord.second.get<std::string>("<xmlattr>.xyz", "");
+             std::stringstream xyzstream(xyz);
+             cv::Point3d point;
+             xyzstream >> point.x >> point.y >> point.z;
+           }
+        }
+      }
+    }
+  }
+  catch(const std::runtime_error& e)
+  {
+    MITK_ERROR << "Caught " << e.what();
+  }             
+
 }
 
 } // end namespace

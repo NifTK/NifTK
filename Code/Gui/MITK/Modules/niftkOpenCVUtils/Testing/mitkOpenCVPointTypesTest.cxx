@@ -68,7 +68,6 @@ void TestPickedObjectCompare()
 
 }
 
-
 int mitkOpenCVPointTypesTest(int argc, char * argv[])
 {
   // always start with this!

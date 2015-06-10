@@ -100,6 +100,16 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadTimeStampedPoints(std::vector< std
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT void SaveTimeStampedPoints(const std::vector< std::pair<unsigned long long, cv::Point3d> >& points, const std::string& fileName);
 
+/**
+ * \brief Saves a vector of picked objects
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std::ostream& os );
+
+/**
+ * \brief Loads a vector of picked objects 
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is );
+
 } // end namespace
 
 #endif

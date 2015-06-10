@@ -16,14 +16,13 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/round.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <numeric>
 #include <algorithm>
 #include <functional>
 #include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <string>
 #include <fstream>
 
@@ -440,34 +439,6 @@ std::ostream& operator << ( std::ostream& os, const mitk::PickedObject& po )
 }
 
 //-----------------------------------------------------------------------------
-void PickedObject::WriteXML ( std::ostream& os )
-{
-  boost::property_tree::ptree pt;
-  pt.add ("picked object.version", 1);
-  boost::property_tree::ptree& node = pt.add("picked object", "");
-  node.put("id",m_Id);
-  node.put("frame",m_FrameNumber);
-  node.put("channel", m_Channel);
-  node.put("timestamp",m_TimeStamp);
-  for ( unsigned int i = 0 ; i < m_Points.size() ; i ++ )
-  {
-    node.put("coordinate", m_Points[i]);
-  }
-  if ( m_IsLine )
-  {
-    node.put("<xmlattr>.line",  true);
-  }
-  else
-  {
-    node.put("<xmlattr>.point", false);
-  }
-  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
-  std::locale locale();
-  boost::property_tree::write_xml (os, pt, settings);// std::locale());// settings);
-
-}
-
-//-----------------------------------------------------------------------------
 bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
 {
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
@@ -517,11 +488,7 @@ PickedPointList::~PickedPointList()
 //-----------------------------------------------------------------------------
 void PickedPointList::PutOut (std::ofstream& os )
 {
-  for ( int i = 0 ; i < m_PickedObjects.size(); i ++ )
-  {
-    m_PickedObjects[i].WriteXML(os);
-  //  os << m_PickedObjects[i];
-  }
+  mitk::SavePickedObjects ( m_PickedObjects, os );
 }
 
 //-----------------------------------------------------------------------------
