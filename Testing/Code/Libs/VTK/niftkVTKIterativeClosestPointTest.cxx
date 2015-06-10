@@ -86,10 +86,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
     niftk::PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
   }
 
-  if ( ! icp->Run() )
-  {
-    return EXIT_FAILURE;
-  }
+  icp->Run();
 
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   std::cerr << "The resulting matrix is: " << *m << std::endl;
@@ -178,10 +175,8 @@ int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     niftk::PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
-    if ( ! icp->Run() )
-    {
-      return EXIT_FAILURE;
-    }
+
+    icp->Run();
 
     vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
 

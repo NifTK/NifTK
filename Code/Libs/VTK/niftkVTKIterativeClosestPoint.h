@@ -36,9 +36,8 @@ public:
 
   /**
    * \brief Perform a vtk Iterative Closest Point (ICP) registration on the two data sets.
-   * \return residual
    */
-  double Run();
+  void Run();
 
   /**
    * \brief returns the transform to move the source to the target
@@ -61,7 +60,7 @@ public:
   void SetTarget (vtkSmartPointer<vtkPolyData>);
 
   /**
-   * \brief Set the maximum number of landmarks, NOT WORKING.
+   * \brief Set the maximum number of landmarks.
    */
   void SetMaxLandmarks(int);
 

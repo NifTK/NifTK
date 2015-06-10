@@ -21,7 +21,6 @@
 #include <vtkTransform.h>
 #include <vtkVersion.h>
 #include <stdexcept>
-#include <limits>
 
 #define __NIFTTKVTKICPNPOINTS 50
 #define __NIFTTKVTKICPMAXITERATIONS 100
@@ -39,7 +38,6 @@ VTKIterativeClosestPoint::VTKIterativeClosestPoint()
   m_ICP->GetLandmarkTransform()->SetModeToRigidBody();
   m_ICP->SetMaximumNumberOfLandmarks(__NIFTTKVTKICPNPOINTS);
   m_ICP->SetMaximumNumberOfIterations(__NIFTTKVTKICPMAXITERATIONS);
-  m_ICP->SetCheckMeanDistance(true);
 
   m_TransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_TransformMatrix->Identity();
@@ -56,8 +54,6 @@ VTKIterativeClosestPoint::~VTKIterativeClosestPoint()
 void VTKIterativeClosestPoint::SetMaxLandmarks(int maxLandMarks)
 {
   m_ICP->SetMaximumNumberOfLandmarks(maxLandMarks);
-  //TODO I'm not sure this works, changing the number of landmarks
-  //doesn't seem to alter the performance of the algorithm.
 }
 
 
@@ -83,10 +79,8 @@ void VTKIterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
 
 
 //-----------------------------------------------------------------------------
-double VTKIterativeClosestPoint::Run()
+void VTKIterativeClosestPoint::Run()
 {
-  double residual = std::numeric_limits<double>::max();
-
   if (m_Source == NULL)
   {
     throw std::runtime_error("VTKIterativeClosestPoint::Run, source is NULL.");
@@ -129,8 +123,6 @@ double VTKIterativeClosestPoint::Run()
     m_ICP->Update();
     m_TransformMatrix->DeepCopy(m_ICP->GetMatrix());
   }
-  residual = m_ICP->GetMeanDistance();
-  return residual;
 }
 
 

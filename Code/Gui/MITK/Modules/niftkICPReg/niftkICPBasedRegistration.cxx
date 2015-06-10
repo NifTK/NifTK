@@ -47,9 +47,9 @@ ICPBasedRegistration::~ICPBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
-                                      vtkPolyData* movingPoly,
-                                      vtkMatrix4x4& transformMovingToFixed)
+void ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
+                                     vtkPolyData* movingPoly,
+                                     vtkMatrix4x4& transformMovingToFixed)
 {
   if (fixedPoly == NULL)
   {
@@ -68,7 +68,7 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetTarget(fixedPoly);
 
   // Throws exception if fails.
-  double residual = icp->Run();
+  icp->Run();
 
   // Retrieve transformation
   vtkSmartPointer<vtkMatrix4x4> temp = icp->GetTransform();
@@ -76,14 +76,13 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
 
   // Tidy up
   delete icp;
-  return residual;
 }
 
 
 //-----------------------------------------------------------------------------
-double ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
-                                       const mitk::DataNode::Pointer movingNode,
-                                       vtkMatrix4x4& transformMovingToFixed)
+void ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
+                                  const mitk::DataNode::Pointer movingNode,
+                                  vtkMatrix4x4& transformMovingToFixed)
 {
   vtkSmartPointer<vtkPolyData> fixedPoly = vtkSmartPointer<vtkPolyData>::New();
   NodeToPolyData ( fixedNode, *fixedPoly);
@@ -91,7 +90,7 @@ double ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
   vtkSmartPointer<vtkPolyData> movingPoly = vtkSmartPointer<vtkPolyData>::New();
   NodeToPolyData ( movingNode, *movingPoly, m_CameraNode, m_FlipNormals);
 
-  return RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
+  RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
 }
 
 
