@@ -16,25 +16,16 @@
 #define niftkVTKIterativeClosestPoint_h
 
 #include "niftkVTKWin32ExportHeader.h"
-
-#include <ostream>
-#include <stdio.h>
-#include <string>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkIterativeClosestPointTransform.h>
 
-#define __NIFTTKVTKICPNPOINTS 50
-#define __NIFTTKVTKICPMAXITERATIONS 100
-
 namespace niftk {
 
 /**
  * \class VTKIterativeClosestPoint
- * \brief Uses vtkIterativeClosestPointTransform to register two vtk polydata sets
- *
- * This is an interface to vtkIterativeClosestPointTransform.
+ * \brief Uses vtkIterativeClosestPointTransform to register two vtkPolyData sets.
  */
 class NIFTKVTK_WINEXPORT VTKIterativeClosestPoint {
 
@@ -44,10 +35,10 @@ public:
   ~VTKIterativeClosestPoint();
 
   /**
-   * \brief
-   * Perform a vtk Iterative closest point registration on the two data sets
+   * \brief Perform a vtk Iterative Closest Point (ICP) registration on the two data sets.
+   * \return residual
    */
-  bool Run();
+  double Run();
 
   /**
    * \brief returns the transform to move the source to the target
@@ -57,7 +48,7 @@ public:
   /**
    * \brief Transform the source to the target, placing the result in solution
    */
-  bool ApplyTransform(vtkPolyData * solution);
+  void ApplyTransform(vtkPolyData * solution);
 
   /**
    * \brief Set the source poly data
@@ -70,9 +61,9 @@ public:
   void SetTarget (vtkSmartPointer<vtkPolyData>);
 
   /**
-   * \brief Set the maximum number of landmarks, NOT WORKING
+   * \brief Set the maximum number of landmarks, NOT WORKING.
    */
-  void SetMaxLandmarks ( int);
+  void SetMaxLandmarks(int);
 
   /**
    * \brief Set the maximum number of iterations.
@@ -81,12 +72,10 @@ public:
 
 private:
 
-  vtkSmartPointer<vtkIterativeClosestPointTransform>  m_Icp;
+  vtkSmartPointer<vtkIterativeClosestPointTransform>  m_ICP;
   vtkSmartPointer<vtkPolyData>                        m_Source;
   vtkSmartPointer<vtkPolyData>                        m_Target;
   vtkSmartPointer<vtkMatrix4x4>                       m_TransformMatrix;
-  unsigned int                                        m_MaxLandmarks;
-  unsigned int                                        m_MaxIterations;
 };
 
 } // end namespace
