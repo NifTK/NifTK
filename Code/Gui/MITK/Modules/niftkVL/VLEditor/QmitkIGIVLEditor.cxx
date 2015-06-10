@@ -21,8 +21,9 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
-#include <Rendering/SharedOGLContext.h>
+
 #include "VLQt4Widget.h"
+#include <Rendering/SharedOGLContext.h>
 
 
 //-----------------------------------------------------------------------------

@@ -15,6 +15,15 @@
 #ifndef QmitkIGIVLEditor_h
 #define QmitkIGIVLEditor_h
 
+// Note:
+// The None constant is defined by Xlib.h and it is also declared as an enum
+// in qstyleoption.h. This causes a compile error with gcc. As a workaround,
+// we undefine the symbol before including the Qt headers. This works only
+// if cotire is switched off.
+#ifdef None
+#undef None
+#endif
+
 #include "ui_QmitkIGIVLEditor.h"
 #include "niftkVLExports.h"
 #include <QWidget>
