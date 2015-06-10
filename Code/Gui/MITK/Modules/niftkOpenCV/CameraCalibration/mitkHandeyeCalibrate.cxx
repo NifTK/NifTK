@@ -15,6 +15,7 @@
 #include "mitkHandeyeCalibrate.h"
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <ios>
 #include <fstream>
 #include <iostream>

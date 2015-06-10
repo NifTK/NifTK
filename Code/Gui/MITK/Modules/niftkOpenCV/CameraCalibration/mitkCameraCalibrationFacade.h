@@ -685,67 +685,11 @@ cv::Point3d InternalIterativeTriangulatePointUsingSVD(
   );
 
 /**
- * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and 
- * put them in a vector of 4x4 cvMats
- */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
-
-
-/**
- * \brief Read a set of matrices, stored in openCV xml matrix format from a directory and
- * put them in a vector of 4x4 cvMats
- */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName);
-
-
- /**
-  * \brief Load a set of matrices from a file describing the 
-  * extrinsic parameters of a standard camera calibration
-  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
-
-
-/**
-  * \brief Load stereo camera parameters from a directory
-  */
-extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (const std::string& directory,
-  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
-  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion,
-  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
-  cv::Mat* leftCameraToTracker);
-
-/**
  * \brief reads the handeye and r2l transforms and writes out a set of left, centre and 
  * right hand eye matrices, useful for generating geometry for the scope
  */
 extern "C++" NIFTKOPENCV_EXPORT void GenerateFullHandeyeMatrices (const std::string& directory);
 
-/**
- * \brief Load camera intrinsics from a plain text file and return results as
- * cv::Mat
- * \param cameraIntrinsic 3x3 matrix (double!)
- * \param cameraDistortion is optional, number of components needs to match the file! (double!)
- * \throws exception if parsing fails for any reason.
- */
-extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
-  cv::Mat* cameraIntrinsic, cv::Mat* cameraDistortion);
-
-
-/**
- * \brief Load stereo camera parameters from a plain text file
- * cv::Mat
- * \throws exception if parsing fails for any reason.
- */
-extern "C++" NIFTKOPENCV_EXPORT void LoadStereoTransformsFromPlainText ( const std::string& filename,
-  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
-
-
-/**
- * \brief Load the handeye matrix from a plain text file
- * cv::Mat
- */
-extern "C++" NIFTKOPENCV_EXPORT void LoadHandeyeFromPlainText ( const std::string& filename,
-    cv::Mat* leftCameraToTracker);
 
  /**
   * \brief loads a result file into a residual vector and matrix

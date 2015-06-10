@@ -21,6 +21,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkHandeyeCalibrate.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>

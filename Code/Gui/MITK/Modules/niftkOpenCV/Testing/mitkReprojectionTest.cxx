@@ -19,6 +19,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkOpenCVFileIOUtils.h>
 
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>

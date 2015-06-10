@@ -9,6 +9,8 @@
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Maths/niftk*.cxx
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Registration/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Registration/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Utilities/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Utilities/niftk*.cxx
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointRegService/Internal/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointRegService/Internal/niftk*.cxx
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkIGI/MicroServices/niftk*.h

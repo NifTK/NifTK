@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "mitkHandeyeCalibrateUsingRegistration.h"
-#include "mitkCameraCalibrationFacade.h"
+#include "niftkHandeyeCalibrateUsingRegistration.h"
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
 #include <mitkFileIOUtils.h>
@@ -25,7 +25,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 
-namespace mitk {
+namespace niftk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrateUsingRegistration::HandeyeCalibrateUsingRegistration()
@@ -97,12 +97,15 @@ void HandeyeCalibrateUsingRegistration::Calibrate(const std::string& modelInputF
 
   if (modelTrackingMatrices.size() > 0 && modelTrackingMatrices.size() != cameraPoints.size())
   {
-    mitkThrow() << "If model (chessboard) tracking directory is specified, there must be the same number of tracking matrices as the number of sets of reconstucted camera points." << std::endl;
+    mitkThrow() << "If model (chessboard) tracking directory is specified, "
+                << "there must be the same number of tracking matrices as "
+                << "the number of sets of reconstucted camera points." << std::endl;
   }
 
   if (handTrackingMatrices.size() != cameraPoints.size())
   {
-    mitkThrow() << "There must be the same number of hand (e.g. laparoscope) tracking matrices as the number of sets of reconstucted camera points." << std::endl;
+    mitkThrow() << "There must be the same number of hand (e.g. laparoscope) "
+                << "tracking matrices as the number of sets of reconstucted camera points." << std::endl;
   }
 
   vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -140,27 +143,19 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
   {
     isModelTracking = true;
   }
-
   if (isModelTracking && modelTrackingMatrices.size() != cameraPoints.size())
   {
-    mitkThrow() << "If model (chessboard) tracking matrices are specified, there must be the same number of matrices as the number of sets of reconstucted camera points." << std::endl;
+    mitkThrow() << "If model (chessboard) tracking matrices are specified, "
+                << "there must be the same number of matrices as the number "
+                << "of sets of reconstucted camera points." << std::endl;
   }
-
   if (handTrackingMatrices.size() != cameraPoints.size())
   {
-    mitkThrow() << "There must be the same number of hand (eg. laparoscope) tracking matrices as the number of sets of reconstucted camera points." << std::endl;
+    mitkThrow() << "There must be the same number of hand (eg. laparoscope) "
+                << "tracking matrices as the number of sets of reconstucted camera points." << std::endl;
   }
 
-  // Now we basically loop through each camera point set.
-  //   We take the model (chessboard) points.
-  //     If there are no model tracking matrices, these are assumed to be in tracker space.
-  //     If there are tracking matrices, we multiply the model by the corresponding tracker matrix, to convert model points to tracker points.
-  //   We then register the model points to the camera points to give us hand (tracker) to eye (camera).
-  // Then, we have a whole bunch of registration matrices. Output these.
-  // Then we also compute the average using the Frechet norm.
-
   mitk::PointSet::Pointer modelPointsInTrackerSpace = mitk::PointSet::New();
-
   double fiducialRegistrationError = std::numeric_limits<double>::max();
 
   cv::Mat trackerToHand = cvCreateMat(4,4,CV_64FC1);
@@ -173,7 +168,6 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
   {
     vtkSmartPointer<vtkMatrix4x4> trackingTransform = vtkSmartPointer<vtkMatrix4x4>::New();
     trackingTransform->Identity();
-
     vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     registrationMatrix->Identity();
 
@@ -199,8 +193,8 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
     if (fabs(origin[2]) < distanceThreshold)
     {
       fiducialRegistrationError =
-          niftk::PointBasedRegistrationUsingSVD(modelPointsInTrackerSpace, // fixed points   so this gives us camera-to-tracker
-                                                cameraPoints[i],           // moving points
+          niftk::PointBasedRegistrationUsingSVD(modelPointsInTrackerSpace,
+                                                cameraPoints[i],
                                                 *registrationMatrix);
 
       if (fiducialRegistrationError < fiducialRegistrationThreshold)
@@ -214,27 +208,31 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
         std::cout << "Hand-eye pair " << i << " registers with FRE=" << fiducialRegistrationError << std::endl;
         for (unsigned int r = 0; r < 4; r++)
         {
-          std::cout << handToCamera.at<double>(r, 0) << " " << handToCamera.at<double>(r, 1) << " " << handToCamera.at<double>(r, 2) << " " << handToCamera.at<double>(r, 3) << std::endl;
+          std::cout << handToCamera.at<double>(r, 0) << " "
+                    << handToCamera.at<double>(r, 1) << " "
+                    << handToCamera.at<double>(r, 2) << " "
+                    << handToCamera.at<double>(r, 3) << std::endl;
         }
       }
       else
       {
-        std::cout << "Hand-eye pair " << i << " has FRE=" << fiducialRegistrationError << " which is above threshold " << fiducialRegistrationThreshold << " and so is rejected." << std::endl;
+        std::cout << "Hand-eye pair " << i << " has FRE=" << fiducialRegistrationError
+                  << " which is above threshold " << fiducialRegistrationThreshold
+                  << " and so is rejected." << std::endl;
       }
     }
     else
     {
-      std::cout << "Hand-eye pair " << i << " has z=" << origin[2] << " which is above threshold " << distanceThreshold << " and so is rejected." << std::endl;
+      std::cout << "Hand-eye pair " << i << " has z=" << origin[2]
+                << " which is above threshold " << distanceThreshold
+                << " and so is rejected." << std::endl;
     }
   }
-
   if (handEyeMatrices.size() == 0)
   {
     mitkThrow() << "No suitable registration results were found." << std::endl;
   }
-
-  cv::Mat averageHandeye = cvCreateMat(4,4,CV_64FC1);
-  averageHandeye = mitk::AverageMatrices(handEyeMatrices);
+  cv::Mat averageHandeye = mitk::AverageMatrices(handEyeMatrices);
   mitk::CopyToVTK4x4Matrix(averageHandeye, outputMatrix);
 }
 
