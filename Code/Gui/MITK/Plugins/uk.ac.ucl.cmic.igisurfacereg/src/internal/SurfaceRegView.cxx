@@ -153,14 +153,14 @@ void SurfaceRegView::OnComputeDistance()
 
   try
   {
-    // essentially the same stuff that SurfaceBasedRegistration::Update() does.
+    // essentially the same stuff that ICPBasedRegistration::Update() does.
     // we should do that before we kick off the worker thread! 
     // otherwise someone else might move around the node's matrices.
     vtkPolyData *fixedPoly = vtkPolyData::New();
-    niftk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
+    niftk::ICPBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
 
     vtkPolyData *movingPoly = vtkPolyData::New();
-    niftk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
+    niftk::ICPBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
 
     // this seems a bit messy here:
     // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
@@ -290,7 +290,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
     return;
   }
   
-  niftk::SurfaceBasedRegistration::Pointer registration = niftk::SurfaceBasedRegistration::New();
+  niftk::ICPBasedRegistration::Pointer registration = niftk::ICPBasedRegistration::New();
   if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
   {
     registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());

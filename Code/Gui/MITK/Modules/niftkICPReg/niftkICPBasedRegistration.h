@@ -50,25 +50,25 @@ public:
 
 
   /**
-   * \brief Runs ICP registration.
-   * \param fixedNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
-   * \param movingNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
-   */
+  * \brief Runs ICP registration.
+  * \param fixedNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
+  * \param movingNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
+  */
   double Update(const mitk::DataNode::Pointer fixedNode,
            const mitk::DataNode::Pointer movingNode,
            vtkMatrix4x4& transformMovingToFixed);
 
   /**
-   * \brief Generates a poly data from a mitk::DataNode.
-   */
+  * \brief Generates a poly data from a mitk::DataNode.
+  */
   static void NodeToPolyData (const mitk::DataNode::Pointer& node,
                               vtkPolyData& polyOut,
                               const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(),
                               bool flipnormals = false);
 
   /**
-   * \brief Generates a poly data from a mitk::PointSet.
-   */
+  * \brief Generates a poly data from a mitk::PointSet.
+  */
   static void PointSetToPolyData (const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut);
 
 protected:

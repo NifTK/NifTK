@@ -20,6 +20,8 @@
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
 #include <vtkVersion.h>
+#include <stdexcept>
+#include <limits>
 
 #define __NIFTTKVTKICPNPOINTS 50
 #define __NIFTTKVTKICPMAXITERATIONS 100
