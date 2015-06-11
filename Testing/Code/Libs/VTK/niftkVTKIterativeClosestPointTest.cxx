@@ -86,7 +86,9 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
     niftk::PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
   }
 
+  std::cerr << "The initial RMS error is: " << icp->GetRMSResidual() << std::endl;
   icp->Run();
+  std::cerr << "The final RMS error is: " << icp->GetRMSResidual() << std::endl;
 
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
   std::cerr << "The resulting matrix is: " << *m << std::endl;
@@ -107,6 +109,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
           Residual->Element[row][col] - idmat->Element[row][col] : MaxError;
       }
   }
+
   std::cerr << "Max Error = " << MaxError << std::endl;
   delete icp;
 
@@ -176,7 +179,9 @@ int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
 
+    std::cerr << "The initial RMS error is: " << icp->GetRMSResidual() << std::endl;
     icp->Run();
+    std::cerr << "The final RMS error is: " << icp->GetRMSResidual() << std::endl;
 
     vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
 
@@ -203,6 +208,8 @@ int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   MeanError /= Repeats;
   std::cerr << "Mean Error = " << MeanError << std::endl;
   std::cerr << "Max Error = " << MaxError << std::endl;
+
+  delete icp;
 
   if ( MeanError > 3.0 || MaxError > 10.0 )
   {

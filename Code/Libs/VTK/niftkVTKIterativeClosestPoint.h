@@ -20,6 +20,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkIterativeClosestPointTransform.h>
+#include <vtkCellLocator.h>
 
 namespace niftk {
 
@@ -40,22 +41,27 @@ public:
   void Run();
 
   /**
-   * \brief returns the transform to move the source to the target
+   * \brief returns the transform to move the source to the target.
    */
-  vtkSmartPointer<vtkMatrix4x4> GetTransform();
+  vtkSmartPointer<vtkMatrix4x4> GetTransform() const;
 
   /**
-   * \brief Transform the source to the target, placing the result in solution
+   * \brief Returns the RMS residual error between target and transformed source.
+   */
+  double GetRMSResidual() const;
+
+  /**
+   * \brief Transform the source to the target, placing the result in solution.
    */
   void ApplyTransform(vtkPolyData * solution);
 
   /**
-   * \brief Set the source poly data
+   * \brief Set the source poly data.
    */
   void SetSource (vtkSmartPointer<vtkPolyData>);
 
   /**
-   * \brief Set the target polydata
+   * \brief Set the target polydata.
    */
   void SetTarget (vtkSmartPointer<vtkPolyData>);
 
@@ -75,6 +81,7 @@ private:
   vtkSmartPointer<vtkPolyData>                        m_Source;
   vtkSmartPointer<vtkPolyData>                        m_Target;
   vtkSmartPointer<vtkMatrix4x4>                       m_TransformMatrix;
+  vtkSmartPointer<vtkCellLocator>                     m_Locator;
 };
 
 } // end namespace

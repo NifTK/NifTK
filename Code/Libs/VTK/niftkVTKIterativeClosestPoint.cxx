@@ -22,9 +22,6 @@
 #include <vtkVersion.h>
 #include <stdexcept>
 
-#define __NIFTTKVTKICPNPOINTS 50
-#define __NIFTTKVTKICPMAXITERATIONS 100
-
 namespace niftk
 {
 
@@ -36,11 +33,13 @@ VTKIterativeClosestPoint::VTKIterativeClosestPoint()
 {
   m_ICP = vtkSmartPointer<vtkIterativeClosestPointTransform>::New();
   m_ICP->GetLandmarkTransform()->SetModeToRigidBody();
-  m_ICP->SetMaximumNumberOfLandmarks(__NIFTTKVTKICPNPOINTS);
-  m_ICP->SetMaximumNumberOfIterations(__NIFTTKVTKICPMAXITERATIONS);
+  m_ICP->SetMaximumNumberOfLandmarks(50);
+  m_ICP->SetMaximumNumberOfIterations(100);
 
   m_TransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_TransformMatrix->Identity();
+
+  m_Locator = vtkSmartPointer<vtkCellLocator>::New();
 }
 
 
@@ -75,6 +74,9 @@ void VTKIterativeClosestPoint::SetSource ( vtkSmartPointer<vtkPolyData>  source)
 void VTKIterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
 {
   m_Target = target;
+  m_Locator->SetDataSet(m_Target);
+  m_Locator->SetNumberOfCellsPerBucket(1);
+  m_Locator->BuildLocator();
 }
 
 
@@ -127,12 +129,56 @@ void VTKIterativeClosestPoint::Run()
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::GetTransform()
+vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::GetTransform() const
 {
   vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
   result->Identity();
   result->DeepCopy(m_TransformMatrix);
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+double VTKIterativeClosestPoint::GetRMSResidual() const
+{
+  int step = 1;
+  double residual = 0;
+  double sourcePoint[4];
+  double transformedSourcePoint[4];
+  double closestTargetPoint[4];
+  vtkIdType cellId;
+  vtkIdType numberOfPointsUsed = 0;
+  int subId;
+  double distance;
+
+  vtkIdType numberSourcePoints = m_Source->GetNumberOfPoints();
+  if (numberSourcePoints > m_ICP->GetMaximumNumberOfLandmarks())
+  {
+    step = numberSourcePoints / m_ICP->GetMaximumNumberOfLandmarks();
+  }
+
+  for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints; pointCounter+= step)
+  {
+    m_Source->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
+    sourcePoint[3] = 1;                            // but we need the w (homogeneous coords) for matrix multiply.
+
+    m_TransformMatrix->MultiplyPoint(sourcePoint, transformedSourcePoint);
+    m_Locator->FindClosestPoint(transformedSourcePoint,
+                                closestTargetPoint,
+                                cellId,
+                                subId,
+                                distance);
+
+    numberOfPointsUsed++;
+
+    residual += (distance*distance);
+  }
+  if (numberOfPointsUsed > 0)
+  {
+    residual /= static_cast<double>(numberOfPointsUsed);
+  }
+  residual = sqrt(residual);
+  return residual;
 }
 
 
