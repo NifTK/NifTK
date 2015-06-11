@@ -30,6 +30,11 @@
 #include <QTextStream>
 #include <QDir>
 
+// Note:
+// This header must be included before mitkOclResourceService.h to avoid name clash between Xlib.h and Qt.
+// Both headers define a 'None' constant. The header below undefines it to avoid compile error with gcc.
+#include <VLEditor/QmitkIGIVLEditor.h>
+
 #include <mitkColorProperty.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkNodePredicateNot.h>
@@ -39,9 +44,8 @@
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
-#include <VLEditor/QmitkIGIVLEditor.h>
-#include <internal/IGIVLEditorPreferencePage.h>
-#include <internal/IGIVLEditorActivator.h>
+#include "internal/IGIVLEditorPreferencePage.h"
+#include "internal/IGIVLEditorActivator.h"
 
 
 //-----------------------------------------------------------------------------
