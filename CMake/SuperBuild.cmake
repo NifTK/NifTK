@@ -12,6 +12,19 @@
 #
 #============================================================================*/
 
+# We need a proper patch program. On Linux and MacOS, we assume
+# that "patch" is available. On Windows, we download patch.exe
+# if not patch program is found.
+find_program(PATCH_COMMAND patch)
+if((NOT PATCH_COMMAND OR NOT EXISTS ${PATCH_COMMAND}) AND WIN32)
+  downloadFile(${NIFTK_EP_TARBALL_LOCATION}/patch.exe
+               ${CMAKE_CURRENT_BINARY_DIR}/patch.exe)
+  find_program(PATCH_COMMAND patch ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+if(NOT PATCH_COMMAND)
+  message(FATAL_ERROR "No patch program found.")
+endif()
+
 include(ExternalProject)
 
 set(EP_BASE "${CMAKE_BINARY_DIR}" CACHE PATH "Directory where the external projects are configured and built")

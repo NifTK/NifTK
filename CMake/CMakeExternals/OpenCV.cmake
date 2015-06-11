@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  set(version "2.4.8.2")
+  set(version "2.4.11")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(OpenCV ${version} ${location})
@@ -35,7 +35,11 @@ if(BUILD_IGI)
       -DBUILD_opencv_java:BOOL=OFF
     )
 
-    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.8.2.cmake)
+    if(CTEST_USE_LAUNCHERS)
+      list(APPEND additional_cmake_args
+        "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+      )
+    endif()
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -45,7 +49,8 @@ if(BUILD_IGI)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
+      # Related bug: http://bugs.mitk.org/show_bug.cgi?id=5912
+      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11.patch
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -69,6 +74,10 @@ if(BUILD_IGI)
         -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
         ${additional_cmake_args}
+      CMAKE_CACHE_ARGS
+        ${ep_common_cache_args}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${ep_common_cache_default_args}
       DEPENDS ${proj_DEPENDENCIES}
     )
 

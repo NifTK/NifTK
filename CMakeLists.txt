@@ -33,11 +33,7 @@ mark_as_advanced(NIFTK_VERSION_PATCH)
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-if(WIN32)
-  cmake_minimum_required(VERSION 3.1)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
+cmake_minimum_required(VERSION 3.2)
 
 ######################################################################
 # Setting supported build types. Should ONLY be Debug or Release.
@@ -108,9 +104,9 @@ endif ()
 option(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
 
 if(BUILD_SUPERBUILD)
-  project(NIFTK-SUPERBUILD)
+  project(NifTK-superbuild)
 else(BUILD_SUPERBUILD)
-  project(NIFTK)
+  project(NifTK)
 endif(BUILD_SUPERBUILD)
 
 ######################################################################
@@ -337,6 +333,67 @@ include(CMakePackageConfigHelpers)
 ######################################################################
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
+
+
+#-----------------------------------------------------------------------------
+# Check miminum compiler versions
+#-----------------------------------------------------------------------------
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # require at least gcc 4.7.3 as provided by ppa:ubuntu-toolchain-r/test for Ubuntu 12.04
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7.3)
+    message(FATAL_ERROR "GCC version must be at least 4.7.3
+If you are using Ubuntu 12.04, you can easily install gcc and g++ 4.7.3 (or any later version available) in addition to your version ${CMAKE_CXX_COMPILER_VERSION}:
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get install gcc-4.7 g++-4.7
+Make sure to explicitly specify these compilers when configuring MITK:
+  CMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc-4.7
+  CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++-4.7
+For more information on the proposed PPA see the Toolchain Updates section of https://wiki.ubuntu.com/ToolChain.")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # require at least clang 3.4 as provided by Ubuntu 12.04
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.4)
+    message(FATAL_ERROR "Clang version must be at least 3.4")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  # require at least clang 5.0
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+    message(FATAL_ERROR "Apple Clang version must be at least 5.0")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # require at least Visual Studio 2012
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0.61030.0)
+    message(FATAL_ERROR "Microsoft Visual Studio 2012 Update 4 or newer required (MSVC 17.0.61030.0)")
+  endif()
+else()
+  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang (Linux or Apple), GCC and MSVC.")
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
+else()
+  set(GCC_VERSION 0)
+endif()
+
+set(MITK_CXX_STANDARD 11)
+
+set(CMAKE_CXX_EXTENSIONS 0)
+set(CMAKE_CXX_STANDARD ${MITK_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD_REQUIRED 1)
+
+# This is necessary to avoid problems with compile feature checks.
+# CMAKE_CXX_STANDARD seems to only set the -std=c++11 flag for targets.
+# However, compile flag checks also need to be done with -std=c++11.
+# The MITK_CXX11_FLAG variable is also used for external projects
+# build during the MITK super-build.
+mitkFunctionCheckCompilerFlags("-std=c++11" MITK_CXX11_FLAG)
+if(NOT MITK_CXX11_FLAG)
+  # Older gcc compilers use -std=c++0x
+  mitkFunctionCheckCompilerFlags("-std=c++0x" MITK_CXX11_FLAG)
+endif()
+
 
 ######################################################################
 # Setting build name based on local system details
