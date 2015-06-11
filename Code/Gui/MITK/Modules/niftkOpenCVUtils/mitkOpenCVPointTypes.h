@@ -187,10 +187,6 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
     PickedObject(GoldStandardPoint gsp); //cast a gold standard point to a PickedObject
     ~PickedObject();
-
-    void WriteXML ( std::ostream& os );
-    void ReadXML ( std::istream& is );
-    void ReadXML ( char* is );
     
     /**
      * \brief compare the header information (Id, IsLine, Channel, FrameNumber)

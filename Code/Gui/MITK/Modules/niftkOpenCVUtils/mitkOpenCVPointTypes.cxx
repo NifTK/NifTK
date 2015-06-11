@@ -396,49 +396,6 @@ PickedObject::~PickedObject()
 {}
 
 //-----------------------------------------------------------------------------
-std::istream& operator >> ( std::istream& is, mitk::PickedObject& po ) 
-{
-  is >> po.m_Id;
-  return is;
-}
-
-//-----------------------------------------------------------------------------
-std::ostream& operator << ( std::ostream& os, const mitk::PickedObject& po ) 
-{
-  if ( po.m_Points.size() > 0 )
-  {
-    if ( po.m_IsLine )
-    {
-      os << "<line>" << std::endl;
-    }
-    else
-    {
-      os << "<point>" << std::endl;
-    }
-    os << "<id>" << po.m_Id << "</id>" << std::endl;
-    os << "<frame>" << po.m_FrameNumber << "</frame>" << std::endl;
-    os << "<channel>" << po.m_Channel <<"</channel>" << std::endl;
-    os << "<timestamp>" << po.m_TimeStamp <<"</timestamp>" << std::endl;
-    os << "<coordinates>" << std::endl;
-    for ( unsigned int j = 0 ; j < po.m_Points.size() ; j ++ )
-    {
-      os << po.m_Points[j];
-    }
-    os << std::endl << "</coordinates>" <<std::endl;
-
-    if ( po.m_IsLine )
-    {
-      os << "</line>" << std::endl;
-    }
-    else
-    {
-      os << "</point>" << std::endl;
-    }
-  }
-  return os;
-}
-
-//-----------------------------------------------------------------------------
 bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
 {
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
