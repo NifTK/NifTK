@@ -62,8 +62,8 @@ void ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   }
 
   niftk::VTKIterativeClosestPoint *icp = new  niftk::VTKIterativeClosestPoint();
-  icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
-  icp->SetMaxIterations(m_MaximumIterations);
+  icp->SetICPMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
+  icp->SetICPMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);
   icp->SetTarget(fixedPoly);
 

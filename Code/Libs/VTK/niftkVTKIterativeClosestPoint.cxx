@@ -18,9 +18,11 @@
 #include <vtkPolyData.h>
 #include <vtkIterativeClosestPointTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkIterativeClosestPointTransform.h>
 #include <vtkTransform.h>
 #include <vtkVersion.h>
 #include <stdexcept>
+#include <map>
 
 namespace niftk
 {
@@ -30,16 +32,13 @@ VTKIterativeClosestPoint::VTKIterativeClosestPoint()
 : m_Source(NULL)
 , m_Target(NULL)
 , m_TransformMatrix(NULL)
+, m_ICPMaxLandmarks(50)
+, m_ICPMaxIterations(100)
+, m_TLSPercentage(50)
+, m_TLSIterations(0)
 {
-  m_ICP = vtkSmartPointer<vtkIterativeClosestPointTransform>::New();
-  m_ICP->GetLandmarkTransform()->SetModeToRigidBody();
-  m_ICP->SetMaximumNumberOfLandmarks(50);
-  m_ICP->SetMaximumNumberOfIterations(100);
-
   m_TransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_TransformMatrix->Identity();
-
-  m_Locator = vtkSmartPointer<vtkCellLocator>::New();
 }
 
 
@@ -50,16 +49,42 @@ VTKIterativeClosestPoint::~VTKIterativeClosestPoint()
 
 
 //-----------------------------------------------------------------------------
-void VTKIterativeClosestPoint::SetMaxLandmarks(int maxLandMarks)
+void VTKIterativeClosestPoint::SetICPMaxLandmarks(unsigned int maxLandMarks)
 {
-  m_ICP->SetMaximumNumberOfLandmarks(maxLandMarks);
+  if (maxLandMarks < 3)
+  {
+    throw std::runtime_error("SetICPMaxLandmarks: maxLandMarks must be >= 3.");
+  }
+  m_ICPMaxLandmarks = maxLandMarks;
 }
 
 
 //-----------------------------------------------------------------------------
-void VTKIterativeClosestPoint::SetMaxIterations(int maxIterations)
+void VTKIterativeClosestPoint::SetICPMaxIterations(unsigned int maxIterations)
 {
-  m_ICP->SetMaximumNumberOfIterations(maxIterations);
+  if (maxIterations < 1)
+  {
+    throw std::runtime_error("SetICPMaxIterations: maxIterations must be >= 1.");
+  }
+  m_ICPMaxIterations = maxIterations;
+}
+
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetTLSPercentage(unsigned int percentage)
+{
+  if (percentage > 100)
+  {
+    throw std::runtime_error("SetTLSPercentage: percentage must be <= 100.");
+  }
+  m_TLSPercentage = percentage;
+}
+
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetTLSIterations(unsigned int iterations)
+{
+  m_TLSIterations = iterations;
 }
 
 
@@ -74,57 +99,6 @@ void VTKIterativeClosestPoint::SetSource ( vtkSmartPointer<vtkPolyData>  source)
 void VTKIterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
 {
   m_Target = target;
-  m_Locator->SetDataSet(m_Target);
-  m_Locator->SetNumberOfCellsPerBucket(1);
-  m_Locator->BuildLocator();
-}
-
-
-//-----------------------------------------------------------------------------
-void VTKIterativeClosestPoint::Run()
-{
-  if (m_Source == NULL)
-  {
-    throw std::runtime_error("VTKIterativeClosestPoint::Run, source is NULL.");
-  }
-  if (m_Source->GetNumberOfPoints() < 3)
-  {
-    throw std::runtime_error("VTKIterativeClosestPoint::Run, source has < 3 points.");
-  }
-  if (m_Target == NULL)
-  {
-    throw std::runtime_error("VTKIterativeClosestPoint::Run, target is NULL.");
-  }
-  if (m_Target->GetNumberOfPoints() < 3)
-  {
-    throw std::runtime_error("VTKIterativeClosestPoint::Run, target has < 3 points.");
-  }
-
-  // VTK ICP is point to surface
-  //   the source only needs points,
-  //   but the target needs a surface
-
-  if ( m_Target->GetNumberOfCells() == 0 )
-  {
-    if ( m_Source->GetNumberOfCells() == 0 )
-    {
-      throw std::runtime_error("Neither source not target have a surface, cannot run ICP");
-    }
-    m_ICP->SetSource(m_Target);
-    m_ICP->SetTarget(m_Source);
-    m_ICP->Modified();
-    m_ICP->Update();
-    m_TransformMatrix->DeepCopy(m_ICP->GetMatrix());
-    m_TransformMatrix->Invert();
-  }
-  else
-  {
-    m_ICP->SetSource(m_Source);
-    m_ICP->SetTarget(m_Target);
-    m_ICP->Modified();
-    m_ICP->Update();
-    m_TransformMatrix->DeepCopy(m_ICP->GetMatrix());
-  }
 }
 
 
@@ -132,16 +106,220 @@ void VTKIterativeClosestPoint::Run()
 vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::GetTransform() const
 {
   vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
-  result->Identity();
   result->DeepCopy(m_TransformMatrix);
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-double VTKIterativeClosestPoint::GetRMSResidual() const
+bool VTKIterativeClosestPoint::CheckInverted(vtkPolyData *source, vtkPolyData* target) const
 {
-  int step = 1;
+  bool inverted = false;
+
+  // VTK ICP is point to surface
+  //   the source only needs points,
+  //   but the target needs a surface
+
+  if ( target->GetNumberOfCells() == 0 )
+  {
+    if ( source->GetNumberOfCells() == 0 )
+    {
+      throw std::runtime_error("Neither source not target have a surface, cannot run ICP");
+    }
+    inverted = true;
+  }
+  return inverted;
+}
+
+
+//-----------------------------------------------------------------------------
+int VTKIterativeClosestPoint::GetStepSize(vtkPolyData *source) const
+{
+  int stepSize = 1;
+
+  vtkIdType numberSourcePoints = source->GetNumberOfPoints();
+  if (numberSourcePoints > m_ICPMaxLandmarks)
+  {
+    stepSize = numberSourcePoints / m_ICPMaxLandmarks;
+  }
+  return stepSize;
+}
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::InternalRunICP(vtkPolyData *source,
+                                                                       vtkPolyData* target,
+                                                                       unsigned int landmarks,
+                                                                       unsigned int iterations,
+                                                                       bool inverted) const
+{
+  if (source == NULL)
+  {
+    throw std::runtime_error("VTKIterativeClosestPoint::InternalRunICP, source is NULL.");
+  }
+  if (source->GetNumberOfPoints() < 3)
+  {
+    throw std::runtime_error("VTKIterativeClosestPoint::InternalRunICP, source has < 3 points.");
+  }
+  if (target == NULL)
+  {
+    throw std::runtime_error("VTKIterativeClosestPoint::InternalRunICP, target is NULL.");
+  }
+  if (target->GetNumberOfPoints() < 3)
+  {
+    throw std::runtime_error("VTKIterativeClosestPoint::InternalRunICP, target has < 3 points.");
+  }
+/*
+  std::cerr << "Running ICP with source=" << source
+            << ", sourcePoints=" << source->GetNumberOfPoints()
+            << ", target=" << target
+            << ", targetPoints=" << target->GetNumberOfPoints()
+            << ", landmarks=" << landmarks
+            << ", iterations=" << iterations
+            << ", inverted=" << inverted
+            << std::endl;
+*/
+  vtkSmartPointer<vtkIterativeClosestPointTransform> icp
+      = vtkSmartPointer<vtkIterativeClosestPointTransform>::New();
+
+  icp->GetLandmarkTransform()->SetModeToRigidBody();
+  icp->SetMaximumNumberOfLandmarks(landmarks);
+  icp->SetMaximumNumberOfIterations(iterations);
+  icp->SetSource(source);
+  icp->SetTarget(target);
+  icp->Modified();
+  icp->Update();
+
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+  result->DeepCopy(icp->GetMatrix());
+
+  if (inverted)
+  {
+    result->Invert();
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+double VTKIterativeClosestPoint::Run()
+{
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkCellLocator> locator = vtkSmartPointer<vtkCellLocator>::New();
+
+  vtkPolyData *source = m_Source;
+  vtkPolyData *target = m_Target;
+
+  bool inverted = this->CheckInverted(source, target);
+  if (inverted)
+  {
+    source = m_Target;
+    target = m_Source;
+  }
+
+  // At this point, we know the Target has cells.
+  locator->SetDataSet(target);
+  locator->SetNumberOfCellsPerBucket(1);
+  locator->BuildLocator();
+
+  if (m_TLSIterations == 0)
+  {
+    // Normal ICP, no TLS.
+    result = this->InternalRunICP(source, target, m_ICPMaxLandmarks, m_ICPMaxIterations, inverted);
+  }
+  else
+  {
+    vtkSmartPointer<vtkPoints> points[2];
+    vtkSmartPointer<vtkPolyData> polies[2];
+
+    for (int i = 0; i < 2; i++)
+    {
+      points[i] = vtkSmartPointer<vtkPoints>::New();
+      polies[i] = vtkSmartPointer<vtkPolyData>::New();
+    }
+
+    int current = 0;
+    int other = 1;
+    double sourcePoint[4];
+
+    // First fill temporary dataset with a subsampled set of points.
+    int step = this->GetStepSize(source);
+    vtkIdType numberSourcePoints = source->GetNumberOfPoints();
+    vtkIdType numberOfPointsInserted = 0;
+    for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints
+         && numberOfPointsInserted < m_ICPMaxLandmarks; pointCounter += step)
+    {
+      source->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
+      points[current]->InsertPoint(numberOfPointsInserted++, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+    }
+    polies[current]->SetPoints(points[current]);
+
+    // Do a certain number of iterations of TLS based ICP.
+    for (int i = 0; i < m_TLSIterations; i++)
+    {
+      result = this->InternalRunICP(polies[current], target, points[current]->GetNumberOfPoints(), m_ICPMaxIterations, inverted);
+
+      // Now iterate through all points, and form sorted list of residual errors.
+      double transformedSourcePoint[4];
+      double closestTargetPoint[4];
+      vtkIdType cellId = 0;
+      int subId = 0;
+      double distance = 0;
+      std::map<double, vtkIdType> map;
+
+      // Get residual for each point.
+      for (vtkIdType pointCounter = 0; pointCounter < points[current]->GetNumberOfPoints(); pointCounter++)
+      {
+        points[current]->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
+        sourcePoint[3] = 1;                                   // but we need the w (homogeneous coords) for matrix multiply.
+
+        result->MultiplyPoint(sourcePoint, transformedSourcePoint);
+        locator->FindClosestPoint(transformedSourcePoint,
+                                  closestTargetPoint,
+                                  cellId,
+                                  subId,
+                                  distance);
+        std::pair<double, vtkIdType> pair(distance, pointCounter);
+        map.insert(pair);
+      }
+
+      std::map<double, vtkIdType>::size_type numberOfPointsCopied = 0;
+      std::map<double, vtkIdType>::size_type numberOfPointsInMap = map.size();
+      std::map<double, vtkIdType>::size_type numberOfPointsRequired = numberOfPointsInMap
+          * (static_cast<double>(m_TLSPercentage)/100.0);
+
+      // Iterate through the top m_TLSPercentage of closest points, and put into other point set
+      points[other]->Initialize();
+      std::map<double, vtkIdType>::iterator iter = map.begin();
+      do
+      {
+        points[current]->GetPoint(iter->second, sourcePoint);
+        points[other]->InsertPoint(numberOfPointsCopied++, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+        iter++;
+      } while (iter != map.end() && numberOfPointsCopied < numberOfPointsRequired);
+
+      polies[other]->SetPoints(points[other]);
+
+      // Swap current/other
+      int tmp = current;
+      current = other;
+      other = tmp;
+    }
+
+  }
+
+  // Finish, set the member variable.
+  m_TransformMatrix->DeepCopy(result);
+  double residual = this->InternalGetRMSResidual(source, locator, m_TransformMatrix);
+  return residual;
+}
+
+
+//-----------------------------------------------------------------------------
+double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData *source,
+                                                        vtkCellLocator *locator,
+                                                        vtkMatrix4x4 *matrix) const
+{
   double residual = 0;
   double sourcePoint[4];
   double transformedSourcePoint[4];
@@ -151,23 +329,18 @@ double VTKIterativeClosestPoint::GetRMSResidual() const
   int subId;
   double distance;
 
-  vtkIdType numberSourcePoints = m_Source->GetNumberOfPoints();
-  if (numberSourcePoints > m_ICP->GetMaximumNumberOfLandmarks())
+  vtkIdType numberSourcePoints = source->GetNumberOfPoints();
+  for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints; pointCounter += 1)
   {
-    step = numberSourcePoints / m_ICP->GetMaximumNumberOfLandmarks();
-  }
+    source->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
+    sourcePoint[3] = 1;                          // but we need the w (homogeneous coords) for matrix multiply.
 
-  for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints; pointCounter+= step)
-  {
-    m_Source->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
-    sourcePoint[3] = 1;                            // but we need the w (homogeneous coords) for matrix multiply.
-
-    m_TransformMatrix->MultiplyPoint(sourcePoint, transformedSourcePoint);
-    m_Locator->FindClosestPoint(transformedSourcePoint,
-                                closestTargetPoint,
-                                cellId,
-                                subId,
-                                distance);
+    matrix->MultiplyPoint(sourcePoint, transformedSourcePoint);
+    locator->FindClosestPoint(transformedSourcePoint,
+                              closestTargetPoint,
+                              cellId,
+                              subId,
+                              distance);
 
     numberOfPointsUsed++;
 
@@ -198,13 +371,13 @@ void VTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
     throw std::runtime_error("VTKIterativeClosestPoint::ApplyTransform, solution vtkPolyData is NULL.");
   }
 
-  vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-  vtkSmartPointer<vtkTransform> icpTransform = vtkSmartPointer<vtkTransform>::New();
-  icpTransform->SetMatrix(m_TransformMatrix);
-
   // Clear all memory.
   solution->Initialize();
 
+  vtkSmartPointer<vtkTransform> icpTransform = vtkSmartPointer<vtkTransform>::New();
+  icpTransform->SetMatrix(m_TransformMatrix);
+
+  vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
 #if VTK_MAJOR_VERSION <= 5
   icpTransformFilter->SetInput(m_Source);
 #else

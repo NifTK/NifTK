@@ -61,7 +61,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
   targetReader->Update();
   target->ShallowCopy(targetReader->GetOutput());
 
-  icp->SetMaxLandmarks(1000);
+  icp->SetICPMaxLandmarks(1000);
   icp->SetSource(source);
   icp->SetTarget(target);
 
@@ -86,12 +86,18 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
     niftk::PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
   }
 
-  std::cerr << "The initial RMS error is: " << icp->GetRMSResidual() << std::endl;
-  icp->Run();
-  std::cerr << "The final RMS error is: " << icp->GetRMSResidual() << std::endl;
-
+  // Check TLS.
+  icp->SetTLSIterations(2);
+  double residual = icp->Run();
   vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
-  std::cerr << "The resulting matrix is: " << *m << std::endl;
+  std::cerr << "The TLS RMS error is: " << residual << std::endl;
+  std::cerr << "The TLS matrix is: " << *m << std::endl;
+
+  icp->SetTLSIterations(0); // turn it off.
+  residual = icp->Run();
+  m = icp->GetTransform();
+  std::cerr << "The ICP RMS error is: " << residual << std::endl;
+  std::cerr << "The ICP matrix is: " << *m << std::endl;
 
   vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->Concatenate(m);
@@ -158,8 +164,8 @@ int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   double MeanError = 0.0;
   double MaxError = 0.0;
   niftk::VTKIterativeClosestPoint *  icp = new niftk::VTKIterativeClosestPoint();
-  icp->SetMaxLandmarks(300);
-  icp->SetMaxIterations(1000);
+  icp->SetICPMaxLandmarks(300);
+  icp->SetICPMaxIterations(1000);
   double *StartPoint = new double[4];
   double * EndPoint = new double [4];
   for ( int repeat = 0; repeat < Repeats; repeat ++ )
@@ -179,9 +185,8 @@ int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
 
-    std::cerr << "The initial RMS error is: " << icp->GetRMSResidual() << std::endl;
-    icp->Run();
-    std::cerr << "The final RMS error is: " << icp->GetRMSResidual() << std::endl;
+    double residual = icp->Run();
+    std::cerr << "The final RMS error is: " << residual << std::endl;
 
     vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
 
