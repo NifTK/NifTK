@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <ctime>
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -258,7 +259,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //std::default_random_engine generator;
   //std::uniform_int_distribution<int> distribution (0, numberOfFrames/2);
 
-  if (!m_Randomise)
+  if (m_Randomise)
+  {
+    std::srand(std::time(NULL));
+  }
+  else
   {
     std::srand(0);
   }
