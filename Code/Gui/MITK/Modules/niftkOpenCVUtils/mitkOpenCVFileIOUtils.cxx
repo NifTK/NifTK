@@ -512,8 +512,10 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
              std::stringstream xyzstream(xyz);
              cv::Point3d point;
              xyzstream >> point.x >> point.y >> point.z;
+             po.m_Points.push_back(point);
            }
         }
+        points.push_back(po);
       }
     }
   }
@@ -521,7 +523,6 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
   {
     MITK_ERROR << "Caught " << e.what();
   }             
-
 }
 
 } // end namespace
