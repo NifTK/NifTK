@@ -95,18 +95,9 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
   sourceReader->SetFileName(strSource.c_str());
   sourceReader->Update();
 
-  vtkSmartPointer<vtkPolyDataNormals> sourceNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
-  sourceNormals->SetInputConnection(sourceReader->GetOutputPort());
-  sourceNormals->SetComputePointNormals(true);
-  sourceNormals->SetAutoOrientNormals(true);
-  sourceNormals->Update();
-
   vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
   targetReader->SetFileName(strTarget.c_str());
   targetReader->Update();
-
-  vtkSmartPointer<vtkPolyData> source = sourceNormals->GetOutput();
-  vtkSmartPointer<vtkPolyData> target = targetReader->GetOutput();
 
   vtkSmartPointer<vtkMinimalStandardRandomSequence> uniRand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   uniRand->SetSeed(2);
@@ -117,7 +108,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
   vtkSmartPointer<vtkBoxMuellerRandomSequence> gaussRand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
   gaussRand->SetUniformSequence(uniRand2);
 
-  for (unsigned int range = minRange; range < maxRange; range += stepSize)
+  for (unsigned int range = minRange; range <= maxRange; range += stepSize)
   {
     std::vector<double> rms[2];
 
@@ -131,16 +122,22 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
                                rotationStdDev , rotationStdDev , rotationStdDev,
                                uniRand);
 
-      vtkSmartPointer<vtkTransformPolyDataFilter> transform = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-      transform->SetInputConnection(sourceNormals->GetOutputPort());
-      transform->SetTransform(startTrans);
-      transform->Update();
+      vtkSmartPointer<vtkTransformPolyDataFilter> transformedSource = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+      transformedSource->SetInputConnection(sourceReader->GetOutputPort());
+      transformedSource->SetTransform(startTrans);
+      transformedSource->Update();
+
+      vtkSmartPointer<vtkPolyDataNormals> sourceNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
+      sourceNormals->SetInputConnection(transformedSource->GetOutputPort());
+      sourceNormals->SetComputePointNormals(true);
+      sourceNormals->SetAutoOrientNormals(true);
+      sourceNormals->Update();
 
       niftk::VTKIterativeClosestPoint *icp = new niftk::VTKIterativeClosestPoint();
       icp->SetICPMaxLandmarks(1000);
       icp->SetICPMaxIterations(1000);
-      icp->SetSource(transform->GetOutput());
-      icp->SetTarget(target);
+      icp->SetSource(sourceNormals->GetOutput());
+      icp->SetTarget(targetReader->GetOutput());
 
       if ( false && noiseLevel > 0.1)
       {
@@ -149,7 +146,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
         //niftk::PerturbPolyDataAlongNormal(source, 5.0, gaussRand);
 
         vtkSmartPointer<vtkPolyDataWriter> writer  = vtkSmartPointer<vtkPolyDataWriter>::New();
-        writer->SetInputData(source);
+        writer->SetInputData(transformedSource->GetOutput());
         writer->SetFileName("/tmp/tmp.vtk");
         writer->Update();
       }
@@ -161,8 +158,8 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
         double residual;
 
         icp->SetTLSIterations(i*2); // so it will be either 0 (normal ICP), or 2 (use TLS).
-        icp->Run();
-        residual = icp->GetRMSResidual(*(sourceNormals->GetOutput()));
+        icp->Run();                 // this returns residual,....
+        residual = icp->GetRMSResidual(*(transformedSource->GetOutput())); // but we want to measure RMS using non-noise corrupted points.
         rms[i].push_back(residual);
 
         if (range <= rangeThreshold)
