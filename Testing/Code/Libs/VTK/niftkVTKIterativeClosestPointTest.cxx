@@ -26,107 +26,185 @@
 #include <vtkBoxMuellerRandomSequence.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkPolyDataNormals.h>
+#include <vtkPolyDataWriter.h>
+#include <sstream>
+
+double CheckMatrixAgainstIdentity(const vtkMatrix4x4& transform,
+                                  const double rotationTolerance, const double translationTolerance)
+{
+  double maxError=0.0;
+  vtkSmartPointer<vtkMatrix4x4> idmat  = vtkSmartPointer<vtkMatrix4x4>::New();
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+      maxError = (fabs(transform.Element[row][col] - idmat->Element[row][col]) > maxError) ?
+        fabs(transform.Element[row][col] - idmat->Element[row][col]) : maxError;
+    }
+  }
+  if  ( maxError > rotationTolerance )
+  {
+    std::stringstream oss;
+    oss << "Rotation component in " << std::endl << niftk::WriteMatrix4x4ToString(transform) << ", is not Identity (tolerance=" << rotationTolerance << ").";
+    throw std::runtime_error(oss.str());
+  }
+  maxError=0.0;
+  for ( int row = 0; row < 3; row ++ )
+  {
+    maxError = (fabs(transform.Element[row][3] - idmat->Element[row][3]) > maxError) ?
+      fabs(transform.Element[row][3] - idmat->Element[row][3]) : maxError;
+  }
+  if  ( maxError > translationTolerance )
+  {
+    std::stringstream oss;
+    oss << "Translation component in " << std::endl << niftk::WriteMatrix4x4ToString(transform) << ", is not Identity (tolerance=" << translationTolerance << ").";
+    throw std::runtime_error(oss.str());
+  }
+
+  return maxError;
+}
 
 /**
- * Runs ICP registration a known data set and checks the error
+ * Runs ICP/TLS registration a known data set and checks the error
  */
-
 int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
 {
-  if ( argc != 4 )
+  if ( argc != 9)
   {
-    std::cerr << "Usage niftkVTKIterativeClosestPointTest source target" << std::endl;
+    std::cerr << "Usage niftkVTKIterativeClosestPointTest source target iterations minRange maxRange stepSize rangeThreshold noiseLevel" << std::endl;
+    std::cerr << "Where:" << std::endl;
+    std::cerr << "  iterations (int) = number of iterations at each step" << std::endl;
+    std::cerr << "  minRange (int) = minimum size of uniform distribution for transformation offset" << std::endl;
+    std::cerr << "  maxRange (int) = maximum size of uniform distribution for transformation offset" << std::endl;
+    std::cerr << "  stepSize (int) = step size between minRange and maxRange" << std::endl;
+    std::cerr << "  rangeThreshold (int) = minimum range, below which tests must pass (i.e. acceptance criteria)." << std::endl;
+    std::cerr << "  noiseLevel (float) = zero mean Gaussian noise to add to source data-set" << std::endl;
     return EXIT_FAILURE;
   }
-  niftk::VTKIterativeClosestPoint *  icp = new niftk::VTKIterativeClosestPoint();
   std::string strTarget = argv[1];
   std::string strSource = argv[2];
-
-  bool Perturb = false;
-  if ( ( strcmp(argv[3], "perturb" ) == 0 ) )
-  {
-    std::cerr << "Perturbing Source" << std::endl;
-    Perturb = true;
-  }
-
-  vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
-  vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
+  int iterations = atoi(argv[3]);
+  int minRange = atoi(argv[4]);
+  int maxRange = atoi(argv[5]);
+  int stepSize = atoi(argv[6]);
+  int rangeThreshold = atoi(argv[7]);
+  float noiseLevel = atof(argv[8]);
 
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(strSource.c_str());
   sourceReader->Update();
-  source->ShallowCopy(sourceReader->GetOutput());
+
+  vtkSmartPointer<vtkPolyDataNormals> sourceNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
+  sourceNormals->SetInputConnection(sourceReader->GetOutputPort());
+  sourceNormals->SetComputePointNormals(true);
+  sourceNormals->SetAutoOrientNormals(true);
+  sourceNormals->Update();
+
   vtkSmartPointer<vtkPolyDataReader> targetReader = vtkSmartPointer<vtkPolyDataReader>::New();
   targetReader->SetFileName(strTarget.c_str());
   targetReader->Update();
-  target->ShallowCopy(targetReader->GetOutput());
 
-  icp->SetICPMaxLandmarks(1000);
-  icp->SetSource(source);
-  icp->SetTarget(target);
+  vtkSmartPointer<vtkPolyData> source = sourceNormals->GetOutput();
+  vtkSmartPointer<vtkPolyData> target = targetReader->GetOutput();
 
-  vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-  Uni_Rand->SetSeed(2);
-  vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> uniRand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  uniRand->SetSeed(2);
 
-  niftk::RandomTransform ( StartTrans, 20.0 , 20.0 , 20.0, 10.0 , 10.0, 10.0 , Uni_Rand);
-  niftk::TranslatePolyData ( source , StartTrans);
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> uniRand2 = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  uniRand2->SetSeed(3);
 
-  vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
-  StartTrans->GetInverse(Trans_In);
-  std::cerr << "Inverse of start trans " << *Trans_In << std::endl;
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> gaussRand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  gaussRand->SetUniformSequence(uniRand2);
 
-  if ( Perturb )
+  for (unsigned int range = minRange; range < maxRange; range += stepSize)
   {
-    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand2 = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-    Uni_Rand2->SetSeed(3);
+    std::vector<double> rms[2];
 
-    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
-    Gauss_Rand->SetUniformSequence(Uni_Rand2);
-    niftk::PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
-  }
+    for (unsigned int counter = 0; counter < iterations; counter++)
+    {
 
-  // Check TLS.
-  icp->SetTLSIterations(2);
-  double residual = icp->Run();
-  vtkSmartPointer<vtkMatrix4x4> m = icp->GetTransform();
-  std::cerr << "The TLS RMS error is: " << residual << std::endl;
-  std::cerr << "The TLS matrix is: " << *m << std::endl;
+      vtkSmartPointer<vtkTransform> startTrans = vtkSmartPointer<vtkTransform>::New();
+      double translationStdDev = range*4;
+      double rotationStdDev = range*2;
+      niftk::RandomTransform ( startTrans, translationStdDev , translationStdDev, translationStdDev,
+                               rotationStdDev , rotationStdDev , rotationStdDev,
+                               uniRand);
 
-  icp->SetTLSIterations(0); // turn it off.
-  residual = icp->Run();
-  m = icp->GetTransform();
-  std::cerr << "The ICP RMS error is: " << residual << std::endl;
-  std::cerr << "The ICP matrix is: " << *m << std::endl;
+      vtkSmartPointer<vtkTransformPolyDataFilter> transform = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+      transform->SetInputConnection(sourceNormals->GetOutputPort());
+      transform->SetTransform(startTrans);
+      transform->Update();
 
-  vtkSmartPointer<vtkMatrix4x4> Residual  = vtkSmartPointer<vtkMatrix4x4>::New();
-  StartTrans->Concatenate(m);
-  StartTrans->GetInverse(Residual);
-  std::cerr << "Residual " << *Residual << std::endl;
-  //what's the success criteria, the residual should be very close to identity.
+      niftk::VTKIterativeClosestPoint *icp = new niftk::VTKIterativeClosestPoint();
+      icp->SetICPMaxLandmarks(1000);
+      icp->SetICPMaxIterations(1000);
+      icp->SetSource(transform->GetOutput());
+      icp->SetTarget(target);
 
-  double MaxError=0.0;
-  vtkSmartPointer<vtkMatrix4x4> idmat  = vtkSmartPointer<vtkMatrix4x4>::New();
-  for ( int row = 0; row < 4; row ++ )
-  {
-    for ( int col = 0; col < 4; col ++ )
+      if ( false && noiseLevel > 0.1)
       {
-        MaxError = (Residual->Element[row][col] - idmat->Element[row][col] > MaxError) ?
-          Residual->Element[row][col] - idmat->Element[row][col] : MaxError;
+
+        // niftk::PerturbPolyData(source, 1.0, 1.0, 1.0, gaussRand);
+        //niftk::PerturbPolyDataAlongNormal(source, 5.0, gaussRand);
+
+        vtkSmartPointer<vtkPolyDataWriter> writer  = vtkSmartPointer<vtkPolyDataWriter>::New();
+        writer->SetInputData(source);
+        writer->SetFileName("/tmp/tmp.vtk");
+        writer->Update();
       }
-  }
 
-  std::cerr << "Max Error = " << MaxError << std::endl;
-  delete icp;
 
-  if  ( MaxError > 1e-3 )
-  {
-    return EXIT_FAILURE;
-  }
-  else
-  {
-    return EXIT_SUCCESS;
-  }
+      // If i=iterations == 0, TLS is turned off, if i > 0, TLS is on.
+      for (unsigned int i = 0; i < 2; i++)
+      {
+        double residual;
+
+        icp->SetTLSIterations(i*2); // so it will be either 0 (normal ICP), or 2 (use TLS).
+        icp->Run();
+        residual = icp->GetRMSResidual(*(sourceNormals->GetOutput()));
+        rms[i].push_back(residual);
+
+        if (range <= rangeThreshold)
+        {
+          vtkSmartPointer<vtkMatrix4x4> registration = icp->GetTransform();
+
+          vtkSmartPointer<vtkMatrix4x4> offset = vtkSmartPointer<vtkMatrix4x4>::New();
+          startTrans->GetMatrix(offset);
+
+          vtkSmartPointer<vtkMatrix4x4> inv = vtkSmartPointer<vtkMatrix4x4>::New();
+          startTrans->GetInverse(inv);
+
+          vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+          vtkMatrix4x4::Multiply4x4(registration, offset, result);
+
+          double rotationTolerance = 0.001;   // component of a rotation matrix.
+          double translationTolerance = 0.25; // millimetres
+          try
+          {
+            CheckMatrixAgainstIdentity(*result, rotationTolerance, translationTolerance);
+          } catch (const std::runtime_error& e)
+          {
+            std::cerr << "Method=" << i << ", rotation tolerance=" << rotationTolerance << ", translation tolerance=" << translationTolerance <<  std::endl;
+            std::cerr << "Start Trans=" << *startTrans << std::endl;
+            std::cerr << "Inv Trans=" << *inv << std::endl;
+            std::cerr << "Registration Trans=" << *registration << std::endl;
+            std::cerr << "Result Trans=" << *result << std::endl;
+            return EXIT_FAILURE;
+          }
+        } // if checking acceptance criteria
+      } // end for each method
+
+      // Tidy up.
+      delete icp;
+
+    } // end for each iteration
+
+    // Print results.
+    std::cerr << range << " " << iterations << " " << rms[0].front() << " " << rms[1].front() << std::endl;
+
+  } // end for range
+  return EXIT_SUCCESS;
 }
 
 int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )

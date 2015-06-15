@@ -45,9 +45,14 @@ public:
 
   /**
    * \brief Perform a vtk Iterative Closest Point (ICP) registration on the two data sets.
-   * \return the RMS residual error.
+   * \return the RMS residual error, using the full source dataset.
    */
   double Run();
+
+  /**
+   * \brief Calculates the RMS residual, using the current transformation and the supplied source data-set.
+   */
+  double GetRMSResidual(vtkPolyData &source) const;
 
   /**
    * \brief returns the transform to move the source to the target.
@@ -93,13 +98,14 @@ public:
 
 private:
 
-  vtkSmartPointer<vtkPolyData>  m_Source;
-  vtkSmartPointer<vtkPolyData>  m_Target;
-  vtkSmartPointer<vtkMatrix4x4> m_TransformMatrix;
-  unsigned int                  m_ICPMaxLandmarks;
-  unsigned int                  m_ICPMaxIterations;
-  unsigned int                  m_TLSPercentage;
-  unsigned int                  m_TLSIterations;
+  vtkSmartPointer<vtkPolyData>    m_Source;
+  vtkSmartPointer<vtkPolyData>    m_Target;
+  vtkSmartPointer<vtkMatrix4x4>   m_TransformMatrix;
+  vtkSmartPointer<vtkCellLocator> m_Locator;
+  unsigned int                    m_ICPMaxLandmarks;
+  unsigned int                    m_ICPMaxIterations;
+  unsigned int                    m_TLSPercentage;
+  unsigned int                    m_TLSIterations;
 
   int GetStepSize(vtkPolyData *source) const;
 
@@ -112,9 +118,9 @@ private:
                                                bool inverted
                                               ) const;
 
-  double InternalGetRMSResidual(vtkPolyData *source,
-                                vtkCellLocator *locator,
-                                vtkMatrix4x4 *matrix
+  double InternalGetRMSResidual(vtkPolyData &source,
+                                vtkCellLocator &locator,
+                                vtkMatrix4x4 &matrix
                                 ) const;
 };
 

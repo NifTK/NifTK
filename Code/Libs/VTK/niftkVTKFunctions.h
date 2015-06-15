@@ -75,6 +75,10 @@ extern "C++" NIFTKVTK_WINEXPORT double GetBoundingBoxDiagonalLength(const double
 /** Copies n doubles from a to b, which must be allocated, and at least of length n. */
 extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, double *b);
 
+/** Perturbs a vtkPolyData, by moving each point along its normal. */
+extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyDataAlongNormal(vtkPolyData * polydata,
+        double stdDev, vtkRandomSequence * rng);
+
 /**
  * \brief Perturbs the points in a polydata object by random values, using existing random number generator
  * \param polydata the polydata
