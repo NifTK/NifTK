@@ -348,6 +348,21 @@ double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData& source,
     numberOfPointsUsed++;
 
     residual += (distance*distance);
+/*
+    std::cerr << "Matt, c=" << pointCounter
+              << ", sp=" << sourcePoint[0]
+              << ", " << sourcePoint[1]
+              << ", " << sourcePoint[2]
+              << ", tr=" << transformedSourcePoint[0]
+              << ", " << transformedSourcePoint[1]
+              << ", " << transformedSourcePoint[2]
+              << ", tp" << closestTargetPoint[0]
+              << ", " << closestTargetPoint[1]
+              << ", " << closestTargetPoint[2]
+              << ", dist=" << distance
+              << ", resi=" << residual
+              << std::endl;
+*/
   }
   if (numberOfPointsUsed > 0)
   {
