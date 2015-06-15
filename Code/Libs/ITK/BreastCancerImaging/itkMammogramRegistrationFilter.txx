@@ -537,7 +537,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   useWeighting = false;
   useCogInitialisation = true;
 
-
   // The factory.
 
   typename FactoryType::Pointer factory = FactoryType::New();
@@ -819,6 +818,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
       singleResMethod->SetRescaleFixedUpperThreshold(intensityFixedUpperBound);
       singleResMethod->SetRescaleFixedMinimum((InputImagePixelType)lowerIntensity+1);
       singleResMethod->SetRescaleFixedMaximum((InputImagePixelType)higherIntensity);
+
       singleResMethod->SetRescaleMovingImage(true);
       singleResMethod->SetRescaleMovingBoundaryValue(lowerIntensity);
       singleResMethod->SetRescaleMovingLowerThreshold(intensityMovingLowerBound);
@@ -1346,7 +1346,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   }
 
   fileImage = ImageFileIsNiftiOrConvert( fileImage );
-
 
   QStringList argsResample;
 

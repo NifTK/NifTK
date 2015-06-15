@@ -239,6 +239,7 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
+
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -418,6 +419,7 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
+
     // Get the records for this tumour
 
     for ( iNodeRecord = 0;
@@ -545,6 +547,7 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
+
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -648,6 +651,7 @@ int main(int argc, char** argv)
       std::cout << "    tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
+
 
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
