@@ -20,7 +20,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
-#include <mitkMathsUtils.h>
+#include <niftkMathsUtils.h>
 #include <stdexcept>
 #include <sstream>
 #include <cstdlib>
@@ -137,14 +137,14 @@ void PivotCalibration::Calibrate(
       yOffset.push_back(tmpMatrix(1,3));
       zOffset.push_back(tmpMatrix(2,3));
     }
-    double meanResidual = mitk::Mean(vectorOfResiduals);
-    double stdDevResidual = mitk::StdDev(vectorOfResiduals);
-    double meanX = mitk::Mean(xOffset);
-    double meanY = mitk::Mean(yOffset);
-    double meanZ = mitk::Mean(zOffset);
-    double stdDevX = mitk::StdDev(xOffset);
-    double stdDevY = mitk::StdDev(yOffset);
-    double stdDevZ = mitk::StdDev(zOffset);
+    double meanResidual = niftk::Mean(vectorOfResiduals);
+    double stdDevResidual = niftk::StdDev(vectorOfResiduals);
+    double meanX = niftk::Mean(xOffset);
+    double meanY = niftk::Mean(yOffset);
+    double meanZ = niftk::Mean(zOffset);
+    double stdDevX = niftk::StdDev(xOffset);
+    double stdDevY = niftk::StdDev(yOffset);
+    double stdDevZ = niftk::StdDev(zOffset);
 
     std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times on " << percentage << "% of the data gives offset=[" \
               << meanX << " (" << stdDevX << "), " \

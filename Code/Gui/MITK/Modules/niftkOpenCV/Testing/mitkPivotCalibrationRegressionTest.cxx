@@ -25,7 +25,7 @@
 #include <vtkMatrix4x4.h>
 #include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkMathsUtils.h>
+#include <niftkMathsUtils.h>
 
 /**
  * \class PivotCalibrationRegressionTest
@@ -68,7 +68,7 @@ public:
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
+        MITK_TEST_CONDITION_REQUIRED(niftk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
       }
     }
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");

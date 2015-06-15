@@ -24,13 +24,13 @@
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
-#include <mitkMathsUtils.h>
 #include <QmitkIGINiftyLinkDataSource.h>
 #include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
 #include <QmitkRenderingManager.h>
+#include <niftkMathsUtils.h>
 
 #include <stdexcept>
 #include <vtkWindowToImageFilter.h>
@@ -1516,8 +1516,8 @@ void QmitkIGIDataSourceManager::OnComputeStats()
 {
   m_StatsTimerEnd->Update();
   m_RequestedFrameRate = 1000 / m_GuiUpdateTimer->interval();
-  double meanRendering = mitk::Mean(m_ListRenderingTimes);
-  double meanFetch = mitk::Mean(m_ListDataFetchTimes);
+  double meanRendering = niftk::Mean(m_ListRenderingTimes);
+  double meanFetch = niftk::Mean(m_ListDataFetchTimes);
 
   QString output = QObject::tr("STATS: rate=%1 fps, forced=%2, requested=%3, fetch=%4 (msec), render=%5 (msec).").arg(m_RequestedFrameRate).arg(m_NumberOfTimesRenderingLoopCalled).arg(m_NumberOfTimesRenderingIsActuallyCalled).arg(meanFetch).arg(meanRendering);
   this->PrintStatusMessage(output);
@@ -1526,7 +1526,7 @@ void QmitkIGIDataSourceManager::OnComputeStats()
   for (i = m_MapLagTiming.begin(); i != m_MapLagTiming.end(); i++)
   {
     int rowNumber = (*i).first;
-    double mean = mitk::Mean(m_MapLagTiming[rowNumber]);
+    double mean = niftk::Mean(m_MapLagTiming[rowNumber]);
     QString lagMessage = QObject::tr("LAG: row=%1, time=%2 (msec)").arg(rowNumber).arg(mean*1000);
     this->PrintStatusMessage(lagMessage);
   }

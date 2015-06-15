@@ -16,7 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkUltrasoundPinCalibration.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkMathsUtils.h>
+#include <niftkMathsUtils.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -140,7 +140,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
   {
     std::pair < unsigned int , unsigned int > minIndexes;
-    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
+    std::pair < double , double > minValues = niftk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
     MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << (int)minIndexes.first + windowLow << " ms ";  ;
     MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << (int)minIndexes.second + windowLow << " ms ";  ;
   }
@@ -361,7 +361,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TimeStampsContainer.size() ; trackerIndex++ )
   {
     std::pair < unsigned int , unsigned int > minIndexes;
-    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
+    std::pair < double , double > minValues = niftk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
     MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << (int)minIndexes.first + windowLow << " ms ";  ;
     MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << (int)minIndexes.second + windowLow << " ms ";  ;
   }

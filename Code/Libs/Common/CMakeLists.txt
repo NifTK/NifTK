@@ -20,6 +20,7 @@ set(niftkcommon_SRCS
   niftkEnvironmentHelper.cxx
   niftkCommandLineParser.cxx
   niftkCSVRow.cxx
+  niftkMathsUtils.cxx
 )
 
 add_library(niftkcommon ${niftkcommon_SRCS})

@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "mitkMathsUtils.h"
+#include "niftkMathsUtils.h"
 #include <numeric>
 #include <algorithm>
 #include <functional>
 #include <cmath>
 
-namespace mitk {
+namespace niftk {
 
 //-----------------------------------------------------------------------------
 bool IsCloseToZero(const double& value, const double& tolerance)
@@ -102,7 +102,7 @@ double StdDev(const std::vector<double>& input)
     return 0;
   }
 
-  double mean = mitk::Mean(input);
+  double mean = niftk::Mean(input);
 
   std::vector<double> diff(input.size());
   std::transform(input.begin(), input.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
