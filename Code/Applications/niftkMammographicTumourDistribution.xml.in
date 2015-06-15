@@ -29,7 +29,7 @@
       <name>fileImageXML</name>
       <flag>i</flag>
       <longflag>image</longflag>
-      <description>Input image info XML file</description>      
+      <description>Input image info XML file</description>
       <label>Input image info XML file</label>
       <channel>input</channel>
     </file>
@@ -38,7 +38,7 @@
       <name>fileTumourXML</name>
       <flag>t</flag>
       <longflag>tumour</longflag>
-      <description>Input tumour mask info XML file</description>      
+      <description>Input tumour mask info XML file</description>
       <label>Input tumour mask info XML file</label>
       <channel>input</channel>
     </file>
@@ -47,7 +47,7 @@
       <name>fileBreastEdgeXML</name>
       <flag>e</flag>
       <longflag>edge</longflag>
-      <description>Input breast edge points XML file</description>      
+      <description>Input breast edge points XML file</description>
       <label>Input breast edge XML file</label>
       <channel>input</channel>
     </file>
@@ -60,26 +60,6 @@
       <label>Input pectoralis XML file</label>
       <channel>input</channel>
     </file>
-
-    <float>
-      <name>regionSizeInMM</name>
-      <longflag>regionSize</longflag>
-      <description>The dimension of the square region size in millimeters.</description>
-      <label>Region size in mm.</label>
-      <default>10</default>
-      <constraints>
-        <minimum>1</minimum>
-        <maximum>100</maximum>
-        <step>1</step>
-      </constraints>
-    </float>
-
-    <boolean>
-      <name>flgRegisterAffine</name>
-      <longflag>regAffine</longflag>
-      <description>Affine register the input image to the diagnostic image to enable the tumour location to be mapped into the pre-diagnostic image.</description>
-      <label>Affine register to the diagnostic image?</label>
-    </boolean>
 
     <boolean>
       <name>flgRegisterNonRigid</name>
@@ -105,12 +85,12 @@
     </directory>
 
     <file>
-      <name>fileOutputDensityCSV</name>
+      <name>fileOutputCSV</name>
       <flag>o</flag>
       <longflag>csv</longflag>
-      <description>Output CSV file of patch densities</description>      
-      <label>Output CSV density file</label>
-      <default>NiftyDensityMeasurements.csv</default>
+      <description>Output CSV file</description>
+      <label>Output CSV file</label>
+      <default>NiftyMeasurements.csv</default>
       <channel>output</channel>
     </file>
 

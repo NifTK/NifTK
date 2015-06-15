@@ -14,7 +14,7 @@
 
 #ifndef itkMammogramRegistrationFilter_h
 #define itkMammogramRegistrationFilter_h
- 
+
 #include <itkImageToImageFilter.h>
 
 #include <itkImageFileReader.h>
@@ -34,7 +34,7 @@ namespace itk
 
 
 template< class TInputImage, class TOutputImage >
-class MammogramRegistrationFilter : 
+class MammogramRegistrationFilter :
   public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
@@ -43,10 +43,10 @@ public:
   typedef MammogramRegistrationFilter Self;
   typedef ImageToImageFilter< TInputImage, TOutputImage > Superclass;
   typedef SmartPointer< Self > Pointer;
- 
+
   /// Method for creation through the object factory.
   itkNewMacro(Self);
- 
+
   /// Run-time type information (and related methods).
   itkTypeMacro(MammogramRegistrationFilter, ImageToImageFilter);
 
@@ -100,6 +100,7 @@ public:
   void SetDebugOn( void ) { m_FlgDebug = true; }
   void SetDebugOff( void ) { m_FlgDebug = false; }
 
+  void SetOverwriteRegistration( void ) { m_FlgOverwrite = true; }
 
   /// Set the directory to look for executables in
   void SetExecutablesDirectoryToTry( std::string dir ) { m_DirExecutable = dir; }
@@ -110,26 +111,26 @@ public:
     REGISTER_MASKS,
     REGISTER_DISTANCE_TRANSFORMS
   } enumRegistrationImagesType;
-  
+
   /// Set the registration image type.
-  void SetTypeOfInputImagesToRegister( enumRegistrationImagesType regImagesType ) { 
+  void SetTypeOfInputImagesToRegister( enumRegistrationImagesType regImagesType ) {
     m_TypeOfInputImagesToRegister = regImagesType;
   }
 
   /// Set the final control point spacing for non-rigid registrations
-  itkSetMacro( ControlPointSpacing, float ); 
+  itkSetMacro( ControlPointSpacing, float );
   /// Get the final control point spacing for non-rigid registrations
-  itkGetMacro( ControlPointSpacing, float ); 
+  itkGetMacro( ControlPointSpacing, float );
 
   /// Set the number of multi-scale registration levels
-  itkSetMacro( NumberOfLevels, unsigned int ); 
+  itkSetMacro( NumberOfLevels, unsigned int );
   /// Get the number of multi-scale registration levels
-  itkGetMacro( NumberOfLevels, unsigned int ); 
+  itkGetMacro( NumberOfLevels, unsigned int );
 
   /// Set the number of multi-scale registration levels to use
-  itkSetMacro( NumberOfLevelsToUse, unsigned int ); 
+  itkSetMacro( NumberOfLevelsToUse, unsigned int );
   /// Get the number of multi-scale registration levels to use
-  itkGetMacro( NumberOfLevelsToUse, unsigned int ); 
+  itkGetMacro( NumberOfLevelsToUse, unsigned int );
 
 
   /// Set the target image.
@@ -150,75 +151,78 @@ public:
 
 
   /// Set the working directory for storing any intermediate files
-  void SetWorkingDirectory( std::string directory ) { 
-    m_DirWorking = directory; 
+  void SetWorkingDirectory( std::string directory ) {
+    m_DirWorking = directory;
   }
 
 
   /// Set the target image filename
-  void SetFileTarget( std::string filename ) { 
-    m_FileTarget = filename; 
+  void SetFileTarget( std::string filename ) {
+    m_FileTarget = filename;
   }
   /// Set the source image filename
-  void SetFileSource( std::string filename ) { 
-    m_FileSource = filename; 
+  void SetFileSource( std::string filename ) {
+    m_FileSource = filename;
   }
 
   /// Set the target mask image filename
-  void SetFileTargetMask( std::string filename ) { 
-    m_FileTargetMask = filename; 
+  void SetFileTargetMask( std::string filename ) {
+    m_FileTargetMask = filename;
   }
   /// Set the source mask image filename
-  void SetFileSourceMask( std::string filename ) { 
-    m_FileSourceMask = filename; 
+  void SetFileSourceMask( std::string filename ) {
+    m_FileSourceMask = filename;
   }
 
   /// Set the input target registration mask filename
-  void SetFileInputTargetRegistrationMask( std::string filename ) { 
-    m_FileInputTargetRegistrationMask = filename; 
+  void SetFileInputTargetRegistrationMask( std::string filename ) {
+    m_FileInputTargetRegistrationMask = filename;
   }
 
   /// Set the output target registration mask filename
-  void SetFileOutputTargetRegistrationMask( std::string fileOut ) { 
-    m_FileOutputTargetRegistrationMask = fileOut; 
+  void SetFileOutputTargetRegistrationMask( std::string fileOut ) {
+    m_FileOutputTargetRegistrationMask = fileOut;
   }
 
   /// Set the output target mask distance transform image
-  void SetFileTargetDistanceTransform( std::string fileOut ) { 
-    m_FileTargetDistanceTransform = fileOut; 
+  void SetFileTargetDistanceTransform( std::string fileOut ) {
+    m_FileTargetDistanceTransform = fileOut;
   }
   /// Set the output source mask distance transform image
-  void SetFileSourceDistanceTransform( std::string fileOut ) { 
-    m_FileSourceDistanceTransform = fileOut; 
+  void SetFileSourceDistanceTransform( std::string fileOut ) {
+    m_FileSourceDistanceTransform = fileOut;
   }
 
   /// Set the output affine transformation matrix file
-  void SetFileOutputAffineTransformation( std::string fileOut ) { 
-    m_FileOutputAffineTransformation = fileOut; 
+  void SetFileOutputAffineTransformation( std::string fileOut ) {
+    m_FileOutputAffineTransformation = fileOut;
   }
   /// Set the output non-rigid transformation (control-point) file
-  void SetFileOutputNonRigidTransformation( std::string fileOut ) { 
-    m_FileOutputNonRigidTransformation = fileOut; 
+  void SetFileOutputNonRigidTransformation( std::string fileOut ) {
+    m_FileOutputNonRigidTransformation = fileOut;
   }
   /// Set the output deformation field file
-  void SetFileOutputDeformation( std::string fileOut ) { 
-    m_FileOutputDeformation = fileOut; 
+  void SetFileOutputDeformation( std::string fileOut ) {
+    m_FileOutputDeformation = fileOut;
   }
 
   /// Set the output affine registered file
-  void SetFileOutputAffineRegistered( std::string fileOut ) { 
-    m_FileOutputAffineRegistered = fileOut; 
+  void SetFileOutputAffineRegistered( std::string fileOut ) {
+    m_FileOutputAffineRegistered = fileOut;
   }
   /// Set the output non-rigid registered file
-  void SetFileOutputNonRigidRegistered( std::string fileOut ) { 
-    m_FileOutputNonRigidRegistered = fileOut; 
+  void SetFileOutputNonRigidRegistered( std::string fileOut ) {
+    m_FileOutputNonRigidRegistered = fileOut;
   }
 
   /// Specify whether to perform a non-rigid registration
   void SetRegisterNonRigid( void ) { m_FlgRegisterNonRigid = true; }
- 
+
   /// Transform a point from the target image to the source
   InputImagePointType TransformPoint( InputImagePointType point );
+
+  /// Non-rigidly trasnform an image file using the registration
+  void NonRigidlyTransformImageFile( std::string fileImage, std::string fileResult );
 
 
 #ifdef ITK_USE_CONCEPT_CHECKING
@@ -240,9 +244,12 @@ protected:
   bool m_FlgVerbose;
   bool m_FlgDebug;
 
+  /// Overwrite existing registration even if it already exists
+  bool m_FlgOverwrite;
+
   /// Specify whether to perform a non-rigid registration
   bool m_FlgRegisterNonRigid;
-  
+
   /// Specify the input images to register
   enumRegistrationImagesType m_TypeOfInputImagesToRegister;
 
@@ -333,15 +340,22 @@ protected:
   /// Print the object
   void Print( void );
 
-
   /// The affine registration
   InputImagePointer RunAffineRegistration( InputImagePointer imTarget,
                                            InputImagePointer imSource,
                                            int finalInterpolator=4,
                                            int registrationInterpolator=2 );
-    
+
   /// The a non-rigid registration
   InputImagePointer RunNonRigidRegistration( void );
+
+  /// Read the affine transformation
+  bool ReadAffineTransformation( std::string fileAffineTransformation );
+  /// Read the affine transformation
+  bool ReadNonRigidDeformationField( std::string fileInputDeformation );
+
+  /// Read the transformations instead of re-running them?
+  bool ReadRegistrationData();
 
   /// Does the real work
   virtual void GenerateData();
@@ -352,7 +366,7 @@ protected:
 private:
   MammogramRegistrationFilter(const Self &); //purposely not implemented
   void operator=(const Self &);  //purposely not implemented
- 
+
 };
 
 
